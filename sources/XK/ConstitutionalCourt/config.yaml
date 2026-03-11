@@ -1,0 +1,55 @@
+source:
+  id: XK/ConstitutionalCourt
+  name: Kosovo Constitutional Court (Gjykata Kushtetuese)
+  country: XK
+  data_types:
+    - case_law
+  auth: none
+  url: https://gjk-ks.org
+  api_base: https://api.webgjk-ks.org
+  total_records: 2954
+  languages:
+    - sq  # Albanian
+    - sr  # Serbian
+    - en  # English (titles only)
+    - tr  # Turkish (titles only)
+
+fetch:
+  method: api
+  endpoints:
+    decisions: /publish/CdmsCase/getAllFilteredDecisions
+  pagination:
+    type: page_based
+    page_size: 100
+    param_page: PageNumber
+    param_size: PageSize
+  rate_limit:
+    requests_per_second: 2
+    delay_between_pages: 0.5
+
+schema:
+  key_fields:
+    - case_number
+    - _id
+  date_fields:
+    - date
+    - entryDate
+  text_fields:
+    - text
+    - description
+    - descriptionSR
+  normalized_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - title_sr
+    - text
+    - date
+    - url
+    - case_number
+    - decision_type
+    - complainant
+    - pdf_urls
+    - languages

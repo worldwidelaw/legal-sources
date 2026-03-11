@@ -1,0 +1,56 @@
+# AD/BOPA -- Andorra Official Gazette (Butlletí Oficial del Principat d'Andorra)
+#
+# Fetches Andorran legislation from bopa.ad official gazette.
+#
+# Source URL: https://www.bopa.ad
+# API: Azure Functions at bopaazurefunctions.azurewebsites.net
+# Storage: Azure Blob Storage at bopadocuments.blob.core.windows.net
+#
+# Data coverage:
+#   - Electronic official version from 2015-present
+#   - Document types: Lleis (Laws), Reglaments, Decrets, Convenis internacionals
+#   - Language: Catalan (ca)
+#
+# License: Open Government Data (Andorra)
+
+source:
+  id: AD/BOPA
+  name: Butlletí Oficial del Principat d'Andorra
+  country: AD
+  url: https://www.bopa.ad
+  data_types:
+    - legislation
+  auth: none
+  rate_limit: 1.0  # seconds between requests
+
+  # API endpoints
+  api:
+    base_url: https://bopaazurefunctions.azurewebsites.net
+    newsletter_endpoint: /api/GetNewPaginatedNewsletter
+    documents_endpoint: /api/GetDocumentsByBOPA
+
+  # Document storage
+  storage:
+    blob_url: https://bopadocuments.blob.core.windows.net/bopa-documents
+
+schema:
+  # Key fields for deduplication and validation
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: document_name
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true

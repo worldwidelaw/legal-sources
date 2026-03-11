@@ -1,0 +1,51 @@
+# UK/CaseLaw - Find Case Law (National Archives)
+#
+# Official UK case law database from the National Archives.
+# Covers major UK courts:
+# - UK Supreme Court (UKSC)
+# - Court of Appeal (EWCA)
+# - High Court (EWHC) - all divisions
+# - First-tier Tribunal (UKFTT)
+# - Employment tribunals (EAT, UKEAT)
+#
+# Data source: https://caselaw.nationalarchives.gov.uk
+# API docs: https://nationalarchives.github.io/ds-find-caselaw-docs/public
+# License: Open Justice Licence
+
+source_id: UK/CaseLaw
+country: UK
+name: UK Case Law (National Archives)
+url: https://caselaw.nationalarchives.gov.uk
+
+data_types:
+  - case_law
+
+auth:
+  type: none
+
+rate_limit:
+  # API limit: 1000 requests per 5 minutes = ~3.3 req/sec
+  requests_per_second: 2
+  burst: 5
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - court
+    - citation
+
+# Courts covered (partial list - many more available)
+courts:
+  - uksc      # UK Supreme Court
+  - ewca/civ  # Court of Appeal Civil
+  - ewca/crim # Court of Appeal Criminal
+  - ewhc/ch   # High Court Chancery
+  - ewhc/kb   # High Court King's Bench
+  - ewhc/admin # High Court Administrative
+  - ewhc/fam  # High Court Family
+  - ukftt     # First-tier Tribunals
+  - ukut      # Upper Tribunals

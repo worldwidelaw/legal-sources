@@ -1,0 +1,116 @@
+# ===================================================================
+# AL/QBZ -- Albanian Official Gazette (Qendra e Botimeve Zyrtare)
+# ===================================================================
+# Full text available via WebDAV/Alfresco CMS and ELI URIs.
+# No authentication required. Documents from 1990 to present.
+#
+# Primary endpoint: WebDAV at qbz.gov.al/alfresco/webdav/Aktet/
+# ELI endpoint: qbz.gov.al/eli/ligj/{year}/{month}/{day}/{number}
+# Docs: Albania has implemented ELI since January 2023
+# ===================================================================
+
+source:
+  id: "AL/QBZ"
+  country: "AL"
+  name: "Qendra e Botimeve Zyrtare (Albanian Official Gazette)"
+  url: "https://qbz.gov.al"
+  description: |
+    Albania's Official Publishing Center (Qendra e Botimeve Zyrtare) under
+    the Ministry of Justice. Publishes the Official Gazette (Fletorja Zyrtare)
+    containing all laws (ligj), decisions (vendim), decrees (dekret), and
+    other official acts. Full text accessible via WebDAV in PDF format.
+    Albania implemented ELI (European Legislation Identifier) in January 2023.
+    EU candidate country.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "webdav"
+  base_url: "https://qbz.gov.al"
+  endpoints:
+    # WebDAV structure for browsing acts
+    webdav_base: "/alfresco/webdav"
+    webdav_acts: "/alfresco/webdav/Aktet"
+    webdav_laws: "/alfresco/webdav/Aktet/ligj/kuvendi-i-shqiperise"
+    # Document path pattern: /alfresco/webdav/Aktet/ligj/kuvendi-i-shqiperise/{year}/{month}/{day}/{number}/base/
+    # Files: ligj-{year}-{month}-{day}-{number}.pdf
+
+    # ELI URIs
+    eli_law: "/eli/ligj/{year}/{month}/{day}/{number}"
+    eli_gazette: "/eli/fz/{year}/{issue}"
+  pagination:
+    by_directory: true
+    eli_listing: true
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  versioning: "none"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "doc_id"
+      description: "Document identifier (ligj-{year}-{month}-{day}-{number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title in Albanian"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation (extracted from PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Enactment date (ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "ELI URL to the document on qbz.gov.al"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "year"
+      description: "Enactment year"
+      type: "integer"
+      role: "temporal_key"
+      required: true
+    - name: "law_number"
+      description: "Law number within the year"
+      type: "integer"
+      role: "classification"
+      required: true
+  secondary_fields:
+    - name: "document_type"
+      description: "Type of legal act (ligj, vendim, dekret, etc.)"
+    - name: "issuing_authority"
+      description: "Authority that issued the document (Parliament, President)"
+    - name: "eli_uri"
+      description: "Full ELI URI for the document"
+    - name: "language"
+      description: "Language code (sqi for Albanian)"
+
+notes: |
+  - Full text via WebDAV PDF downloads: /alfresco/webdav/Aktet/ligj/kuvendi-i-shqiperise/{year}/{month}/{day}/{number}/base/
+  - ELI URIs: /eli/ligj/{year}/{month}/{day}/{number}
+  - Document types: ligj (law), vendim (decision), dekret (decree), urdher (order), rregullore (regulation)
+  - Issuing bodies: kuvendi-i-shqiperise (Parliament), presidenti-i-republikes (President)
+  - Albania implemented ELI in January 2023
+  - Language: Albanian (SQI)
+  - Rate limit: conservative 2 req/s to avoid overloading the server

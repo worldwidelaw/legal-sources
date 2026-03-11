@@ -1,0 +1,45 @@
+source:
+  id: LT/ConstitutionalCourt
+  country: LT
+  name: Lithuanian Constitutional Court (Konstitucinis Teismas)
+  url: https://www.lrkt.lt
+  data_types:
+    - case_law
+  auth: none
+  license: CC BY 4.0
+  notes: |
+    Constitutional Court decisions from the Lithuanian TAR (Register of Legal Acts)
+    via data.gov.lt Open Data API. Includes rulings (nutarimai), decisions (sprendimai),
+    conclusions (išvados), announcements (pranešimai), orders (potvarkis), and
+    corrections (atitaisymas). 1300+ documents with full text.
+
+    Pagination uses vda_id-based keyset pagination due to API limitations with
+    cursor-based pagination when filters are applied.
+
+    Note: data.gov.lt has fewer records than the full lrkt.lt archive (Cloudflare protected).
+    This is a known limitation of the data source, not the scraper.
+
+api:
+  base_url: https://get.data.gov.lt
+  endpoint: /datasets/gov/lrsk/teises_aktai/Dokumentas
+  filter: priemusi_inst.contains("Konstitu")
+  rate_limit: 1.0  # seconds between requests
+
+schema:
+  key_fields:
+    - name: "dokumento_id"
+      type: "string"
+      required: true
+    - name: "vda_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+  date_format: "YYYY-MM-DD"

@@ -1,0 +1,60 @@
+# IT/Toscana - Toscana Regional Legislation
+# Raccolta Normativa della Regione Toscana
+
+source:
+  id: "IT/Toscana"
+  name: "Toscana Regional Legislation (Raccolta Normativa)"
+  country: "IT"
+  jurisdiction: "Tuscany Region"
+  url: "https://raccoltanormativa.consiglio.regione.toscana.it"
+  data_types:
+    - legislation
+
+  # Data access method
+  access:
+    type: "bulk_download"
+    base_url: "https://raccoltanormativa.consiglio.regione.toscana.it"
+    download_endpoint: "/class/download.php"
+    # Downloads ZIP files of XML by legislature and document type
+    # Parameters: type=zip, formato=xml|akm|pdf|rtf|txt, tipo=legge|regolamento.consiglio|regolamento.giunta, metaleg=1-10
+
+  # Document types available
+  document_types:
+    - legge              # Regional laws
+    - regolamento.consiglio  # Council regulations
+    - regolamento.giunta     # Executive regulations
+
+  # Legislatures (I-X, 1970-present)
+  legislatures:
+    - { id: 10, name: "X Legislatura", years: "2020-present" }
+    - { id: 9, name: "IX Legislatura", years: "2015-2020" }
+    - { id: 8, name: "VIII Legislatura", years: "2010-2015" }
+    - { id: 7, name: "VII Legislatura", years: "2005-2010" }
+    - { id: 6, name: "VI Legislatura", years: "2000-2005" }
+    - { id: 5, name: "V Legislatura", years: "1995-2000" }
+    - { id: 4, name: "IV Legislatura", years: "1990-1995" }
+    - { id: 3, name: "III Legislatura", years: "1985-1990" }
+    - { id: 2, name: "II Legislatura", years: "1975-1980" }
+    - { id: 1, name: "I Legislatura", years: "1970-1975" }
+
+schema:
+  key_fields:
+    - urn          # URN:NIR identifier
+    - doc_type     # legge, regolamento, etc.
+    - date         # Publication date
+    - number       # Document number
+  text_field: "text"
+
+license:
+  type: "CC-BY-3.0"
+  url: "https://creativecommons.org/licenses/by/3.0/"
+
+notes: |
+  Tuscany Regional Legislative Database. Provides all regional laws (leggi regionali)
+  and regulations (regolamenti) from 1971 to present in NIR XML format.
+
+  Data access via bulk ZIP downloads by legislature and document type.
+  Updates weekly. Full text available in structured XML with rich metadata
+  including cross-references to other laws.
+
+  Coverage: ~2,000+ laws and regulations across all 10 legislatures.

@@ -1,0 +1,114 @@
+# ===================================================================
+# CA/SupremeCourt -- Supreme Court of Canada Decisions
+# ===================================================================
+# Full text decisions from the Supreme Court of Canada (1970-present).
+# Uses official decisions portal with HTML parsing for full judgment text.
+# RSS feed available for incremental updates.
+# Source: https://decisions.scc-csc.ca
+# ===================================================================
+
+source:
+  id: "CA/SupremeCourt"
+  country: "CA"
+  name: "Supreme Court of Canada Decisions"
+  url: "https://decisions.scc-csc.ca"
+  description: |
+    Canada's highest court. Hears appeals on questions of public importance
+    from all provincial and federal courts. ~15,500+ decisions from 1970 to
+    present. Bilingual (English/French). Full text available in HTML format.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scraping"
+  base_url: "https://decisions.scc-csc.ca"
+  endpoints:
+    rss_feed: "/scc-csc/scc-csc/en/rss.do"
+    year_nav: "/scc-csc/scc-csc/en/{year}/nav_date.do"
+    case: "/scc-csc/scc-csc/en/item/{id}/index.do"
+  pagination:
+    type: "year_based"
+    start_year: 1970
+
+data_model:
+  type: "case_law"
+  primary_key: "item_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "item_id"
+
+schema:
+  key_fields:
+    - name: "_id"
+      description: "Unique record ID (scc_{item_id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "item_id"
+      description: "SCC document item ID"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "neutral_citation"
+      description: "Neutral citation (e.g., 2025 SCC 33)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Case title/name"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the judgment"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (YYYY-MM-DD)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the decision on scc-csc.ca"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "case_number"
+      description: "SCC case/docket number"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "judges"
+      description: "Panel of judges hearing the case"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "appealed_from"
+      description: "Court appealed from"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "subjects"
+      description: "Legal subject areas"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - Uses HTML scraping from official SCC decisions portal
+  - ~15,500+ decisions available (1970-present)
+  - Full text extracted from HTML judgment pages
+  - RSS feed used for incremental updates
+  - Bilingual: English and French versions available
+  - Public domain / Crown copyright
+  - Language: English (primary), French

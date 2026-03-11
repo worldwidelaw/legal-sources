@@ -1,0 +1,47 @@
+{
+  "_id": "DU/2024/1977",
+  "_source": "PL/DziennikUrzedowy",
+  "_type": "legislation",
+  "_fetched_at": "2026-02-10T18:05:07.224263+00:00",
+  "title": "Rozporządzenie Ministra Zdrowia z dnia 30 grudnia 2024 r. zmieniające rozporządzenie w sprawie świadczeń gwarantowanych z zakresu ambulatoryjnej opieki specjalistycznej",
+  "text": "Rozporządzenie Ministra Zdrowiaz dnia 30 grudnia 2024 r.zmieniające rozporządzenie w sprawie świadczeń gwarantowanych z zakresu ambulatoryjnej opieki specjalistycznej 1)Minister Zdrowia kieruje działem administracji rządowej - zdrowie, na podstawie § 1 ust. 2 rozporządzenia Prezesa Rady Ministrów z dnia 18 grudnia 2023 r. w sprawie szczegółowego zakresu działania Ministra Zdrowia (Dz. U. poz. 2704).\nSpis treści\nTreść rozporządzenia\n§ 1.\n§ 2.\nZałącznik - Tekst załącznika\nNa podstawie art. 31d ustawy z dnia 27 sierpnia 2004 r. o świadczeniach opieki zdrowotnej finansowanych ze środków publicznych (Dz. U. z 2024 r. poz. 146, 858, 1222, 1593, 1615 i 1915) zarządza się, co następuje:\nW rozporządzeniu Ministra Zdrowia z dnia 6 listopada 2013 r. w sprawie świadczeń gwarantowanych z zakresu ambulatoryjnej opieki specjalistycznej (Dz. U. z 2016 r. poz. 357, z późn. zm.2)Zmiany tekstu jednolitego wymienionego rozporządzenia zostały ogłoszone w Dz. U. z 2016 r. poz. 2164, z 2017 r. poz. 1244, 1766 i 2423, z 2018 r. poz. 657, z 2019 r. poz. 397, 1060 i 1864, z 2020 r. poz. 612, z 2021 r. poz. 543 i 727, z 2022 r. poz. 365, 482, 1542, 2641 i 2678, z 2023 r. poz. 1953 i 2294 oraz z 2024 r. poz. 224, 1318 i 1543.) w załączniku nr 2 do rozporządzenia w części VI „Świadczenia tomografii komputerowej” lp. 23 otrzymuje brzmienie określone w załączniku do niniejszego rozporządzenia.\nRozporządzenie wchodzi w życie z dniem 1 stycznia 2025 r.",
+  "date": "2024-12-31",
+  "url": "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20241977",
+  "eli": "DU/2024/1977",
+  "address": "WDU20240001977",
+  "display_address": "Dz.U. 2024 poz. 1977",
+  "year": 2024,
+  "pos": 1977,
+  "doc_type": "Rozporządzenie",
+  "status": "obowiązujący",
+  "in_force": "IN_FORCE",
+  "entry_into_force": "2025-01-01",
+  "keywords": [
+    "świadczenia lecznicze",
+    "opieka zdrowotna",
+    "służba zdrowia"
+  ],
+  "released_by": [
+    "MIN. ZDROWIA"
+  ],
+  "references": {
+    "Akty zmienione": [
+      {
+        "id": "DU/2013/1413",
+        "date": "2025-01-01"
+      }
+    ],
+    "Podstawa prawna": [
+      {
+        "id": "DU/2004/2135"
+      }
+    ],
+    "Podstawa prawna z art.": [
+      {
+        "id": "DU/2004/2135",
+        "art": "art. 31d"
+      }
+    ]
+  },
+  "language": "pl"
+}

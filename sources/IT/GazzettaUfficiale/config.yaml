@@ -1,0 +1,119 @@
+# ===================================================================
+# IT/GazzettaUfficiale -- Italian Official Gazette via Normattiva
+# ===================================================================
+# Full text available via ELI URIs on Normattiva (consolidated legislation)
+# and Gazzetta Ufficiale (original gazette publications).
+# No authentication required. Open Government Data.
+#
+# Primary endpoint: Normattiva ELI URIs for consolidated legislation
+# Secondary: Gazzetta Ufficiale for original gazette publications
+# ===================================================================
+
+source:
+  id: "IT/GazzettaUfficiale"
+  country: "IT"
+  name: "Gazzetta Ufficiale della Repubblica Italiana"
+  url: "https://www.normattiva.it"
+  description: |
+    Italian legislation from Normattiva (consolidated texts) and the
+    Gazzetta Ufficiale (Official Gazette). Normattiva is maintained by
+    the Presidency of the Council of Ministers and provides consolidated
+    versions of laws with ELI (European Legislation Identifier) support.
+    Contains laws (leggi), legislative decrees (decreti legislativi),
+    decree-laws (decreti-legge), and other normative acts.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1    # Conservative rate limiting
+  burst: 2
+
+api:
+  type: "eli"               # European Legislation Identifier URIs
+  base_url: "https://www.normattiva.it"
+  secondary_base: "https://www.gazzettaufficiale.it"
+  endpoints:
+    # Normattiva URN-based access (consolidated texts)
+    normattiva_urn: "/uri-res/N2Ls?urn:nir:stato:{act_type}:{date};{number}"
+    # Normattiva ELI-style access
+    normattiva_eli: "/eli/id/{yyyy}/{mm}/{dd}/{code}/CONSOLIDATED/ita/html"
+    # Gazzetta Ufficiale ELI endpoints
+    gu_issue: "/eli/gu/{yyyy}/{mm}/{dd}/{issue}/sg/html"
+    gu_act: "/atto/serie_generale/caricaDettaglioAtto/originario"
+    gu_article: "/atto/serie_generale/caricaArticolo"
+  pagination:
+    by_year: true           # Browse by year
+    by_gazette_issue: true  # Browse by gazette issue
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  versioning: "consolidated"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 16
+  key_fields:
+    - name: "doc_id"
+      description: "Document identifier (code from Gazzetta Ufficiale, e.g., 24G00164)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title in Italian"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date (ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "year"
+      description: "Publication year"
+      type: "integer"
+      role: "temporal_key"
+      required: true
+    - name: "act_type"
+      description: "Type of act (legge, decreto.legislativo, decreto.legge, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "act_number"
+      description: "Act number"
+      type: "integer"
+      role: "classification"
+      required: false
+  secondary_fields:
+    - name: "eli_uri"
+      description: "Full ELI URI for the document"
+    - name: "gazette_number"
+      description: "Gazette issue number"
+    - name: "gazette_date"
+      description: "Date of gazette publication"
+    - name: "language"
+      description: "Language code (it for Italian)"
+
+notes: |
+  - Normattiva provides consolidated legislation with ELI URIs
+  - URN format: urn:nir:stato:{type}:{date};{number}
+  - ELI format: /eli/id/{yyyy}/{mm}/{dd}/{code}/CONSOLIDATED/ita/html
+  - Gazzetta Ufficiale provides original gazette publications
+  - Italy has implemented ELI since 2014
+  - License: Open Government Data (IODL 2.0)

@@ -1,0 +1,66 @@
+source:
+  id: IE/SupremeCourt
+  country: IE
+  name: Irish Courts Service - Case Law
+  description: |
+    Irish court judgments from the Courts Service of Ireland (www2.courts.ie/Judgments).
+    Covers Supreme Court, Court of Appeal, High Court, and Circuit Court decisions.
+    Full text extracted from PDF judgments.
+
+  url: https://www2.courts.ie/Judgments
+  data_types:
+    - case_law
+
+  auth:
+    type: none
+
+  license:
+    name: Irish Public Service Data License
+    url: https://www.courts.ie/terms
+
+schedule:
+  frequency: weekly
+  reason: New judgments published regularly
+
+schema:
+  key_fields:
+    - name: citation
+      type: string
+      required: true
+    - name: neutral_citation
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+  secondary_fields:
+    - name: court
+      type: string
+      required: false
+    - name: judge
+      type: string
+      required: false
+    - name: date_delivered
+      type: string
+      required: false
+    - name: date_uploaded
+      type: string
+      required: false
+    - name: parties
+      type: string
+      required: false
+    - name: ecli
+      type: string
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - citation
+
+notes: |
+  Uses Drupal-based listing at www2.courts.ie/Judgments with pagination.
+  PDFs directly accessible at /acc/alfresco/{uuid}/{citation}.pdf/pdf.
+  Full text extracted using pdfplumber library.
+  Citation format: [YYYY] IE{Court} {Number} (e.g., [2026] IEHC 83).
+  Courts: IESC (Supreme Court), IECA (Court of Appeal), IEHC (High Court).

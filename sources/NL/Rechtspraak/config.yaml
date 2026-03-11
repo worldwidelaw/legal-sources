@@ -1,0 +1,70 @@
+# NL/Rechtspraak -- Dutch Court Decisions (Open Data van de Rechtspraak)
+# Official data from de Rechtspraak (Dutch Judiciary)
+
+source_id: "NL/Rechtspraak"
+name: "Dutch Court Decisions (rechtspraak.nl)"
+country: "NL"
+language: "nl"
+data_types:
+  - case_law
+
+# Data endpoints (no authentication required)
+endpoints:
+  # ECLI Index Search (returns Atom feed of ECLIs)
+  search: "https://data.rechtspraak.nl/uitspraken/zoeken"
+
+  # Full text document retrieval
+  content: "https://data.rechtspraak.nl/uitspraken/content"
+
+  # Value lists (courts, legal fields, etc.)
+  instanties: "https://data.rechtspraak.nl/Waardelijst/Instanties"
+  rechtsgebieden: "https://data.rechtspraak.nl/Waardelijst/Rechtsgebieden"
+  proceduresoorten: "https://data.rechtspraak.nl/Waardelijst/Proceduresoorten"
+
+# Schema information
+schema:
+  key_fields:
+    - "ecli"         # European Case Law Identifier (e.g., ECLI:NL:RBAMS:2023:3197)
+    - "id"           # Internal ID (same as ECLI)
+  date_format: "ISO8601"
+  text_field: "text"
+
+# License
+license:
+  name: "Public Domain"
+  url: "https://www.rechtspraak.nl/Uitspraken/Paginas/Open-Data.aspx"
+  notes: |
+    Data from de Rechtspraak is public domain. Court decisions are
+    pseudonymized before publication.
+
+# Rate limit
+rate_limit:
+  requests_per_second: 5  # API allows up to 10/sec, we use 5 for safety
+
+# Fetcher configuration
+fetcher:
+  timeout_s: 60
+  max_retries: 3
+
+# Notes
+notes: |
+  Open Data van de Rechtspraak provides access to all Dutch court decisions
+  from all courts (Rechtbanken, Gerechtshoven, Hoge Raad, etc.).
+
+  Two-step query process:
+  1. Search ECLI-index to get list of ECLIs matching criteria
+  2. Fetch full document XML for each ECLI
+
+  Search parameters:
+  - max: result limit (default 1000)
+  - from: offset for pagination
+  - sort: ASC/DESC by modification date
+  - type: Uitspraak (judgment) or Conclusie (opinion)
+  - date: single date or range (yyyy-mm-dd)
+  - modified: timestamp filter
+  - subject: legal field URI
+  - creator: court instance
+
+  Full text available as LJN XML (contains judgment text, court, parties, etc.)
+
+  ~700,000+ court decisions from 2012 onwards.

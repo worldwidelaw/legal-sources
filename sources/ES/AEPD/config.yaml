@@ -1,0 +1,54 @@
+name: AEPD - Agencia Española de Protección de Datos
+source_id: ES/AEPD
+country: ES
+data_types:
+  - case_law
+
+url: https://www.aepd.es/informes-y-resoluciones/resoluciones
+license: Open Government License
+update_frequency: daily
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: expediente
+      type: string
+      required: false
+    - name: date
+      type: date
+      required: false
+    - name: text
+      type: string
+      required: true
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  max_workers: 5
+
+notes: |
+  AEPD resolutions include:
+  - PS (Procedimiento Sancionador): sanction procedures
+  - AI (Archivo de Actuaciones): archived actions
+  - PD (Procedimiento de Derechos): rights procedures
+  - PA (Procedimiento de Apercibimiento): warning procedures
+  - TD (Tutela de Derechos): rights protection
+  - REPOSICION: appeals
+
+  Data source: PDF enumeration by type and year (2018-present)
+  PDF text extraction via pdfminer
+  ~46,000 resolutions in total catalog

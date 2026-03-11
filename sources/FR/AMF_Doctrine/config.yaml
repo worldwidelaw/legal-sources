@@ -1,0 +1,42 @@
+source:
+  id: FR/AMF_Doctrine
+  name: "AMF Regulatory Doctrine (Doctrine AMF)"
+  country: FR
+  data_types:
+    - doctrine
+    - regulation
+  url: https://www.amf-france.org/fr/reglementation/doctrine
+  auth: none
+  license: "Licence Ouverte Etalab 2.0"
+
+endpoints:
+  rss_feed: "https://www.amf-france.org/fr/flux-rss/display/31"
+  base_url: "https://www.amf-france.org"
+
+schema:
+  key_fields:
+    - _id
+    - doc_reference
+    - date
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+
+rate_limit:
+  requests_per_second: 0.5
+  delay_between_requests: 2.0
+
+notes: |
+  AMF Doctrine documents include:
+  - Instructions (DOC-YYYY-NN)
+  - Positions/Recommendations
+  - Professional rules (règles professionnelles)
+
+  Fetches via RSS feed which includes all recently updated doctrine.
+  Full text extracted from HTML pages. PDFs also available.

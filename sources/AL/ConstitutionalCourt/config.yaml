@@ -1,0 +1,120 @@
+# ===================================================================
+# AL/ConstitutionalCourt -- Albanian Constitutional Court
+# ===================================================================
+# WordPress REST API, no authentication required.
+# PDFs contain full text of constitutional court decisions.
+# ===================================================================
+
+source:
+  id: "AL/ConstitutionalCourt"
+  country: "AL"
+  name: "Gjykata Kushtetuese (Albanian Constitutional Court)"
+  url: "https://www.gjykatakushtetuese.gov.al"
+  description: |
+    Constitutional Court of the Republic of Albania (Gjykata Kushtetuese
+    e Republikës së Shqipërisë). Publishes constitutional case law decisions
+    via WordPress REST API with PDF attachments containing full text.
+    Data includes final decisions, collegial decisions, and plenary
+    session decisions. Language: Albanian (sq).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5    # 1 request every 2 seconds (conservative)
+  burst: 3
+
+api:
+  type: "wordpress_rest"
+  base_url: "https://www.gjykatakushtetuese.gov.al/wp-json/wp/v2"
+  endpoints:
+    court_decisions: "/court_decision"
+    decision_requests: "/kerkesa_vendimi"
+    media: "/media"
+  post_types:
+    - court_decision      # Full court decisions with PDF attachments
+    - kerkesa_vendimi     # Decision requests (4500+ records)
+  pagination:
+    page_param: "page"
+    page_size_param: "per_page"
+    max_page_size: 100
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "Unique document ID (AL-CC-{type}-{id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (e.g., Vendim nr. 15 datë 22.01.2025)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (YYYY-MM-DD)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the decision page or PDF"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "decision_number"
+      description: "Decision number"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "petitioner"
+      description: "Petitioner name (kerkues)"
+      type: "string"
+      role: "party"
+      required: false
+    - name: "subject"
+      description: "Subject/object of the case (objekti)"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "pdf_url"
+      description: "Direct URL to the PDF file"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "court"
+      description: "Court name"
+      type: "string"
+      role: "classification"
+      required: false
+  secondary_fields:
+    - name: "post_type"
+      description: "WordPress post type (court_decision, kerkesa_vendimi, media)"
+    - name: "country"
+      description: "Country code (AL)"
+    - name: "language"
+      description: "Language code (sq for Albanian)"
+
+notes: |
+  - WordPress REST API with custom post types for court decisions
+  - Full text in PDF attachments (pdfplumber/PyPDF2 required for extraction)
+  - ~4600 decision records (kerkesa_vendimi) + ~6 recent court decisions
+  - ~1700 PDF files in media library
+  - Some PDFs may be scanned images (OCR not implemented)
+  - EU candidate country, implementing ELI standards
+  - Language: Albanian (sq)

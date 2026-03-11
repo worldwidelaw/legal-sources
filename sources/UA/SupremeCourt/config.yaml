@@ -1,0 +1,55 @@
+# UA/SupremeCourt -- Supreme Court of Ukraine (Верховний Суд)
+#
+# Data source: data.gov.ua - Unified State Register of Court Decisions (ЄДРСР)
+# Downloads bulk CSV data with links to RTF full text documents
+#
+# Registry contains ALL Ukrainian courts, but this source filters to:
+#   - Cassation courts (instance_code = 1)
+#   - Court codes: 5001, 9901, 9911, 9921, 9931, 9941, 9951, 9991, 9992, 9999
+#
+# Annual datasets available: 2009-present (updated daily for current year)
+#
+# RTF files hosted at: http://od.reyestr.court.gov.ua/files/XX/<hash>.rtf
+#   - No authentication required
+#   - No rate limits documented (use conservative 1 req/sec)
+
+name: Supreme Court of Ukraine
+country: UA
+url: https://supreme.court.gov.ua
+
+data_types:
+  - case_law
+
+auth:
+  type: none
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - doc_id
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  max_workers: 3
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: doc_id
+      type: string
+      required: true
+    - name: court_code
+      type: string
+      required: true
+    - name: cause_num
+      type: string
+      required: false
+    - name: adjudication_date
+      type: date
+      required: false
+    - name: text
+      type: string
+      required: true

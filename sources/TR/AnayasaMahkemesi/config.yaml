@@ -1,0 +1,123 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — Turkish Constitutional Court Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "TR/AnayasaMahkemesi"
+  country: "TR"
+  name: "Turkish Constitutional Court (Anayasa Mahkemesi)"
+  url: "https://www.anayasa.gov.tr"
+  description: |
+    Constitutional Court of the Republic of Turkey (Anayasa Mahkemesi).
+    Two main databases:
+    - Norm Review Decisions (Norm Denetimi Kararları) - ~5470 decisions
+    - Individual Applications (Bireysel Başvuru Kararları) - ~16464 decisions
+    Coverage: 1961 onwards for norm review, 2012 onwards for individual applications
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "html"
+  base_url: "https://www.anayasa.gov.tr"
+  databases:
+    norm_review:
+      base_url: "https://normkararlarbilgibankasi.anayasa.gov.tr"
+      list_endpoint: "/Ara?page={page}"
+      detail_endpoint: "/ND/{year}/{decision_number}"
+    individual_applications:
+      base_url: "https://kararlarbilgibankasi.anayasa.gov.tr"
+      list_endpoint: "/Ara?page={page}"
+      detail_endpoint: "/BB/{year}/{application_number}"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "decision_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "decision_id"
+    - "database"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "decision_id"
+      description: "Unique decision identifier (e.g., ND/2025/256 or BB/2023/78445)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title or applicant name"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the decision in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to view the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "database"
+      description: "Source database (norm_review or individual_applications)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "case_number"
+      description: "Case reference (Esas Sayısı)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "decision_number"
+      description: "Decision reference (Karar Sayısı)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "decision_type"
+      description: "Type of decision (merits, inadmissibility, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+  secondary_fields:
+    - name: "official_gazette_date"
+      description: "Official Gazette publication date"
+    - name: "official_gazette_number"
+      description: "Official Gazette issue number"
+    - name: "applicant"
+      description: "Name of applicant (for individual applications)"
+    - name: "pdf_url"
+      description: "URL to PDF version"
+    - name: "_raw"
+      description: "Complete raw data from source"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: Turkish (UTF-8)
+  - Coverage: 1961+ (norm review), 2012+ (individual applications)
+  - Two separate databases with different URL patterns
+  - Pagination via ?page= parameter (10 results per page)
+  - Full HTML content embedded in detail pages
+  - PDF/Word downloads available via /Dosyalar/Kararlar/ paths

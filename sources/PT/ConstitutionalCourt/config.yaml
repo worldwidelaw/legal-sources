@@ -1,0 +1,65 @@
+# PT/ConstitutionalCourt — Portuguese Constitutional Court Case Law
+#
+# Source: Tribunal Constitucional de Portugal
+# URL: https://www.tribunalconstitucional.pt
+# Data type: case_law
+# Auth: none
+# License: Public (open government data)
+#
+# The Portuguese Constitutional Court publishes all decisions (Acórdãos)
+# on its official website. Decisions are available from 1983 onwards.
+#
+# URL pattern: https://www.tribunalconstitucional.pt/tc/acordaos/{YYYY}{NNNN}.html
+# Where YYYY is the 4-digit year and NNNN is the 4-digit decision number.
+#
+# Coverage: All Constitutional Court decisions including:
+#   - Abstract judicial review (fiscalização abstracta)
+#   - Concrete judicial review (fiscalização concreta)
+#   - Electoral matters
+#   - Political party matters
+#   - Reference proceedings
+#
+# Search interface: https://acordaosv22.tribunalconstitucional.pt/
+
+source:
+  id: PT/ConstitutionalCourt
+  name: Portuguese Constitutional Court
+  country: PT
+  data_types:
+    - case_law
+  url: https://www.tribunalconstitucional.pt
+  language: pt
+  auth: none
+  license: public
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: decision_number
+      type: integer
+      required: true
+    - name: decision_year
+      type: integer
+      required: true
+    - name: text
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - decision_number
+    - decision_year
+    - case_number
+    - rapporteur
+  date_field: date
+
+fetch:
+  # Rate limiting: 1 request per 1.5 seconds
+  rate_limit_delay: 1.5
+  # Start year for decisions (Constitutional Court established 1982, first decisions 1983)
+  start_year: 1983
+  # Sample mode: fetch recent decisions
+  sample_years: 2
+  sample_count: 12

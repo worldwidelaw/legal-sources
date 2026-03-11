@@ -1,0 +1,114 @@
+# ===================================================================
+# TW/MOJ -- Taiwan Ministry of Justice National Laws Database
+# ===================================================================
+# Official Open API providing all Taiwan legislation in JSON format.
+# Data available in Chinese and English. Open Government Data License 1.0.
+# API: https://law.moj.gov.tw/api/
+# ===================================================================
+
+source:
+  id: "TW/MOJ"
+  country: "TW"
+  name: "National Laws Database (全國法規資料庫)"
+  url: "https://law.moj.gov.tw"
+  description: |
+    Taiwan's official legislation database operated by the Ministry of Justice.
+    Provides all central government laws and regulations in full text, with
+    English translations for most laws. Data available as JSON ZIP downloads.
+    ~3,000+ laws and regulations covering constitution, codes, and acts.
+    Open Government Data License 1.0 (OGDL-Taiwan-1.0).
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1      # Be gentle - downloading ZIPs
+  burst: 2
+
+api:
+  type: "bulk"
+  base_url: "https://law.moj.gov.tw/api"
+  endpoints:
+    chinese_laws: "/Ch/Law/JSON"
+    english_laws: "/En/Law/JSON"
+  format: "json_zip"          # Returns ZIP containing JSON file
+
+data_model:
+  type: "legislation"
+  primary_key: "pcode"
+  update_strategy: "upsert"
+  versioning: "temporal"
+  dedup_key:
+    - "pcode"
+
+schema:
+  total_fields: 18
+  key_fields:
+    - name: "_id"
+      description: "Unique identifier (pcode)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "pcode"
+      description: "Law code (e.g., A0000001 for Constitution)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Law name in Chinese"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "title_en"
+      description: "Law name in English (if available)"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "text"
+      description: "Full text of all articles concatenated"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Last modified date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the law on law.moj.gov.tw"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "law_level"
+      description: "Level of law (憲法, 法律, 命令, etc.)"
+    - name: "law_category"
+      description: "Category of law"
+    - name: "effective_date"
+      description: "Effective date (ISO 8601)"
+    - name: "effective_note"
+      description: "Note about effective date"
+    - name: "abandon_note"
+      description: "Note about law repeal"
+    - name: "articles"
+      description: "Array of individual articles with numbers and content"
+    - name: "histories"
+      description: "Amendment history"
+    - name: "foreword"
+      description: "Preamble text"
+    - name: "has_english"
+      description: "Whether English translation exists"
+    - name: "attachments"
+      description: "Attachment files"
+
+notes: |
+  - API provides bulk JSON ZIP downloads (~26MB Chinese, ~31MB English)
+  - Full article text included in LawArticles array
+  - ArticleType: "A" = article, "C" = chapter heading
+  - Language: Chinese (primary) + English (translations for many laws)
+  - Data licensed Open Government Data License 1.0 (OGDL-Taiwan-1.0)
+  - Covers constitution, central government laws, and regulations
+  - Does NOT include local (municipal) laws or administrative rules

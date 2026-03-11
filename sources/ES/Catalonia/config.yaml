@@ -1,0 +1,46 @@
+source_id: ES/Catalonia
+country: ES
+name: Catalan Legislation (DOGC)
+url: https://analisi.transparenciacatalunya.cat/d/n6hn-rmy7
+
+data_types:
+  - legislation
+
+license: CC0 1.0 Universal (Public Domain Dedication)
+language: ca, es
+
+endpoints:
+  metadata_api: https://analisi.transparenciacatalunya.cat/resource/n6hn-rmy7.json
+  xml_full_text: https://portaljuridic.gencat.cat/eli/{path}/cat/xml
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+
+data_model:
+  dedup_key:
+    - _id
+  update_strategy: upsert
+
+notes: |
+  Catalan regional legislation from the Official Gazette (DOGC - Diari Oficial
+  de la Generalitat de Catalunya) and Portal Jurídic de Catalunya.
+
+  Uses Socrata SODA API for metadata discovery, then ELI URIs for full text
+  in Akoma Ntoso XML format.
+
+  Document types: Llei (Laws), Decret (Decrees), Ordre (Orders), Resolució.
+  Available in Catalan and Spanish.
+
+  30,000+ records covering all Catalan legislation since 1977.

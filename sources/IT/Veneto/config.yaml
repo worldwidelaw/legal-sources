@@ -1,0 +1,54 @@
+source_id: IT/Veneto
+country: IT
+name: Veneto Regional Legislation (BUR)
+url: http://bur.regione.veneto.it/BurvServices/
+
+data_types:
+  - legislation
+
+license: CC0 1.0 Universal (Italian public sector information)
+language: it
+
+endpoints:
+  search: http://bur.regione.veneto.it/BurvServices/Pubblica/SommarioRicerca.aspx
+  detail: http://bur.regione.veneto.it/BurvServices/Pubblica/DettaglioLegge.aspx
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: law_number
+      type: string
+      required: false
+    - name: year
+      type: string
+      required: false
+    - name: text
+      type: string
+      required: true
+  date_fields:
+    - date
+    - bur_date
+    - _fetched_at
+
+rate_limit:
+  requests_per_second: 1.0
+
+coverage:
+  start_date: 2004-09-24  # BUR online archive starts from this date
+  end_date: present
+  notes: |
+    Regional laws (Leggi Regionali), regional regulations, decrees,
+    and deliberations of the Veneto Regional Council.
+    Over 4,400 regional laws in the database.
+
+license:
+  type: CC0 1.0
+  notes: Italian public sector information
+
+document_types:
+  - Legge Regionale
+  - Regolamento Regionale
+  - Decreto
+  - Deliberazione della Giunta Regionale

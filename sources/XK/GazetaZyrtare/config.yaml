@@ -1,0 +1,42 @@
+# XK/GazetaZyrtare — Kosovo Official Gazette
+# Source configuration
+
+source_id: XK/GazetaZyrtare
+name: Gazeta Zyrtare - Kosovo Official Gazette
+country: XK
+country_name: Kosovo
+url: https://gzk.rks-gov.net
+data_types:
+  - legislation
+language: sq  # Albanian (also Serbian, Turkish, Bosnian, English available)
+auth: none
+license: public_domain
+
+# Technical details
+api_type: html_scraping
+rate_limit: 1  # requests per second
+discovery_method: gazette_issues  # Iterate GZID 1-600+ for ActIDs
+content_method: html_extraction  # MainContent_txtDocument span
+
+# Schema
+schema:
+  key_fields:
+    - act_id
+    - act_number
+  required_fields:
+    - title
+    - text
+    - date
+    - act_type
+
+# Notes
+notes: |
+  Kosovo Official Gazette publishes all legislation since independence (2008).
+  Full text is embedded in HTML pages for most documents.
+  Discovery via OfficialGazetteDetail.aspx?GZID={1-600+}
+  Content via ActDocumentDetail.aspx?ActID={id}
+
+  Languages: Albanian (default), English (?langid=2), Serbian, Turkish, Bosnian
+
+  Document types: Laws (Ligje), Decrees, Administrative Instructions,
+  Constitution, Regulations, Codes, International Agreements

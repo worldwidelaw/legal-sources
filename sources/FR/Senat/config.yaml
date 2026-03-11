@@ -1,0 +1,53 @@
+# FR/Senat - French Senate (Sénat)
+# Legislative documents in Akoma Ntoso XML format
+
+source_id: FR/Senat
+name: French Senate (Sénat)
+country: FR
+language: fr
+data_types:
+  - legislation
+
+# Data access
+api:
+  type: xml_index
+  base_url: https://www.senat.fr/akomantoso
+  indexes:
+    - https://www.senat.fr/akomantoso/depots.xml      # Deposited texts
+    - https://www.senat.fr/akomantoso/adoptions.xml   # Adopted texts
+
+# Akoma Ntoso document structure
+format: xml
+schema:
+  standard: Akoma Ntoso 3.0
+  key_fields:
+    - FRBRthis
+    - FRBRuri
+  metadata_fields:
+    - FRBRdate
+    - FRBRauthor
+    - docTitle
+    - workflow
+  text_field: body/article/alinea/content/p
+
+# Rate limiting
+rate_limit:
+  requests_per_second: 2
+  delay_between_requests: 0.5
+
+# License
+license:
+  name: Licence Ouverte / Open Licence Etalab
+  url: https://data.senat.fr/licence/
+  commercial_use: true
+
+# Coverage
+coverage:
+  start_date: 2019-12-01
+  document_types:
+    - pjl: Projet de loi (Government bills)
+    - ppl: Proposition de loi (Private member bills)
+    - ppr: Proposition de résolution (Resolution proposals)
+  notes: >
+    All legislative texts deposited or adopted at the French Senate
+    since December 1, 2019 in Akoma Ntoso international standard format.

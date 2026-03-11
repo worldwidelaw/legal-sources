@@ -1,0 +1,121 @@
+# ═══════════════════════════════════════════════════════════════════
+# FR/LegifranceCodes — French Consolidated Legal Codes (PISTE API)
+# ═══════════════════════════════════════════════════════════════════
+# All 78+ French consolidated codes (Code civil, Code pénal, etc.)
+# Uses the official PISTE API with OAuth2 authentication.
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "FR/LegifranceCodes"
+  country: "FR"
+  name: "French Consolidated Legal Codes (Codes législatifs)"
+  url: "https://api.piste.gouv.fr/dila/legifrance"
+  description: |
+    Complete collection of French consolidated legal codes via the official
+    PISTE/Légifrance API. Includes all 78+ codes with full article text:
+    - Code civil (civil law)
+    - Code pénal (criminal law)
+    - Code du travail (labor law)
+    - Code de commerce (commercial law)
+    - Code de procédure civile (civil procedure)
+    - Code de procédure pénale (criminal procedure)
+    - Code de la consommation (consumer law)
+    - Code général des impôts (tax code)
+    - And 70+ more specialized codes
+
+data_types:
+  - legislation
+
+# ── Data Access ───────────────────────────────────────────────────
+access:
+  primary:
+    method: "rest_api"
+    base_url: "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app"
+    description: "PISTE Légifrance REST API"
+    format: "json"
+    auth: oauth2_client_credentials
+    update_frequency: "continuous"
+  token_url: "https://oauth.piste.gouv.fr/api/oauth/token"
+  endpoints:
+    list_codes: "list/code"
+    table_of_contents: "consult/code/tableMatieres"
+    get_article: "consult/getArticle"
+
+auth:
+  type: "oauth2_client_credentials"
+  env_vars:
+    - PISTE_CLIENT_ID
+    - PISTE_CLIENT_SECRET
+
+rate_limit:
+  requests_per_second: 2
+  delay_between_requests: 0.5
+  note: "PISTE quota managed per access token"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "legislation"
+  primary_key: "_id"
+  update_strategy: "upsert"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  total_fields: 18
+  key_fields:
+    - name: "_id"
+      description: "Article LEGIARTI ID (e.g., LEGIARTI000006420098)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "code_id"
+      description: "Parent code LEGITEXT ID (e.g., LEGITEXT000006070721)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "code_name"
+      description: "Code name (e.g., Code civil)"
+      type: "string"
+      role: "title"
+      required: true
+    - name: "article_num"
+      description: "Article number (e.g., 1134, L. 121-1)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "text"
+      description: "Full article text content"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Article version date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+  secondary_fields:
+    - name: "section_path"
+      description: "Hierarchical location in the code (e.g., Livre I > Titre II > Chapitre I)"
+    - name: "article_type"
+      description: "Article type (AUTONOME, PARTIELLEMENT_MODIF, etc.)"
+    - name: "etat"
+      description: "Article status (VIGUEUR, ABROGE, MODIFIE)"
+    - name: "date_debut"
+      description: "Entry into force date"
+    - name: "date_fin"
+      description: "End of validity date (if applicable)"
+    - name: "version_count"
+      description: "Number of versions this article has had"
+    - name: "nota"
+      description: "Editorial notes"
+    - name: "liens"
+      description: "Legal references (citations to other articles/laws)"
+
+notes: |
+  - Covers all 78+ French consolidated codes
+  - Article text is the definitive consolidated version
+  - Historical versions available via version dates
+  - Articles are identified by LEGIARTI IDs, codes by LEGITEXT IDs
+  - Updates are continuous as laws are modified
+  - ELI URIs available: /eli/code/{code_abbrev}/article_{num}
+  - Language: French only
+  - License: Licence Ouverte 2.0

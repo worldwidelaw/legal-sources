@@ -1,0 +1,47 @@
+{
+  "_id": "DU/2024/1980",
+  "_source": "PL/DziennikUrzedowy",
+  "_type": "legislation",
+  "_fetched_at": "2026-02-10T18:05:02.180280+00:00",
+  "title": "Rozporządzenie Ministra Przemysłu oraz Ministra Klimatu i Środowiska z dnia 30 grudnia 2024 r. zmieniające rozporządzenie w sprawie wymagań jakościowych dla paliw ciekłych",
+  "text": "Rozporządzenie Ministra Przemysłu Oraz Ministra Klimatu i Środowiskaz dnia 30 grudnia 2024 r.zmieniające rozporządzenie w sprawie wymagań jakościowych dla paliw ciekłych 1)Minister Przemysłu kieruje działem administracji rządowej - gospodarka surowcami energetycznymi, na podstawie § 1 ust. 2 rozporządzenia Prezesa Rady Ministrów z dnia 19 grudnia 2023 r. w sprawie szczegółowego zakresu działania Ministra Przemysłu (Dz. U. poz. 2727 oraz z 2024 r. poz. 289 i 999).\nTreść rozporządzenia\n§ 1.\n§ 2.\n2)Minister Klimatu i Środowiska kieruje działem administracji rządowej - klimat, na podstawie § 1 ust. 2 pkt 2 rozporządzenia Prezesa Rady Ministrów z dnia 19 grudnia 2023 r. w sprawie szczegółowego zakresu działania Ministra Klimatu i Środowiska (Dz. U. poz. 2726).\n3)Niniejsze rozporządzenie służy stosowaniu rozporządzenia wykonawczego Komisji (UE) 2024/2522 z dnia 23 września 2024 r. zmieniającego załącznik I do rozporządzenia Rady (EWG) nr 2658/87 w sprawie nomenklatury taryfowej i statystycznej oraz w sprawie Wspólnej Taryfy Celnej (Dz. Urz. UE L 2024/2522 z 31.10.2024).\nNa podstawie art. 3 ust. 2 pkt 1 ustawy z dnia 25 sierpnia 2006 r. o systemie monitorowania i kontrolowania jakości paliw (Dz. U. z 2024 r. poz. 1209, 1940 i 1946) zarządza się, co następuje:\nW rozporządzeniu Ministra Klimatu i Środowiska z dnia 26 czerwca 2024 r. w sprawie wymagań jakościowych dla paliw ciekłych (Dz. U. poz. 1018) użyte w § 1 w pkt 3 oraz w tytule załącznika nr 3 do rozporządzenia wyrazy „CN 2710 19 43” zastępuje się wyrazami „CN 2710 19 44”.\nRozporządzenie wchodzi w życie z dniem 1 stycznia 2025 r.",
+  "date": "2024-12-31",
+  "url": "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20241980",
+  "eli": "DU/2024/1980",
+  "address": "WDU20240001980",
+  "display_address": "Dz.U. 2024 poz. 1980",
+  "year": 2024,
+  "pos": 1980,
+  "doc_type": "Rozporządzenie",
+  "status": "obowiązujący",
+  "in_force": "IN_FORCE",
+  "entry_into_force": "2025-01-01",
+  "keywords": [
+    "paliwa",
+    "kontrola"
+  ],
+  "released_by": [
+    "MIN. PRZEMYSŁU",
+    "MIN. KLIMATU I ŚRODOWISKA"
+  ],
+  "references": {
+    "Akty zmienione": [
+      {
+        "id": "DU/2024/1018",
+        "date": "2025-01-01"
+      }
+    ],
+    "Podstawa prawna": [
+      {
+        "id": "DU/2006/1200"
+      }
+    ],
+    "Podstawa prawna z art.": [
+      {
+        "id": "DU/2006/1200",
+        "art": "art. 3 ust. 2 pkt 1"
+      }
+    ]
+  },
+  "language": "pl"
+}

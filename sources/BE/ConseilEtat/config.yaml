@@ -1,0 +1,27 @@
+source:
+  id: BE/ConseilEtat
+  name: Belgian Council of State (Conseil d'État / Raad van State)
+  country: BE
+  url: https://www.raadvst-consetat.be
+  data_types:
+    - case_law
+  auth: none
+  license: Open Government Data
+
+schema:
+  key_fields:
+    - _id
+    - arret_nr
+
+endpoints:
+  decision: https://www.raadvst-consetat.be/arr.php?nr={nr}&l={lang}
+  monthly: https://www.raadvst-consetat.be/?lang={lang}&page=lastmonth_{mm}
+
+notes: |
+  Belgian Council of State (Conseil d'État / Raad van State)
+  - Supreme Administrative Court
+  - Handles administrative disputes (urbanisme, fonction publique, marchés publics, etc.)
+  - ~5,000+ decisions per year (including aliens cases excluded from public access)
+  - Decisions since 1994 available digitally
+  - PDF direct access via arr.php endpoint
+  - Published decisions in French, Dutch, and German

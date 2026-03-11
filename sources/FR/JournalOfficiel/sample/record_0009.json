@@ -1,0 +1,18 @@
+{
+  "_id": "LEGITEXT000006068830",
+  "_source": "FR/JournalOfficiel",
+  "_type": "legislation",
+  "_fetched_at": "2026-02-18T11:33:22.128544+00:00",
+  "title": "Loi n° 84-16 du 11 janvier 1984 portant dispositions statutaires relatives à la fonction publique de l'Etat (1).",
+  "text": "SIGNATAIRES:\nPar le Président de la République\n FRANCOIS MITTERRAND\n Le Premier ministre,\n PIERRE MAUROY\n Le secrétaire d'Etat auprès du Premier ministre, chargé de la fonction publique et des réformes administratives,\n ANICET LE PORS.",
+  "date": "1984-01-12",
+  "url": "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000501099",
+  "cid": "JORFTEXT000000501099",
+  "nature": "LOI",
+  "nor": "",
+  "num": "84-16",
+  "etat": "ABROGE_DIFF",
+  "date_debut": "1984-01-12",
+  "date_fin": "2222-02-22",
+  "ministere": ""
+}

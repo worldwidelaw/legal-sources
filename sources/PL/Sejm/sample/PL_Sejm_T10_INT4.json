@@ -1,0 +1,22 @@
+{
+  "_id": "PL/Sejm/T10/INT4",
+  "_source": "PL/Sejm",
+  "_type": "parliamentary_proceedings",
+  "_fetched_at": "2026-02-13T22:35:43.193981+00:00",
+  "title": "Interpelacja w sprawie pilnego uregulowania kwestii prawnych dotyczących używania sztucznej inteligencji",
+  "text": "Interpelacja w sprawie pilnego uregulowania kwestii prawnych dotyczących używania sztucznej inteligencji\nInterpelacja nr 4\ndo prezesa Rady Ministrów, ministra rozwoju i technologii\nw sprawie pilnego uregulowania kwestii prawnych dotyczących używania sztucznej inteligencji\nZgłaszający: Paulina Matysiak\nData wpływu: 18-11-2023\nSzanowny Panie Premierze,\nw związku z rosnącym znaczeniem sztucznej inteligencji (AI) w naszym społeczeństwie, pragnę zwrócić uwagę na konieczność pilnego uregulowania kwestii prawnych związanych z jej użyciem. \nDziałając na podstawie art. 14 ust. 1 pkt 7 ustawy z dnia 9 maja 1996 r. o wykonywaniu mandatu posła i senatora (t.j. Dz. U. z 2018 r. poz. 1799), proszę o udzielenie odpowiedzi na następujące pytania:\nJakie są obecne plany rządu dotyczące regulacji prawnych związanych z użyciem sztucznej inteligencji w Polsce? Kiedy możemy się spodziewać ich wprowadzenia? \nJakie zadania zrealizował powołany w 2022 r. przez rząd Zespół zadaniowy do spraw technologii przełomowych?\nCzy rząd planuje wprowadzenie specjalnych przepisów dotyczących ochrony prywatności i danych osobowych w kontekście użycia sztucznej inteligencji?\nCzy rząd rozważa wprowadzenie standardów etycznych dotyczących użycia sztucznej inteligencji, takich jak zakaz użycia AI do celów manipulacji społecznej czy dyskryminacji, walki z hejtem?\nCzy rząd planuje inwestycje w badania i rozwój sztucznej inteligencji, aby Polska mogła konkurować na globalnym rynku technologii AI?\nJakie są plany rządu dotyczące edukacji w zakresie sztucznej inteligencji w polskich szkołach, aby przygotować dzieci i młodzież polską do funkcjonowania w przyszłości zdominowanej przez technologię AI?\nCzy polskie szkolnictwo branżowe uwzględni potrzeby związane z rozwojem technologii AI? \nZ wyrazami szacunku\nPaulina Matysiak\nPosłanka na Sejm RP",
+  "date": "2023-11-18",
+  "url": "https://sejm.gov.pl/sejm10.nsf/interpelacja.xsp?typ=int&nr=4",
+  "doc_type": "interpellation",
+  "term": 10,
+  "interpellation_num": 4,
+  "from_mps": [
+    "239"
+  ],
+  "to": [
+    "minister rozwoju i technologii"
+  ],
+  "reply_count": 0,
+  "last_modified": "2024-01-23T22:01:02",
+  "language": "pl"
+}

@@ -1,0 +1,58 @@
+source_id: BA/FBiH
+name: Federation of BiH Official Gazette (Službene novine FBiH)
+description: |
+  Legislation from the Federation of Bosnia and Herzegovina (FBiH),
+  one of the two entities of Bosnia and Herzegovina. Full text of laws
+  is available via the FBiH Government website (fbihvlada.gov.ba).
+
+  The FBiH has its own Parliament (Dom naroda and Predstavnički dom)
+  that adopts entity-level legislation. This source provides federal
+  FBiH laws published in the Official Gazette (Službene novine FBiH).
+
+  Note: This complements BA/SluzbenGlasnik (state-level) and BA/Brcko (district).
+  Canton-level legislation requires separate sources.
+
+url: https://fbihvlada.gov.ba/bs/zakoni
+country: BA
+entity: FBiH  # Federation of Bosnia and Herzegovina entity
+data_types:
+  - legislation
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_minute: 30
+  delay_seconds: 1.5
+
+coverage:
+  start_year: 2019
+  estimated_documents: 250  # ~30-50 laws per year
+  update_frequency: weekly
+
+schema:
+  key_fields:
+    - _id
+    - gazette_number
+    - year
+
+  fields:
+    _id: string            # Unique identifier (BA-FBiH-{year}-{gazette_number})
+    _source: string        # Source ID (BA/FBiH)
+    _type: string          # Document type (legislation)
+    _fetched_at: datetime  # ISO 8601 timestamp
+    title: string          # Law title
+    text: string           # Full text content (mandatory)
+    date: date             # Publication date (ISO 8601)
+    url: string            # Source URL
+    gazette_number: string # Gazette issue number (e.g., "5/25")
+    year: integer          # Publication year
+    law_number: string     # Sequential law number within year
+    language: string       # Language code (bs)
+
+notes: |
+  - Full text is available via FBiH Government website (free access)
+  - The official gazette (sluzbenilist.ba) requires subscription for FBiH content
+  - Chronological registers available from 2019 onwards
+  - Content is in Bosnian, Croatian, and Serbian variants
+  - FBiH has 10 cantons with own legislation (not covered here)

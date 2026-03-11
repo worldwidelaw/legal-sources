@@ -1,0 +1,128 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — Turkish Court of Cassation Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "TR/Yargitay"
+  country: "TR"
+  name: "Turkish Court of Cassation (Yargıtay)"
+  url: "https://www.yargitay.gov.tr"
+  description: |
+    Court of Cassation of the Republic of Turkey (Yargıtay).
+    Supreme court for civil and criminal matters.
+    Reviews decisions from lower courts and ensures uniform application of law.
+    Turkey's highest court of appeals with 23 civil and 23 criminal chambers.
+    Coverage: ~6 million decisions via Bedesten API.
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "json_api"
+  base_url: "https://bedesten.adalet.gov.tr"
+  endpoints:
+    search:
+      path: "/emsal-karar/searchDocuments"
+      method: "POST"
+      description: "Search decisions by keyword, date, chamber"
+    document:
+      path: "/emsal-karar/getDocumentContent"
+      method: "POST"
+      description: "Retrieve full decision text (base64 encoded HTML/PDF)"
+  headers:
+    AdaletApplicationName: "UyapMevzuat"
+    Origin: "https://mevzuat.adalet.gov.tr"
+    Referer: "https://mevzuat.adalet.gov.tr/"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "document_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "document_id"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "document_id"
+      description: "Unique document identifier from Bedesten API"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (chamber + case/decision numbers)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content extracted from HTML"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the decision on mevzuat.adalet.gov.tr"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "chamber"
+      description: "Court chamber (e.g., 12. Hukuk Dairesi)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "division_type"
+      description: "Chamber type (civil, criminal, general_council)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "case_number"
+      description: "Case reference (Esas No, e.g., 2025/5612)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "decision_number"
+      description: "Decision reference (Karar No, e.g., 2026/338)"
+      type: "string"
+      role: "identifier"
+      required: false
+  secondary_fields:
+    - name: "division_number"
+      description: "Numeric chamber number (1-23)"
+    - name: "case_year"
+      description: "Year from case number"
+    - name: "decision_year"
+      description: "Year from decision number"
+    - name: "decision_date_display"
+      description: "Display format of decision date (DD.MM.YYYY)"
+    - name: "_raw_metadata"
+      description: "Raw API metadata"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: Turkish (UTF-8)
+  - Coverage: ~6 million decisions (5,926,343 as of 2026-02)
+  - API returns decisions as base64-encoded HTML content
+  - 23 Civil Chambers (Hukuk Dairesi) + 23 Criminal Chambers (Ceza Dairesi)
+  - Special chambers: Hukuk Genel Kurulu, Ceza Genel Kurulu, Büyük Genel Kurul
+  - Some older decisions have malformed dates (e.g., year 6006 instead of 2006)
+  - Full text retrieval requires separate API call per document
+  - Alternative portals exist (karararama.yargitay.gov.tr) but require CAPTCHA

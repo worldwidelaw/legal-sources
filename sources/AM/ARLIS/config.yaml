@@ -1,0 +1,67 @@
+# AM/ARLIS - Armenian Legal Information System
+# https://www.arlis.am
+#
+# Official legal database for Armenia containing 154,000+ legal documents
+# including laws, government decisions, ministerial orders, and treaties.
+#
+# Data access strategy:
+#   1. Metadata index from OpenData Armenia JSONL dump (data.opendata.am)
+#   2. Full text HTML from print endpoint: /hy/acts/{uniqid}/print/act
+#   3. Fallback to PDF extraction from pdf.arlis.am/{uniqid}
+#
+# Coverage: 1998-present (some historical documents available)
+# Languages: Armenian (primary), Russian, English (for some documents)
+# License: Public data from official government source
+
+source_id: AM/ARLIS
+name: Armenian Legal Information System (ARLIS)
+country: AM
+url: https://www.arlis.am
+data_types:
+  - legislation
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  max_workers: 3
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - uniqid
+
+schema:
+  key_fields:
+    - name: uniqid
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: act_number
+      type: string
+      required: false
+    - name: act_type
+      type: string
+      required: false
+    - name: act_status
+      type: string
+      required: false
+    - name: enactment_organ
+      type: string
+      required: false
+    - name: enactment_date
+      type: date
+      required: false
+    - name: effective_date
+      type: date
+      required: false

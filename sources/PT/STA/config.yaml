@@ -1,0 +1,71 @@
+# PT/STA — Portuguese Supreme Administrative Court Case Law
+#
+# Source: Supremo Tribunal Administrativo (STA)
+# URL: https://www.dgsi.pt/jsta.nsf
+# Data type: case_law
+# Auth: none
+# License: Public (open government data)
+#
+# The Portuguese Supreme Administrative Court publishes all decisions (Acórdãos)
+# on the DGSI (Direção-Geral dos Serviços de Informática do Ministério da Justiça)
+# jurisprudence database. The database is powered by Lotus Notes/Domino.
+#
+# Access patterns:
+#   - Database listing: /jsta.nsf?OpenDatabase&Start=N (N = pagination offset, ~121 per page)
+#   - Document detail: /jsta.nsf/{view_id}/{doc_id}?OpenDocument&ExpandSection=1
+#   - view_id is constant: 35fbbbf22e1bb1e680256f8e003ea931
+#
+# Coverage: ~89,300 decisions
+#   - Administrative contentious (Contencioso Administrativo) - since 1950
+#   - Tax and customs contentious (Contencioso Tributário) - since 1963
+#   - Full text available from 2002 onwards
+#   - Sections: Administrative, Tax, Plenary
+#
+# Full text is available in the "Texto Integral" section (requires ExpandSection=1).
+
+source:
+  id: PT/STA
+  name: Portuguese Supreme Administrative Court (Supremo Tribunal Administrativo)
+  country: PT
+  data_types:
+    - case_law
+  url: https://www.dgsi.pt/jsta.nsf
+  language: pt
+  auth: none
+  license: public
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: case_number
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - summary
+    - case_number
+    - conventional_number
+    - document_number
+    - rapporteur
+    - section
+    - descriptors
+    - appellant
+    - appellee
+    - voting
+  date_field: date
+
+fetch:
+  # Rate limiting: 1 request per 1.5 seconds (respectful scraping)
+  rate_limit_delay: 1.5
+  # Pagination: ~121 records per page
+  page_size: 121
+  # Total decisions available (~89,300)
+  estimated_total: 89300
+  # Sample mode: fetch first pages
+  sample_count: 12

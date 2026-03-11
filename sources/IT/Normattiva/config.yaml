@@ -1,0 +1,124 @@
+# ===================================================================
+# IT/Normattiva -- Italian National Legislation Database
+# ===================================================================
+# Official consolidated Italian legislation from 1861 to present.
+# Full text available via scraping the HTML article pages.
+# Uses URN:NIR (Uniform Resource Names for Norme In Rete) identifiers.
+#
+# Primary endpoint: www.normattiva.it (URN resolution and article loading)
+# ELI metadata embedded in pages
+# Docs: https://www.normattiva.it/staticPage/utilita
+# ===================================================================
+
+source:
+  id: "IT/Normattiva"
+  country: "IT"
+  name: "Normattiva - Italian Legal Database"
+  url: "https://www.normattiva.it"
+  description: |
+    Italy's official legislation database operated by the Istituto Poligrafico
+    e Zecca dello Stato (IPZS). Contains consolidated texts of all Italian
+    national legislation from 1861 to present. Implements both URN:NIR
+    (Italian naming standard) and ELI (European Legislation Identifier).
+    Free public access to full text of laws, decrees, and regulations.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5    # 1 request every 2 seconds (conservative)
+  burst: 3
+
+api:
+  type: "urn-nir"              # URN:NIR (Norme In Rete) identifier system
+  base_url: "https://www.normattiva.it"
+  endpoints:
+    # URN resolution endpoint (returns HTML page with document)
+    urn_resolver: "/uri-res/N2Ls"
+    # Article detail page with all articles loaded
+    detail: "/atto/caricaDettaglioAtto"
+    # Export menu (requires session)
+    export_menu: "/atto/vediMenuExport"
+    # Individual article loading (AJAX)
+    article: "/atto/caricaArticolo"
+  legislation_types:
+    - legge               # Laws
+    - decreto.legislativo # Legislative decrees
+    - decreto.legge       # Decree-laws (emergency decrees)
+    - decreto             # Generic decrees
+    - costituzione        # Constitution
+    - codice              # Codes (civil, penal, etc.)
+  urn_pattern: "urn:nir:stato:{type}:{date};{number}"
+  pagination:
+    by_year: true           # Browse by year of enactment
+    search_available: true  # Search functionality available
+
+data_model:
+  type: "legislation"
+  primary_key: "codice_redazionale"
+  update_strategy: "upsert"
+  versioning: "consolidated"
+  dedup_key:
+    - "codice_redazionale"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "codice_redazionale"
+      description: "Italian editorial code (unique identifier in Normattiva)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation (all articles concatenated)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "document_type"
+      description: "Type of document (legge, decreto.legislativo, decreto.legge, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date of enactment/signature (ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to document on normattiva.it"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "year"
+      description: "Year of enactment"
+      type: "integer"
+      role: "temporal_key"
+      required: true
+  secondary_fields:
+    - name: "urn_nir"
+      description: "URN:NIR identifier (e.g., urn:nir:stato:legge:2024-01-01;1)"
+    - name: "eli_uri"
+      description: "ELI (European Legislation Identifier) URI"
+    - name: "date_publication"
+      description: "Publication date in the Gazzetta Ufficiale"
+    - name: "number"
+      description: "Law number"
+    - name: "gazzetta_ufficiale"
+      description: "Gazzetta Ufficiale reference"
+
+notes: |
+  - Full text is loaded article-by-article via AJAX in the web interface.
+  - To get full text, we scrape the detail page and load all articles.
+  - URN:NIR pattern: urn:nir:stato:{type}:{YYYY-MM-DD};{number}
+  - ELI metadata embedded as RDFa in HTML pages.
+  - Data from 1861 to present (Constitution from 1947).
+  - Uses session management - must maintain cookies across requests.
+  - Rate limit carefully - aggressive access may be blocked.

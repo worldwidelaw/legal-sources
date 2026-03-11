@@ -1,0 +1,116 @@
+# ===================================================================
+# IE/Acts -- Irish Statute Book (eISB)
+# ===================================================================
+# Full text available via ELI (European Legislation Identifier) URIs.
+# No authentication required. Acts from 1922 to present.
+#
+# Primary endpoint: ELI URIs on irishstatutebook.ie
+# Docs: https://www.irishstatutebook.ie/eli/
+# ELI Register: https://eur-lex.europa.eu/eli-register/ireland.html
+# ===================================================================
+
+source:
+  id: "IE/Acts"
+  country: "IE"
+  name: "Irish Statute Book"
+  url: "https://www.irishstatutebook.ie"
+  description: |
+    Ireland's electronic Irish Statute Book (eISB) maintained by the
+    Office of the Attorney General. Contains all Acts of the Oireachtas
+    (primary legislation) from 1922 to present and Statutory Instruments
+    (secondary legislation) from 1922 to present. Full text accessible
+    via ELI URIs in HTML format. Ireland implemented ELI in September 2015.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2    # Conservative rate limiting
+  burst: 3
+
+api:
+  type: "eli"               # European Legislation Identifier URIs
+  base_url: "https://www.irishstatutebook.ie"
+  endpoints:
+    # Year listing pages
+    acts_year: "/eli/{year}/act/"
+    si_year: "/eli/{year}/si/"
+    # Individual act ELI endpoints
+    act_html: "/eli/{year}/act/{number}/enacted/en/html"
+    act_section: "/eli/{year}/act/{number}/section/{section}/enacted/en/html"
+    # Statutory instrument ELI endpoints
+    si_html: "/eli/{year}/si/{number}/made/en/html"
+  pagination:
+    by_year: true           # Browse by year
+    eli_listing: true       # ELI provides individual document access
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  versioning: "none"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "doc_id"
+      description: "Document identifier (type/year/number format, e.g., act/2024/1)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title in English"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation (from ELI HTML endpoint)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Enactment/signing date (ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "ELI URL to the document on irishstatutebook.ie"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "year"
+      description: "Publication year"
+      type: "integer"
+      role: "temporal_key"
+      required: true
+    - name: "number"
+      description: "Act or SI number within the year"
+      type: "integer"
+      role: "classification"
+      required: true
+    - name: "doc_type"
+      description: "Document type (act or si)"
+      type: "string"
+      role: "classification"
+      required: true
+  secondary_fields:
+    - name: "long_title"
+      description: "Long title of the act"
+    - name: "eli_uri"
+      description: "Full ELI URI for the document"
+    - name: "language"
+      description: "Language code (en for English, ga for Irish)"
+
+notes: |
+  - Full text available via ELI URIs: /eli/{year}/act/{number}/enacted/en/html
+  - SI full text: /eli/{year}/si/{number}/made/en/html
+  - Acts browsable by year: /eli/{year}/act/
+  - ELI implementation since September 2015, metadata serialization since April 2017
+  - Over 3,500 acts, 35,000 statutory instruments, 1,000 pre-1922 acts
+  - Language: English (en) - some documents also available in Irish (ga)
+  - Contact: Office of the Attorney General

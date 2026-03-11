@@ -1,0 +1,57 @@
+source:
+  id: SI/LegislativeDatabase
+  name: Slovenian Legislation Database (PISRS)
+  country: SI
+  type: legislation
+  url: https://www.pisrs.si
+  description: |
+    Official Slovenian legislation database, fetching laws passed by the
+    National Assembly (Državni zbor) since independence in 1991.
+
+    Data sources:
+    - Metadata: Parliament open data XML (fotogalerija.dz-rs.si)
+    - Full text: Official Gazette (uradni-list.si)
+
+  license: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+
+api:
+  metadata_url: https://fotogalerija.dz-rs.si/datoteke/opendata/SZ.XML
+  gazette_base: https://www.uradni-list.si/glasilo-uradni-list-rs/vsebina
+  pisrs_base: https://www.pisrs.si
+  rate_limit: 2  # seconds between requests
+
+schema:
+  key_fields:
+    - sop_number
+    - title
+    - date
+
+  fields:
+    sop_number:
+      type: string
+      description: Official Publication Number (e.g., 1997-01-1842)
+    title:
+      type: string
+      description: Law title in Slovenian
+    abbreviation:
+      type: string
+      description: Law abbreviation (e.g., ZOsn-A)
+    date:
+      type: date
+      description: Date of adoption (ISO 8601)
+    publication:
+      type: string
+      description: Official Gazette reference
+    procedure:
+      type: string
+      description: Legislative procedure type
+    proposer:
+      type: string
+      description: Who proposed the law
+    keywords:
+      type: array
+      description: Subject keywords
+    text:
+      type: string
+      description: Full text of the law (MANDATORY)

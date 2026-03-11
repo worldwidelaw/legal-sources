@@ -1,0 +1,24 @@
+{
+  "_id": "DDD-RA-2026-024",
+  "_source": "FR/DefenseurDesDroits",
+  "_type": "case_law",
+  "_fetched_at": "2026-02-22T21:45:08.868990+00:00",
+  "title": "Règlement amiable RA-2026-024 du 13 février 2026 - Discrimination supposée en raison du handicap",
+  "text": "Monsieur X précise être déficient visuel et rencontre depuis février 2025 de nombreuses anomalies d’accessibilité numérique en termes d’utilisation sur la nouvelle version de l’application mobile de sa banque.\r\n\nCette nouvelle version serait très régressive par rapport à la version précédente, car la banque aurait fait le choix d'une technologie « React Native » ne présentant pas l'accessibilité numérique requise par le Référentiel général d'amélioration de l'accessibilité (RGAA).\r\n\nDe ce fait, il serait parfois bloqué sur certains parcours et aurait beaucoup de difficultés à utiliser certaines fonctionnalités proposées par l'application mobile.\r\n\nLe réclamant aurait écrit le 27 février 2025 à l'assistance accessibilité numérique de la banque pour l’alerter et faire remonter ses difficultés auprès des services compétents en charge de l’application de la banque, mais aucune réponse ne lui aurait été apportée.\r\n\nLe Défenseur des droits est intervenu par la voie amiable auprès de la banque mise en cause afin d’échanger sur cette réclamation et de tenter de trouver un accord amiable pouvant convenir à chacune des parties. \r\n\nEn conséquence, la banque a adressé un courrier au réclamant le 23 décembre 2025 lui indiquant notamment : « Le Défenseur des Droits est intervenu auprès de nos services et nous a relayé votre mécontentement relatif à l’accessibilité de la nouvelle version de notre application mobile. Vous nous avez alertés en février mais n’avez pas reçu de réponse à votre réclamation. Tout d’abord, je vous prie d’accepter toutes nos excuses pour ce dysfonctionnement. Votre signalement a été pris en compte dès sa réception, toutefois, une réponse aurait dû vous être apportée. Je tiens à vous confirmer que les corrections actionnables par notre banque ont été traitées dès votre signalement, en particulier les points bloquants de la phase de déconnexion, un plan de correction est en cours et nous sommes très vigilants à la mise en œuvre des rectifications prévues pour satisfaire aux exigences d’accessibilité et des normes en vigueur ».",
+  "date": "2026-02-13",
+  "url": "https://juridique.defenseurdesdroits.fr/index.php?lvl=notice_display&id=58376&opac_view=-1",
+  "doc_number": "RA-2026-024",
+  "doc_type": "reglement_amiable",
+  "doc_type_raw": "Règlements amiables",
+  "keywords": [
+    "Handicap",
+    "Biens et services",
+    "Établissement bancaire",
+    "Discrimination",
+    "Handicap sensoriel",
+    "Technologies du numérique",
+    "Plateforme numérique",
+    "Accessibilité"
+  ],
+  "language": "fr"
+}

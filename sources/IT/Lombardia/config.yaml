@@ -1,0 +1,40 @@
+source_id: IT/Lombardia
+country: IT
+name: Lombardia Regional Legislation
+url: https://www.dati.lombardia.it/government/CRL-Leggi-Regionali-della-Lombardia/abjw-hhay
+
+data_types:
+  - legislation
+
+license: CC0 1.0 Universal (Public Domain Dedication)
+language: it
+
+endpoints:
+  metadata_api: https://www.dati.lombardia.it/resource/abjw-hhay.json
+  xml_full_text: http://normelombardia.consiglio.regione.lombardia.it/normelombardia/accessibile/xmain_xml.aspx
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+
+data_model:
+  dedup_key:
+    - _id
+  update_strategy: upsert
+
+notes: |
+  Regional legislation of Lombardia (laws and regulations) via Socrata SODA API.
+  Full text available in XML (NIR format) from normelombardia.consiglio.regione.lombardia.it.
+  Covers Leggi Regionali and Regolamenti Regionali from 1970 to present.
+  ~2,658 records.

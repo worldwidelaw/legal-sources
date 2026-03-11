@@ -1,0 +1,54 @@
+source:
+  id: ES/Andalusia
+  name: Andalusia Regional Legislation (BOJA)
+  url: https://datos.juntadeandalucia.es
+  country: ES
+  region: Andalucía
+  data_types:
+    - legislation
+  auth:
+    type: none
+  license: CC BY 4.0
+
+api:
+  base_url: https://datos.juntadeandalucia.es/api/v0/boja
+  endpoints:
+    all: /all?year={year}&format=json
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 2015-01-01
+    end: present
+  document_types:
+    - Órdenes
+    - Decretos
+    - Resoluciones
+    - Leyes
+    - Acuerdos
+    - Convenios
+  estimated_count: 25000+
+
+notes: |
+  Boletín Oficial de la Junta de Andalucía (BOJA).
+  Full text available via REST API in JSON format.
+  Data available from 2015 onwards.
+  Approximately 2,000-2,500 dispositions per year.

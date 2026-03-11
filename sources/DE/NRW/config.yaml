@@ -1,0 +1,78 @@
+source_id: DE/NRW
+name: North Rhine-Westphalia State Law (recht.nrw.de)
+description: >
+  Official state legislation database for North Rhine-Westphalia (Nordrhein-Westfalen),
+  Germany's most populous state. Covers state laws (Landesrecht), legal ordinances
+  (Rechtsverordnungen), administrative directives (Verwaltungsvorschriften), and
+  official announcements (Bekanntmachungen) since 1946.
+
+data_type: legislation
+jurisdiction: North Rhine-Westphalia (Nordrhein-Westfalen)
+country: DE
+language: de
+
+# Data access
+base_url: https://recht.nrw.de
+access_method: sitemap_html
+sitemap_url: https://recht.nrw.de/sitemap.xml
+
+# Authentication
+auth_required: false
+
+# Rate limiting
+rate_limit_delay: 1.0  # seconds between requests
+
+# License
+license: Public Domain (§ 5 UrhG - German Copyright Act)
+license_notes: >
+  German government works (amtliche Werke) are not protected by copyright
+  under § 5 UrhG. This includes laws, ordinances, and official announcements.
+
+# Document types
+document_types:
+  - gesetz           # State laws
+  - rechtsverordnung # Legal ordinances
+  - verwaltungsvorschrift # Administrative directives
+  - bekanntmachung   # Official announcements
+
+# Schema
+schema:
+  key_fields:
+    - _id
+    - doc_id
+    - title
+    - doc_type
+    - date
+    - url
+    - text
+  metadata_fields:
+    - vollzitat
+    - fundstelle
+    - doc_type_display
+    - jurisdiction
+    - country
+    - language
+
+# Coverage
+coverage:
+  start_date: "1946-01-01"
+  end_date: null  # ongoing
+  notes: >
+    Includes current consolidated versions of all NRW state legislation.
+    Historical versions available through version links on document pages.
+    Gesetz- und Verordnungsblatt (GV. NRW.) archived since 1946,
+    Ministerialblatt (MBl. NRW.) since 1949.
+
+# Update frequency
+update_frequency: daily
+update_method: sitemap  # Check sitemap for new URLs
+
+# Data quality
+data_quality:
+  full_text: true
+  structured: true
+  versioning: true
+  notes: >
+    All documents include full text in HTML format with structured
+    article/paragraph markup. Version history available through
+    document version links.

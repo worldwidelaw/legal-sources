@@ -1,0 +1,112 @@
+# GE/SupremeCourt -- Georgian Supreme Court
+# Configuration for World Wide Law
+
+source:
+  id: GE/SupremeCourt
+  name: საქართველოს უზენაესი სასამართლო
+  name_en: Supreme Court of Georgia
+  country: GE
+  data_types:
+    - case_law
+  url: https://www.supremecourt.ge
+  description: >
+    Supreme Court case law from Georgia covering administrative, civil,
+    and criminal matters. Over 85,000 decisions available from 2010 onwards.
+  language: ka
+  license: Open public access
+  coverage:
+    start_year: 2010
+    end_year: present
+
+endpoints:
+  search:
+    method: GET
+    url: https://www.supremecourt.ge/ka/getCases
+    description: Search for decisions by chamber (palata) with pagination
+    params:
+      palata: Chamber ID (0=Administrative, 1=Civil, 2=Criminal)
+      page: Page number (1-indexed)
+  fullcase:
+    method: GET
+    url: https://www.supremecourt.ge/ka/fullcase/{id}/{palata}
+    description: Full text of a decision
+    params:
+      id: Unique case ID
+      palata: Chamber ID
+
+schema:
+  key_fields:
+    - name: "_id"
+      description: "Unique document ID (GE-SC/ID/PALATA format)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "Official case number"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "title"
+      description: "Case title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the decision on supremecourt.ge"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "chamber"
+      description: "Court chamber (administrative/civil/criminal)"
+    - name: "chamber_id"
+      description: "Chamber ID (0/1/2)"
+    - name: "subject"
+      description: "Subject matter of the dispute"
+    - name: "result"
+      description: "Decision outcome"
+    - name: "case_type"
+      description: "Type of appeal"
+    - name: "court"
+      description: "Court name in Georgian"
+    - name: "court_en"
+      description: "Court name in English"
+    - name: "language"
+      description: "Language code (ka for Georgian)"
+
+rate_limit:
+  requests_per_second: 1
+  delay_between_requests: 1.5
+  note: Be respectful to the court's server
+
+notes: |
+  The Supreme Court of Georgia (საქართველოს უზენაესი სასამართლო) is the highest
+  court of Georgia for administrative, civil, and criminal matters.
+
+  Data access:
+  - Decisions searchable via web interface with pagination
+  - Three chambers: Administrative, Civil, Criminal
+  - Full text available in Georgian
+  - No registration required
+  - No JSON API (HTML responses, but well-structured endpoints)
+
+  Chambers:
+  - ადმინისტრაციულ საქმეთა პალატა (Administrative Cases Chamber) - palata=0
+  - სამოქალაქო საქმეთა პალატა (Civil Cases Chamber) - palata=1
+  - სისხლის სამართლის საქმეთა პალატა (Criminal Cases Chamber) - palata=2
+
+  Statistics (as of 2026):
+  - Administrative: ~26,600 decisions
+  - Civil: ~32,600 decisions
+  - Criminal: ~26,600 decisions
+  - Total: ~85,800+ decisions

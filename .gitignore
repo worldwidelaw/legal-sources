@@ -1,0 +1,47 @@
+# Secrets (NEVER commit these)
+.env
+*.env
+.env.*
+!.env.template
+!.env.example
+secrets/
+*.key
+*.pem
+
+# Data files (too large for git)
+# Sample data IS tracked (small, for validation)
+# Full data dumps are NOT tracked
+sources/*/data/
+sources/*/*/data/
+*.jsonl
+!sources/*/sample/
+!sources/*/*/sample/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Cache
+.cache/
+*.cache
+
+# Logs
+*.log
+logs/

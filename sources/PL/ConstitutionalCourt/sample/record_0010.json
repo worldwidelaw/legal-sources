@@ -1,0 +1,46 @@
+{
+  "_id": "PL/TK/SK 8/13",
+  "_source": "PL/ConstitutionalCourt",
+  "_type": "case_law",
+  "_fetched_at": "2026-02-13T22:07:04.804623+00:00",
+  "title": "Postanowienie SK 8/13",
+  "text": "183/10/A/2015 POSTANOWIENIE z dnia 26 listopada 2015 r. Sygn. akt SK 8/13 Trybunał Konstytucyjny w składzie: Andrzej Rzepliński – przewodniczący Teresa Liszcz Małgorzata Pyziak-Szafnicka Stanisław Rymar Sławomira Wronkowska-Jaśkiewicz – sprawozdawca, po rozpoznaniu, na posiedzeniu niejawnym w dniu 26 listopada 2015 r., wniosku pełnomocnika skarżącego J.K. B., adwokata R.G., o zasądzenie na rzecz skarżącego zwrotu kosztów zastępstwa adwokackiego według norm przepisanych, p o s t a n a w i a: nie uwzględnić wniosku. Uzasadnienie Ponieważ, stosownie do dyspozycji art. 134 pkt 3 ustawy z dnia 25 czerwca 2015 r. o Trybunale Konstytucyjnym (Dz. U. poz. 1064 i 1928), Trybunał Konstytucyjny orzekał w sprawie skargi konstytucyjnej J.K. B. na podstawie przepisów ustawy z dnia 1 sierpnia 1997 r. o Trybunale Konstytucyjnym (Dz. U. Nr 102, poz. 643, ze zm.; dalej: ustawa o TK z 1997 r.), wniosek o zasądzenie zwrotu kosztów zastępstwa adwokackiego należy rozpoznać również na podstawie ustawy o TK z 1997 r. Zgodnie z 24 ust. 2 zdanie pierwsze ustawy o TK z 1997 r., Trybunał orzeka, w drodze postanowienia, na rzecz wnoszącego skargę konstytucyjną zwrot kosztów postępowania przed Trybunałem wraz z wyrokiem uwzględniającym tę skargę. Jednakże w uzasadnionych przypadkach Trybunał może orzec zwrot kosztów postępowania również wtedy, gdy nie uwzględnił skargi konstytucyjnej (art. 24 ust. 2 zdanie drugie ustawy o TK z 1997 r.). Trybunał Konstytucyjny 26 listopada 2015 r. wydał postanowienie o umorzeniu postępowania w sprawie skargi konstytucyjnej J.K. B. Tym samym nie zachodzi przesłanka zwrotu kosztów postępowania określona w art. 24 ust. 2 zdanie pierwsze ustawy o TK z 1997 r. W ocenie Trybunału, nie ma również podstaw do orzeczenia zwrotu tych kosztów na podstawie art. 24 ust. 2 zdanie drugie powołanej ustawy. Z tych względów, Trybunał Konstytucyjny postanowił jak na wstępie.",
+  "date": "2015-11-26",
+  "url": "http://otk.trybunal.gov.pl/orzeczenia/teksty/otk/2015/SK_08k13.doc",
+  "saos_id": 206773,
+  "case_number": "SK 8/13",
+  "all_case_numbers": [
+    "SK 8/13"
+  ],
+  "judgment_type": "DECISION",
+  "judges": [
+    {
+      "name": "Andrzej Rzepliński",
+      "roles": [
+        "PRESIDING_JUDGE"
+      ]
+    },
+    {
+      "name": "Małgorzata Pyziak-Szafnicka",
+      "roles": []
+    },
+    {
+      "name": "Stanisław Rymar",
+      "roles": []
+    },
+    {
+      "name": "Sławomira Wronkowska-Jaśkiewicz",
+      "roles": [
+        "REPORTING_JUDGE"
+      ]
+    },
+    {
+      "name": "Teresa Liszcz",
+      "roles": []
+    }
+  ],
+  "keywords": [],
+  "referenced_regulations": [],
+  "court_type": "CONSTITUTIONAL_TRIBUNAL",
+  "language": "pl"
+}

@@ -1,0 +1,40 @@
+source:
+  id: CH/Fedlex
+  name: Fedlex - Swiss Federal Legislation
+  country: CH
+  url: https://fedlex.data.admin.ch
+
+data:
+  types:
+    - legislation
+  format: rdf
+  api_type: sparql
+  update_frequency: daily
+
+schema:
+  key_fields:
+    - eli_uri
+    - title
+    - date_document
+    - language
+    - file_url
+    - text
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  delay_between_requests: 0.5
+
+license:
+  name: Open Government Data
+  url: https://www.admin.ch/gov/en/start/terms-and-conditions.html
+
+notes: |
+  Swiss Federal Legislation via Fedlex SPARQL endpoint.
+  Uses JOLux ontology (FRBR-based) with ELI URIs.
+  Available formats: HTML, XML, PDF, DOCX.
+  Coverage: Official Compilation (OC), Official Federal Gazette (FGA),
+  Classified Compilation (CC).
+  Languages: DE, FR, IT, RM (Romansh).

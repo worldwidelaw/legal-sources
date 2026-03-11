@@ -1,0 +1,110 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — Bulgarian Constitutional Court Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "BG/ConstitutionalCourt"
+  country: "BG"
+  name: "Bulgarian Constitutional Court (Конституционен съд)"
+  url: "https://www.constcourt.bg"
+  description: |
+    Constitutional Court of the Republic of Bulgaria.
+    Decisions on constitutional matters including:
+    - Constitutionality of laws
+    - Disputes between state institutions
+    - Impeachment proceedings
+    - Election disputes
+    Coverage: 1991 onwards (Court established in 1991)
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "html"
+  base_url: "https://www.constcourt.bg"
+  endpoints:
+    search_acts: "/?mode=search_acts&year={year}"
+    act_detail: "/bg/act-{act_id}"
+    pdf_download: "/generate_document.php?act_id={act_id}"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "act_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "act_id"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "act_id"
+      description: "Unique act identifier (numeric ID from URL)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title/type (e.g., Решение, Определение)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the decision in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to view the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "case_number"
+      description: "Constitutional case reference (e.g., 2/2026)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "act_type"
+      description: "Type of decision (decision, order, dissenting_opinion, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "judges"
+      description: "List of judges on the panel"
+      type: "list"
+      role: "metadata"
+      required: false
+  secondary_fields:
+    - name: "pdf_url"
+      description: "URL to PDF version of the document"
+    - name: "_raw"
+      description: "Complete raw data from source (for debugging)"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: Bulgarian (UTF-8)
+  - Coverage: 1991 onwards
+  - Document types: решение (decision), определение (order),
+    особено мнение (dissenting opinion), тълкувателно решение (interpretative)
+  - Year-based search is the main discovery method
+  - Sequential act IDs enable enumeration
+  - Full HTML content available on act detail pages
+  - PDF also available via generate_document.php endpoint

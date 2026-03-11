@@ -1,0 +1,67 @@
+source_id: IT/EmiliaRomagna
+country: IT
+name: Emilia-Romagna Regional Legislation (Demetra)
+url: https://demetra.regione.emilia-romagna.it
+description: |
+  Regional legislation from Emilia-Romagna via Demetra database.
+  Downloads ZIP archives containing XML files in NIR (Norme in Rete) format.
+  Weekly updates. Coverage from 1971 to present.
+
+data_types:
+  - legislation
+
+endpoints:
+  base_url: https://demetra.regione.emilia-romagna.it/al
+  download: /public/resources/themes/simple/class/download_archive.php
+  parameters:
+    type: zip
+    formato: xml  # or pdf, rtf, txt
+    tipo: LR  # LR = Legge Regionale, RR = Regolamento Regionale
+    metaleg: "12"  # legislature number (1-12)
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: urn
+      type: string
+      required: false
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: legislature
+      type: integer
+      required: false
+    - name: document_type
+      type: string
+      required: false
+
+data_model:
+  dedup_key:
+    - _id
+  update_strategy: upsert
+
+rate_limit:
+  requests_per_second: 0.5
+  delay_between_requests: 2.0
+
+auth:
+  type: none
+
+license:
+  name: CC BY 4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+
+notes: |
+  - ZIP files contain XML (NIR format) and PDF attachments
+  - XML naming: {legislature}_{type}_{year}_{number}.xml
+  - PDF attachments: {legislature}_{type}_{year}_{number}_A{n}.pdf
+  - Legislatures: 1-12 (current is XII, 2020-2025)
+  - Types: LR (Legge Regionale), RR (Regolamento Regionale), RI (Regolamento Interno)

@@ -1,0 +1,119 @@
+# ===================================================================
+# SK/SupremeCourt -- Slovak Supreme Court (Najvyšší súd)
+# ===================================================================
+# Supreme Court case law via nsud.sk OpenData REST API.
+# 104K+ decisions with full text. JSON format, no auth required.
+# API docs: https://www.nsud.sk/opendata/
+# ===================================================================
+
+source:
+  id: "SK/SupremeCourt"
+  country: "SK"
+  name: "Slovak Supreme Court (Najvyšší súd)"
+  url: "https://www.nsud.sk"
+  description: |
+    Slovakia's Supreme Court (Najvyšší súd Slovenskej republiky). Highest
+    judicial authority for civil, commercial, criminal, and administrative law.
+    Public OpenData API provides full text decisions in JSON format.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5    # 1 request every 2 seconds (conservative)
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://www.nsud.sk/ws"
+  endpoints:
+    opendata: "/opendata.php"
+  functions:
+    - name: "getDecision"
+      params: ["id"]
+      description: "Get a specific decision by ID"
+    - name: "getLastDecision"
+      params: ["date"]
+      description: "Get all decision IDs since a date (YYYY-MM-DD)"
+    - name: "searchDecision"
+      params: ["nazov", "art_ecli", "art_datum_od", "art_datum_do", "art_merito", "art_obsah"]
+      description: "Search decisions by various criteria"
+
+data_model:
+  type: "case_law"
+  primary_key: "ID"
+  update_strategy: "upsert"
+  versioning: "temporal"
+  dedup_key:
+    - "ID"
+
+schema:
+  key_fields:
+    - name: "ID"
+      description: "Supreme Court decision ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "ecli"
+      description: "European Case Law Identifier (ECLI:SK:NSSR:...)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "cislo"
+      description: "Case number (e.g., 4Tdo/60/2024)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Case title (cislo)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (obsah field)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (datum)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Direct URL to the decision"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "kolegium"
+      description: "Court division (1=Civil, 2=Commercial, 3=Administrative, 4=Criminal)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "senat"
+      description: "Senate number"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "sudca"
+      description: "Judge name"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "merito"
+      description: "Subject matter of the case"
+      type: "string"
+      role: "metadata"
+      required: false
+
+notes: |
+  - Uses nsud.sk/ws/opendata.php REST API
+  - 104,000+ decisions available (2021 onwards)
+  - Full text in "obsah" field (Slovak language)
+  - Kolegium codes: 1=Civil, 2=Commercial, 3=Administrative, 4=Criminal
+  - ECLI format: ECLI:SK:NSSR:YYYY:NNNNNNNNN.N
+  - PDF attachments available via subor field
+  - Data is public domain (Open Government Data)
+  - Language: Slovak

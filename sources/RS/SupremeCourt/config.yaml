@@ -1,0 +1,129 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — Serbian Supreme Court Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "RS/SupremeCourt"
+  country: "RS"
+  name: "Serbian Supreme Court (Vrhovni sud)"
+  url: "https://vrh.sud.rs"
+  description: |
+    Supreme Court of the Republic of Serbia (Vrhovni sud).
+    Formerly known as Vrhovni kasacioni sud (Supreme Court of Cassation).
+    Decisions include:
+    - Criminal matters (Kzz = requests for protection of legality)
+    - Civil matters (Rev = revision appeals)
+    - Administrative matters
+    - Labor law
+    - Intellectual property
+    - Bankruptcy
+    Coverage: ~13,000+ decisions available via SOLR search
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "html"
+  base_url: "https://vrh.sud.rs"
+  endpoints:
+    search: "/sr-lat/solr-search-page/results"
+    search_params:
+      court_type: "sc"  # Supreme Court filter
+      matter: "_none"
+      registrant: "_none"
+      sorting: "by_date_down"
+      results: "50"  # Results per page
+      page: "{page}"
+    detail: "/sr-lat/{slug}"
+  content_type: "drupal_7"
+  node_type: "court-practice"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "node_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "node_id"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "node_id"
+      description: "Drupal node ID (e.g., 70273)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_reference"
+      description: "Case reference number (e.g., Kzz 293/2023)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Decision title from og:title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to view the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "matter"
+      description: "Legal matter (criminal, civil, administrative, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "case_type"
+      description: "Type of case (Kzz, Rev, Rev2, Prev, Gzz, Uzp, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "published_at"
+      description: "Publication date on website"
+      type: "datetime"
+      role: "temporal_key"
+      required: false
+  secondary_fields:
+    - name: "_raw"
+      description: "Complete raw data from source (for debugging)"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: Serbian (Latin script, UTF-8)
+  - Platform: Drupal 7 with Apache SOLR search
+  - Coverage: ~13,000+ Supreme Court decisions
+  - Case types:
+    - Kzz: Requests for protection of legality (criminal)
+    - Rev: Revision appeals (civil)
+    - Rev2: Second-instance revision appeals
+    - Prev: Pre-revision appeals
+    - Gzz: General requests for legality protection
+    - Uzp: Unified legal positions
+  - Pagination: SOLR search with 0-indexed pages, 50 results per page
+  - Full HTML content available on Drupal node pages
+  - Decision text in div.field-name-body inside article.node-court-practice

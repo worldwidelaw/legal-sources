@@ -1,0 +1,141 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — Serbian Constitutional Court Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "RS/ConstitutionalCourt"
+  country: "RS"
+  name: "Serbian Constitutional Court (Ustavni sud)"
+  url: "https://ustavni.sud.rs"
+  description: |
+    Constitutional Court of the Republic of Serbia.
+    Decisions on constitutional matters including:
+    - Constitutional complaints (Уж)
+    - Constitutionality of laws and regulations
+    - Conflicts of jurisdiction
+    - Electoral disputes
+    - Prohibition of political parties/organizations
+    - Judges and prosecutors appeals
+    Coverage: 1998 onwards (21,000+ decisions available)
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "html"
+  base_url: "https://ustavni.sud.rs"
+  endpoints:
+    search: "/sudska-praksa/baza-sudske-prakse"
+    search_params: "?limit={limit}&startfrom={offset}&sortBy={sort}&action=1"
+    detail: "/sudska-praksa/baza-sudske-prakse/pregled-dokumenta?PredmetId={predmet_id}"
+  sort_options:
+    date_desc: "dateDESC"
+    date_asc: "dateASC"
+    code_desc: "codeDESC"
+    code_asc: "codeASC"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "predmet_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "predmet_id"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "predmet_id"
+      description: "Unique case identifier (numeric ID from URL)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_reference"
+      description: "Case reference number (e.g., Уж-11232/2017)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Document title constructed from case type and reference"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the decision in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to view the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "outcome"
+      description: "Decision outcome (e.g., Одлука о усвајању)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "case_type"
+      description: "Type of procedure (Уж=constitutional complaint, IУ=constitutionality, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "legal_area"
+      description: "Legal area (Грађанско право, Кривично право, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "constitutional_articles"
+      description: "Referenced constitutional articles and paragraphs"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "applicant"
+      description: "Applicant name/initials"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "notes"
+      description: "Additional notes about the decision"
+      type: "string"
+      role: "metadata"
+      required: false
+  secondary_fields:
+    - name: "_raw"
+      description: "Complete raw data from source (for debugging)"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: Serbian (Cyrillic and Latin, UTF-8)
+  - Coverage: 1998 onwards (21,000+ decisions)
+  - Case types:
+    - Уж: Constitutional complaints (ustavne žalbe)
+    - IУ, IУз, IУо, IУа, IУл, IУп: Constitutionality reviews
+    - IIУ: Pre-promulgation review
+    - IIIУ: Jurisdiction conflicts
+    - IVУ: Presidential impeachment
+    - VУ: Electoral disputes
+    - VIIIУ: Judge/prosecutor appeals
+  - Search API supports pagination via startfrom/limit parameters
+  - Full HTML content available on detail pages via PredmetId
+  - Serbian month names need conversion: januar, februar, mart, april,
+    maj, jun, jul, avgust, septembar, oktobar, novembar, decembar

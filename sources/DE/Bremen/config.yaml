@@ -1,0 +1,39 @@
+source_id: DE/Bremen
+name: Bremen State Law (Transparenzportal)
+description: Bremen state legislation from the Transparenzportal Bremen
+url: https://www.transparenz.bremen.de
+country: DE
+jurisdiction: Bremen
+data_types:
+  - legislation
+  - regulation
+
+access:
+  type: xml_feed_with_html_scraping
+  rate_limit: 2/s
+  auth: none
+  endpoints:
+    legislation_xml: https://www.transparenz.bremen.de/sixcms/detail.php?template=30_export_template_ifg_d&dt=Gesetze+und+Rechtsverordnungen
+
+schema:
+  key_fields:
+    - _id
+    - import_id
+  text_field: text
+  date_field: date
+  title_field: title
+
+update:
+  frequency: weekly
+  method: fetch_updates
+
+license:
+  type: CC-BY-3.0
+  notes: Creative Commons Attribution 3.0 - must attribute to "Senator für Finanzen, Bremen"
+
+notes: |
+  Bremen state legislation from the official Transparenzportal.
+  XML feed provides metadata and URLs to detail pages.
+  Full text extracted from HTML detail pages.
+  Covers laws (Gesetze), ordinances (Rechtsverordnungen), and related documents.
+  Data is public under CC-BY-3.0 license.

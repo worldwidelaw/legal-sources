@@ -1,0 +1,75 @@
+# AZ/Qanun - Azerbaijan Legislation Database (e-Qanun)
+# https://e-qanun.az
+#
+# Official legal database maintained by the Ministry of Justice of the
+# Republic of Azerbaijan. Contains 55,000+ legal documents including laws,
+# presidential decrees, cabinet decisions, and ministerial orders.
+#
+# Data access strategy:
+#   1. Parse sitemap.xml to get all framework document IDs
+#   2. For each ID, fetch metadata from REST API: api.e-qanun.az/framework/{id}
+#   3. Fetch full text HTML from the URL in API response (htmlUrl field)
+#   4. Extract text from Word-exported HTML format
+#
+# Coverage: 1992-present
+# Languages: Azerbaijani (primary)
+# License: Public data from official government source
+
+source_id: AZ/Qanun
+name: Azerbaijan Legislation Database (e-Qanun)
+country: AZ
+url: https://e-qanun.az
+data_types:
+  - legislation
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  max_workers: 3
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - framework_id
+
+schema:
+  key_fields:
+    - name: framework_id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: citation
+      type: string
+      required: false
+    - name: type_name
+      type: string
+      required: false
+    - name: status_name
+      type: string
+      required: false
+    - name: accept_date
+      type: date
+      required: false
+    - name: effect_date
+      type: date
+      required: false
+    - name: register_date
+      type: date
+      required: false
+    - name: register_code
+      type: string
+      required: false
+    - name: class_codes
+      type: array
+      required: false

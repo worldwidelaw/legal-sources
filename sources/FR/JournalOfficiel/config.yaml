@@ -1,0 +1,147 @@
+# ===================================================================
+# FR/JournalOfficiel -- French Official Gazette (LEGI Database)
+# ===================================================================
+# Uses DILA open data bulk downloads from echanges.dila.gouv.fr.
+# Daily incremental updates in tar.gz format containing XML files.
+# No authentication required, public FTP-style directory.
+# Data licensed: Licence Ouverte / Open Licence 2.0
+# Docs: https://www.data.gouv.fr/datasets/legi-codes-lois-et-reglements-consolides
+# ===================================================================
+
+source:
+  id: "FR/JournalOfficiel"
+  country: "FR"
+  name: "Journal Officiel de la République Française (LEGI)"
+  url: "https://www.journal-officiel.gouv.fr"
+  description: |
+    France's official gazette and consolidated legislation database operated
+    by DILA (Direction de l'information légale et administrative).
+
+    The LEGI database contains consolidated laws, decrees, ordinances, and
+    orders from the French legal system. Data is provided in structured XML
+    format with LEGITEXT (text containers) and LEGIARTI (article content).
+
+    Updated daily with incremental tar.gz archives. Full database is ~1GB,
+    but daily updates are typically 1-5MB.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1.0
+  burst: 5
+
+api:
+  type: "bulk_download"
+  base_url: "https://echanges.dila.gouv.fr/OPENDATA"
+  endpoints:
+    legi_index: "/LEGI/"
+    jorf_index: "/JORF/"
+  file_patterns:
+    daily_update: "LEGI_{YYYYMMDD}-*.tar.gz"
+    full_database: "Freemium_legi_global_*.tar.gz"
+  xml_structure:
+    text_container: "LEGITEXT*.xml"
+    article_content: "LEGIARTI*.xml"
+    paths:
+      in_force: "legi/global/code_et_TNC_en_vigueur"
+      not_in_force: "legi/global/code_et_TNC_non_vigueur"
+
+data_model:
+  type: "legislation"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "temporal"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 16
+  key_fields:
+    - name: "_id"
+      description: "Unique document identifier (LEGITEXT ID)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "_source"
+      description: "Source identifier"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "_type"
+      description: "Document type category"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "_fetched_at"
+      description: "Timestamp when record was fetched"
+      type: "datetime"
+      role: "metadata"
+      required: true
+    - name: "title"
+      description: "Document title (TITREFULL from LEGITEXT)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full document text (concatenated from LEGIARTI articles)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date (DATE_PUBLI)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to Légifrance"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "cid"
+      description: "JORFTEXT identifier (original publication)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "nature"
+      description: "Document nature (LOI, DECRET, ORDONNANCE, ARRETE)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "nor"
+      description: "NOR identifier (unique French legal reference)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "etat"
+      description: "Document status (VIGUEUR, ABROGE, MODIFIE)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "date_debut"
+      description: "Date document came into force"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "date_fin"
+      description: "Date document was abrogated (if applicable)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+  secondary_fields:
+    - name: "ministere"
+      description: "Issuing ministry"
+    - name: "num"
+      description: "Document number"
+
+notes: |
+  - Uses DILA bulk data from echanges.dila.gouv.fr
+  - Daily incremental updates (1-5MB tar.gz)
+  - XML structure: LEGITEXT (container) + LEGIARTI (articles)
+  - Full text extracted from <BLOC_TEXTUEL><CONTENU> elements
+  - License: Licence Ouverte / Open Licence 2.0
+  - Document types: LOI, DECRET, ORDONNANCE, ARRETE, CODE
+  - Languages: French only

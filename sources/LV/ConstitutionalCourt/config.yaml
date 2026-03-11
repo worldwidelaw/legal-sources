@@ -1,0 +1,53 @@
+source_id: LV/ConstitutionalCourt
+name: Latvian Constitutional Court (Satversmes tiesa)
+country: LV
+language: lv
+data_types:
+  - case_law
+
+endpoints:
+  base_url: https://www.satv.tiesa.gov.lv
+  sitemap_url: https://www.satv.tiesa.gov.lv/wp-sitemap-posts-decision-1.xml
+  decisions_base: https://www.satv.tiesa.gov.lv/decisions/
+
+auth:
+  type: none
+  notes: Public access via official Constitutional Court website
+
+schema:
+  key_fields:
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: petition_number
+      type: string
+      required: false
+    - name: decision_type
+      type: string
+      required: false
+    - name: keywords
+      type: array
+      required: false
+
+rate_limit:
+  requests_per_minute: 30
+  delay_seconds: 2
+
+notes: |
+  Latvian Constitutional Court (Satversmes tiesa) decisions from the official
+  website. Uses WordPress sitemap to discover decisions and extracts full text
+  from HTML decision pages.
+
+  Content types:
+  - Kolēģijas lēmums: Collegium decisions (admissibility decisions)
+  - Spriedums: Judgments (final constitutional review decisions)
+  - Rīcības sēdes lēmums: Procedural session decisions
+
+  Covers decisions from 2015 to present (~800+ decisions).
+  Full text is embedded in HTML <p> tags on decision pages.

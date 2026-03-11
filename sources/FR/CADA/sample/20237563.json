@@ -1,0 +1,26 @@
+{
+  "_id": "FR/CADA/20237563",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-02-20T16:35:21.946423+00:00",
+  "opinion_id": "20237563",
+  "title": "Avis 20237563 - Mairie de Canala",
+  "date": "2024-01-25",
+  "url": "https://cada.data.gouv.fr/20237563/",
+  "text": "Monsieur X a saisi la Commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 12 décembre 2023, à la suite du refus opposé par le maire de Canala à sa demande de communication d'une copie de l'acte de mariage de Monsieur X avec Madame X établi le X 1911.\n\nEn l’absence de réponse du maire de Canala à la date de sa séance, la commission rappelle qu'elle est compétente, en vertu des dispositions de l’article L.342-1 du code des relations entre le public et l'administration, pour émettre un avis sur la communication au demandeur, en application des dispositions des articles L213-1 à L213-3 du code du patrimoine, par les services qui le conservent, des documents sollicités qui constituent des documents d’archives publiques, au sens de l’article L211-1 de ce même code.\n\nLa commission précise que les actes d’état civil (naissances et mariages) sont librement communicables à toute personne qui en fait la demande dès lors qu’ils ont plus de soixante-quinze ans, conformément au e) du 4° du I de l’article L213-2 du code du patrimoine. La communication des documents librement communicables s’effectue selon les modalités pratiques prévues à l’article L213-1 du code du patrimoine et L311-9 du code des relations entre le public et l’administration.\n\nDans la mesure où l’acte de mariage sollicité est daté de 1911, le délai de libre communicabilité qui lui est applicable est échu. La commission estime donc que cet acte d’état civil est librement communicable dans son intégralité à toute personne qui en fait la demande, conformément au e) du 4° du I de l’article L213-2 du code du patrimoine.\n\nElle émet donc un avis favorable.",
+  "subject": "",
+  "administration": "Mairie de Canala",
+  "meanings": [
+    "Favorable"
+  ],
+  "topics": [
+    "Enseignement",
+    "Culture",
+    "Loisirs / Archives"
+  ],
+  "tags": [
+    "Etat civil"
+  ],
+  "part": 3,
+  "type": "Avis"
+}

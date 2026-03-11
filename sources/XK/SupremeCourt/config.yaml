@@ -1,0 +1,37 @@
+name: Kosovo Supreme Court (EULEX-published judgments)
+country: XK
+source_id: XK/SupremeCourt
+data_types:
+  - case_law
+url: https://www.eulex-kosovo.eu/en/judgments/
+auth: none
+languages:
+  - en
+  - sq
+  - sr
+coverage:
+  start_year: 2008
+  end_year: 2014
+  notes: >
+    Criminal and civil proceedings from Kosovo Supreme Court, published by EULEX
+    (European Union Rule of Law Mission in Kosovo). Covers cases handled by
+    international judges deployed to Kosovo courts.
+
+schema:
+  key_fields:
+    - case_number
+    - date
+  optional_fields:
+    - court
+    - proceeding_type
+    - language
+    - parties
+
+rate_limits:
+  requests_per_second: 0.5
+  delay_between_pages: 2
+
+notes: >
+  Full text judgments from EULEX Kosovo judicial portal. Documents available as
+  PDFs in English, Albanian, and Serbian. Primary Kosovo Supreme Court website
+  (supreme.gjyqesori-rks.org) is blocked by Cloudflare.

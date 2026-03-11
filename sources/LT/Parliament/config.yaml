@@ -1,0 +1,115 @@
+# ===================================================================
+# LT/Parliament -- Lithuanian Parliament (Seimas) Publications
+# ===================================================================
+# Official publications from the Lithuanian Parliament (Seimas)
+# website, including press releases, meeting agendas, committee work
+# plans, parliamentary statements, and other official documents.
+#
+# Data sourced from the data.gov.lt Open Data Portal (dataset 2609).
+# Full text available in Lithuanian, English, German, French, Russian.
+#
+# Primary endpoint: get.data.gov.lt/datasets/gov/lrsk/interneto_tekstai/Straipsnis
+# Documentation: https://data.gov.lt/datasets/2609/
+# License: CC BY 4.0
+# ===================================================================
+
+source:
+  id: "LT/Parliament"
+  country: "LT"
+  name: "Lithuanian Parliament (Seimas)"
+  url: "https://data.gov.lt/datasets/2609/"
+  description: |
+    Official publications from the Lithuanian Parliament (Seimas) website,
+    available since 1999. Contains press releases, meeting agendas, committee
+    work plans, parliamentary statements, announcements, and other official
+    documents in multiple languages (LT, EN, DE, FR, RU).
+
+    This complements LT/LegalBase which covers enacted legislation from TAR.
+    LT/Parliament covers the parliamentary publication process and institutional
+    communications rather than the final enacted laws.
+
+    Data is published via the Lithuanian Open Data Portal (data.gov.lt)
+    with monthly updates and full text content.
+
+data_types:
+  - legislation  # Parliamentary proceedings are a form of legislative materials
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1.0
+  burst: 5
+
+api:
+  type: "rest-json"
+  base_url: "https://get.data.gov.lt"
+  endpoints:
+    articles: "/datasets/gov/lrsk/interneto_tekstai/Straipsnis"
+  pagination:
+    type: "cursor"
+    param: "_page"
+    limit_param: "_limit"
+    default_limit: 100
+  formats:
+    - json
+    - jsonl
+    - csv
+    - rdf
+
+data_model:
+  type: "legislation"
+  primary_key: "vda_id"
+  update_strategy: "upsert"
+  versioning: "none"
+  dedup_key:
+    - "vda_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "vda_id"
+      description: "Unique document identifier from Seimas"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "language"
+      description: "Language code (LT, EN, DE, FR, RU)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to document on Seimas website"
+      type: "string"
+      role: "reference"
+      required: false
+  secondary_fields:
+    - name: "koregavimas"
+      description: "Last correction/update date"
+    - name: "_id"
+      description: "UUID from data.gov.lt"
+
+notes: |
+  - Full text is provided in the tekstas_lt field for all documents.
+  - Uses cursor-based pagination via _page token (base64 encoded).
+  - Documents cover: press releases, meeting agendas, committee work plans,
+    parliamentary statements, announcements, biographical information.
+  - Content available since 1999 in multiple languages.
+  - Data updated monthly from the official Seimas publication system.
+  - License: Creative Commons Attribution 4.0 (CC BY 4.0).
+  - This source complements LT/LegalBase (enacted legislation from TAR).

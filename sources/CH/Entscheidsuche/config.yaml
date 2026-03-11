@@ -1,0 +1,40 @@
+source:
+  id: CH/Entscheidsuche
+  name: Entscheidsuche - Swiss Court Decisions
+  country: CH
+  url: https://entscheidsuche.ch
+  data_types:
+    - case_law
+  languages:
+    - de
+    - fr
+    - it
+    - rm
+
+api:
+  type: elasticsearch
+  base_url: https://entscheidsuche.ch/_search.php
+  auth: none
+  rate_limit: 2  # requests per second (be kind to the server)
+
+schema:
+  key_fields:
+    - _id
+    - canton
+    - date
+    - title
+    - attachment.content
+
+notes: |
+  Entscheidsuche.ch is a freely accessible, non-commercial portal aggregating court decisions
+  from all Swiss federal and cantonal courts. Uses Elasticsearch API for search and retrieval.
+
+  Coverage:
+  - Federal courts (CH): 294K+ decisions (Bundesgericht, Bundesverwaltungsgericht, Bundesstrafgericht)
+  - All 26 cantons: 539K+ decisions from cantonal courts
+  - Total: 833K+ court decisions
+
+  API documentation: https://entscheidsuche.ch/pdf/EntscheidsucheAPI.pdf
+  Terms: Open API, free to use, mention entscheidsuche.ch as source for commercial use.
+
+  Full text available in attachment.content field (extracted from PDFs).

@@ -1,0 +1,43 @@
+source:
+  id: US/CourtListener
+  name: CourtListener (Case Law)
+  country: US
+  type: case_law
+  url: https://www.courtlistener.com
+  description: >
+    CourtListener is a free legal research platform from the Free Law Project.
+    It provides access to millions of federal and state court opinions, PACER data,
+    oral arguments, and more. The API provides structured access to court opinions
+    with full text.
+
+api:
+  base_url: https://www.courtlistener.com/api/rest/v4
+  auth_type: token
+  auth_header: Authorization
+  auth_prefix: "Token "
+  rate_limit: 5000  # queries per hour for authenticated users
+  request_delay: 0.75  # seconds between requests
+
+endpoints:
+  opinions: /opinions/
+  clusters: /clusters/
+  dockets: /dockets/
+  courts: /courts/
+
+schema:
+  key_fields:
+    - _id
+    - opinion_id
+    - cluster_id
+  text_fields:
+    - text
+    - html_with_citations
+  date_fields:
+    - date_filed
+    - date_created
+    - date_modified
+
+fetch:
+  page_size: 20
+  max_pages: null  # unlimited for full fetch
+  sample_count: 15

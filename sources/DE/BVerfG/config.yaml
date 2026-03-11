@@ -1,0 +1,64 @@
+# German Federal Constitutional Court (BVerfG) Data Source Configuration
+# Official case law from rechtsprechung-im-internet.de
+
+source_id: "DE/BVerfG"
+name: "German Federal Constitutional Court (Bundesverfassungsgericht)"
+country: "DE"
+language: "de"
+data_types:
+  - case_law
+
+# Data endpoints (no authentication required)
+endpoints:
+  # RSS feed for recent decisions
+  rss_feed: "https://www.rechtsprechung-im-internet.de/jportal/docs/feed/bsjrs-bverfg.xml"
+
+  # Decision page pattern:
+  # https://www.rechtsprechung-im-internet.de/jportal/portal/page/bsjrsprod.psml?doc.id={id}&doc.part=L
+  # doc.part=K for short text, doc.part=L for full text (Langtext)
+
+  # Portal base URL
+  portal: "https://www.rechtsprechung-im-internet.de"
+
+# Schema information
+schema:
+  key_fields:
+    - "doc_id"          # Internal document ID (KVRE...)
+    - "ecli"            # European Case Law Identifier
+    - "aktenzeichen"    # File number (case number)
+  date_format: "ISO8601"
+  text_field: "text"
+
+# License
+license:
+  name: "Public Domain (Amtliche Werke)"
+  url: "https://www.rechtsprechung-im-internet.de/jportal/portal/page/bsjrsprod.psml?cmsuri=/technik/de/impressum/bsjrsimpressum.jsp"
+  notes: |
+    German court decisions are "amtliche Werke" (official works) which are
+    not protected by copyright under German law (§ 5 UrhG).
+    Decisions are offered in all formats for free use and reuse.
+
+# Fetcher configuration
+fetcher:
+  rate_limit_ms: 1500
+  ssl_verify: true
+  timeout_s: 60
+  max_retries: 3
+
+# Notes
+notes: |
+  rechtsprechung-im-internet.de provides access to decisions from the
+  Federal Constitutional Court (BVerfG) and other supreme federal courts.
+
+  Coverage:
+  - Decisions from 1998 onwards (with some older selected decisions)
+  - Full text available (Langtext) for most decisions
+  - ECLI identifiers included for case law interoperability
+
+  Available formats:
+  - HTML (web display)
+  - PDF (print-ready)
+  - XML (structured data via RSS feed)
+
+  The RSS feed provides the most recent decisions. For comprehensive
+  coverage, the search interface must be used to discover historical cases.

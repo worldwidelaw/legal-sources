@@ -1,0 +1,27 @@
+{
+  "_id": "FR/CADA/20237408",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-02-20T16:35:21.941779+00:00",
+  "opinion_id": "20237408",
+  "title": "Avis 20237408 - Communauté d'agglomération du Grand Avignon",
+  "date": "2024-01-25",
+  "url": "https://cada.data.gouv.fr/20237408/",
+  "text": "Madame X, X, a saisi la Commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 6 décembre 2023, à la suite du refus opposé par le président de la communauté d'agglomération du Grand Avignon à sa demande de communication, par courrier électronique, des documents suivants, concernant le projet de construction d'une voie dans le cadre du dévoiement du Chemin Vicinal VC5 dans le quartier d'Agroparc, commune d'Avignon et Morières-les-Avignon :\n1) toute délibération ou acte administratif décisoire du Grand Avignon concernant ce projet ;\n2) toute étude concernant ce projet en possession du Grand Avignon ;\n3) tout échange entre le Grand Avignon et Citadis, le Grand Avignon et la Région, le Grand Avignon et l’aéroport d’Avignon, ainsi qu’entre le grand Avignon et les communes d'Avignon et Morières-les-Avignon concernant ce projet ;\n4) le calendrier prévisible de ce projet.\n\nEn l'absence de réponse exprimée par le président de la communauté d'agglomération du Grand Avignon à la date de sa séance, la commission estime, en premier lieu, que les documents sollicités au point 1) sont librement communicables à toute personne qui en fait la demande, en application de l'article L5211-46 du code général des collectivités territoriales.\n\nElle émet donc un avis favorable sur ce point.\n\nLa commission considère, en second lieu, que les documents sollicités aux points 2) à 4), s'ils sont achevés et ne présentent plus un caractère préparatoire, sont communicables à toute personne qui en fait la demande sur le fondement de l'article L311-1 du code des relations entre le public et l'administration, dans le respect des secrets protégés par les articles L311-5 et L311-6 de ce code, et par suite, après occultation des mentions relevant de ces derniers ou disjonction des documents qui en relèveraient entièrement en application des dispositions de l’article L311-7 dudit code.\n\nElle émet donc, sous ces réserves, un avis favorable sur ces points.",
+  "subject": "",
+  "administration": "Communauté d'agglomération du Grand Avignon",
+  "meanings": [
+    "Favorable",
+    "Favorable/Sauf articles L311-5 et L311-6",
+    "Favorable/Sauf inachevé",
+    "Favorable/Sauf préparatoire"
+  ],
+  "topics": [
+    "Urbanisme Et Aménagement Du Territoire / Aménagement Du Territoire"
+  ],
+  "tags": [
+    "Infrastructures routières"
+  ],
+  "part": 3,
+  "type": "Avis"
+}

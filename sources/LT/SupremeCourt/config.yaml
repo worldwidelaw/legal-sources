@@ -1,0 +1,54 @@
+source_id: LT/SupremeCourt
+country: LT
+name: Lithuanian Supreme Court of Cassation
+description: |
+  Supreme Court of Cassation (Lietuvos Aukščiausiasis Teismas) case law.
+  Contains decisions from the highest court for civil, criminal, and
+  administrative law matters in Lithuania.
+
+data_types:
+  - case_law
+
+url: https://liteko.teismai.lt/
+dataset_url: https://data.gov.lt/datasets/1938/
+csv_endpoint: https://liteko.teismai.lt/csv/
+text_endpoint: https://liteko.teismai.lt/viesasprendimupaieska/tekstas.aspx
+
+auth:
+  type: none
+
+license:
+  type: CC BY 4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+
+rate_limit:
+  requests_per_minute: 30
+  delay_seconds: 2
+
+schema:
+  key_fields:
+    - name: case_number
+      type: string
+      required: true
+    - name: doc_id
+      type: string
+      required: false
+    - name: text
+      type: string
+      required: true
+  date_fields:
+    - name: date
+      type: date
+      required: false
+    - name: received_date
+      type: date
+      required: false
+    - name: completed_date
+      type: date
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - case_number
+    - doc_id

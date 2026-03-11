@@ -1,0 +1,99 @@
+# ===================================================================
+# AT/VfGH -- Austrian Constitutional Court (Verfassungsgerichtshof)
+# ===================================================================
+# VfGH decisions via RIS OGD API v2.6. 23K+ records.
+# Full text available via XML/HTML content URLs.
+# API docs: https://data.bka.gv.at/ris/api/v2.6/
+# ===================================================================
+
+source:
+  id: "AT/VfGH"
+  country: "AT"
+  name: "Austrian Constitutional Court (VfGH)"
+  url: "https://www.vfgh.gv.at"
+  description: |
+    Austria's Constitutional Court (Verfassungsgerichtshof). Reviews
+    constitutionality of laws, adjudicates individual rights complaints,
+    election disputes, and conflicts between authorities. Data via RIS OGD API.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5    # 1 request every 2 seconds (conservative for bulk)
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://data.bka.gv.at/ris/api/v2.6"
+  endpoints:
+    judikatur: "/Judikatur"
+    version: "/Version"
+  applications:
+    - Vfgh
+  pagination:
+    page_param: "Seitennummer"
+    page_size_param: "DokumenteProSeite"
+    max_page_size: "OneHundred"   # 100 results per page
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  versioning: "temporal"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  key_fields:
+    - name: "doc_id"
+      description: "RIS document ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "ecli"
+      description: "European Case Law Identifier"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "geschaeftszahl"
+      description: "Case number"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Case title (Geschaeftszahl)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (Entscheidungsdatum)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Direct URL to the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "entscheidungsart"
+      description: "Type of decision (Erkenntnis, Beschluss, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - Uses RIS OGD API v2.6 with application "Vfgh"
+  - ~24,000 records available
+  - Full text fetched from XML content URLs
+  - Includes Rechtssatz (legal principles) and Entscheidungstexte (decision texts)
+  - Data licensed CC BY 4.0
+  - Language: German

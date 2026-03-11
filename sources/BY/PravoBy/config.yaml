@@ -1,0 +1,35 @@
+# BY/PravoBy -- Belarus National Legal Portal (Codes)
+# Fetches codified laws from pravo.by
+
+source_id: BY/PravoBy
+country: BY
+name: Belarus National Legal Portal (Codes)
+url: https://pravo.by
+data_types:
+  - legislation
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+schema:
+  key_fields:
+    - regnum
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+
+notes: |
+  Fetches all 26 Belarusian codified laws (codes) from pravo.by.
+  Full text is available in HTML format via /document/?guid=3871&p0={regnum}.
+  The codes page lists all available codes with their registration numbers.
+  Related to issue #192 - admin confirmed codified laws are sufficient.

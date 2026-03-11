@@ -1,0 +1,53 @@
+{
+  "_id": "A0000004",
+  "_source": "TW/MOJ",
+  "_type": "legislation",
+  "_fetched_at": "2026-02-28T15:39:17.467794+00:00",
+  "title": "訓政結束程序法",
+  "title_en": "",
+  "text": "第 1 條\n國民政府主席、國民政府委員會及其五院外之直轄機關行使原有之法定職權，應於依憲法產生之總統就職之日，即行停止。\n\n第 2 條\n立法院行使原有之法定職權，應於依憲法產生之首屆立法院集會之日，即行停止。\n\n第 3 條\n監察院行使原有之法定職權，應於依憲法產生之首屆監察院集會之日，即行停止。\n\n第 4 條\n行政院、司法院、考試院行使原有之法定職權，應於依憲法產生之各該院改組完成之日，即行停止。\n\n第 5 條\n省市縣現有民意機構及行政機構行使原有之法定職權，應於依憲法選舉或改組完成之日，即行停止。\n\n第 6 條\n本法自公布日施行。",
+  "date": "1947-12-25",
+  "url": "https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=A0000004",
+  "pcode": "A0000004",
+  "law_level": "憲法",
+  "law_category": "憲法",
+  "effective_date": "",
+  "effective_note": "",
+  "abandon_note": "",
+  "has_english": false,
+  "foreword": "",
+  "histories": "1.中華民國三十六年十二月二十五日國民政府制定公布",
+  "articles": [
+    {
+      "ArticleType": "A",
+      "ArticleNo": "第 1 條",
+      "ArticleContent": "國民政府主席、國民政府委員會及其五院外之直轄機關行使原有之法定職權，應於依憲法產生之總統就職之日，即行停止。"
+    },
+    {
+      "ArticleType": "A",
+      "ArticleNo": "第 2 條",
+      "ArticleContent": "立法院行使原有之法定職權，應於依憲法產生之首屆立法院集會之日，即行停止。"
+    },
+    {
+      "ArticleType": "A",
+      "ArticleNo": "第 3 條",
+      "ArticleContent": "監察院行使原有之法定職權，應於依憲法產生之首屆監察院集會之日，即行停止。"
+    },
+    {
+      "ArticleType": "A",
+      "ArticleNo": "第 4 條",
+      "ArticleContent": "行政院、司法院、考試院行使原有之法定職權，應於依憲法產生之各該院改組完成之日，即行停止。"
+    },
+    {
+      "ArticleType": "A",
+      "ArticleNo": "第 5 條",
+      "ArticleContent": "省市縣現有民意機構及行政機構行使原有之法定職權，應於依憲法選舉或改組完成之日，即行停止。"
+    },
+    {
+      "ArticleType": "A",
+      "ArticleNo": "第 6 條",
+      "ArticleContent": "本法自公布日施行。"
+    }
+  ],
+  "attachments": []
+}

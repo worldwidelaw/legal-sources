@@ -1,0 +1,25 @@
+source:
+  id: AM/ConstitutionalCourt
+  name: Armenian Constitutional Court
+  country: AM
+  url: https://www.concourt.am
+  data_types:
+    - case_law
+  auth: none
+  license: Public domain (official government publication)
+  update_frequency: daily
+
+fetcher:
+  type: html_scraping
+  base_url: https://www.concourt.am
+  decisions_path: /decisions/cc-decision/
+  rate_limit_seconds: 2
+  user_agent: "WorldWideLaw/1.0 (research project; +https://github.com/worldwidelaw/legal-sources)"
+  years: 2000-present
+
+schema:
+  key_fields:
+    - decision_number
+    - decision_date
+  text_field: text
+  date_field: decision_date

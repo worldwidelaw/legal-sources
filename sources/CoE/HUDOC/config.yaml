@@ -1,0 +1,45 @@
+source_id: CoE/HUDOC
+name: HUDOC (European Court of Human Rights)
+country: CoE
+url: https://hudoc.echr.coe.int
+data_types:
+  - case_law
+
+auth:
+  type: none
+
+endpoints:
+  search: https://hudoc.echr.coe.int/app/query/results
+  full_text: https://hudoc.echr.coe.int/app/conversion/docx/html/body
+
+rate_limit:
+  requests_per_second: 1
+  delay_between_requests: 1.0
+
+schema:
+  key_fields:
+    - _id
+    - itemid
+    - docname
+    - kpdate
+    - doctype
+
+license: Open Access (Council of Europe)
+
+notes: |
+  HUDOC is the official case-law database of the European Court of Human Rights.
+  Contains 227K+ judgments and decisions.
+
+  API Access:
+  - Search: POST to /app/query/results with query parameters
+  - Full text: GET /app/conversion/docx/html/body?library=ECHR&id={itemid}
+
+  Document types (doctype):
+  - HEJUD: Judgments in English
+  - HFJUD: Judgments in French
+  - HEDEC: Decisions in English
+  - HFDEC: Decisions in French
+  - HECOMOLD: Commission reports
+  - HFCOMOLD: Commission reports (French)
+
+  The API returns JSON for search and HTML for full text.

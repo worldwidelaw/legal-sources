@@ -1,0 +1,34 @@
+source:
+  id: BE/APD
+  name: Belgian Data Protection Authority (APD/GBA)
+  country: BE
+  type: case_law
+  url: https://www.autoriteprotectiondonnees.be
+  language: [fr, nl]
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+    - decision_number
+    - decision_type
+    - language
+
+fetch:
+  rate_limit_seconds: 2.0
+  method: html_scrape_pdf
+  listing_url_fr: "https://www.autoriteprotectiondonnees.be/citoyen/chercher?q=&search_category[]=taxonomy%3Apublications&search_type[]=decision&s=recent&l=50"
+  listing_url_nl: "https://www.gegevensbeschermingsautoriteit.be/burger/zoeken?q=&search_category[]=taxonomy%3Apublications&search_type[]=decision&s=recent&l=50"
+
+notes: |
+  Belgian Data Protection Authority decisions since 2018.
+  Decisions published as PDFs in both French and Dutch.
+  ~1200 decisions total across both languages (some overlap).
+  Decision types: décisions au fond (substantive), classements sans suite (dismissals),
+  avertissements (warnings), ordonnances (orders), arrêts (court judgments).

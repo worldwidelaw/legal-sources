@@ -1,0 +1,41 @@
+{
+  "_id": "pjl25-240",
+  "_source": "FR/Senat",
+  "_type": "legislation",
+  "_fetched_at": "2026-02-12T08:02:19.728503+00:00",
+  "title": "Projet de loi autorisant l’approbation de la résolution n° F/BG/2023/04 relative aux amendements à l’accord portant création du Fonds africain de développement",
+  "text": "Est autorisée l’approbation de la résolution n° F/BG/2023/04 relative aux amendements à l’accord portant création du Fonds africain de développement, adoptée par le Conseil des gouverneurs du Fonds africain de développement à Charm el‑Cheikh le 23 mai 2023, et dont le texte est annexé à la présente loi (1) . \nEst autorisée l’approbation de la résolution n° F/BG/2023/04 relative aux amendements à l’accord portant création du Fonds africain de développement, adoptée par le Conseil des gouverneurs du Fonds africain de développement à Charm el‑Cheikh le 23 mai 2023, et dont le texte est annexé à la présente loi (1) .",
+  "date": "2026-02-11",
+  "url": "https://www.senat.fr/dossier-legislatif/pjl25-240.html",
+  "frbr_uri": "",
+  "signet": "pjl25-240",
+  "doc_type_label": "Projet de loi",
+  "authors": [
+    "françois-bayrou",
+    "jean-noël-barrot"
+  ],
+  "workflow": [
+    {
+      "date": "2025-05-15",
+      "outcome": "déposé à l'Assemblée Nationale",
+      "by": "assemblee-nationale"
+    },
+    {
+      "date": "2025-12-17",
+      "outcome": "adopté par l'Assemblée nationale",
+      "by": "assemblee-nationale"
+    },
+    {
+      "date": "2025-12-18",
+      "outcome": "transmis au Sénat",
+      "by": "senat"
+    },
+    {
+      "date": "2026-02-11",
+      "outcome": "de la commission",
+      "by": "commission-senat"
+    }
+  ],
+  "date_depot": "2026-02-11",
+  "date_adoption": ""
+}

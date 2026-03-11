@@ -1,0 +1,32 @@
+# Legal Data Hunter — Python Dependencies
+#
+# Install: pip install -r requirements.txt
+
+# Core
+requests>=2.31.0
+pyyaml>=6.0
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+
+# For XML-based sources
+xmltodict>=0.13.0
+
+# For some EU sources that use SPARQL
+sparqlwrapper>=2.0.0
+
+# Optional: for HTML-heavy scraping
+html5lib>=1.1
+
+# PDF text extraction
+pypdf>=4.0.0
+pdfplumber>=0.10.0
+
+# RSS/Atom feed parsing
+feedparser>=6.0.0
+
+# HuggingFace datasets (for CH/Kantone and other dataset-based sources)
+datasets>=2.18.0
+
+# Browser automation (for JavaScript SPAs and Cloudflare-protected sites)
+# After install, run: playwright install chromium
+playwright>=1.40.0

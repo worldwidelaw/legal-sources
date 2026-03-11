@@ -1,0 +1,37 @@
+source:
+  id: "EU/EuroParl"
+  country: "EU"
+  name: "European Parliament Adopted Texts"
+  description: "Resolutions, legislative resolutions, legislative acts, opinions, declarations, decisions, and recommendations adopted by the European Parliament"
+  url: "https://data.europarl.europa.eu"
+  data_types:
+    - legislation
+
+schema:
+  key_fields:
+    - eli_id
+    - document_type
+    - title
+    - date
+    - url
+    - full_text
+
+api:
+  type: "rest"
+  endpoints:
+    list_api: "https://data.europarl.europa.eu/api/v2/adopted-texts"
+    doceo_base: "https://www.europarl.europa.eu/doceo/document/"
+    rss_feed: "https://www.europarl.europa.eu/rss/doc/texts-adopted/en.xml"
+  auth: "none"
+  rate_limit:
+    requests_per_second: 2
+    delay_seconds: 0.5
+
+pagination:
+  type: "offset"
+  page_size: 100
+  max_offset: 5500
+
+documentation:
+  - "https://data.europarl.europa.eu/en/developer-corner/opendata-api"
+  - "https://github.com/europarl/open-data-beta-testing"

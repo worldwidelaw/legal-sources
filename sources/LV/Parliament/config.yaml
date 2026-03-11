@@ -1,0 +1,37 @@
+# LV/Parliament -- Latvian Parliament (Saeima) Transcripts
+# Source: https://www.saeima.lv/lv/transcripts/
+
+source_id: LV/Parliament
+country: LV
+name: Latvian Parliament (Saeima)
+data_types:
+  - parliamentary_proceedings
+
+# Access
+url: https://www.saeima.lv
+auth:
+  type: none
+
+# Rate limiting
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# Schema definition
+schema:
+  key_fields:
+    - name: transcript_id
+      type: integer
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+
+# License: Public domain (government documents)
+license: public_domain

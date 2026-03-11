@@ -1,0 +1,49 @@
+source:
+  id: HU/FelsoBirosag
+  name: Hungarian Supreme Court (Kúria)
+  country: HU
+  data_type: case_law
+  url: https://kuria-birosag.hu
+  license: Public Domain
+  language: hu
+
+endpoints:
+  base_url: https://kuria-birosag.hu
+  sitemap: /hu/sitemap.xml
+  decision_patterns:
+    - /hu/valhat/       # Electoral decisions
+    - /hu/joghat/       # Legal unity decisions
+    - /hu/onkugy/       # Municipal cases
+    - /hu/nepszavugy/   # Referendum cases
+    - /hu/ejeb/         # ECHR cases
+    - /hu/alkotmbir-hat/  # Constitutional court cases
+    - /hu/jogegysegi-panasz/  # Legal unity complaints
+    - /hu/kuriai-dontesek/    # Curia decisions
+    - /hu/gyulhat/      # Assembly cases
+    - /hu/kollvel/      # Collegial opinions
+
+schema:
+  key_fields:
+    - case_number
+    - decision_number
+  normalized_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+    - decision_number
+    - case_number
+    - decision_type
+
+fetch:
+  method: sitemap_scrape
+  rate_limit: 1.5
+  user_agent: "World Wide Law/1.0 (EU Legal Research)"
+  notes: |
+    Uses XML sitemap to discover decision URLs.
+    Full text extracted from HTML body field.
+    Uses curl subprocess due to Python SSL compatibility issues.

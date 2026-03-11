@@ -1,0 +1,115 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — Constitutional Court of Ukraine Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UA/ConstitutionalCourt"
+  country: "UA"
+  name: "Constitutional Court of Ukraine"
+  url: "https://ccu.gov.ua"
+  description: |
+    Decisions and rulings of the Constitutional Court of Ukraine.
+
+    The Constitutional Court is the sole body of constitutional
+    jurisdiction in Ukraine. It decides on constitutionality of laws
+    and other legal acts, official interpretations of the Constitution,
+    and compliance with constitutional procedures.
+
+    Data is accessed via the Verkhovna Rada Open Data API (data.rada.gov.ua)
+    which indexes all Constitutional Court decisions (org=79).
+
+    Coverage: 2,500+ decisions, rulings, and separate opinions (1997 onwards)
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"  # Uses "OpenData" User-Agent for public access
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_minute: 60
+  daily_limit: 100000
+  daily_bandwidth_mb: 200
+  recommended_delay_seconds: 1
+
+# ── API Configuration ─────────────────────────────────────────────
+api:
+  type: "rest"
+  base_url: "https://data.rada.gov.ua"
+  endpoints:
+    # List of Constitutional Court decisions (paginated)
+    list: "/laws/main/o79/page{page}.json"
+    list_all: "/laws/main/o79.json"
+    # Full text endpoints
+    text_txt: "/laws/show/{nreg}.txt"
+    text_json: "/laws/show/{nreg}.json"
+    # View URL
+    document_url: "https://zakon.rada.gov.ua/laws/show/{nreg}"
+  org_id: 79  # Constitutional Court organization ID
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "nreg"
+  update_strategy: "upsert"
+  versioning: "orgdat"
+  dedup_key:
+    - "nreg"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  total_fields: 20
+  key_fields:
+    - name: "nreg"
+      description: "Document registration number (e.g., v001p710-21)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title in Ukrainian"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601 format)"
+      type: "string"
+      role: "temporal_key"
+      required: true
+    - name: "decision_number"
+      description: "Official decision number (e.g., 1-р/2021)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "decision_type"
+      description: "Type of decision (ruling, separate opinion, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "url"
+      description: "Direct URL to view the decision"
+      type: "string"
+      role: "reference"
+      required: true
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: Ukrainian (UTF-8)
+  - API: Verkhovna Rada Open Data Portal (data.rada.gov.ua)
+  - Coverage: 2,500+ Constitutional Court decisions (1997-present)
+  - Document types:
+    - typ=22: Decisions (рішення)
+    - typ=30: Rulings/Orders (ухвали)
+    - typ=153: Separate opinions (окремі думки)
+  - Full text: Plain text via /laws/show/{nreg}.txt endpoint
+  - License: CC BY 4.0 (Creative Commons Attribution)
+  - Authentication: None required (anonymous access)
+  - Rate limits: 60 req/min, recommended 1s delays

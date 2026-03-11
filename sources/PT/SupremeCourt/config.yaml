@@ -1,0 +1,75 @@
+# PT/SupremeCourt — Portuguese Supreme Court Case Law
+#
+# Source: Supremo Tribunal de Justiça (STJ)
+# URL: https://juris.stj.pt
+# Data type: case_law
+# Auth: none
+# License: Public (open government data)
+#
+# The Portuguese Supreme Court publishes all decisions (Acórdãos) on its
+# official jurisprudence portal. The portal is powered by ElasticSearch
+# and provides a JSON API for searching decisions.
+#
+# API endpoints:
+#   - Search: https://juris.stj.pt/api/search?MinAno=YYYY&MaxAno=YYYY
+#   - Document: https://juris.stj.pt/{processo}/{uuid_prefix} (SSR, data in __NEXT_DATA__)
+#
+# Data source: DGSI (Direção-Geral dos Serviços de Informática do Ministério da Justiça)
+# The portal indexes decisions from dgsi.pt/jstj.nsf
+#
+# Coverage: ~71,500 decisions from 1900 to present
+#   - Criminal appeals (Recurso Penal)
+#   - Civil appeals
+#   - Habeas corpus
+#   - Extradition/European Arrest Warrant
+#   - Jurisprudence fixation (Fixação de Jurisprudência)
+#
+# Full text is available in the "Texto" field (via document endpoint only).
+# The search API returns metadata + "Sumário" (summary) but not full text.
+
+source:
+  id: PT/SupremeCourt
+  name: Portuguese Supreme Court (Supremo Tribunal de Justiça)
+  country: PT
+  data_types:
+    - case_law
+  url: https://juris.stj.pt
+  language: pt
+  auth: none
+  license: public
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: case_number
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - summary
+    - case_number
+    - ecli
+    - rapporteur
+    - section
+    - area
+    - procedural_type
+    - outcome
+    - keywords
+  date_field: date
+
+fetch:
+  # Rate limiting: 1 request per 1.5 seconds
+  rate_limit_delay: 1.5
+  # Start year for decisions (portal has data from 1900)
+  start_year: 1900
+  # Total decisions available (~71,500)
+  estimated_total: 71500
+  # Sample mode: fetch recent decisions with full text
+  sample_years: 2
+  sample_count: 12

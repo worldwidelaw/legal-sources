@@ -1,0 +1,2192 @@
+sources:
+- id: CoE/HUDOC
+  country: CoE
+  name: HUDOC (European Court of Human Rights)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://hudoc.echr.coe.int
+  notes: ECHR case law database. 227K+ judgments and decisions. JSON search API +
+    HTML full text endpoint. 15 sample records with avg 33K chars/doc. ECLI identifiers
+    available. Open access.
+- id: EU/EUR-Lex
+  country: EU
+  name: EUR-Lex Portal
+  data_types:
+  - legislation
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://eur-lex.europa.eu
+  notes: 'Fixed #114. Full pagination via SPARQL OFFSET/LIMIT. Checkpoint/resume support
+    for large bootstraps. Use --full for complete fetch. 15 sample records with avg 11K chars.'
+- id: EU/CURIA
+  country: EU
+  name: Court of Justice of the EU (CURIA)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://curia.europa.eu
+  notes: 'Fixed #76, #100. SPARQL + EUR-Lex HTML. 12 sample records (post-2018). Now supports --historical for pre-2018. Total 33K+ judgments from 1954. Avg 50K chars.
+    avg 50K chars/doc. CJ and TJ judgments. Publications Office SPARQL for discovery.'
+- id: AT/RIS
+  country: AT
+  name: Rechtsinformationssystem (RIS)
+  data_types:
+  - legislation
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.ris.bka.gv.at
+  notes: OGD API v2.6, JSON REST, no auth. 436K legislation + 138K case law. CC BY
+    4.0. Full text fetched from XML content URLs.
+- id: AT/Bundesgesetzblatt
+  country: AT
+  name: Bundesgesetzblatt (BGBl)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.ris.bka.gv.at/Bgbl-Auth/
+  notes: Austrian Federal Law Gazette - authentic versions since 2004. Uses RIS OGD
+    API v2.6 with BgblAuth application. 18K+ records with full text. Avg 61K chars/doc.
+    CC BY 4.0.
+- id: AT/VfGH
+  country: AT
+  name: Austrian Constitutional Court (VfGH)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.vfgh.gv.at
+  notes: VfGH decisions via RIS OGD API v2.6. 24K records. Full text via XML content
+    URLs. 12 sample records with avg 6.5K chars/doc. CC BY 4.0.
+- id: BE/MoniteurBelge
+  country: BE
+  name: Moniteur Belge / Belgisch Staatsblad
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.ejustice.just.fgov.be/eli
+  notes: 'Belgian Official Journal. Full text available via ELI URIs. Data types:
+    loi, decret, ordonnance, arrete. License: CC Zero.'
+- id: BE/CASS
+  country: BE
+  name: Court of Cassation (Cour de Cassation)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://juportal.be
+  notes: "Fixed: Checkpoint file support implemented. 49,000+ decisions via ECLI
+    sitemap discovery. Saves checkpoint every 100 ECLIs. Use --clear-checkpoint
+    to reset. Commands: bootstrap, update, status, clear-checkpoint."
+- id: BE/CourConstitutionnelle
+  country: BE
+  name: Belgian Constitutional Court (Cour constitutionnelle)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.const-court.be
+  notes: Belgian Constitutional Court decisions since 1985. PDF downloads with predictable
+    URL pattern. Full text extraction via pdfplumber. 100 sample records with avg
+    65K chars/doc. ~100-180 decisions per year. ECLI format ECLI:BE:GHCC:YEAR:NR.
+    Open Government Data license.
+- id: BE/ConseilEtat
+  country: BE
+  name: Belgian Council of State (Conseil d'État)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.raadvst-consetat.be
+  notes: Belgian supreme administrative court. Decisions since 1994 via arr.php PDF
+    endpoint. Full text extraction via pdfplumber. 100 sample records with avg 18K
+    chars/doc. ~5,000+ decisions per year. Covers urbanisme, fonction publique, marchés
+    publics, etc. Open Government Data license.
+- id: BG/StateGazette
+  country: BG
+  name: Bulgarian State Gazette (Държавен вестник)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://dv.parliament.bg
+  notes: "Fixed issue #125. Iterates through document IDs 1000-250000 with checkpoint. ~240K+ documents from 2003-present. SSL verification disabled due to cert issues."
+- id: BG/SupremeCourt
+  country: BG
+  name: Bulgarian Supreme Court of Cassation
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.vks.bg
+  notes: Supreme Court case law via Domino database (domino.vks.bg). Full text decisions
+    in Bulgarian. 12 sample records with avg 11.6K chars/doc. CC BY 4.0.
+- id: BG/ConstitutionalCourt
+  country: BG
+  name: Bulgarian Constitutional Court
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.constcourt.bg
+  notes: Constitutional Court decisions since 1991. HTML scraping via year-based search.
+    12 sample records with avg 8K chars/doc.
+- id: HR/OfficialGazette
+  country: HR
+  name: Croatian Official Gazette (Narodne novine)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://narodne-novine.nn.hr
+  notes: Full text available via ELI URIs. Uses sitemaps for document discovery and
+    /eli/sluzbeni/{year}/{issue}/{doc}/hrv/html for full text. 12 sample records fetched,
+    avg 33K chars/doc.
+- id: HR/SupremeCourt
+  country: HR
+  name: Croatian Supreme Court
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://odluke.sudovi.hr
+  notes: Croatian court decisions via ANON (Odluke.sudovi.hr) - official portal with
+    883K+ decisions. Uses ct=vs filter for Supreme Court. Full text with ECLI, EuroVoc,
+    thematic indexes. 12 sample records, avg 3.5K chars/doc.
+- id: CY/CYLAW
+  country: CY
+  name: CY-Law - Cyprus Legislation Database
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.cylaw.org
+  notes: Consolidated Cypriot legislation via XML export. 1700 documents with full
+    text in Greek. Avg 93K chars/doc. Open Government Data.
+- id: CY/SupremeCourt
+  country: CY
+  name: Cyprus Supreme Court
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: http://www.cylaw.org/apofaseis/aad/
+  notes: Cyprus Supreme Court case law via CyLaw. 35K+ decisions from 1961-present.
+    Full text in Greek. 12 sample records with avg 28K chars/doc. Open access.
+- id: CZ/eSbirka
+  country: CZ
+  name: e-Sbírka - Czech Collection of Laws
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.e-sbirka.cz
+  notes: Official Czech legislation database (launched Jan 2024). Full text via bulk
+    open data from opendata.eselpoint.cz. 45K+ acts. Requires ~4GB RAM for processing.
+    CC BY 4.0.
+- id: CZ/SupremeCourt
+  country: CZ
+  name: Czech Supreme Court (Nejvyšší soud)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://sbirka.nsoud.cz
+  notes: Supreme Court case law from Sbírka soudních rozhodnutí a stanovisek. Uses
+    WordPress sitemaps for discovery, HTML scraping for full text. 12 sample records
+    with avg 11K chars/doc. Open Government Data license.
+- id: CZ/ConstitutionalCourt
+  country: CZ
+  name: Czech Constitutional Court (Ústavní soud)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.usoud.cz
+  notes: Constitutional Court decisions via NALUS database GetText.aspx endpoint.
+    12 sample records with avg 12.6K chars/doc. ECLI format supported.
+- id: DK/Lovdata
+  country: DK
+  name: Danish Legislation Database (Retsinformation)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.retsinformation.dk
+  notes: 'Official Danish legislation via ELI XML endpoints. Full text support. 15
+    sample records fetched, avg 21K chars/doc. Doc types: LOV, LBK, BEK, CIR, VEJ.'
+- id: DK/CourtOfAppeal
+  country: DK
+  name: Danish Courts Database (Domsdatabasen)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://domsdatabasen.dk
+  notes: Court decisions from all Danish courts (Supreme Court, High Courts, district
+    courts, Maritime and Commercial Court). Uses public webapi with RSS feeds and
+    JSON endpoints. Full text via HTML content. 12 sample records with avg 61K chars/doc.
+    Public domain (Danish Copyright Law §9).
+- id: EE/RiigiTeatajaLoomal
+  country: EE
+  name: Riigi Teataja - Estonian Legal Portal
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.riigiteataja.ee
+  notes: Official Estonian legislation database. Full text fetched via XML downloads.
+    10 sample records validated (avg 139K chars/doc).
+- id: EE/Riigikogu
+  country: EE
+  name: Estonian Parliament (Riigikogu)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://api.riigikogu.ee
+  notes: Legislative drafts (bills) via REST API. Full text extracted from DOCX files
+    or introduction field. Complements EE/RiigiTeatajaLoomal which covers enacted
+    laws. 12 sample records, avg 10K chars/doc. CC BY-SA 3.0 license.
+- id: EE/SupremeCourt
+  country: EE
+  name: Estonian Supreme Court (Riigikohus)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.riigikohus.ee
+  notes: null
+- id: FI/Finlex
+  country: FI
+  name: Finlex - Finnish Legal Database
+  data_types:
+  - legislation
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.finlex.fi
+  notes: Official Finnish legislation, case law, and treaties. Uses Finlex Open Data
+    API (AKN format). 12 samples with full text, avg 6887 chars/doc.
+- id: FI/Eduskunta
+  country: FI
+  name: Finnish Parliament (Eduskunta)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://avoindata.eduskunta.fi
+  notes: Finnish Parliament Open Data API. Government proposals (HE) and committee
+    reports from VaskiData table. 323K+ documents with full text in XML. 12 samples
+    avg 87K chars/doc. REST API, no auth.
+- id: FI/SupremeCourt
+  country: FI
+  name: Finnish Supreme Court (Korkein oikeus)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.korkeinoikeus.fi
+  notes: KKO case law via LawSampo SPARQL (ldf.fi/lawsampo). 5948 judgments with full
+    text in Finnish. 12 sample records avg 22K chars/doc. CC-BY license.
+- id: FI/SupremeAdministrativeCourt
+  country: FI
+  name: Finnish Supreme Administrative Court
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.kho.fi
+  notes: KHO case law via LawSampo SPARQL endpoint. 10K+ judgments with ECLI identifiers.
+    Full text from HTML content. 12 sample records with avg 41K chars/doc. CC-BY license.
+- id: FR/JournalOfficiel
+  country: FR
+  name: Légifrance LEGI - French Consolidated Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://echanges.dila.gouv.fr/OPENDATA/LEGI/
+  notes: 'DILA LEGI bulk data. bootstrap-fast uses 1.1GB global dump with checkpointing.
+    Daily incremental updates also supported. Licence Ouverte 2.0.'
+- id: FR/AssembleeNationale
+  country: FR
+  name: French National Assembly (Assemblée Nationale)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://data.assemblee-nationale.fr
+  notes: 'Parliamentary bills (projets de loi, propositions de loi) with full text.
+    Uses Open Data bulk ZIP for document IDs and /dyn/docs/{id}.raw endpoint for full
+    HTML text. 12 sample records with avg 10K chars/doc. License: Licence Ouverte.'
+- id: FR/Senat
+  country: FR
+  name: French Senate (Sénat)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.senat.fr
+  notes: Akoma Ntoso XML format. 3300+ deposited texts and adopted texts since Dec
+    2019. 12 sample records with avg 13K chars/doc. Licence Ouverte Etalab.
+- id: FR/CouncilState
+  country: FR
+  name: French Administrative Courts (CE, CAA, TA)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://opendata.justice-administrative.fr
+  notes: 'All French administrative courts via Open Data platform: CE (Conseil d''État
+    - Supreme), CAA (Cours Administratives d''Appel - Appeals), TA (Tribunaux Administratifs
+    - First Instance). ZIP archives with full text XML. 15 samples across all courts
+    (5 per court): CE avg 10K chars, CAA avg 15K chars, TA avg 7K chars. ECLI identifiers.
+    Licence Ouverte. Coverage: CE from Sept 2021, CAA/TA from 2022.'
+- id: FR/Judilibre
+  country: FR
+  name: Judilibre - French Judicial Case Law
+  data_types:
+  - case_law
+  auth: piste_oauth2
+  status: complete
+  priority: 2
+  preferred_for:
+  - case_law
+  blocked_reason: null
+  url: https://api.piste.gouv.fr/cassation/judilibre
+  notes: "Fixed: Full archive support (2010-present) with checkpoint file. Fetches
+    month-by-month with checkpoint after each month. Use --full for archive,
+    --recent for last 30 days. Commands: bootstrap --full, bootstrap --sample,
+    updates --since, status, clear-checkpoint."
+- id: FR/ConseilConstitutionnel
+  country: FR
+  name: French Constitutional Council (Conseil constitutionnel)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.conseil-constitutionnel.fr
+  notes: 'Constitutional Council decisions via DILA CONSTIT bulk open data. 8,000+
+    decisions since 1958. Covers DC (constitutional review), QPC (priority questions
+    since 2010), and electoral matters. Full text XML with ECLI identifiers. 100 sample
+    records with avg 3.3K chars/doc. Open Licence 2.0.'
+- id: FR/LegifranceCodes
+  country: FR
+  name: French Consolidated Legal Codes (PISTE API)
+  data_types:
+  - legislation
+  auth: oauth2
+  status: complete
+  priority: 1
+  preferred_for:
+  - consolidated_codes
+  blocked_reason: null
+  url: https://api.piste.gouv.fr/dila/legifrance
+  retrieve: true
+  notes: 'All 78+ French consolidated codes (Code civil, Code pénal, Code du travail,
+    etc.) via PISTE/Légifrance OAuth2 API. 16 sample records from 8 codes with avg
+    1K chars/article. Covers 78+ codes totaling 50K+ articles. Licence Ouverte 2.0.'
+- id: FR/CASS
+  country: FR
+  name: French Court of Cassation Case Law (CASS Database)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://echanges.dila.gouv.fr/OPENDATA/CASS/
+  notes: 'Fixed #66: Download timeout increased for 248MB global dump. Now downloads
+    Freemium_cass_global archive (500K+ records) + incremental archives. 15 sample
+    records with avg 9.6K chars/doc.'
+- id: DE/BGBl
+  country: DE
+  name: German Federal Law (Gesetze im Internet)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.gesetze-im-internet.de
+  notes: 6,800+ federal laws with full XML text. Data from gesetze-im-internet.de
+    provided by BMJV. Public domain (amtliche Werke).
+- id: DE/Bundestag
+  country: DE
+  name: German Federal Parliament (Bundestag)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://dip.bundestag.de
+  notes: Parliamentary documents via DIP API. Uses drucksache-text endpoint for full
+    text. 12 sample records with avg 249K chars/doc. Public API key valid until May
+    2026.
+- id: DE/Bundesrat
+  country: DE
+  name: German Federal Council (Bundesrat)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.bundesrat.de
+  notes: Uses DIP API (search.dip.bundestag.de) with public demo key. ~100K Bundesrat
+    documents with full text. 12 sample records avg 105K chars/doc.
+- id: DE/BVerfG
+  country: DE
+  name: German Federal Constitutional Court (BVerfG)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.rechtsprechung-im-internet.de
+  notes: Constitutional Court case law via rechtsprechung-im-internet.de RSS feed.
+    Full text fetched from HTML pages. 12 sample records, avg 21K chars/doc.
+- id: DE/BGH
+  country: DE
+  name: German Federal Court of Justice (BGH)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.rechtsprechung-im-internet.de
+  notes: Supreme Court case law via rechtsprechung-im-internet.de RSS feed. Full text
+    fetched from HTML pages. 12 sample records, avg 16K chars/doc. Covers civil and
+    criminal decisions since 2010.
+- id: DE/BSG
+  country: DE
+  name: German Federal Social Court (BSG)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 3
+  blocked_reason: null
+  url: https://www.rechtsprechung-im-internet.de
+  notes: 'Fixed #117. Discovery via rii-toc.xml TOC (not RSS). 6,285 BSG decisions available.
+    12 sample records with avg 26K chars/doc. Full text via ZIP XML downloads. CC BY 4.0.'
+- id: DE/BVerwG
+  country: DE
+  name: German Federal Administrative Court (BVerwG)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.rechtsprechung-im-internet.de
+  notes: Federal Administrative Court (Bundesverwaltungsgericht) case law via rechtsprechung-im-internet.de.
+    Uses XML ZIP downloads from daily TOC. ~10,000+ decisions. 100 samples avg 341 chars/doc
+    (mostly Beschlüsse - procedural orders). Full text including Leitsatz, Tenor, Tatbestand,
+    Entscheidungsgründe. Public domain (amtliche Werke § 5 UrhG).
+- id: DE/Sachsen
+  country: DE
+  name: Saxony State Law (REVOSAX)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 3
+  blocked_reason: null
+  url: https://www.revosax.sachsen.de
+  notes: Saxon state legislation via REVOSAX. 6,232+ laws accessible via sitemap.xml.
+    Full HTML text at /vorschrift_gesamt/{id}/{version}.html URLs. Covers Gesetze,
+    Verordnungen, Verwaltungsvorschriften. Public domain (amtliche Werke § 5 UrhG).
+    First German Länder source. 12 sample records avg 7.8K chars/doc.
+- id: DE/OpenLegalData
+  country: DE
+  name: Open Legal Data (openlegaldata.io)
+  data_types:
+  - case_law
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://de.openlegaldata.io
+  notes: "Fixed #124: Increased rate limit delay (3s), added 5s initial warmup, aggressive backoff (30s base), 8 retries, JSONL output to stdout. 251K+ cases, 57K+ laws."
+- id: DE/Bayern
+  country: DE
+  name: Bavaria State Law (BAYERN.RECHT)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 3
+  blocked_reason: null
+  url: https://www.gesetze-bayern.de
+  notes: 'Bavarian court decisions via RSS feed at /Api/Feed. 23K+ records across
+    VGH, OLG, LG, AG, VG, and specialized courts. Full text extracted from HTML (Tenor
+    + Gründe). 12 samples avg 27.7K chars/doc. Courts covered: VGH München, OLG München,
+    Landgerichte, Verwaltungsgerichte. Public domain (amtliche Werke).'
+- id: DE/NRW
+  country: DE
+  name: North Rhine-Westphalia State Law (recht.nrw.de)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 3
+  blocked_reason: null
+  url: https://recht.nrw.de
+  notes: 'NRW state legislation via comprehensive sitemap (47 pages). Full text extracted
+    from HTML pages with legaldoc-article sections. 15 sample records with avg 7.3K
+    chars/doc. Document types: gesetz (laws), rechtsverordnung (ordinances), verwaltungsvorschrift
+    (administrative rules), bekanntmachung (announcements). Coverage: Landesrecht
+    since 1946, Ministerialblatt since 1949. Public domain (amtliche Werke § 5 UrhG).'
+- id: GR/SupremeCourt
+  country: GR
+  name: Greek Supreme Court (Άρειος Πάγος)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.areiospagos.gr
+  notes: 'COMPLETE: Supreme Court case law via HTML scraping. Search endpoint returns
+    all decisions by year. Full text available in Greek (windows-1253 encoding). 12
+    sample records fetched, avg 37K chars/doc. Coverage: 2006-present.'
+- id: GR/Diavgeia
+  country: GR
+  name: Diavgeia - Greek Government Decisions
+  data_types:
+  - administrative_decisions
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://diavgeia.gov.gr
+  notes: 'COMPLETE: Greek government decisions via OpenData API. 71M+ decisions since
+    2010. Full text extracted from PDFs using pdfplumber. 15 sample records fetched,
+    avg 8K chars/doc. CC-BY license.'
+- id: HU/NJT
+  country: HU
+  name: Nemzeti Jogszabálytár - Hungarian National Legislation Database
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://njt.hu
+  notes: Hungary's official legislation database (Nemzeti Jogszabálytár). ELI implemented
+    since 2023. Full text via server-rendered HTML. 12 sample records, avg 5.5K chars/doc.
+- id: HU/Parlament
+  country: HU
+  name: Hungarian Parliament (Országgyűlés)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.parlament.hu
+  notes: Parliamentary documents (törvényjavaslatok, bills, motions) via PDF extraction.
+    Full text extracted using pdfplumber. 12 sample records with avg 2.2K chars/doc.
+    Covers cycles 38-42 (2006-present). ~13,350+ documents in current cycle alone.
+- id: HU/FelsoBirosag
+  country: HU
+  name: Hungarian Supreme Court (Kúria)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://kuria-birosag.hu
+  notes: Supreme Court case law via XML sitemap. Covers electoral decisions, legal
+    unity decisions, municipal cases, referendum cases, ECHR cases, constitutional
+    cases, and more. Full text from HTML pages. 12 sample records with avg 18K chars/doc.
+    1900+ total decisions available.
+- id: HU/Constitutional
+  country: HU
+  name: Hungarian Constitutional Court (Alkotmánybíróság)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: requires_browser_automation
+  url: https://alkotmanybirosag.hu
+  notes: "GitHub issue #38. Current scraper gets ~50 recent decisions via Next.js
+    __NEXT_DATA__ from /a-legfrissebb-dontesek/. Full archive (1990-present, 10K+
+    decisions) requires browser automation for /ugykereso/ search interface (React/JS).
+    Gazette bundle PDFs available at 89.135.41.81 but contain multiple decisions per
+    file requiring complex parsing. No REST API. Blocked until Playwright integration."
+- id: IE/Acts
+  country: IE
+  name: Irish Statute Database
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.irishstatutebook.ie
+  notes: Full text via ELI URIs. 48+ Acts and 760+ SIs per year. HTML scraping with
+    avg 10-25K chars/doc. CC-BY 4.0.
+- id: IE/Oireachtas
+  country: IE
+  name: Oireachtas - Irish Parliament
+  data_types:
+  - parliamentary_proceedings
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.oireachtas.ie
+  notes: Parliamentary debates from Dáil Éireann and Seanad Éireann via Open Data
+    API. Full text fetched as Akoma Ntoso XML. 12 sample records with avg 147K chars/doc.
+    CC-BY 4.0 (PSI Licence).
+- id: IE/SupremeCourt
+  country: IE
+  name: Irish Courts Service - Case Law
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www2.courts.ie/Judgments
+  notes: 'From issue #75. Full text via PDF extraction. Covers Supreme Court, Court of
+    Appeal, High Court. 12 sample records with avg 55K chars/doc. Irish Public Service
+    Data License.'
+- id: IT/Normattiva
+  country: IT
+  name: Normattiva - Italian Legal Database
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.normattiva.it
+  notes: Official Italian legislation via ELI URIs. Full text via HTML parsing of
+    testoNormalizzato. 12 sample records, avg 42K chars/doc. Uses year-based listing
+    + individual document fetch. As of Jan 2026, data is open under CC BY 4.0 (was
+    IODL 2.0). New bulk/API endpoint at dati.normattiva.it available but not yet tested.
+- id: IT/Senato
+  country: IT
+  name: Italian Senate (Senato della Repubblica)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.senato.it
+  notes: Senate DDL (Disegni di Legge) via SPARQL endpoint (dati.senato.it/sparql)
+    + GitHub Akoma Ntoso repository. 12 sample records, avg 9.3K chars/doc. Full text
+    extracted from Akoma Ntoso XML. 58K+ DDL total. Open Data.
+- id: IT/Camera
+  country: IT
+  name: Italian Chamber of Deputies (Camera dei Deputati)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.camera.it
+  notes: Parliamentary bills (proposte di legge) via HTML scraping. Full text from
+    documenti.camera.it/apps/commonServices/getDocumento.ashx endpoint. 12 sample
+    records, avg 33K chars/doc. Legislature XIX (2022-present). Public information
+    license.
+- id: IT/CorteCostituzionale
+  country: IT
+  name: Italian Constitutional Court (Corte Costituzionale)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.cortecostituzionale.it
+  notes: Constitutional Court decisions via dati.cortecostituzionale.it Open Data
+    portal. ~22K decisions (1956-present) with full text in JSON/XML/CSV format. 12
+    sample records, avg 6K chars/doc. CC BY SA 3.0.
+- id: IT/CassazioneCivile
+  country: IT
+  name: Court of Cassation (Corte di Cassazione)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.cortedicassazione.it
+  notes: Italian Supreme Court case law via SentenzeWeb Solr API. 423K+ decisions
+    (186K civil + 238K criminal) with full OCR text. 12 sample records with avg 13.5K
+    chars/doc. Italian Open Data License (IODL).
+- id: IT/ConsiglioDiStato
+  country: IT
+  name: Council of State (Consiglio di Stato)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.giustizia-amministrativa.it
+  notes: Italian supreme administrative court (Council of State - CdS). Uses OpenGA
+    CKAN API for metadata + MDP endpoint for full text XML. 15 sample records with
+    avg 22K chars/doc. Covers CdS decisions (sentenze). TAR courts metadata available
+    but full text only for CdS via MDP endpoint. CC BY 4.0.
+- id: IT/Lombardia
+  country: IT
+  name: Lombardia Regional Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.dati.lombardia.it/government/CRL-Leggi-Regionali-della-Lombardia/abjw-hhay
+  notes: "2,658 regional laws/regulations via Socrata SODA API + NIR XML full text.
+    Avg 35K chars/doc. CC0 1.0 Universal license."
+- id: LV/LegislativeDatabase
+  country: LV
+  name: Likumi.lv - Latvian Law Portal
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.likumi.lv
+  notes: Latvian official legislation database via likumi.lv. Full text fetched from
+    HTML document pages. 12 sample records with avg 589 chars/doc. Uses RSS feeds
+    for updates and sitemap for discovery.
+- id: LV/Parliament
+  country: LV
+  name: Latvian Parliament (Saeima)
+  data_types:
+  - parliamentary_proceedings
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.saeima.lv
+  notes: Full stenogram transcripts from 5th-14th Saeima (1993-present). ~1,600+ transcripts
+    with full debate text. Fetched from /lv/transcripts/view/{ID} HTML pages. 12 sample
+    records with avg 218K chars/doc.
+- id: LV/SupremeCourt
+  country: LV
+  name: Latvian Supreme Court (Senāts)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://manas.tiesas.lv/eTiesasMvc
+  notes: 'Fixed issue #68. Now uses weekly date ranges to avoid 100-result search cap.
+    Full archive pagination working (2017-present). 12 sample records with avg 4K chars/doc.
+    Uses ECLI metadata API + PDF text extraction.'
+- id: LT/LegalBase
+  country: LT
+  name: Lithuanian Legal Database (TAR)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://data.gov.lt/datasets/2613/
+  notes: Lithuanian legislation via data.gov.lt Open Data API. Full text in tekstas_lt
+    field. 12 sample records fetched, avg 12K chars/doc. CC BY 4.0 license.
+- id: LT/Parliament
+  country: LT
+  name: Lithuanian Parliament (Seimas)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://data.gov.lt/datasets/2609/
+  notes: Parliamentary publications (press releases, meeting agendas, committee work
+    plans, statements) via data.gov.lt Open Data API. Full text in tekstas_lt field.
+    12 sample records (77% with text, avg 2.1K chars/doc for non-empty). Complements
+    LT/LegalBase (enacted legislation). Coverage since 1999 in multiple languages
+    (LT/EN/DE/FR/RU). CC BY 4.0 license.
+- id: LT/ConstitutionalCourt
+  country: LT
+  name: Lithuanian Constitutional Court (Konstitucinis Teismas)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.lrkt.lt
+  notes: "Fixed issue #108. Constitutional Court decisions via data.gov.lt TAR API.
+    1,304 documents (rulings, decisions, conclusions, orders, announcements).
+    Full text in Lithuanian. 12 sample records avg 11K chars/doc. CC BY 4.0.
+    Note: data.gov.lt has fewer records than lrkt.lt archive (Cloudflare protected)."
+- id: LT/SupremeCourt
+  country: LT
+  name: Lithuanian Supreme Court of Cassation
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: cloudflare_datacenter_block
+  url: https://liteko.teismai.lt/
+  notes: 'Issue #74: tekstas.aspx endpoint returns 403 from VPS/datacenter IPs (Cloudflare
+    blocking). Works fine from residential IPs - 12 sample records exist with full
+    text. Requires: residential IP proxy OR browser automation. CSV metadata available
+    via data.gov.lt but no full text API.'
+- id: LU/LegalDatabase
+  country: LU
+  name: Luxembourg Legal Database (Legilux)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://legilux.public.lu
+  notes: 'Official Luxembourg legislation from Legilux portal. Uses SPARQL endpoint
+    + HTML filestore for full text. 147K+ Acts. Document types: LOI (laws), RGD (regulations),
+    AMIN (orders). ELI URIs. License: CC BY 4.0. 12 sample records, avg 6.6K chars/doc.'
+- id: LU/Parliament
+  country: LU
+  name: Luxembourgian Chamber of Deputies
+  data_types:
+  - parliamentary_proceedings
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.chd.lu
+  notes: 'Parliamentary written questions and answers from data.public.lu Open Data.
+    Full text of questions and ministerial responses in FR/LB/DE. 15 sample records,
+    avg 5.1K chars/doc. License: CC0.'
+- id: LU/SupremeCourt
+  country: LU
+  name: Luxembourg Court of Cassation (Cour de Cassation)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://justice.public.lu
+  notes: 'Court of Cassation decisions via data.public.lu Open Data. 2,346 pseudonymized
+    PDFs. Full text extracted via pdfplumber. 15 sample records, avg 39K chars/doc.
+    License: CC BY-ND.'
+- id: MT/GovernmentGazette
+  country: MT
+  name: Malta Government Gazette
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://legislation.mt
+  notes: 'Fixed #121: Verified fetch_all works correctly for all 654 chapters. Updated
+    MAX_CHAPTER to 660. Sample has 12 records with full text (Constitution + major codes).
+    Large PDFs (Criminal Code 1.1M chars, Civil Procedure 963K chars). Run without --sample
+    for full 600+ chapters.'
+- id: NL/Staatsblad
+  country: NL
+  name: Staatsblad der Nederlanden - Dutch Official Gazette
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.staatsblad.nl
+  notes: Official Dutch legislation and gazette. Uses SRU 2.0 API at repository.overheid.nl
+    with w.publicatienaam==Staatsblad query. Full text XML from repository URLs. 12
+    sample records with avg 8.9K chars/doc. CC0 license.
+- id: NL/wetten.overheid.nl
+  country: NL
+  name: Dutch Legislation Portal (wetten.overheid.nl)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.wetten.overheid.nl
+  notes: Official Dutch consolidated legislation database. Uses SRU 1.2 API with BWB
+    connection. 45K+ regulations, full text via XML repository. CC0 license. 12 sample
+    records, avg 590K chars/doc.
+- id: NL/TweedeKamer
+  country: NL
+  name: Dutch House of Representatives (Tweede Kamer)
+  data_types:
+  - parliamentary_proceedings
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://opendata.tweedekamer.nl
+  notes: 'Parliamentary proceedings via OData v4 API. 12 sample records, avg 246K
+    chars/doc. Full debate transcripts with speaker names and timestamps. [NOTE: This
+    is parliamentary proceedings, NOT enacted legislation - legislation is covered
+    by NL/wetten.overheid.nl]'
+- id: NL/SupremeCourt
+  country: NL
+  name: Dutch Supreme Court (Hoge Raad)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.rechtspraak.nl
+  notes: 'Fixed #113: Uses year-based pagination (1998-present) to bypass API offset
+    limit of ~42,000. 128K decisions available across ~27 years.'
+- id: PL/DziennikUrzedowy
+  country: PL
+  name: Dziennik Ustaw - Polish Official Journal
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.dziennikustaw.gov.pl
+  notes: Official Polish legislation via Sejm ELI API (api.sejm.gov.pl). Full text
+    from /text.html endpoint. 12 sample records, avg 4.6K chars/doc. Coverage 1918-present
+    (~96K acts). CC0 license.
+- id: PL/Sejm
+  country: PL
+  name: Polish Sejm (Parliament)
+  data_types:
+  - parliamentary_proceedings
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.sejm.gov.pl
+  notes: 'Parliamentary transcripts and interpellations from Polish Sejm via api.sejm.gov.pl.
+    Full text HTML available. 12 sample records (avg 3.8K chars/doc). Coverage: Term
+    10 (2023-present) with historical terms 7-9 available.'
+- id: PL/SupremeCourt
+  country: PL
+  name: Polish Supreme Court (Sąd Najwyższy)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.saos.org.pl
+  notes: 'Fixed #116. Added checkpoint/resume support for 38K+ records. SAOS API with
+    full text. Use --no-checkpoint to disable. 12 sample records with avg 6.7K chars/doc.'
+- id: PL/ConstitutionalCourt
+  country: PL
+  name: Polish Constitutional Court (Trybunał Konstytucyjny)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.trybunal.gov.pl
+  notes: Constitutional Court decisions from SAOS API (saos.org.pl). 8,000+ judgments
+    from 1985-present. Full text via /api/judgments/{id} endpoint. 12 samples avg
+    66K chars/doc. CC-BY license.
+- id: PT/DiarioRepublica
+  country: PT
+  name: Diário da República - Portuguese Official Gazette
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.dre.pt
+  notes: Uses dre.tretas.org community mirror with JSON-LD metadata and HTML full
+    text. 12 sample records fetched, avg 17K chars/doc. Covers Decreto-Lei, Lei, Portaria,
+    etc.
+- id: PT/SupremeCourt
+  country: PT
+  name: Portuguese Supreme Court (Supremo Tribunal de Justiça)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://juris.stj.pt
+  notes: 'Supreme Court case law (Acórdãos) from STJ jurisprudence portal. Uses Next.js
+    API at juris.stj.pt/api/search for discovery, then extracts full text from __NEXT_DATA__.
+    12 sample records fetched, avg 55K chars/doc. Coverage: 1900-present (~71,500
+    decisions). Full ECLI support with ECLI:PT:STJ identifiers.'
+- id: PT/ConstitutionalCourt
+  country: PT
+  name: Portuguese Constitutional Court (Tribunal Constitucional)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.tribunalconstitucional.pt
+  notes: 'Constitutional Court decisions (Acórdãos) from 1983 to present. 12 sample
+    records fetched, avg 41K chars/doc. Direct URL access pattern: /tc/acordaos/{YYYY}{NNNN}.html.
+    Full text extracted from HTML pages.'
+- id: RO/LegislationDatabase
+  country: RO
+  name: Portal Legislativ (Romanian Legislative Portal)
+  data_types:
+  - legislation
+  auth: token
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://legislatie.just.ro
+  notes: Ministry of Justice legislative portal. SOAP API with full text. 150K+ laws
+    from 1989 onwards. 12 sample records, avg 1.8K chars/doc. Public domain.
+- id: SK/CollectionOfLaws
+  country: SK
+  name: Slovak Collection of Laws (Zbierka zákonov)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://static.slov-lex.sk
+  notes: Official Slovak legislation from Slov-Lex (Ministry of Justice). Uses static
+    HTML portal for full text extraction. 12 sample records with avg 6.8K chars/doc.
+    Coverage from 1918 to present. License Open Government Data.
+- id: SK/SupremeCourt
+  country: SK
+  name: Slovak Supreme Court (Najvyšší súd)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.nsud.sk
+  notes: 'Fixed #115. Added checkpoint/resume for 104K+ decisions. ID-based iteration
+    with exponential backoff for 429 errors. 12 sample records avg 17K chars/doc.'
+- id: SI/LegislativeDatabase
+  country: SI
+  name: Slovenian Legislation Database (PISRS)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.pisrs.si
+  notes: Slovenian laws since 1991 via Parliament XML metadata + Official Gazette
+    full text. 4700+ laws. 15 samples avg 17K chars/doc. CC BY 4.0.
+- id: SI/SupremeCourt
+  country: SI
+  name: Slovenian Case Law Database (sodnapraksa.si)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.sodnapraksa.si
+  notes: null
+- id: ES/BOE
+  country: ES
+  name: BOE - Boletín Oficial del Estado
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.boe.es
+  notes: Official Spanish consolidated legislation via Open Data API. Full text from
+    /datosabiertos/api/legislacion-consolidada/id/{id}/texto. 12 sample records, avg
+    270K chars/doc. Also implements ELI URIs.
+- id: ES/ConstitutionalCourt
+  country: ES
+  name: Spanish Constitutional Court (Tribunal Constitucional)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://hj.tribunalconstitucional.es
+  notes: 'Fixed Issue #118: Implemented multi-range iteration (historical range 1-30225,
+    recent range 31220-current). Database has ~30K+ decisions. 15 sample records with
+    full text. Uses sequential IDs with checkpoint support for large bootstraps.'
+- id: ES/Catalonia
+  country: ES
+  name: Catalan Regional Legislation (DOGC)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://analisi.transparenciacatalunya.cat/d/n6hn-rmy7
+  notes: "From issue #90. Catalan regional legislation via SODA API + ELI Akoma Ntoso XML.
+    30,984 records (laws, decrees, orders) since 1977. Available in Catalan and Spanish.
+    12 sample records avg 40K chars/doc. Includes Catalan civil law (derecho foral).
+    Uses portaljuridic.gencat.cat ELI URIs for full text. CC BY 4.0 license."
+- id: ES/BasqueCountry
+  country: ES
+  name: Basque Country Regional Legislation (BOPV/EHAA)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://opendata.euskadi.eus
+  notes: "SPARQL endpoint at api.euskadi.eus + XML full text via legegunea.euskadi.eus.
+    12 sample records with avg 3K chars/doc. Covers 1936-present. Spanish and Basque.
+    Includes decretos, ordenes, resoluciones. ELI URIs. CC BY 4.0 license."
+- id: ES/Andalusia
+  country: ES
+  name: Andalusia Regional Legislation (BOJA)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://datos.juntadeandalucia.es
+  notes: "BOJA via REST API at datos.juntadeandalucia.es/api/v0/boja/all.
+    12 sample records with avg 9K chars/doc. Full text in bodyNoHtml field.
+    Coverage 2015-present. ~2,500 records/year (ordenes, decretos, resoluciones).
+    CC BY 4.0 license."
+- id: SE/SvenskaForfattningssamlingen
+  country: SE
+  name: Svenska Forfattningssamlingen (SFS) - Swedish Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.riksdagen.se
+  notes: Riksdagen open data API. 11K+ SFS legislation with full text. Uses /dokumentlista
+    for discovery, /dokument/{id}.text for content. Public domain. 10 samples avg
+    5.7K chars/doc.
+- id: SE/RiksdagenDB
+  country: SE
+  name: Riksdag - Swedish Parliament
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://data.riksdagen.se
+  notes: Swedish Parliament open data API. Covers propositions (prop), motions (mot),
+    committee reports (bet), parliamentary decisions (rskr). 500K+ documents with
+    full HTML text. 12 samples avg 220K chars/doc. Public domain.
+- id: SE/SupremeCourt
+  country: SE
+  name: Swedish Supreme Court (Högsta domstolen)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://rattspraxis.etjanst.domstol.se
+  notes: 'Fixed issue #68. Now fetches all publication types (not just filtered subset).
+    5,517 HDO decisions available via Domstolsverket Open Data API. Full text via
+    PDF extraction. 15 sample records avg 11K chars/doc. Public domain court decisions.'
+- id: SE/SupremeAdministrativeCourt
+  country: SE
+  name: Swedish Supreme Administrative Court (Högsta förvaltningsdomstolen)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://rattspraxis.etjanst.domstol.se
+  notes: 'Fixed issue #68. Now uses Domstolsverket Open Data API (rattspraxis.etjanst.domstol.se/api/v1)
+    instead of RSS. 1,341 HFD decisions available. HTML full text via innehall field,
+    PDF fallback for attachments. 12 sample records, avg 7.9K chars/doc. Public domain.'
+- id: SE/Domstolverket
+  country: SE
+  name: Swedish Courts (Domstolsverket)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 3
+  blocked_reason: null
+  url: https://rattspraxis.etjanst.domstol.se
+  notes: Case law from all Swedish courts via Domstolsverket Open Data API. Covers
+    hovrätter (courts of appeal), kammarrätter (admin courts of appeal), and specialized
+    courts (ADO, MMOD, MIOD, PMOD). Complements SE/SupremeCourt (HDO) and SE/SupremeAdministrativeCourt
+    (HFD). 12 samples avg 18.9K chars/doc. Full text via PDF extraction. Public domain
+    court decisions.
+- id: NO/Lovdata
+  country: 'NO'
+  name: Lovdata - Norwegian Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://lovdata.no
+  notes: Official Norwegian legislation via Lovdata API. Free bulk download at api.lovdata.no/v1/publicData.
+    Includes Norwegian Constitution (64K chars) and all laws. 12 sample records fetched,
+    avg 14K chars/doc. ELI URIs since 2016. NLOD license.
+- id: NO/Høyesterett
+  country: 'NO'
+  name: Norwegian Supreme Court (Høyesterett)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://lovdata.no/register/avgjørelser
+  notes: "Fixed: Now uses full registry pagination by year (verdict=HRA&year=YYYY&offset=N)
+    instead of RSS. ~7,000 Supreme Court decisions from 2008-present (~350-450 per year).
+    Checkpoint file enables resume across sessions. 12 sample records with avg 9.7K chars/doc.
+    NLOD 2.0 license."
+- id: CH/Fedlex
+  country: CH
+  name: Fedlex - Swiss Federal Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://fedlex.data.admin.ch
+  notes: Swiss Federal Legislation via SPARQL endpoint with JOLux ontology. 209K+
+    acts including Official Compilation (OC), Federal Gazette (FGA), and Classified
+    Compilation (CC). Full text via HTML/XML filestore endpoints. Languages DE/FR/IT/RM.
+    12 sample records with avg 7K chars/doc. ELI URIs. Open Government Data license.
+- id: CH/Entscheidsuche
+  country: CH
+  name: Entscheidsuche - Swiss Court Decisions
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - case_law
+  blocked_reason: null
+  url: https://entscheidsuche.ch
+  notes: 'Swiss court decisions from ALL federal and cantonal courts via Elasticsearch
+    API. 833K+ decisions: Federal courts (CH) 294K+ including Bundesgericht/Bundesverwaltungsgericht/Bundesstrafgericht,
+    plus all 26 cantons (ZH 81K, GE 88K, VD 72K, etc). Full text extracted from PDFs.
+    Languages DE/FR/IT/RM. 15 sample records with avg 27K chars/doc. Open API, free
+    to use.'
+- id: GR/GovernmentGazette
+  country: GR
+  name: Greek Government Gazette (FEK)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.et.gr
+  notes: 'COMPLETE: Greek Official Gazette (Εφημερίς της Κυβερνήσεως - FEK). PDF download
+    via /api/DownloadFeksApi/?fek_pdf={code}. FEK code format: YYYYSSNNNN. Series
+    01=Laws, 02=Regulatory Acts. Full text extracted from PDF using pdfplumber. 12
+    sample records with avg 73K chars/doc. Greece has NO free consolidated legislation
+    database — this is the primary source. Public domain (official government acts).'
+- id: IS/Lagasafn
+  country: IS
+  name: Lagasafn - Icelandic Consolidated Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.althingi.is/lagasafn/
+  notes: Official Icelandic law collection from Althingi (Parliament). Downloads ZIP
+    archive (~8.7MB) containing 1700+ laws as HTML. Version 156b (September 2025).
+    15 sample records with avg 248K chars/doc. Major laws include Financial Institutions
+    Act (2002/161), Income Tax Act (2003/90), Criminal Code (1940/19). Icelandic language.
+    Public domain.
+- id: IS/SupremeCourt
+  country: IS
+  name: Icelandic Supreme Court (Hæstiréttur)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  preferred_for:
+  - case_law
+  blocked_reason: null
+  url: https://www.haestirettur.is
+  notes: 'Fixed: Full archive pagination via AJAX endpoint. 2,443 decisions via
+    /default.aspx?pageitemid=<id>&offset=<n>&count=50. Checkpoint file enables resume.
+    12 sample records with avg 30K chars/doc. Icelandic language. Public domain.'
+- id: LI/LILEX
+  country: LI
+  name: LILEX - Liechtenstein Consolidated Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.gesetze.li
+  notes: Liechtenstein national legislation database (Landesgesetzblatt). HTML scraping
+    via /konso/html/ endpoint. 12 sample records with avg 264K chars/doc. German language.
+    Free access.
+- id: LI/StGH
+  country: LI
+  name: Liechtenstein Constitutional Court (Staatsgerichtshof)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.stgh.li
+  notes: Constitutional Court (StGH) decisions via gerichtsentscheidungen.li. HTML
+    scraping with full text extraction. 15 sample records with avg 37K chars/doc.
+    German language. Open Government Data license.
+- id: UA/RadaLegislation
+  country: UA
+  name: Legislation of Ukraine (Verkhovna Rada)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://data.rada.gov.ua/laws/
+  notes: Official Ukrainian legislation database via Verkhovna Rada Open Data Portal.
+    Bulk JSON datasets at /ogd/zak/perv/cards.json (2,918+ docs) with HTML full text
+    at /ogd/zak/perv/text/d{dokid}.htm. 15 sample records with avg 39K chars/doc.
+    No authentication required. CC BY 4.0 license. Ukrainian language.
+- id: RS/SluzbenGlasnik
+  country: RS
+  name: Službeni glasnik RS - Serbian Official Gazette
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.paragraf.rs/propisi.html
+  notes: Serbian legislation via paragraf.rs (mirrors official PIS). 15 sample records
+    fetched, avg 66K chars/doc. EU candidate country.
+- id: BA/SluzbenGlasnik
+  country: BA
+  name: Službeni glasnik BiH - Bosnia Official Gazette
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: http://www.sluzbenilist.ba
+  notes: State-level Official Gazette of Bosnia and Herzegovina. Covers Službeni glasnik
+    BiH and Međunarodni ugovori (international treaties). Full text via HTML scraping
+    from /page/akt/{id} endpoint. 12 sample records with avg 12K chars/doc. Federation/Canton
+    level requires subscription. Bosnian/Croatian/Serbian languages.
+- id: ME/SluzbenList
+  country: ME
+  name: Službeni list Crne Gore - Montenegro Official Gazette
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.sluzbenilist.me
+  notes: Montenegro Official Gazette. PDF documents with pdfplumber text extraction.
+    12 sample records with avg 70K chars/doc. Covers laws (Zakon), decrees (Uredba),
+    decisions (Odluka), and regulations (Pravilnik). Montenegrin (Latin script).
+- id: XK/GazetaZyrtare
+  country: XK
+  name: Gazeta Zyrtare - Kosovo Official Gazette
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://gzk.rks-gov.net
+  notes: Kosovo Official Gazette. HTML scraping via gazette issue pages and ActDocumentDetail.
+    100 sample records with full text, avg 44K chars/doc. Covers laws (Ligje) and
+    administrative instructions (Udhezime Administrative). Albanian language.
+- id: AL/QBZ
+  country: AL
+  name: Qendra e Botimeve Zyrtare - Albanian Official Gazette
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.qbz.gov.al
+  notes: Albanian legislation via Official Publications Center (EU candidate). WebDAV
+    access to PDF laws at /alfresco/webdav/Aktet/ligj/. Full text via pdfplumber extraction.
+    12 sample records with avg 31K chars/doc. ELI URIs supported.
+- id: AL/SupremeCourt
+  country: AL
+  name: Albanian Supreme Court (Gjykata e Lartë)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.gjykataelarte.gov.al
+  notes: "Gatsby page-data JSON API + AWS S3 document storage. Two data sources:
+    (1) Archive 1999-2019 with monthly bundle .doc files, (2) Bulletins 2020+ with
+    individual decision .doc files. Text extraction via textutil (macOS). 15 sample
+    records with avg 4.5K chars/doc. Covers Civil, Penal, Administrative, and United
+    Colleges. Albanian language."
+# ===== NEW SOURCES (Priority 3 from GitHub issues) =====
+- id: ES/TribunalSupremo
+  country: ES
+  name: Spanish Supreme Court (Tribunal Supremo)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: captcha_required
+  url: https://www.poderjudicial.es/search/indexAN.jsp
+  notes: "GitHub issue #50. CENDOJ (poderjudicial.es) requires CAPTCHA to download
+    PDFs. No public REST API exists. datos.gob.es has pending request for judicial
+    database (filed 2021, still waiting). ECLI search at e-justice.europa.eu blocked
+    by robots.txt. RSS feeds only provide news summaries. Fresh research confirmed
+    2026-02-18."
+- id: AT/OGH
+  country: AT
+  name: Austrian Supreme Court (Oberster Gerichtshof)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.ris.bka.gv.at/Jus/
+  notes: OGH case law via RIS OGD API v2.6. Uses Justiz application with Gericht=OGH
+    filter. 131K+ decisions covering civil and criminal supreme court judgments.
+    Full text via XML/HTML content URLs. 12 sample records with avg 2.4K chars/doc.
+    ECLI format ECLI:AT:OGH0002. CC BY 4.0.
+- id: AT/Landesrecht
+  country: AT
+  name: Austrian State Legislation (Landesrecht)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.ris.bka.gv.at
+  notes: "From issue #93. State legislation from all 9 Austrian Bundesländer via RIS
+    OGD API v2.6. Uses LrKons application (275K+ records). Full text via XML content
+    URLs. 12 sample records with avg 844 chars/doc. CC BY 4.0. Note: State admin
+    court case law (LVwG) already covered by AT/RIS via Lvwg application."
+- id: RO/HighCourt
+  country: RO
+  name: Romanian High Court of Cassation and Justice
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 3
+  blocked_reason: requires_browser_automation
+  url: https://www.scj.ro
+  notes: "GitHub issue #52. BLOCKED: All Romanian court databases require
+    browser automation. ReJust (rejust.ro) is Blazor WebAssembly SPA.
+    SCJ (scj.ro/736) has search page but requires JavaScript form submission.
+    portal.just.ro is SharePoint with no API. ROLII access was terminated in
+    March 2022 per CSM decision. Romania has ECLI via ECRIS but no public REST
+    API. Fresh research confirmed 2026-02-18."
+- id: GR/CouncilOfState
+  country: GR
+  name: Greek Council of State (Symvoulio tis Epikrateias)
+  data_types:
+  - case_law
+  auth: required
+  status: blocked
+  priority: 3
+  blocked_reason: requires_auth
+  url: https://www.adjustice.gr
+  notes: "GitHub issue #57. BLOCKED: adjustice.gr requires Oracle Access Manager
+    login. No public API. Case law only available via subscription databases
+    (NOMOS, Nomotelia, DSAnet). GR0051 Open Gov commitment incomplete. Nomothesia
+    research project (legislation.di.uoa.gr) is down. GR/SupremeCourt covers
+    Areios Pagos; GR/Diavgeia covers govt decisions (71M+ records)."
+- id: MT/Courts
+  country: MT
+  name: Malta Courts (ecourts.gov.mt)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 3
+  blocked_reason: cloudflare_blocked
+  url: https://ecourts.gov.mt
+  notes: "GitHub issue #58. BLOCKED: All Malta court websites (ecourts.gov.mt,
+    courts.gov.mt, judiciary.mt) return Cloudflare 403 for all HTTP requests.
+    Malta uses ECLI (ECLI:MT:...) but no public API. WorldLII links to same
+    Cloudflare-blocked portals. Only accessible via browser automation.
+    Fresh research confirmed 2026-02-18."
+- id: FR/AMF
+  country: FR
+  name: Autorité des Marchés Financiers (AMF)
+  data_types:
+  - case_law
+  - doctrine
+  auth: none
+  status: complete
+  priority: 3
+  blocked_reason: null
+  url: https://www.amf-france.org/fr/sanctions-transactions
+  notes: "Fixed issue #78: Doctrine samples now correctly extract full text from PDFs.
+    French financial regulator decisions (SAN-YYYY-NN) and doctrine (DOC-YYYY-NN).
+    RSS feeds + PDF text extraction via pdfplumber. 10 sample records (6 sanctions,
+    4 doctrine). 200+ decisions + 200+ doctrine items available."
+- id: FR/CNIL
+  country: FR
+  name: CNIL - Commission Nationale de l'Informatique et des Libertés
+  data_types:
+  - case_law
+  - doctrine
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://echanges.dila.gouv.fr/OPENDATA/CNIL/
+  notes: "CNIL deliberations (sanctions, research authorizations, opinions) since 1979.
+    XML bulk data via DILA. 15 sample records with full text (avg 3.5K chars). Monthly updates.
+    Licence Ouverte 2.0."
+- id: FR/ConventionsCollectives
+  country: FR
+  name: Conventions Collectives (Base KALI)
+  data_types:
+  - doctrine
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://echanges.dila.gouv.fr/OPENDATA/KALI/
+  notes: "From issue #103. French collective labor agreements (conventions collectives).
+    DILA bulk data with daily updates. 15 sample records with avg 361K chars/doc.
+    Covers all national conventions with full article text. Licence Ouverte 2.0."
+- id: FR/ADLC
+  country: FR
+  name: Autorité de la Concurrence (French Competition Authority)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.autoritedelaconcurrence.fr/
+  notes: "From issue #105. French competition law decisions since 1988. JSON dataset
+    from data.gouv.fr with full text. 6,525 decisions (merger control, antitrust,
+    opinions, interim measures). Avg 30K chars/doc. Open Licence 2.0 (Etalab)."
+- id: FR/CADA
+  country: FR
+  name: CADA - Commission d'accès aux documents administratifs
+  data_types:
+  - doctrine
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://cada.data.gouv.fr
+  notes: "From issue #107. CADA opinions on document access requests since 1984. 60K+
+    avis via cada.data.gouv.fr JSON API. 15 sample records with avg 3.4K chars/doc.
+    Covers all French administrations. Open Licence Etalab."
+# ===== PRIORITY 4: Missing Countries (from GitHub issues #79-87) =====
+- id: UK/Legislation
+  country: UK
+  name: UK Legislation (legislation.gov.uk)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  preferred_for:
+  - legislation
+  blocked_reason: null
+  url: https://www.legislation.gov.uk
+  notes: "From issue #79. COMPLETE: UK legislation via legislation.gov.uk REST API.
+    Covers all UK jurisdictions (England & Wales, Scotland, Northern Ireland). 150K+
+    documents: ukpga (12K), uksi (108K), asp (386), ssi (11K), wsi (6.7K), nia (229),
+    nisr (18K). Full CLML XML with text extraction. 15 sample records with avg 12K
+    chars/doc. Open Government Licence v3.0. Rate limit: 3000 req/5min."
+- id: UK/CaseLaw
+  country: UK
+  name: UK Case Law (National Archives)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://caselaw.nationalarchives.gov.uk
+  notes: "Atom feed API + Akoma Ntoso XML full text. 361K+ judgments (7200+ pages).
+    Covers UKSC, EWCA, EWHC, tribunals. 12 sample records avg 44K chars/doc.
+    Rate limit 1000 req/5min. Open Justice Licence."
+- id: TR/Mevzuat
+  country: TR
+  name: Turkish Legislation (Mevzuat Bilgi Sistemi)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.mevzuat.gov.tr
+  notes: "Complete. DataTable JSON API + iframe full text. ~28,900 records total: 912
+    laws, 107 KHK, 8,875 regulations, 63 directives, 185 presidential decrees, 18,760
+    presidential decisions. 15 sample records with avg 22K chars/doc."
+- id: GE/Matsne
+  country: GE
+  name: Georgian Legislation Database (Matsne)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://matsne.gov.ge
+  notes: "Fixed #83. RSS feed + HTML scraping. 12 sample records with avg 110K chars/doc.
+    Constitution, laws, decrees. Georgian and partial English translations available."
+- id: AM/ARLIS
+  country: AM
+  name: Armenian Legal Information System (ARLIS)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.arlis.am
+  notes: "154K+ Armenian legal documents (laws, decisions, orders). Metadata from OpenData
+    Armenia JSONL. Full text via HTML print endpoint /hy/acts/{id}/print/act. PDF fallback
+    at pdf.arlis.am. 12 sample records with avg 14.6K chars/doc. From issue #84."
+- id: AZ/Qanun
+  country: AZ
+  name: Azerbaijan Legislation (e-Qanun)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://e-qanun.az
+  notes: "55K+ Azerbaijani legal documents (laws, decrees, cabinet decisions). REST API
+    at api.e-qanun.az/framework/{id}. Full text via Word-exported HTML from htmlUrl field.
+    Sitemap discovery for all IDs. 12 sample records with avg 24K chars/doc. From issue #85."
+- id: MD/Legis
+  country: MD
+  name: Moldova Legislation Database
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: cloudflare_protected
+  url: https://www.legis.md
+  notes: "All Moldovan legislation portals blocked: legis.md (Cloudflare JS challenge),
+    parlament.md (Cloudflare), lex.justice.md (defunct 404), monitorul.gov.md (paywall),
+    data.gov.md (API 404). lex.md has metadata only. No accessible full text API exists."
+- id: MK/SluzbenVesnik
+  country: MK
+  name: North Macedonia Official Gazette
+  data_types:
+  - legislation
+  auth: subscription
+  status: blocked
+  priority: 2
+  blocked_reason: subscription_required
+  url: https://www.slvesnik.com.mk
+  notes: "BLOCKED: slvesnik.com.mk requires paid subscription (members.slvesnik.com.mk)
+    for legislation access. SSL cert issues. No public REST API. opendata.sobranie.mk
+    has parliamentary metadata (sessions, MPs) but NO legislation text. ldbis.pravda.gov.mk
+    is Telerik/ASP.NET with no API. NATLEX/ILO Cloudflare protected. LEGISLATIONLINE
+    has limited PDFs only. No ELI implementation. No open data portal with legislation."
+- id: AD/BOPA
+  country: AD
+  name: Andorra Official Gazette (BOPA)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 3
+  blocked_reason: null
+  url: https://www.bopa.ad
+  notes: "Butlletí Oficial del Principat d'Andorra. Azure Functions API + Blob Storage
+    for HTML full text. 12 sample records with avg 8.8K chars/doc. Catalan language.
+    Electronic official version from 2015-present. Open Government Data license."
+- id: MC/JournalMonaco
+  country: MC
+  name: Monaco Official Journal (Journal de Monaco)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 3
+  blocked_reason: null
+  url: https://journaldemonaco.gouv.mc
+  notes: "Monaco Official Journal (Journal de Monaco). HTML scraping of journaldemonaco.gouv.mc.
+    15 sample records with full text (avg 1.2K chars/doc). Covers Ordonnances Souveraines,
+    Arrêtés Ministériels, Lois, Décrets, and other legal acts. French language. Open access."
+- id: SM/Legisammarino
+  country: SM
+  name: San Marino Official Legislation (Bollettino Ufficiale)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 3
+  blocked_reason: null
+  url: https://www.bollettinoufficiale.sm
+  notes: "Complete. 12 sample records with full text (avg 9.4K chars/doc). PDF extraction via pdfplumber.
+    Covers Leggi Costituzionali, Leggi Qualificate, Leggi Ordinarie, Decreti, Regolamenti.
+    Electronic bulletin from 2012 onwards. Italian language. Open access."
+# ===== FEDERATED / SUB-NATIONAL SOURCES (Issue #89 and related) =====
+- id: CH/Kantone
+  country: CH
+  name: Swiss Cantonal Legislation (All 26 Cantons)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://huggingface.co/datasets/rcds/swiss_legislation
+  notes: "From issue #89. All 26 Swiss cantonal legislation via HuggingFace rcds/swiss_legislation
+    dataset (compiled from lexfind.ch). 35,698 laws with full text (HTML/PDF). 15 sample records
+    from 13 cantons, avg 22.5K chars/doc. Languages: DE/FR/IT/RM. Includes version history.
+    CC-BY-SA-4.0 license. Complements CH/Fedlex (federal) and CH/Entscheidsuche (case law)."
+# German Länder - Issue #88 (13 remaining states - Bavaria, Saxony, NRW already complete)
+- id: DE/BadenWuerttemberg
+  country: DE
+  name: Baden-Württemberg State Law (Landesrecht BW)
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: javascript_spa
+  url: https://www.landesrecht-bw.de
+  notes: "From issue #88. JavaScript SPA (Juris portal), no API. Requires browser automation."
+- id: DE/Berlin
+  country: DE
+  name: Berlin State Law (Gesetze Berlin)
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: javascript_spa
+  url: https://gesetze.berlin.de
+  notes: "From issue #88. JavaScript SPA (Juris portal), same platform as BadenWuerttemberg. No API discovered. Requires browser automation."
+- id: DE/Brandenburg
+  country: DE
+  name: Brandenburg State Law (BRAVORS)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://bravors.brandenburg.de
+  notes: "1800+ laws from BRAVORS portal. HTML scraping via subject area navigation. 12 sample records with avg 11.5K chars/doc. Full text in German. Public domain (§5 UrhG)."
+- id: DE/Bremen
+  country: DE
+  name: Bremen State Law (Transparenzportal)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.transparenz.bremen.de
+  notes: "9080+ laws from Transparenzportal. XML feed + HTML scraping. 12 sample records with avg 16.6K chars/doc. Full text in German. CC-BY-3.0 license."
+- id: DE/Hamburg
+  country: DE
+  name: Hamburg State Law (Landesrecht HH)
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: javascript_spa
+  url: https://www.landesrecht-hamburg.de
+  notes: "Juris React SPA requiring browser automation. Same platform as DE/BadenWuerttemberg and DE/Berlin. Transparenzportal has no legislation datasets."
+- id: DE/Hessen
+  country: DE
+  name: Hessen State Law (Hessenrecht)
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: javascript_spa
+  url: https://www.rv.hessenrecht.hessen.de
+  notes: "Juris React SPA requiring browser automation. Same platform as DE/Hamburg/Berlin/BadenWuerttemberg. opendata.hessen.de has no legislation datasets."
+- id: DE/MecklenburgVorpommern
+  country: DE
+  name: Mecklenburg-Vorpommern State Law (Landesrecht MV)
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: javascript_spa
+  url: https://www.landesrecht-mv.de
+  notes: "Juris React SPA requiring browser automation. Same platform as DE/Hamburg/Berlin/BadenWuerttemberg/Hessen. 31K+ documents in sitemap but all URLs return JS shell. No pre-rendered HTML endpoints."
+- id: DE/Niedersachsen
+  country: DE
+  name: Niedersachsen State Law (VORIS)
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: cms_no_api
+  url: https://voris.niedersachsen.de
+  notes: "Wolters Kluwer Drupal 11 CMS. Redirects to voris.wolterskluwer-online.de. No API, no sitemap, tree navigation via JS. Gazette PDFs available at verkuendung-niedersachsen.de but as bundled issues, not individual laws."
+- id: DE/RheinlandPfalz
+  country: DE
+  name: Rheinland-Pfalz State Law (Landesrecht RLP)
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: javascript_spa
+  url: https://landesrecht.rlp.de
+  notes: "Juris React SPA requiring browser automation. Same platform as DE/Hamburg/Berlin/BadenWuerttemberg/Hessen/MecklenburgVorpommern. Redirects to /bsrp/ SPA."
+- id: DE/Saarland
+  country: DE
+  name: Saarland State Law (recht.saarland.de)
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: javascript_spa
+  url: https://recht.saarland.de
+  notes: "Juris React SPA requiring browser automation. Same platform as DE/Hamburg/Berlin/BadenWuerttemberg/Hessen/MecklenburgVorpommern. ~1,500 URLs in sitemap."
+- id: DE/SachsenAnhalt
+  country: DE
+  name: Sachsen-Anhalt State Law (Landesrecht ST)
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: javascript_spa
+  url: https://www.landesrecht.sachsen-anhalt.de/bsst/
+  notes: "Juris React SPA requiring browser automation. Same platform as DE/Hamburg/Berlin/BadenWuerttemberg/Hessen/MecklenburgVorpommern/Saarland. Sitemap has ~3000 URLs but all pages require JavaScript rendering."
+- id: DE/SchleswigHolstein
+  country: DE
+  name: Schleswig-Holstein State Law (Landesrecht SH)
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: javascript_spa
+  url: https://www.gesetze-rechtsprechung.sh.juris.de/bssh/
+  notes: "Juris React SPA requiring browser automation. Same platform as other blocked German states."
+- id: DE/Thueringen
+  country: DE
+  name: Thüringen State Law (Landesrecht TH)
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: javascript_spa
+  url: https://landesrecht.thueringen.de/bsth/
+  notes: "Juris React SPA requiring browser automation. Same platform as other blocked German states."
+# ===== BOSNIA-HERZEGOVINA ENTITIES (Issue #91) =====
+- id: BA/RS
+  country: BA
+  name: Republika Srpska Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.paragraf.ba/besplatni-propisi-republike-srpske.html
+  notes: "Fetches from Paragraf BA (free public access). 162 major laws and regulations with full text. Constitution, Criminal Code, Family Law, etc. Originally published in Službeni glasnik RS. Avg 95K chars/doc."
+- id: BA/FBiH
+  country: BA
+  name: Federation of BiH Official Gazette (Službene novine FBiH)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://fbihvlada.gov.ba/bs/zakoni
+  notes: "From issue #91. Full text via FBiH Government website. 12 sample records,
+    avg 44K chars/doc. Covers 2019-present (~250 laws). Chronological registers by year."
+- id: BA/Brcko
+  country: BA
+  name: Brčko District Official Gazette (Službeni glasnik Brčko)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.skupstinabd.ba
+  notes: "203 laws from Brčko District Assembly. PDF extraction via PyPDF2. 12 samples, avg 47K chars/doc. From issue #91."
+# ===== ADDITIONAL FRENCH AAIs (Issue #107) =====
+- id: FR/DefenseurDesDroits
+  country: FR
+  name: Défenseur des Droits (French Ombudsman)
+  data_types:
+  - case_law
+  - doctrine
+  auth: none
+  status: blocked
+  priority: 3
+  blocked_reason: pdf_only_no_api
+  url: https://juridique.defenseurdesdroits.fr
+  notes: "From issue #107. French ombudsman decisions and recommendations. Uses PMB library system (SIGB) at juridique.defenseurdesdroits.fr. Documents are PDFs only, no REST API, no bulk download, no RSS feed. ~200+ decisions per year covering discrimination, public services, children's rights, security ethics."
+- id: FR/ARCEP
+  country: FR
+  name: ARCEP (Autorité de régulation des communications)
+  data_types:
+  - case_law
+  - doctrine
+  auth: none
+  status: blocked
+  priority: 3
+  blocked_reason: pdf_only_no_api
+  url: https://www.arcep.fr/cartes-et-donnees.html
+  notes: "From issue #107. French telecom regulator decisions. Open data portal has network quality/coverage metrics only, not deliberations. Decisions available as PDFs at arcep.fr/nos-publications/publications.html but no structured API."
+- id: FR/CRE
+  country: FR
+  name: CRE (Commission de régulation de l'énergie)
+  data_types:
+  - case_law
+  - doctrine
+  auth: none
+  status: blocked
+  priority: 3
+  blocked_reason: pdf_only_no_api
+  url: https://www.cre.fr/documents
+  notes: "From issue #107. French energy regulator deliberations. Publishes 29 open data datasets but only quantitative tracking (counts, statistics), not full text deliberations. Individual deliberations are PDFs only at cre.fr/documents."
+# ===== ADDITIONAL FRENCH SOURCES (Issues #110, #111) =====
+- id: FR/Bofip
+  country: FR
+  name: Bofip (Bulletin Officiel des Finances Publiques)
+  data_types:
+  - doctrine
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://data.economie.gouv.fr/explore/dataset/bofip-vigueur/api/
+  notes: "From issue #110. French tax administration doctrine via data.economie.gouv.fr OpenDataSoft API.
+    ~9,000 active publications covering TVA, IR, IS, CTX, BIC, BNC series. 15 sample records
+    with avg 9.6K chars/doc. Licence Ouverte v2.0 (Etalab). Weekly updates."
+- id: FR/ServicePublic
+  country: FR
+  name: Service-Public.fr (Fiches pratiques)
+  data_types:
+  - doctrine
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.service-public.fr
+  notes: "Complete. 8K+ fiches pratiques (Particuliers + Entreprises). XML via data.gouv.fr open data. Avg 7K chars/doc. License Ouverte v2.0. Daily updates."
+# ===== ITALIAN REGIONS (Issue #94) =====
+- id: IT/EmiliaRomagna
+  country: IT
+  name: Emilia-Romagna Regional Legislation (Demetra)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://demetra.regione.emilia-romagna.it
+  notes: "Regional legislation via Demetra database XML downloads. 12 legislatures (1971-present),
+    3 document types (LR, RR, RI). CC BY 4.0 license. Full text via NIR XML format."
+- id: IT/Toscana
+  country: IT
+  name: Toscana Regional Legislation (Raccolta Normativa)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://raccoltanormativa.consiglio.regione.toscana.it
+  notes: "Tuscany regional legislation via bulk ZIP downloads of NIR XML. Coverage 1971-present
+    across 10 legislatures. Includes laws (leggi), council regulations, executive regulations.
+    15 sample records with avg 22K chars/doc. CC BY 3.0 license. Weekly updates."
+- id: IT/Veneto
+  country: IT
+  name: Veneto Regional Legislation (BUR)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://bur.regione.veneto.it
+  notes: "Veneto regional legislation via BUR (Bollettino Ufficiale Regionale).
+    Coverage 2004-present. 400+ regional laws. HTML scraping of BUR detail pages.
+    12 sample records with avg 7.6K chars/doc. CC0 1.0 license."
+- id: IT/Lazio
+  country: IT
+  name: Lazio Regional Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.consiglio.regione.lazio.it/?vw=leggiregionali
+  notes: "From issue #94. Regional laws via Consiglio Regionale del Lazio. Covers 1971-present
+    via form-based search + ID-based detail pages. 12 sample records with avg 1K chars/doc.
+    Full text from HTML. CC BY-NC-SA 2.0 license."

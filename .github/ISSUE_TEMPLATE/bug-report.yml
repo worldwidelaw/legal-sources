@@ -1,0 +1,45 @@
+name: Bug Report
+description: Report a broken or malfunctioning scraper
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: input
+    id: source_id
+    attributes:
+      label: Source ID
+      description: Which source is affected?
+      placeholder: "e.g., FR/LegifranceCodes"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the bug. Include any error messages you see.
+      placeholder: "The scraper crashes with a timeout when running bootstrap..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should happen instead?
+      placeholder: "The scraper should fetch documents without errors..."
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce the issue?
+      placeholder: |
+        1. Run `python runner.py sample FR/LegifranceCodes`
+        2. Wait for the API call to...
+        3. See error...
+
+  - type: input
+    id: python_version
+    attributes:
+      label: Python version
+      placeholder: "e.g., 3.11.4"

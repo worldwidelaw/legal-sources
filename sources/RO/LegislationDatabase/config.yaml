@@ -1,0 +1,110 @@
+# ===================================================================
+# RO/LegislationDatabase -- Portal Legislativ (Romanian Legislative Portal)
+# ===================================================================
+# Official Romanian legislation database operated by the Ministry of Justice.
+# SOAP API returning full text of all legislation from 1989 onwards.
+# Data is public domain (not protected by copyright).
+# API docs: http://legislatie.just.ro/ServiciulWebLegislatie.htm
+# ===================================================================
+
+source:
+  id: "RO/LegislationDatabase"
+  country: "RO"
+  name: "Portal Legislativ (Romanian Legislative Portal)"
+  url: "https://legislatie.just.ro"
+  description: |
+    Romania's official legislative portal operated by the Ministry of Justice.
+    Provides access to over 150,000 laws from 1989 to present. The database
+    is updated daily and interconnected with the European N-Lex gateway.
+    SOAP-based API provides full text access. Data is public domain.
+
+data_types:
+  - legislation
+
+auth:
+  type: "token"
+  notes: "Token obtained via GetToken SOAP call (no registration needed)"
+
+rate_limit:
+  requests_per_second: 0.5    # 1 request every 2 seconds (conservative)
+  burst: 3
+
+api:
+  type: "soap"
+  base_url: "https://legislatie.just.ro/apiws"
+  wsdl: "https://legislatie.just.ro/apiws/FreeWebService.svc?wsdl"
+  endpoint: "https://legislatie.just.ro/apiws/FreeWebService.svc/SOAP"
+  methods:
+    get_token: "GetToken"
+    search: "Search"
+  namespaces:
+    soap: "http://schemas.xmlsoap.org/soap/envelope/"
+    service: "http://tempuri.org/"
+    data: "http://schemas.datacontract.org/2004/07/FreeWebService"
+
+data_model:
+  type: "legislation"
+  primary_key: "numar"
+  update_strategy: "upsert"
+  dedup_key:
+    - "tip_act"
+    - "numar"
+    - "data_vigoare"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Unique document ID (TipAct/Numar/Year)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title (Titlu)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation (Text field from API)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date in force (DataVigoare)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the document on legislatie.just.ro (LinkHtml)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "tip_act"
+      description: "Type of legal act (LEGE, OG, OUG, HG, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "numar"
+      description: "Document number"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "emitent"
+      description: "Issuing body (Parlamentul, Guvernul, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "publicatie"
+      description: "Publication reference (Monitorul Oficial)"
+      type: "string"
+      role: "reference"
+      required: false
+
+notes: |
+  - SOAP API, no registration required (token obtained via GetToken call)
+  - 150,000+ legislation records from 1989 onwards
+  - Full text returned directly in API response (Text field)
+  - Data is public domain per Romanian law
+  - Available document types: LEGE, OG (Ordonanta), OUG (Ordonanta de Urgenta),
+    HG (Hotarare de Guvern), and others
+  - Language: Romanian

@@ -1,0 +1,120 @@
+# ===================================================================
+# LV/LegislativeDatabase -- Latvian Legislation Database (Likumi.lv)
+# ===================================================================
+# Official Latvian legislation from the Likumi.lv portal.
+# Full text available via HTML scraping of individual documents.
+# Maintained by Latvijas Vēstnesis (official publisher).
+#
+# Document discovery via sitemap (49K+ documents)
+# Updates via RSS feeds (multiple categories)
+# ===================================================================
+
+source:
+  id: "LV/LegislativeDatabase"
+  country: "LV"
+  name: "Likumi.lv - Latvian Law Portal"
+  url: "https://likumi.lv"
+  description: |
+    Latvia's official legislation database (Likumi.lv) providing free access
+    to systematized (consolidated) legal acts of the Republic of Latvia.
+    Contains laws, cabinet regulations, ministerial orders, presidential
+    decrees, constitutional court decisions, and municipal binding regulations.
+
+    The portal is maintained by the official publisher Latvijas Vēstnesis
+    and provides comprehensive coverage of Latvian legislation from 1999
+    to present. All consolidated versions are available with cross-references.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5    # Conservative - 1 request per 2 seconds
+  burst: 3
+
+api:
+  type: "html-scrape"
+  base_url: "https://likumi.lv"
+  endpoints:
+    sitemap: "/sitemap.xml"
+    document: "/doc.php?id={id}"
+    rss_all: "/rss/visi_ta.xml"
+    rss_laws: "/rss/likumi.xml"
+    rss_regulations: "/rss/mk_not.xml"
+  formats:
+    - html
+    - xml
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  versioning: "consolidated"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "Document ID from likumi.lv"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title in Latvian"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation in Latvian"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "document_type"
+      description: "Type of document (Likums, Noteikumi, Rīkojums, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "date"
+      description: "Primary date (adoption date, ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to document on likumi.lv"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "doc_number"
+      description: "Official document number"
+    - name: "issuer"
+      description: "Issuing institution (Saeima, Ministru kabinets, etc.)"
+    - name: "adopted_date"
+      description: "Date of adoption"
+    - name: "effective_date"
+      description: "Entry into force date"
+    - name: "expires_date"
+      description: "Expiration date (if applicable)"
+    - name: "published_date"
+      description: "Publication date in Latvijas Vēstnesis"
+    - name: "publication_ref"
+      description: "Publication reference (e.g., LV 123)"
+    - name: "language"
+      description: "Language code (always 'lv')"
+
+notes: |
+  - Full text is extracted from HTML P tags in document pages.
+  - Sitemap contains ~49K documents for initial discovery.
+  - RSS feeds provide updates for recent documents (limited items).
+  - Document types include: Likumi (Laws), Noteikumi (Regulations),
+    Rīkojumi (Orders), Instrukcijas (Instructions), ST nolēmumi
+    (Constitutional Court decisions).
+  - Issuers include: Saeima (Parliament), Ministru kabinets (Cabinet),
+    Valsts prezidents (President), Latvijas Banka, FKTK.
+  - Dates are converted from DD.MM.YYYY to ISO 8601 (YYYY-MM-DD).
+  - All content is in Latvian language.
+  - License: Open government data (public domain equivalent).

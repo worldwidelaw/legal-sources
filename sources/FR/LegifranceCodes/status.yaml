@@ -1,0 +1,21 @@
+last_bootstrap: '2026-02-17T08:03:12.697730+00:00'
+last_error: null
+last_run: '2026-02-17T08:03:12.697730+00:00'
+run_history:
+- errors: 0
+  finished_at: '2026-02-17T08:02:23.215979+00:00'
+  records_fetched: 8
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 8
+  started_at: '2026-02-17T08:02:23.215979+00:00'
+- errors: 0
+  finished_at: '2026-02-17T08:03:12.697730+00:00'
+  records_fetched: 16
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 16
+  started_at: '2026-02-17T08:03:12.697730+00:00'
+total_records: 0

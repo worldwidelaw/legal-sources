@@ -1,0 +1,122 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — Source Configuration Template
+# ═══════════════════════════════════════════════════════════════════
+# Copy this file to sources/{COUNTRY}/{SOURCE}/config.yaml
+# and fill in all fields marked with TODO.
+#
+# This file defines everything about a data source:
+# what it is, how to access it, what the data looks like,
+# and how to keep it updated.
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "XX/source_name"           # TODO: e.g., "FR/legifrance"
+  country: "XX"                   # TODO: ISO 3166-1 alpha-2
+  name: "Source Display Name"     # TODO: e.g., "Légifrance"
+  url: "https://..."              # TODO: main URL of the data source
+  description: |
+    TODO: Brief description of what this source provides.
+    What types of legal data? Coverage period? Language?
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  # What kind of legal data does this source provide?
+  # Options: legislation, case_law, codes, regulations, directives, treaties
+  - legislation                   # TODO: adjust as needed
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"                    # Options: none, api_key, oauth2, basic
+  # Uncomment and fill if auth is needed:
+  # env_var: "SOURCE_API_KEY"     # Name of the environment variable
+  # header: "Authorization"       # HTTP header to use
+  # prefix: "Bearer "             # Prefix before the key value
+  # registration_url: "https://..."  # Where the admin registers for a key
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 2          # TODO: check source's terms of service
+  burst: 5                        # Max requests in a burst
+  max_workers: 5                  # Concurrent download threads for bootstrap_fast
+  # For adaptive rate limiter (used by bootstrap_fast):
+  # min_rate: 0.5                 # Floor rate (req/s)
+  # max_rate: 50.0                # Ceiling rate (req/s)
+  # Notes on rate limiting:
+  # - Always respect robots.txt
+  # - Check the source's API docs for explicit limits
+  # - Use `python runner.py stress-test XX/Source` to discover actual limits
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "rest"                    # Options: rest, soap, html_scrape, xml_dump, rss
+  base_url: "https://..."         # TODO: API base URL
+  # For REST APIs:
+  # endpoints:
+  #   list: "/api/articles"       # Endpoint to list/search documents
+  #   detail: "/api/articles/{id}" # Endpoint to get a single document
+  #   updates: "/api/articles?modified_since={date}"  # For incremental updates
+  # For HTML scraping:
+  # selectors:
+  #   list_page: "https://..."
+  #   item_selector: "div.result"
+  #   pagination: "a.next-page"
+  # For XML dumps:
+  # dump_url: "https://..."
+  # format: "xml"                 # xml, csv, json
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "legislation"             # legislation or case_law
+  source_nature: "gazette"        # consolidated | gazette | bulk_archive
+  primary_key: "article_id"       # TODO: field name for the unique identifier
+  update_strategy: "upsert"       # upsert (for legislation) or append_only (for case_law)
+  versioning: "temporal"          # temporal (track versions by date) or none or consolidated
+  dedup_key:                      # Fields that together make a record unique
+    - "article_id"                # TODO: adjust to match source
+    # - "version_date"            # Uncomment for versioned legislation
+
+# ── Schema ────────────────────────────────────────────────────────
+# Describe the fields in normalized records.
+# This is used for validation and for flagging important columns.
+schema:
+  total_fields: null              # TODO: fill after first sample run
+  key_fields:
+    - name: "id"
+      description: "Unique identifier"
+      type: "string"
+      role: "primary_key"         # primary_key, content, temporal_key, status, reference
+      required: true
+    # TODO: Add more key fields after reviewing sample data
+    # - name: "title"
+    #   description: "Title of the document"
+    #   type: "string"
+    #   role: "content"
+    #   required: true
+    # - name: "text"
+    #   description: "Full text content"
+    #   type: "string"
+    #   role: "content"
+    #   required: true
+    # - name: "date"
+    #   description: "Publication or effective date"
+    #   type: "date"
+    #   role: "temporal_key"
+    #   required: true
+  secondary_fields: []
+    # TODO: Fill after reviewing sample data
+    # - name: "field_name"
+    #   description: "What this field contains"
+  probably_ignorable: []
+    # TODO: Fill after reviewing sample data
+    # - name: "internal_field"
+    #   description: "Probably not useful"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  TODO: Any important notes about this source.
+  - Known quirks or limitations
+  - Language of the data
+  - Coverage period
+  - Whether the API is well-documented
+  - Any known issues with the data quality

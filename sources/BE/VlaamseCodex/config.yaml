@@ -1,0 +1,43 @@
+source_id: BE/VlaamseCodex
+name: Vlaamse Codex
+description: Flemish legislation database - unofficial consolidation of all Flemish laws and regulations
+country: BE
+data_types:
+  - legislation
+url: https://codex.vlaanderen.be
+api_url: https://codex.opendata.api.vlaanderen.be
+auth: none
+license: Open Data (Gratis hergebruik)
+language: nl
+coverage:
+  start: 1970
+  end: present
+format: JSON
+update_frequency: daily
+
+schema:
+  key_fields:
+    - id
+    - numac
+  date_fields:
+    - date
+    - bs_datum
+  text_fields:
+    - text
+    - opschrift
+    - commentaar
+
+api:
+  base_url: https://codex.opendata.api.vlaanderen.be
+  documents_endpoint: /api/WetgevingDocument
+  full_document_endpoint: /api/v2/WetgevingDocument/{id}/VolledigDocument
+  pagination:
+    type: offset
+    params:
+      skip: skip
+      take: take
+    default_page_size: 100
+    max_page_size: 100
+  rate_limit:
+    requests_per_second: 1
+    delay_seconds: 1.0

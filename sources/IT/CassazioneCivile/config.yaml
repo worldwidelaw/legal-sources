@@ -1,0 +1,101 @@
+# IT/CassazioneCivile Configuration
+# Italian Supreme Court (Corte di Cassazione) Case Law
+
+source:
+  id: "IT/CassazioneCivile"
+  name: "Court of Cassation (Corte di Cassazione)"
+  country: "IT"
+  url: "https://www.cortedicassazione.it"
+  api_url: "https://www.italgiure.giustizia.it/sncass/"
+  description: "Italian Supreme Court case law from SentenzeWeb (civil and criminal decisions)"
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"  # Public Solr API, no authentication required
+
+endpoints:
+  solr: "https://www.italgiure.giustizia.it/sncass/isapi/hc.dll/sn.solr/sn-collection/select"
+  website: "https://www.italgiure.giustizia.it/sncass/"
+  court: "https://www.cortedicassazione.it"
+
+format:
+  input: "json"  # Solr JSON response
+  output: "json"
+
+coverage:
+  total_documents: 1876485  # As of 2026-02
+  civil_cases: 186004       # kind:snciv
+  criminal_cases: 237828    # kind:snpen
+  date_range: "2010-present (rolling 5+ years)"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  key_fields:
+    - name: "_id"
+      description: "Unique document ID (e.g., snciv2021521018O)"
+      type: "string"
+      required: true
+    - name: "title"
+      description: "Decision title with court, type, number, year"
+      type: "string"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (OCR extracted)"
+      type: "string"
+      required: true
+    - name: "date"
+      description: "Date of deposit (ISO 8601 format)"
+      type: "date"
+      required: true
+    - name: "url"
+      description: "URL to PDF or court website"
+      type: "string"
+      required: true
+  secondary_fields:
+    - name: "ecli"
+      description: "European Case Law Identifier"
+    - name: "court"
+      description: "Court name"
+    - name: "decision_number"
+      description: "Decision number"
+    - name: "year"
+      description: "Decision year"
+    - name: "section"
+      description: "Court section number"
+    - name: "president"
+      description: "President judge"
+    - name: "reporter"
+      description: "Reporting judge"
+    - name: "subject_matter"
+      description: "Case subject matter"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+license:
+  type: "IODL"
+  name: "Italian Open Data License 2.0"
+  url: "https://www.dati.gov.it/content/italian-open-data-license-v20"
+  commercial_use: true
+  attribution_required: true
+
+notes: |
+  The SentenzeWeb service provides free access to Court of Cassation decisions
+  from the last 5+ years. Full text is available in the 'ocr' field (extracted
+  from PDF via OCR). Documents include ECLI identifiers for European case law
+  interoperability.
+
+  Document types:
+  - snciv: Civil decisions (Sezioni Civili)
+  - snpen: Criminal decisions (Sezioni Penali)
+
+  The Solr API is publicly accessible without authentication.

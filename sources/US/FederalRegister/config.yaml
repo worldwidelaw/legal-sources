@@ -1,0 +1,37 @@
+source:
+  id: US/FederalRegister
+  name: Federal Register
+  country: US
+  type: legislation
+  url: https://www.federalregister.gov
+  description: >
+    The Federal Register is the daily journal of the United States Government.
+    It contains rules, proposed rules, notices, and presidential documents
+    from federal agencies. Data available from 1994 to present.
+
+api:
+  base_url: https://www.federalregister.gov/api/v1
+  auth_type: none
+  rate_limit: null  # No documented limit, use polite delays
+  request_delay: 0.5  # seconds between requests
+
+endpoints:
+  documents: /documents.json
+  document: /documents/{document_number}.json
+  full_text: /documents/full_text/text/{yyyy}/{mm}/{dd}/{document_number}.txt
+
+schema:
+  key_fields:
+    - _id
+    - document_number
+  text_fields:
+    - text
+    - abstract
+  date_fields:
+    - publication_date
+    - effective_date
+
+fetch:
+  page_size: 100
+  max_pages: null  # unlimited for full fetch
+  sample_count: 15

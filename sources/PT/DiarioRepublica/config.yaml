@@ -1,0 +1,77 @@
+# PT/DiarioRepublica Configuration
+# Portuguese Official Journal (Diário da República)
+
+source:
+  id: PT/DiarioRepublica
+  name: Diário da República
+  country: PT
+  description: Portuguese Official Journal - legislation and official acts
+  url: https://diariodarepublica.pt
+  mirror_url: https://dre.tretas.org
+  data_types:
+    - legislation
+  language: pt
+  license: Open Government Data
+  auth: none
+
+endpoints:
+  # Community mirror with structured access
+  rss_feed: https://dre.tretas.org/dre/rss/
+  browse_date: https://dre.tretas.org/dre/data/{yyyy}/{m}/{d}/
+  document_html: https://dre.tretas.org/dre/{id}/{slug}
+  document_jsonld: https://dre.tretas.org/dre/{id}.jsonld
+  # Official ELI URIs
+  eli_base: https://data.dre.pt/eli/
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: true
+    - name: "url"
+      type: "string"
+      required: true
+    - name: "document_type"
+      type: "string"
+      required: false
+    - name: "creator"
+      type: "string"
+      required: false
+    - name: "summary"
+      type: "string"
+      required: false
+    - name: "eli_uri"
+      type: "string"
+      required: false
+    - name: "official_url"
+      type: "string"
+      required: false
+    - name: "language"
+      type: "string"
+      required: false
+
+rate_limits:
+  requests_per_minute: 30
+  delay_between_requests: 2.0
+
+notes: |
+  Uses dre.tretas.org community mirror which provides structured access to the
+  official Diário da República content. The mirror is updated frequently and
+  contains full text of all legislation published in the official gazette.
+
+  Document discovery:
+  - RSS feed for recent documents
+  - Browse by date for historical discovery
+
+  Full text access:
+  - HTML pages contain complete document text in <div itemprop="articleBody">
+  - JSON-LD provides structured metadata including ELI URIs

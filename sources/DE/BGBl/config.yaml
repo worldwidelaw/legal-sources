@@ -1,0 +1,60 @@
+# German Federal Law (Gesetze im Internet) Data Source Configuration
+# Official XML data from the Federal Ministry of Justice
+
+source_id: "DE/BGBl"
+name: "German Federal Law (Gesetze im Internet)"
+country: "DE"
+language: "de"
+data_types:
+  - legislation
+
+# Data endpoints (no authentication required)
+endpoints:
+  # XML table of contents listing all federal laws
+  toc: "https://www.gesetze-im-internet.de/gii-toc.xml"
+
+  # Individual law XML files follow pattern:
+  # https://www.gesetze-im-internet.de/{identifier}/xml.zip
+
+  # Alternative access points
+  portal: "https://www.gesetze-im-internet.de"
+  bgbl_portal: "https://www.recht.bund.de"
+
+# Schema information
+schema:
+  key_fields:
+    - "doknr"       # Document number (BJNR...)
+    - "jurabk"      # Legal abbreviation (e.g., "GG", "BGB")
+  date_format: "ISO8601"
+  text_field: "Content"
+
+# License
+license:
+  name: "Public Domain (Amtliche Werke)"
+  url: "https://www.gesetze-im-internet.de/hinweise.html"
+  notes: |
+    German federal laws are "amtliche Werke" (official works) which are
+    not protected by copyright under German law (§ 5 UrhG).
+
+# Fetcher configuration
+fetcher:
+  rate_limit_ms: 1000
+  ssl_verify: true
+  timeout_s: 60
+  max_retries: 3
+
+# Notes
+notes: |
+  Gesetze im Internet provides free access to virtually the entire body of
+  current German federal law. Over 6,000 laws and regulations are available.
+
+  Data is provided by the Federal Ministry of Justice and Consumer Protection
+  in cooperation with the Federal Office of Justice.
+
+  XML files contain:
+  - Metadata (abbreviation, title, publication reference)
+  - Full structured text (articles, paragraphs, annexes)
+  - Amendment history and notes
+
+  The XML schema follows the DTD at:
+  http://www.gesetze-im-internet.de/dtd/1.01/gii-norm.dtd

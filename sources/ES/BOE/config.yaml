@@ -1,0 +1,106 @@
+# ES/BOE -- Spanish Official State Gazette Configuration
+# Source: Boletín Oficial del Estado (BOE)
+# URL: https://www.boe.es
+# Data types: legislation (consolidated)
+# License: Open Data (Reutilización de datos abiertos)
+
+source:
+  id: "ES/BOE"
+  name: "BOE - Boletín Oficial del Estado"
+  country: "ES"
+  url: "https://www.boe.es"
+  description: "Official Spanish legislation and gazette. Consolidated laws via Open Data API."
+
+data_types:
+  - legislation
+
+api:
+  type: "rest"
+  base_url: "https://www.boe.es/datosabiertos/api"
+  format: "xml"
+  documentation: "https://www.boe.es/datosabiertos/"
+  endpoints:
+    list: "/legislacion-consolidada"
+    metadata: "/legislacion-consolidada/id/{id}/metadatos"
+    text: "/legislacion-consolidada/id/{id}/texto"
+    analysis: "/legislacion-consolidada/id/{id}/analisis"
+  pagination:
+    type: "offset"
+    limit_param: "limit"
+    offset_param: "offset"
+    default_limit: 50
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+data_model:
+  type: "legislation"
+  primary_key: "identifier"
+  update_strategy: "upsert"
+  versioning: "consolidated"
+  dedup_key:
+    - "identifier"
+
+schema:
+  total_fields: 18
+  key_fields:
+    - name: "identifier"
+      description: "BOE document identifier (e.g., BOE-A-1989-22056)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the consolidated legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of enactment/signature (ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to document on BOE website"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "rango"
+      description: "Document type/rank (Ley, Real Decreto, Orden, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+  secondary_fields:
+    - name: "departamento"
+      description: "Issuing department/ministry"
+    - name: "ambito"
+      description: "Territorial scope (Estatal, Autonomico, etc.)"
+    - name: "numero_oficial"
+      description: "Official number of the document"
+    - name: "publication_date"
+      description: "Publication date in BOE"
+    - name: "effective_date"
+      description: "Date when the law took effect"
+    - name: "estado_consolidacion"
+      description: "Consolidation status (Finalizado, En curso, etc.)"
+    - name: "url_eli"
+      description: "ELI (European Legislation Identifier) URI"
+    - name: "language"
+      description: "Language of the document (es)"
+
+notes: |
+  - Full text available via official REST API: /legislacion-consolidada/id/{id}/texto
+  - XML response includes structured articles, paragraphs, and versions
+  - Consolidated versions include all amendments and modifications
+  - API is public, no authentication required
+  - Supports date range filtering via from/to parameters
+  - Also implements ELI URIs: https://www.boe.es/eli/es/{type}/{year}/{month}/{day}/{number}
+  - Data includes state legislation; regional legislation via separate endpoints

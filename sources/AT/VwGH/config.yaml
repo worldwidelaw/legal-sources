@@ -1,0 +1,99 @@
+# ===================================================================
+# AT/VwGH -- Austrian Supreme Administrative Court (Verwaltungsgerichtshof)
+# ===================================================================
+# VwGH decisions via RIS OGD API v2.6. 350K+ records.
+# Full text available via XML/HTML content URLs.
+# API docs: https://data.bka.gv.at/ris/api/v2.6/
+# ===================================================================
+
+source:
+  id: "AT/VwGH"
+  country: "AT"
+  name: "Austrian Supreme Administrative Court (VwGH)"
+  url: "https://www.vwgh.gv.at"
+  description: |
+    Austria's Supreme Administrative Court (Verwaltungsgerichtshof). Reviews
+    decisions of administrative courts and authorities. Handles tax, social
+    welfare, asylum, public procurement, and regulatory matters. Data via RIS OGD API.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5    # 1 request every 2 seconds (conservative for bulk)
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://data.bka.gv.at/ris/api/v2.6"
+  endpoints:
+    judikatur: "/Judikatur"
+    version: "/Version"
+  applications:
+    - Vwgh
+  pagination:
+    page_param: "Seitennummer"
+    page_size_param: "DokumenteProSeite"
+    max_page_size: "OneHundred"   # 100 results per page
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "temporal"
+  dedup_key:
+    - "_id"
+
+schema:
+  key_fields:
+    - name: "_id"
+      description: "RIS document ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "ecli"
+      description: "European Case Law Identifier"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "geschaeftszahl"
+      description: "Case number"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Case title (Geschaeftszahl)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (Entscheidungsdatum)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Direct URL to the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "entscheidungsart"
+      description: "Type of decision (Erkenntnis, Beschluss, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - Uses RIS OGD API v2.6 with application "Vwgh"
+  - ~354,000 records available (Austria's largest case law database)
+  - Full text fetched from XML content URLs
+  - Includes Rechtssatz (legal principles) and Entscheidungstexte (decision texts)
+  - Data licensed CC BY 4.0
+  - Language: German

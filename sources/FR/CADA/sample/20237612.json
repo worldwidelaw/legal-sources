@@ -1,0 +1,24 @@
+{
+  "_id": "FR/CADA/20237612",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-02-20T16:35:21.948894+00:00",
+  "opinion_id": "20237612",
+  "title": "Avis 20237612 - Agence nationale pour la rénovation urbaine (ANRU)",
+  "date": "2024-01-25",
+  "url": "https://cada.data.gouv.fr/20237612/",
+  "text": "Monsieur XX, X, a saisi la Commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 14 décembre 2023, à la suite du refus opposé par le directeur général de l'Agence nationale pour la rénovation urbaine à sa demande de communication du compte rendu de la réunion de suivi du nouveau programme national de renouvellement urbain (NPNRU) du 22 septembre 2023.\n\nEn réponse à la demande qui lui a été adressée, le directeur général de l'Agence nationale pour la rénovation urbaine a informé la commission que le compte-rendu de réunion sollicité est en cours de finalisation et n'a pas encore été diffusé à ses membres.\n\nLa commission en prend note et émet dès lors, en l'état, un avis défavorable à la communication de ce document, qui présente un caractère inachevé.",
+  "subject": "",
+  "administration": "Agence nationale pour la rénovation urbaine (ANRU)",
+  "meanings": [
+    "Défavorable/Inachevé"
+  ],
+  "topics": [
+    "Urbanisme Et Aménagement Du Territoire / Aménagement Du Territoire"
+  ],
+  "tags": [
+    "Equipements collectifs"
+  ],
+  "part": 3,
+  "type": "Avis"
+}

@@ -1,0 +1,69 @@
+# HU/NJT - Hungarian National Legislation Database (Nemzeti Jogszabálytár)
+# https://njt.hu/
+
+source_id: "HU/NJT"
+name: "Nemzeti Jogszabálytár - Hungarian National Legislation Database"
+country: "HU"
+url: "https://njt.hu"
+
+auth:
+  type: none
+
+data_model:
+  data_types: [legislation]
+  update_strategy: upsert
+  dedup_key: ["doc_id"]
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+    - name: doc_type
+      type: string
+      required: false
+    - name: year
+      type: string
+      required: false
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+notes: |
+  Nemzeti Jogszabálytár (njt.hu) is Hungary's official legislation database.
+  Hungary has ELI (European Legislation Identifier) implementation since 2023.
+
+  Document types (ELI codes):
+  - TV: Törvény (Laws/Acts)
+  - TVR: Törvényerejű rendelet (Statutory decrees)
+  - KR: Kormányrendelet (Government decrees)
+  - MR: Miniszteri rendelet (Ministerial decrees)
+
+  Access patterns:
+  - Search: /search/{params}/page/size returns HTML with document links
+  - Document: /jogszabaly/{year}-{num}-{mod1}-{mod2} returns full HTML with law text
+  - ELI: /eli/TV/{year}/{num} redirects to document
+
+  Data:
+  - All legislation in force (hatályos) from 1949-present
+  - Full text available server-side rendered in HTML
+  - CC BY 4.0 license (Open Government Data)

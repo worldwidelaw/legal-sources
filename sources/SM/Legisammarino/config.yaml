@@ -1,0 +1,89 @@
+# SM/Legisammarino Configuration
+# San Marino Official Legislation - Bollettino Ufficiale
+
+source_id: SM/Legisammarino
+country: SM
+name: San Marino Official Legislation (Bollettino Ufficiale)
+description: >
+  Official San Marino legislation from the Bollettino Ufficiale.
+  Uses monthly bulletin archives and PDF extraction for full text.
+  Electronic format available from 2012 onwards.
+
+# Base URL
+base_url: https://www.bollettinoufficiale.sm
+
+# Data types available
+data_types:
+  - legislation
+
+# Authentication (none required - open data)
+auth:
+  type: none
+
+# Rate limiting configuration
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# Data schema
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+    - name: url
+      type: string
+      required: true
+  secondary_fields:
+    - name: document_type
+      type: string
+      required: false
+    - name: number
+      type: string
+      required: false
+    - name: description
+      type: string
+      required: false
+    - name: year
+      type: integer
+      required: false
+    - name: month
+      type: integer
+      required: false
+    - name: language
+      type: string
+      required: false
+
+# Data model
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+# Coverage
+coverage:
+  temporal: 2012-present
+  completeness: full text from PDF extraction
+
+# License information
+license:
+  name: San Marino Open Government Data
+  url: https://www.bollettinoufficiale.sm
+  commercial_use: true
+  attribution_required: false
+
+# Notes
+notes:
+  - Documents are served as PDF files, text extracted via pdfplumber
+  - Electronic bulletin started January 1, 2012 per Legge Qualificata n. 2/2010
+  - Monthly bulletins organized by document type categories
+  - Italian language only

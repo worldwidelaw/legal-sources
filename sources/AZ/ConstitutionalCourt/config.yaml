@@ -1,0 +1,99 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — Azerbaijan Constitutional Court Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "AZ/ConstitutionalCourt"
+  country: "AZ"
+  name: "Azerbaijan Constitutional Court (Konstitusiya Məhkəməsi)"
+  url: "https://www.constcourt.gov.az"
+  description: |
+    Constitutional Court of the Republic of Azerbaijan.
+    Decisions on constitutional matters including:
+    - Constitutionality of laws
+    - Constitutional interpretation
+    - Citizen complaints
+    Coverage: 1998 onwards
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "html"
+  base_url: "https://www.constcourt.gov.az"
+  verify_ssl: false
+  endpoints:
+    decision_list: "/az/decisions?page={page}"
+    decision_detail: "/az/decision/{id}"
+    decision_docx: "/az/decisionDocx/{id}"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "decision_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "decision_id"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "decision_id"
+      description: "Unique decision identifier (numeric ID from URL)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (in Azerbaijani)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the decision in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to view the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "decision_type"
+      description: "Type of decision (decision, ruling, opinion, interpretation)"
+      type: "string"
+      role: "classification"
+      required: false
+  secondary_fields:
+    - name: "docx_url"
+      description: "URL to Word document version"
+    - name: "_raw"
+      description: "Complete raw data from source (for debugging)"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: Azerbaijani (UTF-8)
+  - Coverage: 1998 onwards (estimated 600+ decisions)
+  - SSL certificate issues - verify_ssl must be false
+  - Document types: qərar (decision), qərardad (ruling), rəy (opinion), şərh (interpretation)
+  - Paginated decision list with ~15 decisions per page
+  - Full HTML content available on decision detail pages
+  - Word document also available via decisionDocx endpoint

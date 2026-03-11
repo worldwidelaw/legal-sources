@@ -1,0 +1,50 @@
+id: LU/SupremeCourt
+name: Luxembourg Court of Cassation (Cour de Cassation)
+country: LU
+data_types:
+  - case_law
+url: https://justice.public.lu
+auth: none
+priority: 2
+
+# Data source information
+source:
+  type: open_data_api
+  base_url: https://data.public.lu/api/1
+  dataset_id: "cour-de-cassation"
+  dataset_slug: "cour-de-cassation"
+  organization: Administration judiciaire
+
+# Schema for normalized records
+schema:
+  fields:
+    - name: _id
+      description: "Unique identifier (e.g., LU-CASS-2025-00151-32)"
+    - name: case_number
+      description: "Case registry number (e.g., CAS-2025-00151)"
+    - name: decision_number
+      description: "Decision number (e.g., 32/2025)"
+    - name: date
+      description: "Decision date in ISO format"
+    - name: title
+      description: "Case title/description"
+    - name: text
+      description: "Full text of the decision"
+    - name: url
+      description: "URL to original PDF"
+    - name: pdf_filename
+      description: "Original PDF filename"
+  key_fields:
+    - case_number
+    - decision_number
+
+license: CC BY-ND
+license_url: https://creativecommons.org/licenses/by-nd/4.0/
+update_frequency: weekly
+coverage:
+  start_date: "1976-01-01"
+  end_date: null
+notes: >
+  Court of Cassation decisions from Luxembourg via data.public.lu Open Data.
+  2,346 pseudonymized PDF documents. Full text extracted from PDFs using pdfplumber.
+  Covers civil and criminal cassation appeals.

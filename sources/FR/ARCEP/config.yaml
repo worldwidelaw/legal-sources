@@ -1,0 +1,49 @@
+source_id: FR/ARCEP
+name: ARCEP (Autorité de régulation des communications électroniques)
+country: FR
+url: https://www.arcep.fr/la-regulation/avis-et-decisions-de-larcep.html
+
+data_types:
+  - doctrine
+
+license:
+  name: Licence Ouverte / Open License
+  url: https://www.etalab.gouv.fr/licence-ouverte-open-licence/
+
+description: |
+  ARCEP is the French regulatory authority for electronic communications, postal
+  services, and press distribution. This source collects all regulatory decisions
+  ("Avis et décisions") including frequency authorizations, network access rules,
+  universal service obligations, numbering allocation, and postal regulation.
+
+coverage:
+  start_date: "1997-01-01"
+  estimated_records: 46000
+
+access:
+  type: csv_export_with_pdf
+  csv_url: https://www.arcep.fr/la-regulation/avis-et-decisions-de-larcep/download.csv?tx_arcepavis_results%5Bformat%5D=csv
+  pdf_base: https://www.arcep.fr/uploads/tx_gsavis/
+  rate_limit: 1.0
+
+schema:
+  key_fields:
+    - _id
+    - number
+    - title
+    - date
+    - text
+  optional_fields:
+    - category
+    - adoption_date
+    - publication_date
+    - pdf_url
+
+categories:
+  - Décisions relatives au service universel
+  - Réseaux ouverts au public
+  - Réseaux indépendants
+  - Expérimentations
+  - Numérotation
+  - Fréquences
+  - Services postaux

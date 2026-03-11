@@ -1,0 +1,98 @@
+# ===============================================================================
+# World Wide Law - Polish Sejm (Parliament) Configuration
+# ===============================================================================
+
+# -- Source Identity -----------------------------------------------------------
+source:
+  id: "PL/Sejm"
+  country: "PL"
+  name: "Polish Sejm (Parliament)"
+  url: "https://www.sejm.gov.pl"
+  description: |
+    Polish Parliament (Sejm) proceedings and parliamentary questions.
+
+    Data includes:
+    - Parliamentary transcripts (full text of speeches and debates)
+    - Interpellations (questions from MPs to ministers with replies)
+
+    Accessed via the official Sejm API at api.sejm.gov.pl with full HTML text.
+
+    Coverage: Term 10 (2023-present), Terms 7-9 available via API
+
+# -- Data Types ----------------------------------------------------------------
+data_types:
+  - parliamentary_proceedings
+
+# -- Authentication ------------------------------------------------------------
+auth:
+  type: "none"
+
+# -- Rate Limiting -------------------------------------------------------------
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+# -- API Configuration ---------------------------------------------------------
+api:
+  type: "rest"
+  base_url: "https://api.sejm.gov.pl/sejm"
+  endpoints:
+    proceedings: "/term{term}/proceedings"
+    proceeding: "/term{term}/proceedings/{num}"
+    transcripts: "/term{term}/proceedings/{num}/{date}/transcripts"
+    statement: "/term{term}/proceedings/{num}/{date}/transcripts/{statementNum}"
+    interpellations: "/term{term}/interpellations"
+    interpellation: "/term{term}/interpellations/{num}"
+    interpellation_body: "/term{term}/interpellations/{num}/body"
+    reply_body: "/term{term}/interpellations/{num}/reply/{key}/body"
+
+# -- Data Model ----------------------------------------------------------------
+data_model:
+  type: "parliamentary_proceedings"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+# -- Schema --------------------------------------------------------------------
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "_id"
+      description: "Unique document identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Direct URL to view the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "doc_type"
+      description: "Type: transcript or interpellation"
+      type: "string"
+      role: "category"
+      required: true
+
+# -- Notes ---------------------------------------------------------------------
+notes: |
+  - Language: Polish (UTF-8)
+  - API: Official Sejm API (api.sejm.gov.pl)
+  - Full HTML text available for transcripts and interpellations
+  - Coverage: Terms 7-10 (2011-present)
+  - License: Open data, public domain

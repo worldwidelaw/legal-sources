@@ -1,0 +1,25 @@
+{
+  "_id": "FR/CADA/20237622",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-02-20T16:35:21.949306+00:00",
+  "opinion_id": "20237622",
+  "title": "Avis 20237622 - Préfecture de police de Paris",
+  "date": "2024-01-25",
+  "url": "https://cada.data.gouv.fr/20237622/",
+  "text": "Madame X a saisi la Commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 18 novembre 2023, à la suite du refus opposé par le préfet de police à sa demande de communication d'une copie de l’enquête administrative à la suite de laquelle son intégration au sein de la sûreté ferroviaire a été refusée.\n\nEn l'absence de réponse du préfet de police à la date de sa séance, la commission estime que le rapport sollicité est communicable à Madame X, qui a la qualité de personne intéressée au sens de l'article L311-6 du code des relations entre le public et l'administration, après occultation des mentions éventuelles dont la communication porterait atteinte à l’un des secrets protégés par les articles L311-5 et L311-6, en particulier à la protection de la vie privée d’un tiers, portant une appréciation ou un jugement de valeur sur un tiers nommément désigné ou facilement identifiable, ou faisant apparaître de la part d'un tiers, lorsqu'il ne s'agit pas d'un agent public agissant dans l'exercice de ses fonctions, un comportement dont la divulgation pourrait lui porter préjudice, en application des dispositions du même article L311-6.\n\nLa commission, qui n’a pas pu prendre connaissance du document sollicité, émet donc un avis favorable sous les réserves mentionnées.",
+  "subject": "",
+  "administration": "Préfecture de police de Paris",
+  "meanings": [
+    "Favorable/Sauf articles L311-5 et L311-6"
+  ],
+  "topics": [
+    "Travail Et Emploi / Emploi Public"
+  ],
+  "tags": [
+    "Concours",
+    "Carrière"
+  ],
+  "part": 3,
+  "type": "Avis"
+}

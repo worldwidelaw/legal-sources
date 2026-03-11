@@ -1,0 +1,69 @@
+source:
+  id: BE/CASS
+  country: BE
+  name: Court of Cassation (Cour de Cassation / Hof van Cassatie)
+  description: |
+    Belgian Supreme Court case law from JUPORTAL (juportal.be).
+    Decisions from the Court of Cassation covering civil, criminal,
+    and social matters since 1958.
+
+  data_types:
+    - case_law
+
+  url: https://juportal.be
+  auth: none
+
+  # Sitemap-based discovery (EU ECLI format)
+  sitemap_base: https://juportal.just.fgov.be/JUPORTAsitemap
+  content_base: https://juportal.be/content
+
+  # Court code for filtering
+  court_code: CASS
+
+  # Known document count (from search)
+  estimated_records: 49364
+
+schema:
+  # Primary identifier and key fields
+  key_fields:
+    - name: ecli
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: true
+    - name: court
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: false
+    - name: language
+      type: string
+      required: false
+    - name: abstract
+      type: string
+      required: false
+    - name: role_number
+      type: string
+      required: false
+    - name: chamber
+      type: string
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - ecli
+
+rate_limits:
+  requests_per_second: 1
+  delay_between_requests: 1.0
+
+license:
+  type: Open Government Data
+  attribution: JUPORTAL - SPF Justice / FOD Justitie
+  url: https://juportal.be

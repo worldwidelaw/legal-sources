@@ -1,0 +1,78 @@
+# SK/CollectionOfLaws - Slovak Collection of Laws (Zbierka zákonov)
+# https://static.slov-lex.sk
+
+source_id: "SK/CollectionOfLaws"
+name: "Zbierka zákonov Slovenskej republiky - Slovak Collection of Laws"
+country: "SK"
+url: "https://static.slov-lex.sk"
+
+auth:
+  type: none
+
+data_model:
+  data_types: [legislation]
+  update_strategy: upsert
+  dedup_key: ["doc_id"]
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+    - name: doc_type
+      type: string
+      required: false
+    - name: year
+      type: integer
+      required: false
+    - name: number
+      type: integer
+      required: false
+    - name: effective_date
+      type: string
+      required: false
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+notes: |
+  Slov-Lex is the official legislation portal of the Slovak Ministry of Justice.
+  Slovakia has ELI (European Legislation Identifier) implementation (Pillar I).
+
+  The static version at static.slov-lex.sk provides HTML access without JavaScript.
+
+  URL patterns:
+  - Year listing: /static/SK/ZZ/{year}/
+  - Law index: /static/SK/ZZ/{year}/{number}/
+  - Law version: /static/SK/ZZ/{year}/{number}/{date}.html
+  - PDF version: /static/pdf/SK/ZZ/{year}/{number}/ZZ_{year}_{number}_{date}.pdf
+
+  Document types (ZZ = Zbierka zákonov - Collection of Laws):
+  - Zákon (Laws)
+  - Nariadenie vlády (Government regulations)
+  - Vyhláška (Decrees)
+  - Rozhodnutie (Decisions)
+  - Oznámenie (Announcements)
+  - Nález (Constitutional court findings)
+
+  Coverage: All Slovak legislation from 1918 to present
+  License: Open Government Data (CC0-like per Slovak public sector data policy)

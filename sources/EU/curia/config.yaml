@@ -1,0 +1,66 @@
+source:
+  id: "EU/CURIA"
+  name: "Court of Justice of the EU (CURIA)"
+  country: "EU"
+  language: "en"  # Primary language (multi-language available)
+
+  endpoints:
+    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
+    eurlex_html: "https://eur-lex.europa.eu/legal-content/{lang}/TXT/HTML/"
+    eurlex_base: "https://eur-lex.europa.eu"
+
+  data_types:
+    - case_law
+
+  document_types:
+    - JUDG      # Judgments from Court of Justice
+    - ORDER     # Orders from courts
+    - OPIN_AG   # Opinions of Advocate General
+    - OPIN_CJ   # Opinions of the Court
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1.5
+
+  schema:
+    key_fields:
+      - _id
+      - celex_id
+      - ecli
+      - title
+      - text
+      - date
+
+    field_mappings:
+      _id: "celex_id"
+      title: "title"
+      text: "text"
+      date: "date"
+      url: "url"
+
+fetch:
+  sample_count: 15
+  max_documents: 1000
+
+  sparql_query: |
+    PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
+    SELECT DISTINCT ?celex ?date ?title ?ecli ?court
+    WHERE {
+      ?work cdm:work_has_resource-type ?type .
+      FILTER(?type IN (
+        <http://publications.europa.eu/resource/authority/resource-type/JUDG>,
+        <http://publications.europa.eu/resource/authority/resource-type/ORDER>
+      ))
+      ?work cdm:resource_legal_id_celex ?celex .
+      OPTIONAL { ?work cdm:work_date_document ?date }
+      OPTIONAL { ?work cdm:work_title ?title }
+      OPTIONAL { ?work cdm:resource_legal_id_ecli ?ecli }
+    }
+    ORDER BY DESC(?date)
+    LIMIT {limit}
+    OFFSET {offset}
+
+license:
+  type: "Reuse"
+  url: "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html"
+  notes: "EUR-Lex content is available for reuse. Attribution required."

@@ -1,0 +1,62 @@
+# Czech e-Sbírka (Collection of Laws) Data Source Configuration
+# Official open data from the Czech Ministry of Interior
+
+source_id: "CZ/eSbirka"
+name: "e-Sbírka - Czech Collection of Laws"
+country: "CZ"
+language: "cs"
+data_types:
+  - legislation
+
+# Open data endpoints (no authentication required)
+endpoints:
+  # Bulk download files from opendata.eselpoint.cz
+  acts_metadata: "https://opendata.eselpoint.cz/datove-sady-esbirka/002PravniAkt.json.gz"
+  fragments: "https://opendata.eselpoint.cz/datove-sady-esbirka/004PravniAktFragment.json.gz"
+  version_fragments: "https://opendata.eselpoint.cz/datove-sady-esbirka/003PravniAktZneniFragment.json.gz"
+
+  # SPARQL endpoint for semantic queries
+  sparql: "https://opendata.eselpoint.cz/sparql"
+
+  # Web portal
+  portal: "https://www.e-sbirka.cz"
+  info_portal: "https://zakony.gov.cz"
+
+# Schema information
+schema:
+  key_fields:
+    - "akt-kód"
+    - "akt-citace"
+  date_format: "ISO8601"
+  text_field: "fragment-text"
+
+# License
+license:
+  name: "CC BY 4.0"
+  url: "https://creativecommons.org/licenses/by/4.0/"
+
+# Fetcher configuration
+fetcher:
+  rate_limit_ms: 1000
+  ssl_verify: false  # Certificates sometimes cause issues
+  timeout_s: 120
+  max_retries: 3
+
+# Notes
+notes: |
+  e-Sbírka is the official Czech electronic collection of laws, launched in January 2024.
+  The open data contains 43,000+ legal acts with full text. Data is updated daily.
+
+  Data structure:
+  - 002PravniAkt.json.gz: Legal act metadata (5.1MB)
+  - 004PravniAktFragment.json.gz: Text fragments with content (503MB)
+  - 003PravniAktZneniFragment.json.gz: Links versions to fragments (1.1GB)
+
+  The fragments need to be reassembled to get complete document text.
+  Each act consists of multiple fragments (Paragraf, Odstavec, Clanek, etc.)
+  ordered by their hierarchical position.
+
+  TECHNICAL REQUIREMENTS:
+  - Initial download: ~500MB (cached after first run)
+  - Memory: ~4GB RAM recommended for processing
+  - First run takes 10-15 minutes for download

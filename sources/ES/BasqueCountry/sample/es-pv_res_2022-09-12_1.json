@@ -1,0 +1,27 @@
+{
+  "_id": "es-pv_res_2022-09-12_1",
+  "_source": "ES/BasqueCountry",
+  "_type": "legislation",
+  "_fetched_at": "2026-02-21T13:05:01.878237+00:00",
+  "title": "CORRECCIÓN DE ERRORES de la Resolución de 5 de marzo de 2019, del Viceconsejero de Salud, por la que se dictan instrucciones para uniformizar la mención de autoría y la afiliación institucional en el sistema sanitario vasco.",
+  "text": "El artículo 18.2.b) del Decreto 217/2008, de 23 de diciembre, del Boletín Oficial del País Vasco, establece que los meros errores u omisiones en el texto remitido para su publicación que se infieran claramente del contexto y no constituyan modificación o alteración del sentido de los documentos, pero cuya rectificación se juzgue conveniente para evitar posibles confusiones, se corregirán por la Dirección de la Secretaría del Gobierno y de Relaciones con el Parlamento, a instancia del órgano que haya ordenado la publicación del texto. Advertidos errores de dicha índole en el texto de la Resolución de 5 de marzo de 2019, del Viceconsejero de Salud, por la que se dictan instrucciones para uniformizar la mención de autoría y la afiliación institucional en el sistema sanitario vasco, publicado en el Boletín Oficial del País Vasco, n.º 74, de 16 de abril de 2019, se procede a su corrección. En el Anexo II.B. 1.5, en la página 2019/1921 (8/10), donde dice: Organización Sanitaria Integrada Goierri-Urola Garaia / Goierri-Urola Garaiko Erakunde Sanitario Integratua / Goierri-Urola Garaia Integrated Health Organisation, Debe decir: Organización Sanitaria Integrada Goierri-Alto Urola / Goierri-Urola Garaiko Erakunde Sanitario Integratua / Goierri-Urola Garaia Integrated Health Organisation,",
+  "date": "2019-04-16",
+  "url": "https://id.euskadi.eus/eli/es-pv/res/2022/09/12/(1)/dof/spa",
+  "eli_uri": "https://id.euskadi.eus/eli/es-pv/res/2022/09/12/(1)/dof/spa",
+  "document_type": "resolucion",
+  "boletin_numero": "74",
+  "boletin_id": "201901921",
+  "entidad": "Gobierno Vasco",
+  "departamentos": [
+    "Salud"
+  ],
+  "rango_name": "RESOLUCION",
+  "categorias": [
+    "ADMINISTRACION PUBLICA",
+    "SANIDAD Y CONSUMO",
+    "DEPARTAMENTOS"
+  ],
+  "pdf_url": "https://www.euskadi.eus/bopv2/datos/2022/09/2204040a.pdf",
+  "language": "es",
+  "jurisdiction": "es-pv"
+}

@@ -1,0 +1,125 @@
+# ===================================================================
+# LT/LegalBase -- Lithuanian Legal Database (TAR - Teises Aktu Registras)
+# ===================================================================
+# Official Lithuanian legislation from the Register of Legal Acts.
+# Full text available via the data.gov.lt Open Data API.
+# Data sourced from e-tar.lt (official publication system).
+#
+# Primary endpoint: get.data.gov.lt/datasets/gov/lrsk/teises_aktai/Dokumentas
+# Documentation: https://data.gov.lt/datasets/2613/
+# License: CC BY 4.0
+# ===================================================================
+
+source:
+  id: "LT/LegalBase"
+  country: "LT"
+  name: "Lithuanian Legal Database (TAR)"
+  url: "https://data.gov.lt/datasets/2613/"
+  description: |
+    Lithuania's official legislation database from the Register of Legal Acts
+    (Teises aktu registras - TAR). Contains constitutional documents, laws,
+    government resolutions, ministerial orders, international treaties, and
+    court judgments. Data is published via the Lithuanian Open Data Portal
+    (data.gov.lt) with full text content and rich metadata.
+
+    The register is maintained by the Office of the Seimas (Parliament) of
+    the Republic of Lithuania. All data is freely accessible under CC BY 4.0.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1.0    # Conservative rate limit
+  burst: 5
+
+api:
+  type: "rest-json"
+  base_url: "https://get.data.gov.lt"
+  endpoints:
+    # Main documents endpoint with full text
+    documents: "/datasets/gov/lrsk/teises_aktai/Dokumentas"
+    # Summaries endpoint (lighter, no full text)
+    summaries: "/datasets/gov/lrsk/teises_aktai/Suvestine"
+  pagination:
+    type: "cursor"
+    param: "_page.next"
+    limit_param: "_limit"
+    default_limit: 100
+  formats:
+    - json
+    - jsonl
+    - csv
+    - rdf
+
+data_model:
+  type: "legislation"
+  primary_key: "dokumento_id"
+  update_strategy: "upsert"
+  versioning: "consolidated"
+  dedup_key:
+    - "dokumento_id"
+
+schema:
+  total_fields: 20
+  key_fields:
+    - name: "dokumento_id"
+      description: "Unique document identifier from e-tar.lt"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title in Lithuanian"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation in Lithuanian"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "document_type"
+      description: "Type of document (Istatymas/Law, Isakymas/Order, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date of adoption (ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to document on e-tar.lt"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "tar_kodas"
+      description: "TAR registry code"
+    - name: "atv_dok_nr"
+      description: "Official document number"
+    - name: "adopting_institution"
+      description: "Adopting institution"
+    - name: "preparing_institution"
+      description: "Preparing institution"
+    - name: "validity_status"
+      description: "Validity status (galioja/valid, negalioja/invalid)"
+    - name: "entry_into_force"
+      description: "Entry into force date"
+    - name: "lost_force"
+      description: "Date when the act lost force"
+    - name: "published_tar"
+      description: "Date published in TAR"
+    - name: "document_group"
+      description: "Document group classification"
+
+notes: |
+  - Full text is provided in the tekstas_lt field for all documents.
+  - Uses cursor-based pagination via _page.next token.
+  - Documents cover: Constitution, laws, government resolutions,
+    ministerial orders, municipal acts, international treaties, court decisions.
+  - Validity status indicates whether the act is currently in force.
+  - Data updated daily from the official TAR registry.
+  - License: Creative Commons Attribution 4.0 (CC BY 4.0).

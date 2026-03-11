@@ -1,0 +1,74 @@
+# MT/GovernmentGazette Configuration
+# Malta Laws - legislation.mt
+
+source_id: MT/GovernmentGazette
+country: MT
+name: Malta Government Gazette
+description: >
+  Official Maltese consolidated legislation from legislation.mt.
+  Uses ELI (European Legislation Identifier) URIs for document discovery
+  and PDF extraction for full text.
+
+# Base URL
+base_url: https://legislation.mt
+
+# Data types available
+data_types:
+  - legislation
+
+# Authentication (none required - open data)
+auth:
+  type: none
+
+# Rate limiting configuration
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# Data schema
+schema:
+  key_fields:
+    - name: eli_identifier
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+    - name: url
+      type: string
+      required: true
+  secondary_fields:
+    - name: chapter_number
+      type: integer
+      required: false
+    - name: document_type
+      type: string
+      required: false
+    - name: keywords
+      type: list
+      required: false
+    - name: in_force
+      type: boolean
+      required: false
+    - name: language
+      type: string
+      required: false
+
+# Data model
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+# License information
+license:
+  name: Open Government Data
+  url: https://legislation.mt
+  commercial_use: true
+  attribution_required: false

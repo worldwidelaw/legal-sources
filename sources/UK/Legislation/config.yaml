@@ -1,0 +1,126 @@
+# ===================================================================
+# UK/Legislation -- legislation.gov.uk
+# ===================================================================
+# Official REST API for UK legislation. No authentication required.
+# Provides consolidated legislation from England & Wales, Scotland,
+# Northern Ireland. Data licensed under Open Government Licence v3.0.
+# API docs: https://www.legislation.gov.uk/developer
+# ===================================================================
+
+source:
+  id: "UK/Legislation"
+  country: "UK"
+  name: "UK Legislation (legislation.gov.uk)"
+  url: "https://www.legislation.gov.uk"
+  description: |
+    UK's official legislation database operated by The National Archives.
+    Covers all UK primary legislation (Public General Acts, Scottish Parliament
+    Acts, Senedd Acts, Northern Ireland Acts) and secondary legislation
+    (Statutory Instruments, SSI, WSI, NISR). Provides revised/consolidated
+    legislation with amendments incorporated. Atom/XML API with no authentication.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://www.legislation.gov.uk"
+  endpoints:
+    list: "/{type}/{year}/data.feed"
+    item: "/{type}/{year}/{number}/data.xml"
+    search: "/search"
+  legislation_types:
+    primary:
+      - ukpga      # UK Public General Acts
+      - ukla       # UK Local Acts
+      - asp        # Acts of the Scottish Parliament
+      - asc        # Acts of Senedd Cymru
+      - nia        # Acts of the Northern Ireland Assembly
+    secondary:
+      - uksi       # UK Statutory Instruments
+      - ssi        # Scottish Statutory Instruments
+      - wsi        # Welsh Statutory Instruments
+      - nisr       # Northern Ireland Statutory Rules
+  formats:
+    xml: "application/xml"
+    atom: "application/atom+xml"
+  pagination:
+    page_param: "page"
+    page_size: 20
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  versioning: "temporal"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 18
+  key_fields:
+    - name: "doc_id"
+      description: "Document URI (e.g., ukpga/2024/1)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Official title of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation (XML body content)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Enactment or publication date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Canonical URL to the legislation"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "legislation_type"
+      description: "Type code (ukpga, uksi, asp, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "year"
+      description: "Year of enactment/publication"
+      type: "integer"
+      role: "temporal_key"
+      required: true
+    - name: "number"
+      description: "Chapter or number within the year"
+      type: "string"
+      role: "identifier"
+      required: true
+  secondary_fields:
+    - name: "short_title"
+      description: "Short title of the legislation"
+    - name: "extent"
+      description: "Territorial extent (E+W+S+N.I., E+W, S, etc.)"
+    - name: "status"
+      description: "Document status (revised, repealed, etc.)"
+    - name: "date_modified"
+      description: "Last modification date"
+
+notes: |
+  - API returns XML and Atom feeds, no JSON
+  - Full text available via {uri}/data.xml endpoint
+  - Atom feeds provide document listings with metadata
+  - 100K+ Acts and Statutory Instruments
+  - Updated regularly with amendments incorporated
+  - License: Open Government Licence v3.0 (OGL)
+  - Languages: English (primarily), Welsh for Welsh legislation

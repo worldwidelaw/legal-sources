@@ -1,0 +1,83 @@
+name: Submit a Legal Data Source
+description: Tell us about a legal data source your country publishes
+title: "[New Source] "
+labels: ["new-source"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for submitting a legal data source! This helps us expand coverage worldwide. You don't need any technical knowledge to fill this out.
+
+  - type: input
+    id: country
+    attributes:
+      label: Country
+      description: Which country publishes this data?
+      placeholder: "e.g., France, Germany, Brazil"
+    validations:
+      required: true
+
+  - type: input
+    id: source_name
+    attributes:
+      label: Data source name
+      description: What is this portal or database called?
+      placeholder: "e.g., Official Gazette, Consolidated Codes Portal, Supreme Court Database"
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: URL
+      description: Link to the data source
+      placeholder: "https://..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: data_type
+    attributes:
+      label: Data type
+      description: What kind of legal data does this source provide?
+      options:
+        - Legislation (codes, statutes, consolidated laws)
+        - Case law (court decisions, judgments)
+        - Official gazette (journal officiel, BOE, etc.)
+        - Regulations (decrees, orders, circulars)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: access_type
+    attributes:
+      label: Access method
+      description: How can the data be accessed?
+      options:
+        - API (REST, SOAP, or similar)
+        - Bulk download (ZIP, XML dump, etc.)
+        - Website only (HTML pages, no API)
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: access_restrictions
+    attributes:
+      label: Access restrictions
+      description: Is registration or payment required?
+      options:
+        - Fully open (no registration needed)
+        - Free with registration
+        - Paid or restricted access
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Additional details
+      description: Anything else we should know? API documentation links, data format, coverage dates, languages, etc.
+      placeholder: "e.g., The API returns XML, covers laws from 1960 to present, documentation is at..."

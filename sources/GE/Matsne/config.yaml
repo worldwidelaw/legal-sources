@@ -1,0 +1,89 @@
+# GE/Matsne - Georgian Legislative Herald (Matsne)
+# Source configuration
+
+source_id: GE/Matsne
+name: Georgian Legislative Herald (Matsne)
+country: GE
+url: https://matsne.gov.ge
+description: >
+  The Legislative Herald of Georgia (Matsne) is a legal entity under public law
+  within the governance of the Ministry of Justice of Georgia. It provides access
+  to consolidated Georgian primary and secondary legislation in Georgian, English,
+  and Russian.
+
+# Data model
+data_model:
+  type: legislation
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+# Authentication
+auth:
+  type: none
+
+# Rate limiting (be respectful to the server)
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  max_workers: 3
+
+# Schema validation
+schema:
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document identifier from Matsne"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to document on matsne.gov.ge"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "issuer"
+      description: "Issuing authority (Parliament, Government, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+
+# Endpoints
+endpoints:
+  base_url: https://matsne.gov.ge
+  rss_feed: /en/document/feed
+  search: /en/document/search
+  document: /en/document/view/{doc_id}
+
+# Language support
+languages:
+  - ka  # Georgian
+  - en  # English
+  - ru  # Russian
+
+# License
+license:
+  name: Open Government Data
+  url: https://matsne.gov.ge/en
+
+# Notes
+notes: |
+  - RSS feed provides recent documents
+  - Search pages support pagination via ?page=N parameter
+  - Full text is embedded in HTML within #maindoc div
+  - Some documents have English translations available
+  - Requires User-Agent header to avoid blocks

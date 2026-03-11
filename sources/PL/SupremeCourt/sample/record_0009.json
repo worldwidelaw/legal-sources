@@ -1,0 +1,48 @@
+{
+  "_id": "245349",
+  "_source": "PL/SupremeCourt",
+  "_type": "case_law",
+  "_fetched_at": "2026-02-21T23:03:03.409033+00:00",
+  "title": "II KK 165/16 - 2016-06-15",
+  "text": "Sygn. akt II KK 165/16\nPOSTANOWIENIE\nDnia 15 czerwca 2016 r.\nSąd Najwyższy w składzie:\nSSN Jerzy Grubba\nw sprawie S. D.\npo rozpoznaniu w Izbie Karnej na posiedzeniu\nw dniu 15 czerwca 2016r.,\nwniosku obrońcy skazanego\no wstrzymanie wykonania wyroku Sądu Rejonowego w W.\nz dnia 30 września 2014r., utrzymanego w mocy\nwyrokiem Sądu Okręgowego w W.\nz dnia 1 grudnia 2015r.,\nna podstawie art. 532 § 3 k.p.k.\np o s t a n o w i ł:\nnie uwzględnić wniosku\nUZASADNIENIE\nWniosek obrońcy skazanego na uwzględnienie nie zasługiwał.\nW orzecznictwie Sądu Najwyższego wskazywano wielokrotnie, że\nuwzględnienie wniosku o wstrzymanie wykonania orzeczenia jest możliwe jedynie,\ngdy strona wykaże istnienie szczególnych okoliczności powodujących, że\nwykonanie orzeczenia pociągnęłoby za sobą wyjątkowo dolegliwe i w zasadzie\nnieodwracalne skutki, podnosząc też, że wniosek o wstrzymanie orzeczenia\npowinien zawierać dodatkową argumentację wskazującą na duże\nprawdopodobieństwo zasadności podniesionego w skardze zarzutu i przez to\nnieodwracalność skutków kary w razie jej wykonania.\nWniosek sporządzony w niniejszej sprawie takiej argumentacji nie zawiera i\nw ogóle nie został uzasadniony poza stwierdzeniem, że w sprawie może być\n2\nwszczęte postępowanie wykonawcze. Stwierdzić zatem wypada, że sam fakt\nzłożenia kasacji nie może obligować Sądu Najwyższego do uwzględnienia wniosku\no wstrzymanie wykonania kary. Nie można bowiem zapominać, że w sprawie\nzapadł prawomocny, a więc wykonalny wyrok. Przede wszystkim zaś, mając na\nuwadze rodzaj wymierzonej skazanemu kary, w ogóle nie można przyjmować, że\nmoże ona spowodować „nieodwracalne skutki”.\nPowyższe powoduje, że tak sformułowany wniosek nie zasługiwał na\nuwzględnienie.\nKierując się przedstawionymi względami Sad Najwyższy orzekł jak na\nwstępie.\nkc",
+  "date": "2016-06-15",
+  "url": "https://www.saos.org.pl/judgments/245349",
+  "case_number": "II KK 165/16",
+  "case_numbers": [
+    "II KK 165/16"
+  ],
+  "judgment_id": 245349,
+  "court_type": "SUPREME",
+  "chamber": "Izba Karna",
+  "division": "Wydział II",
+  "judgment_type": "DECISION",
+  "judgment_form": "postanowienie SN",
+  "personnel_type": "ONE_PERSON",
+  "judges": [
+    {
+      "name": "Jerzy Grubba",
+      "function": "SSN",
+      "roles": [
+        "REASONS_FOR_JUDGMENT_AUTHOR",
+        "PRESIDING_JUDGE",
+        "REPORTING_JUDGE"
+      ]
+    }
+  ],
+  "legal_bases": [],
+  "referenced_regulations": [
+    {
+      "journalTitle": "Ustawa z dnia 6 czerwca 1997 r. - Kodeks postępowania karnego",
+      "journalNo": 89,
+      "journalYear": 1997,
+      "journalEntry": 555,
+      "text": "Ustawa z dnia 6 czerwca 1997 r. - Kodeks postępowania karnego (Dz. U. z 1997 r. Nr 89 poz. 555 - art. 532 § 3)"
+    }
+  ],
+  "referenced_cases": [],
+  "keywords": [],
+  "decision": "",
+  "summary": "",
+  "source_url": "http://www.sn.pl/orzecznictwo/SitePages/Baza_orzeczen",
+  "publication_date": "2016-06-18"
+}

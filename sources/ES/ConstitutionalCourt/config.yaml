@@ -1,0 +1,106 @@
+# ES/ConstitutionalCourt -- Spanish Constitutional Court Configuration
+# Source: Tribunal Constitucional de España - Sistema HJ
+# URL: https://hj.tribunalconstitucional.es
+# Data types: case_law
+# License: Public domain (official court decisions)
+
+source:
+  id: "ES/ConstitutionalCourt"
+  name: "Tribunal Constitucional - Sistema HJ"
+  country: "ES"
+  url: "https://hj.tribunalconstitucional.es"
+  description: "Spanish Constitutional Court decisions. Full text via HJ search system."
+
+data_types:
+  - case_law
+
+api:
+  type: "html_scraping"
+  base_url: "https://hj.tribunalconstitucional.es"
+  format: "html"
+  documentation: "https://hj.tribunalconstitucional.es/"
+  endpoints:
+    resolution: "/HJ/es/Resolucion/Show/{id}"
+    document: "/HJ/es/Resolucion/GetDocumentResolucion/{id}"
+  pagination:
+    type: "sequential_id"
+    min_id: 1
+    max_id: 32500  # Approximate upper bound, grows over time
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+data_model:
+  type: "case_law"
+  primary_key: "ecli"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "ecli"
+
+schema:
+  total_fields: 16
+  key_fields:
+    - name: "ecli"
+      description: "European Case Law Identifier (e.g., ECLI:ES:TC:2024:123)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Resolution title (SENTENCIA/AUTO/DECLARACION number/year)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (antecedentes, fundamentos, fallo)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of decision (ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to resolution on HJ System"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "resolution_type"
+      description: "Type of resolution (SENTENCIA, AUTO, DECLARACION)"
+      type: "string"
+      role: "classification"
+      required: true
+  secondary_fields:
+    - name: "resolution_number"
+      description: "Resolution number within the year"
+    - name: "resolution_year"
+      description: "Year of resolution"
+    - name: "chamber"
+      description: "Court chamber (Pleno, Sala Primera, Sala Segunda)"
+    - name: "magistrates"
+      description: "Panel of magistrates"
+    - name: "boe_date"
+      description: "BOE publication date"
+    - name: "boe_number"
+      description: "BOE issue number"
+    - name: "case_type"
+      description: "Process type (recurso de amparo, recurso de inconstitucionalidad, etc.)"
+    - name: "case_number"
+      description: "Case registration number"
+    - name: "language"
+      description: "Language of the document (es)"
+
+notes: |
+  - Full text available via direct URL: /HJ/es/Resolucion/Show/{id}
+  - Sequential IDs from 1 (SENTENCIA 1/1981) to ~32000+ (2025)
+  - HTML response includes structured sections: Antecedentes, Fundamentos, Fallo
+  - Includes ECLI (European Case Law Identifier) for all decisions
+  - Also available in English (en) and French (fr) languages: /HJ/{lang}/Resolucion/Show/{id}
+  - Resolution types: SENTENCIA (judgment), AUTO (order), DECLARACION (declaration)
+  - BOE PDF links available for official gazette publication
+  - Document export to DOCX available via GetDocumentResolucion endpoint

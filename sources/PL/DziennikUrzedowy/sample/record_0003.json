@@ -1,0 +1,49 @@
+{
+  "_id": "DU/2024/1981",
+  "_source": "PL/DziennikUrzedowy",
+  "_type": "legislation",
+  "_fetched_at": "2026-02-10T18:05:00.472500+00:00",
+  "title": "Rozporządzenie Ministra Rolnictwa i Rozwoju Wsi z dnia 22 grudnia 2024 r. zmieniające rozporządzenie w sprawie wykazu punktów wjazdu podróżnych oraz warunków i sposobu współpracy organów Inspekcji Weterynaryjnej z organami celnymi przy kontroli przemieszczanych w celach niehandlowych zwierząt domowych towarzyszących podróżnym",
+  "text": "Rozporządzenie Ministra Rolnictwa i Rozwoju Wsiz dnia 22 grudnia 2024 r.zmieniające rozporządzenie w sprawie wykazu punktów wjazdu podróżnych oraz warunków i sposobu współpracy organów Inspekcji Weterynaryjnej z organami celnymi przy kontroli przemieszczanych w celach niehandlowych zwierząt domowych towarzyszących podróżnym 1)Minister Rolnictwa i Rozwoju Wsi kieruje działem administracji rządowej - rolnictwo, na podstawie § 1 ust. 2 pkt 1 rozporządzenia Prezesa Rady Ministrów z dnia 18 grudnia 2023 r. w sprawie szczegółowego zakresu działania Ministra Rolnictwa i Rozwoju Wsi (Dz. U. poz. 2706).\nTreść rozporządzenia\n§ 1.\nn)\n§ 2.\nNa podstawie art. 24b ust. 10 ustawy z dnia 11 marca 2004 r. o ochronie zdrowia zwierząt oraz zwalczaniu chorób zakaźnych zwierząt (Dz. U. z 2023 r. poz. 1075) zarządza się, co następuje:\nW rozporządzeniu Ministra Rolnictwa i Rozwoju Wsi z dnia 29 lipca 2022 r. w sprawie wykazu punktów wjazdu podróżnych oraz warunków i sposobu współpracy organów Inspekcji Weterynaryjnej z organami celnymi przy kontroli przemieszczanych w celach niehandlowych zwierząt domowych towarzyszących podróżnym (Dz. U. poz. 1660) w załączniku do rozporządzenia w ust. 1 w pkt 3 w lit. m kropkę zastępuje się przecinkiem i dodaje się lit. n w brzmieniu:\nMalhowice - Niżankowice - drogowe.\nRozporządzenie wchodzi w życie po upływie 14 dni od dnia ogłoszenia.",
+  "date": "2024-12-31",
+  "url": "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20241981",
+  "eli": "DU/2024/1981",
+  "address": "WDU20240001981",
+  "display_address": "Dz.U. 2024 poz. 1981",
+  "year": 2024,
+  "pos": 1981,
+  "doc_type": "Rozporządzenie",
+  "status": "obowiązujący",
+  "in_force": "IN_FORCE",
+  "entry_into_force": "2025-01-15",
+  "keywords": [
+    "weterynaryjna służba",
+    "zwierzęta",
+    "choroby zakaźne",
+    "ochrona zwierząt",
+    "choroby zwierząt"
+  ],
+  "released_by": [
+    "MIN. ROLNICTWA I ROZWOJU WSI"
+  ],
+  "references": {
+    "Akty zmienione": [
+      {
+        "id": "DU/2022/1660",
+        "date": "2025-01-15"
+      }
+    ],
+    "Podstawa prawna": [
+      {
+        "id": "DU/2004/625"
+      }
+    ],
+    "Podstawa prawna z art.": [
+      {
+        "id": "DU/2004/625",
+        "art": "art. 24b ust. 10"
+      }
+    ]
+  },
+  "language": "pl"
+}

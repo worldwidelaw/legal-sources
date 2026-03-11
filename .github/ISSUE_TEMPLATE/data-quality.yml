@@ -1,0 +1,43 @@
+name: Data Quality Issue
+description: Report missing, incorrect, or incomplete data from a source
+title: "[Data Quality] "
+labels: ["data-quality"]
+body:
+  - type: input
+    id: source_id
+    attributes:
+      label: Source ID
+      description: Which source is affected?
+      placeholder: "e.g., DE/GesetzeImInternet"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: Issue type
+      options:
+        - Missing data (documents not captured)
+        - Incorrect data (wrong text, dates, or metadata)
+        - Incomplete data (truncated text, missing fields)
+        - Duplicate data
+        - Encoding issues (garbled text, wrong characters)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the data quality issue. Include specific document IDs or examples if possible.
+      placeholder: "Articles published after January 2025 are not being captured..."
+    validations:
+      required: true
+
+  - type: input
+    id: reference
+    attributes:
+      label: Reference URL
+      description: Link to the correct data on the original source (if available)
+      placeholder: "https://..."

@@ -1,0 +1,115 @@
+# ===================================================================
+# AR/InfoLEG -- Sistema de Información Legislativa
+# ===================================================================
+# Official Argentine legislation database from Ministry of Justice.
+# Bulk CSV/ZIP download from datos.jus.gob.ar. Full text via HTTP.
+# Laws, decrees, resolutions since 1853 (indexed from May 1997).
+# Monthly updates. CC BY 4.0.
+# ===================================================================
+
+source:
+  id: "AR/InfoLEG"
+  country: "AR"
+  name: "InfoLEG - Sistema de Información Legislativa"
+  url: "https://datos.jus.gob.ar/dataset/base-de-datos-legislativos-infoleg"
+  description: |
+    Official Argentine legislation database operated by the Ministry
+    of Justice. Contains laws, decrees, administrative decisions,
+    resolutions, dispositions, and other normative acts published
+    in the Official Bulletin since May 1997, plus referenced
+    legislation dating back to 1853. Data exported from InfoLEG.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  notes: "Rate limiting for full text fetching from servicios.infoleg.gob.ar"
+
+api:
+  type: "bulk"
+  base_url: "https://datos.jus.gob.ar"
+  endpoints:
+    dataset: "/api/3/action/package_show?id=base-de-datos-legislativos-infoleg"
+    sample_csv: "/dataset/d9a963ea-8b1d-4ca3-9dd9-07a4773e8c23/resource/8b1c2310-564e-41e6-9a84-99cfa9939bbc/download/base-infoleg-normativa-nacional-muestreo.csv"
+    full_zip: "/dataset/d9a963ea-8b1d-4ca3-9dd9-07a4773e8c23/resource/bf0ec116-ad4e-4572-a476-e57167a84403/download/base-infoleg-normativa-nacional.zip"
+  full_text_base: "http://servicios.infoleg.gob.ar"
+
+data_model:
+  type: "legislation"
+  primary_key: "id_norma"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "id_norma"
+      description: "InfoLEG unique norm identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "tipo_norma"
+      description: "Norm type (Ley, Decreto, Resolución, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "numero_norma"
+      description: "Norm number"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Brief title (titulo_resumido)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Enactment date (fecha_sancion)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "organismo_origen"
+      description: "Issuing body/agency"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "url"
+      description: "URL to full text on InfoLEG"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "numero_boletin"
+      description: "Official Bulletin number"
+    - name: "fecha_boletin"
+      description: "Official Bulletin date"
+    - name: "pagina_boletin"
+      description: "Official Bulletin page"
+    - name: "clase_norma"
+      description: "Norm class"
+    - name: "titulo_sumario"
+      description: "Summary title"
+    - name: "texto_resumido"
+      description: "Text summary/abstract"
+    - name: "observaciones"
+      description: "Observations/notes"
+    - name: "texto_actualizado"
+      description: "URL to consolidated/updated text if available"
+
+notes: |
+  - CKAN-based open data portal with bulk CSV/ZIP downloads
+  - Sample CSV has 1000 records; full ZIP has entire database
+  - ~37% of records have direct texto_original URLs for full text
+  - Full text pages are simple HTML at servicios.infoleg.gob.ar
+  - Updated monthly (last update: March 2026)
+  - License: CC BY 4.0
+  - Language: Spanish

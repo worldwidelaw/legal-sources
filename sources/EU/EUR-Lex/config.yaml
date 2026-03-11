@@ -1,0 +1,38 @@
+source:
+  id: "EU/EUR-Lex"
+  country: "EU"
+  name: "EUR-Lex Portal"
+  description: "Official EU legislation, treaties, and CJEU case law database"
+  url: "https://eur-lex.europa.eu"
+  data_types:
+    - legislation
+    - case_law
+
+schema:
+  key_fields:
+    - celex_id
+    - document_type
+    - title
+    - date
+    - url
+    - full_text
+
+api:
+  type: "multiple"
+  endpoints:
+    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
+    cellar_base: "http://publications.europa.eu/resource/cellar/"
+    eurlex_api: "https://eur-lex.europa.eu/eurlex-ws"
+  auth: "none"
+  rate_limit:
+    requests_per_second: 2
+    delay_seconds: 1
+
+pagination:
+  type: "offset"
+  page_size: 100
+
+documentation:
+  - "https://eur-lex.europa.eu/content/help/data-reuse/reuse-contents-eurlex-details.html"
+  - "https://op.europa.eu/en/web/cellar/cellar-data"
+  - "https://eur-lex.europa.eu/content/tools/webservices/DataExtractionUsingWebServices.pdf"

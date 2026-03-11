@@ -1,0 +1,71 @@
+source_id: BA/RS
+name: Republika Srpska Legislation
+description: |
+  Legislation from Republika Srpska (one of the two entities of Bosnia and Herzegovina).
+  Fetches consolidated legislation from Paragraf BA, which provides free public access
+  to key RS laws, regulations, and decisions originally published in Službeni glasnik
+  Republike Srpske (Official Gazette of Republika Srpska).
+
+country: BA
+region: Republika Srpska
+data_types:
+  - legislation
+
+url: https://www.paragraf.ba/besplatni-propisi-republike-srpske.html
+official_gazette: Službeni glasnik Republike Srpske
+license: public  # Free public access via Paragraf BA
+
+auth: none
+
+schedule:
+  bootstrap: manual
+  updates: weekly
+
+schema:
+  key_fields:
+    - _id
+    - gazette_number
+    - slug
+
+  fields:
+    _id:
+      type: string
+      description: Unique document identifier
+    _source:
+      type: string
+      description: Source identifier (BA/RS)
+    _type:
+      type: string
+      description: Document type (legislation)
+    _fetched_at:
+      type: datetime
+      description: ISO 8601 timestamp of fetch
+    title:
+      type: string
+      description: Document title
+    text:
+      type: string
+      description: Full text of the legislation
+    date:
+      type: date
+      description: Publication date in gazette
+    url:
+      type: string
+      description: Link to original document
+    gazette_number:
+      type: string
+      description: Official gazette issue number (e.g., "64/2017")
+    doc_type:
+      type: string
+      description: Document type (zakon, uredba, pravilnik, odluka, etc.)
+    language:
+      type: string
+      description: Language code (sr - Serbian)
+
+notes: |
+  - Source provides ~160+ key legislation documents
+  - All documents have full text in HTML format
+  - Documents are consolidated/precisceni versions with amendments incorporated
+  - Covers major laws (zakon/zakonik), regulations (uredba), rulebooks (pravilnik),
+    and decisions (odluka)
+  - Complements BA/SluzbenGlasnik (state-level) and BA/FBiH (Federation of BiH)

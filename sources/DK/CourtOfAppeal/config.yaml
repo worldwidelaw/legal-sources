@@ -1,0 +1,61 @@
+# DK/CourtOfAppeal - Danish Courts Database (Domsdatabasen)
+# https://domsdatabasen.dk
+
+source:
+  id: DK/CourtOfAppeal
+  name: Danish Courts Database (Domsdatabasen)
+  country: DK
+  country_name: Denmark
+  url: https://domsdatabasen.dk
+  description: >
+    Court decisions from all Danish courts including the Supreme Court (Højesteret),
+    High Courts (Østre and Vestre Landsret), district courts (byretter), and the
+    Maritime and Commercial High Court. Contains both civil and criminal cases.
+  data_types:
+    - case_law
+  language: da
+  license: Public Domain (Danish Copyright Law §9)
+
+api:
+  type: rest
+  base_url: https://domsdatabasen.dk/webapi/api
+  endpoints:
+    rss_feeds: /rssfeeds
+    case_search: /Case/rss
+    case_detail: /Case/get/{id}
+    document: /Case/document/{id}
+  auth: none
+  rate_limit: 1 request/second
+
+schema:
+  key_fields:
+    - _id
+    - ecli
+    - court_case_number
+  text_field: text
+  date_field: date
+  fields:
+    _id: Unique identifier (format: DK-DDB-{case_id})
+    _source: Source identifier (DK/CourtOfAppeal)
+    _type: Document type (case_law)
+    _fetched_at: ISO 8601 timestamp when fetched
+    title: Case headline/description
+    text: Full text of the judgment (cleaned from HTML)
+    date: Verdict date (YYYY-MM-DD)
+    url: Link to case on domsdatabasen.dk
+    language: Language code (da)
+    ecli: European Case Law Identifier
+    court_case_number: Court's case number
+    court: Name of the court
+    case_type: Type of case procedure
+    profession: Case category (civil/criminal)
+    instance: Court instance level
+    verdict_status: Status of the verdict
+    subjects: List of case topics
+    participants: List of case participants with roles
+
+notes: |
+  The Domsdatabasen web API is publicly accessible without authentication.
+  Full text is provided as HTML and cleaned to plain text.
+  The database was launched in January 2022 and contains cases from 2020 onwards.
+  Some documents may be anonymized to protect personal information.

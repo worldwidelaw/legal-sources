@@ -1,0 +1,127 @@
+# ===================================================================
+# BE/MoniteurBelge -- Belgian Official Journal (Moniteur Belge / Belgisch Staatsblad)
+# ===================================================================
+# Full text available via ELI (European Legislation Identifier) URIs.
+# No authentication required. Licensed CC Zero (CC 0).
+#
+# Primary endpoint: ELI URIs on ejustice.just.fgov.be
+# Fallback: CGI article_body.pl endpoint
+# Docs: https://eur-lex.europa.eu/eli-register/belgium.html
+# ===================================================================
+
+source:
+  id: "BE/MoniteurBelge"
+  country: "BE"
+  name: "Moniteur Belge / Belgisch Staatsblad"
+  url: "https://www.ejustice.just.fgov.be"
+  description: |
+    Belgium's official gazette operated by the Federal Public Service Justice.
+    Publishes all federal laws, decrees, regulations, and official notices.
+    Available in Dutch (Belgisch Staatsblad), French (Moniteur Belge), and
+    German. Full text accessible via ELI (European Legislation Identifier)
+    URIs returning HTML. Data licensed CC Zero (CC 0).
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5    # 1 request every 2 seconds (conservative)
+  burst: 3
+
+api:
+  type: "eli"                   # European Legislation Identifier URIs
+  base_url: "https://www.ejustice.just.fgov.be"
+  endpoints:
+    # ELI browsing endpoints (list legislation by year/month/day)
+    eli_browse: "/eli/{type}/{year}"
+    # ELI full text endpoints
+    eli_justel: "/eli/{type}/{year}/{month}/{day}/{numac}/justel"    # Consolidated text
+    eli_moniteur: "/eli/{type}/{year}/{month}/{day}/{numac}/moniteur" # Original published text
+    # Fallback CGI endpoints
+    article_body: "/cgi/article_body.pl"       # Full text body (params: language, numac, pub_date)
+    summary: "/cgi/summary.pl"                 # Daily table of contents
+    article: "/cgi/article.pl"                 # Document viewer with metadata
+  legislation_types:
+    - loi         # Federal laws (lois/wetten)
+    - decret      # Regional/community decrees
+    - ordonnance  # Brussels ordinances
+    - arrete      # Royal/ministerial decrees (secondary legislation)
+    - constitution # Constitutional provisions
+  pagination:
+    by_year: true                # Iterate through years per legislation type
+    eli_listing: true            # /eli/{type}/{year} returns year listing
+
+data_model:
+  type: "legislation"
+  primary_key: "numac"
+  update_strategy: "upsert"
+  versioning: "none"
+  dedup_key:
+    - "numac"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "numac"
+      description: "NUMAC identifier (Belgian legislative numbering system)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation (fetched from ELI /justel endpoint)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "document_type"
+      description: "Type of document (loi, decret, arrete, ordonnance, constitution)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date of enactment/signature (ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "ELI URL to consolidated text on ejustice.just.fgov.be"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "language"
+      description: "Language (nl/fr/de)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "year"
+      description: "Year of enactment"
+      type: "integer"
+      role: "temporal_key"
+      required: true
+  secondary_fields:
+    - name: "date_publication"
+      description: "Publication date in the Moniteur Belge"
+    - name: "authority"
+      description: "Issuing authority"
+    - name: "eli_uri"
+      description: "Full ELI URI for the document"
+    - name: "moniteur_text"
+      description: "Original published text (from /moniteur endpoint, if different from consolidated)"
+
+notes: |
+  - Full text available via ELI URIs: /eli/{type}/{yyyy}/{mm}/{dd}/{numac}/justel
+  - ELI browse listings: /eli/{type}/{year} lists all documents for a year
+  - Fallback: CGI article_body.pl with language, numac, pub_date params
+  - Data from September 22, 1998 onwards (full text), some metadata from 1997
+  - Three languages: French (F), Dutch (N), German (D)
+  - License: CC Zero (CC 0) per data.gov.be
+  - Two text versions: "justel" (consolidated) and "moniteur" (original)
+  - Contact: info.moniteur@just.fgov.be / info.staatsblad@just.fgov.be
+  - Also consider: Vlaamse Codex API for Flemish legislation (separate source)

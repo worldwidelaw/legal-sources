@@ -1,0 +1,52 @@
+source_id: CZ/NSS
+name: Czech Supreme Administrative Court (Nejvyšší správní soud)
+country: CZ
+language: cs
+data_types:
+  - case_law
+
+endpoints:
+  collection_base: https://sbirka.nssoud.cz
+  archive: https://sbirka.nssoud.cz/cz/archiv
+  current_edition: https://sbirka.nssoud.cz/cz/aktualni-vydani
+  search_form: https://sbirka.nssoud.cz/cz/vyhledavani
+
+license: Open access (no explicit license, public government data)
+
+schema:
+  key_fields:
+    - _id
+    - ecli
+    - case_reference
+    - collection_number
+  content_fields:
+    - text
+    - legal_principle
+  date_fields:
+    - date
+    - _fetched_at
+
+fetcher:
+  class: NSSFetcher
+  module: bootstrap
+  rate_limit: 1.5  # seconds between requests
+
+notes: |
+  The Czech Supreme Administrative Court (Nejvyšší správní soud - NSS) publishes
+  decisions through Sbírka rozhodnutí NSS (Collection of NSS Decisions).
+
+  The collection is organized by year (ročník) and issue number (číslo), with
+  approximately 12 issues per year since 2003.
+
+  Decision pages contain:
+  - Collection number (sbírkové číslo): e.g., 4716/2026
+  - Case reference (spisová značka): e.g., 30 Af 3/2023-129
+  - Full text of the decision
+  - Legal principle/headnote
+  - Related legislation references
+
+  URL pattern: https://sbirka.nssoud.cz/cz/{slug}.p{id}.html
+
+  The database contains published decisions from 2003 onwards, covering
+  administrative law cases including taxes, immigration, social security,
+  public procurement, and other administrative matters.

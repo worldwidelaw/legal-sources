@@ -1,0 +1,38 @@
+source:
+  id: EG/LegalCorpus
+  country: EG
+  name: Egyptian Legal Corpus (Hugging Face)
+  url: https://huggingface.co/datasets/dataflare/egypt-legal-corpus
+  license: MIT
+  language: ar
+
+data:
+  types:
+    - legislation
+  format: parquet
+  access_method: huggingface_datasets
+  records_count: 2434
+  tokens_count: 25054372
+
+schema:
+  key_fields:
+    - _id
+    - law_name
+    - title
+    - text
+    - categories
+    - tokens
+
+auth:
+  required: false
+  type: none
+
+rate_limit:
+  requests_per_second: null  # HuggingFace handles this
+  delay_between_requests: 0
+
+notes: |
+  Egyptian Legal Corpus dataset from Hugging Face.
+  Contains 2,434 Egyptian laws with full Arabic text.
+  MIT licensed, freely accessible.
+  Hierarchical category taxonomy for document classification.

@@ -1,0 +1,22 @@
+{
+  "_id": "815_OE",
+  "_source": "EE/Riigikogu",
+  "_type": "legislation",
+  "_fetched_at": "2026-02-11T22:05:38.691835+00:00",
+  "title": "Riigikogu otsus „Ettepaneku tegemine Vabariigi Valitsusele töötada välja elektrihinna kriisi leevendamise pakett\"",
+  "text": "Eelnõuga tehakse ettepanek töötada välja elektrihinna kriisi leevendamise pakett, mille eesmärk on leevendada erakordselt kõrgete elektrihindade mõju Eesti elanike ja ettevõtjate toimetulekule, tagada energiajulgeolek ning säilitada majanduslik stabiilsus.",
+  "date": "2026-02-09",
+  "url": "https://www.riigikogu.ee/tegevus/eelnoud/eelnou/b0ba755b-40aa-487f-bc8e-baa0d806d618",
+  "uuid": "b0ba755b-40aa-487f-bc8e-baa0d806d618",
+  "mark": 815,
+  "draft_type": "OE",
+  "draft_type_name": "Resolution draft (Otsuse eelnõu)",
+  "status": "MENETLUSSE_VOETUD",
+  "stage": "MENETLUSSE_VOETUD",
+  "initiators": [
+    "Eesti Keskerakonna fraktsioon"
+  ],
+  "leading_committee": "Rahanduskomisjon",
+  "membership": 15,
+  "introduction": "Eelnõuga tehakse ettepanek töötada välja elektrihinna kriisi leevendamise pakett, mille eesmärk on leevendada erakordselt kõrgete elektrihindade mõju Eesti elanike ja ettevõtjate toimetulekule, tagada energiajulgeolek ning säilitada majanduslik stabiilsus."
+}

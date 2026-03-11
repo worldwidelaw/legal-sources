@@ -1,0 +1,31 @@
+{
+  "_id": "PIONANR5L16B0097",
+  "_source": "FR/AssembleeNationale",
+  "_type": "legislation",
+  "_fetched_at": "2026-02-12T07:05:35.653694+00:00",
+  "title": "proposition de loi tendant à renforcer l'intervention du maire dans la lutte contre l'introduction et la propagation des espèces exotiques envahissantes",
+  "text": "N ° 97 rectifié \n\n_____ \n\nASSEMBLÉE NATIONALE \n\nCONSTITUTION DU 4 OCTOBRE 1958 \n\nSEIZIÈME LÉGISLATURE \n\nEnregistré à la Présidence de l’Assemblée nationale le 12 juillet 2022. \n\nPROPOSITION DE LOI \n\nADOPTÉE PAR LE SÉNAT, \n\ntendant à renforcer l’ intervention du maire dans la lutte contre l’ introduction et la propagation des espèces exotiques envahissantes , \n\nTRANSMISE PAR \n\nM. LE PRÉSIDENT DU SÉNAT \n\nÀ \n\nMME LA PRÉSIDENTE \n\nDE L’ASSEMBLÉE NATIONALE \n\n(Renvoyée à la commission des lois constitutionnelles, de la législation et de l’administration générale \nde la République, à défaut de constitution d’une commission spéciale \ndans les délais prévus par les articles 30 et 31 du Règlement.) \n\nLe Sénat a adopté, en première lecture, la proposition de loi dont la teneur suit : \n\nVoir les numéros : \n\nSénat : 215 , 475 , 476 et T.A. 95 (2018‑2019). \n\n– 1 – \n\nArticle unique \n\nL’article L. 411‑8 du code de l’environnement est complété par un alinéa ainsi rédigé : \n\n« Lorsqu’il constate la présence dans le milieu naturel d’une ou plusieurs espèces mentionnées aux articles L. 411‑5 ou L. 411‑6, le maire peut en aviser l’autorité administrative mentionnée au premier alinéa du présent article. » \n\nDélibéré en séance publique, à Paris, le 7 mai 2019. \n\nLe Président, \n\nSigné : Gérard LARCHER",
+  "date": "2022-07-12",
+  "url": "https://www.assemblee-nationale.fr/dyn/16/textes/pionanr5l16b0097",
+  "legislature": "16",
+  "denomination": "Proposition de loi",
+  "dossier_ref": "DLR5L15N37420",
+  "classification": {
+    "famille": {
+      "depot": {
+        "code": "INITNAV",
+        "libelle": "Initiative en Navette"
+      },
+      "classe": {
+        "code": "PIONLOI",
+        "libelle": "Proposition de loi"
+      }
+    },
+    "type": {
+      "code": "PION",
+      "libelle": "Proposition de loi"
+    },
+    "sousType": null,
+    "statutAdoption": null
+  }
+}

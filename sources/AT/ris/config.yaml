@@ -1,0 +1,168 @@
+# ===================================================================
+# AT/RIS -- Rechtsinformationssystem (Austrian Legal Information System)
+# ===================================================================
+# Free JSON REST API, no authentication required.
+# Provides consolidated federal legislation + case law from all major
+# Austrian courts. Data licensed CC BY 4.0.
+# API docs: https://data.bka.gv.at/ris/api/v2.6/
+# ===================================================================
+
+source:
+  id: "AT/RIS"
+  country: "AT"
+  name: "Rechtsinformationssystem (RIS)"
+  url: "https://www.ris.bka.gv.at"
+  description: |
+    Austria's official legal database operated by the Federal Chancellery
+    (Bundeskanzleramt). Covers consolidated federal law (Bundesrecht),
+    state law (Landesrecht), and case law (Judikatur) from all major courts
+    including OGH, VfGH, VwGH, BVwG, and LVwG. Open Government Data (OGD)
+    API v2.6, returning JSON, no authentication required.
+
+data_types:
+  - legislation
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2      # API is open/unauthenticated; 2 req/s is safe
+  burst: 5
+  max_workers: 8              # concurrent full-text downloads for bootstrap-fast
+  max_rate: 10.0              # adaptive rate-limiter ceiling
+
+api:
+  type: "rest"
+  base_url: "https://data.bka.gv.at/ris/api/v2.6"
+  endpoints:
+    bundesrecht: "/Bundesrecht"
+    judikatur: "/Judikatur"
+    landesrecht: "/Landesrecht"
+    sonstige: "/Sonstige"
+    version: "/Version"
+  applications:
+    legislation:
+      - BrKons        # Consolidated federal law
+    case_law:
+      - Justiz        # General courts (OGH, OLG, LG, BG)
+      - Vfgh          # Constitutional Court
+      - Vwgh          # Supreme Administrative Court
+      - Bvwg          # Federal Administrative Court
+      - Lvwg          # State Administrative Courts
+  pagination:
+    page_param: "Seitennummer"
+    page_size_param: "DokumenteProSeite"
+    max_page_size: "OneHundred"   # 100 results per page
+
+data_model:
+  type: "mixed"                   # Both legislation and case_law
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  versioning: "temporal"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 22
+  key_fields:
+    - name: "doc_id"
+      description: "RIS document ID (e.g., NOR40258921 for legislation, JJT_... for case law)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "doc_type"
+      description: "legislation or case_law"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "applikation"
+      description: "RIS application identifier (BrKons, Justiz, Vfgh, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "title"
+      description: "Document title (Kurztitel or Geschaeftszahl)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document (fetched from XML content URL)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Primary date (publication, decision, or last modified)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "eli"
+      description: "European Legislation Identifier (legislation only)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "ecli"
+      description: "European Case Law Identifier (case law only)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "document_url"
+      description: "URL to the document on ris.bka.gv.at"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "date_published"
+      description: "Publication or decision date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "date_effective"
+      description: "Effective start date (Inkrafttretensdatum, legislation only)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "date_expired"
+      description: "Expiry date (Ausserkrafttretensdatum, legislation only)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "organ"
+      description: "Issuing body (BKA, OGH, VfGH, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+  secondary_fields:
+    - name: "gesetzesnummer"
+      description: "Law number (federal legislation)"
+    - name: "geschaeftszahl"
+      description: "Case number (case law)"
+    - name: "normen"
+      description: "Referenced legal norms (case law)"
+    - name: "indizes"
+      description: "Systematic classification indices"
+    - name: "schlagworte"
+      description: "Keywords/tags"
+    - name: "content_urls"
+      description: "URLs to full text in XML/HTML/RTF/PDF"
+    - name: "gericht"
+      description: "Court name (case law)"
+    - name: "rechtsgebiete"
+      description: "Legal areas/domains (case law)"
+  probably_ignorable:
+    - name: "import_timestamp"
+      description: "Internal RIS import timestamp (often null)"
+
+notes: |
+  - API v2.6 (May 2024), returns JSON, no auth needed
+  - 436K+ federal legislation records, 138K+ case law records
+  - For bulk access: insert 2s pauses, prefer off-hours (18:00-06:00 CET)
+  - Notify ris.it@bka.gv.at before large-scale downloads
+  - Max 100 results per page (DokumenteProSeite=OneHundred)
+  - Data licensed CC BY 4.0 (Austrian Open Government Data)
+  - Language: German
+  - Full document text available via content URLs (XML/HTML/RTF/PDF)

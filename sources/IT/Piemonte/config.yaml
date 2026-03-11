@@ -1,0 +1,29 @@
+source:
+  id: IT/Piemonte
+  name: Piemonte Regional Legislation
+  country: IT
+  url: https://arianna.consiglioregionale.piemonte.it/
+  data_types:
+    - legislation
+  auth: none
+  license: CC0 1.0 Universal (Italian public sector information)
+
+schema:
+  key_fields:
+    - _id
+    - law_number
+    - year
+  date_fields:
+    - date
+    - date_bur
+
+rate_limits:
+  requests_per_second: 1.0
+  delay_between_requests: 1.0
+
+notes: |
+  Piemonte regional legislation via Arianna database XML API.
+  Uses NIR (Norme in Rete) XML format.
+  Coverage: Regional laws from 1970s to present.
+  Approach: Iterate through law numbers (1-N) for each year.
+  XML endpoint: ariaint/TESTO?LAYOUT=PRESENTAZIONE&TIPODOC=LEGGI&LEGGE={num}&LEGGEANNO={year}&TIPOVISUAL=XML

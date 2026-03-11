@@ -1,0 +1,34 @@
+source:
+  id: NL/AP
+  name: Dutch Data Protection Authority (Autoriteit Persoonsgegevens)
+  country: NL
+  url: https://www.autoriteitpersoonsgegevens.nl
+  data_types:
+    - case_law  # Enforcement decisions (boetebesluiten, besluiten)
+    - doctrine  # Guidelines, advice, Woo decisions
+  language: nl
+  auth: none
+  license: "Open data (public decisions)"
+
+endpoints:
+  documents_base: https://www.autoriteitpersoonsgegevens.nl/documenten
+  rss_feed: https://www.autoriteitpersoonsgegevens.nl/feed/publication/rss.xml
+  sanctions_page: https://www.autoriteitpersoonsgegevens.nl/boetes-en-andere-sancties
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+  optional_fields:
+    - document_type
+    - topics
+    - summary
+    - pdf_url
+
+fetch:
+  rate_limit_delay: 2.0
+  page_size: 10
+  max_pages: 200

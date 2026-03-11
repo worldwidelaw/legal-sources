@@ -1,0 +1,37 @@
+source:
+  id: HU/Constitutional
+  name: Hungarian Constitutional Court (Alkotmánybíróság)
+  country: HU
+  data_type: case_law
+  url: https://alkotmanybirosag.hu
+  license: Public Domain
+  language: hu
+
+endpoints:
+  recent_decisions: https://alkotmanybirosag.hu/a-legfrissebb-dontesek/
+  media_base: https://media.alkotmanybirosag.hu
+  gazette_archive: https://alkotmanybirosag.hu/az-alkotmanybirosag-hatarozatai-ab-kozlony/
+
+schema:
+  key_fields:
+    - decision_number
+    - date
+  normalized_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+    - decision_number
+    - decision_type
+    - rapporteur
+    - summary
+    - pdf_url
+
+fetch:
+  method: scrape_nextjs
+  rate_limit: 1.5
+  user_agent: "World Wide Law/1.0 (EU Legal Research)"

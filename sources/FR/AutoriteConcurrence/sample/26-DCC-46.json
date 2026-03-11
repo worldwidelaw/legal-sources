@@ -1,0 +1,27 @@
+{
+  "_id": "FR/ADLC/26-DCC-46",
+  "_source": "FR/ADLC",
+  "_type": "case_law",
+  "_fetched_at": "2026-02-20T14:39:13.942243+00:00",
+  "decision_id": "26-DCC-46",
+  "title": "relative à la création d’une entreprise commune dénommée Bear Rioz par les sociétés Janseb et ITM Entreprises",
+  "date": "2026-02-04",
+  "year": 2026,
+  "decision_type": "merger_control",
+  "decision_type_code": "DCC",
+  "url": "https://www.autoritedelaconcurrence.fr/fr/decision-de-controle-des-concentrations/relative-la-creation-dune-entreprise-commune-denommee-bear",
+  "text": "RÉPUBLIQUE FRANÇAISE\nDécision n° 26-DCC-46 du 4 février 2026 relative à la création d'une entreprise commune dénommée Bear Rioz par les sociétés Janseb et ITM Entreprises\nL'Autorité de la concurrence,\nVu le dossier de notification adressé complet au service des concentrations le 16 janvier 2026, relatif à la création d'une entreprise commune dénommée Bear Rioz par les sociétés Janseb et ITM Entreprises, formalisée par une lettre d'offre ferme et irrévocable d'acquisition du fonds de commerce et de son immobilier du 22 mai 2025 et une promesse unilatérale d'achat du 16 juin 2025 ;\nVu le livre IV du code de commerce relatif à la liberté des prix et de la concurrence, et notamment ses articles L. 430-1 à L. 430-7 ;\nVu les autres pièces du dossier ;\nAdopte la décision suivante :\n1. L'opération notifiée consiste en la création, par les sociétés Janseb et ITM Entreprises, d'une entreprise commune de plein exercice dénommée Bear Rioz, laquelle a pour objet l'acquisition et l'exploitation d'un fonds de commerce de distribution à dominante alimentaire, actuellement sous enseigne Colruyt mais qui sera exploité sous enseigne Intermarché, d'une surface de vente de 1 162 m², dans la ville de Rioz (70). Cette opération constitue une concentration, au sens de l'article L. 430-1 du code de commerce. Compte tenu des chiffres d'affaires réalisés par les entreprises concernées, l'opération ne relève pas de la compétence de l'Union européenne. En revanche, les seuils de contrôle mentionnés au II de l'article L. 430-2 du code de commerce sont franchis. La présente opération est donc soumise aux dispositions des articles L. 430-3 et suivants du code de commerce relatifs à la concentration économique.\n2. Au vu des éléments du dossier, l'opération n'est pas de nature à porter atteinte à la concurrence sur les marchés concernés.\nDÉCIDE\nArticle unique : L'opération notifiée sous le numéro 25-348 est autorisée.\nLe président,\nBenoît Cœuré\n Autorité de la concurrence",
+  "companies_involved": [
+    "Société Bear Rioz",
+    "Sociétés Janseb et ITM Entreprises"
+  ],
+  "notifying_party": "Sociétés Janseb et ITM Entreprises",
+  "sector": [
+    "Distribution",
+    "Grande consommation"
+  ],
+  "simplified_procedure": true,
+  "merger_phase": "Phase 1",
+  "merger_disposition": "Autorisation",
+  "operation_type": "Création d’entreprise commune"
+}

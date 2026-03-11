@@ -1,0 +1,123 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — Turkish Council of State Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "TR/Danistay"
+  country: "TR"
+  name: "Turkish Council of State (Danıştay)"
+  url: "https://www.danistay.gov.tr"
+  description: |
+    Council of State of the Republic of Turkey (Danıştay).
+    Supreme administrative court handling administrative law appeals.
+    This source provides precedent-setting decisions (İçtihat Kararları)
+    from the Administrative and Tax Chamber Boards.
+    Coverage: Recent precedent decisions with full text via PDF extraction.
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "json_api"
+  base_url: "https://api.danistay.gov.tr/api/v1"
+  endpoints:
+    current_decisions:
+      path: "/tr/guncelKararlar"
+      method: "GET"
+      description: "List of recent precedent decisions with summaries and PDF links"
+    decision_bulletins:
+      path: "/tr/yayin/kararlarBultenler"
+      method: "GET"
+      description: "Decision bulletins from chamber boards"
+  pdf_base_url: "https://danistay.gov.tr/assets/pdf/guncelKararlar"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "decision_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "decision_id"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "decision_id"
+      description: "Unique decision identifier from API"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (truncated summary)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the PDF document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "chamber"
+      description: "Court chamber (e.g., İdari Dava Daireleri Kurulu)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "case_number"
+      description: "Case reference (Esas Sayısı)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "decision_number"
+      description: "Decision reference (Karar Sayısı)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "decision_type"
+      description: "Type of decision (precedent, unification, annulment)"
+      type: "string"
+      role: "classification"
+      required: false
+  secondary_fields:
+    - name: "summary"
+      description: "Original summary from API (ozet)"
+    - name: "pdf_filename"
+      description: "PDF filename on server"
+    - name: "pdf_url"
+      description: "Full URL to PDF document"
+    - name: "_raw"
+      description: "Complete raw data from API"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: Turkish (UTF-8)
+  - Coverage: Recent precedent-setting decisions
+  - API returns ~235 decisions with summaries and PDF links
+  - Full text is extracted from PDF documents using pdfplumber/PyPDF2
+  - Decisions are primarily from İDDK (Administrative) and VDDK (Tax) chambers
+  - These are precedent decisions used for unification of case law
+  - The karararama.danistay.gov.tr search portal (372K+ decisions)
+    requires browser/JavaScript and is not accessible via simple HTTP

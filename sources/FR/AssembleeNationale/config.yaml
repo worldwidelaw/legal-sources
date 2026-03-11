@@ -1,0 +1,30 @@
+source:
+  id: FR/AssembleeNationale
+  name: French National Assembly (Assemblée Nationale)
+  country: FR
+  language: fr
+  url: https://data.assemblee-nationale.fr
+
+data:
+  types:
+    - legislation
+  format: html_json
+  access: open_data
+  license: Licence Ouverte / Open Licence
+
+endpoints:
+  # Open data ZIP files with document IDs
+  documents_zip: https://data.assemblee-nationale.fr/static/openData/repository/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip
+  # Full text HTML endpoint (append document ID)
+  full_text_base: https://www.assemblee-nationale.fr/dyn/docs/
+  # Metadata JSON endpoint
+  metadata_base: https://www.assemblee-nationale.fr/dyn/opendata/
+
+fetch:
+  method: bulk_zip_then_individual
+  rate_limit: 1.0  # seconds between requests
+
+schema:
+  key_fields:
+    - uid
+    - legislature

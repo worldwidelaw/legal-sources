@@ -1,0 +1,121 @@
+# ===================================================================
+# AT/Bundesgesetzblatt -- Austrian Federal Law Gazette (BGBl)
+# ===================================================================
+# Authentic versions of laws as published in the Federal Law Gazette.
+# Since 2004, the electronic version is legally binding (authentisch).
+# Uses the RIS OGD API v2.6 with BgblAuth application.
+# ===================================================================
+
+source:
+  id: "AT/Bundesgesetzblatt"
+  country: "AT"
+  name: "Bundesgesetzblatt (BGBl)"
+  url: "https://www.ris.bka.gv.at/Bgbl-Auth/"
+  description: |
+    Austrian Federal Law Gazette - the official journal for publishing
+    federal legislation. Since January 1, 2004, the electronic version
+    published on RIS is legally binding (authentisch). Covers:
+    - BGBl I: Federal laws (Bundesgesetze)
+    - BGBl II: Regulations/ordinances (Verordnungen)
+    - BGBl III: International law (Staatsvertraege, EU law)
+    Data licensed CC BY 4.0 (Austrian Open Government Data).
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5    # 1 request every 2 seconds (conservative for bulk)
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://data.bka.gv.at/ris/api/v2.6"
+  endpoints:
+    search: "/Bundesrecht"
+    version: "/Version"
+  application: "BgblAuth"
+  pagination:
+    page_param: "Seitennummer"
+    page_size_param: "DokumenteProSeite"
+    max_page_size: "OneHundred"   # 100 results per page
+
+data_model:
+  type: "legislation"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "none"           # Gazette issues are immutable once published
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 17
+  key_fields:
+    - name: "_id"
+      description: "RIS document ID (e.g., BGBLA_2026_I_1)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Short title (Kurztitel)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the law as published"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (Ausgabedatum)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Direct URL to the document on RIS"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "bgbl_number"
+      description: "Official gazette number (e.g., BGBl. I Nr. 1/2026)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "eli"
+      description: "European Legislation Identifier"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "teil"
+      description: "Gazette part (Teil1=BGBl I, Teil2=BGBl II, Teil3=BGBl III)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "typ"
+      description: "Document type (Bundesgesetz, Verordnung, Kundmachung, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "organ"
+      description: "Issuing ministry/body"
+      type: "string"
+      role: "classification"
+      required: false
+  secondary_fields:
+    - name: "title_full"
+      description: "Full official title (Titel)"
+    - name: "content_urls"
+      description: "URLs to full text in XML/HTML/RTF/PDF formats"
+    - name: "alte_dokumentnummer"
+      description: "Legacy document number"
+
+notes: |
+  - Authentic BGBl since 2004 (~18K+ records)
+  - BGBl I: Federal laws passed by Parliament
+  - BGBl II: Regulations issued by ministries
+  - BGBl III: International treaties, EU transpositions
+  - Full text available in XML (preferred), HTML, RTF, and PDF
+  - ELI URIs follow pattern: /eli/bgbl/{I,II,III}/{year}/{number}/{date}
+  - Data licensed CC BY 4.0

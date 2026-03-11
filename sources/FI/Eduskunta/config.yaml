@@ -1,0 +1,59 @@
+source:
+  id: FI/Eduskunta
+  country: FI
+  name: Finnish Parliament (Eduskunta)
+  url: https://avoindata.eduskunta.fi
+  description: |
+    Finnish Parliament open data service providing parliamentary documents including
+    government proposals (HE), committee reports, and other legislative proceedings.
+    Complements FI/Finlex which covers enacted legislation.
+
+data:
+  types:
+    - legislation  # Government proposals, committee reports, amendments
+  format: XML (custom Parliament schema in VaskiData table)
+  language: fi, sv
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: REST
+  base_url: https://avoindata.eduskunta.fi/api/v1
+  docs: https://avoindata.eduskunta.fi/swagger/apidocs.html
+
+schema:
+  key_fields:
+    - name: eduskunta_id
+      type: string
+      required: true
+    - name: row_id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+  date_fields:
+    - Created
+    - Imported
+  text_field: text
+
+fetch:
+  strategy: batch
+  batch_size: 10
+  max_pages: null  # Fetch all pages for bootstrap
+  document_types:
+    - GovernmentProposal  # HE - Hallituksen esitys
+    - CommitteeReport     # Various committee reports
+    - MinutesOfPlenary    # Plenary session minutes
+
+license:
+  name: Open Data - Public Domain
+  url: https://avoindata.eduskunta.fi

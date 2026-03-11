@@ -1,0 +1,49 @@
+source:
+  id: FR/ConventionsCollectives
+  name: French Collective Bargaining Agreements (Base Kali)
+  description: |
+    French collective bargaining agreements (conventions collectives) from
+    DILA's KALI database. Covers all national, regional, and departmental
+    collective labor agreements and associated texts (salary grids, extension
+    orders). Essential for French employment law practice.
+  url: https://echanges.dila.gouv.fr/OPENDATA/KALI/
+  country: FR
+  data_types:
+    - doctrine
+    - collective_agreements
+  auth: none
+  license: Licence Ouverte / Open Licence (Etalab)
+
+schema:
+  key_fields:
+    - _id
+    - idcc
+    - title
+    - text
+  optional_fields:
+    - date_signature
+    - date_publi
+    - date_debut
+    - date_fin
+    - etat
+    - nature
+    - num_brochure
+    - ministere
+    - url
+
+fetch:
+  method: bulk_archive
+  base_url: https://echanges.dila.gouv.fr/OPENDATA/KALI/
+  archive_pattern: "KALI_YYYYMMDD-HHMMSS.tar.gz"
+  global_dump_pattern: "Freemium_kali_global_YYYYMMDD-HHMMSS.tar.gz"
+  update_frequency: daily
+  rate_limit_delay: 1.0
+
+notes: |
+  - KALI database structure mirrors LEGI (legislation)
+  - KALICONT = Convention collective container (metadata)
+  - KALISCTA = Section titles (structure)
+  - KALIARTI = Articles with full text
+  - IDCC = Identifiant de la Convention Collective
+  - Covers ~500+ national agreements + regional/departmental variants
+  - Used to determine which agreement applies to a given business sector

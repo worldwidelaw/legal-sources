@@ -1,0 +1,38 @@
+source:
+  id: US/GovInfo
+  name: GovInfo (US Federal Legislation)
+  country: US
+  url: https://www.govinfo.gov
+  bulk_data: https://www.govinfo.gov/bulkdata
+
+data:
+  types:
+    - legislation
+  collections:
+    - BILLS: Congressional Bills
+    - CFR: Code of Federal Regulations
+    - PLAW: Public and Private Laws
+    - FR: Federal Register
+  coverage:
+    temporal: 1996 to present (varies by collection)
+    estimated_size: Millions of documents
+
+fetch:
+  method: Bulk Data Repository
+  base_url: https://www.govinfo.gov/bulkdata
+  auth:
+    type: none
+    note: No API key required for bulk data
+  response_format: XML
+  full_text_format: XML
+
+schema:
+  key_fields:
+    - collection_code
+    - doc_id
+  metadata:
+    - title
+    - date
+    - short_title
+    - publisher
+    - agency

@@ -1,0 +1,46 @@
+# GR/Diavgeia -- Greek Government Decisions
+# Diavgeia is Greece's transparency program (Law 3861/2010)
+
+source:
+  id: GR/Diavgeia
+  name: Diavgeia - Greek Government Decisions
+  country: GR
+  url: https://diavgeia.gov.gr
+  description: >
+    Greek government decisions published under the Diavgeia transparency program.
+    All public sector organizations must publish their decisions online.
+    Contains 71+ million administrative decisions since 2010.
+  data_types:
+    - administrative_decisions
+  license: CC-BY
+  auth: none
+
+# Schema for normalized records
+schema:
+  key_fields:
+    - _id        # ADA (unique decision identifier)
+    - title      # Subject of the decision
+    - text       # Full text extracted from PDF
+    - date       # Issue date
+    - url        # Original document URL
+
+  optional_fields:
+    - published_date
+    - organization_id
+    - decision_type
+    - thematic_categories
+    - extra_fields
+    - status
+    - document_url
+
+# API endpoints
+endpoints:
+  search: https://diavgeia.gov.gr/luminapi/opendata/search
+  decisions: https://diavgeia.gov.gr/luminapi/api/decisions/{ada}
+  document: https://diavgeia.gov.gr/doc/{ada}
+  organizations: https://diavgeia.gov.gr/luminapi/opendata/organizations
+
+# Rate limiting
+rate_limit:
+  requests_per_second: 1
+  delay_between_requests: 1.0

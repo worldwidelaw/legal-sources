@@ -1,0 +1,15 @@
+{
+  "_id": "govinfo-bills-BILLS-119s9pcs",
+  "_source": "US/GovInfo",
+  "_type": "legislation",
+  "_fetched_at": "2026-02-28T12:35:53.027767+00:00",
+  "title": "119 S9 PCS: Protection of Women and Girls in Sports Act of 2025",
+  "text": "OFFICIAL TITLE: To provide that for purposes of determining compliance with title IX of the Education Amendments of 1972 in athletics, sex shall be recognized based solely on a person's reproductive biology and genetics at birth.\n\n1. Short title: This Act may be cited as the Protection of Women and Girls in Sports Act of 2025.\n\n2. Amendment: Section 901 of the Education Amendments of 1972 (20 U.S.C. 1681) is amended by adding at the end the following:\n\n(1): It shall be a violation of subsection (a) for a recipient of Federal funds who operates, sponsors, or facilitates athletic programs or activities to permit a person whose sex is male to participate in an athletic program or activity that is designated for women or girls.\n\n(2): For purposes of this subsection, sex shall be recognized based solely on a person's reproductive biology and genetics at birth.",
+  "date": "2025-01-08",
+  "url": "https://www.govinfo.gov/bulkdata/BILLS/119/1/s/BILLS-119s9pcs.xml",
+  "collection_code": "BILLS",
+  "collection_name": "Congressional Bills",
+  "publisher": "U.S. Senate",
+  "short_title": "Protection of Women and Girls in Sports Act of 2025",
+  "agency": null
+}

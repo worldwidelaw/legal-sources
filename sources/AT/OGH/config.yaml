@@ -1,0 +1,40 @@
+source:
+  id: AT/OGH
+  country: AT
+  name: Austrian Supreme Court (Oberster Gerichtshof)
+  data_types:
+    - case_law
+  auth: none
+  url: https://www.ris.bka.gv.at/Jus/
+
+api:
+  base_url: https://data.bka.gv.at/ris/api/v2.6
+  application: Justiz
+  court_filter: OGH
+  rate_limit: 1.0
+
+schema:
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: ecli
+      type: string
+      required: false
+    - name: geschaeftszahl
+      type: string
+      required: false
+    - name: text
+      type: string
+      required: true
+  date_fields:
+    - entscheidungsdatum
+    - date_published
+
+notes: |
+  Austrian Supreme Court (Oberster Gerichtshof - OGH) case law via RIS OGD API v2.6.
+  Uses Justiz application with Gericht=OGH filter.
+  131K+ decisions covering civil and criminal supreme court judgments.
+  Full text via XML/HTML content URLs.
+  ECLI format: ECLI:AT:OGH0002:YYYY:...
+  License: CC BY 4.0 (Austrian Open Government Data)

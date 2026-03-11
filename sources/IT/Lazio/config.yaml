@@ -1,0 +1,32 @@
+source:
+  id: IT/Lazio
+  name: Lazio Regional Legislation
+  country: IT
+  region: Lazio
+  url: https://www.consiglio.regione.lazio.it/?vw=leggiregionali
+  data_types:
+    - legislation
+  auth: none
+  license: CC BY-NC-SA 2.0
+  notes: |
+    Regional laws from Lazio (Leggi Regionali) via Consiglio Regionale del Lazio.
+    Covers 1971-present. Full text available in HTML format.
+    Includes both "testo coordinato" (consolidated text) and "testo storico" (original text).
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: law_number
+      type: string
+      required: true
+    - name: year
+      type: string
+      required: true
+  date_field: date
+  text_field: text
+
+rate_limit:
+  requests_per_minute: 30
+  delay_seconds: 2.0

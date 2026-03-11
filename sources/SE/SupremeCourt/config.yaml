@@ -1,0 +1,132 @@
+source_id: SE/SupremeCourt
+name: Swedish Supreme Court (Högsta domstolen)
+country: SE
+language: swe
+
+description: |
+  Swedish Supreme Court case law from Domstolsverket's open data API.
+  Covers precedent decisions (vägledande avgöranden) from:
+  - Högsta domstolen (HDO) - Supreme Court for civil and criminal matters
+  - Högsta förvaltningsdomstolen (HFD) - Supreme Administrative Court
+  - Courts of Appeal (Hovrätter) and Administrative Courts of Appeal (Kammarrätter)
+
+  Data includes 5,500+ decisions from HDO (Supreme Court).
+  Full text extracted from official PDF attachments.
+  Covers DOM_ELLER_BESLUT (judgments), PROVNINGSTILLSTAND (leave to appeal),
+  and REFERAT (case reports) publication types.
+
+api_base: https://rattspraxis.etjanst.domstol.se/api/v1
+api_docs: https://rattspraxis.etjanst.domstol.se/openapi/puh-openapi.yaml
+
+data_types:
+  - case_law
+
+license: Open data (public domain court decisions)
+license_url: https://www.domstol.se/om-webbplatsen-och-digitala-kanaler/oppna-data/
+
+update_frequency: daily
+historical_coverage: 1981-present (summaries), 2025-present (full decisions)
+
+schema:
+  key_fields:
+    - _id
+    - primary_case_number
+    - court_code
+    - date
+
+  fields:
+    _id:
+      type: string
+      description: Unique publication ID (UUID)
+    _source:
+      type: string
+      description: Source identifier (SE/SupremeCourt)
+    _type:
+      type: string
+      description: Document type (case_law)
+    _fetched_at:
+      type: datetime
+      description: ISO 8601 timestamp when record was fetched
+    title:
+      type: string
+      description: Case title with name and case number
+    text:
+      type: string
+      description: Full text of the decision (extracted from PDF)
+    date:
+      type: date
+      description: Decision date (YYYY-MM-DD)
+    url:
+      type: url
+      description: Link to decision in search interface
+    court:
+      type: string
+      description: Full court name (Swedish)
+    court_code:
+      type: string
+      description: Court code (HDO, HFD, etc.)
+    case_numbers:
+      type: array
+      description: List of case numbers
+    primary_case_number:
+      type: string
+      description: Primary case number (e.g., T 5816-24)
+    publication_type:
+      type: string
+      description: Publication type code
+    is_precedent:
+      type: boolean
+      description: Whether this is a precedent/guiding decision
+    reference_numbers:
+      type: array
+      description: Reference numbers (NJA, RÅ, etc.)
+    legal_provisions:
+      type: array
+      description: Referenced legal provisions (SFS references)
+    sfs_numbers:
+      type: array
+      description: SFS statute numbers referenced
+    keywords:
+      type: array
+      description: Subject keywords (Swedish)
+    summary:
+      type: string
+      description: Official case summary
+
+endpoints:
+  courts:
+    method: GET
+    path: /api/v1/domstolar
+    description: List available courts
+
+  publications:
+    method: GET
+    path: /api/v1/publiceringar
+    params:
+      domstolkod: Court code filter
+      page: Page number (0-indexed)
+      pagesize: Results per page
+      publiceringstyper: Publication types filter
+      sortorder: Sort field
+      asc: Sort ascending
+
+  publication:
+    method: GET
+    path: /api/v1/publiceringar/{id}
+    description: Get single publication by ID
+
+  attachment:
+    method: GET
+    path: /api/v1/bilagor/{storageId}
+    description: Download PDF attachment
+    notes: storageId must be URL-encoded
+
+court_codes:
+  HDO: Högsta domstolen (Supreme Court)
+  HFD: Högsta förvaltningsdomstolen (Supreme Administrative Court)
+  ADO: Arbetsdomstolen (Labour Court)
+  HSV: Svea hovrätt
+  HGO: Göta hovrätt
+  MMOD: Mark- och miljööverdomstolen
+  MIOD: Migrationsöverdomstolen
+  PMOD: Patent- och marknadsöverdomstolen

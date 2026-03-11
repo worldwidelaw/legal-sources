@@ -1,0 +1,54 @@
+source_id: LV/SupremeCourt
+name: Latvian Supreme Court (Senāts)
+country: LV
+language: lv
+data_types:
+  - case_law
+
+endpoints:
+  base_url: https://manas.tiesas.lv/eTiesasMvc
+  search_url: https://manas.tiesas.lv/eTiesasMvc/lv/nolemumi
+  ecli_metadata: https://manas.tiesas.lv/eTiesasMvc/geteclimetadata/{ecli}
+  pdf_download: https://manas.tiesas.lv/eTiesasMvc/nolemumi/pdf/{id}.pdf
+
+auth:
+  type: none
+  notes: Public access via Latvian Courts Portal (manas.tiesas.lv)
+
+schema:
+  key_fields:
+    - name: ecli
+      type: string
+      required: true
+    - name: pdf_id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+
+rate_limit:
+  requests_per_minute: 30
+  delay_seconds: 2
+
+notes: |
+  Latvian Supreme Court (Augstākās tiesas Senāts) decisions from the
+  National Courts Portal (manas.tiesas.lv). Uses ECLI metadata API and
+  PDF downloads with text extraction.
+
+  Court ID 44 = Augstākās tiesas Senāts (Supreme Court Senate)
+
+  ECLI Format: ECLI:LV:AT:YYYY:MMDD.CASENUMBER.NN.TYPE
+  - LV = Latvia
+  - AT = Supreme Court
+  - YYYY = Year
+  - MMDD = Month and Day
+  - CASENUMBER = Case number
+  - NN = Sequence number
+  - TYPE = S (Spriedums/Judgment) or L (Lēmums/Decision)

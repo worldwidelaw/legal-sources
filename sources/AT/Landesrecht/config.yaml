@@ -1,0 +1,34 @@
+source:
+  id: AT/Landesrecht
+  country: AT
+  name: Austrian State Legislation (Landesrecht)
+  url: https://www.ris.bka.gv.at
+  data_types:
+    - legislation
+  auth: none
+
+rate_limit:
+  requests_per_second: 1.0
+  burst: 5
+
+schema:
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: land
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+
+metadata:
+  license: CC BY 4.0
+  update_frequency: daily
+  total_estimated_records: 275000
+  notes: |
+    State legislation from all 9 Austrian Bundesländer via RIS OGD API v2.6.
+    Uses /Landesrecht endpoint with LrKons application.
+    Includes: Landesgesetze (state laws), Verordnungen (regulations),
+    Vereinbarungen (agreements), and Kundmachungen (announcements).

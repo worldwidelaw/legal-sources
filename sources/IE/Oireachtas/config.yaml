@@ -1,0 +1,62 @@
+# IE/Oireachtas -- Houses of the Oireachtas (Irish Parliament)
+# Parliamentary debates and proceedings
+
+source:
+  id: IE/Oireachtas
+  country: IE
+  name: Houses of the Oireachtas
+  description: Irish parliamentary debates and proceedings
+  data_types:
+    - parliamentary_proceedings
+  auth: none
+  license: Oireachtas (Open Data) PSI Licence
+  license_url: https://www.oireachtas.ie/en/open-data/license/
+
+endpoints:
+  api_base: https://api.oireachtas.ie/v1
+  data_base: https://data.oireachtas.ie
+  debates: /debates
+  legislation: /legislation
+  questions: /questions
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: chamber
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: url
+      type: string
+      required: true
+
+fetcher:
+  rate_limit: 2  # requests per second
+  timeout: 120
+  retry_attempts: 3
+  sample_size: 12
+
+notes: |
+  The Oireachtas Open Data API provides access to parliamentary debates
+  dating back to 1919. Debates are available in Akoma Ntoso XML format
+  with full transcripts of all speeches, questions, and proceedings.
+
+  Covers both:
+  - Dáil Éireann (lower house)
+  - Seanad Éireann (upper house)
+
+  Data includes:
+  - Full transcripts of debates
+  - Parliamentary questions and answers
+  - Bill discussions
+  - Voting records

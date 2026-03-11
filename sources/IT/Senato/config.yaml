@@ -1,0 +1,123 @@
+# ===================================================================
+# IT/Senato -- Senato della Repubblica (Italian Senate)
+# ===================================================================
+# Open data portal with SPARQL endpoint + GitHub Akoma Ntoso repository.
+# Provides bills (Disegni di Legge), legislative procedures, and full text.
+# Data licensed CC BY 3.0.
+# Portal: https://dati.senato.it
+# GitHub: https://github.com/SenatoDellaRepubblica/AkomaNtosoBulkData
+# ===================================================================
+
+source:
+  id: "IT/Senato"
+  country: "IT"
+  name: "Senato della Repubblica (Italian Senate)"
+  url: "https://www.senato.it"
+  description: |
+    Italian Senate open data portal providing legislative documents (DDL -
+    Disegni di Legge), parliamentary procedures, voting records, and senator
+    information. Data accessible via SPARQL endpoint for metadata and GitHub
+    repository for full text in Akoma Ntoso XML format. Covers legislatures
+    13-19 (1996-present).
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1.0    # Conservative for SPARQL + GitHub
+  burst: 5
+
+api:
+  type: "sparql+github"
+  sparql_endpoint: "https://dati.senato.it/sparql"
+  github_base: "https://raw.githubusercontent.com/SenatoDellaRepubblica/AkomaNtosoBulkData/master"
+  prefixes:
+    osr: "http://dati.senato.it/osr/"
+
+data_model:
+  type: "legislation"
+  primary_key: "idFase"
+  update_strategy: "upsert"
+  dedup_key:
+    - "idFase"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "idFase"
+      description: "Senate phase ID (unique per legislative reading)"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "idDdl"
+      description: "Bill ID (Disegno di Legge identifier)"
+      type: "integer"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Bill title (titolo)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the bill from Akoma Ntoso XML"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Presentation date (dataPresentazione)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Direct URL to the bill page on senato.it"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "legislatura"
+      description: "Legislature number (13-19)"
+      type: "integer"
+      role: "classification"
+      required: true
+    - name: "fase"
+      description: "Phase identifier (e.g., S.1, C.2345)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "numeroFase"
+      description: "Bill number within the phase"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "statoDdl"
+      description: "Current status of the bill"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "ramo"
+      description: "Chamber (S=Senate, C=Camera)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "natura"
+      description: "Bill type (ordinaria, costituzionale, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "descrIniziativa"
+      description: "Initiative description (sponsor names)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+notes: |
+  - SPARQL endpoint at dati.senato.it/sparql for metadata queries
+  - Full text available via GitHub AkomaNtosoBulkData repository
+  - Akoma Ntoso XML format (international legal document standard)
+  - 58,000+ bills across legislatures 13-19 (1996-present)
+  - Data licensed CC BY 3.0
+  - Language: Italian
+  - GitHub folder structure: Leg{N}/Atto{idFase:08d}/ddlpres/*.akn.xml

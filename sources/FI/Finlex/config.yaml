@@ -1,0 +1,137 @@
+# ===================================================================
+# FI/Finlex -- Finnish Legal Database
+# ===================================================================
+# Official REST API returning Akoma Ntoso XML format.
+# No authentication required, User-Agent header mandatory.
+# Data licensed CC BY 4.0 (or CC BY-NC for consolidated law).
+# API docs: https://www.finlex.fi/en/open-data/integration-quick-guide
+# ===================================================================
+
+source:
+  id: "FI/Finlex"
+  country: "FI"
+  name: "Finlex - Finnish Legal Database"
+  url: "https://www.finlex.fi"
+  description: |
+    Finland's official legal database operated by the Ministry of Justice.
+    Provides legislation (statutes, consolidated law, treaties, government
+    proposals), authority regulations, and translations. Uses Akoma Ntoso
+    XML standard. Case law (KKO, KHO) requires separate authentication.
+    Open data API returns full document text in structured XML format.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5    # Conservative for bulk access
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://opendata.finlex.fi/finlex/avoindata/v1"
+  headers:
+    User-Agent: "WorldWideLaw/1.0 (Open Data Research)"
+  endpoints:
+    statute_list: "/akn/fi/act/statute/list"
+    statute_consolidated_list: "/akn/fi/act/statute-consolidated/list"
+    treaty_list: "/akn/fi/doc/treaty/list"
+    government_proposal_list: "/akn/fi/doc/government-proposal/list"
+  document_types:
+    legislation:
+      - statute                           # Original statutes
+      - statute-consolidated              # Up-to-date consolidated law
+      - statute-foreign-language-translation
+      - statute-sami-translation
+      - treaty
+      - government-proposal
+  pagination:
+    page_param: "page"
+    page_size_param: "limit"
+    max_page_size: 10   # API enforces max 10 per page
+
+data_model:
+  type: "legislation"
+  primary_key: "akn_uri"
+  update_strategy: "upsert"
+  versioning: "temporal"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "_id"
+      description: "Unique document identifier (derived from AKN URI)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "akn_uri"
+      description: "Full Akoma Ntoso URI"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "doc_type"
+      description: "Document type (statute, statute-consolidated, treaty, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "title"
+      description: "Document title (docTitle from Akoma Ntoso)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document (extracted from Akoma Ntoso XML body)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date issued or published (from FRBRdate)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "eli"
+      description: "European Legislation Identifier"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "year"
+      description: "Document year"
+      type: "integer"
+      role: "temporal_key"
+      required: false
+    - name: "number"
+      description: "Document number within the year"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "language"
+      description: "Document language (fin, swe, eng, sme)"
+      type: "string"
+      role: "classification"
+      required: false
+  secondary_fields:
+    - name: "date_published"
+      description: "Publication date"
+    - name: "author"
+      description: "Issuing authority (Parliament, Ministry, etc.)"
+    - name: "subtype"
+      description: "Document subtype (statute, decree, etc.)"
+
+notes: |
+  - Open data API v1, returns Akoma Ntoso XML
+  - User-Agent header required on all requests
+  - TLS 1.2+ required (no unencrypted HTTP)
+  - Document types: statute, statute-consolidated, treaty, government-proposal
+  - Case law (KKO, KHO) is NOT available through public API (requires auth)
+  - Languages: Finnish (fin), Swedish (swe), Sámi (sme), English (eng) translations
+  - Full document text available in XML body element
+  - License: CC BY 4.0 (CC BY-NC for consolidated legislation)

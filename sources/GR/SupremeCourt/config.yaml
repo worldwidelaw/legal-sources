@@ -1,0 +1,103 @@
+# GR/SupremeCourt -- Greek Supreme Court (Areios Pagos)
+# Configuration for World Wide Law
+
+source:
+  id: GR/SupremeCourt
+  name: Greek Supreme Court (Άρειος Πάγος)
+  name_en: Greek Supreme Court (Areios Pagos)
+  country: GR
+  data_types:
+    - case_law
+  url: https://www.areiospagos.gr
+  description: >
+    Supreme civil and criminal court case law from Greece.
+    Decisions available from 2006 to present.
+  language: el
+  license: Open public access
+  coverage:
+    start_year: 2006
+    end_year: present
+
+endpoints:
+  search:
+    method: POST
+    url: https://www.areiospagos.gr/nomologia/apofaseis_result.asp?S=1
+    description: Search for decisions by year and chamber
+    encoding: windows-1253
+  display:
+    method: GET
+    url: https://www.areiospagos.gr/nomologia/apofaseis_DISPLAY.asp
+    description: Display full text of a decision
+    params:
+      cd: unique document code
+      apof: decision number (format NUM_YEAR)
+    encoding: windows-1253
+
+schema:
+  key_fields:
+    - name: "_id"
+      description: "Unique document ID (AP/NUM_YEAR format)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "number"
+      description: "Decision number"
+      type: "integer"
+      role: "classification"
+      required: true
+    - name: "year"
+      description: "Year of decision"
+      type: "integer"
+      role: "temporal_key"
+      required: true
+    - name: "title"
+      description: "Decision title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the decision on areiospagos.gr"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "chamber"
+      description: "Court chamber/division"
+    - name: "court"
+      description: "Court name in Greek"
+    - name: "court_en"
+      description: "Court name in English"
+    - name: "language"
+      description: "Language code (el for Greek)"
+
+rate_limit:
+  requests_per_second: 1
+  delay_between_requests: 1.5
+  note: Be respectful to the court's server
+
+notes: |
+  The Greek Supreme Court (Άρειος Πάγος / Areios Pagos) is the supreme court
+  for civil and criminal matters in Greece. The website provides free access
+  to decisions from 2006 onwards.
+
+  Data access:
+  - Decisions searchable by year and chamber
+  - Full text available in Greek
+  - No registration required
+  - No known API (HTML scraping required)
+  - Content encoded in windows-1253 (Greek Windows codepage)
+
+  Chambers:
+  - Α', Β', Γ', Δ', Ε', ΣΤ', Ζ' Πολιτικά Τμήματα (Civil divisions)
+  - Α', Β', Γ', Δ', Ε', ΣΤ', Ζ' Ποινικά Τμήματα (Criminal divisions)
+  - Ολομέλεια (Plenary session)

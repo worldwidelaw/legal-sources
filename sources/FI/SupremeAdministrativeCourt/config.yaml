@@ -1,0 +1,28 @@
+source:
+  id: FI/SupremeAdministrativeCourt
+  name: Finnish Supreme Administrative Court (Korkein hallinto-oikeus)
+  country: FI
+  url: https://www.kho.fi
+  data_types:
+    - case_law
+  auth: none
+  license: CC BY 4.0
+
+api:
+  base_url: http://ldf.fi/lawsampo/sparql
+  type: sparql
+  rate_limit: 2  # Seconds between requests
+
+schema:
+  key_fields:
+    - ecli
+    - judgment_number
+    - date
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url

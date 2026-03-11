@@ -1,0 +1,135 @@
+# ===================================================================
+# LU/LegalDatabase -- Luxembourg Legal Database (Legilux)
+# ===================================================================
+# Official Luxembourg legislation from the Legilux portal.
+# Full text available via SPARQL endpoint + HTML file store.
+# Data uses ELI (European Legislation Identifier) URIs.
+#
+# SPARQL endpoint: https://data.legilux.public.lu/sparqlendpoint
+# Portal: https://legilux.public.lu
+# Documentation: https://data.legilux.public.lu/
+# License: CC BY 4.0
+# ===================================================================
+
+source:
+  id: "LU/LegalDatabase"
+  country: "LU"
+  name: "Luxembourg Legal Database (Legilux)"
+  url: "https://legilux.public.lu"
+  description: |
+    Luxembourg's official legislation database from the Legilux portal,
+    managed by the Service central de législation (Ministry of State).
+    Contains laws, grand-ducal regulations, ministerial orders, decrees,
+    and other legal acts. Full ELI implementation with SPARQL endpoint
+    for structured data access. All documents available with full text
+    in HTML format.
+
+    The database follows the FRBR (Functional Requirements for
+    Bibliographic Records) model: Work (Act) -> Expression ->
+    Manifestation -> File.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1.0    # Conservative rate limit
+  burst: 3
+
+api:
+  type: "sparql"
+  base_url: "https://data.legilux.public.lu"
+  endpoints:
+    sparql: "/sparqlendpoint"
+    filestore: "/filestore/eli/"
+  formats:
+    - json
+    - html
+    - xml
+    - rdf
+
+data_model:
+  type: "legislation"
+  primary_key: "eli_uri"
+  update_strategy: "upsert"
+  versioning: "consolidated"
+  dedup_key:
+    - "eli_uri"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "ELI-based document identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title in French"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation in French"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "document_type"
+      description: "Type of document (LOI, RGD, AMIN, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date of the document (ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "ELI URI to document"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "eli_uri"
+      description: "Full ELI (European Legislation Identifier) URI"
+    - name: "html_url"
+      description: "URL to HTML full text file"
+    - name: "document_type_label"
+      description: "Human-readable document type label"
+    - name: "in_force_status"
+      description: "Whether the act is currently in force"
+    - name: "is_in_force"
+      description: "Boolean: true if act is in force"
+    - name: "language"
+      description: "Language of the document (fr/de)"
+
+document_types:
+  - code: "LOI"
+    label: "Loi (Law)"
+    count: 9000+
+  - code: "RGD"
+    label: "Règlement grand-ducal (Grand-Ducal Regulation)"
+    count: 15000+
+  - code: "AGD"
+    label: "Arrêté grand-ducal (Grand-Ducal Decree)"
+    count: 9000+
+  - code: "AMIN"
+    label: "Arrêté ministériel (Ministerial Order)"
+    count: 12000+
+  - code: "RMIN"
+    label: "Règlement ministériel (Ministerial Regulation)"
+    count: 6000+
+  - code: "A"
+    label: "Arrêté (Decree)"
+    count: 7000+
+
+notes: |
+  - Full text is fetched from HTML manifestations via the filestore.
+  - Uses the JOLux ontology (based on ELI and FRBR models).
+  - SPARQL endpoint provides rich metadata including in-force status.
+  - Documents are primarily in French, some in German.
+  - ELI URIs follow the pattern: /eli/etat/leg/{type}/{yyyy}/{mm}/{dd}/{id}/jo
+  - License: Creative Commons Attribution 4.0 (CC BY 4.0).
+  - Luxembourg chairs the EU ELI Task Force - excellent data quality.

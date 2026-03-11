@@ -1,0 +1,15 @@
+{
+  "_id": "BOI-BAREME-000003",
+  "_source": "FR/Bofip",
+  "_type": "doctrine",
+  "_fetched_at": "2026-02-22T01:03:37.133538+00:00",
+  "title": "BAREME - RSA - BA - BIC - BNC (sous conditions) - Frais de carburant en euro au kilomètre - Barèmes applicables pour l’année 2025",
+  "text": "Évaluation pour 2025 s’agissant des véhicules de tourisme\n (1)\nPuissance fiscale des véhicules de tourisme\nGazole\nSuper sans plomb\nGPL \n(2)\n3 et 4 CV\n0,089 €\n0,113 €\n0,072 €\n5 à 7 CV\n0,110 €\n0,139 €\n0,089 €\n8 et 9 CV\n0,131 €\n0,165 €\n0,106 €\n10 et 11 CV\n0,148 €\n0,187 €\n0,120 €\n12 CV et plus\n0,165 €\n0,208 €\n0,133 €\n(1) Sur la définition des véhicules de tourisme, il convient de se reporter au I-B § 80 du BOI-AIS-MOB-10-10.\n(2) Gaz de pétrole liquéfié.\nÉvaluation pour 2025 s’agissant des véhicules deux roues motorisés : vélomoteurs, scooters et motocyclettes\nPuissance fiscale des véhicules deux-roues motorisés\nFrais de carburant au kilomètre\nInférieure à 50 CC\n0,037 €\nDe 50 CC à 125 CC\n0,074 €\n3 à 5 CV\n0,095 €\nAu-delà de 5 CV\n0,131 €",
+  "date": "2026-02-18",
+  "url": "https://bofip.impots.gouv.fr/bofip/2095-PGP.html/identifiant=BOI-BAREME-000003-20260218",
+  "identifiant_juridique": "BOI-BAREME-000003",
+  "serie": "RSA",
+  "division": "RSA",
+  "type": "Contenu",
+  "language": "fr"
+}

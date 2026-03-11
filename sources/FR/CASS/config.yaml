@@ -1,0 +1,115 @@
+# ═══════════════════════════════════════════════════════════════════
+# FR/CASS — French Court of Cassation Case Law (CASS Database)
+# ═══════════════════════════════════════════════════════════════════
+# Case law decisions from France's highest court of appeal.
+# Uses DILA's open data bulk downloads (no auth required).
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "FR/CASS"
+  country: "FR"
+  name: "French Court of Cassation (Cour de cassation)"
+  url: "https://www.legifrance.gouv.fr"
+  description: |
+    Case law decisions from France's Court of Cassation (Cour de cassation),
+    the highest court in the French judicial system for civil and criminal matters.
+    Includes decisions from all chambers: civil, criminal, commercial, social.
+    Data from DILA's CASS database via bulk XML downloads.
+
+data_types:
+  - case_law
+
+# ── Data Access ───────────────────────────────────────────────────
+access:
+  primary:
+    method: "bulk_download"
+    base_url: "https://echanges.dila.gouv.fr/OPENDATA/CASS/"
+    description: "Court of Cassation decisions"
+    format: "tar.gz containing XML files"
+    auth: none
+    update_frequency: "weekly"
+  secondary:
+    note: "JADE database for administrative courts available separately"
+    url: "https://echanges.dila.gouv.fr/OPENDATA/JADE/"
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  delay_between_archives: 1.0
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  total_fields: 22
+  key_fields:
+    - name: "_id"
+      description: "JURITEXT identifier (e.g., JURITEXT000052439669)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "ecli"
+      description: "European Case Law Identifier"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "date"
+      description: "Decision date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "title"
+      description: "Decision title with court, date, case number"
+      type: "string"
+      role: "title"
+      required: true
+  secondary_fields:
+    - name: "juridiction"
+      description: "Court name (always 'Cour de cassation')"
+    - name: "formation"
+      description: "Chamber (CHAMBRE_CIVILE_1, CHAMBRE_CRIMINELLE, etc.)"
+    - name: "solution"
+      description: "Outcome (Rejet, Cassation, Cassation partielle, etc.)"
+    - name: "numero"
+      description: "Internal case number"
+    - name: "numeros_affaires"
+      description: "Pourvoi case numbers"
+    - name: "president"
+      description: "Presiding judge"
+    - name: "avocats"
+      description: "Lawyers involved"
+    - name: "form_dec_att"
+      description: "Lower court that issued appealed decision"
+    - name: "date_dec_att"
+      description: "Date of appealed decision"
+    - name: "sommaire"
+      description: "Decision summary/headnotes"
+    - name: "analyse"
+      description: "Legal analysis"
+    - name: "citations"
+      description: "Legal citations referenced in decision"
+    - name: "nature"
+      description: "Document type (usually ARRET)"
+    - name: "publi_bull"
+      description: "Published in official bulletin (boolean)"
+
+notes: |
+  - CASS database contains Court of Cassation decisions
+  - Weekly incremental archives (CASS_YYYYMMDD-HHMMSS.tar.gz)
+  - XML format follows JURITEXT DTD
+  - Full text includes decision reasoning (motifs) and operative part (dispositif)
+  - Sommaire provides case law headnotes for legal research
+  - ECLI format: ECLI:FR:CCASS:YYYY:{chamber}{number}
+  - For French legislation, see FR/JournalOfficiel (LEGI database)
+  - Language: French only

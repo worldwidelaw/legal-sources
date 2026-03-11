@@ -1,0 +1,56 @@
+# PL/NSA - Polish Supreme Administrative Court (Naczelny Sąd Administracyjny)
+# Central Database of Administrative Court Decisions
+# https://orzeczenia.nsa.gov.pl
+#
+# Coverage: 427,000+ administrative court decisions
+# Source: CBOSA (Centralna Baza Orzeczeń Sądów Administracyjnych)
+# License: Public domain (official court decisions)
+
+source_id: PL/NSA
+name: Polish Supreme Administrative Court (Naczelny Sąd Administracyjny)
+country: PL
+url: https://orzeczenia.nsa.gov.pl
+
+data_types:
+  - case_law
+
+auth:
+  type: none
+
+api:
+  base_url: https://orzeczenia.nsa.gov.pl
+  search_endpoint: /cbo/search
+  document_endpoint: /doc/{id}
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 3
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "case_number"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "court"
+      type: "string"
+      required: true
+    - name: "judges"
+      type: "list"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true

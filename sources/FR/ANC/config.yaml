@@ -1,0 +1,40 @@
+source:
+  id: FR/ANC
+  name: Autorité des Normes Comptables (ANC)
+  country: FR
+  url: https://www.anc.gouv.fr
+  data_types:
+    - legislation  # règlements (accounting regulations)
+    - doctrine     # avis (opinions)
+  license: Open Licence Etalab
+  auth: none
+  update_frequency: monthly
+  description: |
+    French accounting standards authority (Autorité des Normes Comptables).
+    Publishes accounting regulations (règlements) that are homologated by
+    ministerial decree and published in the Journal Officiel. Also publishes
+    consolidated compilations (recueils) with doctrine annotations.
+
+fetch:
+  rate_limit: 2.0  # seconds between requests
+  user_agent: WorldWideLaw/1.0 (Open Data Research)
+
+schema:
+  key_fields:
+    - document_number
+    - version
+  normalized_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+    - detail_url
+    - document_number
+    - year
+    - version  # JO (official), web, recueil (annotated), standard
+    - doc_type  # regulation, avis, publication
+    - pdf_size

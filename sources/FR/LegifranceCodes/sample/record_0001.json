@@ -1,0 +1,18 @@
+{
+  "_id": "LEGIARTI000006419281",
+  "_source": "FR/LegifranceCodes",
+  "_type": "legislation",
+  "_fetched_at": "2026-02-17T08:02:54.706109+00:00",
+  "title": "Code civil - Article 2",
+  "text": "La loi ne dispose que pour l'avenir ; elle n'a point d'effet rétroactif.",
+  "date": "1804-03-21",
+  "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006419281",
+  "code_id": "LEGITEXT000006070721",
+  "code_name": "Code civil",
+  "article_num": "2",
+  "section_path": "Code civil > Titre préliminaire : De la publication, des effets et de l'application des lois en général",
+  "etat": "VIGUEUR",
+  "date_debut": "1804-03-21",
+  "date_fin": "2999-01-01",
+  "nota": ""
+}

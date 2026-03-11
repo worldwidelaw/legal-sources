@@ -1,0 +1,27 @@
+{
+  "_id": "FR/CADA/20237582",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-02-20T16:35:21.947628+00:00",
+  "opinion_id": "20237582",
+  "title": "Avis 20237582 - Mairie de Raizeux",
+  "date": "2024-01-25",
+  "url": "https://cada.data.gouv.fr/20237582/",
+  "text": "Maître X, conseil de X, a saisi la Commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 11 décembre 2023, à la suite du refus opposé par le maire de Raizeux à sa demande de communication d'une copie de la la convention d’occupation du domaine public signée entre X et la municipalité concernant la parcelle cadastrée X et les documents qui y sont annexés.\n\nEn l'absence de réponse exprimée par le maire de Raizeux à la date de sa séance, la commission rappelle que les autorisations et conventions d'occupation du domaine public sont en principe communicables à toute personne qui en fait la demande, sous réserve de l’occultation des mentions couvertes par le secret des affaires (notamment chiffre d’affaires et coordonnées bancaires de l'occupant) ou le secret de la vie privée (notamment adresse personnelle et date de naissance du preneur). A cet égard, elle estime que les informations relatives aux conditions d'occupation du domaine public, notamment aux redevances d’occupation de ce domaine, ainsi que les noms des titulaires de ces autorisations ne sont pas protégés par ces secrets.\n\nLa commission émet donc, sous ces réserves, un avis favorable.",
+  "subject": "",
+  "administration": "Mairie de Raizeux",
+  "meanings": [
+    "Favorable/Sauf vie privée",
+    "Favorable/Sauf secret des affaires"
+  ],
+  "topics": [
+    "Urbanisme Et Aménagement Du Territoire / Urbanisme"
+  ],
+  "tags": [
+    "POS-PLU",
+    "Agrément",
+    "Gestion domaniale"
+  ],
+  "part": 3,
+  "type": "Avis"
+}

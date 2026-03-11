@@ -1,0 +1,118 @@
+# DK/Lovdata - Danish Legislation Database (Retsinformation)
+#
+# Official Danish legislation, regulations, and circulars.
+#
+# Data access:
+#   - ELI XML endpoint: https://www.retsinformation.dk/eli/lta/{year}/{number}/xml
+#   - Harvest API: https://api.retsinformation.dk/v1/Documents (03:00-23:45 CET only)
+#
+# License: Open Data (https://www.retsinformation.dk/eli/about)
+
+source:
+  id: "DK/Lovdata"
+  country: "DK"
+  name: "Danish Legislation Database (Retsinformation)"
+  url: "https://www.retsinformation.dk"
+  description: |
+    Official Danish legal database operated by Civilstyrelsen (Danish Civil
+    Affairs Agency). Covers all Danish legislation including laws (LOV),
+    consolidated laws (LBK), executive orders (BEK), circulars (CIR), and
+    guidelines (VEJ). Full ELI implementation. No authentication required.
+
+data_types:
+  - legislation
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: rest
+  base_url: "https://www.retsinformation.dk"
+  endpoints:
+    eli_xml: "/eli/lta/{year}/{number}/xml"
+    eli_html: "/eli/lta/{year}/{number}"
+  harvest_api:
+    base_url: "https://api.retsinformation.dk"
+    endpoint: "/v1/Documents"
+    availability: "03:00-23:45 CET"
+
+data_model:
+  type: legislation
+  primary_key: accession_number
+  update_strategy: upsert
+  dedup_key:
+    - accession_number
+
+schema:
+  key_fields:
+    - name: accession_number
+      description: "Unique accession number (e.g., B20240000105)"
+      type: string
+      role: primary_key
+      required: true
+    - name: title
+      description: "Document title in Danish"
+      type: string
+      role: content
+      required: true
+    - name: text
+      description: "Full text of the legal document"
+      type: string
+      role: content
+      required: true
+    - name: date
+      description: "Signature or publication date"
+      type: date
+      role: temporal_key
+      required: false
+    - name: url
+      description: "ELI URI to original document"
+      type: string
+      role: reference
+      required: true
+    - name: document_type
+      description: "Type: LOV, LBK, BEK, CIR, VEJ, etc."
+      type: string
+      role: classification
+      required: true
+    - name: year
+      description: "Year of the document"
+      type: integer
+      role: temporal_key
+      required: true
+    - name: number
+      description: "Sequential number within year"
+      type: integer
+      role: identifier
+      required: true
+  secondary_fields:
+    - name: eli_uri
+      description: "European Legislation Identifier URI"
+    - name: ministry
+      description: "Responsible ministry"
+    - name: administrative_authority
+      description: "Administrative authority"
+    - name: status
+      description: "Document status (Valid, Historic)"
+    - name: publication_date
+      description: "Date published in gazette"
+    - name: signature_date
+      description: "Date signed"
+    - name: announced_in
+      description: "Publication venue (Lovtidende A, etc.)"
+    - name: subjects
+      description: "Subject keywords"
+    - name: journal_number
+      description: "Internal journal reference"
+
+notes: |
+  - ELI XML endpoint provides cleanest text extraction
+  - Harvest API available 03:00-23:45 CET only
+  - Documents numbered sequentially within each year
+  - Some numbers may be skipped (repealed/never published)
+  - Language: Danish
+  - Data licensed as Open Data

@@ -1,0 +1,53 @@
+source_id: "AL/SupremeCourt"
+name: "Albanian Supreme Court (Gjykata e Lartë)"
+country: "AL"
+language: "sq"
+data_types:
+  - case_law
+url: "https://www.gjykataelarte.gov.al"
+
+description: |
+  Court decisions from the Supreme Court of Albania (Gjykata e Lartë).
+
+  Data sources:
+  1. Archive 1999-2019: Monthly bundle documents (.doc) containing multiple decisions
+     organized by year and month, plus United Colleges (Kolegje të Bashkuara) decisions.
+  2. Bulletins 2020+: Individual decision files (.doc) embedded in periodic and thematic
+     bulletins published by the court.
+
+  Court structure:
+  - Kolegji Civil (Civil College)
+  - Kolegji Penal (Penal College)
+  - Kolegji Administrativ (Administrative College)
+  - Kolegjet e Bashkuara (United Colleges)
+
+access_method: "gatsby_page_data_api"
+api_base: "https://www.gjykataelarte.gov.al/page-data"
+media_base: "https://gjykata-media.s3.eu-central-1.amazonaws.com"
+
+endpoints:
+  archive_1999_2019: "/sq/vendimet-e-gjykates/vendimet-1999-2019/page-data.json"
+  bulletins: "/sq/lajme/buletini/page-data.json"
+  bulletin_detail: "/sq/lajme/buletini/{slug}/page-data.json"
+
+schema:
+  key_fields:
+    - decision_number
+    - year
+    - month
+    - college
+  date_format: "ISO8601"
+  text_extraction: "textutil"  # macOS native, fallback to python-docx
+
+rate_limit:
+  requests_per_second: 1
+  delay_between_requests: 1.0
+
+notes: |
+  - Bundle documents in archive contain table of contents (PERMBAJTJA) with case summaries
+    followed by full text of each decision
+  - Individual decisions in bulletins contain maxima (legal principle), keywords,
+    and full text summaries
+  - All content is in Albanian language
+  - Decision numbers follow format: Nr. XX or Nr. 00-YYYY-XXXX (XXX)
+  - Coverage: 1999-present, thousands of decisions

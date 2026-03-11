@@ -1,0 +1,57 @@
+source:
+  id: HR/SupremeCourt
+  country: HR
+  name: Croatian Supreme Court (Vrhovni sud)
+  url: https://odluke.sudovi.hr
+
+data:
+  types:
+    - case_law
+  language: hrv
+  coverage: All Croatian courts including Supreme Court (Vrhovni sud), High Courts, County Courts, Commercial Courts, Administrative Courts
+  volume: 883,000+ published decisions
+
+access:
+  auth: none
+  license: Open Government Data (CC BY 4.0)
+  rate_limit: 3 requests/second
+
+endpoints:
+  search_page: /Document/DisplayList
+  document_view: /Document/View?id={uuid}
+  filter_api: /Document/FilterData
+
+schema:
+  key_fields:
+    - name: decision_number
+      type: string
+      required: true
+    - name: ecli
+      type: string
+      required: false
+    - name: text
+      type: string
+      required: true
+    - name: court
+      type: string
+      required: true
+  metadata:
+    - decision_date
+    - publication_date
+    - decision_type
+    - court_registry
+    - previous_decisions
+    - subject_index     # Stvarno kazalo
+    - law_index         # Zakonsko kazalo
+    - eurovoc
+
+notes: |
+  Odluke.sudovi.hr is the official Croatian court decisions portal operated by
+  the Ministry of Justice, Administration and Digital Transformation.
+
+  Full text is available in HTML format for all published decisions.
+  The system includes rich metadata including ECLI identifiers, thematic
+  indexes (Stvarno kazalo, Zakonsko kazalo), and EuroVoc classifications.
+
+  Filtering can be done by court type (Vrhovni sud, Visoki sudovi, etc.),
+  case type, date ranges, and various indexes.

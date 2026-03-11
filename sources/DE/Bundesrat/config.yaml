@@ -1,0 +1,70 @@
+# German Federal Council (Bundesrat) Data Source Configuration
+# Parliamentary documents from the DIP (Dokumentations- und Informationssystem)
+
+source_id: "DE/Bundesrat"
+name: "German Federal Council (Bundesrat)"
+country: "DE"
+language: "de"
+data_types:
+  - legislation
+
+# Data endpoints
+endpoints:
+  # DIP API (includes both Bundestag and Bundesrat data)
+  api_base: "https://search.dip.bundestag.de/api/v1"
+
+  # Drucksache (printed documents) endpoints
+  drucksache_list: "https://search.dip.bundestag.de/api/v1/drucksache"
+  drucksache_text: "https://search.dip.bundestag.de/api/v1/drucksache-text"
+
+  # Portal
+  portal: "https://www.bundesrat.de"
+  dip_portal: "https://dip.bundestag.de"
+
+# Authentication
+auth:
+  type: "api_key"
+  header: "Authorization"
+  header_prefix: "ApiKey "
+  # Public demo key valid until May 2026
+  demo_key: "OSOegLs.PR2lwJ1dwCeje9vTj7FPOt3hvpYKtwKkhw"
+
+# Schema information
+schema:
+  key_fields:
+    - "id"              # DIP document ID
+    - "dokumentnummer"  # Document number (e.g., "91/26")
+  date_format: "ISO8601"
+  text_field: "text"
+
+# License
+license:
+  name: "Open Data"
+  url: "https://dip.bundestag.de/impressum"
+  notes: |
+    Parliamentary documents are available as open data through the DIP API.
+    The API provides machine-readable access to Bundestag and Bundesrat proceedings.
+
+# Fetcher configuration
+fetcher:
+  rate_limit_ms: 500
+  ssl_verify: true
+  timeout_s: 60
+  max_retries: 3
+  # Filter for Bundesrat only: f.zuordnung=BR
+  default_params:
+    f.zuordnung: "BR"
+
+# Notes
+notes: |
+  The Bundesrat is the federal council representing the German states (Länder).
+
+  The DIP API provides access to ~100,000 Bundesrat documents including:
+  - Drucksachen (printed materials: motions, reports, opinions)
+  - Plenarprotokolle (plenary protocols)
+  - Vorgänge (legislative proceedings)
+
+  Documents are filtered by herausgeber=BR (Bundesrat) to exclude Bundestag content.
+
+  API documentation: https://dip.bundestag.de/über-dip/hilfe/api
+  Public API key valid until May 2026.

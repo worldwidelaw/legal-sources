@@ -1,0 +1,56 @@
+source_id: "BY/ETALON"
+country: "BY"
+name: "Belarus ETALON Legal Database"
+url: "https://etalonline.by"
+data_types:
+  - legislation
+auth:
+  type: none
+
+description: |
+  ETALON-ONLINE is the official database of Belarusian legislation maintained
+  by the National Center for Legal Information. This source fetches codified
+  laws (codes) - the 26 major codes of the Republic of Belarus.
+
+  Note: The site has severe bandwidth throttling (~2KB/s), requiring very long
+  timeouts. Each code document may take 5-15 minutes to download.
+
+schedule:
+  frequency: monthly  # Codes change infrequently
+  priority: low
+
+schema:
+  key_fields:
+    - name: regnum
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+  secondary_fields:
+    - name: date
+      type: string
+      required: false
+    - name: name_ru
+      type: string
+      required: false
+    - name: document_type
+      type: string
+      required: false
+
+rate_limit:
+  requests_per_minute: 2
+  delay_between_requests: 30  # Extra delay due to slow bandwidth
+
+timeout:
+  connect: 60
+  read: 900  # 15 minutes per document
+
+notes: |
+  Admin clarified in issue #192: codified laws (codes) only are sufficient.
+  Site is accessible (no geo-restriction) but bandwidth-throttled.
+  URL pattern: https://etalonline.by/document/?regnum=HK0000441
+  Codes list at: https://pravo.by/pravovaya-informatsiya/normativnye-dokumenty/kodeksy-respubliki-belarus/

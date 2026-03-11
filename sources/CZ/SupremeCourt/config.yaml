@@ -1,0 +1,81 @@
+# Czech Supreme Court (Nejvyšší soud) Configuration
+# Source: https://sbirka.nsoud.cz
+# Collection: Sbírka soudních rozhodnutí a stanovisek
+
+source:
+  id: CZ/SupremeCourt
+  name: Czech Supreme Court (Nejvyšší soud)
+  country: CZ
+  url: https://sbirka.nsoud.cz
+  data_types:
+    - case_law
+  auth: none
+  license: "Open Government Data"
+  language: cs
+
+# Data discovery via WordPress sitemaps
+discovery:
+  method: sitemap
+  sitemap_index: https://sbirka.nsoud.cz/sitemap_index.xml
+  collection_sitemaps:
+    - https://sbirka.nsoud.cz/collection-sitemap.xml
+    - https://sbirka.nsoud.cz/collection-sitemap2.xml
+    - https://sbirka.nsoud.cz/collection-sitemap3.xml
+    - https://sbirka.nsoud.cz/collection-sitemap4.xml
+    - https://sbirka.nsoud.cz/collection-sitemap5.xml
+    - https://sbirka.nsoud.cz/collection-sitemap6.xml
+    - https://sbirka.nsoud.cz/collection-sitemap7.xml
+    - https://sbirka.nsoud.cz/collection-sitemap8.xml
+    - https://sbirka.nsoud.cz/collection-sitemap9.xml
+    - https://sbirka.nsoud.cz/collection-sitemap10.xml
+
+# Individual decision fetching
+fetch:
+  base_url: https://sbirka.nsoud.cz/sbirka/{id}/
+  rate_limit: 1.0  # seconds between requests
+  timeout: 30
+
+# RSS feed for updates
+updates:
+  rss_feed: https://sbirka.nsoud.cz/feed/
+
+# Schema for normalized records
+schema:
+  key_fields:
+    - ecli
+    - case_reference
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  optional_fields:
+    - legal_principle  # právní věta
+    - decision_type    # rozsudek/usnesení/stanovisko
+    - court           # court name
+    - senate          # senát
+    - collection_number  # sbírkové číslo
+    - collection_year
+    - collection_issue  # sešit
+    - keywords        # hesla
+    - regulations     # dotčené předpisy
+
+notes: |
+  The Supreme Court Collection (Sbírka soudních rozhodnutí a stanovisek) publishes
+  significant Supreme Court decisions organized by year and issue (sešit).
+
+  Decision types:
+  - Rozsudek (Judgment)
+  - Usnesení (Resolution)
+  - Stanovisko (Legal Opinion)
+
+  Sections:
+  - Criminal (Trestní kolegium)
+  - Civil/Commercial (Občanskoprávní a obchodní kolegium)
+
+  Each decision includes a "právní věta" (legal principle) approved by
+  the respective collegium.

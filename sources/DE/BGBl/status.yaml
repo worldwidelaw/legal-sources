@@ -1,0 +1,13 @@
+last_run: "2026-02-14T12:18:41Z"
+last_bootstrap: "2026-02-14T12:18:41Z"
+total_records: 5934
+run_history:
+  - started_at: "2026-02-14T11:55:15Z"
+    finished_at: "2026-02-14T12:18:41Z"
+    mode: fast
+    max_workers: 10
+    batch_size: 100
+    records_fetched: 5934
+    errors: 936
+    sample_records_saved: 10
+    notes: "First full fast bootstrap. 936 'errors' = laws with <100 chars text filtered out, not HTTP failures. Zero 429s."

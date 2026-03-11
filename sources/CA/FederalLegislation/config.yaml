@@ -1,0 +1,26 @@
+source_id: CA/FederalLegislation
+name: Federal Laws and Regulations (Justice Laws Website)
+country: CA
+url: https://laws-lois.justice.gc.ca
+data_types:
+  - legislation
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - unique_id
+    - language
+
+schema:
+  key_fields:
+    - unique_id
+    - title
+    - language
+    - current_to_date

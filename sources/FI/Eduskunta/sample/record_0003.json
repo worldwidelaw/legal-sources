@@ -1,0 +1,19 @@
+{
+  "_id": "FI_Eduskunta_HE_203_2022_vp_226164",
+  "_source": "FI/Eduskunta",
+  "_type": "legislation",
+  "_fetched_at": "2026-02-12T04:32:08.983228+00:00",
+  "title": "Hallituksen esitys eduskunnalle laiksi Kevasta annetun lain muuttamisesta",
+  "text": "Annettu Ilmoitettu täysistunnossa Lähetekeskustelu Käsittely Asian ilmoittaminen Asiantuntijakuuleminen Asiantuntijakuuleminen Asiantuntijakuuleminen Valmistava keskustelu Mietintöluonnoksen esittely Yleiskeskustelu Yksityiskohtainen käsittely Valiokunnan päätös Valiokunnan mietintö Mietinnön pöydällepano Käsittely Ensimmäinen käsittely Käsittely Toinen käsittely Käsittely Eduskunnan vastaus Eduskunnan vastauksen toimittaminen",
+  "date": "2022-10-06",
+  "url": "https://avoindata.eduskunta.fi/#/fi/vaski/226164",
+  "eduskunta_id": "HE 203/2022 vp",
+  "row_id": "226164",
+  "doc_subtype": "government_proposal",
+  "doc_type_name": "Hallituksen esitys",
+  "language": "fi",
+  "created": "2023-10-31 09:03:08",
+  "imported": "2023-11-01 00:01:42.782767",
+  "attachment_group_id": null,
+  "status": "5"
+}

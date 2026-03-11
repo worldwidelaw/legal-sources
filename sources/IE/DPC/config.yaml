@@ -1,0 +1,40 @@
+source:
+  id: IE/DPC
+  name: Irish Data Protection Commission (DPC)
+  country: IE
+  url: https://www.dataprotection.ie
+  data_types:
+    - case_law   # enforcement decisions
+    - doctrine   # court judgments involving DPC
+  license: Irish Public Sector Open Licence
+  auth: none
+  update_frequency: monthly
+  description: |
+    Irish Data Protection Commission decisions and enforcement actions.
+    Ireland hosts EU headquarters for most Big Tech companies (Meta, Google,
+    Apple, Microsoft, TikTok), making DPC decisions highly significant for
+    EU-wide GDPR enforcement. Decisions published as PDFs with full text.
+
+fetch:
+  rate_limit: 2.0  # seconds between requests
+  user_agent: WorldWideLaw/1.0 (Open Data Research)
+  endpoints:
+    decisions: https://www.dataprotection.ie/en/dpc-guidance/law/decisions-made-under-data-protection-act-2018
+    judgments: https://www.dataprotection.ie/en/dpc-guidance/law/judgments
+
+schema:
+  key_fields:
+    - decision_id
+    - date
+  normalized_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+    - organization  # entity that was investigated
+    - fine_amount   # if applicable
+    - gdpr_articles # articles violated

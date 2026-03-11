@@ -1,0 +1,26 @@
+{
+  "_id": "FR/CADA/20237407",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-02-20T16:35:21.940894+00:00",
+  "opinion_id": "20237407",
+  "title": "Avis 20237407 - Direction régionale de l'environnement, de l'aménagement et du logement de Provence-Alpes-Côte-d'Azur (DREAL 13)",
+  "date": "2024-01-25",
+  "url": "https://cada.data.gouv.fr/20237407/",
+  "text": "Madame X, X, a saisi la Commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 6 décembre 2023, à la suite du refus opposé par la directrice régionale de l'environnement, de l'aménagement et du logement de Provence-Alpes-Côte-d'Azur à sa demande de communication, par courrier électronique, des documents suivants, concernant le projet de construction d'une voie dans le cadre du dévoiement du Chemin Vicinal VC5 dans le quartier d'Agroparc, commune d'Avignon et Morières-les-Avignon :\n1) toute délibération ou acte administratif décisoire de la DREAL concernant ce projet ;\n2) toute étude concernant ce projet en possession de la DREAL ;\n3) tout échange entre la DREAL et Citadis, la DREAL et la Région, le Grand Avignon et la DREAL concernant ce projet ;\n4) le calendrier prévisible de ce projet.\n\nEn l'absence de réponse exprimée par la directrice régionale de l'environnement, de l'aménagement et du logement de Provence-Alpes-Côte-d'Azur à la date de sa séance, la commission estime que les documents sollicités, s'ils sont achevés et ne présentent plus un caractère préparatoire, sont communicables à toute personne qui en fait la demande sur le fondement de l'article L311-1 du code des relations entre le public et l'administration, dans le respect des secrets protégés par les articles L311-5 et L311-6 de ce code, et par suite, après occultation des mentions relevant de ces derniers ou disjonction des documents qui en relèveraient entièrement en application des dispositions de l’article L311-7 dudit code.\n\nElle émet donc, sous ces réserves, un avis favorable.",
+  "subject": "",
+  "administration": "Direction régionale de l'environnement, de l'aménagement et du logement de Provence-Alpes-Côte-d'Azur (DREAL 13)",
+  "meanings": [
+    "Favorable/Sauf articles L311-5 et L311-6",
+    "Favorable/Sauf inachevé",
+    "Favorable/Sauf préparatoire"
+  ],
+  "topics": [
+    "Urbanisme Et Aménagement Du Territoire / Aménagement Du Territoire"
+  ],
+  "tags": [
+    "Infrastructures routières"
+  ],
+  "part": 3,
+  "type": "Avis"
+}

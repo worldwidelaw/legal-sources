@@ -1,0 +1,70 @@
+# IT/CorteCostituzionale -- Italian Constitutional Court
+# Corte Costituzionale - Decisions and case law since 1956
+
+source:
+  id: IT/CorteCostituzionale
+  name: Italian Constitutional Court (Corte Costituzionale)
+  country: IT
+  url: https://www.cortecostituzionale.it
+  data_portal: https://dati.cortecostituzionale.it
+  license: CC BY SA 3.0
+  description: |
+    Open data portal of the Italian Constitutional Court containing all
+    decisions (sentenze, ordinanze, decreti) since 1956. Data includes
+    full text, ECLI identifiers, and rich metadata.
+
+data_model:
+  types:
+    - case_law
+  update_strategy: append_only
+  dedup_key:
+    - ecli
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: ecli
+      type: string
+      required: false
+    - name: numero_pronuncia
+      type: string
+      required: true
+    - name: anno_pronuncia
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: true
+    - name: url
+      type: string
+      required: true
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+auth:
+  type: none
+
+# Data is available in JSON, CSV, and XML format
+# Also accessible via SPARQL endpoint
+endpoints:
+  sparql: https://dati.cortecostituzionale.it/sparql/endpoint
+  download_base: https://dati.cortecostituzionale.it/opendata/distribuzione/pronunce/
+  web: https://www.cortecostituzionale.it/actionSchedaPronuncia.do
+
+download_files:
+  - name: "2001-present"
+    url: https://dati.cortecostituzionale.it/opendata/distribuzione/pronunce/P_json2001_oggi.zip
+  - name: "1981-2000"
+    url: https://dati.cortecostituzionale.it/opendata/distribuzione/pronunce/P_json1981_2000.zip
+  - name: "1956-1980"
+    url: https://dati.cortecostituzionale.it/opendata/distribuzione/pronunce/P_json1956_1980.zip

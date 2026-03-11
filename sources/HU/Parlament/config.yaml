@@ -1,0 +1,87 @@
+source_id: HU/Parlament
+country: HU
+name: Hungarian Parliament (Országgyűlés)
+description: |
+  Parliamentary documents from the Hungarian Parliament including draft legislation
+  (törvényjavaslatok), amendments, committee reports, and parliamentary resolutions.
+  Covers parliamentary cycles from 38 (2010) to present (42).
+data_types:
+  - legislation
+  - parliamentary_documents
+language: hu
+license: Open Data (Government)
+auth:
+  type: none
+base_url: https://www.parlament.hu
+
+fetch:
+  mode: pdf_extraction
+  rate_limit: 1.5  # seconds between requests
+  timeout: 60  # seconds
+
+  # Parliamentary cycles and their document ranges
+  # ciklus 42: 2022-present (13600+ docs as of Feb 2026)
+  # ciklus 41: 2018-2022 (18500+ docs)
+  # ciklus 40: 2014-2018 (22000+ docs)
+  # ciklus 39: 2010-2014 (14000+ docs)
+  # ciklus 38: 2006-2010 (17000+ docs)
+  cycles:
+    42:
+      start_year: 2022
+      end_year: null  # current/ongoing
+    41:
+      start_year: 2018
+      end_year: 2022
+    40:
+      start_year: 2014
+      end_year: 2018
+    39:
+      start_year: 2010
+      end_year: 2014
+    38:
+      start_year: 2006
+      end_year: 2010
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+    - name: cycle
+      type: integer
+      required: true
+    - name: doc_number
+      type: integer
+      required: true
+    - name: doc_type
+      type: string
+      required: false
+    - name: submitter
+      type: string
+      required: false
+
+data_model:
+  data_types: [legislation, parliamentary_documents]
+  update_strategy: upsert
+  dedup_key: [_id]
+
+rate_limit:
+  requests_per_second: 0.7
+  burst: 3

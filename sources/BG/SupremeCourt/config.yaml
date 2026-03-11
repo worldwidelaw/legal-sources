@@ -1,0 +1,118 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — Bulgarian Supreme Court of Cassation Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "BG/SupremeCourt"
+  country: "BG"
+  name: "Bulgarian Supreme Court of Cassation (Върховен касационен съд)"
+  url: "https://www.vks.bg"
+  description: |
+    Supreme Court of Cassation of the Republic of Bulgaria (ВКС).
+    The highest court in Bulgaria for civil, criminal, and commercial matters.
+    Data source: Legacy Domino database (domino.vks.bg) and new JSP system (vks.bg)
+    Coverage: 2008 onwards (full text decisions)
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "html"
+  base_url: "http://domino.vks.bg"
+  alternative_url: "https://www.vks.bg"
+  endpoints:
+    # Domino database - categorized views
+    domino_view: "/bcap/scc/webdata.nsf/bbeda36093eefe07c2257a7b002d7313?OpenView&Start={start}&Count={count}&Expand={category}"
+    domino_doc: "/bcap/scc/webdata.nsf/bbeda36093eefe07c2257a7b002d7313/{doc_id}?OpenDocument"
+    # New JSP system
+    jsp_doc: "/pregled-akt.jsp?type=ot-delo&id={doc_id}"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "doc_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "doc_id"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document identifier (Domino UNID or JSP ID)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title/type (e.g., Решение, Определение)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the decision in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to view the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "case_number"
+      description: "Court case reference number"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "act_type"
+      description: "Type of decision (decision, order, determination)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "chamber"
+      description: "Court chamber (civil, criminal, commercial)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "division"
+      description: "Court division number"
+      type: "string"
+      role: "classification"
+      required: false
+  secondary_fields:
+    - name: "ecli"
+      description: "European Case Law Identifier"
+    - name: "reporters"
+      description: "Reporting judges"
+    - name: "category"
+      description: "Legal category/topic"
+    - name: "_raw"
+      description: "Complete raw data from source (for debugging)"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: Bulgarian (UTF-8)
+  - Encoding: Legacy Domino uses Windows-1251, new system uses UTF-8
+  - Coverage: 2008 onwards (full text), older decisions may be metadata only
+  - Document types: решение (decision), определение (order), разпореждане (directive)
+  - Chambers: граждански (civil), наказателен (criminal), търговски (commercial)
+  - Both Domino and JSP systems have full text HTML content
+  - ECLI format: ECLI:BG:SC001:YYYY:NNNNNNNN.NNN

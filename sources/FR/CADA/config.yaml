@@ -1,0 +1,66 @@
+# FR/CADA - Commission d'accès aux documents administratifs
+# Source configuration
+
+source:
+  id: FR/CADA
+  name: CADA - Commission d'accès aux documents administratifs
+  country: FR
+  url: https://cada.data.gouv.fr
+  data_types:
+    - doctrine
+  auth: none
+  license: Open Licence Etalab
+  rate_limit: 3 requests/second
+
+api:
+  base_url: https://cada.data.gouv.fr
+  search_endpoint: /api/search
+  detail_endpoint: /api/{id}/
+  format: json
+  pagination:
+    style: page-based
+    page_param: page
+    size_param: page_size
+    max_page_size: 100
+
+schema:
+  key_fields:
+    - opinion_id
+    - administration
+    - date
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - text
+    - date
+  optional_fields:
+    - title
+    - subject
+    - meanings
+    - topics
+    - tags
+    - part
+    - type
+
+data:
+  description: |
+    CADA (Commission d'accès aux documents administratifs) opinions on
+    administrative document access requests. The CADA is an independent
+    French authority that citizens can consult when denied access to
+    administrative documents.
+  coverage:
+    start_year: 1984
+    end_year: present
+  volume: 60,000+ opinions
+  update_frequency: continuous (as sessions occur)
+  languages:
+    - fr
+
+notes: |
+  - API provides full text of opinions
+  - Session dates (not publication dates) are used for date field
+  - Topics and tags are pre-classified by CADA
+  - Meanings indicate CADA's recommendation (Favorable, Défavorable, etc.)
+  - Part field indicates which part of the session (1-4)

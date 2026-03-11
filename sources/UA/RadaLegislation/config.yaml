@@ -1,0 +1,96 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — Ukraine Legislation (Verkhovna Rada) Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UA/RadaLegislation"
+  country: "UA"
+  name: "Legislation of Ukraine (Verkhovna Rada)"
+  url: "https://data.rada.gov.ua/laws/"
+  description: |
+    Official Ukrainian legislation database from the Verkhovna Rada
+    (Ukrainian Parliament) Open Data Portal. Contains all Ukrainian laws,
+    decrees, resolutions, orders, and other legal acts.
+
+    Data is accessed via the official Open Data API with full text support.
+    The API provides JSON metadata and plain text document content.
+
+    Coverage: 290,000+ legislative documents (1991 onwards)
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - legislation
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"  # Uses "OpenData" User-Agent for public access
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_minute: 60
+  daily_limit: 100000
+  daily_bandwidth_mb: 200
+  recommended_delay_seconds: 5
+
+# ── API Configuration ─────────────────────────────────────────────
+api:
+  type: "bulk"
+  base_url: "https://data.rada.gov.ua"
+  endpoints:
+    # Bulk JSON datasets
+    cards: "/ogd/zak/perv/cards.json"       # Document metadata (~2,918 records)
+    texts: "/ogd/zak/perv/texts.json"       # Text file references
+    text_files: "/ogd/zak/perv/text/"       # HTML full text directory
+    # Individual document endpoints (for reference)
+    document_url: "https://zakon.rada.gov.ua/laws/show/{nreg}"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "legislation"
+  primary_key: "nreg"
+  update_strategy: "upsert"
+  versioning: "datred"
+  dedup_key:
+    - "nreg"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  total_fields: 25
+  key_fields:
+    - name: "nreg"
+      description: "Document registration number (e.g., 4784-20, 168-2026-п)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title in Ukrainian"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date (ISO 8601 format)"
+      type: "string"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Direct URL to view the document"
+      type: "string"
+      role: "reference"
+      required: true
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: Ukrainian (UTF-8)
+  - API: Official Verkhovna Rada Open Data Portal (data.rada.gov.ua)
+  - Coverage: 2,918+ primary legislative acts (laws, codes, decrees)
+  - Bulk JSON: cards.json (~2.5MB), texts.json (~280KB)
+  - Full text: HTML files in /ogd/zak/perv/text/ directory (~46MB total)
+  - License: CC BY 4.0 (Creative Commons Attribution)
+  - Authentication: None required (anonymous access)
+  - Rate limits: Use 1-2s delays between requests

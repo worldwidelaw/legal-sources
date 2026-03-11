@@ -1,0 +1,75 @@
+id: LU/Parliament
+name: Luxembourgian Chamber of Deputies (Chambre des Députés)
+country: LU
+data_types:
+  - parliamentary_proceedings
+url: https://www.chd.lu
+auth: none
+priority: 2
+
+# Data source information
+source:
+  type: open_data_api
+  base_url: https://data.public.lu/api/1
+  dataset_id: "66163fc900322d4991ed3a9c"
+  dataset_name: "Ensemble des Questions et Réponses Parlementaires incluant le texte complet"
+
+# Available resources by legislature
+resources:
+  2013_2018:
+    url: https://download.data.public.lu/resources/ensemble-des-questions-et-reponses-parlementaires-incluant-le-texte-complet/20250428-165925/opendata-qp-ecrite-2013-2018.txt
+    format: txt
+  2018_2023:
+    url: https://download.data.public.lu/resources/ensemble-des-questions-et-reponses-parlementaires-incluant-le-texte-complet/20250428-165928/opendata-qp-ecrite-2018-2023.txt
+    format: txt
+  2023_2028:
+    url: https://download.data.public.lu/resources/ensemble-des-questions-et-reponses-parlementaires-incluant-le-texte-complet/20250428-165930/opendata-qp-ecrite-2023-2028.txt
+    format: txt
+
+# Field mapping (columns in order by position after þ delimiter)
+schema:
+  fields:
+    - name: legislature
+      description: "Legislature period (e.g., 2023_2028)"
+    - name: question_number
+      description: "Question number"
+    - name: question_date
+      description: "Date question was submitted"
+    - name: author
+      description: "Name of the deputy who submitted the question"
+    - name: political_party
+      description: "Political party of the author"
+    - name: question_text
+      description: "Full text of the question"
+    - name: title
+      description: "Title of the question"
+    - name: languages
+      description: "Languages (FR, LB, DE)"
+    - name: answer_date
+      description: "Date of the answer"
+    - name: answer_author
+      description: "Minister who answered"
+    - name: answer_text
+      description: "Full text of the answer"
+    - name: answer_language
+      description: "Language of the answer"
+    - name: question_url
+      description: "URL to question page on chd.lu"
+    - name: question_pdf_url
+      description: "URL to question PDF"
+    - name: answer_pdf_url
+      description: "URL to answer PDF"
+  key_fields:
+    - legislature
+    - question_number
+
+license: CC0
+license_url: https://creativecommons.org/publicdomain/zero/1.0/
+update_frequency: bimonthly
+coverage:
+  start_date: "2013-01-01"
+  end_date: null
+notes: >
+  Parliamentary written questions and answers from the Luxembourg Chamber of Deputies.
+  Contains full text of questions and ministerial responses in French, Luxembourgish, and German.
+  Data sourced from data.public.lu Open Data platform.

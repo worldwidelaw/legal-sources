@@ -1,0 +1,44 @@
+source_id: US/CaselawAccessProject
+name: Caselaw Access Project (Harvard/HuggingFace)
+country: US
+url: https://huggingface.co/datasets/common-pile/caselaw_access_project
+data_types:
+  - case_law
+
+auth:
+  type: none
+
+endpoints:
+  huggingface: https://huggingface.co/datasets/common-pile/caselaw_access_project
+  original: https://case.law/caselaw/
+
+rate_limit:
+  requests_per_second: 10
+  delay_between_requests: 0.1
+
+schema:
+  key_fields:
+    - _id
+    - id
+    - source
+    - created
+    - metadata
+
+license: CC0 1.0 (Public Domain)
+
+notes: |
+  Caselaw Access Project - Harvard Law Library + Ravel Law digitization.
+  6.7M+ cases from 360 years of U.S. federal and state court decisions.
+
+  Available via HuggingFace Datasets library using streaming mode.
+
+  Dataset: common-pile/caselaw_access_project
+  - Format: Parquet files
+  - Size: ~78 GB uncompressed
+  - Fields: id, source, added, created, metadata, text
+
+  The 'text' field contains full case opinions with court, date, parties, and ruling.
+
+  Usage:
+    from datasets import load_dataset
+    ds = load_dataset("common-pile/caselaw_access_project", split="train", streaming=True)

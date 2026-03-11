@@ -1,0 +1,44 @@
+source:
+  id: LI/LILEX
+  name: LILEX - Liechtenstein Consolidated Legislation
+  country: LI
+  url: https://www.gesetze.li
+
+data:
+  types:
+    - legislation
+  format: html
+  api_type: scraping
+  update_frequency: daily
+
+schema:
+  key_fields:
+    - lgbl_id
+    - lr_nr
+    - title
+    - date
+    - version
+    - text
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  delay_between_requests: 1.0
+
+license:
+  name: Public Domain
+  url: https://www.gesetze.li/impressum
+  notes: Official government publication, free access
+
+notes: |
+  Liechtenstein national legislation database (Landesgesetzblatt).
+  Contains consolidated legislation (konso) and chronological gazette entries (chrono).
+  Full text available via HTML iframe endpoint.
+  URL patterns:
+    - Overview: /konso/{lgblId} or /konso/{year}.{number}
+    - Full text: /konso/html/{lgblId}?version={version}
+    - PDF: /konso/pdf/{lgblId}?version={version}
+  Language: German only.
+  Historical versions available from 1921 onwards.

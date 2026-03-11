@@ -1,0 +1,119 @@
+# ===================================================================
+# AR/SAIJ -- Sistema Argentino de Información Jurídica
+# ===================================================================
+# Public JSON API, no authentication required.
+# 892K+ case law documents: 321K full judgments + 564K summaries.
+# National and provincial courts, all legal areas.
+# ===================================================================
+
+source:
+  id: "AR/SAIJ"
+  country: "AR"
+  name: "SAIJ - Sistema Argentino de Información Jurídica"
+  url: "https://www.saij.gob.ar"
+  description: |
+    Official Argentine Legal Information System operated by the Ministry
+    of Justice and Human Rights. Contains case law from national and
+    provincial courts, including Supreme Court, appellate courts, and
+    administrative tribunals. Public JSON API with Lucene-style query syntax.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest"
+  base_url: "https://www.saij.gob.ar"
+  endpoints:
+    search: "/busqueda"
+    document: "/view-document"
+  pagination:
+    offset_param: "o"
+    page_size_param: "p"
+    max_page_size: 100
+  params:
+    facets: "Total|Fecha[20,1]|Estado de Vigencia[5,1]|Tema[5,1]|Organismo[5,1]|Autor[5,1]|Jurisdicción|Tribunal[5,1]|Publicación[5,1]|Colección temática[5,1]|Tipo de Documento/Jurisprudencia"
+    sort: "fecha-rango|DESC"
+    view: "colapsada"
+
+data_model:
+  type: "case_law"
+  primary_key: "uuid"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "uuid"
+      description: "SAIJ unique document identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "doc_type"
+      description: "Document type (fallo, sumario, sentencia)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "title"
+      description: "Case title (caratula)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision or summary"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "tribunal"
+      description: "Court name"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "jurisdiction"
+      description: "Jurisdiction (Federal, Local, Nacional)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "materia"
+      description: "Legal area (Civil, Penal, Constitucional, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "url"
+      description: "Direct URL to the document"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "actor"
+      description: "Plaintiff"
+    - name: "demandado"
+      description: "Defendant"
+    - name: "sobre"
+      description: "Subject matter"
+    - name: "magistrados"
+      description: "Judges/magistrates"
+    - name: "descriptores"
+      description: "Legal descriptors/keywords"
+    - name: "sumarios_relacionados"
+      description: "Related case summaries"
+
+notes: |
+  - Public JSON API at saij.gob.ar/busqueda, no auth needed
+  - Returns nested JSON with documentAbstract as JSON string
+  - Full judgments (Fallo) have separate PDF files; summaries (Sumario) have inline text
+  - Supports Lucene-style query syntax with facet filtering
+  - ~892,415 total documents (as of 2026)
+  - Language: Spanish
+  - Open public access

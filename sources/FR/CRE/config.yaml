@@ -1,0 +1,45 @@
+id: FR/CRE
+name: CRE (Commission de régulation de l'énergie)
+country: FR
+url: https://www.cre.fr/documents/
+description: |
+  French Energy Regulatory Commission deliberations and CoRDiS decisions.
+
+  CRE is the French independent administrative authority responsible for regulating
+  electricity and gas markets. It publishes regulatory deliberations (délibérations)
+  on tariffs, network access, and market rules, as well as quasi-judicial decisions
+  from CoRDiS (Comité de règlement des différends et des sanctions) on disputes
+  between market participants and sanctions for rule violations.
+
+data_types:
+  - doctrine       # Regulatory deliberations (~3,500 documents)
+  - case_law       # CoRDiS dispute resolution decisions (~470 documents)
+
+license: Licence Ouverte 2.0
+
+coverage:
+  start_year: 1999
+  document_count: ~4000
+
+update_frequency: weekly
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - doc_number
+    - doc_type
+  optional_fields:
+    - pdf_url
+    - url
+
+notes: |
+  Documents are published as PDFs on cre.fr. Full text is extracted using pdfplumber.
+
+  Document types:
+  - deliberations: Regulatory decisions by the CRE college (Collège)
+  - cordis: CoRDiS dispute resolution and sanctions decisions
+
+  The scraper paginates through listing pages and downloads individual PDFs.
+  Rate-limited to 1.5 seconds between requests to respect server.

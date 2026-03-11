@@ -1,0 +1,127 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — Bulgarian State Gazette Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "BG/StateGazette"
+  country: "BG"
+  name: "Bulgarian State Gazette (Държавен вестник)"
+  url: "https://dv.parliament.bg"
+  description: |
+    Official journal of the Republic of Bulgaria, publishing laws, decisions,
+    declarations, regulations from the National Assembly, President, Constitutional
+    Court, Council of Ministers, and other government bodies.
+
+    Contains two divisions:
+    - Official section: laws, government decisions, regulations
+    - Unofficial section: ministry/municipal orders, corporate notices
+
+    Data available from 2003 onwards via RSS feed and web interface.
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - legislation
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  # Note: SSL certificate has issues, using -k flag in requests
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "rss"
+  base_url: "https://dv.parliament.bg/DVWeb"
+  endpoints:
+    rss_official: "/rss_newspaper.jsp"
+    rss_procurement: "/rss_porachki.jsp"
+    issue_contents: "/materiali.faces?idObj={issue_id}"
+    document_detail: "/showMaterialDV.jsp?idMat={doc_id}"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "doc_id"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document identifier (idMat from source)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title (category or RSS title)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content of the document (fetched from detail page)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Direct URL to view the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "description"
+      description: "Full description/title of the legislative material"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "publication_date"
+      description: "Publication date in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "category"
+      description: "Category/issuing authority (e.g., National Assembly, President)"
+      type: "string"
+      role: "content"
+      required: true
+  secondary_fields:
+    - name: "title"
+      description: "Short title (usually the category name)"
+    - name: "issue_number"
+      description: "State Gazette issue number"
+    - name: "issue_date"
+      description: "Issue date (may be empty)"
+    - name: "issue_id"
+      description: "Internal issue identifier (idObj)"
+    - name: "page_number"
+      description: "Page number within the issue"
+    - name: "source_url"
+      description: "Direct URL to view the document"
+  probably_ignorable:
+    - name: "_raw"
+      description: "Complete raw data from source (for debugging)"
+    - name: "_fetched_at"
+      description: "Timestamp when record was fetched"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: Bulgarian (UTF-8)
+  - Coverage: 2003 onwards (full text search)
+  - RSS feeds provide recent materials (7 items in official section)
+  - SSL certificate verification fails, must use verify=False
+  - Documents published as amendments/corrections, not full legislative texts
+  - Two RSS feeds: official section (legislation) and public procurement
+  - Each material has page number, category, and publication date
+  - Full HTML content available via showMaterialDV.jsp

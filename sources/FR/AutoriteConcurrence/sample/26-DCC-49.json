@@ -1,0 +1,27 @@
+{
+  "_id": "FR/ADLC/26-DCC-49",
+  "_source": "FR/ADLC",
+  "_type": "case_law",
+  "_fetched_at": "2026-02-20T14:39:13.929236+00:00",
+  "decision_id": "26-DCC-49",
+  "title": "relative à la prise de contrôle exclusif de la société Axxia par la société CDA Motors",
+  "date": "2026-02-10",
+  "year": 2026,
+  "decision_type": "merger_control",
+  "decision_type_code": "DCC",
+  "url": "https://www.autoritedelaconcurrence.fr/fr/decision-de-controle-des-concentrations/relative-la-prise-de-controle-exclusif-de-la-societe-axxia",
+  "text": "RÉPUBLIQUE FRANÇAISE\nDécision n° 26-DCC-49 du 10 février 2026 relative à la prise de contrôle exclusif de la société Axxia par la société CDA Motors\nL'Autorité de la concurrence,\nVu le dossier de notification adressé complet au service des concentrations le 23 janvier 2026, relatif à la prise de contrôle exclusif de la société Axxia par la société CDA Motors, formalisée par une offre de rachat du 19 décembre 2025 ;\nVu le livre IV du code de commerce relatif à la liberté des prix et de la concurrence, et notamment ses articles L. 430-1 à L. 430-7 ;\nVu les éléments complémentaires transmis par la partie notifiante en cours d'instruction ;\nAdopte la décision suivante :\n1. L'opération notifiée consiste en la prise de contrôle exclusif par la société CDA Motors de la société Axxia, laquelle exploite des concessions automobiles sous les enseignes BMW et Mini, situées à Bourges (18), Nevers (58) et Châteauroux (36). Cette opération constitue une concentration au sens de l'article L. 430-1 du code de commerce. Compte tenu des chiffres d'affaires réalisés par les entreprises concernées, l'opération ne relève pas de la compétence de l'Union européenne. En revanche, les seuils de contrôle mentionnés au II de l'article L. 430-2 du code de commerce sont franchis. La présente opération est donc soumise aux dispositions des articles L. 430-3 et suivants du code de commerce relatifs à la concentration économique.\n2. Au vu des éléments du dossier, l'opération n'est pas de nature à porter atteinte à la concurrence sur les marchés concernés.\nDÉCIDE\nArticle unique : L'opération notifiée sous le numéro 26-028 est autorisée.\nLe président,\nBenoît Cœuré\n Autorité de la concurrence",
+  "companies_involved": [
+    "Société Axxia",
+    "Société CDA Motors"
+  ],
+  "notifying_party": "Société CDA Motors",
+  "sector": [
+    "Distribution",
+    "Grande consommation"
+  ],
+  "simplified_procedure": true,
+  "merger_phase": "Phase 1",
+  "merger_disposition": "Autorisation",
+  "operation_type": "Prise de contrôle"
+}

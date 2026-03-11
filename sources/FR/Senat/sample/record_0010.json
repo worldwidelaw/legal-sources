@@ -1,0 +1,30 @@
+{
+  "_id": "ppl25-328",
+  "_source": "FR/Senat",
+  "_type": "legislation",
+  "_fetched_at": "2026-02-12T08:02:22.499733+00:00",
+  "title": "Proposition de loi visant à permettre le remboursement des frais d’expertise comptable aux candidats",
+  "text": "Le code électoral est ainsi modifié : \nLe code électoral est ainsi modifié :\n 1° Le premier alinéa du III de l’article L. 52‑12 est complété par deux phrases ainsi rédigées : « Les frais d’expertise comptable liés à l’application du présent article sont inscrits dans le compte de campagne et éligibles au remboursement forfaitaire de la part de l’État prévu à l’article L. 52‑11‑1. La Commission nationale des comptes de campagne et des financements politiques peut ne retenir qu’une partie de ces frais lorsqu’ils s’avèrent manifestement excessifs au regard des prestations effectivement accomplies, des pièces et des justificatifs produits ou de la nature des difficultés présentées par le compte de campagne. » ; \n1° Le premier alinéa du III de l’article L. 52‑12 est complété par deux phrases ainsi rédigées : « Les frais d’expertise comptable liés à l’application du présent article sont inscrits dans le compte de campagne et éligibles au remboursement forfaitaire de la part de l’État prévu à l’article L. 52‑11‑1. La Commission nationale des comptes de campagne et des financements politiques peut ne retenir qu’une partie de ces frais lorsqu’ils s’avèrent manifestement excessifs au regard des prestations effectivement accomplies, des pièces et des justificatifs produits ou de la nature des difficultés présentées par le compte de campagne. » ;\n 2° (nouveau) Au premier alinéa du I de l’article L. 388, les mots : « n° 2025‑658 du 18 juillet 2025 relative au droit de vote par correspondance des personnes détenues » sont remplacés par les mots : « n°       du       visant à permettre le remboursement des frais d’expertise comptable aux candidats ». \n2° (nouveau) Au premier alinéa du I de l’article L. 388, les mots : « n° 2025‑658 du 18 juillet 2025 relative au droit de vote par correspondance des personnes détenues » sont remplacés par les mots : « n°       du       visant à permettre le remboursement des frais d’expertise comptable aux candidats ».",
+  "date": "2026-02-11",
+  "url": "https://www.senat.fr/dossier-legislatif/ppl25-328.html",
+  "frbr_uri": "",
+  "signet": "ppl25-328",
+  "doc_type_label": "Proposition de loi",
+  "authors": [
+    "muriel-jourda-et-aln"
+  ],
+  "workflow": [
+    {
+      "date": "2026-01-30",
+      "outcome": "déposé au Sénat",
+      "by": "senat"
+    },
+    {
+      "date": "2026-02-11",
+      "outcome": "de la commission",
+      "by": "commission-senat"
+    }
+  ],
+  "date_depot": "2026-02-11",
+  "date_adoption": ""
+}

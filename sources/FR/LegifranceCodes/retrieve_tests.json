@@ -1,0 +1,130 @@
+[
+  {
+    "reference": "article 1 du Code civil",
+    "expected_id": "LEGIARTI000006419280",
+    "variants": [
+      "C. civ., art. 1",
+      "art. 1 code civil"
+    ]
+  },
+  {
+    "reference": "article 2 du Code civil",
+    "expected_id": "LEGIARTI000006419281",
+    "variants": [
+      "C. civ., art. 2",
+      "art. 2 code civil"
+    ]
+  },
+  {
+    "reference": "article 111-1 du Code pénal",
+    "expected_id": "LEGIARTI000006417175",
+    "variants": [
+      "C. pén., art. 111-1",
+      "art. 111-1 code pénal"
+    ]
+  },
+  {
+    "reference": "article 111-2 du Code pénal",
+    "expected_id": "LEGIARTI000006417176",
+    "variants": [
+      "C. pén., art. 111-2",
+      "art. 111-2 code pénal"
+    ]
+  },
+  {
+    "reference": "article L1 du Code du travail",
+    "expected_id": "LEGIARTI000018764571",
+    "variants": [
+      "C. trav., art. L1",
+      "art. L1 code du travail"
+    ]
+  },
+  {
+    "reference": "article L2 du Code du travail",
+    "expected_id": "LEGIARTI000042654546",
+    "variants": [
+      "C. trav., art. L2",
+      "art. L2 code du travail"
+    ]
+  },
+  {
+    "reference": "article L110-1 du Code de commerce",
+    "expected_id": "LEGIARTI000044072567",
+    "variants": [
+      "C. com., art. L110-1",
+      "art. L110-1 code de commerce"
+    ]
+  },
+  {
+    "reference": "article L110-2 du Code de commerce",
+    "expected_id": "LEGIARTI000006219126",
+    "variants": [
+      "C. com., art. L110-2",
+      "art. L110-2 code de commerce"
+    ]
+  },
+  {
+    "reference": "article liminaire du Code de la consommation",
+    "expected_id": "LEGIARTI000049464063",
+    "variants": [
+      "C. conso., art. liminaire",
+      "art. liminaire code de la consommation"
+    ]
+  },
+  {
+    "reference": "article L111-1 du Code de la consommation",
+    "expected_id": "LEGIARTI000044142438",
+    "variants": [
+      "C. conso., art. L111-1",
+      "art. L111-1 code de la consommation"
+    ]
+  },
+  {
+    "reference": "article 1 du Code de procédure civile",
+    "expected_id": "LEGIARTI000006410094",
+    "variants": [
+      "C. pr. civ., art. 1",
+      "art. 1 code de procédure civile"
+    ]
+  },
+  {
+    "reference": "article 2 du Code de procédure civile",
+    "expected_id": "LEGIARTI000006410095",
+    "variants": [
+      "C. pr. civ., art. 2",
+      "art. 2 code de procédure civile"
+    ]
+  },
+  {
+    "reference": "article préliminaire du Code de procédure pénale",
+    "expected_id": "LEGIARTI000044568200",
+    "variants": [
+      "C. pr. pén., art. préliminaire",
+      "art. préliminaire code de procédure pénale"
+    ]
+  },
+  {
+    "reference": "article 1 du Code de procédure pénale",
+    "expected_id": "LEGIARTI000024496929",
+    "variants": [
+      "C. pr. pén., art. 1",
+      "art. 1 code de procédure pénale"
+    ]
+  },
+  {
+    "reference": "article 1 A du Code général des impôts",
+    "expected_id": "LEGIARTI000006302199",
+    "variants": [
+      "CGI, art. 1 A",
+      "art. 1 A code général des impôts"
+    ]
+  },
+  {
+    "reference": "article 4 A du Code général des impôts",
+    "expected_id": "LEGIARTI000006302200",
+    "variants": [
+      "CGI, art. 4 A",
+      "art. 4 A code général des impôts"
+    ]
+  }
+]

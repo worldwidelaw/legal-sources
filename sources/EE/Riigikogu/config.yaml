@@ -1,0 +1,42 @@
+source:
+  id: "EE/Riigikogu"
+  country: "EE"
+  name: "Estonian Parliament (Riigikogu)"
+  url: "https://api.riigikogu.ee"
+  data_types: [legislation]
+  license: "CC BY-SA 3.0"
+  update_frequency: daily
+  language: "et"
+
+fetch:
+  base_url: "https://api.riigikogu.ee"
+  rate_limit: 1.5  # seconds between requests
+  timeout: 60
+  retry_attempts: 3
+
+  # Draft bills endpoint
+  # /api/volumes/drafts - lists all legislative drafts
+  # /api/volumes/drafts/{uuid} - draft details with files
+  # /api/files/{uuid}/download - download docx/pdf files
+
+  # Draft types:
+  # SE - Seaduseelnõu (Law draft/bill)
+  # OE - Otsuse eelnõu (Resolution draft)
+
+schema:
+  key_fields:
+    - "_id"
+    - "title"
+    - "text"
+    - "date"
+    - "url"
+
+  # Additional fields from Riigikogu API:
+  # - mark (bill number, e.g., 758)
+  # - draft_type (SE, OE, etc.)
+  # - status (VASTU_VOETUD, TAGASI_LYKATUD, etc.)
+  # - initiators (who proposed the bill)
+  # - leading_committee
+  # - introduction (summary text)
+  # - initiated_date
+  # - membership (parliamentary session)

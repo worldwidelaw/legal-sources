@@ -1,0 +1,64 @@
+# FR/AMF - Autorité des Marchés Financiers
+# French Financial Markets Authority - Sanctions decisions and doctrine
+
+source_id: FR/AMF
+name: Autorité des Marchés Financiers (AMF)
+country: FR
+language: fr
+data_types:
+  - case_law  # Sanctions decisions from Commission des sanctions
+  - doctrine  # Regulatory doctrine (positions, recommendations, instructions)
+
+# Data access via RSS feeds + PDF extraction
+api:
+  type: rss
+  endpoints:
+    sanctions: https://www.amf-france.org/fr/flux-rss/display/24
+    doctrine: https://www.amf-france.org/fr/flux-rss/display/31
+  documentation:
+    - https://www.amf-france.org/fr/abonnements-flux-rss
+    - https://bdif.amf-france.org
+
+# Response format
+format: rss_xml
+pdf_extraction: true  # Full text from PDFs via pdfplumber
+
+schema:
+  key_fields:
+    - id
+    - document_id
+  metadata_fields:
+    - title
+    - publication_date
+    - document_type
+    - category
+  text_field: text
+
+# Rate limiting
+rate_limit:
+  requests_per_second: 1
+  delay_between_requests: 1.5
+
+# License - AMF publications are public
+license:
+  name: Open Data
+  notes: AMF decisions and doctrine are public regulatory documents
+
+# Coverage
+coverage:
+  document_types:
+    - sanctions_decisions  # Commission des sanctions decisions (SAN-YYYY-NN)
+    - transactions         # Approved transactions
+    - doctrine            # Positions, recommendations, instructions (DOC-YYYY-NN)
+    - professional_rules  # Professional rules approvals
+  notes: >
+    AMF is the French financial regulator. This source covers:
+    1. Commission des sanctions decisions (financial penalties, enforcement)
+    2. Regulatory doctrine (positions, recommendations, instructions)
+    3. Approved professional rules
+
+    RSS feeds provide recent 200 items each. Full text via PDF extraction.
+    For bulk historical data, see BDIF (bdif.amf-france.org).
+
+# Authentication
+requires_auth: false

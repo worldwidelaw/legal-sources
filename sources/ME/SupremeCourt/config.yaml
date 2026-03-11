@@ -1,0 +1,29 @@
+source:
+  id: ME/SupremeCourt
+  name: Montenegro Supreme Court (Vrhovni sud)
+  country: ME
+  url: https://sudovi.me/vrhs/odluke/
+  data_types:
+    - case_law
+  language: me
+  license: Public Domain
+  update_frequency: daily
+
+api:
+  base_url: https://sudovi.me/api
+  endpoints:
+    search: POST /search/decisions
+    detail: GET /decision/{id}
+    courts: GET /decisions/courts
+    departments: GET /decisions/departments
+  rate_limit: 2  # requests per second
+  court_code: vrhs
+
+schema:
+  key_fields:
+    - dbid
+  date_fields:
+    - datum_vijecanja
+    - _fetched_at
+  text_fields:
+    - tekst

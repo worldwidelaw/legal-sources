@@ -1,0 +1,30 @@
+source_id: FR/ADLC
+name: Autorité de la Concurrence (French Competition Authority)
+country: FR
+url: https://www.autoritedelaconcurrence.fr/
+data_url: https://www.data.gouv.fr/datasets/decisions-publiees-par-lautorite-de-la-concurrence-depuis-1988/
+description: |
+  Decisions of the French Competition Authority (Autorité de la Concurrence) and its
+  predecessor (Conseil de la Concurrence) since 1988. Includes merger control decisions,
+  antitrust decisions, opinions, and interim measures.
+
+data_types:
+  - case_law
+
+license: Open Licence 2.0 (Etalab)
+language: fr
+
+update_frequency: monthly
+
+schema:
+  key_fields:
+    - decision_id
+  date_field: date
+  text_field: text
+  title_field: title
+  url_field: url
+
+notes: |
+  Dataset provides full text of all 6,500+ decisions.
+  Types: DCC (merger control), D (antitrust), A (opinions), MC (interim measures).
+  Data updated monthly on data.gouv.fr.

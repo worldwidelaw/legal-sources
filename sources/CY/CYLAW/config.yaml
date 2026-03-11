@@ -1,0 +1,42 @@
+source:
+  id: CY/CYLAW
+  name: CY-Law - Cyprus Legislation Database
+  country: CY
+  language: el
+  data_types:
+    - legislation
+  url: https://www.cylaw.org
+
+api:
+  # XML export of consolidated legislation
+  base_url: http://www.cylaw.org/nomoi/enop/backup/cybarlegis/zips/export/full20240628-0951/db/cybar/legislation/
+  contents_url: http://www.cylaw.org/nomoi/enop/backup/cybarlegis/zips/export/full20240628-0951/db/cybar/legislation/__contents__.xml
+  # Individual documents: {base_url}{uuid}.xml
+  rate_limit: 1.0  # seconds between requests
+  timeout: 30
+
+schema:
+  key_fields:
+    - _id
+    - legis_num
+    - official_title
+  date_fields:
+    - date
+    - enforced_date
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+
+fetch:
+  mode: full_catalog
+  batch_size: 50
+  max_sample: 12
+
+license:
+  name: Open Government Data
+  url: https://www.cylaw.org/
+  notes: Cyprus legislation is publicly available through CyLaw

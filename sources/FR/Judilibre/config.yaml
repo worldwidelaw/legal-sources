@@ -1,0 +1,66 @@
+# FR/Judilibre - Cour de Cassation Judilibre API
+# French judicial case law from the Court of Cassation and lower courts
+
+source_id: FR/Judilibre
+name: Judilibre (Cour de Cassation)
+country: FR
+language: fr
+data_types:
+  - case_law
+
+# Data access via PISTE API
+api:
+  type: rest
+  sandbox_url: https://sandbox-api.piste.gouv.fr/cassation/judilibre/v1.0
+  production_url: https://api.piste.gouv.fr/cassation/judilibre/v1.0
+  auth_type: api_key
+  auth_header: KeyId
+  documentation:
+    - https://api.gouv.fr/les-api/api-judilibre
+    - https://github.com/Cour-de-cassation/judilibre-search
+
+# Response format
+format: json
+schema:
+  key_fields:
+    - id
+    - ecli
+  metadata_fields:
+    - jurisdiction
+    - chamber
+    - decision_date
+    - publication
+    - solution
+    - themes
+    - files
+  text_field: text
+
+# Rate limiting
+rate_limit:
+  requests_per_second: 2
+  delay_between_requests: 0.5
+
+# License
+license:
+  name: Licence Ouverte / Open Licence
+  url: https://www.etalab.gouv.fr/licence-ouverte-open-licence
+  commercial_use: true
+
+# Coverage
+coverage:
+  courts:
+    - Cour de cassation
+    - Cours d'appel
+    - Tribunaux judiciaires
+  notes: >
+    Judilibre provides access to French judicial case law including decisions
+    from the Court of Cassation and appellate courts. Requires PISTE API
+    registration for access. More comprehensive than the DILA/Legifrance
+    archives which only include Court of Cassation decisions.
+
+# Authentication required
+requires_auth: true
+auth_instructions: >
+  Register at https://developer.aife.economie.gouv.fr (PISTE portal),
+  subscribe to the Judilibre API, and obtain your API key (KeyId).
+  Copy it to .env file in this directory.

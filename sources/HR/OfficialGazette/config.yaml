@@ -1,0 +1,120 @@
+# ===================================================================
+# HR/OfficialGazette -- Croatian Official Gazette (Narodne novine)
+# ===================================================================
+# Full text available via ELI (European Legislation Identifier) URIs.
+# No authentication required. Documents from 1990 to present.
+#
+# Primary endpoint: ELI URIs on narodne-novine.nn.hr
+# Docs: https://narodne-novine.nn.hr/data_access.aspx
+# ELI Register: https://eur-lex.europa.eu/eli-register/croatia.html
+# ===================================================================
+
+source:
+  id: "HR/OfficialGazette"
+  country: "HR"
+  name: "Narodne novine (Croatian Official Gazette)"
+  url: "https://narodne-novine.nn.hr"
+  description: |
+    Croatia's official gazette published by Narodne novine d.d. since 1990.
+    Contains all laws (zakoni), decrees (uredbe), regulations (pravilnici),
+    and other official acts. Full text accessible via ELI URIs in HTML format.
+    Metadata available in JSON-LD and RDF/XML. Sitemap index provides
+    complete document discovery. Rate limit: max 3 requests/second.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2    # Conservative (max 3 allowed)
+  burst: 3
+
+api:
+  type: "eli"               # European Legislation Identifier URIs
+  base_url: "https://narodne-novine.nn.hr"
+  endpoints:
+    # Sitemap for document discovery
+    sitemap: "/sitemap.xml"
+    sitemap_issue: "/sitemap_1_{year}_{issue}.xml"
+    # ELI endpoints
+    eli_document: "/eli/sluzbeni/{year}/{issue}/{doc_num}"
+    eli_html: "/eli/sluzbeni/{year}/{issue}/{doc_num}/hrv/html"
+    eli_jsonld: "/eli/sluzbeni/{year}/{issue}/{doc_num}/json-ld"
+    eli_rdf: "/eli/sluzbeni/{year}/{issue}/{doc_num}/rdf"
+    # Legacy HTML format
+    html_document: "/clanci/sluzbeni/{year}_{month}_{issue}_{doc_num}.html"
+  pagination:
+    by_sitemap: true        # Use sitemaps for document discovery
+    eli_listing: true       # ELI provides individual document access
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  versioning: "none"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "doc_id"
+      description: "Document identifier (year/issue/number format)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title in Croatian"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation (from ELI /hrv/html endpoint)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "ELI URL to the document on narodne-novine.nn.hr"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "year"
+      description: "Publication year"
+      type: "integer"
+      role: "temporal_key"
+      required: true
+    - name: "issue"
+      description: "Gazette issue number within the year"
+      type: "integer"
+      role: "classification"
+      required: true
+    - name: "doc_num"
+      description: "Document number within the issue"
+      type: "integer"
+      role: "classification"
+      required: true
+  secondary_fields:
+    - name: "document_type"
+      description: "Type of legal act (zakon, uredba, pravilnik, odluka, etc.)"
+    - name: "issuing_authority"
+      description: "Authority that issued the document"
+    - name: "eli_uri"
+      description: "Full ELI URI for the document"
+    - name: "language"
+      description: "Language code (hrv for Croatian)"
+
+notes: |
+  - Full text available via ELI URIs: /eli/sluzbeni/{year}/{issue}/{doc}/hrv/html
+  - JSON-LD metadata: /eli/sluzbeni/{year}/{issue}/{doc}/json-ld
+  - Sitemap index: /sitemap.xml with per-issue sitemaps /sitemap_1_{year}_{issue}.xml
+  - Rate limit: max 3 requests/second (per data_access.aspx documentation)
+  - Documents available from 1990 to present, full HTML/PDF from 2023
+  - Language: Croatian (HRV) - some documents may have translations
+  - Contact: Ostap Graljuk (ELI national coordinator)

@@ -1,0 +1,35 @@
+source:
+  id: NL/SupremeCourt
+  name: Dutch Supreme Court (Hoge Raad)
+  country: NL
+  url: https://www.rechtspraak.nl
+
+data:
+  types:
+    - case_law
+  format: xml
+  language: nl
+  coverage: 1999-present
+  update_frequency: daily
+
+api:
+  type: rest
+  base_url: https://data.rechtspraak.nl/uitspraken
+  search_endpoint: /zoeken
+  content_endpoint: /content
+  rate_limit_per_second: 10
+  auth: none
+
+schema:
+  key_fields:
+    - ecli
+    - case_number
+    - decision_date
+    - subject_area
+    - procedure_type
+    - text
+
+license:
+  name: Open Government Data
+  url: https://www.rechtspraak.nl/Uitspraken/Paginas/Open-Data.aspx
+  commercial_use: true

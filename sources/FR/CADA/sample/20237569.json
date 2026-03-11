@@ -1,0 +1,29 @@
+{
+  "_id": "FR/CADA/20237569",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-02-20T16:35:21.947041+00:00",
+  "opinion_id": "20237569",
+  "title": "Avis 20237569 - Maison départementale des personnes handicapées du Val-d'Oise (MDPH 95)",
+  "date": "2024-01-25",
+  "url": "https://cada.data.gouv.fr/20237569/",
+  "text": "Madame X a saisi la Commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 4 décembre 2023, à la suite du refus opposé par la directrice de la maison départementale des personnes handicapées du Val-d'Oise à sa demande de communication d'une copie des documents suivants :\n1) l’intégralité des documents composant son dossier, dont le formulaire de demande complété (Cerfa n°15692*01), le certificat médical principal (Cerfa n°15695*01), ainsi que toutes les pièces médicales et administratives annexes ;\n2) le prénom, le nom, les coordonnées administratives et la qualité des agents ayant été chargés d'instruire chacune de ses demandes ainsi que la décision de désignation de ces agents ;\n3) l'intégralité des travaux (pièces, rapports et propositions) des membres de l'équipe pluridisciplinaire d’évaluation qui a procédé à l'évaluation des besoins en compensation de ses handicaps, ainsi que la décision de nomination de ses membres ;\n4) le guide d’évaluation des besoins de compensation des personnes handicapées (GEVA) associé à son dossier ;\n5) le procès-verbal de séance de la commission des droits et de l'autonomie des personnes handicapées (CDAPH) du 26 janvier 2022 ayant rendu son avis sur ses demandes.\n\nEn l'absence de réponse du directeur de la maison départementale des personnes handicapées du Val d'Oise à la date de sa séance, la commission rappelle, en premier lieu, que le droit d'accès prévu par le livre III du code des relations entre le public et l'administration ne s'applique qu'à des documents existants ou susceptibles d’être obtenus par un traitement automatisé d’usage courant. En revanche, et sous cette dernière réserve, cette loi ne fait pas obligation à l’administration saisie d’une demande de communication de procéder à des recherches en vue de collecter l'ensemble des documents éventuellement détenus (CE, 27 septembre 1985, recueil page 267), ou d'établir un document en vue de procurer les renseignements ou l'information souhaités (30 janvier 1995, n° 128797 ; CE, 22 mai 1995, n° 152393).\n\nLa commission se déclare par suite incompétente pour se prononcer sur le point 2) en tant qu’il porte sur l’identification des agents chargés de l’instruction, qui s’analyse en réalité en une demande de renseignements.\n\nEn deuxième lieu, la commission estime que les actes déterminant la composition de l'équipe pluridisciplinaire visés au point 3) et des agents chargés de l'instruction visés au point 2), s’ils existent, sont communicables à toute personne qui en fait la demande, en application de L311-1 du code des relations entre le public et l'administration.\n\nElle émet par suite un avis favorable sur ces points de la demande, sous cette réserve et dans cette mesure. \n\nElle considère, en troisième lieu que les autres documents sollicités, s'ils existent en l’état ou peuvent obtenus par un traitement automatisé d’usage courant, sont communicables à l'intéressé, en application de l'article L311-6 du code des relations entre le public et l'administration et de l'article L1111-7 du code de la santé publique pour les données de santé qu'ils comporteraient, à l'exception des informations mentionnant qu'elles ont été recueillies auprès de tiers n'intervenant pas dans la prise en charge thérapeutique ou concernant un tel tiers. En application de l'article L311-6 du code des relations entre le public et l'administration, doivent, en outre, être occultées les éventuelles mentions dont la communication porterait atteinte à la vie privée de tiers, portant une appréciation ou un jugement de valeur sur une personne physique, nommément désignée ou facilement identifiable, autre que Madame X ou faisant apparaître le comportement d'une personne tierce, dès lors que la divulgation de ce comportement pourrait lui porter préjudice. \n\nElle émet dès lors un avis favorable au surplus de la demande, sous l’ensemble de ces réserves.",
+  "subject": "",
+  "administration": "Maison départementale des personnes handicapées du Val-d'Oise (MDPH 95)",
+  "meanings": [
+    "Favorable/Sauf inexistant",
+    "Favorable/Sauf appréciation",
+    "Favorable/Sauf comportement",
+    "Favorable/Sauf vie privée",
+    "Incompétence/Renseignement"
+  ],
+  "topics": [
+    "Affaires Sanitaires Et Sociales / Solidarités Et Prestations Sociales"
+  ],
+  "tags": [
+    "Handicap - invalidité",
+    "Aide sociale"
+  ],
+  "part": 3,
+  "type": "Avis"
+}

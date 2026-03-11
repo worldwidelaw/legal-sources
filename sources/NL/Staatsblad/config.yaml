@@ -1,0 +1,122 @@
+# NL/Staatsblad -- Dutch Official Gazette (Staatsblad van het Koninkrijk der Nederlanden)
+#
+# Data source: https://repository.overheid.nl (via SRU API)
+# Official portal: https://wetten.overheid.nl and https://zoek.officielebekendmakingen.nl
+#
+# This source fetches Dutch national legislation from the Staatsblad, which includes:
+# - Wetten (Laws)
+# - AMvB (General Administrative Orders)
+# - Klein Koninklijk Besluit (Small Royal Decrees)
+# - Other official royal decrees
+#
+# API: SRU 2.0 (Search/Retrieve via URL)
+# Repository: https://repository.overheid.nl
+# SRU Endpoint: https://repository.overheid.nl/sru
+# Full text: XML documents available at https://repository.overheid.nl/frbr/officielepublicaties/stb/{year}/{id}/1/xml/{id}.xml
+#
+# License: CC0 (Public Domain) - Netherlands Open Government Data
+
+source:
+  id: "NL/Staatsblad"
+  country: "NL"
+  name: "Staatsblad der Nederlanden"
+  url: "https://www.staatsblad.nl"
+  description: |
+    Dutch Official Gazette containing national legislation. The Staatsblad is
+    the official publication medium for Dutch laws and royal decrees. All
+    legislation must be published in the Staatsblad to enter into force.
+
+data_types:
+  - legislation
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "sru"
+  base_url: "https://repository.overheid.nl/sru"
+  version: "2.0"
+  query_prefix: "w.publicatienaam==Staatsblad"
+  full_text_pattern: "https://repository.overheid.nl/frbr/officielepublicaties/stb/{year}/{id}/1/xml/{id}.xml"
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: upsert
+  versioning: "temporal"
+  dedup_key:
+    - doc_id
+
+schema:
+  total_fields: 20
+  key_fields:
+    - name: "doc_id"
+      description: "Document identifier (e.g., stb-2021-620)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document (fetched from XML content URL)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Primary date (ondertekening, available, or issued)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "doc_type_raw"
+      description: "Document type from Staatsblad (Wet, AMvB, Klein Koninklijk Besluit)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "jaargang"
+      description: "Year of publication"
+      type: "string"
+      role: "temporal_key"
+      required: false
+    - name: "publicatienummer"
+      description: "Publication number within year"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "datum_ondertekening"
+      description: "Date of signature (royal assent)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+  secondary_fields:
+    - name: "alternative_title"
+      description: "Alternative or short title"
+    - name: "creator"
+      description: "Ministry responsible for the legislation"
+    - name: "publisher"
+      description: "Publishing ministry"
+    - name: "subject"
+      description: "Subject classification"
+    - name: "source"
+      description: "Legal basis reference"
+    - name: "content_urls"
+      description: "URLs to full text in XML/HTML/PDF formats"
+
+notes: |
+  - ~49,000 Staatsblad publications available
+  - Coverage from 1995 onwards (digitized records)
+  - SRU 2.0 API with CQL query support
+  - Full text available in XML format
+  - License: CC0 (Public Domain)
+  - Language: Dutch (nl)

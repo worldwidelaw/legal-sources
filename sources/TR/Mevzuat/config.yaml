@@ -1,0 +1,39 @@
+source_id: TR/Mevzuat
+name: Turkish Legislation (Mevzuat Bilgi Sistemi)
+country: TR
+url: https://www.mevzuat.gov.tr
+description: >
+  Official Turkish legislation database maintained by the Presidency of Turkey.
+  Contains laws (kanunlar), decrees with force of law (KHK), regulations (tüzükler),
+  directives (yönetmelikler), and presidential decrees (cumhurbaşkanlığı kararnameleri).
+
+data_types:
+  - legislation
+
+schema:
+  key_fields:
+    - mevzuat_no
+    - mevzuat_tur
+    - mevzuat_tertip
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  delay_between_requests: 1.5
+
+endpoints:
+  datatable: /Anasayfa/MevzuatDatatable
+  content_iframe: /anasayfa/MevzuatFihristDetayIframe
+
+# Legislation types (MevzuatTur values)
+# 1 = Kanunlar (Laws) - ~912 records
+# 2 = KHK (Decree with Force of Law) - ~107 records
+# 3 = Tüzükler (Regulations) - ~8,875 records
+# 4 = Yönetmelikler (Directives) - ~63 records
+# 5 = Cumhurbaşkanlığı Kararnameleri (Presidential Decrees) - ~185 records
+# 6 = Cumhurbaşkanı Kararları (Presidential Decisions) - ~18,760 records
+
+license: Open Government Data
+language: tr

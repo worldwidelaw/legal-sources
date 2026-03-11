@@ -1,0 +1,41 @@
+{
+  "_id": "pjl25-239",
+  "_source": "FR/Senat",
+  "_type": "legislation",
+  "_fetched_at": "2026-02-12T08:02:18.955580+00:00",
+  "title": "Projet de loi autorisant l’approbation de la convention de coopération judiciaire internationale entre le Gouvernement de la République française et l’Organisation des Nations unies représentée par le Mécanisme d’enquête indépendant pour le Myanmar",
+  "text": "Est autorisée l’approbation de la convention de coopération judiciaire internationale entre le Gouvernement de la République française et l’Organisation des Nations unies représentée par le Mécanisme d’enquête indépendant pour le Myanmar, signée à Genève le 12 juin 2024, et dont le texte est annexé à la présente loi (1) . \nEst autorisée l’approbation de la convention de coopération judiciaire internationale entre le Gouvernement de la République française et l’Organisation des Nations unies représentée par le Mécanisme d’enquête indépendant pour le Myanmar, signée à Genève le 12 juin 2024, et dont le texte est annexé à la présente loi (1) .",
+  "date": "2026-02-11",
+  "url": "https://www.senat.fr/dossier-legislatif/pjl25-239.html",
+  "frbr_uri": "",
+  "signet": "pjl25-239",
+  "doc_type_label": "Projet de loi",
+  "authors": [
+    "françois-bayrou",
+    "jean-noël-barrot"
+  ],
+  "workflow": [
+    {
+      "date": "2025-07-02",
+      "outcome": "déposé à l'Assemblée Nationale",
+      "by": "assemblee-nationale"
+    },
+    {
+      "date": "2025-12-17",
+      "outcome": "adopté par l'Assemblée nationale",
+      "by": "assemblee-nationale"
+    },
+    {
+      "date": "2025-12-18",
+      "outcome": "transmis au Sénat",
+      "by": "senat"
+    },
+    {
+      "date": "2026-02-11",
+      "outcome": "de la commission",
+      "by": "commission-senat"
+    }
+  ],
+  "date_depot": "2026-02-11",
+  "date_adoption": ""
+}

@@ -1,0 +1,62 @@
+# PL/SupremeCourt -- Polish Supreme Court (Sąd Najwyższy) via SAOS API
+#
+# Source: System Analizy Orzeczeń Sądowych (SAOS)
+# URL: https://www.saos.org.pl
+# API Docs: https://www.saos.org.pl/help/index.php/dokumentacja-api
+#
+# Coverage: 38,000+ Supreme Court judgments with full text
+# Format: JSON REST API
+# License: Public domain (Polish court decisions are not copyrighted)
+
+source_id: PL/SupremeCourt
+name: Polish Supreme Court (Sąd Najwyższy)
+country: PL
+url: https://www.saos.org.pl
+
+data_types:
+  - case_law
+
+auth:
+  type: none
+
+api:
+  base_url: https://www.saos.org.pl/api
+  search_endpoint: /search/judgments
+  detail_endpoint: /judgments/{id}
+  chambers_endpoint: /dump/scChambers
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "case_number"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "court_type"
+      type: "string"
+      required: true
+    - name: "chamber"
+      type: "string"
+      required: false
+    - name: "judges"
+      type: "list"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true

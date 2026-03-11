@@ -1,0 +1,36 @@
+source_id: DE/Brandenburg
+name: Brandenburg State Law (BRAVORS)
+description: Brandenburg state legislation from BRAVORS (Brandenburgisches Vorschriftensystem)
+url: https://bravors.brandenburg.de
+country: DE
+jurisdiction: Brandenburg
+data_types:
+  - legislation
+  - regulation
+
+access:
+  type: html_scraping
+  rate_limit: 2/s
+  auth: none
+
+schema:
+  key_fields:
+    - _id
+    - law_id
+  text_field: text
+  date_field: date
+  title_field: title
+
+update:
+  frequency: weekly
+  method: fetch_updates
+
+license:
+  type: public_domain
+  notes: German official works (§ 5 UrhG) - public domain
+
+notes: |
+  Brandenburg state legislation from the official BRAVORS portal.
+  Covers approximately 1800+ laws and regulations.
+  Full text extracted from HTML pages.
+  Data is organized by 9 subject areas (Sachgebiete).

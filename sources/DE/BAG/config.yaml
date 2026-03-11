@@ -1,0 +1,72 @@
+# German Federal Labor Court (BAG) Data Source Configuration
+# Official case law from rechtsprechung-im-internet.de
+
+source_id: "DE/BAG"
+name: "German Federal Labor Court (Bundesarbeitsgericht)"
+country: "DE"
+language: "de"
+data_types:
+  - case_law
+
+# Data endpoints (no authentication required)
+endpoints:
+  # RSS feed for recent decisions
+  rss_feed: "https://www.rechtsprechung-im-internet.de/jportal/docs/feed/bsjrs-bag.xml"
+
+  # Table of Contents XML (full document discovery)
+  toc: "https://www.rechtsprechung-im-internet.de/rii-toc.xml"
+
+  # ZIP download pattern for full text XML:
+  # http://www.rechtsprechung-im-internet.de/jportal/docs/bsjrs/jb-{doc_id}.zip
+
+  # Portal base URL
+  portal: "https://www.rechtsprechung-im-internet.de"
+
+# Schema information
+schema:
+  key_fields:
+    - "doknr"           # Internal document ID
+    - "ecli"            # European Case Law Identifier
+    - "aktenzeichen"    # File number (case number)
+  date_format: "ISO8601"
+  text_field: "text"
+
+# License
+license:
+  name: "Public Domain (Amtliche Werke)"
+  url: "https://www.rechtsprechung-im-internet.de/jportal/portal/page/bsjrsprod.psml?cmsuri=/technik/de/impressum/bsjrsimpressum.jsp"
+  notes: |
+    German court decisions are "amtliche Werke" (official works) which are
+    not protected by copyright under German law (§ 5 UrhG).
+    Decisions are offered in all formats for free use and reuse.
+
+# Fetcher configuration
+fetcher:
+  rate_limit_ms: 1500
+  ssl_verify: true
+  timeout_s: 60
+  max_retries: 3
+
+# Notes
+notes: |
+  rechtsprechung-im-internet.de provides access to decisions from the
+  Federal Labor Court (Bundesarbeitsgericht/BAG) and other supreme federal courts.
+
+  Coverage:
+  - 12,000+ decisions in the database
+  - Full text available via ZIP XML downloads
+  - ECLI identifiers included for case law interoperability
+
+  The BAG is the supreme court for labor law matters with senates covering:
+  - Individual labor law (dismissal protection, wages, working time)
+  - Collective labor law (unions, works councils, collective agreements)
+  - Social security related to employment
+  - Church labor law
+
+  Available formats:
+  - HTML (web display)
+  - PDF (print-ready)
+  - XML (structured data via ZIP downloads)
+
+  The RSS feed provides the most recent decisions.
+  The TOC XML provides complete discovery of all 12,000+ decisions.

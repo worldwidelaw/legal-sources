@@ -1,0 +1,36 @@
+source:
+  id: NO/Lovdata
+  name: Lovdata - Norwegian Legislation
+  country: 'NO'
+  url: https://lovdata.no
+
+api:
+  type: rest
+  base_url: https://api.lovdata.no
+  auth: none  # Free bulk download, no auth required
+  endpoints:
+    list_datasets: /v1/publicData/list
+    download: /v1/publicData/get/{filename}
+  bulk_files:
+    laws: gjeldende-lover.tar.bz2
+    regulations: gjeldende-sentrale-forskrifter.tar.bz2
+  rate_limit:
+    requests_per_minute: 30
+    delay_seconds: 2
+
+data:
+  format: xml_html
+  language: nob  # Norwegian Bokmål
+  encoding: utf-8
+  license: NLOD 2.0  # Norwegian Licence for Open Government Data
+
+schema:
+  key_fields:
+    - id
+    - type
+    - date
+  required_fields:
+    - title
+    - text
+    - date
+    - url
