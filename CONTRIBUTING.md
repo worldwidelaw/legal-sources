@@ -1,6 +1,8 @@
 # Contributing to World Wide Law
 
-Thank you for helping make the world's legal data more accessible. This guide covers how to add a new data source, improve an existing scraper, or report issues.
+Thank you for helping make the world's open legal data more accessible. This guide covers how to add a new data source, improve an existing collection script, or report issues.
+
+All sources in this repository must be **open data** -- publicly available legal information from official government portals. We always prefer API and bulk download access over web extraction.
 
 ## Ways to Contribute
 
@@ -15,7 +17,7 @@ Know about a legal data portal that isn't covered? [Open a "New Source" issue](h
 
 This is especially valuable from government officials who know their own data portals best.
 
-### 2. Build a New Scraper
+### 2. Build a New Collection Script
 
 #### Prerequisites
 
@@ -64,9 +66,9 @@ pip install -r requirements.txt
 
 8. **Submit a PR** with your changes.
 
-#### Scraper Interface
+#### Script Interface
 
-Every scraper inherits from `common.base_scraper.BaseScraper` and must implement:
+Every collection script inherits from `common.base_scraper.BaseScraper` and must implement:
 
 ```python
 class MyScraper(BaseScraper):
@@ -91,10 +93,10 @@ class MyScraper(BaseScraper):
         }
 ```
 
-### 3. Fix or Improve an Existing Scraper
+### 3. Fix or Improve an Existing Script
 
 1. Check the [issues](https://github.com/worldwidelaw/legal-sources/issues) for bug reports or data quality issues.
-2. Test the scraper locally: `python runner.py sample {CC}/{SourceName}`
+2. Test locally: `python runner.py sample {CC}/{SourceName}`
 3. Make your fix.
 4. Regenerate samples to verify: `python runner.py sample {CC}/{SourceName}`
 5. Submit a PR.
@@ -127,4 +129,5 @@ Before submitting a pull request:
 - Be respectful of rate limits — these are government servers, not your stress test target
 - Always use appropriate User-Agent strings
 - If a source requires authentication, document it in `.env.template` but never commit actual credentials
-- Prefer official APIs over scraping HTML when available
+- Always prefer official APIs and bulk downloads over web extraction
+- Only include open data sources -- publicly available legal information

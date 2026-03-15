@@ -1,19 +1,26 @@
 # World Wide Law
 
-**Open-source legal data scrapers for 50+ countries.**
+**Open-source collection scripts for open legal data from 50+ countries.**
 
-Every country publishes its laws, court decisions, and regulations online -- but in different formats, behind different APIs, with different access rules. World Wide Law is building the open infrastructure to collect, normalize, and make all of it accessible.
+Every country publishes its laws, court decisions, and regulations online -- but in different formats, behind different APIs, with different access rules. World Wide Law is building the open infrastructure to collect, normalize, and make all of it searchable.
+
+All sources in this repository are **open data** -- publicly available legal information from official government portals, APIs, and bulk download endpoints. We always prefer API and bulk access over web extraction.
+
+## Live Dashboard & API
+
+- **Dashboard**: [legaldatahunter.com](https://legaldatahunter.com) -- track coverage, explore sources, submit feedback
+- **Search API**: Available at [legaldatahunter.com](https://legaldatahunter.com) -- search across 6M+ indexed legal documents
 
 ## What's Here
 
-This repository contains **227 data source definitions** and **188 working scrapers** that download and normalize legal data from government portals worldwide. Each scraper follows a standard interface so that any developer can run, test, or improve it.
+This repository contains **227 data source definitions** and **188 working collection scripts** that download and normalize open legal data from government portals worldwide. Each script follows a standard interface so that any developer can run, test, or improve it.
 
 ```
 sources/
-  FR/LegifranceCodes/     # French consolidated legal codes
-  DE/GesetzeImInternet/   # German federal laws
-  IT/NormattivaLegislation/ # Italian legislation
-  ES/BOE/                 # Spanish official gazette
+  FR/LegifranceCodes/     # French consolidated legal codes (API)
+  DE/GesetzeImInternet/   # German federal laws (bulk XML)
+  IT/NormattivaLegislation/ # Italian legislation (API)
+  ES/BOE/                 # Spanish official gazette (API)
   ... (50+ countries)
 ```
 
@@ -45,8 +52,8 @@ Every source lives in `sources/{COUNTRY_CODE}/{SourceName}/` and contains:
 
 | File | Purpose |
 |------|---------|
-| `bootstrap.py` | The scraper -- implements `fetch_all()`, `fetch_updates()`, `normalize()` |
-| `config.yaml` | Source metadata, auth type, rate limits, schema |
+| `bootstrap.py` | Collection script -- implements `fetch_all()`, `fetch_updates()`, `normalize()` |
+| `config.yaml` | Source metadata, access method, rate limits, schema |
 | `sample/` | 10+ sample documents for validation |
 | `README.md` | Documentation about the data source |
 | `.env.template` | Required API keys or credentials (if any) |
@@ -60,7 +67,7 @@ Every source lives in `sources/{COUNTRY_CODE}/{SourceName}/` and contains:
 
 ### Standard Output Schema
 
-Every scraper normalizes documents to a common schema:
+Every script normalizes documents to a common schema:
 - `_id` -- Unique identifier
 - `_source` -- Source identifier (e.g., `FR/LegifranceCodes`)
 - `_type` -- `legislation` or `case_law`
@@ -74,14 +81,14 @@ Every scraper normalizes documents to a common schema:
 ```
 legal-sources/
   manifest.yaml          # Master inventory: all 227 sources + status
-  runner.py              # CLI: run, test, and manage scrapers
+  runner.py              # CLI: run, test, and manage collection scripts
   common/                # Shared libraries
-    base_scraper.py        Base class all scrapers inherit from
+    base_scraper.py        Base class all scripts inherit from
     http_client.py         HTTP client with retries + caching
     rate_limiter.py        Token bucket rate limiter
     storage.py             JSONL storage with deduplication
     validators.py          Schema validation
-  templates/             # Templates for new scrapers
+  templates/             # Templates for new sources
     scraper_template.py    Boilerplate for bootstrap.py
     config_template.yaml   Boilerplate for config.yaml
     retrieve_template.py   Boilerplate for retrieve.py
@@ -99,21 +106,21 @@ legal-sources/
 | Western Balkans | RS, BA, ME, AL, MK, XK | 15+ |
 | Other | US, CA, AR, TW, EG | 10+ |
 
-Track live progress on the [dashboard](https://worldwidelaw.github.io/legal-sources/).
+Track live progress on the [dashboard](https://legaldatahunter.com).
 
 ## Contributing
 
-We welcome contributions from developers, legal researchers, and **especially governments** who want their legal data included.
+We welcome contributions from developers, legal researchers, and **especially governments** who want their open legal data included.
 
 **Submit a data source** (no coding required):
 - [Open a "New Source" issue](https://github.com/worldwidelaw/legal-sources/issues/new?template=new-source.yml) and tell us about your country's legal data portal
 
-**Fix or improve a scraper**:
+**Fix or improve a collection script**:
 - See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide
 
 **Report a problem**:
 - [Data quality issue](https://github.com/worldwidelaw/legal-sources/issues/new?template=data-quality.yml) -- missing or incorrect data
-- [Bug report](https://github.com/worldwidelaw/legal-sources/issues/new?template=bug-report.yml) -- broken scraper
+- [Bug report](https://github.com/worldwidelaw/legal-sources/issues/new?template=bug-report.yml) -- broken script
 
 ## License
 
