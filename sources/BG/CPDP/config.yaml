@@ -1,0 +1,105 @@
+# ===================================================================
+# World Wide Law — Bulgarian Data Protection Authority (CPDP) Configuration
+# ===================================================================
+
+# -- Source Identity -----------------------------------------------
+source:
+  id: "BG/CPDP"
+  country: "BG"
+  name: "Bulgarian Commission for Personal Data Protection (КЗЛД)"
+  url: "https://cpdp.bg"
+  description: |
+    Commission for Personal Data Protection (Комисия за защита на личните данни).
+    The Bulgarian data protection supervisory authority.
+    Publishes decisions and opinions on personal data protection matters.
+    Data source: WordPress REST API (wp-json/wp/v2)
+    Coverage: 2007 onwards (decisions and opinions)
+
+# -- Data Types ----------------------------------------------------
+data_types:
+  - regulation  # DPA decisions are regulatory in nature
+
+# -- Authentication ------------------------------------------------
+auth:
+  type: "none"
+
+# -- Rate Limiting -------------------------------------------------
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# -- API / Scraping Configuration ----------------------------------
+api:
+  type: "rest_api"
+  base_url: "https://cpdp.bg"
+  ssl_verify: false  # Site has certificate issues
+  endpoints:
+    categories: "/wp-json/wp/v2/categories"
+    posts: "/wp-json/wp/v2/posts"
+  pagination:
+    type: "offset"
+    page_param: "page"
+    per_page_param: "per_page"
+    max_per_page: 100
+
+# -- Data Model ----------------------------------------------------
+data_model:
+  type: "regulation"
+  primary_key: "post_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "post_id"
+
+# -- Schema --------------------------------------------------------
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "post_id"
+      description: "WordPress post ID"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision or opinion title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content of the decision/opinion"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Direct URL to the decision"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "category"
+      description: "Category (decisions, opinions, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "year"
+      description: "Year of the decision"
+      type: "integer"
+      role: "temporal_key"
+      required: false
+    - name: "decision_type"
+      description: "Type of document (decision, opinion, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+
+# -- Notes ---------------------------------------------------------
+notes: |
+  - Language: Bulgarian (UTF-8)
+  - Source: WordPress REST API (wp-json/wp/v2)
+  - Content is in HTML format (needs cleaning)
+  - Categories cover decisions from 2007-2024 and opinions from 2007-2026
+  - SSL certificate issues require verify=False

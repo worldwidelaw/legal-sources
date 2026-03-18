@@ -1,0 +1,16 @@
+{
+  "_id": "vat-input-tax_vit05000",
+  "_source": "UK/HMRC",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-15T15:35:03.193527+00:00",
+  "title": "VIT05000 - Data Protection",
+  "text": "HMRC will:\n\n\n• process personal data under article 6(e) of the General Data Protection Regulation (GDPR) HMRC Privacy Notice\n\n• process special category data under article 9 of the GDPR and schedule 1 of the Data Protection Act (DPA) 2018 HMRC appropriate Policy document\n\n• retain personal data in line with the HMRC Records Management and Retention and Disposal Policy.\n\nAny sharing of personal data outside of HMRC will follow the:\n\n\n• data sharing guidance within the HMRC Privacy Notice\n\n• contracts and data sharing guidance published on the ICO website\n\n• HMRC Information Disclosure Guide available on GOV.UK.",
+  "date": "2021-06-16",
+  "url": "https://www.gov.uk/hmrc-internal-manuals/vat-input-tax/vit05000",
+  "manual_title": "VAT Input Tax",
+  "manual_slug": "vat-input-tax",
+  "section_id": "VIT05000",
+  "updated_at": "2021-06-16T15:32:32+01:00",
+  "first_published_at": "2021-06-16T15:32:39+01:00",
+  "language": "en"
+}

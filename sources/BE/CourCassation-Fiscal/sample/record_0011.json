@@ -1,0 +1,28 @@
+{
+  "_id": "ECLI:BE:CASS:2026:CONC.20260130.1F.8",
+  "_source": "BE/CourCassation-Fiscal",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-16T19:03:51.539007+00:00",
+  "title": "VILLE DE GEMBLOUX contra CS MAG s.r.l.",
+  "text": "La règle de l'égalité des Belges devant la loi contenue dans l'article \n        10 de la Constitution, celle de la non-discrimination dans la jouissance \n        des droits et libertés reconnus aux Belges inscrite dans l'article \n        11 de la Constitution ainsi que celle de l'égalité devant l'impôt \n        exprimée dans l'article 172 de la Constitution impliquent que tous \n        ceux qui se trouvent dans la même situation soient traités de la même \n        manière mais n'excluent pas qu'une distinction soit faite entre \n        différentes catégories de personnes pour autant que le critère de distinction \n        soit susceptible de justification objective et raisonnable (1). (1) Voir \n        les concl. du MP.\nL'existence d'une telle justification doit s'apprécier \n        par rapport au but et aux effets de la mesure prise ou de l'impôt \n        instauré; le principe d'égalité est également violé lorsqu'il \n        est établi qu'il n'existe pas de rapport raisonnable de proportionnalité \n        entre les moyens employés et le but visé (1). (1) Voir les concl. du \n        MP.\nLa justification objective et raisonnable de la différence de traitement \n        de contribuables dans un règlement-taxe communal doit en principe ressortir \n        du règlement attaqué lui-même ou du dossier sur la base duquel le conseil \n        communal a décidé de l'instauration de la taxe; elle peut également \n        se déduire de la nature et du contexte même de la différence ainsi \n        établie lorsque le motif qui la fonde est à ce point évident qu'aucune \n        autre interprétation n'est possible et qu'il est clair que \n        le conseil communal a approuvé cette mesure pour ce motif (1). (1) Voir \n        les concl. du MP.",
+  "date": "2026-01-30",
+  "url": "https://juportal.be/content/ECLI:BE:CASS:2026:CONC.20260130.1F.8",
+  "ecli": "ECLI:BE:CASS:2026:CONC.20260130.1F.8",
+  "court": "Cour de cassation",
+  "chamber": "1F",
+  "language": "fr",
+  "role_number": "F.23.0057.F",
+  "abstract": "La règle de l'égalité des Belges devant la loi contenue dans l'article \n                                    10 de la Constitution, celle de la non-discrimination dans la jouissance \n                                    des droits et libertés reconnus aux Belges inscrite dans l'article \n                                    11 de la Constitution ainsi que celle de l'égalité devant l'impôt \n                                    exprimée dans l'article 172 de la Constitution impliquent que tous \n                                    ceux qui se trouvent dans la même situation soient traités de la même \n                                    manière mais n'excluent pas qu'une distinction soit faite entre \n                                    différentes catégories de personnes pour autant que le critère de distinction \n                                    soit susceptible de justification objective et raisonnable (1). (1) Voir \n                                    les concl. du MP.",
+  "subjects": [
+    "Droit fiscal",
+    "Belastingrecht",
+    "Droit constitutionnel",
+    "Constitutioneel recht"
+  ],
+  "keywords": [
+    "TAXES COMMUNALES, PROVINCIALES ET LOCALES - TAXES COMMUNALES",
+    "GEMEENTE-, PROVINCIE- EN PLAATSELIJKE BELASTINGEN - GEMEENTEBELASTINGEN",
+    "CONSTITUTION - CONSTITUTION 1994 (ART. 100 A FIN) - Article 172",
+    "GRONDWET - GRONDWET 1994 (ART. 100 TOT EINDE) - Artikel 172"
+  ]
+}

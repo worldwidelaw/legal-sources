@@ -1,0 +1,35 @@
+source:
+  id: UK/CMA
+  name: UK Competition and Markets Authority (CMA)
+  country: UK
+  url: https://www.gov.uk/cma-cases
+  description: >
+    UK Competition and Markets Authority cases and projects.
+    Includes merger decisions, market investigations, consumer enforcement,
+    competition cases, regulatory references, and digital markets unit cases.
+  data_types:
+    - regulatory_decisions
+  language: en
+  license: Open Government Licence v3.0
+
+api:
+  search_endpoint: https://www.gov.uk/api/search.json
+  content_endpoint: https://www.gov.uk/api/content
+  auth: none
+  rate_limit: 10 requests per second
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - case_type
+    - case_state
+    - market_sector
+  date_field: date
+
+fetch:
+  sample_size: 15
+  per_page: 50
+  delay_seconds: 0.2

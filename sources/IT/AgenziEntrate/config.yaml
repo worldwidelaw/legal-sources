@@ -1,0 +1,49 @@
+# IT/AgenziEntrate -- Italian Revenue Agency (Agenzia delle Entrate)
+# Tax doctrine: circolari, risoluzioni, interpelli (tax rulings)
+
+source_id: IT/AgenziEntrate
+name: Italian Revenue Agency (Agenzia delle Entrate)
+country: IT
+url: https://www.agenziaentrate.gov.it
+
+data_types:
+  - other  # Administrative guidance (circolari, interpelli, risoluzioni)
+
+# No authentication required - open data
+auth:
+  type: none
+
+# Rate limiting - be conservative
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# Data model
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+# Schema validation
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: doc_type
+      type: string
+      required: true
+    - name: doc_number
+      type: string
+      required: true
+    - name: year
+      type: integer
+      required: true

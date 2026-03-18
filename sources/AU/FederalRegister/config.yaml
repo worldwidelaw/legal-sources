@@ -1,0 +1,133 @@
+# ===================================================================
+# AU/FederalRegister -- Federal Register of Legislation (Australia)
+# ===================================================================
+# Australian Commonwealth legislation via official REST API.
+# No authentication required. Free access. OpenAPI v3.0.1 compliant.
+#
+# API Base: https://api.prod.legislation.gov.au/v1/
+# Documentation: https://api.prod.legislation.gov.au/swagger/index.html
+# Data Portal: https://www.legislation.gov.au
+# ===================================================================
+
+source:
+  id: "AU/FederalRegister"
+  country: "AU"
+  name: "Federal Register of Legislation"
+  url: "https://www.legislation.gov.au"
+  description: |
+    Australia's Federal Register of Legislation (FRL) is the authorised
+    whole-of-government website for Commonwealth legislation and related
+    documents. Contains Acts of Parliament, Legislative Instruments,
+    Notifiable Instruments, and Administrative Arrangements Orders from
+    1901 to present. Full text available in Word (.docx), PDF, and EPUB
+    formats via free REST API. Managed by the Office of Parliamentary
+    Counsel under the Legislation Act 2003.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1    # Conservative - API docs recommend off-peak access
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://api.prod.legislation.gov.au"
+  spec_url: "https://api.prod.legislation.gov.au/swagger/v1/swagger.json"
+  endpoints:
+    # Title/legislation listing
+    titles: "/v1/titles"
+    title_by_id: "/v1/titles/{id}"
+    titles_count: "/v1/titles/$count"
+    titles_search: "/v1/titles/search(criteria={criteria})"
+    # Version information
+    versions: "/v1/versions"
+    version_find: "/v1/versions/find(titleId={titleId},asAtSpecification={spec})"
+    # Document download (full text)
+    documents: "/v1/documents"
+    document_find: "/v1/documents/find(registerId={registerId},type={type},format={format},uniqueTypeNumber={uniqueTypeNumber},volumeNumber={volumeNumber},rectificationVersionNumber={rectificationVersionNumber})"
+  pagination:
+    type: "odata"
+    default_page_size: 100
+    max_page_size: 1000
+    skip_param: "$skip"
+    top_param: "$top"
+    count_param: "$count"
+
+data_model:
+  type: "legislation"
+  primary_key: "register_id"
+  update_strategy: "upsert"
+  versioning: "versioned"
+  dedup_key:
+    - "register_id"
+
+schema:
+  total_fields: 18
+  key_fields:
+    - name: "register_id"
+      description: "Register ID (e.g., C2024C00838)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Full title of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation extracted from Word document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Start date of this version (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the legislation on legislation.gov.au"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "title_id"
+      description: "Title ID (e.g., C1901A00002)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "collection"
+      description: "Collection type (Act, LegislativeInstrument, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "status"
+      description: "Current status (InForce, Repealed, Ceased, NeverEffective)"
+      type: "string"
+      role: "classification"
+      required: true
+  secondary_fields:
+    - name: "compilation_number"
+      description: "Compilation number for this version"
+    - name: "making_date"
+      description: "Date the legislation was made/signed"
+    - name: "year"
+      description: "Year of the legislation"
+    - name: "number"
+      description: "Number within the year"
+    - name: "is_principal"
+      description: "Whether this is principal (not amending) legislation"
+    - name: "series_type"
+      description: "Series type (Act, SR, SLI)"
+
+notes: |
+  - Full text available via Word documents downloaded from API
+  - API is OData-compliant, supports $filter, $top, $skip, $expand
+  - Collections: Act, LegislativeInstrument, NotifiableInstrument, etc.
+  - Versions track compilation history with start/end dates
+  - Document formats: Word (.docx), PDF, EPUB
+  - Text extraction: Word documents are ZIP archives with XML content
+  - Rate limiting: avoid 0800-2000 AEST for bulk downloads
+  - Contact: feedback@legislation.gov.au

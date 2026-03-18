@@ -41,11 +41,28 @@ Where:
 # Test access
 python3 bootstrap.py test
 
-# Fetch 100 sample records
+# Fetch 100 sample records from recent years
 python3 bootstrap.py bootstrap --limit 100
 
 # Fetch all decisions from specific years
 python3 bootstrap.py bootstrap --start-year 2024 --end-year 2020 --limit 1000
+
+# FULL HISTORICAL BACKFILL (1985-present, ~5000+ decisions)
+# Note: This will take several hours due to rate limiting
+python3 bootstrap.py bootstrap --start-year 2026 --end-year 1985
+```
+
+## Historical Backfill
+
+The court has published decisions since 1985. A full backfill captures approximately:
+- **1985-1990:** ~50 decisions/year (early years)
+- **1990-2000:** ~100 decisions/year
+- **2000-present:** ~160 decisions/year
+- **Total estimate:** ~5,000+ decisions
+
+To run a complete historical backfill:
+```bash
+python3 bootstrap.py bootstrap --start-year 2026 --end-year 1985
 ```
 
 ## Notes

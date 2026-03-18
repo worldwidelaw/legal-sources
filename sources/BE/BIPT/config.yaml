@@ -1,0 +1,40 @@
+source:
+  id: BE/BIPT
+  name: Belgian Telecom Regulator (BIPT)
+  country: BE
+  url: https://www.bipt.be
+  data_types:
+    - regulatory_decisions
+  license: Open Data - Belgian Federal Government
+  languages:
+    - fr
+    - nl
+  update_frequency: weekly
+  auth: none
+
+fetcher:
+  method: xml_rss_with_pdf
+  rss_endpoint: https://www.bipt.be/operators/search.xml
+  params:
+    s: publication_date
+    tgGroup: operators
+    type[0]: publication_type:decision
+  pagination:
+    type: page_param
+    param: p
+    start: 0
+  rate_limit: 2.0
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - decision_type
+    - text
+  optional_fields:
+    - description
+    - themes
+    - language
+    - pdf_url
+    - pdf_size

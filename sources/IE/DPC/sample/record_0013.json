@@ -1,0 +1,17 @@
+{
+  "_id": "IE/DPC/case-study/access-request-complaints/incomplete-organisational-search-in-response-to-an",
+  "_source": "IE/DPC",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-08T21:40:15.864840+00:00",
+  "title": "Incomplete organisational search in response to an Access Request",
+  "text": "Resources\nGuidance\nLaw\nBlogs\nPodcasts\nPublications\nCase Studies\nHome\nResources\nCase Studies\nAccess Request Complaints\nCase Studies\nAccess Request Complaints\nSearch\nSearch\nAccess Request Complaints\n2024\nIncomplete organisational search in response to an Access Request\nThe DPC received a complaint from an individual who had submitted an access request under Article 15 of the GDPR to a property management company. The individual was seeking access to any personal data processed by the organisation in relation to them. The organisation responded to the access request explicitly stating to the individual that it did not process any personal data in relation to the individual at the time the access request was made or any time before that.\nDuring the assessment stage, the DPC raised queries with the individual regarding their relationship with the organisation in order to establish if they were “data processor” or “a data controller” in this instance. Upon a review of the individual’s response and the supporting documentation they provided, the DPC established that the property management company was the appropriate “data  controller” in relation to this complaint.\nThe DPC requested the organisation to provide further details in relation to the searches it carried out to identify any personal data belonging to the individual. In its initial response, the organisation advised that it had conducted a search of its ‘system’ and that the only personal data that could be identified was the initial request made by the individual. The DPC queried the searches completed and requested documentary evidence of the efforts made to locate the individual’s personal data including those conducted in other sections of the organisation.\nThe organisation responded with a comprehensive outline of the searches undertaken and provided the relevant supporting documentation. The DPC reviewed this correspondence and it subsequently identified three records containing the individual’s personal data (two (2) invoices & one (1) data entry  on a software system) which had not been provided to the individual.\nFollowing further engagement between the DPC and the organisation, the three outstanding documents containing the individual’s personal data were provided\nto the individual.\nKey Takeaway\nOrganisations are required to ensure that appropriate organisational measures are in place to ensure they are in a position to respond to any rights requests within the stipulated timeframes under the GDPR and to be able demonstrate to the DPC that adequate searches have taken place to locate any records containing personal data that may be processed.",
+  "date": "2024-01-01",
+  "url": "http://www.dataprotection.ie/en/dpc-guidance/case-studies/access-request-complaints/incomplete-organisational-search-response-access-request",
+  "pdf_url": null,
+  "organization": null,
+  "fine_amount": null,
+  "gdpr_articles": [],
+  "pdf_size": null,
+  "category": "access-request-complaints",
+  "record_type": "case_study"
+}

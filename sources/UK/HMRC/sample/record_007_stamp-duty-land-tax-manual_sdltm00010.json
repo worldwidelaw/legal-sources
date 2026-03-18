@@ -1,0 +1,16 @@
+{
+  "_id": "stamp-duty-land-tax-manual_sdltm00010",
+  "_source": "UK/HMRC",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-15T15:35:08.540181+00:00",
+  "title": "SDLTM00010 - Introduction to Stamp Duty Land Tax (SDLT): Contents",
+  "text": "From 1 April\n2015 SDLT no longer applies to land transactions in Scotland.  These are instead subject to Land and\nBuildings Transaction Tax (LBTT). Please see the Scottish\nGovernment website.  .\n\nFrom 1 April 2018 SDLT no longer applies to\nland transactions in Wales.  These are\nsubject to Land Transaction Tax (LTT) instead.\nLTT is operated by the Welsh\nRevenue Authority.\n\nYou won’t have to pay Stamp Duty Land Tax (SDLT) or need to send HM Revenue and Customs (HMRC)\na return for these transactions. For more detail about SDLT to LBTT and LTT,\nread cross-border and transitional guidance.",
+  "date": "2024-09-26",
+  "url": "https://www.gov.uk/hmrc-internal-manuals/stamp-duty-land-tax-manual/sdltm00010",
+  "manual_title": "Stamp Duty Land Tax Manual",
+  "manual_slug": "stamp-duty-land-tax-manual",
+  "section_id": "SDLTM00010",
+  "updated_at": "2024-09-26T12:24:56+01:00",
+  "first_published_at": "2016-03-19T21:38:12+00:00",
+  "language": "en"
+}

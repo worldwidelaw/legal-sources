@@ -1,0 +1,14 @@
+{
+  "_id": "UOOU-04604_22",
+  "_source": "CZ/UOOU",
+  "_type": "regulatory_decision",
+  "_fetched_at": "2026-03-17T19:07:31.260545",
+  "title": "Mobilní operátor (UOOU-04604/22)",
+  "case_number": "04604/22",
+  "text": "Zpracování údajů z rozesílaných SMS Úřad provedl kontrolu zaměřenou na plnění povinností stanovených GDPR a zákonem o zpracování osobních údajů, a to především (nikoli však výlučně) v souvislosti se zásadou minimalizace podle čl. 5 odst. 1 písm. c) GDPR. Důvodem pro provedení kontroly byly tři stížnosti zákazníků kontrolované osoby. Kontrolovanou osobou byl v tomto případě mobilní operátor, který považoval za nezbytné zasílat klientům informace o vystaveném vyúčtování a proběhlých platbách několika způsoby, a to na osobní účet zákazníka na webových stránkách, adresným e-mailem či v listinné podobě poštou. Současně toto informování probíhalo prostřednictvím SMS zpráv, přičemž nebylo umožněno zasílání těchto SMS zrušit. Kontrolou bylo zjištěno, že toto zpracování osobních údajů se týkalo části klientů bez přihlédnutí k tomu, zda konkrétní osoby měly v minulosti u tohoto operátora problém s úhradou vyúčtování, a bez zohlednění faktu, že klienti stejnou informaci dostávali i jiným způsobem. Takové nastavení zpracování osobních údajů Úřad vyhodnotil jako rozporné se standardní ochranou osobních údajů a konstatoval, že mobilní operátor nezavedl vhodná technická a organizační opatření k zajištění toho, aby došlo ke zpracování pouze těch osobních údajů, jež jsou pro každý konkrétní účel nezbytné, jak vyplývá z ustanovení čl. 25 odst. 2 GDPR. V návaznosti na tuto skutečnost Úřad vyhodnotil v konkrétních případech klientů nadměrné informování o vystaveném vyúčtování a jeho uhrazení prostřednictvím SMS jako zpracování bez právního důvodu dle čl. 6 odst. 1 GDPR. Úřad shledal, že kontrolovaná osoba nesplnila ani svou informační povinnost vůči subjektům údajů, když v této souvislosti neinformovala o účelech zpracování osobních údajů, jak ukládá čl. 13 odst. 1 písm. c) GDPR. Kontrolovaná osoba využila možnosti podat proti kontrolním zjištěním uvedeným v kontrolním protokolu ve stanovené lhůtě námitky. Námitky byly v plném rozsahu zamítnuty. Doplňující informace: Jednou z klíčových podmínek stanovených GDPR je nezbytnost zpracování osobních údajů. Praktickým důsledkem této podmínky je, že správce by měl provádět pouze takové zpracování osobních údajů, které je zcela nezbytné pro naplnění účelu zpracování. V daném případě však správce osobních údajů prováděl rozesílku SMS, aniž by to bylo nezbytné, neboť zároveň využíval jiných způsobů ke sdělení totožných informací.",
+  "date": "2026-03-09",
+  "year": 2024,
+  "category": "personal_data",
+  "url": "https://uoou.gov.cz/cinnost/ochrana-osobnich-udaju/ukoncene-kontroly/kontroly-za-rok-2024-1/kontrolni-cinnost-v-oblasti-ochrany-osobnich-udaju-2024/mobilni-operator-uoou-0460422",
+  "language": "cs"
+}

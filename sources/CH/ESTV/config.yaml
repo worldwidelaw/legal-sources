@@ -1,0 +1,41 @@
+source_id: CH/ESTV
+name: Swiss Federal Tax Administration (ESTV)
+country: CH
+url: https://www.estv.admin.ch
+description: |
+  Eidgenössische Steuerverwaltung (ESTV) / Administration fédérale des contributions (AFC)
+  Swiss Federal Tax Administration circulars and directives including:
+  - Kreisschreiben (Tax circulars) for direct federal tax
+  - Rundschreiben (Administrative notices) for direct federal tax
+  - Kreisschreiben for withholding tax (Verrechnungssteuer)
+  - Rundschreiben for withholding tax
+
+  These documents provide interpretive guidance on Swiss federal tax law.
+  Published primarily in German, French, and Italian.
+
+data_types:
+  - doctrine
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - circular_number
+    - circular_type
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url

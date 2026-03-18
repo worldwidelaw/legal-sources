@@ -1,0 +1,16 @@
+{
+  "_id": "company-taxation-manual_ctm14000",
+  "_source": "UK/HMRC",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-15T15:34:57.894842+00:00",
+  "title": "CTM14000 - Non-corporate distribution rate",
+  "text": "The non-corporate distribution rate (NCDR) was introduced in FA04/S28 but was abolished by FA06/S26 (2). The legislation was in ICTA88/S13AB and ICTA88/SCHA2. It applied only for the period 1 April 2004 to 31 March 2006.  Throughout that period the rate was set at 19 per cent.\n\nThe NCDR was a minimum rate of Corporation Tax (CT), which applied where a company made distributions to persons who are not companies.  The NCDR in essence removed the benefit of the lowest rates of CT for at least some of the profits for the companies affected.   It was therefore irrelevant where companies were liable to CT at the NCDR or above.\n\nIf detailed advice on the application of the NCDR is required contact BAI (CT Structure Team) who will be able to provide copies of the original guidance.",
+  "date": "2025-07-21",
+  "url": "https://www.gov.uk/hmrc-internal-manuals/company-taxation-manual/ctm14000",
+  "manual_title": "Company Taxation Manual",
+  "manual_slug": "company-taxation-manual",
+  "section_id": "CTM14000",
+  "updated_at": "2025-07-21T01:00:00+01:00",
+  "first_published_at": "2016-04-16T19:46:40+01:00",
+  "language": "en"
+}

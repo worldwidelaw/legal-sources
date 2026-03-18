@@ -1,0 +1,16 @@
+{
+  "_id": "business-income-manual_bim14000",
+  "_source": "UK/HMRC",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-15T15:35:12.524741+00:00",
+  "title": "BIM14000 - Taxation of trading income: contents",
+  "text": "This section provides an overview of the charge to tax on trading income, summarising briefly the law and practice affecting the scope of the charge.",
+  "date": "2016-04-01",
+  "url": "https://www.gov.uk/hmrc-internal-manuals/business-income-manual/bim14000",
+  "manual_title": "Business Income Manual ",
+  "manual_slug": "business-income-manual",
+  "section_id": "BIM14000",
+  "updated_at": "2016-04-01T15:02:53+01:00",
+  "first_published_at": "2013-11-22T09:00:00+00:00",
+  "language": "en"
+}

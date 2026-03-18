@@ -1,0 +1,30 @@
+source_id: DE/BPatG
+name: German Federal Patent Court (BPatG)
+country: DE
+url: https://www.rechtsprechung-im-internet.de
+data_types:
+  - case_law
+auth: none
+schedule: weekly
+rate_limit: 1.5  # seconds between requests
+
+schema:
+  key_fields:
+    - _id
+    - ecli
+    - aktenzeichen
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+
+notes: |
+  Data sourced from rechtsprechung-im-internet.de (operated by German Federal Ministry of Justice).
+  Contains all BPatG decisions from 2010 onwards (~7,000+ decisions).
+  ZIP files containing XML with full text are downloaded and parsed.
+  Data is public domain under German law (amtliche Werke, § 5 UrhG).

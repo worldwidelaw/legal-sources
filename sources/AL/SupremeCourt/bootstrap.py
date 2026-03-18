@@ -55,6 +55,34 @@ class AlbanianSupremeCourtFetcher:
         })
         self.sample_dir = Path(sample_dir) if sample_dir else Path(__file__).parent / 'sample'
         self.sample_dir.mkdir(parents=True, exist_ok=True)
+        self._check_doc_tools()
+
+    def _check_doc_tools(self):
+        """Check if tools for .doc extraction are available and warn if not."""
+        tools = []
+        if sys.platform == 'darwin':
+            tools.append(('textutil', ['textutil', '-help']))
+        tools.extend([
+            ('antiword', ['antiword', '--version']),
+            ('catdoc', ['catdoc', '-V']),
+            ('libreoffice', ['libreoffice', '--version']),
+        ])
+        available = []
+        for name, cmd in tools:
+            try:
+                subprocess.run(cmd, capture_output=True, timeout=5)
+                available.append(name)
+            except (FileNotFoundError, subprocess.TimeoutExpired):
+                pass
+        if not available:
+            print("WARNING: No .doc extraction tool found!", file=sys.stderr)
+            print("This source uses .doc files. Install one of:", file=sys.stderr)
+            print("  - antiword (apt install antiword)", file=sys.stderr)
+            print("  - catdoc (apt install catdoc)", file=sys.stderr)
+            print("  - libreoffice (apt install libreoffice)", file=sys.stderr)
+            print("Without a tool, no records will be extracted.", file=sys.stderr)
+        else:
+            print(f"Doc extraction tools available: {', '.join(available)}", file=sys.stderr)
 
     def _fetch_json(self, url: str) -> Optional[dict]:
         """Fetch JSON from a URL."""
@@ -103,7 +131,7 @@ class AlbanianSupremeCourtFetcher:
                 except Exception:
                     pass
 
-            # Try antiword for .doc files on Linux
+            # Try antiword for .doc files (Linux/Unix)
             if text is None and ext == '.doc':
                 try:
                     result = subprocess.run(
@@ -114,7 +142,42 @@ class AlbanianSupremeCourtFetcher:
                     if result.returncode == 0:
                         text = result.stdout.decode('utf-8', errors='replace')
                 except FileNotFoundError:
-                    # antiword not installed
+                    pass
+                except Exception:
+                    pass
+
+            # Try catdoc as another fallback for .doc files (Linux/Unix)
+            if text is None and ext == '.doc':
+                try:
+                    result = subprocess.run(
+                        ['catdoc', '-w', tmp_path],
+                        capture_output=True,
+                        timeout=30
+                    )
+                    if result.returncode == 0:
+                        text = result.stdout.decode('utf-8', errors='replace')
+                except FileNotFoundError:
+                    pass
+                except Exception:
+                    pass
+
+            # Try LibreOffice headless conversion for .doc files
+            if text is None and ext == '.doc':
+                try:
+                    # Convert to txt using LibreOffice
+                    with tempfile.TemporaryDirectory() as tmpdir:
+                        result = subprocess.run(
+                            ['libreoffice', '--headless', '--convert-to', 'txt:Text',
+                             '--outdir', tmpdir, tmp_path],
+                            capture_output=True,
+                            timeout=60
+                        )
+                        if result.returncode == 0:
+                            txt_path = os.path.join(tmpdir, os.path.splitext(os.path.basename(tmp_path))[0] + '.txt')
+                            if os.path.exists(txt_path):
+                                with open(txt_path, 'r', encoding='utf-8', errors='replace') as f:
+                                    text = f.read()
+                except FileNotFoundError:
                     pass
                 except Exception:
                     pass
@@ -565,7 +628,7 @@ class AlbanianSupremeCourtFetcher:
             normalized = self.normalize(raw)
             records.append(normalized)
 
-            # Save sample
+            # Save individual sample files for inspection
             if sample_only:
                 filename = f"{normalized['_id'].replace('/', '_')}.json"
                 filepath = self.sample_dir / filename
@@ -582,6 +645,15 @@ class AlbanianSupremeCourtFetcher:
             print(f"  Records with text: {has_text}/{len(records)}")
             print(f"  Avg text length: {avg_length:.0f} chars")
             print(f"  Sample files saved to: {self.sample_dir}")
+
+            # Write to data/records.jsonl for VPS pipeline ingestion
+            data_dir = Path(__file__).parent / 'data'
+            data_dir.mkdir(parents=True, exist_ok=True)
+            jsonl_path = data_dir / 'records.jsonl'
+            with open(jsonl_path, 'w', encoding='utf-8') as f:
+                for record in records:
+                    f.write(json.dumps(record, ensure_ascii=False) + '\n')
+            print(f"  Records written to: {jsonl_path}")
 
         return records
 

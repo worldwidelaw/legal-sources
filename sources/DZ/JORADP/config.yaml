@@ -1,0 +1,71 @@
+# DZ/JORADP - Algerian Official Journal
+# Journal Officiel de la Republique Algerienne Democratique et Populaire
+
+name: "Algerian Official Journal (JORADP)"
+country: DZ
+source_type: legislation
+
+# Main URLs
+base_url: "https://www.joradp.dz"
+official_url: "https://www.joradp.dz"
+
+# PDF URL patterns:
+# French: /FTP/jo-francais/{year}/F{year}{issue:03d}.pdf (1994+)
+# Arabic: /FTP/jo-arabe/{year}/A{year}{issue:03d}.pdf (1994+)
+# Pre-1994 uses different format: /Jo6283/{year}/{issue}/AP{page}.pdf
+
+# Data characteristics
+data_types:
+  - legislation
+  - decrees
+  - orders
+  - announcements
+
+languages:
+  - fr  # French edition
+  - ar  # Arabic edition
+
+# Coverage: Official Journal issues from 1994 onwards (PDF format)
+# Earlier years (1962-1993) available in different format
+coverage:
+  start_year: 1994
+  end_year: 2026  # Updated each year
+  issues_per_year: ~80
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# Data model for deduplication
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+# Schema definition
+schema:
+  key_fields:
+    - name: "year"
+      type: "int"
+      required: true
+    - name: "issue_number"
+      type: "int"
+      required: true
+    - name: "language"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url

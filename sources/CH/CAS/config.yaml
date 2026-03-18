@@ -1,0 +1,39 @@
+source:
+  id: CH/CAS
+  name: Court of Arbitration for Sport (CAS / TAS)
+  country: CH
+  url: https://www.tas-cas.org
+  data_types:
+    - case_law
+  language:
+    - en
+    - fr
+  description: |
+    Arbitration awards from the Court of Arbitration for Sport (CAS),
+    headquartered in Lausanne, Switzerland. The CAS is the supreme court
+    for international sports disputes and publishes non-confidential
+    arbitration awards since 1986.
+
+fetcher:
+  type: api
+  schedule: weekly
+  rate_limit: 1.5
+  requires:
+    - pdfplumber
+    - requests
+
+schema:
+  key_fields:
+    - _id
+    - case_number
+    - date
+    - sport
+    - procedure_type
+  text_field: text
+  date_field: date
+
+notes: |
+  Data sourced from the official CAS Jurisprudence Database API.
+  Full award texts are extracted from PDFs available at jurisprudence.tas-cas.org.
+  The database contains approximately 2,600 non-confidential awards.
+  Categories include Appeal, Ordinary, Ad Hoc Division, and Anti-Doping procedures.

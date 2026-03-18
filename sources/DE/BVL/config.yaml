@@ -1,0 +1,52 @@
+source_id: DE/BVL
+name: German Federal Office for Consumer Protection (BVL) - Plant Protection Products
+country: DE
+language: de
+data_types:
+  - regulatory_decisions
+
+endpoints:
+  base_url: https://psm-api.bvl.bund.de/ords/psm/api-v1
+  mittel: /mittel/
+  awg: /awg/
+  auflagen: /auflagen/
+  kode: /kode/
+  wirkstoff: /wirkstoff/
+  wirkstoff_gehalt: /wirkstoff_gehalt/
+  ghs_gefahrenhinweise: /ghs_gefahrenhinweise/
+  ghs_sicherheitshinweise: /ghs_sicherheitshinweise/
+  stand: /stand/
+
+schema:
+  key_fields:
+    - kennr
+  date_fields:
+    - zul_erstmalig_am
+    - zul_ende
+  text_fields:
+    - text
+    - mittelname
+    - auflagen_text
+    - wirkstoffe_text
+    - anwendungen_text
+
+rate_limit:
+  requests_per_second: 2
+  delay_between_requests: 0.5
+
+license: |
+  Public domain - Official German government data.
+  Provided by Bundesamt für Verbraucherschutz und Lebensmittelsicherheit (BVL).
+  https://psm-api.bvl.bund.de/
+
+notes: |
+  This source fetches plant protection product (pesticide) authorization data from the BVL PSM-API.
+  The API provides structured regulatory data including:
+  - Approved products (mittel)
+  - Active ingredients (wirkstoffe)
+  - Approved applications (awg)
+  - Requirements and conditions (auflagen)
+  - GHS hazard and safety information
+
+  Full text is constructed by combining all regulatory information for each product.
+  Data is updated monthly by BVL.

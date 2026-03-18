@@ -92,18 +92,40 @@ class SerbianConstitutionalCourtScraper(BaseScraper):
         """
         offset = 0
         total_fetched = 0
+        consecutive_empty_pages = 0  # Track consecutive empty pages to detect issues
 
         # First request to get total count
         total_count = self._get_total_count()
         logger.info(f"Total decisions in database: {total_count}")
+
+        if total_count == 0:
+            logger.error("Total count is 0 - this indicates the site may be blocking requests or has changed structure")
+            # Still try to fetch the first page as a fallback
+            predmet_ids = self._fetch_search_page(0)
+            if not predmet_ids:
+                logger.error("First search page also returned 0 results. Aborting.")
+                return
+            # If first page has results despite total count being 0, continue
 
         while True:
             logger.info(f"Fetching page at offset {offset}")
             predmet_ids = self._fetch_search_page(offset)
 
             if not predmet_ids:
-                logger.info(f"No more results at offset {offset}, stopping")
-                break
+                consecutive_empty_pages += 1
+                if offset == 0:
+                    logger.error("First page returned 0 results! Cannot proceed.")
+                    logger.error("This may indicate IP blocking, captcha, or site structure change.")
+                    break
+                elif consecutive_empty_pages >= 3:
+                    logger.warning(f"Got {consecutive_empty_pages} consecutive empty pages at offset {offset}, stopping")
+                    break
+                else:
+                    logger.warning(f"Empty page at offset {offset}, but continuing to check for more...")
+                    offset += self.page_size
+                    continue
+            else:
+                consecutive_empty_pages = 0  # Reset counter on successful page
 
             for predmet_id in predmet_ids:
                 try:
@@ -164,6 +186,20 @@ class SerbianConstitutionalCourtScraper(BaseScraper):
                 "/sudska-praksa/baza-sudske-prakse",
                 params={"limit": 1, "startfrom": 0, "sortBy": "dateDESC", "action": 1}
             )
+
+            # Log response status for debugging
+            logger.info(f"Search page response: status={resp.status_code}, length={len(resp.text)}")
+
+            # Check for blocking/captcha pages
+            if resp.status_code != 200:
+                logger.error(f"Search page returned non-200 status: {resp.status_code}")
+                return 0
+
+            if len(resp.text) < 1000:
+                logger.error(f"Search page response suspiciously short ({len(resp.text)} bytes), may be blocked")
+                logger.debug(f"Response content: {resp.text[:500]}")
+                return 0
+
             soup = BeautifulSoup(resp.text, "html.parser")
 
             # Look for "Укупно пронађено XXXXX предмета"
@@ -172,6 +208,11 @@ class SerbianConstitutionalCourtScraper(BaseScraper):
                 match = re.search(r"(\d+)", h1.get_text())
                 if match:
                     return int(match.group(1))
+
+            # Fallback: log what we found for debugging
+            all_h1 = soup.find_all("h1")
+            logger.warning(f"Could not find total count header. H1 tags found: {[h.get_text()[:50] for h in all_h1[:5]]}")
+
             return 0
         except Exception as e:
             logger.error(f"Failed to get total count: {e}")
@@ -193,6 +234,17 @@ class SerbianConstitutionalCourtScraper(BaseScraper):
                     "action": 1
                 }
             )
+
+            # Check for blocking/error responses
+            if resp.status_code != 200:
+                logger.error(f"Search page at offset {offset} returned status {resp.status_code}")
+                return []
+
+            if len(resp.text) < 1000:
+                logger.error(f"Search page at offset {offset} response too short ({len(resp.text)} bytes)")
+                logger.debug(f"Response content: {resp.text[:500]}")
+                return []
+
             soup = BeautifulSoup(resp.text, "html.parser")
 
             # Find all detail page links
@@ -207,11 +259,20 @@ class SerbianConstitutionalCourtScraper(BaseScraper):
                     if predmet_id not in predmet_ids:
                         predmet_ids.append(predmet_id)
 
+            if not predmet_ids and offset == 0:
+                # First page returned no results - this is unusual, log details
+                logger.warning(f"No PredmetId links found on first page. Logging page structure...")
+                logger.warning(f"Total links on page: {len(soup.find_all('a'))}")
+                all_links = soup.find_all("a", href=True)[:10]
+                logger.warning(f"First 10 links: {[a.get('href')[:50] for a in all_links]}")
+
             logger.info(f"Found {len(predmet_ids)} decisions at offset {offset}")
             return predmet_ids
 
         except Exception as e:
             logger.error(f"Failed to fetch search page at offset {offset}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             return []
 
     def _fetch_decision(self, predmet_id: str) -> Optional[dict]:

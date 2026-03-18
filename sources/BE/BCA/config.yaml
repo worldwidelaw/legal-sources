@@ -1,0 +1,23 @@
+source:
+  id: BE/BCA
+  name: Belgian Competition Authority (Autorité belge de la concurrence)
+  country: BE
+  language:
+    - en
+    - fr
+    - nl
+  url: https://www.belgiancompetition.be
+  data_types:
+    - regulatory_decisions
+  auth: none
+  license: Belgian Federal Government Open Data
+
+schema:
+  key_fields:
+    - case_number
+  date_field: date
+  text_field: text
+
+schedule:
+  update_frequency: weekly
+  full_refresh_frequency: quarterly

@@ -9,9 +9,7 @@ sources:
   priority: 1
   blocked_reason: null
   url: https://hudoc.echr.coe.int
-  notes: ECHR case law database. 227K+ judgments and decisions. JSON search API +
-    HTML full text endpoint. 15 sample records with avg 33K chars/doc. ECLI identifiers
-    available. Open access.
+  notes: null
 - id: EU/EUR-Lex
   country: EU
   name: EUR-Lex Portal
@@ -24,7 +22,8 @@ sources:
   blocked_reason: null
   url: https://eur-lex.europa.eu
   notes: 'Fixed #114. Full pagination via SPARQL OFFSET/LIMIT. Checkpoint/resume support
-    for large bootstraps. Use --full for complete fetch. 15 sample records with avg 11K chars.'
+    for large bootstraps. Use --full for complete fetch. 15 sample records with avg
+    11K chars.'
 - id: EU/CURIA
   country: EU
   name: Court of Justice of the EU (CURIA)
@@ -35,8 +34,24 @@ sources:
   priority: 1
   blocked_reason: null
   url: https://curia.europa.eu
-  notes: 'Fixed #76, #100. SPARQL + EUR-Lex HTML. 12 sample records (post-2018). Now supports --historical for pre-2018. Total 33K+ judgments from 1954. Avg 50K chars.
-    avg 50K chars/doc. CJ and TJ judgments. Publications Office SPARQL for discovery.'
+  notes: 'Fixed issue #147. CJEU/General Court judgments via CELLAR SPARQL endpoint
+    for discovery and CELLAR content negotiation API for full text. 33K+ judgments
+    from 1954-present. 12 sample records avg 50K chars. Use --by-year for full bootstrap
+    to avoid SPARQL offset limits. CC BY 4.0 license.'
+- id: EU/EuroParl
+  country: EU
+  name: European Parliament Adopted Texts
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://data.europarl.europa.eu
+  notes: EP Open Data API (data.europarl.europa.eu/api/v2/adopted-texts) + DOCEO HTML
+    pages. 12 sample records. Avg 20K chars/doc. ~5,200 documents from 2014+. Resolutions,
+    legislative resolutions, legislative acts, opinions, declarations, decisions.
+    CC BY 4.0 license.
 - id: AT/RIS
   country: AT
   name: Rechtsinformationssystem (RIS)
@@ -50,8 +65,8 @@ sources:
   - legislation
   blocked_reason: null
   url: https://www.ris.bka.gv.at
-  notes: OGD API v2.6, JSON REST, no auth. 436K legislation + 138K case law. CC BY
-    4.0. Full text fetched from XML content URLs.
+  notes: 'OGD API v2.6, JSON REST, no auth. CC BY 4.0. Works but slow bootstrap (596
+    records/hour). See closed issue #10 — admin decision needed for rate limit increase.'
 - id: AT/Bundesgesetzblatt
   country: AT
   name: Bundesgesetzblatt (BGBl)
@@ -99,9 +114,9 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://juportal.be
-  notes: "Fixed: Checkpoint file support implemented. 49,000+ decisions via ECLI
-    sitemap discovery. Saves checkpoint every 100 ECLIs. Use --clear-checkpoint
-    to reset. Commands: bootstrap, update, status, clear-checkpoint."
+  notes: 'Fixed: Checkpoint file support implemented. 49,000+ decisions via ECLI sitemap
+    discovery. Saves checkpoint every 100 ECLIs. Use --clear-checkpoint to reset.
+    Commands: bootstrap, update, status, clear-checkpoint.'
 - id: BE/CourConstitutionnelle
   country: BE
   name: Belgian Constitutional Court (Cour constitutionnelle)
@@ -112,10 +127,9 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.const-court.be
-  notes: Belgian Constitutional Court decisions since 1985. PDF downloads with predictable
-    URL pattern. Full text extraction via pdfplumber. 100 sample records with avg
-    65K chars/doc. ~100-180 decisions per year. ECLI format ECLI:BE:GHCC:YEAR:NR.
-    Open Government Data license.
+  notes: 'Fixed: --start-year and --end-year args now work correctly. Run with --start-year
+    2026 --end-year 1985 for full historical backfill (~5000 decisions). ~100-180
+    decisions per year. Uses binary search to find max decision number per year.'
 - id: BE/ConseilEtat
   country: BE
   name: Belgian Council of State (Conseil d'État)
@@ -140,7 +154,8 @@ sources:
   priority: 1
   blocked_reason: null
   url: https://dv.parliament.bg
-  notes: "Fixed issue #125. Iterates through document IDs 1000-250000 with checkpoint. ~240K+ documents from 2003-present. SSL verification disabled due to cert issues."
+  notes: 'Fixed issue #125. Iterates through document IDs 1000-250000 with checkpoint.
+    ~240K+ documents from 2003-present. SSL verification disabled due to cert issues.'
 - id: BG/SupremeCourt
   country: BG
   name: Bulgarian Supreme Court of Cassation
@@ -221,15 +236,17 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: complete
+  status: blocked
   priority: 1
   preferred_for:
   - legislation
-  blocked_reason: null
+  blocked_reason: memory_and_data_model
   url: https://www.e-sbirka.cz
-  notes: Official Czech legislation database (launched Jan 2024). Full text via bulk
-    open data from opendata.eselpoint.cz. 45K+ acts. Requires ~4GB RAM for processing.
-    CC BY 4.0.
+  notes: 'Issue #144: OOM on 8GB VPS during fragment loading. Data model requires
+    1.6GB+ of files (503MB fragments + 1.1GB version-fragments). Even with ijson streaming
+    to SQLite, VPS runs out of memory. Fragment lookup also incorrect - acts use version_id
+    to find fragments via 003PravniAktZneniFragment.json.gz (1.1GB). 45K+ acts. CC
+    BY 4.0. Needs either 16GB+ RAM VPS or complete re-architecture to process on disk.'
 - id: CZ/SupremeCourt
   country: CZ
   name: Czech Supreme Court (Nejvyšší soud)
@@ -253,8 +270,9 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.usoud.cz
-  notes: Constitutional Court decisions via NALUS database GetText.aspx endpoint.
-    12 sample records with avg 12.6K chars/doc. ECLI format supported.
+  notes: NALUS database with search-based discovery. Uses URL-based pagination to
+    collect case refs efficiently, then fetches full text via GetText.aspx. 15 sample
+    records with avg 7K chars/doc. Czech Constitutional Court decisions since 1993.
 - id: DK/Lovdata
   country: DK
   name: Danish Legislation Database (Retsinformation)
@@ -275,14 +293,11 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: complete
+  status: needs_maintenance
   priority: 2
   blocked_reason: null
   url: https://domsdatabasen.dk
-  notes: Court decisions from all Danish courts (Supreme Court, High Courts, district
-    courts, Maritime and Commercial Court). Uses public webapi with RSS feeds and
-    JSON endpoints. Full text via HTML content. 12 sample records with avg 61K chars/doc.
-    Public domain (Danish Copyright Law §9).
+  notes: "Issue #242: 2604 cases seems low. Investigate for more cases. All Danish courts via public webapi. 12 sample records avg 61K chars/doc. Public domain."
 - id: EE/RiigiTeatajaLoomal
   country: EE
   name: Riigi Teataja - Estonian Legal Portal
@@ -355,12 +370,11 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: complete
+  status: needs_maintenance
   priority: 2
   blocked_reason: null
   url: https://www.korkeinoikeus.fi
-  notes: KKO case law via LawSampo SPARQL (ldf.fi/lawsampo). 5948 judgments with full
-    text in Finnish. 12 sample records avg 22K chars/doc. CC-BY license.
+  notes: "Issue #241: No cases after 2021. Investigate post-2021 source. KKO via LawSampo SPARQL (ldf.fi/lawsampo). 5948 judgments. CC-BY license."
 - id: FI/SupremeAdministrativeCourt
   country: FI
   name: Finnish Supreme Administrative Court
@@ -385,8 +399,8 @@ sources:
   - legislation
   blocked_reason: null
   url: https://echanges.dila.gouv.fr/OPENDATA/LEGI/
-  notes: 'DILA LEGI bulk data. bootstrap-fast uses 1.1GB global dump with checkpointing.
-    Daily incremental updates also supported. Licence Ouverte 2.0.'
+  notes: DILA LEGI bulk data. bootstrap-fast uses 1.1GB global dump with checkpointing.
+    Daily incremental updates also supported. Licence Ouverte 2.0.
 - id: FR/AssembleeNationale
   country: FR
   name: French National Assembly (Assemblée Nationale)
@@ -432,17 +446,16 @@ sources:
   name: Judilibre - French Judicial Case Law
   data_types:
   - case_law
-  auth: piste_oauth2
+  auth: api_key
   status: complete
   priority: 2
   preferred_for:
   - case_law
   blocked_reason: null
   url: https://api.piste.gouv.fr/cassation/judilibre
-  notes: "Fixed: Full archive support (2010-present) with checkpoint file. Fetches
-    month-by-month with checkpoint after each month. Use --full for archive,
-    --recent for last 30 days. Commands: bootstrap --full, bootstrap --sample,
-    updates --since, status, clear-checkpoint."
+  notes: 'PISTE API with API key auth via /scan endpoint. Jurisdictions: Cour de cassation
+    (cc), Cours d''appel (ca), Tribunaux judiciaires (tj), Tribunaux de commerce (tcom).
+    Full archive from 2010. Checkpoint support. Issues #165, #188 resolved.'
 - id: FR/ConseilConstitutionnel
   country: FR
   name: French Constitutional Council (Conseil constitutionnel)
@@ -453,10 +466,10 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.conseil-constitutionnel.fr
-  notes: 'Constitutional Council decisions via DILA CONSTIT bulk open data. 8,000+
+  notes: Constitutional Council decisions via DILA CONSTIT bulk open data. 8,000+
     decisions since 1958. Covers DC (constitutional review), QPC (priority questions
     since 2010), and electoral matters. Full text XML with ECLI identifiers. 100 sample
-    records with avg 3.3K chars/doc. Open Licence 2.0.'
+    records with avg 3.3K chars/doc. Open Licence 2.0.
 - id: FR/LegifranceCodes
   country: FR
   name: French Consolidated Legal Codes (PISTE API)
@@ -470,9 +483,9 @@ sources:
   blocked_reason: null
   url: https://api.piste.gouv.fr/dila/legifrance
   retrieve: true
-  notes: 'All 78+ French consolidated codes (Code civil, Code pénal, Code du travail,
-    etc.) via PISTE/Légifrance OAuth2 API. 16 sample records from 8 codes with avg
-    1K chars/article. Covers 78+ codes totaling 50K+ articles. Licence Ouverte 2.0.'
+  notes: 'Fixed in commit 54e5347: fetch_all() now works without explicit client arg.
+    77 French codes via PISTE OAuth2 API. Full text of articles. 15 sample records.
+    Retrieve script resolves French code article citations (54 tests passing).'
 - id: FR/CASS
   country: FR
   name: French Court of Cassation Case Law (CASS Database)
@@ -483,9 +496,20 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://echanges.dila.gouv.fr/OPENDATA/CASS/
-  notes: 'Fixed #66: Download timeout increased for 248MB global dump. Now downloads
-    Freemium_cass_global archive (500K+ records) + incremental archives. 15 sample
-    records with avg 9.6K chars/doc.'
+  notes: 500K+ Court of Cassation decisions. Full text via Freemium_cass_global dump
+    (~248MB).
+- id: FR/ANC
+  country: FR
+  name: Autorité des Normes Comptables (ANC)
+  data_types:
+  - legislation
+  - doctrine
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.anc.gouv.fr
+  notes: null
 - id: DE/BGBl
   country: DE
   name: German Federal Law (Gesetze im Internet)
@@ -560,8 +584,9 @@ sources:
   priority: 3
   blocked_reason: null
   url: https://www.rechtsprechung-im-internet.de
-  notes: 'Fixed #117. Discovery via rii-toc.xml TOC (not RSS). 6,285 BSG decisions available.
-    12 sample records with avg 26K chars/doc. Full text via ZIP XML downloads. CC BY 4.0.'
+  notes: Federal Social Court case law via rechtsprechung-im-internet.de TOC XML.
+    6,285 decisions available via ZIP downloads. Fix applied in commit 6bb0bb9 (changed
+    use_rss default to False). VPS needs to re-run to ingest full archive.
 - id: DE/BVerwG
   country: DE
   name: German Federal Administrative Court (BVerwG)
@@ -573,9 +598,9 @@ sources:
   blocked_reason: null
   url: https://www.rechtsprechung-im-internet.de
   notes: Federal Administrative Court (Bundesverwaltungsgericht) case law via rechtsprechung-im-internet.de.
-    Uses XML ZIP downloads from daily TOC. ~10,000+ decisions. 100 samples avg 341 chars/doc
-    (mostly Beschlüsse - procedural orders). Full text including Leitsatz, Tenor, Tatbestand,
-    Entscheidungsgründe. Public domain (amtliche Werke § 5 UrhG).
+    Uses XML ZIP downloads from daily TOC. ~10,000+ decisions. 100 samples avg 341
+    chars/doc (mostly Beschlüsse - procedural orders). Full text including Leitsatz,
+    Tenor, Tatbestand, Entscheidungsgründe. Public domain (amtliche Werke § 5 UrhG).
 - id: DE/Sachsen
   country: DE
   name: Saxony State Law (REVOSAX)
@@ -597,11 +622,13 @@ sources:
   - case_law
   - legislation
   auth: none
-  status: complete
+  status: blocked
   priority: 2
-  blocked_reason: null
+  blocked_reason: vps_ip_blocked
   url: https://de.openlegaldata.io
-  notes: "Fixed #124: Increased rate limit delay (3s), added 5s initial warmup, aggressive backoff (30s base), 8 retries, JSONL output to stdout. 251K+ cases, 57K+ laws."
+  notes: 'Issues #143, #176: VPS IPs blocked (429/403). Also bootstrap-fast has pagination
+    bug (workers loop same 10 records). 9.3K records via generic bootstrap. 347K+
+    available. Requires residential proxy or API whitelist.'
 - id: DE/Bayern
   country: DE
   name: Bavaria State Law (BAYERN.RECHT)
@@ -612,10 +639,9 @@ sources:
   priority: 3
   blocked_reason: null
   url: https://www.gesetze-bayern.de
-  notes: 'Bavarian court decisions via RSS feed at /Api/Feed. 23K+ records across
-    VGH, OLG, LG, AG, VG, and specialized courts. Full text extracted from HTML (Tenor
-    + Gründe). 12 samples avg 27.7K chars/doc. Courts covered: VGH München, OLG München,
-    Landgerichte, Verwaltungsgerichte. Public domain (amtliche Werke).'
+  notes: 'Fixed #211. Pagination now correctly detects 23,992 documents via facet
+    counts. Uses paginated search across ~2400 pages. 15 sample records with avg 31K
+    chars. Courts covered: VGH, OLG, LG, AG, VG, SG, and specialized courts.'
 - id: DE/NRW
   country: DE
   name: North Rhine-Westphalia State Law (recht.nrw.de)
@@ -702,15 +728,15 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: blocked
+  status: complete
   priority: 1
-  blocked_reason: requires_browser_automation
+  blocked_reason: null
   url: https://alkotmanybirosag.hu
-  notes: "GitHub issue #38. Current scraper gets ~50 recent decisions via Next.js
-    __NEXT_DATA__ from /a-legfrissebb-dontesek/. Full archive (1990-present, 10K+
-    decisions) requires browser automation for /ugykereso/ search interface (React/JS).
-    Gazette bundle PDFs available at 89.135.41.81 but contain multiple decisions per
-    file requiring complex parsing. No REST API. Blocked until Playwright integration."
+  notes: 'UNBLOCKED: Fixed issue #126. Browser automation via common/browser_scraper.py.
+    Full archive access (1990-present, 10K+ decisions) through /ugykereso/ search
+    interface. Year-by-year pagination. Full text from /ugyadatlap detail pages or
+    PDF fallback via pdfplumber. Checkpoint/resume support for large bootstraps. 3
+    sample records with avg 5.7K chars/doc.'
 - id: IE/Acts
   country: IE
   name: Irish Statute Database
@@ -746,9 +772,9 @@ sources:
   priority: 1
   blocked_reason: null
   url: https://www2.courts.ie/Judgments
-  notes: 'From issue #75. Full text via PDF extraction. Covers Supreme Court, Court of
-    Appeal, High Court. 12 sample records with avg 55K chars/doc. Irish Public Service
-    Data License.'
+  notes: 'From issue #75. Full text via PDF extraction. Covers Supreme Court, Court
+    of Appeal, High Court. 12 sample records with avg 55K chars/doc. Irish Public
+    Service Data License.'
 - id: IT/Normattiva
   country: IT
   name: Normattiva - Italian Legal Database
@@ -842,8 +868,8 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.dati.lombardia.it/government/CRL-Leggi-Regionali-della-Lombardia/abjw-hhay
-  notes: "2,658 regional laws/regulations via Socrata SODA API + NIR XML full text.
-    Avg 35K chars/doc. CC0 1.0 Universal license."
+  notes: 2,658 regional laws/regulations via Socrata SODA API + NIR XML full text.
+    Avg 35K chars/doc. CC0 1.0 Universal license.
 - id: LV/LegislativeDatabase
   country: LV
   name: Likumi.lv - Latvian Law Portal
@@ -880,9 +906,9 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://manas.tiesas.lv/eTiesasMvc
-  notes: 'Fixed issue #68. Now uses weekly date ranges to avoid 100-result search cap.
-    Full archive pagination working (2017-present). 12 sample records with avg 4K chars/doc.
-    Uses ECLI metadata API + PDF text extraction.'
+  notes: 'Fixed issue #68. Now uses weekly date ranges to avoid 100-result search
+    cap. Full archive pagination working (2017-present). 12 sample records with avg
+    4K chars/doc. Uses ECLI metadata API + PDF text extraction.'
 - id: LT/LegalBase
   country: LT
   name: Lithuanian Legal Database (TAR)
@@ -893,8 +919,7 @@ sources:
   priority: 1
   blocked_reason: null
   url: https://data.gov.lt/datasets/2613/
-  notes: Lithuanian legislation via data.gov.lt Open Data API. Full text in tekstas_lt
-    field. 12 sample records fetched, avg 12K chars/doc. CC BY 4.0 license.
+  notes: Fixed Issue
 - id: LT/Parliament
   country: LT
   name: Lithuanian Parliament (Seimas)
@@ -920,10 +945,10 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.lrkt.lt
-  notes: "Fixed issue #108. Constitutional Court decisions via data.gov.lt TAR API.
-    1,304 documents (rulings, decisions, conclusions, orders, announcements).
-    Full text in Lithuanian. 12 sample records avg 11K chars/doc. CC BY 4.0.
-    Note: data.gov.lt has fewer records than lrkt.lt archive (Cloudflare protected)."
+  notes: 'Fixed issue #108. Constitutional Court decisions via data.gov.lt TAR API.
+    1,304 documents (rulings, decisions, conclusions, orders, announcements). Full
+    text in Lithuanian. 12 sample records avg 11K chars/doc. CC BY 4.0. Note: data.gov.lt
+    has fewer records than lrkt.lt archive (Cloudflare protected).'
 - id: LT/SupremeCourt
   country: LT
   name: Lithuanian Supreme Court of Cassation
@@ -934,10 +959,10 @@ sources:
   priority: 2
   blocked_reason: cloudflare_datacenter_block
   url: https://liteko.teismai.lt/
-  notes: 'Issue #74: tekstas.aspx endpoint returns 403 from VPS/datacenter IPs (Cloudflare
-    blocking). Works fine from residential IPs - 12 sample records exist with full
-    text. Requires: residential IP proxy OR browser automation. CSV metadata available
-    via data.gov.lt but no full text API.'
+  notes: 'GitHub issue #127. UNBLOCK: Scraper is fully functional — works from residential
+    IPs. Options: (1) run from residential IP, (2) use proxy param in HttpClient,
+    (3) BrowserScraper with stealth. 12 samples already exist (avg 11K chars/doc).
+    See feat/playwright-unblock branch for proxy support.'
 - id: LU/LegalDatabase
   country: LU
   name: Luxembourg Legal Database (Legilux)
@@ -988,9 +1013,9 @@ sources:
   blocked_reason: null
   url: https://legislation.mt
   notes: 'Fixed #121: Verified fetch_all works correctly for all 654 chapters. Updated
-    MAX_CHAPTER to 660. Sample has 12 records with full text (Constitution + major codes).
-    Large PDFs (Criminal Code 1.1M chars, Civil Procedure 963K chars). Run without --sample
-    for full 600+ chapters.'
+    MAX_CHAPTER to 660. Sample has 12 records with full text (Constitution + major
+    codes). Large PDFs (Criminal Code 1.1M chars, Civil Procedure 963K chars). Run
+    without --sample for full 600+ chapters.'
 - id: NL/Staatsblad
   country: NL
   name: Staatsblad der Nederlanden - Dutch Official Gazette
@@ -1016,9 +1041,10 @@ sources:
   - legislation
   blocked_reason: null
   url: https://www.wetten.overheid.nl
-  notes: Official Dutch consolidated legislation database. Uses SRU 1.2 API with BWB
-    connection. 45K+ regulations, full text via XML repository. CC0 license. 12 sample
-    records, avg 590K chars/doc.
+  notes: 'Fix #142: Added retry logic for XML full text downloads (5 retries with
+    exponential backoff). SRU pagination has 10 retries with up to 10min backoff.
+    Checkpoint saves every 10 pages for resume. 145K+ BWB consolidated regulations.
+    CC0 license.'
 - id: NL/TweedeKamer
   country: NL
   name: Dutch House of Representatives (Tweede Kamer)
@@ -1043,8 +1069,9 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.rechtspraak.nl
-  notes: 'Fixed #113: Uses year-based pagination (1998-present) to bypass API offset
-    limit of ~42,000. 128K decisions available across ~27 years.'
+  notes: 'Issue #113: Year-based pagination works but VPS IPs get 403 blocked. 47K+
+    records in Neon (partial). 128K total available. Works from residential IPs. Use
+    NL/Rechtspraak for comprehensive Dutch case law (includes Hoge Raad).'
 - id: PL/DziennikUrzedowy
   country: PL
   name: Dziennik Ustaw - Polish Official Journal
@@ -1081,8 +1108,9 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.saos.org.pl
-  notes: 'Fixed #116. Added checkpoint/resume support for 38K+ records. SAOS API with
-    full text. Use --no-checkpoint to disable. 12 sample records with avg 6.7K chars/doc.'
+  notes: 'Issue #116: SAOS API blocks VPS IPs after ~10K requests. 17K+ records in
+    Neon (partial). 38K total available. Checkpoint/resume support added. Works from
+    residential IPs. 12 sample records with avg 6.7K chars/doc.'
 - id: PL/ConstitutionalCourt
   country: PL
   name: Polish Constitutional Court (Trybunał Konstytucyjny)
@@ -1146,8 +1174,9 @@ sources:
   priority: 1
   blocked_reason: null
   url: https://legislatie.just.ro
-  notes: Ministry of Justice legislative portal. SOAP API with full text. 150K+ laws
-    from 1989 onwards. 12 sample records, avg 1.8K chars/doc. Public domain.
+  notes: SOAP API with robust retry/backoff. 5 retries with exponential backoff, token
+    refresh on persistent failures, tracks consecutive empty responses. Rate limited
+    to 0.33 req/s. 150K+ legislation records from 1989 onwards.
 - id: SK/CollectionOfLaws
   country: SK
   name: Slovak Collection of Laws (Zbierka zákonov)
@@ -1171,8 +1200,21 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.nsud.sk
-  notes: 'Fixed #115. Added checkpoint/resume for 104K+ decisions. ID-based iteration
-    with exponential backoff for 429 errors. 12 sample records avg 17K chars/doc.'
+  notes: 'Fix #115: Now iterates full ID range (1000-250000) with 1000 consecutive
+    miss threshold. Rate limited to 0.5 req/s. ~104K decisions over ~58 hours. Checkpoint/resume
+    supports multi-day runs.'
+- id: SK/ConstitutionalCourt
+  country: SK
+  name: Slovak Constitutional Court (Ústavný súd)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: javascript_spa
+  url: https://www.ustavnysud.sk
+  notes: 'Issue #135: Liferay CMS with JavaScript-driven forms. No REST API, no bulk
+    download, no RSS feed. Requires BrowserScraper with Playwright.'
 - id: SI/LegislativeDatabase
   country: SI
   name: Slovenian Legislation Database (PISRS)
@@ -1196,6 +1238,19 @@ sources:
   blocked_reason: null
   url: https://www.sodnapraksa.si
   notes: null
+- id: SI/ConstitutionalCourt
+  country: SI
+  name: Slovenian Constitutional Court (Ustavno sodišče)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: cloudflare_protected
+  url: https://us-rs.si
+  notes: 'Issue #131: us-rs.si protected by Cloudflare JavaScript challenge. Constitutional
+    Court decisions NOT included in sodnapraksa.si. Requires BrowserScraper with stealth
+    or residential proxy.'
 - id: ES/BOE
   country: ES
   name: BOE - Boletín Oficial del Estado
@@ -1234,10 +1289,10 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://analisi.transparenciacatalunya.cat/d/n6hn-rmy7
-  notes: "From issue #90. Catalan regional legislation via SODA API + ELI Akoma Ntoso XML.
-    30,984 records (laws, decrees, orders) since 1977. Available in Catalan and Spanish.
-    12 sample records avg 40K chars/doc. Includes Catalan civil law (derecho foral).
-    Uses portaljuridic.gencat.cat ELI URIs for full text. CC BY 4.0 license."
+  notes: 'From issue #90. Catalan regional legislation via SODA API + ELI Akoma Ntoso
+    XML. 30,984 records (laws, decrees, orders) since 1977. Available in Catalan and
+    Spanish. 12 sample records avg 40K chars/doc. Includes Catalan civil law (derecho
+    foral). Uses portaljuridic.gencat.cat ELI URIs for full text. CC BY 4.0 license.'
 - id: ES/BasqueCountry
   country: ES
   name: Basque Country Regional Legislation (BOPV/EHAA)
@@ -1248,9 +1303,9 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://opendata.euskadi.eus
-  notes: "SPARQL endpoint at api.euskadi.eus + XML full text via legegunea.euskadi.eus.
+  notes: SPARQL endpoint at api.euskadi.eus + XML full text via legegunea.euskadi.eus.
     12 sample records with avg 3K chars/doc. Covers 1936-present. Spanish and Basque.
-    Includes decretos, ordenes, resoluciones. ELI URIs. CC BY 4.0 license."
+    Includes decretos, ordenes, resoluciones. ELI URIs. CC BY 4.0 license.
 - id: ES/Andalusia
   country: ES
   name: Andalusia Regional Legislation (BOJA)
@@ -1261,10 +1316,9 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://datos.juntadeandalucia.es
-  notes: "BOJA via REST API at datos.juntadeandalucia.es/api/v0/boja/all.
-    12 sample records with avg 9K chars/doc. Full text in bodyNoHtml field.
-    Coverage 2015-present. ~2,500 records/year (ordenes, decretos, resoluciones).
-    CC BY 4.0 license."
+  notes: REST API at datos.juntadeandalucia.es. 12 sample records with full text (3K-49K
+    chars). Covers 2015-present. Includes ordenes, decretos, resoluciones. CC BY 4.0
+    license.
 - id: SE/SvenskaForfattningssamlingen
   country: SE
   name: Svenska Forfattningssamlingen (SFS) - Swedish Legislation
@@ -1275,9 +1329,9 @@ sources:
   priority: 1
   blocked_reason: null
   url: https://www.riksdagen.se
-  notes: Riksdagen open data API. 11K+ SFS legislation with full text. Uses /dokumentlista
-    for discovery, /dokument/{id}.text for content. Public domain. 10 samples avg
-    5.7K chars/doc.
+  notes: 'Fixed #148. Added aggressive VPS rate limiting: 8s between docs, 30s between
+    pages, 15s before list requests. Exponential backoff on failures. Riksdagen open
+    data API. 11K+ SFS legislation with full text.'
 - id: SE/RiksdagenDB
   country: SE
   name: Riksdag - Swedish Parliament
@@ -1327,11 +1381,10 @@ sources:
   priority: 3
   blocked_reason: null
   url: https://rattspraxis.etjanst.domstol.se
-  notes: Case law from all Swedish courts via Domstolsverket Open Data API. Covers
-    hovrätter (courts of appeal), kammarrätter (admin courts of appeal), and specialized
-    courts (ADO, MMOD, MIOD, PMOD). Complements SE/SupremeCourt (HDO) and SE/SupremeAdministrativeCourt
-    (HFD). 12 samples avg 18.9K chars/doc. Full text via PDF extraction. Public domain
-    court decisions.
+  notes: 'Fixed #161. 10,498 records from 21 courts (hovrätter, kammarrätter, specialized
+    courts). Fixed pagination to fetch all pages. Excludes HDO/HFD (separate sources).
+    All publication types included. PDF full text extraction. 20 sample records avg
+    37K chars.'
 - id: NO/Lovdata
   country: 'NO'
   name: Lovdata - Norwegian Legislation
@@ -1342,9 +1395,8 @@ sources:
   priority: 1
   blocked_reason: null
   url: https://lovdata.no
-  notes: Official Norwegian legislation via Lovdata API. Free bulk download at api.lovdata.no/v1/publicData.
-    Includes Norwegian Constitution (64K chars) and all laws. 12 sample records fetched,
-    avg 14K chars/doc. ELI URIs since 2016. NLOD license.
+  notes: 'Fixed issue #149: Now fetches both gjeldende-lover (775 laws) AND gjeldende-sentrale-forskrifter
+    (3,685 regulations) for 4,460 total records. Avg 14.6K chars/doc. NLOD 2.0 license.'
 - id: NO/Høyesterett
   country: 'NO'
   name: Norwegian Supreme Court (Høyesterett)
@@ -1355,10 +1407,10 @@ sources:
   priority: 1
   blocked_reason: null
   url: https://lovdata.no/register/avgjørelser
-  notes: "Fixed: Now uses full registry pagination by year (verdict=HRA&year=YYYY&offset=N)
-    instead of RSS. ~7,000 Supreme Court decisions from 2008-present (~350-450 per year).
-    Checkpoint file enables resume across sessions. 12 sample records with avg 9.7K chars/doc.
-    NLOD 2.0 license."
+  notes: 'Fixed: Now uses full registry pagination by year (verdict=HRA&year=YYYY&offset=N)
+    instead of RSS. ~7,000 Supreme Court decisions from 2008-present (~350-450 per
+    year). Checkpoint file enables resume across sessions. 12 sample records with
+    avg 9.7K chars/doc. NLOD 2.0 license.'
 - id: CH/Fedlex
   country: CH
   name: Fedlex - Swiss Federal Legislation
@@ -1371,10 +1423,8 @@ sources:
   - legislation
   blocked_reason: null
   url: https://fedlex.data.admin.ch
-  notes: Swiss Federal Legislation via SPARQL endpoint with JOLux ontology. 209K+
-    acts including Official Compilation (OC), Federal Gazette (FGA), and Classified
-    Compilation (CC). Full text via HTML/XML filestore endpoints. Languages DE/FR/IT/RM.
-    12 sample records with avg 7K chars/doc. ELI URIs. Open Government Data license.
+  notes: 'Swiss Federal Legislation via SPARQL with JOLux ontology. 209K+ acts. Retry
+    logic with exponential backoff added. Issue #157 resolved.'
 - id: CH/Entscheidsuche
   country: CH
   name: Entscheidsuche - Swiss Court Decisions
@@ -1404,11 +1454,9 @@ sources:
   - legislation
   blocked_reason: null
   url: https://www.et.gr
-  notes: 'COMPLETE: Greek Official Gazette (Εφημερίς της Κυβερνήσεως - FEK). PDF download
-    via /api/DownloadFeksApi/?fek_pdf={code}. FEK code format: YYYYSSNNNN. Series
-    01=Laws, 02=Regulatory Acts. Full text extracted from PDF using pdfplumber. 12
-    sample records with avg 73K chars/doc. Greece has NO free consolidated legislation
-    database — this is the primary source. Public domain (official government acts).'
+  notes: 'Greek Official Gazette (Εφημερίς της Κυβερνήσεως - FEK). PDF download via
+    /api/DownloadFeksApi/?fek_pdf={code}. 12 sample records with avg 62K chars/doc.
+    Memory-optimized PDF extraction using pypdf (issue #168 fixed).'
 - id: IS/Lagasafn
   country: IS
   name: Lagasafn - Icelandic Consolidated Legislation
@@ -1421,11 +1469,10 @@ sources:
   - legislation
   blocked_reason: null
   url: https://www.althingi.is/lagasafn/
-  notes: Official Icelandic law collection from Althingi (Parliament). Downloads ZIP
-    archive (~8.7MB) containing 1700+ laws as HTML. Version 156b (September 2025).
-    15 sample records with avg 248K chars/doc. Major laws include Financial Institutions
-    Act (2002/161), Income Tax Act (2003/90), Criminal Code (1940/19). Icelandic language.
-    Public domain.
+  notes: 'Official Icelandic law collection from Althingi. Primary: ZIP archive (~8.7MB)
+    with 1700+ laws. Fallback: GitHub XML (althingi-net/lagasafn-xml) for datacenter
+    IPs blocked by Cloudflare. 12 sample records with avg 280K chars/doc. Fixed #227:
+    added GitHub XML fallback via git sparse checkout.'
 - id: IS/SupremeCourt
   country: IS
   name: Icelandic Supreme Court (Hæstiréttur)
@@ -1438,9 +1485,9 @@ sources:
   - case_law
   blocked_reason: null
   url: https://www.haestirettur.is
-  notes: 'Fixed: Full archive pagination via AJAX endpoint. 2,443 decisions via
-    /default.aspx?pageitemid=<id>&offset=<n>&count=50. Checkpoint file enables resume.
-    12 sample records with avg 30K chars/doc. Icelandic language. Public domain.'
+  notes: 'Fixed: Full archive pagination via AJAX endpoint. 2,443 decisions via /default.aspx?pageitemid=<id>&offset=<n>&count=50.
+    Checkpoint file enables resume. 12 sample records with avg 30K chars/doc. Icelandic
+    language. Public domain.'
 - id: LI/LILEX
   country: LI
   name: LILEX - Liechtenstein Consolidated Legislation
@@ -1481,10 +1528,8 @@ sources:
   - legislation
   blocked_reason: null
   url: https://data.rada.gov.ua/laws/
-  notes: Official Ukrainian legislation database via Verkhovna Rada Open Data Portal.
-    Bulk JSON datasets at /ogd/zak/perv/cards.json (2,918+ docs) with HTML full text
-    at /ogd/zak/perv/text/d{dokid}.htm. 15 sample records with avg 39K chars/doc.
-    No authentication required. CC BY 4.0 license. Ukrainian language.
+  notes: 'Fixed #238. Laws TSV records now correctly fetch text from zakon.rada.gov.ua.
+    290K+ records.'
 - id: RS/SluzbenGlasnik
   country: RS
   name: Službeni glasnik RS - Serbian Official Gazette
@@ -1527,9 +1572,8 @@ sources:
   - legislation
   blocked_reason: null
   url: https://www.sluzbenilist.me
-  notes: Montenegro Official Gazette. PDF documents with pdfplumber text extraction.
-    12 sample records with avg 70K chars/doc. Covers laws (Zakon), decrees (Uredba),
-    decisions (Odluka), and regulations (Pravilnik). Montenegrin (Latin script).
+  notes: Montenegro Official Gazette. PDF documents with pypdf text extraction (memory-optimized).
+    22 sample records with avg 38K chars/doc. Fixed OOM issue
 - id: XK/GazetaZyrtare
   country: XK
   name: Gazeta Zyrtare - Kosovo Official Gazette
@@ -1570,12 +1614,8 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.gjykataelarte.gov.al
-  notes: "Gatsby page-data JSON API + AWS S3 document storage. Two data sources:
-    (1) Archive 1999-2019 with monthly bundle .doc files, (2) Bulletins 2020+ with
-    individual decision .doc files. Text extraction via textutil (macOS). 15 sample
-    records with avg 4.5K chars/doc. Covers Civil, Penal, Administrative, and United
-    Colleges. Albanian language."
-# ===== NEW SOURCES (Priority 3 from GitHub issues) =====
+  notes: Fixed issue 239. Added catdoc/libreoffice fallbacks for .doc extraction on
+    Linux. Archive 1999-2019 via Gatsby API. 15 sample records with avg 4.5K chars.
 - id: ES/TribunalSupremo
   country: ES
   name: Spanish Supreme Court (Tribunal Supremo)
@@ -1586,11 +1626,21 @@ sources:
   priority: 2
   blocked_reason: captcha_required
   url: https://www.poderjudicial.es/search/indexAN.jsp
-  notes: "GitHub issue #50. CENDOJ (poderjudicial.es) requires CAPTCHA to download
-    PDFs. No public REST API exists. datos.gob.es has pending request for judicial
-    database (filed 2021, still waiting). ECLI search at e-justice.europa.eu blocked
-    by robots.txt. RSS feeds only provide news summaries. Fresh research confirmed
-    2026-02-18."
+  notes: 'GitHub issue #128. BLOCKED: CAPTCHA is deliberate access control. CENDOJ
+    ToS prohibit mass download. datos.gob.es open data request pending since 2021.
+    Monitor quarterly. ES/ConstitutionalCourt (33K decisions) covers the largest accessible
+    subset. Not actionable through code changes.'
+- id: ES/AEPD
+  country: ES
+  name: Spanish Data Protection Authority (AEPD)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.aepd.es
+  notes: null
 - id: AT/OGH
   country: AT
   name: Austrian Supreme Court (Oberster Gerichtshof)
@@ -1602,9 +1652,9 @@ sources:
   blocked_reason: null
   url: https://www.ris.bka.gv.at/Jus/
   notes: OGH case law via RIS OGD API v2.6. Uses Justiz application with Gericht=OGH
-    filter. 131K+ decisions covering civil and criminal supreme court judgments.
-    Full text via XML/HTML content URLs. 12 sample records with avg 2.4K chars/doc.
-    ECLI format ECLI:AT:OGH0002. CC BY 4.0.
+    filter. 131K+ decisions covering civil and criminal supreme court judgments. Full
+    text via XML/HTML content URLs. 12 sample records with avg 2.4K chars/doc. ECLI
+    format ECLI:AT:OGH0002. CC BY 4.0.
 - id: AT/Landesrecht
   country: AT
   name: Austrian State Legislation (Landesrecht)
@@ -1615,10 +1665,10 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.ris.bka.gv.at
-  notes: "From issue #93. State legislation from all 9 Austrian Bundesländer via RIS
+  notes: 'From issue #93. State legislation from all 9 Austrian Bundesländer via RIS
     OGD API v2.6. Uses LrKons application (275K+ records). Full text via XML content
-    URLs. 12 sample records with avg 844 chars/doc. CC BY 4.0. Note: State admin
-    court case law (LVwG) already covered by AT/RIS via Lvwg application."
+    URLs. 12 sample records with avg 844 chars/doc. CC BY 4.0. Note: State admin court
+    case law (LVwG) already covered by AT/RIS via Lvwg application.'
 - id: RO/HighCourt
   country: RO
   name: Romanian High Court of Cassation and Justice
@@ -1629,12 +1679,10 @@ sources:
   priority: 3
   blocked_reason: requires_browser_automation
   url: https://www.scj.ro
-  notes: "GitHub issue #52. BLOCKED: All Romanian court databases require
-    browser automation. ReJust (rejust.ro) is Blazor WebAssembly SPA.
-    SCJ (scj.ro/736) has search page but requires JavaScript form submission.
-    portal.just.ro is SharePoint with no API. ROLII access was terminated in
-    March 2022 per CSM decision. Romania has ECLI via ECRIS but no public REST
-    API. Fresh research confirmed 2026-02-18."
+  notes: 'GitHub issue #129. UNBLOCK: Use BrowserScraper for ReJust (rejust.ro) Blazor
+    WebAssembly SPA. Automate search + pagination. Note: Blazor has unusual DOM structures.
+    ROLII terminated 2022. Requires: playwright installed. See feat/playwright-unblock
+    branch.'
 - id: GR/CouncilOfState
   country: GR
   name: Greek Council of State (Symvoulio tis Epikrateias)
@@ -1645,11 +1693,10 @@ sources:
   priority: 3
   blocked_reason: requires_auth
   url: https://www.adjustice.gr
-  notes: "GitHub issue #57. BLOCKED: adjustice.gr requires Oracle Access Manager
-    login. No public API. Case law only available via subscription databases
-    (NOMOS, Nomotelia, DSAnet). GR0051 Open Gov commitment incomplete. Nomothesia
-    research project (legislation.di.uoa.gr) is down. GR/SupremeCourt covers
-    Areios Pagos; GR/Diavgeia covers govt decisions (71M+ records)."
+  notes: 'GitHub issue #132. BLOCKED: Requires Oracle Access Manager credentials.
+    Not actionable through code changes. GR/SupremeCourt covers civil/criminal case
+    law. GR/Diavgeia covers govt decisions (71M+ records). Monitor for Greek ECLI/ELI
+    API implementation.'
 - id: MT/Courts
   country: MT
   name: Malta Courts (ecourts.gov.mt)
@@ -1660,11 +1707,10 @@ sources:
   priority: 3
   blocked_reason: cloudflare_blocked
   url: https://ecourts.gov.mt
-  notes: "GitHub issue #58. BLOCKED: All Malta court websites (ecourts.gov.mt,
-    courts.gov.mt, judiciary.mt) return Cloudflare 403 for all HTTP requests.
-    Malta uses ECLI (ECLI:MT:...) but no public API. WorldLII links to same
-    Cloudflare-blocked portals. Only accessible via browser automation.
-    Fresh research confirmed 2026-02-18."
+  notes: 'GitHub issue #130. UNBLOCK: Try BrowserScraper with stealth settings. If
+    Cloudflare still blocks, use residential proxy. Success uncertain — Malta courts
+    have aggressive anti-bot measures. Requires: playwright installed. See feat/playwright-unblock
+    branch.'
 - id: FR/AMF
   country: FR
   name: Autorité des Marchés Financiers (AMF)
@@ -1676,10 +1722,9 @@ sources:
   priority: 3
   blocked_reason: null
   url: https://www.amf-france.org/fr/sanctions-transactions
-  notes: "Fixed issue #78: Doctrine samples now correctly extract full text from PDFs.
-    French financial regulator decisions (SAN-YYYY-NN) and doctrine (DOC-YYYY-NN).
-    RSS feeds + PDF text extraction via pdfplumber. 10 sample records (6 sanctions,
-    4 doctrine). 200+ decisions + 200+ doctrine items available."
+  notes: 'Fixed #178. REST API for sanctions (449+ records) + sitemap scraping for
+    doctrine (343+ records). Total 792 records with full PDF text extraction. Avg
+    150K+ chars/doc.'
 - id: FR/CNIL
   country: FR
   name: CNIL - Commission Nationale de l'Informatique et des Libertés
@@ -1691,9 +1736,9 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://echanges.dila.gouv.fr/OPENDATA/CNIL/
-  notes: "CNIL deliberations (sanctions, research authorizations, opinions) since 1979.
-    XML bulk data via DILA. 15 sample records with full text (avg 3.5K chars). Monthly updates.
-    Licence Ouverte 2.0."
+  notes: CNIL deliberations (sanctions, research authorizations, opinions) since 1979.
+    XML bulk data via DILA. 15 sample records with full text (avg 3.5K chars). Monthly
+    updates. Licence Ouverte 2.0.
 - id: FR/ConventionsCollectives
   country: FR
   name: Conventions Collectives (Base KALI)
@@ -1704,9 +1749,8 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://echanges.dila.gouv.fr/OPENDATA/KALI/
-  notes: "From issue #103. French collective labor agreements (conventions collectives).
-    DILA bulk data with daily updates. 15 sample records with avg 361K chars/doc.
-    Covers all national conventions with full article text. Licence Ouverte 2.0."
+  notes: 'Fixed #177: Changed _type from collective_agreement to doctrine. Added deduplication
+    by _id across archives to prevent duplicates. ~402 unique conventions.'
 - id: FR/ADLC
   country: FR
   name: Autorité de la Concurrence (French Competition Authority)
@@ -1717,9 +1761,9 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.autoritedelaconcurrence.fr/
-  notes: "From issue #105. French competition law decisions since 1988. JSON dataset
+  notes: 'From issue #105. French competition law decisions since 1988. JSON dataset
     from data.gouv.fr with full text. 6,525 decisions (merger control, antitrust,
-    opinions, interim measures). Avg 30K chars/doc. Open Licence 2.0 (Etalab)."
+    opinions, interim measures). Avg 30K chars/doc. Open Licence 2.0 (Etalab).'
 - id: FR/CADA
   country: FR
   name: CADA - Commission d'accès aux documents administratifs
@@ -1730,10 +1774,8 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://cada.data.gouv.fr
-  notes: "From issue #107. CADA opinions on document access requests since 1984. 60K+
-    avis via cada.data.gouv.fr JSON API. 15 sample records with avg 3.4K chars/doc.
-    Covers all French administrations. Open Licence Etalab."
-# ===== PRIORITY 4: Missing Countries (from GitHub issues #79-87) =====
+  notes: 'Fixed issue #191. Session-date windowing bypasses 10K pagination limit.
+    60K+ avis via cada.data.gouv.fr JSON API. Open Licence Etalab.'
 - id: UK/Legislation
   country: UK
   name: UK Legislation (legislation.gov.uk)
@@ -1746,11 +1788,8 @@ sources:
   - legislation
   blocked_reason: null
   url: https://www.legislation.gov.uk
-  notes: "From issue #79. COMPLETE: UK legislation via legislation.gov.uk REST API.
-    Covers all UK jurisdictions (England & Wales, Scotland, Northern Ireland). 150K+
-    documents: ukpga (12K), uksi (108K), asp (386), ssi (11K), wsi (6.7K), nia (229),
-    nisr (18K). Full CLML XML with text extraction. 15 sample records with avg 12K
-    chars/doc. Open Government Licence v3.0. Rate limit: 3000 req/5min."
+  notes: 'Fixed #220. Full text extraction working. 15 samples with 810-589K chars.
+    Uses legislation.gov.uk XML API.'
 - id: UK/CaseLaw
   country: UK
   name: UK Case Law (National Archives)
@@ -1761,22 +1800,22 @@ sources:
   priority: 1
   blocked_reason: null
   url: https://caselaw.nationalarchives.gov.uk
-  notes: "Atom feed API + Akoma Ntoso XML full text. 361K+ judgments (7200+ pages).
-    Covers UKSC, EWCA, EWHC, tribunals. 12 sample records avg 44K chars/doc.
-    Rate limit 1000 req/5min. Open Justice Licence."
+  notes: 'Fixed #156. Expanded year coverage (2003-present) and all 29 courts/tribunals.
+    Atom feed API with year filtering via from_date_2/to_date_2. 36K+ judgments. 15
+    sample records avg 56K chars/doc. Open Justice Licence.'
 - id: TR/Mevzuat
   country: TR
   name: Turkish Legislation (Mevzuat Bilgi Sistemi)
   data_types:
   - legislation
   auth: none
-  status: complete
+  status: blocked
   priority: 1
-  blocked_reason: null
+  blocked_reason: vps_ip_blocked
   url: https://www.mevzuat.gov.tr
-  notes: "Complete. DataTable JSON API + iframe full text. ~28,900 records total: 912
-    laws, 107 KHK, 8,875 regulations, 63 directives, 185 presidential decrees, 18,760
-    presidential decisions. 15 sample records with avg 22K chars/doc."
+  notes: 'Code works fine locally (15 sample records with full text). VPS (Hetzner)
+    IP blocked by mevzuat.gov.tr after ~2,686 records. Requires residential proxy
+    or different IP range. Issue #160.'
 - id: GE/Matsne
   country: GE
   name: Georgian Legislation Database (Matsne)
@@ -1787,8 +1826,8 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://matsne.gov.ge
-  notes: "Fixed #83. RSS feed + HTML scraping. 12 sample records with avg 110K chars/doc.
-    Constitution, laws, decrees. Georgian and partial English translations available."
+  notes: 'Fixed #83. RSS feed + HTML scraping. 12 sample records with avg 110K chars/doc.
+    Constitution, laws, decrees. Georgian and partial English translations available.'
 - id: AM/ARLIS
   country: AM
   name: Armenian Legal Information System (ARLIS)
@@ -1799,9 +1838,10 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.arlis.am
-  notes: "154K+ Armenian legal documents (laws, decisions, orders). Metadata from OpenData
-    Armenia JSONL. Full text via HTML print endpoint /hy/acts/{id}/print/act. PDF fallback
-    at pdf.arlis.am. 12 sample records with avg 14.6K chars/doc. From issue #84."
+  notes: '154K+ Armenian legal documents (laws, decisions, orders). Metadata from
+    OpenData Armenia JSONL. Full text via HTML print endpoint /hy/acts/{id}/print/act.
+    PDF fallback at pdf.arlis.am. 12 sample records with avg 14.6K chars/doc. From
+    issue #84.'
 - id: AZ/Qanun
   country: AZ
   name: Azerbaijan Legislation (e-Qanun)
@@ -1812,9 +1852,10 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://e-qanun.az
-  notes: "55K+ Azerbaijani legal documents (laws, decrees, cabinet decisions). REST API
-    at api.e-qanun.az/framework/{id}. Full text via Word-exported HTML from htmlUrl field.
-    Sitemap discovery for all IDs. 12 sample records with avg 24K chars/doc. From issue #85."
+  notes: '55K+ Azerbaijani legal documents (laws, decrees, cabinet decisions). REST
+    API at api.e-qanun.az/framework/{id}. Full text via Word-exported HTML from htmlUrl
+    field. Sitemap discovery for all IDs. 12 sample records with avg 24K chars/doc.
+    From issue #85.'
 - id: MD/Legis
   country: MD
   name: Moldova Legislation Database
@@ -1825,9 +1866,9 @@ sources:
   priority: 2
   blocked_reason: cloudflare_protected
   url: https://www.legis.md
-  notes: "All Moldovan legislation portals blocked: legis.md (Cloudflare JS challenge),
-    parlament.md (Cloudflare), lex.justice.md (defunct 404), monitorul.gov.md (paywall),
-    data.gov.md (API 404). lex.md has metadata only. No accessible full text API exists."
+  notes: 'GitHub issue #138. UNBLOCK: Try BrowserScraper with stealth on legis.md.
+    If Cloudflare still blocks, use residential proxy. No alternative sources exist.
+    Requires: playwright installed. See feat/playwright-unblock branch.'
 - id: MK/SluzbenVesnik
   country: MK
   name: North Macedonia Official Gazette
@@ -1838,11 +1879,9 @@ sources:
   priority: 2
   blocked_reason: subscription_required
   url: https://www.slvesnik.com.mk
-  notes: "BLOCKED: slvesnik.com.mk requires paid subscription (members.slvesnik.com.mk)
-    for legislation access. SSL cert issues. No public REST API. opendata.sobranie.mk
-    has parliamentary metadata (sessions, MPs) but NO legislation text. ldbis.pravda.gov.mk
-    is Telerik/ASP.NET with no API. NATLEX/ILO Cloudflare protected. LEGISLATIONLINE
-    has limited PDFs only. No ELI implementation. No open data portal with legislation."
+  notes: 'GitHub issue #139. BLOCKED: Requires paid subscription. Not actionable through
+    code changes. Check for institutional/research access or EU open data initiatives.
+    No alternative data sources exist.'
 - id: AD/BOPA
   country: AD
   name: Andorra Official Gazette (BOPA)
@@ -1853,9 +1892,9 @@ sources:
   priority: 3
   blocked_reason: null
   url: https://www.bopa.ad
-  notes: "Butlletí Oficial del Principat d'Andorra. Azure Functions API + Blob Storage
+  notes: Butlletí Oficial del Principat d'Andorra. Azure Functions API + Blob Storage
     for HTML full text. 12 sample records with avg 8.8K chars/doc. Catalan language.
-    Electronic official version from 2015-present. Open Government Data license."
+    Electronic official version from 2015-present. Open Government Data license.
 - id: MC/JournalMonaco
   country: MC
   name: Monaco Official Journal (Journal de Monaco)
@@ -1866,9 +1905,10 @@ sources:
   priority: 3
   blocked_reason: null
   url: https://journaldemonaco.gouv.mc
-  notes: "Monaco Official Journal (Journal de Monaco). HTML scraping of journaldemonaco.gouv.mc.
+  notes: Monaco Official Journal (Journal de Monaco). HTML scraping of journaldemonaco.gouv.mc.
     15 sample records with full text (avg 1.2K chars/doc). Covers Ordonnances Souveraines,
-    Arrêtés Ministériels, Lois, Décrets, and other legal acts. French language. Open access."
+    Arrêtés Ministériels, Lois, Décrets, and other legal acts. French language. Open
+    access.
 - id: SM/Legisammarino
   country: SM
   name: San Marino Official Legislation (Bollettino Ufficiale)
@@ -1879,10 +1919,10 @@ sources:
   priority: 3
   blocked_reason: null
   url: https://www.bollettinoufficiale.sm
-  notes: "Complete. 12 sample records with full text (avg 9.4K chars/doc). PDF extraction via pdfplumber.
-    Covers Leggi Costituzionali, Leggi Qualificate, Leggi Ordinarie, Decreti, Regolamenti.
-    Electronic bulletin from 2012 onwards. Italian language. Open access."
-# ===== FEDERATED / SUB-NATIONAL SOURCES (Issue #89 and related) =====
+  notes: Complete. 12 sample records with full text (avg 9.4K chars/doc). PDF extraction
+    via pdfplumber. Covers Leggi Costituzionali, Leggi Qualificate, Leggi Ordinarie,
+    Decreti, Regolamenti. Electronic bulletin from 2012 onwards. Italian language.
+    Open access.
 - id: CH/Kantone
   country: CH
   name: Swiss Cantonal Legislation (All 26 Cantons)
@@ -1893,11 +1933,8 @@ sources:
   priority: 1
   blocked_reason: null
   url: https://huggingface.co/datasets/rcds/swiss_legislation
-  notes: "From issue #89. All 26 Swiss cantonal legislation via HuggingFace rcds/swiss_legislation
-    dataset (compiled from lexfind.ch). 35,698 laws with full text (HTML/PDF). 15 sample records
-    from 13 cantons, avg 22.5K chars/doc. Languages: DE/FR/IT/RM. Includes version history.
-    CC-BY-SA-4.0 license. Complements CH/Fedlex (federal) and CH/Entscheidsuche (case law)."
-# German Länder - Issue #88 (13 remaining states - Bavaria, Saxony, NRW already complete)
+  notes: 'Verified: 35,698 records from HuggingFace. Fixed missing datasets dependency
+    in requirements.txt.'
 - id: DE/BadenWuerttemberg
   country: DE
   name: Baden-Württemberg State Law (Landesrecht BW)
@@ -1908,7 +1945,10 @@ sources:
   priority: 2
   blocked_reason: javascript_spa
   url: https://www.landesrecht-bw.de
-  notes: "From issue #88. JavaScript SPA (Juris portal), no API. Requires browser automation."
+  notes: 'GitHub issue #136. UNBLOCK: Juris React SPA — shared implementation with
+    9 other states. Use BrowserScraper or reverse-engineer jportal API. See sources/DE/_shared/juris_scraper.py
+    pattern. ~100,500 docs in sitemap. Requires: playwright installed. See feat/playwright-unblock
+    branch.'
 - id: DE/Berlin
   country: DE
   name: Berlin State Law (Gesetze Berlin)
@@ -1919,29 +1959,30 @@ sources:
   priority: 2
   blocked_reason: javascript_spa
   url: https://gesetze.berlin.de
-  notes: "From issue #88. JavaScript SPA (Juris portal), same platform as BadenWuerttemberg. No API discovered. Requires browser automation."
+  notes: 'GitHub issue #136. UNBLOCK: Juris React SPA — shared implementation. ~2,950
+    docs in sitemap. See DE/BadenWuerttemberg notes.'
 - id: DE/Brandenburg
   country: DE
   name: Brandenburg State Law (BRAVORS)
   data_types:
   - legislation
   auth: none
-  status: complete
+  status: needs_maintenance
   priority: 2
   blocked_reason: null
   url: https://bravors.brandenburg.de
-  notes: "1800+ laws from BRAVORS portal. HTML scraping via subject area navigation. 12 sample records with avg 11.5K chars/doc. Full text in German. Public domain (§5 UrhG)."
+  notes: 'Issue #249: 71% ingestion error rate (1278 of 1790 records lost). Investigate missing required fields in normalizer.'
 - id: DE/Bremen
   country: DE
   name: Bremen State Law (Transparenzportal)
   data_types:
   - legislation
   auth: none
-  status: complete
+  status: needs_maintenance
   priority: 2
   blocked_reason: null
   url: https://www.transparenz.bremen.de
-  notes: "9080+ laws from Transparenzportal. XML feed + HTML scraping. 12 sample records with avg 16.6K chars/doc. Full text in German. CC-BY-3.0 license."
+  notes: 'Issue #249: 41% ingestion error rate (3744 of 9081 records lost). Investigate missing required fields in normalizer.'
 - id: DE/Hamburg
   country: DE
   name: Hamburg State Law (Landesrecht HH)
@@ -1952,7 +1993,8 @@ sources:
   priority: 2
   blocked_reason: javascript_spa
   url: https://www.landesrecht-hamburg.de
-  notes: "Juris React SPA requiring browser automation. Same platform as DE/BadenWuerttemberg and DE/Berlin. Transparenzportal has no legislation datasets."
+  notes: 'GitHub issue #136. UNBLOCK: Juris React SPA — shared implementation. ~1,001
+    docs in sitemap. See DE/BadenWuerttemberg notes.'
 - id: DE/Hessen
   country: DE
   name: Hessen State Law (Hessenrecht)
@@ -1963,7 +2005,8 @@ sources:
   priority: 2
   blocked_reason: javascript_spa
   url: https://www.rv.hessenrecht.hessen.de
-  notes: "Juris React SPA requiring browser automation. Same platform as DE/Hamburg/Berlin/BadenWuerttemberg. opendata.hessen.de has no legislation datasets."
+  notes: 'GitHub issue #136. UNBLOCK: Juris React SPA — shared implementation. ~1,168
+    docs in sitemap. See DE/BadenWuerttemberg notes.'
 - id: DE/MecklenburgVorpommern
   country: DE
   name: Mecklenburg-Vorpommern State Law (Landesrecht MV)
@@ -1974,7 +2017,8 @@ sources:
   priority: 2
   blocked_reason: javascript_spa
   url: https://www.landesrecht-mv.de
-  notes: "Juris React SPA requiring browser automation. Same platform as DE/Hamburg/Berlin/BadenWuerttemberg/Hessen. 31K+ documents in sitemap but all URLs return JS shell. No pre-rendered HTML endpoints."
+  notes: 'GitHub issue #136. UNBLOCK: Juris React SPA — shared implementation. ~31,800
+    docs in sitemap. See DE/BadenWuerttemberg notes.'
 - id: DE/Niedersachsen
   country: DE
   name: Niedersachsen State Law (VORIS)
@@ -1985,7 +2029,9 @@ sources:
   priority: 2
   blocked_reason: cms_no_api
   url: https://voris.niedersachsen.de
-  notes: "Wolters Kluwer Drupal 11 CMS. Redirects to voris.wolterskluwer-online.de. No API, no sitemap, tree navigation via JS. Gazette PDFs available at verkuendung-niedersachsen.de but as bundled issues, not individual laws."
+  notes: 'GitHub issue #137. UNBLOCK: Use BrowserScraper to render Drupal tree navigation,
+    expand all nodes, extract full text. Separate from Juris SPA group. Requires:
+    playwright installed. See feat/playwright-unblock branch.'
 - id: DE/RheinlandPfalz
   country: DE
   name: Rheinland-Pfalz State Law (Landesrecht RLP)
@@ -1996,7 +2042,8 @@ sources:
   priority: 2
   blocked_reason: javascript_spa
   url: https://landesrecht.rlp.de
-  notes: "Juris React SPA requiring browser automation. Same platform as DE/Hamburg/Berlin/BadenWuerttemberg/Hessen/MecklenburgVorpommern. Redirects to /bsrp/ SPA."
+  notes: 'GitHub issue #136. UNBLOCK: Juris React SPA — shared implementation. See
+    DE/BadenWuerttemberg notes.'
 - id: DE/Saarland
   country: DE
   name: Saarland State Law (recht.saarland.de)
@@ -2007,7 +2054,8 @@ sources:
   priority: 2
   blocked_reason: javascript_spa
   url: https://recht.saarland.de
-  notes: "Juris React SPA requiring browser automation. Same platform as DE/Hamburg/Berlin/BadenWuerttemberg/Hessen/MecklenburgVorpommern. ~1,500 URLs in sitemap."
+  notes: 'GitHub issue #136. UNBLOCK: Juris React SPA — shared implementation. ~1,500
+    docs in sitemap. See DE/BadenWuerttemberg notes.'
 - id: DE/SachsenAnhalt
   country: DE
   name: Sachsen-Anhalt State Law (Landesrecht ST)
@@ -2018,7 +2066,8 @@ sources:
   priority: 2
   blocked_reason: javascript_spa
   url: https://www.landesrecht.sachsen-anhalt.de/bsst/
-  notes: "Juris React SPA requiring browser automation. Same platform as DE/Hamburg/Berlin/BadenWuerttemberg/Hessen/MecklenburgVorpommern/Saarland. Sitemap has ~3000 URLs but all pages require JavaScript rendering."
+  notes: 'GitHub issue #136. UNBLOCK: Juris React SPA — shared implementation. ~3,000
+    docs in sitemap. See DE/BadenWuerttemberg notes.'
 - id: DE/SchleswigHolstein
   country: DE
   name: Schleswig-Holstein State Law (Landesrecht SH)
@@ -2029,7 +2078,8 @@ sources:
   priority: 2
   blocked_reason: javascript_spa
   url: https://www.gesetze-rechtsprechung.sh.juris.de/bssh/
-  notes: "Juris React SPA requiring browser automation. Same platform as other blocked German states."
+  notes: 'GitHub issue #136. UNBLOCK: Juris React SPA — shared implementation. See
+    DE/BadenWuerttemberg notes.'
 - id: DE/Thueringen
   country: DE
   name: Thüringen State Law (Landesrecht TH)
@@ -2040,8 +2090,8 @@ sources:
   priority: 2
   blocked_reason: javascript_spa
   url: https://landesrecht.thueringen.de/bsth/
-  notes: "Juris React SPA requiring browser automation. Same platform as other blocked German states."
-# ===== BOSNIA-HERZEGOVINA ENTITIES (Issue #91) =====
+  notes: 'GitHub issue #136. UNBLOCK: Juris React SPA — shared implementation. See
+    DE/BadenWuerttemberg notes.'
 - id: BA/RS
   country: BA
   name: Republika Srpska Legislation
@@ -2052,19 +2102,20 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.paragraf.ba/besplatni-propisi-republike-srpske.html
-  notes: "Fetches from Paragraf BA (free public access). 162 major laws and regulations with full text. Constitution, Criminal Code, Family Law, etc. Originally published in Službeni glasnik RS. Avg 95K chars/doc."
+  notes: Fetches from Paragraf BA (free public access). 162 major laws and regulations
+    with full text. Constitution, Criminal Code, Family Law, etc. Originally published
+    in Službeni glasnik RS. Avg 95K chars/doc.
 - id: BA/FBiH
   country: BA
   name: Federation of BiH Official Gazette (Službene novine FBiH)
   data_types:
   - legislation
   auth: none
-  status: complete
+  status: needs_maintenance
   priority: 2
   blocked_reason: null
   url: https://fbihvlada.gov.ba/bs/zakoni
-  notes: "From issue #91. Full text via FBiH Government website. 12 sample records,
-    avg 44K chars/doc. Covers 2019-present (~250 laws). Chronological registers by year."
+  notes: 'Issue #253: Only 73 records. Expected hundreds to thousands of laws. Investigate broader coverage.'
 - id: BA/Brcko
   country: BA
   name: Brčko District Official Gazette (Službeni glasnik Brčko)
@@ -2075,8 +2126,8 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.skupstinabd.ba
-  notes: "203 laws from Brčko District Assembly. PDF extraction via PyPDF2. 12 samples, avg 47K chars/doc. From issue #91."
-# ===== ADDITIONAL FRENCH AAIs (Issue #107) =====
+  notes: '203 laws from Brčko District Assembly. PDF extraction via PyPDF2. 12 samples,
+    avg 47K chars/doc. From issue #91.'
 - id: FR/DefenseurDesDroits
   country: FR
   name: Défenseur des Droits (French Ombudsman)
@@ -2084,11 +2135,12 @@ sources:
   - case_law
   - doctrine
   auth: none
-  status: blocked
+  status: complete
   priority: 3
-  blocked_reason: pdf_only_no_api
+  blocked_reason: null
   url: https://juridique.defenseurdesdroits.fr
-  notes: "From issue #107. French ombudsman decisions and recommendations. Uses PMB library system (SIGB) at juridique.defenseurdesdroits.fr. Documents are PDFs only, no REST API, no bulk download, no RSS feed. ~200+ decisions per year covering discrimination, public services, children's rights, security ethics."
+  notes: 'Decisions from French Ombudsman. 2,723 records in Neon. PDF extraction via
+    pdfplumber. Issue #179 resolved.'
 - id: FR/ARCEP
   country: FR
   name: ARCEP (Autorité de régulation des communications)
@@ -2096,11 +2148,13 @@ sources:
   - case_law
   - doctrine
   auth: none
-  status: blocked
+  status: complete
   priority: 3
-  blocked_reason: pdf_only_no_api
-  url: https://www.arcep.fr/cartes-et-donnees.html
-  notes: "From issue #107. French telecom regulator decisions. Open data portal has network quality/coverage metrics only, not deliberations. Decisions available as PDFs at arcep.fr/nos-publications/publications.html but no structured API."
+  blocked_reason: null
+  url: https://www.arcep.fr/la-regulation/avis-et-decisions-de-larcep.html
+  notes: French telecom regulator. 46,492 avis/décisions since 1997. PDF scraping
+    with pdfplumber via paginated HTML listings at /la-regulation/avis-et-decisions-de-larcep.html.
+    12 sample records with avg 9K chars/doc. Licence Ouverte 2.0.
 - id: FR/CRE
   country: FR
   name: CRE (Commission de régulation de l'énergie)
@@ -2108,12 +2162,13 @@ sources:
   - case_law
   - doctrine
   auth: none
-  status: blocked
+  status: complete
   priority: 3
-  blocked_reason: pdf_only_no_api
+  blocked_reason: null
   url: https://www.cre.fr/documents
-  notes: "From issue #107. French energy regulator deliberations. Publishes 29 open data datasets but only quantitative tracking (counts, statistics), not full text deliberations. Individual deliberations are PDFs only at cre.fr/documents."
-# ===== ADDITIONAL FRENCH SOURCES (Issues #110, #111) =====
+  notes: French Energy Regulatory Commission. 3,500+ deliberations (doctrine) and
+    470+ CoRDiS dispute resolution decisions (case_law). PDF scraping with pdfplumber.
+    14 sample records with avg 23K chars/doc. Licence Ouverte 2.0.
 - id: FR/Bofip
   country: FR
   name: Bofip (Bulletin Officiel des Finances Publiques)
@@ -2124,9 +2179,10 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://data.economie.gouv.fr/explore/dataset/bofip-vigueur/api/
-  notes: "From issue #110. French tax administration doctrine via data.economie.gouv.fr OpenDataSoft API.
-    ~9,000 active publications covering TVA, IR, IS, CTX, BIC, BNC series. 15 sample records
-    with avg 9.6K chars/doc. Licence Ouverte v2.0 (Etalab). Weekly updates."
+  notes: 'From issue #110. French tax administration doctrine via data.economie.gouv.fr
+    OpenDataSoft API. ~9,000 active publications covering TVA, IR, IS, CTX, BIC, BNC
+    series. 15 sample records with avg 9.6K chars/doc. Licence Ouverte v2.0 (Etalab).
+    Weekly updates.'
 - id: FR/ServicePublic
   country: FR
   name: Service-Public.fr (Fiches pratiques)
@@ -2137,8 +2193,21 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.service-public.fr
-  notes: "Complete. 8K+ fiches pratiques (Particuliers + Entreprises). XML via data.gouv.fr open data. Avg 7K chars/doc. License Ouverte v2.0. Daily updates."
-# ===== ITALIAN REGIONS (Issue #94) =====
+  notes: Complete. 8K+ fiches pratiques (Particuliers + Entreprises). XML via data.gouv.fr
+    open data. Avg 7K chars/doc. License Ouverte v2.0. Daily updates.
+- id: FR/AMF_Sanctions
+  country: FR
+  name: AMF Enforcement Committee Decisions (Commission des sanctions)
+  data_types:
+  - case_law
+  - enforcement
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.amf-france.org/fr/sanctions-transactions/decisions-de-la-commission-des-sanctions
+  notes: 'Fixed 2026-02-28: Switched from RSS (53 records) to REST API (449+ records
+    from 2004-present). Full text extracted from PDFs.'
 - id: IT/EmiliaRomagna
   country: IT
   name: Emilia-Romagna Regional Legislation (Demetra)
@@ -2149,8 +2218,9 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://demetra.regione.emilia-romagna.it
-  notes: "Regional legislation via Demetra database XML downloads. 12 legislatures (1971-present),
-    3 document types (LR, RR, RI). CC BY 4.0 license. Full text via NIR XML format."
+  notes: Regional legislation via Demetra database XML downloads. 12 legislatures
+    (1971-present), 3 document types (LR, RR, RI). CC BY 4.0 license. Full text via
+    NIR XML format.
 - id: IT/Toscana
   country: IT
   name: Toscana Regional Legislation (Raccolta Normativa)
@@ -2161,9 +2231,10 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://raccoltanormativa.consiglio.regione.toscana.it
-  notes: "Tuscany regional legislation via bulk ZIP downloads of NIR XML. Coverage 1971-present
-    across 10 legislatures. Includes laws (leggi), council regulations, executive regulations.
-    15 sample records with avg 22K chars/doc. CC BY 3.0 license. Weekly updates."
+  notes: Tuscany regional legislation via bulk ZIP downloads of NIR XML. Coverage
+    1971-present across 10 legislatures. Includes laws (leggi), council regulations,
+    executive regulations. 15 sample records with avg 22K chars/doc. CC BY 3.0 license.
+    Weekly updates.
 - id: IT/Veneto
   country: IT
   name: Veneto Regional Legislation (BUR)
@@ -2174,9 +2245,9 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://bur.regione.veneto.it
-  notes: "Veneto regional legislation via BUR (Bollettino Ufficiale Regionale).
-    Coverage 2004-present. 400+ regional laws. HTML scraping of BUR detail pages.
-    12 sample records with avg 7.6K chars/doc. CC0 1.0 license."
+  notes: Veneto regional legislation via BUR (Bollettino Ufficiale Regionale). Coverage
+    2004-present. 400+ regional laws. HTML scraping of BUR detail pages. 12 sample
+    records with avg 7.6K chars/doc. CC0 1.0 license.
 - id: IT/Lazio
   country: IT
   name: Lazio Regional Legislation
@@ -2187,6 +2258,3451 @@ sources:
   priority: 2
   blocked_reason: null
   url: https://www.consiglio.regione.lazio.it/?vw=leggiregionali
-  notes: "From issue #94. Regional laws via Consiglio Regionale del Lazio. Covers 1971-present
-    via form-based search + ID-based detail pages. 12 sample records with avg 1K chars/doc.
-    Full text from HTML. CC BY-NC-SA 2.0 license."
+  notes: 'From issue #94. Regional laws via Consiglio Regionale del Lazio. Covers
+    1971-present via form-based search + ID-based detail pages. 12 sample records
+    with avg 1K chars/doc. Full text from HTML. CC BY-NC-SA 2.0 license.'
+- id: IT/GazzettaUfficiale
+  country: IT
+  name: Gazzetta Ufficiale della Repubblica Italiana
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.gazzettaufficiale.it
+  notes: 'Italian Official Gazette. Fetches from archive pages (2020+) with ELI URLs.
+    12 sample records with avg 110K chars/doc. Full text via caricaArticolo endpoint.
+    Slow due to 1s rate limiting. Fixed #170: pagination working correctly.'
+- id: DE/BFH
+  country: DE
+  name: German Federal Finance Court (Bundesfinanzhof)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.rechtsprechung-im-internet.de
+  notes: Uses rechtsprechung-im-internet.de TOC XML + ZIP infrastructure (same as
+    DE/BGH, DE/BSG, DE/BVerwG). 15,000+ decisions. 12 sample records with avg 28K
+    chars/doc. Full text XML in ZIP. Public domain (amtliche Werke § 5 UrhG).
+- id: DE/BAG
+  country: DE
+  name: German Federal Labor Court (Bundesarbeitsgericht)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.rechtsprechung-im-internet.de
+  notes: Uses rechtsprechung-im-internet.de TOC XML + ZIP infrastructure (same as
+    DE/BGH, DE/BSG, DE/BVerwG). 12,000+ decisions. 12 sample records with avg 28K
+    chars/doc. Full text XML in ZIP. Public domain (amtliche Werke § 5 UrhG).
+- id: DE/BMF
+  country: DE
+  name: BMF-Schreiben (German Federal Ministry of Finance Tax Circulars)
+  data_types:
+  - doctrine
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.bundesfinanzministerium.de
+  notes: '515+ BMF-Schreiben (tax circulars) covering income tax, corporate tax, VAT,
+    international tax, etc. HTML listing with pagination (10/page, 52 pages). PDF
+    downloads with pdfplumber text extraction. 10 sample records, avg 20K chars/doc.
+    Metadata includes GZ (Geschäftszeichen), DOK, date, category. Public domain (§5 UrhG).'
+- id: AT/VwGH
+  country: AT
+  name: Austrian Supreme Administrative Court (Verwaltungsgerichtshof)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.ris.bka.gv.at
+  notes: VwGH decisions via RIS OGD API v2.6. 354K records. Full text via XML/HTML
+    content URLs. 12 sample records with avg 995 chars/doc. CC BY 4.0.
+- id: AT/Findok
+  country: AT
+  name: Findok - Austrian Tax Doctrine (Finanzdokumentation)
+  data_types:
+  - doctrine
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: spa_no_api
+  url: https://findok.bmf.gv.at/findok
+  notes: 'From issue #240. BMF tax doctrine database. Angular SPA with no public REST
+    API for full-text doctrine content. Agent stuck in research loop — no viable
+    endpoint found after repeated sessions. Would require browser automation.'
+- id: PL/NSA
+  country: PL
+  name: Polish Supreme Administrative Court (Naczelny Sąd Administracyjny)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: vps_ip_blocked
+  url: https://orzeczenia.nsa.gov.pl
+  notes: 'Issue #184: VPS IP blocked after page 9. Needs residential proxy or longer
+    delays. CBOSA database via HTML scraping. 427K+ administrative court judgments.
+    32 records in Neon.'
+- id: HR/AllCourts
+  country: HR
+  name: Croatian Court Decisions (All Courts - odluke.sudovi.hr)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://odluke.sudovi.hr
+  notes: Croatian court decisions from all courts via odluke.sudovi.hr. Year-based
+    partitioning to bypass 10K search cap. 12 sample records, 1990-present coverage.
+- id: NL/Rechtspraak
+  country: NL
+  name: Dutch Court Decisions (All Courts - rechtspraak.nl)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.rechtspraak.nl
+  notes: 'Fixed #153: Added aggressive rate limiting (1.5s default, configurable),
+    adaptive backoff on errors, checkpoint/resume support. Use --delay 3 for VPS.
+    700K+ decisions available. 12+ sample records with avg 13K chars/doc.'
+- id: EE/AllCourts
+  country: EE
+  name: Estonian Court Decisions (All Courts - kohtulahendid.ee)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: captcha_required
+  url: https://www.riigiteataja.ee/kohtulahendid/
+  notes: 'BLOCKED: kohtulahendid.ee domain is parked. riigiteataja.ee/kohtulahendid
+    is the actual court decisions portal. Search results accessible but full text
+    PDFs require CAPTCHA. rikos.rik.ee only covers Supreme Court decisions. Would
+    need CAPTCHA solver or browser automation.'
+- id: TR/AnayasaMahkemesi
+  country: TR
+  name: Turkish Constitutional Court (Anayasa Mahkemesi)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.anayasa.gov.tr
+  notes: Complete. Norm review (normkararlarbilgibankasi) 5.4K decisions + Individual
+    applications (kararlarbilgibankasi) 16K+ decisions since 2012. HTML scraping with
+    full text. 12 sample records avg 23K chars/doc. Open access.
+- id: TR/Yargitay
+  country: TR
+  name: Turkish Court of Cassation (Yargitay)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.yargitay.gov.tr
+  notes: 'TIER 2: Supreme court for civil and criminal matters. ~6 million decisions
+    via Bedesten API. Full text from base64-encoded HTML. 23 Civil + 23 Criminal chambers.
+    12 sample records with full text.'
+- id: TR/Danistay
+  country: TR
+  name: Turkish Council of State (Danistay)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.danistay.gov.tr
+  notes: Public API at api.danistay.gov.tr/api/v1/tr/guncelKararlar + PDF text extraction.
+    235 precedent decisions with full text. Avg 40K chars/doc. CC BY 4.0.
+- id: UA/ConstitutionalCourt
+  country: UA
+  name: Constitutional Court of Ukraine
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://ccu.gov.ua
+  notes: 'Fixed #203: Added pagination to fetch all 2580+ decisions (was only fetching
+    first 1000). Full text via data.rada.gov.ua API.'
+- id: UA/SupremeCourt
+  country: UA
+  name: Supreme Court of Ukraine
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://supreme.court.gov.ua
+  notes: Bulk CSV from data.gov.ua/dataset/16ab7f06. 2026 archive has 1.28M docs,
+    26K+ cassation court decisions w/ 25.8K having full text via RTF download from
+    od.reyestr.court.gov.ua. Filters by court_code for Supreme Court and cassation
+    chambers. 15 samples avg 15K chars. Daily updates. Ukrainian language. CC BY 4.0.
+- id: RS/ConstitutionalCourt
+  country: RS
+  name: Serbian Constitutional Court (Ustavni sud)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://ustavni.sud.rs
+  notes: 21K+ constitutional court decisions with full text. Enhanced error logging
+    to diagnose VPS issues.
+- id: RS/SupremeCourt
+  country: RS
+  name: Serbian Supreme Court (Vrhovni sud)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://vrh.sud.rs
+  notes: Serbian Supreme Court case law via SOLR search + Drupal 7 scraping. ~29K+
+    decisions. Full text in Serbian (Latin). 12 sample records with avg 10K chars/doc.
+    Open access, no auth required.
+- id: GE/SupremeCourt
+  country: GE
+  name: Georgian Supreme Court
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.supremecourt.ge
+  notes: Complete. 85K+ decisions across 3 chambers (administrative/civil/criminal).
+    HTML endpoints with full Georgian text. 12 samples avg 21K chars. Open access.
+- id: GE/ConstitutionalCourt
+  country: GE
+  name: Georgian Constitutional Court
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.constcourt.ge
+  notes: 'Constitutional Court decisions via HTML scraping. 3000+ documents across
+    270+ pages. 12 sample records with avg 40K chars/doc. Document types: complaints,
+    rulings, judgments, dissenting opinions. Georgian language.'
+- id: AM/ConstitutionalCourt
+  country: AM
+  name: Armenian Constitutional Court
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.concourt.am
+  notes: HTML scraping + PDF text extraction via PyMuPDF. 1996-present. 12 sample
+    records with avg 20K chars/doc. Armenian language. Open access.
+- id: AM/CourtOfCassation
+  country: AM
+  name: Armenian Court of Cassation
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: javascript_spa
+  url: https://www.cassationcourt.am
+  notes: Both cassationcourt.am and datalex.am require JavaScript rendering (Vue/React
+    SPA) to access case data. 1800+ precedent decisions exist but are loaded dynamically.
+    No REST API, RSS feed, or bulk download. ARLIS open data (data.opendata.am) has
+    legislation but not case law.
+- id: AZ/ConstitutionalCourt
+  country: AZ
+  name: Azerbaijan Constitutional Court
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.constcourt.gov.az
+  notes: 'Complete: 631+ decisions from 1998-present, avg 25K chars/doc. HTML scraping
+    via paginated list + detail pages. Azerbaijani language.'
+- id: AZ/SupremeCourt
+  country: AZ
+  name: Azerbaijan Supreme Court
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: reCAPTCHA required
+  url: https://www.supremecourt.gov.az
+  notes: Decision search API at sc.supremecourt.gov.az requires reCAPTCHA v3 token
+    for every query. Plenum decisions (~120 PDFs) available without CAPTCHA but limited
+    coverage. Open data portal (opendata.az) has court statistics only, not decision
+    full text.
+- id: BA/ConstitutionalCourt
+  country: BA
+  name: Constitutional Court of Bosnia and Herzegovina
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.ustavnisud.ba
+  notes: 'Verified: 26,000+ decisions available via year-by-year API queries. Sample
+    bootstrap uses latest session filter (284 records) for speed; full fetch_all()
+    iterates 1997-present. PDF full text extraction working. Some years 2013-2021
+    return 0 records (server-side data gap).'
+- id: ME/SupremeCourt
+  country: ME
+  name: Montenegro Supreme Court (Vrhovni sud)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: javascript_spa
+  url: https://sudovi.me
+  notes: 'BLOCKED: sudovi.me is a Vue.js/Quasar SPA requiring JavaScript execution.
+    No public REST API discovered. All API endpoints return 404. data.gov.me has no
+    court decision datasets. Requires browser automation (Playwright/Puppeteer).'
+- id: ME/ConstitutionalCourt
+  country: ME
+  name: Montenegro Constitutional Court (Ustavni sud Crne Gore)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: http://www.ustavnisud.me
+  notes: DataTables API at /ustavnisud/upit.php. 18,000+ decisions from 1964. Full
+    text in sadrzaj_fajlova field. Avg 45K chars/doc. Serbian language.
+- id: XK/ConstitutionalCourt
+  country: XK
+  name: Kosovo Constitutional Court (Gjykata Kushtetuese)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://gjk-ks.org
+  notes: 'Fixed #224. Now writes to data/records.jsonl for VPS pipeline. ~2961 decisions
+    available. REST API at api.webgjk-ks.org.'
+- id: XK/SupremeCourt
+  country: XK
+  name: Kosovo Supreme Court (Gjykata Supreme)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: cloudflare_protection
+  url: https://supreme.gjyqesori-rks.org
+  notes: 'Issue #209: Primary site (supreme.gjyqesori-rks.org) blocked by Cloudflare.
+    EULEX fallback (eulex-kosovo.eu) has broken PDFs (7/8 tested return 404). No viable
+    alternative found. Kosovo not in ECHR/HUDOC. KSC (scp-ks.org) is separate war
+    crimes court.'
+- id: LV/ConstitutionalCourt
+  country: LV
+  name: Latvian Constitutional Court (Satversmes tiesa)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.satv.tiesa.gov.lv
+  notes: Constitutional Court decisions via WordPress sitemap. 802 decisions from
+    2015-present. Full text extracted from HTML pages. Includes collegium decisions
+    (lēmumi) and judgments (spriedumi). 12 sample records with avg 7K chars/doc.
+- id: BG/VAS
+  country: BG
+  name: Bulgarian Supreme Administrative Court (VAS)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: javascript_spa
+  url: https://sac.justice.bg
+  notes: IBM Domino XPages SPA at info-adc.justice.bg requires JavaScript. Alternative
+    legalacts.justice.bg has anti-CSRF protection blocking automation. Old URL sac.government.bg
+    no longer resolves. New URL is sac.justice.bg. Case law database accessible only
+    via JavaScript portal. See BLOCKED.md.
+- id: RO/ConstitutionalCourt
+  country: RO
+  name: Romanian Constitutional Court (Curtea Constitutionala)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: waf_javascript_challenge
+  url: https://www.ccr.ro
+  notes: 'BLOCKED: ccr.ro returns JavaScript challenge page (WAF protection). Requires
+    browser automation. See BLOCKED.md.'
+- id: RO/JustPortal
+  country: RO
+  name: Romanian Courts Portal (Portal Just)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: no_full_text_access
+  url: https://portal.just.ro
+  notes: SOAP API at portalquery.just.ro/query.asmx only provides case metadata and
+    short decision summaries (solutieSumar field). Full text judgments are in ROLII
+    database, which is not publicly accessible via API. Alternative platforms (ReJust.ro,
+    Lege5.ro) require browser automation or subscription.
+- id: BE/VlaamseCodex
+  country: BE
+  name: Vlaamse Codex - Flemish Consolidated Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://codex.vlaanderen.be
+  notes: Flemish regional legislation via Open Data API (codex.opendata.api.vlaanderen.be).
+    39K+ documents (decrees, government decisions, ministerial orders). Full text
+    via VolledigDocument endpoint. 15 sample records avg 5.3K chars. Daily updates.
+    Open access.
+- id: BE/APD
+  country: BE
+  name: Belgian Data Protection Authority (APD/GBA)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.autoriteprotectiondonnees.be
+  notes: 'Belgian DPA GDPR enforcement decisions. Fetches PDFs from official website
+    and extracts full text via pypdf. 12 sample records with 7K-36K chars. Decision
+    types: substantive, dismissal, warning, order. Both FR/NL sites supported.'
+- id: CZ/NSS
+  country: CZ
+  name: Czech Supreme Administrative Court (Nejvyssi spravni soud)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://sbirka.nssoud.cz
+  notes: Fetches decisions from Collection of Decisions (Sbírka rozhodnutí NSS) at
+    sbirka.nssoud.cz. Includes full text, legal principles, and case metadata. ~256
+    issues in archive, 5-12 decisions per issue.
+- id: IT/TAR
+  country: IT
+  name: Italian Regional Administrative Courts (Tribunali Amministrativi Regionali)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.giustizia-amministrativa.it
+  notes: 'MERGED: All 29 TAR courts are already covered by IT/ConsiglioDiStato, which
+    fetches sentenze from all tar-*-sentenze datasets via OpenGA CKAN + MDP full text
+    endpoint. No separate source needed. Italian language. CC BY 4.0.'
+- id: PT/STA
+  country: PT
+  name: Portuguese Supreme Administrative Court (Supremo Tribunal Administrativo)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.dgsi.pt
+  notes: STA decisions via DGSI. Pre-2002 records (~50K) skipped (no full text in
+    DGSI). Expected yield ~30-40K with full text.
+- id: IE/DPC
+  country: IE
+  name: Irish Data Protection Commission (DPC)
+  data_types:
+  - case_law
+  - doctrine
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.dataprotection.ie
+  notes: 'Enhanced to fetch 62 DPC decisions, 56 court judgments, 169 case studies
+    (287 total). PDFs from decisions and courts.ie, HTML from case study pages. Addresses
+    Issue #222 - original 42 was only decisions with extractable PDFs.'
+- id: AL/ConstitutionalCourt
+  country: AL
+  name: Albanian Constitutional Court (Gjykata Kushtetuese)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.gjykatakushtetuese.gov.al
+  notes: WordPress REST API at gjykatakushtetuese.gov.al. Constitutional Court decisions
+    via /wp-json/wp/v2/ endpoint + PDF text extraction. 1,700+ decisions. 15 sample
+    records with avg 28K chars/doc. Albanian language. Open access.
+- id: IT/GarantePrivacy
+  country: IT
+  name: Italian Data Protection Authority (Garante Privacy)
+  data_types:
+  - case_law
+  - doctrine
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.garanteprivacy.it
+  notes: Italy DPA - Major GDPR enforcer. 13K+ provvedimenti (decisions, sanctions,
+    guidelines). HTML scraping of docweb system. Paginated search results + full text
+    from interna-webcontent div. 12 sample records avg 24K chars. Italian language.
+    Public access.
+- id: NL/AP
+  country: NL
+  name: Dutch Data Protection Authority (Autoriteit Persoonsgegevens)
+  data_types:
+  - case_law
+  - doctrine
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.autoriteitpersoonsgegevens.nl
+  notes: Dutch DPA - GDPR enforcement decisions, Woo (FOI) decisions, policy advice.
+    HTML scraping with PDF text extraction using pypdf. 48+ sanctions, 10+ pages of
+    documents. 12 sample records avg 15K chars. Dutch language. Public access.
+- id: NL/BAILII
+  country: NL
+  name: Dutch Case Law (BAILII - Rechtspraak.nl)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 3
+  blocked_reason: duplicate of NL/Rechtspraak
+  url: https://data.rechtspraak.nl
+  notes: Duplicate source - uses same Rechtspraak.nl Open Data API as NL/Rechtspraak.
+    NL/Rechtspraak already provides full coverage of 700K+ Dutch court decisions.
+    This source should be deprecated in favor of NL/Rechtspraak.
+- id: US/GovInfo
+  country: US
+  name: GovInfo (US Federal Legislation)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.govinfo.gov
+  notes: Congressional Bills, CFR, Public Laws via bulk data repository. No API key
+    required. XML full text. 11 samples validated.
+- id: US/FederalRegister
+  country: US
+  name: Federal Register
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.federalregister.gov
+  notes: Daily journal of US government (rules, proposed rules, notices, presidential
+    documents). REST API returns JSON with full text. Documents from 1994+. Free access,
+    no API key required. Tested with 15 samples, avg 75k chars/doc.
+- id: US/CongressGov
+  country: US
+  name: Congress.gov (Congressional Bills)
+  data_types:
+  - legislation
+  auth: api_key
+  status: blocked
+  priority: 1
+  blocked_reason: api_key_required
+  url: https://api.congress.gov
+  notes: 'Issue #185. Code complete and tested. DEMO_KEY rate-limited. Needs CONGRESS_API_KEY
+    from api.congress.gov/sign-up in .env to run. Full text via XML. Avg 2-3K chars/bill.'
+- id: US/CourtListener
+  country: US
+  name: CourtListener (Case Law)
+  data_types:
+  - case_law
+  auth: token
+  status: blocked
+  priority: 1
+  blocked_reason: needs_token
+  url: https://www.courtlistener.com
+  notes: 'CODE READY. Needs COURTLISTENER_API_TOKEN. To unblock: 1) Sign up at courtlistener.com
+    2) Get API token from profile 3) Set COURTLISTENER_API_TOKEN env var 4) Run: python
+    sources/US/CourtListener/bootstrap.py bootstrap --sample'
+- id: US/CaselawAccessProject
+  country: US
+  name: Caselaw Access Project (Harvard/HuggingFace)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://huggingface.co/datasets/common-pile/caselaw_access_project
+  notes: Complete. 6.7M+ US cases from 360 years. Full text via HuggingFace streaming.
+    15 samples validated with avg 5,337 chars per record.
+- id: US/OpenStates
+  country: US
+  name: Open States (State Legislation)
+  data_types:
+  - legislation
+  auth: api_key
+  status: blocked
+  priority: 1
+  blocked_reason: api_key_required
+  url: https://openstates.org
+  notes: 'Issue #185. Code complete. All 50 states + DC + Puerto Rico. API v3 + version
+    document download for full text. Needs OPENSTATES_API_KEY from open.pluralpolicy.com/accounts/profile/
+    in .env to run.'
+- id: TW/MOJ
+  country: TW
+  name: National Laws Database (全國法規資料庫)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://law.moj.gov.tw
+  notes: Official Taiwan MOJ Open API. JSON ZIP bulk downloads for all laws (Chinese
+    + English). ~1,300+ laws. Full article text included. Open Government Data License
+    1.0. 10 sample records validated with avg 2,700 chars per law.
+- id: AE/Legislation
+  country: AE
+  name: UAE Federal Legislation Portal
+  data_types:
+  - legislation
+  auth: cloudflare
+  status: blocked
+  priority: 2
+  blocked_reason: cloudflare_protection
+  url: https://uaelegislation.gov.ae
+  notes: 'From issue #155. UAE official federal laws portal. Blocked by Cloudflare
+    WAF. No accessible API found.'
+- id: BY/ETALON
+  country: BY
+  name: Belarus ETALON Legal Database
+  data_types:
+  - legislation
+  auth: none
+  status: needs_maintenance
+  priority: 2
+  url: https://etalonline.by
+  notes: 'Issue #248: Only 26 records (codified laws). Should fetch thousands of laws/decrees. Investigate broader coverage.'
+- id: BY/PravoBy
+  country: BY
+  name: Belarus National Legal Portal (Codes)
+  data_types:
+  - legislation
+  auth: none
+  status: needs_maintenance
+  priority: 2
+  url: https://pravo.by
+  notes: 'Issue #248: Only 52 records. Should fetch thousands of laws. Investigate broader coverage.'
+- id: BY/CIS-Legislation
+  country: BY
+  name: Belarus Codified Laws (CIS Legislation)
+  data_types:
+  - legislation
+  auth: none
+  status: needs_maintenance
+  priority: 2
+  url: https://cis-legislation.com
+  notes: 'Issue #248: Only 20 records. Should have hundreds+ of CIS treaties and model laws. Investigate broader coverage.'
+- id: MA/CourDeCassation
+  country: MA
+  name: Morocco Court of Cassation Jurisprudence
+  data_types:
+  - case_law
+  auth: unknown
+  status: blocked
+  priority: 1
+  blocked_reason: network_access
+  url: https://juriscassation.cspj.ma
+  notes: 'From issue #195. Supreme Council of the Judicial Power portal launched Jan
+    2022. ~7,700+ decisions. Free public access. DNS resolution fails from external
+    IPs (cspj.ma, cassation.cspj.ma domains). Likely geo-restricted or gov network
+    issues. Site is indexed by search engines so it exists.'
+- id: MA/Adala
+  country: MA
+  name: Morocco Ministry of Justice Portal
+  data_types:
+  - legislation
+  - case_law
+  auth: unknown
+  status: blocked
+  priority: 2
+  blocked_reason: network_access
+  url: https://adala.justice.gov.ma
+  notes: 'From issue #195. Ministry of Justice legal portal with Textes_Juridiques
+    and Jurisprudence. DNS times out from external IPs (same as cspj.ma). data.gov.ma
+    CKAN API works but has no legal datasets (only court statistics). Bulletin Officiel
+    (sgg.gov.ma) also unreachable.'
+- id: AR/InfoLEG
+  country: AR
+  name: InfoLEG - Sistema de Información Legislativa
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://datos.jus.gob.ar/dataset/base-de-datos-legislativos-infoleg
+  notes: Official Argentine legislation database from Ministry of Justice. CKAN bulk
+    CSV/ZIP download + full text HTML from servicios.infoleg.gob.ar. 15 sample records
+    with avg 7.3K chars. Laws, decrees, resolutions since 1853 (indexed from May 1997).
+    Monthly updates. CC BY 4.0.
+- id: AR/SAIJ
+  country: AR
+  name: SAIJ - Sistema Argentino de Información Jurídica
+  data_types:
+  - case_law
+  auth: none
+  status: needs_maintenance
+  priority: 1
+  blocked_reason: null
+  url: https://www.saij.gob.ar
+  notes: 'Issue #245: Full bootstrap not implemented. Sample works but bootstrap command fails. Need to implement full fetch.'
+- id: CA/FederalLegislation
+  country: CA
+  name: Federal Laws and Regulations (Justice Laws Website)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://laws-lois.justice.gc.ca
+  notes: ~956 Acts + ~4834 Regulations in XML format. Full text via XML catalog and
+    individual endpoints. Bilingual (English/French). Updated bi-weekly. 12 sample
+    records with full text.
+- id: CA/SupremeCourt
+  country: CA
+  name: Supreme Court of Canada Decisions
+  data_types:
+  - case_law
+  auth: none
+  status: needs_maintenance
+  priority: 1
+  blocked_reason: null
+  url: https://decisions.scc-csc.ca
+  notes: 'Issue #247: Only 96 records fetched. Expected thousands. Investigate pagination or discovery issues.'
+- id: EG/LegalCorpus
+  country: EG
+  name: Egyptian Legal Corpus (Hugging Face)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://huggingface.co/datasets/dataflare/egypt-legal-corpus
+  notes: 'From issue #214. MIT-licensed dataset with 2,434 Egyptian laws. Full text
+    (25M+ tokens, avg 87K chars/doc). Arabic content. Hugging Face datasets API. 15
+    sample records validated.'
+- id: IL/Knesset
+  country: IL
+  name: Knesset OData API (Legislation)
+  data_types:
+  - legislation
+  auth: geo_blocked
+  status: blocked
+  priority: 1
+  blocked_reason: geo_blocking
+  url: https://knesset.gov.il/Odata/ParliamentInfo.svc
+  notes: 'From issue #219. Knesset OData API with KNS_Bill, laws tables. API works
+    from Israeli IPs only. Returns maintenance page from US/EU. Requires VPN/proxy
+    with Israeli IP. hasadna/knesset-data GitHub projects exist but also need Israeli
+    IP.'
+- id: IL/SupremeCourt
+  country: IL
+  name: Israeli Supreme Court Database (ISCD)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: connection_timeout
+  url: https://iscd.huji.ac.il
+  notes: 'From issue #219. Hebrew University hosted. 16K+ Supreme Court decisions
+    2010-2018 with 61 variables. Downloadable SPSS/CSV datasets. Site times out from
+    external IPs. May be geo-blocked or intermittent.'
+- id: DZ/JORADP
+  country: DZ
+  name: Algerian Official Journal (JORADP)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 2
+  url: https://www.joradp.dz
+  notes: Journal Officiel de la République Algérienne. French/Arabic editions. PDFs
+    from 1994-present with full text extraction via PyPDF2. ~80 issues per year. 12
+    sample records validated with full text.
+- id: US/GovInfoLegislation
+  country: US
+  name: GovInfo Federal Legislation (Congress Bills)
+  data_types:
+  - legislation
+  auth: api_key_free
+  status: blocked
+  priority: 1
+  blocked_reason: redundant_source
+  url: https://api.govinfo.gov
+  notes: 'BLOCKED: Redundant with US/GovInfo which already provides Congressional
+    Bills, CFR, Public Laws via bulk data WITHOUT an API key. The API approach requires
+    user registration at api.data.gov and has strict rate limits. No added value over
+    existing US/GovInfo bulk data source. From issue #185.'
+- id: US/CourtListenerCaseLaw
+  country: US
+  name: CourtListener Bulk Case Law
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: file_too_large
+  url: https://www.courtlistener.com/help/api/bulk-data/
+  notes: 'BLOCKED: Bulk opinion files are 30-50GB compressed each (S3 bucket). Exceeds
+    2GB download limit. Use US/CourtListener API source instead (needs free token
+    from courtlistener.com). US/CaselawAccessProject already provides 6.7M cases.
+    Issue #185.'
+- id: LB/OfficialGazette
+  country: LB
+  name: Lebanese Official Gazette (Al-Jarida al-Rasmiya)
+  data_types:
+  - legislation
+  auth: subscription
+  status: blocked
+  priority: 2
+  blocked_reason: subscription_required
+  url: https://jo.pcm.gov.lb
+  notes: 'From issue #228. Official Gazette from Presidency of Council of Ministers.
+    Requires paid subscription (10M or 5M LBP annual cards via LibanPost). No public
+    API. Login required for all content.'
+- id: LB/MinistryOfJustice
+  country: LB
+  name: Lebanese Ministry of Justice Laws
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: no_full_text_access
+  url: https://justice.gov.lb/index.php/laws/1
+  notes: 'From issue #228. Only 3 of 14 laws have PDF full text (Arabic PDFs). Other
+    11 laws including Constitution only show excerpts with circular "Read more" links.
+    No API, no structured data. Full text requires paid SADERLEX subscription.'
+- id: LB/LegiLiban
+  country: LB
+  name: LegiLiban Legal Informatics Center
+  data_types:
+  - legislation
+  auth: institutional
+  status: blocked
+  priority: 2
+  blocked_reason: institutional_access_only
+  url: http://legiliban.ul.edu.lb
+  notes: 'From issue #228. Lebanese University Center for Legal Informatics. Contains
+    all Lebanese legislation since Ottoman period (1920+). Only accessible on-site
+    at Lebanese university libraries. Connection refused from external IPs.'
+- id: TN/JORT
+  country: TN
+  name: Journal Officiel de la République Tunisienne (JORT)
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: webdev_session_required
+  url: http://www.iort.gov.tn
+  notes: 'From issue #234. Site uses WebDev framework with stateful JavaScript session
+    navigation (_JSL function). No REST API available. Alternative legislation.tn
+    is down. Tunisia open data portal (data.gov.tn) has no JORT data. Existing OpenJORT
+    project (github.com/hatemben/OpenJORT) requires browser automation (Firebug/JS
+    console) + PDF download + pdftotext. Requires Playwright/Selenium infrastructure.'
+- id: AU/FederalRegister
+  country: AU
+  name: Federal Register of Legislation (Australia)
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.legislation.gov.au
+  notes: Official REST API at api.prod.legislation.gov.au. Full text via EPUB/Word
+    documents. 130K+ titles. Open data under Creative Commons.
+- id: NZ/Legislation
+  country: NZ
+  name: New Zealand Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.legislation.govt.nz
+  notes: 'From issue #236. Public XML via sitemap (no API key required). ~42K acts/bills/secondary
+    legislation. Full text via URL.xml suffix. 15 sample records avg 4.4K chars.'
+- id: RU/Pravo
+  country: RU
+  name: Official Internet Portal of Legal Information (Pravo.gov.ru)
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: no_machine_readable_data
+  url: http://pravo.gov.ru
+  notes: 'From issue #237. Maintained by Federal Security Service (FSS). Documents
+    only available as scanned TIFF/PDF without text layer. No API, no bulk download,
+    no open licenses. Third-party RusLawOD project exists on GitHub but requires manual
+    scraping and OCR of PDFs.'
+- id: DE/BfDI
+  country: DE
+  name: German Federal Data Protection Authority (BfDI)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: pdf_extraction_required
+  url: https://www.bfdi.bund.de
+  notes: 1,792 publications available (Stellungnahmen, Kontrollberichte, Rundschreiben) but full text is only in PDF format. HTML pages contain only metadata/summaries. GDPRhub has only 6 decisions. Requires PDF text extraction infrastructure (PyMuPDF/PyPDF2) per issue #246.
+- id: PL/UODO
+  country: PL
+  name: Polish Data Protection Authority (UODO)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://uodo.gov.pl
+  notes: Urząd Ochrony Danych Osobowych - Polish GDPR decisions.
+- id: PT/CNPD
+  country: PT
+  name: Portuguese Data Protection Authority (CNPD)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.cnpd.pt
+  notes: Comissão Nacional de Proteção de Dados - Portuguese GDPR enforcement.
+- id: CZ/UOOU
+  country: CZ
+  name: Czech Data Protection Authority (ÚOOÚ)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://uoou.gov.cz
+  notes: HTML scraping of inspection decisions from uoou.gov.cz. 24 years of data (2001-2024). 15 sample records with avg 2.4K chars. Full text of completed DPA inspections on GDPR, commercial communications, Schengen.
+- id: SK/UOOU
+  country: SK
+  name: Slovak Data Protection Authority (ÚOOÚ)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://dataprotection.gov.sk
+  notes: Slovak data protection enforcement decisions.
+- id: HU/NAIH
+  country: HU
+  name: Hungarian Data Protection Authority (NAIH)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.naih.hu
+  notes: Nemzeti Adatvédelmi és Információszabadság Hatóság - Hungarian GDPR decisions.
+- id: RO/ANSPDCP
+  country: RO
+  name: Romanian Data Protection Authority (ANSPDCP)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.dataprotection.ro
+  notes: Romanian GDPR enforcement decisions.
+- id: BG/CPDP
+  country: BG
+  name: Bulgarian Data Protection Authority (CPDP)
+  data_types:
+  - regulation
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://cpdp.bg
+  notes: WordPress REST API. Decisions 2007-2023, Opinions 2007-2026. Full text.
+- id: HR/AZOP
+  country: HR
+  name: Croatian Data Protection Authority (AZOP)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://azop.hr
+  notes: Agencija za zaštitu osobnih podataka - Croatian GDPR decisions.
+- id: SI/IPRS
+  country: SI
+  name: Slovenian Data Protection Authority (IP RS)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.ip-rs.si
+  notes: Informacijski pooblaščenec - Slovenian GDPR decisions.
+- id: EE/AKI
+  country: EE
+  name: Estonian Data Protection Authority (AKI)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.aki.ee
+  notes: Andmekaitse Inspektsioon - Estonian GDPR enforcement.
+- id: LV/DVI
+  country: LV
+  name: Latvian Data Protection Authority (DVI)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.dvi.gov.lv
+  notes: Datu valsts inspekcija - Latvian GDPR decisions.
+- id: LT/VDAI
+  country: LT
+  name: Lithuanian Data Protection Authority (VDAI)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://vdai.lrv.lt
+  notes: Valstybinė duomenų apsaugos inspekcija - Lithuanian GDPR decisions.
+- id: FI/TSV
+  country: FI
+  name: Finnish Data Protection Authority (TSV)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://tietosuoja.fi
+  notes: Tietosuojavaltuutetun toimisto - Finnish GDPR enforcement.
+- id: SE/IMY
+  country: SE
+  name: Swedish Data Protection Authority (IMY)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.imy.se
+  notes: Integritetsskyddsmyndigheten - Swedish GDPR decisions. Check for API.
+- id: DK/DTIL
+  country: DK
+  name: Danish Data Protection Authority (Datatilsynet)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.datatilsynet.dk
+  notes: Danish GDPR enforcement decisions.
+- id: NO/DTIL
+  country: false
+  name: Norwegian Data Protection Authority (Datatilsynet)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.datatilsynet.no
+  notes: Norwegian data protection enforcement (EEA member).
+- id: LU/CNPD
+  country: LU
+  name: Luxembourg Data Protection Authority (CNPD)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://cnpd.public.lu
+  notes: Commission Nationale pour la Protection des Données.
+- id: CY/DATAPROTECTION
+  country: CY
+  name: Cyprus Data Protection Authority
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.dataprotection.gov.cy
+  notes: 'Commissioner for Personal Data Protection Cyprus. PDF decisions from website.
+    15 sample records avg 32K chars. Uses pdfplumber for text extraction. SSL cert workaround.'
+- id: GR/DPA
+  country: GR
+  name: Greek Data Protection Authority (HDPA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.dpa.gr
+  notes: Hellenic Data Protection Authority - GDPR decisions.
+- id: EU/DGComp
+  country: EU
+  name: EU Competition Directorate-General (DG COMP)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://competition-cases.ec.europa.eu
+  notes: Working fetcher with PDF text extraction. 15 sample records with full text.
+    Daily updates from data.europa.eu.
+- id: DE/Bundeskartellamt
+  country: DE
+  name: German Federal Cartel Office (Bundeskartellamt)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.bundeskartellamt.de
+  notes: German competition authority decisions - merger control, abuse of dominance,
+    cartels. PDF full text extraction. 13 sample docs 18k-1.1M chars.
+- id: UK/CMA
+  country: UK
+  name: UK Competition and Markets Authority (CMA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.gov.uk/cma-cases
+  notes: 2530 cases. GOV.UK Content API provides full text. Mergers, markets, consumer enforcement.
+- id: IT/AGCM
+  country: IT
+  name: Italian Competition Authority (AGCM)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.agcm.it
+  notes: AGCM weekly bulletin PDF extraction via pdfplumber. 12 sample records with avg 29K chars/doc. Full text of competition, merger, and consumer protection decisions from 2020+. CC BY 4.0.
+- id: NL/ACM
+  country: NL
+  name: Dutch Competition Authority (ACM)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.acm.nl
+  notes: Autoriteit Consument en Markt - Dutch competition decisions.
+- id: BE/BCA
+  country: BE
+  name: Belgian Competition Authority (BCA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.belgiancompetition.be
+  notes: Belgische Mededingingsautoriteit - Belgian antitrust decisions. ~1500 decisions from 1993-present.
+- id: PL/UOKIK
+  country: PL
+  name: Polish Competition Authority (UOKiK)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.uokik.gov.pl
+  notes: Urząd Ochrony Konkurencji i Konsumentów - Polish competition decisions.
+- id: AT/BWB
+  country: AT
+  name: Austrian Federal Competition Authority (BWB)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: sucuri_waf
+  url: https://www.bwb.gv.at
+  notes: Website behind Sucuri WAF (JavaScript challenge). PDFs accessible directly but no API or discoverable index. Court decisions already in AT/RIS.
+- id: PT/AdC
+  country: PT
+  name: Portuguese Competition Authority (AdC)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.concorrencia.pt
+  notes: Autoridade da Concorrência - Portuguese competition decisions.
+- id: SE/Konkurrensverket
+  country: SE
+  name: Swedish Competition Authority (Konkurrensverket)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.konkurrensverket.se
+  notes: Swedish competition authority decisions.
+- id: DK/KFST
+  country: DK
+  name: Danish Competition Authority (KFST)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.kfst.dk
+  notes: Konkurrence- og Forbrugerstyrelsen - Danish competition decisions.
+- id: FI/FCCA
+  country: FI
+  name: Finnish Competition Authority (KKV)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.kkv.fi
+  notes: Kilpailu- ja kuluttajavirasto - Finnish competition decisions.
+- id: NO/KONKURR
+  country: false
+  name: Norwegian Competition Authority (Konkurransetilsynet)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://konkurransetilsynet.no
+  notes: Norwegian competition enforcement decisions (EEA member).
+- id: CH/COMCO
+  country: CH
+  name: Swiss Competition Commission (COMCO)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.weko.admin.ch
+  notes: WEKO/COMCO competition decisions via PDF extraction from decisions page. 115 decisions available. 12 sample records with full text (avg 400K+ chars). German/French/Italian languages.
+- id: IE/CCPC
+  country: IE
+  name: Irish Competition Authority (CCPC)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.ccpc.ie
+  notes: Competition and Consumer Protection Commission Ireland.
+- id: IT/AgenziaDogane
+  country: IT
+  name: Italian Customs Agency (Agenzia delle Dogane)
+  data_types:
+  - doctrine
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.adm.gov.it
+  notes: Italian customs and excise tax doctrine.
+- id: IT/AgenziEntrate
+  country: IT
+  name: Italian Revenue Agency (Agenzia delle Entrate)
+  data_types:
+  - other
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.agenziaentrate.gov.it
+  notes: Italian tax circolari, risoluzioni, interpelli. PDF extraction via pdfplumber.
+- id: ES/AEAT
+  country: ES
+  name: Spanish Tax Agency (AEAT)
+  data_types:
+  - doctrine
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: no_full_text_access
+  url: https://www.agenciatributaria.es
+  notes: Blocked 2026-03-15. petete.tributos.hacienda.gob.es document endpoint returns
+    401. Search results only provide summaries (descripcion_hechos, cuestion_planteada),
+    not full consultation text/answers. No bulk download API available. Requires browser
+    automation for full text.
+- id: ES/DGT
+  country: ES
+  name: Spanish General Tax Directorate (DGT)
+  data_types:
+  - doctrine
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: no_full_text_access
+  url: https://petete.tributos.hacienda.gob.es/consultas/
+  notes: Blocked 2026-03-15. PETETE database has 68K+ binding tax consultations but
+    document endpoint (/consultas/do/document) returns 401 Unauthorized. Search provides
+    descriptions but not full text answers. Government confirmed no API/bulk access
+    planned (datos.gob.es request marked "No viable" 2022). Same system as ES/AEAT.
+    Requires browser automation.
+- id: NL/Belastingdienst
+  country: NL
+  name: Dutch Tax Administration (Belastingdienst)
+  data_types:
+  - doctrine
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.belastingdienst.nl
+  notes: Dutch tax circulars and policy documents. Check open data portal.
+- id: BE/SPF
+  country: BE
+  name: Belgian Finance Ministry Tax Circulars
+  data_types:
+  - doctrine
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: auth_required
+  url: https://eservices.minfin.fgov.be
+  notes: Fisconetplus (tax circulars database) requires SharePoint authentication. No public API available. eservices.minfin.fgov.be only provides TARBEL tariff browser, not circulars.
+- id: PL/MF
+  country: PL
+  name: Polish Finance Ministry Tax Interpretations
+  data_types:
+  - doctrine
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://sip.mf.gov.pl
+  notes: System Informacji Podatkowej - Polish tax interpretations database.
+- id: PT/AT
+  country: PT
+  name: Portuguese Tax Authority (AT)
+  data_types:
+  - doctrine
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://info.portaldasfinancas.gov.pt
+  notes: Autoridade Tributária e Aduaneira - Portuguese tax circulars and rulings.
+- id: CZ/MFCR
+  country: CZ
+  name: Czech Finance Ministry Tax Guidance
+  data_types:
+  - doctrine
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: pdf_only_no_text_api
+  url: https://www.mfcr.cz
+  notes: Tax guidance (pokyny MF, pokyny D) only available as PDF downloads from financnisprava.gov.cz - no XML/JSON/HTML API. Requires PyPDF2/PyMuPDF for text extraction.
+- id: SE/SKV
+  country: SE
+  name: Swedish Tax Agency (Skatteverket)
+  data_types:
+  - doctrine
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.skatteverket.se
+  notes: Swedish tax guidance and position papers.
+- id: DK/SKAT
+  country: DK
+  name: Danish Tax Authority (Skattestyrelsen)
+  data_types:
+  - doctrine
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://skat.dk
+  notes: Danish tax doctrine and binding rulings.
+- id: FI/VERO
+  country: FI
+  name: Finnish Tax Administration (Vero)
+  data_types:
+  - doctrine
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.vero.fi
+  notes: Finnish tax guidance and instructions.
+- id: NO/SKD
+  country: false
+  name: Norwegian Tax Administration
+  data_types:
+  - doctrine
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.skatteetaten.no
+  notes: Norwegian tax circulars and practice statements.
+- id: IE/Revenue
+  country: IE
+  name: Irish Revenue Commissioners
+  data_types:
+  - doctrine
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.revenue.ie
+  notes: Irish tax manuals, eBriefs, and guidance.
+- id: UK/HMRC
+  country: UK
+  name: UK HMRC Tax Manuals
+  data_types:
+  - doctrine
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.gov.uk/hmrc-internal-manuals
+  notes: HM Revenue & Customs - 247 manuals with 84,000+ sections. GOV.UK Content
+    API, no auth required.
+- id: CH/ESTV
+  country: CH
+  name: Swiss Federal Tax Administration (ESTV)
+  data_types:
+  - doctrine
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.estv.admin.ch
+  notes: 385 tax circulars (Kreisschreiben/Rundschreiben) from 4 categories. Full text
+    extracted from PDFs via pdfplumber/pypdf. 12 sample records avg 37K chars. Covers
+    direct federal tax, withholding tax, stamp duties.
+- id: LU/ACD
+  country: LU
+  name: Luxembourg Tax Administration (ACD)
+  data_types:
+  - doctrine
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://impotsdirects.public.lu
+  notes: Administration des Contributions Directes - Luxembourg tax circulars.
+- id: GR/AADE
+  country: GR
+  name: Greek Tax Authority (AADE)
+  data_types:
+  - doctrine
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.aade.gr
+  notes: Ανεξάρτητη Αρχή Δημοσίων Εσόδων - Greek tax circulars and interpretations.
+- id: RO/ANAF
+  country: RO
+  name: Romanian Tax Authority (ANAF)
+  data_types:
+  - doctrine
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.anaf.ro
+  notes: Agenția Națională de Administrare Fiscală - Romanian tax guidance.
+- id: HU/NAV
+  country: HU
+  name: Hungarian Tax Authority (NAV)
+  data_types:
+  - doctrine
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://nav.gov.hu
+  notes: Nemzeti Adó- és Vámhivatal - Hungarian tax circulars.
+- id: NL/RvS
+  country: NL
+  name: Dutch Council of State (Raad van State)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: duplicate
+  url: https://www.raadvanstate.nl
+  notes: 'DUPLICATE: Raad van State decisions (ECLI:NL:RVS:*) are published via rechtspraak.nl Open Data API and are fully covered by NL/Rechtspraak.'
+- id: AT/BFG
+  country: AT
+  name: Austrian Federal Tax Court (BFG)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: spa_no_api
+  url: https://www.bfg.gv.at
+  notes: 'BFG decisions published via Findok (findok.bmf.gv.at) Angular SPA. NOT in
+    RIS OGD API v2.6 - BFG not a valid Applikation. Findok API /api/neuInFindok/sync
+    suchtypen=BFG returns guidelines (Richtlinien) not decisions. No public API for
+    actual BFG Entscheidungen. Would require browser automation.'
+- id: FR/TA
+  country: FR
+  name: French Administrative Tribunals (Tribunaux Administratifs)
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.conseil-etat.fr
+  notes: Lower administrative court decisions. Check for bulk access via Légifrance/JADE.
+- id: ES/TEAC
+  country: ES
+  name: Spanish Tax Administrative Tribunal (TEAC)
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.tribunaleseconomico-administrativos.gob.es
+  notes: Tribunal Económico-Administrativo Central - Spanish tax appeal decisions.
+- id: PT/CAAD
+  country: PT
+  name: Portuguese Tax Arbitration Centre (CAAD)
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.caad.org.pt
+  notes: Centro de Arbitragem Administrativa - Portuguese tax arbitration decisions.
+- id: EU/ESMA
+  country: EU
+  name: European Securities and Markets Authority (ESMA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.esma.europa.eu
+  notes: ESMA Library scraping + PDF text extraction via pdfplumber. Guidelines, reports, opinions, decisions, technical standards. 15 sample records avg 42K chars/doc. Rate limited 2s/request.
+- id: DE/BaFin
+  country: DE
+  name: German Financial Supervisory Authority (BaFin)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.bafin.de
+  notes: BaFin regulatory circulars (Rundschreiben). 126+ documents via HTML scraping.
+    15 samples with avg 43K chars. MaRisk, MaComp, AML guidance, supervisory practices.
+- id: UK/FCA
+  country: UK
+  name: UK Financial Conduct Authority (FCA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.fca.org.uk
+  notes: 5,333 enforcement notices (decision + final) via sitemap + PDF extraction. 15 samples with avg 33K chars full text.
+- id: IT/CONSOB
+  country: IT
+  name: Italian Securities Commission (CONSOB)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.consob.it
+  notes: Italian securities regulator communications and decisions.
+- id: NL/AFM
+  country: NL
+  name: Dutch Financial Markets Authority (AFM)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.afm.nl
+  notes: Autoriteit Financiële Markten - Dutch securities regulator.
+- id: ES/CNMV
+  country: ES
+  name: Spanish Securities Commission (CNMV)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.cnmv.es
+  notes: Comisión Nacional del Mercado de Valores - Spanish securities decisions.
+- id: EU/ECB
+  country: EU
+  name: European Central Bank (ECB)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://eur-lex.europa.eu/browse/institutions/bank.html
+  notes: ECB legal acts via EUR-Lex SPARQL + HTML. 3,100+ documents (decisions,
+    regulations, guidelines, opinions). 15 sample records avg 27K chars. Uses CELLAR
+    SPARQL endpoint for discovery and EUR-Lex HTML for full text.
+- id: EU/EBA
+  country: EU
+  name: European Banking Authority (EBA)
+  data_types:
+  - guidelines
+  - opinions
+  - decisions
+  - reports
+  - regulatory_technical_standards
+  auth: none
+  status: complete
+  priority: 1
+  blocked_reason: null
+  url: https://www.eba.europa.eu
+  notes: EBA publications via HTML scraping + PDF text extraction. Guidelines, opinions, decisions, reports, RTS/ITS. 15 sample records with avg 100K chars/doc. Full text from PDFs via pdfplumber.
+- id: UK/ET
+  country: UK
+  name: UK Employment Tribunals
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.gov.uk/employment-tribunal-decisions
+  notes: UK employment tribunal decisions - large corpus of labor law.
+- id: FR/Prud
+  country: FR
+  name: French Labor Courts (Conseils de prud'hommes)
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.conseil-prud.com
+  notes: French labor court decisions. Check Légifrance/JADE for bulk access.
+- id: EU/BEREC
+  country: EU
+  name: Body of European Regulators (BEREC)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.berec.europa.eu
+  notes: EU telecom regulatory body - guidelines, opinions, reports.
+- id: DE/BNetzA
+  country: DE
+  name: German Network Agency (BNetzA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.bundesnetzagentur.de
+  notes: German telecom/energy regulator decisions. 19,217+ decisions from ruling chambers (Beschlusskammern). Full text extracted from PDFs.
+- id: UK/Ofcom
+  country: UK
+  name: UK Communications Regulator (Ofcom)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.ofcom.org.uk
+  notes: UK telecom/broadcast regulator decisions and consultations.
+- id: EU/ACER
+  country: EU
+  name: EU Agency for Energy Regulators (ACER)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.acer.europa.eu
+  notes: EU energy regulatory cooperation agency - decisions, opinions.
+- id: DE/BNetzA-Energy
+  country: DE
+  name: German Energy Regulatory Authority
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: duplicate - covered by DE/BNetzA
+  url: https://www.bundesnetzagentur.de
+  notes: DUPLICATE - BNetzA Beschlussdatenbank covers ALL sectors (energy, telecom, postal, rail). Use DE/BNetzA instead.
+- id: UK/Ofgem
+  country: UK
+  name: UK Gas and Electricity Markets Authority (Ofgem)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.ofgem.gov.uk
+  notes: UK energy regulator decisions and consultations.
+- id: ES/TC
+  country: ES
+  name: Spanish Constitutional Court (TC)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: duplicate
+  url: https://www.tribunalconstitucional.es
+  notes: 'DUPLICATE: Covered by ES/ConstitutionalCourt (same source, same API). Use
+    ES/ConstitutionalCourt instead.'
+- id: NL/HogeRaad
+  country: NL
+  name: Dutch Supreme Court (Hoge Raad)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: duplicate
+  url: https://www.rechtspraak.nl
+  notes: 'DUPLICATE: Covered by NL/Rechtspraak which provides full coverage of all Dutch courts including Hoge Raad via the rechtspraak.nl Open Data API.'
+- id: PT/TC
+  country: PT
+  name: Portuguese Constitutional Court (TC)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 1
+  blocked_reason: duplicate
+  url: https://www.tribunalconstitucional.pt
+  notes: 'DUPLICATE: Covered by PT/ConstitutionalCourt which provides full coverage of Tribunal Constitucional decisions from 1983 to present.'
+- id: EU/EUIPO
+  country: EU
+  name: EU Intellectual Property Office (EUIPO)
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://euipo.europa.eu
+  notes: EU trademark/design office decisions. Check for API/bulk data.
+- id: DE/DPMA
+  country: DE
+  name: German Patent Office (DPMA)
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: no_full_text_access
+  url: https://www.dpma.de
+  notes: DPMA examination decisions not publicly published. Schiedsstelle decisions (~370) are PDF-only. Court appeals are handled by BPatG (already complete).
+- id: DE/BPatG
+  country: DE
+  name: German Federal Patent Court (BPatG)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.rechtsprechung-im-internet.de
+  notes: Data from rechtsprechung-im-internet.de. 7,251 decisions from 2010+. XML with full text.
+- id: UK/IPO
+  country: UK
+  name: UK Intellectual Property Office
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.gov.uk/government/organisations/intellectual-property-office
+  notes: UK patent/trademark decisions.
+- id: DE/BadenWürttemberg
+  country: DE
+  name: Baden-Württemberg Regional Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: javascript_spa
+  url: https://www.landesrecht-bw.de
+  notes: 'landesrecht-bw.de is a React SPA requiring browser rendering. The mylex API behind it requires session tokens. Gesetzblatt (baden-wuerttemberg.de/gesetzblatt/) provides only PDF gazette editions, not individual laws. Requires headless browser infrastructure.'
+- id: IT/Piemonte
+  country: IT
+  name: Piedmont Regional Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://arianna.consiglioregionale.piemonte.it
+  notes: Piedmont regional laws (ARIANNA system).
+- id: ES/Cataluna
+  country: ES
+  name: Catalonia Regional Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://portaljuridic.gencat.cat
+  notes: Generalitat de Catalunya - Catalan regional laws.
+- id: ES/PaisVasco
+  country: ES
+  name: Basque Country Regional Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.euskadi.eus/web01-tramite/es/
+  notes: Euskadi regional laws and Basque Official Gazette.
+- id: ES/Andalucia
+  country: ES
+  name: Andalusia Regional Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.juntadeandalucia.es
+  notes: Junta de Andalucía - Andalusian regional laws.
+- id: ES/Madrid
+  country: ES
+  name: Madrid Regional Legislation
+  data_types:
+  - legislation
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.comunidad.madrid
+  notes: Comunidad de Madrid - Madrid regional laws.
+- id: EU/EIOPA
+  country: EU
+  name: EU Insurance and Pensions Authority (EIOPA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.eiopa.europa.eu
+  notes: EU insurance/pensions regulatory body - guidelines, opinions.
+- id: DE/BaFin-Insurance
+  country: DE
+  name: German Insurance Supervisory (BaFin)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: insufficient_data
+  url: https://www.bafin.de
+  notes: Only 3 insurance decisions published under VAG 319. Too few for standalone source.
+- id: UK/PRA
+  country: UK
+  name: UK Prudential Regulation Authority (PRA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.bankofengland.co.uk/prudential-regulation
+  notes: Bank of England PRA - insurance/banking prudential regulation.
+- id: EU/EEA
+  country: EU
+  name: European Environment Agency (EEA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.eea.europa.eu
+  notes: EU environment data and assessments.
+- id: DE/UBA
+  country: DE
+  name: German Federal Environment Agency (UBA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.umweltbundesamt.de
+  notes: Umweltbundesamt - German environmental guidance and studies.
+- id: UK/EA
+  country: UK
+  name: UK Environment Agency
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.gov.uk/government/organisations/environment-agency
+  notes: UK environmental permits, enforcement, guidance.
+- id: EU/CPCS
+  country: EU
+  name: EU Consumer Protection Cooperation Network
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://commission.europa.eu/live-work-travel-eu/consumer-rights-and-complaints_en
+  notes: EU consumer protection enforcement cooperation.
+- id: UK/ASA
+  country: UK
+  name: UK Advertising Standards Authority (ASA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.asa.org.uk
+  notes: UK advertising regulator decisions.
+- id: EU/EMA
+  country: EU
+  name: European Medicines Agency (EMA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.ema.europa.eu
+  notes: EU medicines authorization decisions, EPARs.
+- id: DE/BfArM
+  country: DE
+  name: German Federal Institute for Drugs (BfArM) - Rote-Hand-Briefe
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.bfarm.de
+  notes: Rote-Hand-Briefe (Red Hand Letters) - urgent pharmaceutical safety communications.
+    540+ documents from 2007-present. Full text extracted from PDFs via pdfminer.
+    RSS feed + HTML pagination. 15 sample records avg 5.8K chars.
+- id: FR/ANSM
+  country: FR
+  name: French Medicines Agency (ANSM)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://ansm.sante.fr
+  notes: Agence nationale de sécurité du médicament - French pharma decisions.
+- id: UK/MHRA
+  country: UK
+  name: UK Medicines Agency (MHRA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.gov.uk/government/organisations/medicines-and-healthcare-products-regulatory-agency
+  notes: UK medicines and healthcare products regulatory agency.
+- id: EU/EFSA
+  country: EU
+  name: European Food Safety Authority (EFSA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.efsa.europa.eu
+  notes: EU food safety scientific opinions and assessments.
+- id: DE/BVL
+  country: DE
+  name: German Federal Office for Consumer Protection (BVL) - Plant Protection Products
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://psm-api.bvl.bund.de/
+  notes: PSM-API for plant protection product authorizations. 2,100 approved products with full regulatory text.
+- id: UK/FSA
+  country: UK
+  name: UK Food Standards Agency (FSA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.food.gov.uk
+  notes: UK food safety standards and guidance.
+- id: EU/EASA
+  country: EU
+  name: EU Aviation Safety Agency (EASA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.easa.europa.eu
+  notes: EU aviation safety decisions and airworthiness directives.
+- id: EU/ERA
+  country: EU
+  name: EU Agency for Railways (ERA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.era.europa.eu
+  notes: EU railway interoperability and safety.
+- id: UK/CAA
+  country: UK
+  name: UK Civil Aviation Authority (CAA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.caa.co.uk
+  notes: UK aviation regulatory decisions.
+- id: EU/ECHA
+  country: EU
+  name: European Chemicals Agency (ECHA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://echa.europa.eu
+  notes: EU REACH chemical safety decisions. Large database available.
+- id: EU/ENSREG
+  country: EU
+  name: EU Nuclear Safety Regulators Group (ENSREG)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.ensreg.eu
+  notes: EU nuclear safety regulatory cooperation.
+- id: FR/ASN
+  country: FR
+  name: French Nuclear Safety Authority (ASN)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.asn.fr
+  notes: Autorité de sûreté nucléaire - French nuclear safety decisions.
+- id: UK/ONR
+  country: UK
+  name: UK Office for Nuclear Regulation (ONR)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.onr.org.uk
+  notes: UK nuclear safety regulatory decisions.
+- id: EU/Ombudsman
+  country: EU
+  name: European Ombudsman
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.ombudsman.europa.eu
+  notes: EU Ombudsman decisions on EU administration complaints.
+- id: UK/PHSO
+  country: UK
+  name: UK Parliamentary and Health Service Ombudsman
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.ombudsman.org.uk
+  notes: UK ombudsman decisions on public services.
+- id: FR/DefenseurDroits
+  country: FR
+  name: French Rights Defender (Défenseur des droits)
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.defenseurdesdroits.fr
+  notes: French ombudsman decisions on rights and discrimination.
+- id: DE/BfJ
+  country: DE
+  name: German Federal Office of Justice (BfJ)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: no_full_text_access
+  url: https://www.bundesjustizamt.de
+  notes: BfJ does not publish regulatory decisions as open data. GZR (Gewerbezentralregister) requires authorized access via XJustiz protocol. Only aggregate statistics (CSV/PDF) are publicly available, not individual decisions with full text. NetzDG enforcement data superseded by DSA 2024.
+- id: EU/AMLA
+  country: EU
+  name: EU Anti-Money Laundering Authority (AMLA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://finance.ec.europa.eu
+  notes: New EU AML authority (operational from 2024). Check for published decisions.
+- id: DE/FIU
+  country: DE
+  name: German Financial Intelligence Unit (FIU)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.zoll.de/DE/Fachthemen/FIU/fiu_node.html
+  notes: German AML typologies and guidance (limited public data).
+- id: UK/NCA
+  country: UK
+  name: UK National Crime Agency (AML Unit)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.nationalcrimeagency.gov.uk
+  notes: UK AML guidance and SARs intelligence (limited public data).
+# ===== NEW SOURCES BATCH - 2026-03-15 =====
+# Tax authorities and tax doctrine
+- id: EU/ECJ-Tax
+  country: EU
+  name: ECJ Tax Cases
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://curia.europa.eu
+  notes: European Court of Justice tax law decisions (subset of CURIA filtered by subject).
+- id: FR/CE-Fiscal
+  country: FR
+  name: French Council of State - Tax Chamber
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.conseil-etat.fr
+  notes: Conseil d'État tax decisions (filtered from existing CouncilState source).
+- id: NL/HR-Belasting
+  country: NL
+  name: Dutch Supreme Court - Tax Chamber
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.rechtspraak.nl
+  notes: Hoge Raad tax division decisions.
+- id: BE/CourCassation-Fiscal
+  country: BE
+  name: Belgian Court of Cassation - Tax Cases
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://juportal.be
+  notes: Belgian Court of Cassation tax/fiscal case law via JUPORTAL sitemap. Filtered
+    by F. role numbers and fiscal subjects. 12+ sample records with full text (avg
+    8K chars). Uses same sitemap infrastructure as BE/cass.
+- id: IT/CassazioneTributaria
+  country: IT
+  name: Italian Court of Cassation - Tax Chamber
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.italgiure.giustizia.it
+  notes: Corte di Cassazione sezione tributaria decisions.
+- id: ES/TribunalEconomico
+  country: ES
+  name: Spanish Economic-Administrative Tribunals (TEAC)
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.minhap.gob.es
+  notes: TEAC resolutions - Spanish tax tribunal.
+- id: PL/NSA-Tax
+  country: PL
+  name: Polish Supreme Administrative Court - Tax
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://orzeczenia.nsa.gov.pl
+  notes: NSA tax decisions (filtered by chamber).
+- id: SE/HFD-Tax
+  country: SE
+  name: Swedish Supreme Administrative Court - Tax
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.domstol.se
+  notes: Högsta förvaltningsdomstolen tax decisions.
+# Labor tribunals
+- id: FR/Prud
+  country: FR
+  name: French Labour Courts (Conseil de prud'hommes)
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.legifrance.gouv.fr
+  notes: French labor tribunal decisions via Legifrance.
+- id: UK/ET
+  country: UK
+  name: UK Employment Tribunals
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.gov.uk/employment-tribunal-decisions
+  notes: Employment tribunal decisions from gov.uk.
+- id: ES/TS-Social
+  country: ES
+  name: Spanish Supreme Court - Social Chamber
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.poderjudicial.es
+  notes: Tribunal Supremo labor/social security decisions.
+- id: IT/CassazioneLavoro
+  country: IT
+  name: Italian Court of Cassation - Labour Chamber
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.italgiure.giustizia.it
+  notes: Corte di Cassazione sezione lavoro decisions.
+- id: BE/CourTravail
+  country: BE
+  name: Belgian Labour Courts
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://juportal.be
+  notes: Belgian labor court decisions via juportal.be. Uses API search + PDF extraction via PyMuPDF. 15 sample records with full text (3K-77K chars). Covers Cour du Travail and Tribunal du Travail decisions.
+- id: NL/CRvB
+  country: NL
+  name: Dutch Central Appeals Tribunal
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.rechtspraak.nl
+  notes: Centrale Raad van Beroep - social security/civil service appeals.
+- id: AT/OGH-Arbeitsrecht
+  country: AT
+  name: Austrian Supreme Court - Labour Chamber
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.ris.bka.gv.at
+  notes: Covered by AT/OGH. Labor law cases (ObA = Arbeitsrechtssachen) are included
+    in the general OGH dataset. Filter by Geschaeftszahl containing "ObA" (e.g., 8ObA,
+    9ObA) for labor law cases specifically. RIS API does not support Fachgebiet filtering.
+# Environmental/planning tribunals
+- id: FR/TA
+  country: FR
+  name: French Administrative Tribunals
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.conseil-etat.fr
+  notes: First-instance administrative tribunal decisions.
+- id: UK/UT-Environment
+  country: UK
+  name: UK Upper Tribunal - Environment
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.gov.uk
+  notes: Planning and environment chamber decisions.
+- id: DE/BVerwG-Umwelt
+  country: DE
+  name: German Federal Admin Court - Environment
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: duplicate
+  url: https://www.bverwg.de
+  notes: Subset of DE/BVerwG. Environmental cases are already included in the main BVerwG source (rechtsprechung-im-internet.de covers all BVerwG decisions).
+- id: NL/ABRvS
+  country: NL
+  name: Dutch Council of State - Admin Division
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.raadvanstate.nl
+  notes: Afdeling bestuursrechtspraak environmental/planning decisions.
+# Telecom/energy regulators
+- id: IT/ARERA
+  country: IT
+  name: Italian Regulatory Authority for Energy
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.arera.it
+  notes: ARERA energy regulation decisions.
+- id: ES/CNMC
+  country: ES
+  name: Spanish Markets and Competition Commission
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.cnmc.es
+  notes: Telecom, energy, transport regulation decisions.
+- id: NL/ACM-Telecom
+  country: NL
+  name: Dutch ACM - Telecom/Energy
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.acm.nl
+  notes: ACM telecom and energy regulatory decisions.
+- id: PL/UKE
+  country: PL
+  name: Polish Office of Electronic Communications
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.uke.gov.pl
+  notes: Polish telecom regulator decisions.
+- id: PL/URE
+  country: PL
+  name: Polish Energy Regulatory Office
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.ure.gov.pl
+  notes: Polish energy regulator decisions.
+- id: AT/RTR
+  country: AT
+  name: Austrian Regulatory Authority
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: no_full_text_access
+  url: https://www.rtr.at
+  notes: Full text only in PDFs. HTML pages have only short summaries (1-3 sentences). PDF extraction requires PyMuPDF/PyPDF2 infrastructure (see INBOX.md skip list). ~700 decisions available.
+- id: AT/E-Control
+  country: AT
+  name: Austrian Energy Regulator (E-Control)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: javascript_spa_pdf_only
+  url: https://www.e-control.at
+  notes: Decisions are PDF-only on JavaScript-rendered Liferay CMS. No API to list documents. Requires browser automation + PDF text extraction.
+- id: BE/BIPT
+  country: BE
+  name: Belgian Telecom Regulator (BIPT)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.bipt.be
+  notes: 632 decisions via XML RSS feed, PDF text extraction. Full text confirmed.
+- id: BE/CREG
+  country: BE
+  name: Belgian Energy Regulator (CREG)
+  data_types:
+  - regulatory_decisions
+  - studies
+  - notes
+  - reports
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.creg.be
+  notes: HTML scraping of Drupal site + PDF text extraction. 12 sample records avg 126K chars. Decisions, studies, notes. Reference numbers pattern (B)XXXX/(F)XXXX. Full text from PDFs via pdfplumber.
+# Financial regulators (beyond existing)
+# NOTE: DE/BaFin already exists above with status complete (circulars/Rundschreiben). Duplicate removed.
+- id: IT/Banca
+  country: IT
+  name: Bank of Italy - Supervision
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.bancaditalia.it
+  notes: Banking supervision sanctions and decisions.
+- id: IT/CONSOB
+  country: IT
+  name: Italian Securities Commission (CONSOB)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.consob.it
+  notes: Securities market supervision decisions.
+- id: ES/CNMV
+  country: ES
+  name: Spanish Securities Commission (CNMV)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.cnmv.es
+  notes: Spanish securities supervision decisions.
+- id: NL/AFM
+  country: NL
+  name: Dutch Financial Markets Authority (AFM)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.afm.nl
+  notes: Dutch securities/financial conduct supervision.
+- id: NL/DNB
+  country: NL
+  name: Dutch Central Bank - Supervision (DNB)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.dnb.nl
+  notes: Dutch banking/insurance supervision decisions.
+- id: AT/FMA
+  country: AT
+  name: Austrian Financial Market Authority (FMA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.fma.gv.at
+  notes: RSS feed scraper for FMA sanctions, warnings, and announcements. 12 sample records with full text (421-2526 chars). Categories include Sanktion, Warnung, Information, Publikation, Pressemitteilung. Open Data, no auth.
+- id: BE/FSMA
+  country: BE
+  name: Belgian Financial Services Authority (FSMA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.fsma.be
+  notes: Settlement agreements and sanctions committee decisions. 247 PDFs available. 12 sample records with full text (4566-13784 chars). PDF text extraction via pdfplumber. Open Data.
+- id: PL/KNF
+  country: PL
+  name: Polish Financial Supervision Authority (KNF)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.knf.gov.pl
+  notes: Polish financial supervision decisions.
+# Consumer protection authorities
+- id: DE/BKartA-Verbraucher
+  country: DE
+  name: German Consumer Protection (vzbv complaints)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.vzbv.de
+  notes: German consumer protection decisions.
+- id: FR/DGCCRF
+  country: FR
+  name: French Consumer Protection (DGCCRF)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.economie.gouv.fr/dgccrf
+  notes: French consumer protection enforcement.
+- id: IT/AGCOM
+  country: IT
+  name: Italian Communications Authority (AGCOM)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.agcom.it
+  notes: Italian telecom/media regulator decisions.
+# Immigration/asylum tribunals
+- id: UK/IAC
+  country: UK
+  name: UK Immigration and Asylum Chamber
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.gov.uk
+  notes: Immigration tribunal decisions.
+- id: FR/CNDA
+  country: FR
+  name: French National Asylum Court (CNDA)
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: http://www.cnda.fr
+  notes: Cour nationale du droit d'asile decisions.
+- id: DE/BVerwG-Asyl
+  country: DE
+  name: German Federal Admin Court - Asylum
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: duplicate
+  url: https://www.bverwg.de
+  notes: Subset of DE/BVerwG. Asylum cases are already included in the main BVerwG source (rechtsprechung-im-internet.de covers all BVerwG decisions).
+# Professional regulatory bodies
+- id: UK/SRA
+  country: UK
+  name: UK Solicitors Regulation Authority
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.sra.org.uk
+  notes: Solicitor disciplinary decisions.
+- id: UK/GMC
+  country: UK
+  name: UK General Medical Council
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.gmc-uk.org
+  notes: Medical practitioner disciplinary decisions.
+- id: FR/CNB
+  country: FR
+  name: French National Bar Council
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.cnb.avocat.fr
+  notes: French bar disciplinary decisions.
+- id: DE/BRAK
+  country: DE
+  name: German Federal Bar Association
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.brak.de
+  notes: German bar disciplinary decisions.
+# Additional supreme/high courts not yet covered
+- id: CZ/SupremeAdminCourt
+  country: CZ
+  name: Czech Supreme Administrative Court
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: duplicate
+  url: https://www.nssoud.cz
+  notes: 'Duplicate of CZ/NSS. This entry points to nssoud.cz while CZ/NSS already
+    fetches from sbirka.nssoud.cz (Collection of Decisions) for the same court.
+    The vyhledavac.nssoud.cz search has no public API (requires CSRF tokens/sessions).'
+- id: HU/Kuria
+  country: HU
+  name: Hungarian Curia (Supreme Court)
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://kuria-birosag.hu
+  notes: Hungarian supreme court decisions.
+- id: PL/SN
+  country: PL
+  name: Polish Supreme Court
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.sn.pl
+  notes: Sąd Najwyższy civil/criminal decisions.
+- id: RO/ICCJ
+  country: RO
+  name: Romanian High Court of Cassation
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.scj.ro
+  notes: Înalta Curte de Casație și Justiție decisions.
+- id: BG/SAC
+  country: BG
+  name: Bulgarian Supreme Administrative Court
+  data_types:
+  - case_law
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: captcha_required
+  url: http://www.sac.government.bg
+  notes: BLOCKED - legalacts.justice.bg requires CAPTCHA. EDIS portal (info-adc.justice.bg) uses complex XPages session handling with no bulk access API. Only PDF bulletins available which require PyMuPDF infrastructure not available (see issue #246).
+- id: HR/AdminCourt
+  country: HR
+  name: Croatian High Administrative Court
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.upravnisudrh.hr
+  notes: Visoki upravni sud decisions.
+- id: SI/AdminCourt
+  country: SI
+  name: Slovenian Administrative Court
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.sodisce.si
+  notes: Upravno sodišče decisions.
+# Intellectual property offices
+- id: EU/EPO
+  country: EU
+  name: European Patent Office (EPO)
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.epo.org
+  notes: EPO Boards of Appeal decisions.
+- id: DE/DPMA-regulatory
+  country: DE
+  name: German Patent Office (DPMA) Regulatory Decisions
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: blocked
+  priority: 2
+  blocked_reason: no_full_text_access
+  url: https://www.dpma.de
+  notes: DPMA examination decisions not publicly published in bulk. Schiedsstelle decisions (~370) are PDF-only requiring extraction. See BPatG for court decisions.
+- id: FR/INPI
+  country: FR
+  name: French IP Office (INPI)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.inpi.fr
+  notes: French patent/trademark decisions.
+- id: UK/IPO
+  country: UK
+  name: UK Intellectual Property Office
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.gov.uk/government/organisations/intellectual-property-office
+  notes: UK patent/trademark decisions.
+- id: ES/OEPM
+  country: ES
+  name: Spanish Patent Office (OEPM)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.oepm.es
+  notes: Spanish patent/trademark decisions.
+- id: IT/UIBM
+  country: IT
+  name: Italian Patent Office (UIBM)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://uibm.mise.gov.it
+  notes: Italian patent/trademark decisions.
+# Antitrust courts
+- id: DE/BKartG
+  country: DE
+  name: German Cartel Court (Bundeskartellgericht)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.rechtsprechung-im-internet.de
+  notes: BGH Kartellsenat decisions via rechtsprechung-im-internet.de XML API. 571 decisions from 2010+. 12 sample records with full text. Public domain (§5 UrhG).
+- id: UK/CAT
+  country: UK
+  name: UK Competition Appeal Tribunal
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.catribunal.org.uk
+  notes: Competition Appeal Tribunal decisions.
+# Media regulators
+- id: UK/Ofcom
+  country: UK
+  name: UK Communications Regulator (Ofcom)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.ofcom.org.uk
+  notes: Telecom/broadcasting regulatory decisions.
+- id: DE/KEK
+  country: DE
+  name: German Media Concentration Commission
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.kek-online.de
+  notes: Media ownership/concentration decisions.
+- id: FR/CSA
+  country: FR
+  name: French Audiovisual Regulator (ARCOM)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.arcom.fr
+  notes: French broadcasting regulatory decisions.
+# Customs/trade tribunals
+- id: UK/FTT-Tax
+  country: UK
+  name: UK First-tier Tribunal - Tax Chamber
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.gov.uk
+  notes: Tax tribunal decisions.
+- id: EU/OLAF
+  country: EU
+  name: EU Anti-Fraud Office (OLAF)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://anti-fraud.ec.europa.eu
+  notes: OLAF investigation reports (published cases).
+# Health regulators
+- id: UK/MHRA
+  country: UK
+  name: UK Medicines Regulator (MHRA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.gov.uk/government/organisations/medicines-and-healthcare-products-regulatory-agency
+  notes: MHRA regulatory decisions.
+- id: FR/ANSM
+  country: FR
+  name: French Medicines Agency (ANSM)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://ansm.sante.fr
+  notes: French medicines regulatory decisions.
+# Social security tribunals
+- id: UK/UT-AAC
+  country: UK
+  name: UK Upper Tribunal - Admin Appeals
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.gov.uk
+  notes: Social security/benefits appeals.
+- id: FR/TASS
+  country: FR
+  name: French Social Security Tribunals
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.legifrance.gouv.fr
+  notes: Tribunal des affaires de sécurité sociale decisions.
+# Public procurement
+- id: EU/TED
+  country: EU
+  name: EU Tenders Electronic Daily (TED)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://ted.europa.eu
+  notes: EU public procurement notices and awards.
+- id: FR/BOAMP
+  country: FR
+  name: French Public Procurement (BOAMP)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.boamp.fr
+  notes: French official public procurement bulletin.
+# Insurance regulators
+- id: UK/PRA
+  country: UK
+  name: UK Prudential Regulation Authority
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.bankofengland.co.uk/prudential-regulation
+  notes: PRA regulatory decisions.
+# NOTE: DE/BaFin-Versicherung removed - duplicate of DE/BaFin-Insurance (now blocked - only 3 decisions)
+# Electoral commissions
+- id: UK/EC
+  country: UK
+  name: UK Electoral Commission
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.electoralcommission.org.uk
+  notes: Electoral law enforcement decisions.
+- id: FR/CNCCFP
+  country: FR
+  name: French Campaign Finance Commission
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.cnccfp.fr
+  notes: Campaign finance decisions.
+# Equality/human rights bodies
+- id: UK/EHRC
+  country: UK
+  name: UK Equality and Human Rights Commission
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.equalityhumanrights.com
+  notes: UK equality enforcement decisions.
+- id: FR/Halde
+  country: FR
+  name: French Anti-Discrimination Authority
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.defenseurdesdroits.fr
+  notes: French discrimination decisions (part of Défenseur).
+# National audit offices (published reports with legal findings)
+- id: UK/NAO
+  country: UK
+  name: UK National Audit Office
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.nao.org.uk
+  notes: NAO audit reports.
+- id: FR/CdesC
+  country: FR
+  name: French Court of Auditors
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.ccomptes.fr
+  notes: Cour des comptes decisions and reports.
+- id: DE/BRH
+  country: DE
+  name: German Federal Audit Office
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.bundesrechnungshof.de
+  notes: Bundesrechnungshof audit reports.
+# Maritime authorities
+- id: UK/MCA
+  country: UK
+  name: UK Maritime and Coastguard Agency
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.gov.uk/government/organisations/maritime-and-coastguard-agency
+  notes: Maritime safety decisions.
+- id: EU/EMSA
+  country: EU
+  name: EU Maritime Safety Agency
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.emsa.europa.eu
+  notes: EMSA safety standards and guidance.
+# Aviation authorities
+- id: UK/CAA
+  country: UK
+  name: UK Civil Aviation Authority
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.caa.co.uk
+  notes: UK aviation regulatory decisions.
+- id: DE/LBA
+  country: DE
+  name: German Aviation Authority (LBA)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.lba.de
+  notes: German aviation regulatory decisions.
+- id: FR/DGAC
+  country: FR
+  name: French Civil Aviation Authority
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.ecologie.gouv.fr/direction-generale-laviation-civile-dgac
+  notes: French aviation regulatory decisions.
+# Rail regulators
+- id: UK/ORR
+  country: UK
+  name: UK Office of Rail and Road
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.orr.gov.uk
+  notes: UK rail regulatory decisions.
+- id: DE/EBA
+  country: DE
+  name: German Federal Railway Authority
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.eba.bund.de
+  notes: German railway safety decisions.
+# Gaming/gambling regulators
+- id: UK/GC
+  country: UK
+  name: UK Gambling Commission
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.gamblingcommission.gov.uk
+  notes: UK gambling regulatory decisions.
+- id: FR/ANJ
+  country: FR
+  name: French Gaming Authority (ANJ)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://anj.fr
+  notes: French gambling regulatory decisions.
+# Freedom of Information
+- id: UK/ICO
+  country: UK
+  name: UK Information Commissioner (ICO)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://ico.org.uk
+  notes: ICO FOI and data protection decisions.
+# Alcohol/tobacco regulators
+- id: UK/HMRC-Excise
+  country: UK
+  name: UK HMRC Excise Decisions
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.gov.uk/government/organisations/hm-revenue-customs
+  notes: Excise duty decisions.
+# Charity regulators
+- id: UK/CC
+  country: UK
+  name: UK Charity Commission
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.gov.uk/government/organisations/charity-commission
+  notes: Charity regulatory decisions.
+# Water regulators
+- id: UK/Ofwat
+  country: UK
+  name: UK Water Services Regulation (Ofwat)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.ofwat.gov.uk
+  notes: UK water industry regulatory decisions.
+# Pension regulators
+- id: UK/TPR
+  country: UK
+  name: UK Pensions Regulator
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.thepensionsregulator.gov.uk
+  notes: UK pension scheme regulatory decisions.
+# Property/land registries
+- id: UK/HMLR
+  country: UK
+  name: UK Land Registry
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.gov.uk/government/organisations/land-registry
+  notes: Land registration decisions (adjudicator).
+# Accounting standards
+- id: EU/EFRAG
+  country: EU
+  name: EU Financial Reporting Advisory Group
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.efrag.org
+  notes: EFRAG opinions on accounting standards.
+# Trade remedies
+- id: UK/TRA
+  country: UK
+  name: UK Trade Remedies Authority
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.trade-remedies.service.gov.uk
+  notes: UK anti-dumping/countervailing decisions.
+- id: EU/TDI
+  country: EU
+  name: EU Trade Defence Instruments
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://trade.ec.europa.eu/tdi
+  notes: EU anti-dumping/countervailing decisions.
+# Insolvency practitioners
+- id: UK/RPB
+  country: UK
+  name: UK Recognised Professional Bodies (Insolvency)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.gov.uk
+  notes: Insolvency practitioner disciplinary.
+# Advertising standards
+- id: UK/ASA
+  country: UK
+  name: UK Advertising Standards Authority
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 2
+  blocked_reason: null
+  url: https://www.asa.org.uk
+  notes: Advertising adjudications.
+- id: FR/ARPP
+  country: FR
+  name: French Advertising Regulator (ARPP)
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.arpp.org
+  notes: French advertising standards decisions.
+# Press complaints
+- id: UK/IPSO
+  country: UK
+  name: UK Press Standards Organisation
+  data_types:
+  - regulatory_decisions
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://www.ipso.co.uk
+  notes: Press complaints adjudications.
+# Sports arbitration
+- id: CH/CAS
+  country: CH
+  name: Court of Arbitration for Sport (CAS)
+  data_types:
+  - case_law
+  auth: none
+  status: complete
+  priority: 2
+  blocked_reason: null
+  url: https://www.tas-cas.org
+  notes: JSON API + PDF full text. ~2600 awards. Tested OK.
+# Internet domain disputes
+- id: EU/ADR
+  country: EU
+  name: EU Domain Dispute Resolution (.eu)
+  data_types:
+  - case_law
+  auth: none
+  status: planned
+  priority: 3
+  blocked_reason: null
+  url: https://eurid.eu
+  notes: .eu domain dispute decisions.

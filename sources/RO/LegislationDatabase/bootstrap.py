@@ -27,6 +27,7 @@ import logging
 import time
 import re
 import html
+import random
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Optional
@@ -126,11 +127,13 @@ class RoLegislationScraper(BaseScraper):
         number: Optional[str] = None,
         title: Optional[str] = None,
         text: Optional[str] = None,
+        max_retries: int = 5,
     ) -> list:
         """
-        Execute a SOAP search query.
+        Execute a SOAP search query with robust retry logic.
 
         Returns a list of legislation records (raw dicts).
+        Retries with exponential backoff on 500 errors.
         """
         token = self._get_token()
 
@@ -157,51 +160,128 @@ class RoLegislationScraper(BaseScraper):
   </soap:Body>
 </soap:Envelope>'''
 
-        self.rate_limiter.wait()
+        last_error = None
+        for attempt in range(max_retries):
+            self.rate_limiter.wait()
 
-        try:
-            resp = self.client.post(
-                SOAP_ENDPOINT,
-                data=envelope.encode("utf-8"),
-                headers={
-                    "SOAPAction": f"{SERVICE_NS}IFreeWebService/Search",
-                    "Content-Type": "text/xml; charset=utf-8",
-                },
-            )
-            resp.raise_for_status()
-        except Exception as e:
-            logger.error(f"SOAP request failed: {e}")
-            # Token might have expired, try to refresh
-            self.token = None
-            return []
+            try:
+                resp = self.client.post(
+                    SOAP_ENDPOINT,
+                    data=envelope.encode("utf-8"),
+                    headers={
+                        "SOAPAction": f"{SERVICE_NS}IFreeWebService/Search",
+                        "Content-Type": "text/xml; charset=utf-8",
+                    },
+                )
 
-        # Parse response
-        root = ET.fromstring(resp.content)
-        records = []
+                # Check for 500-level errors specifically
+                if resp.status_code >= 500:
+                    # Server error - back off and retry
+                    backoff = (2 ** attempt) + random.uniform(0, 1)
+                    logger.warning(
+                        f"Server error {resp.status_code} on page {page}, "
+                        f"attempt {attempt + 1}/{max_retries}. Backing off {backoff:.1f}s"
+                    )
+                    time.sleep(backoff)
 
-        # Find all Legi elements
-        for legi in root.iter():
-            if legi.tag.endswith("Legi"):
-                record = {}
-                for child in legi:
-                    # Strip namespace prefix from tag
-                    tag = child.tag.split("}")[-1] if "}" in child.tag else child.tag
-                    record[tag] = child.text or ""
-                if record:
-                    records.append(record)
+                    # On 3rd+ failure, refresh token in case it's stale
+                    if attempt >= 2:
+                        logger.info("Refreshing token after multiple failures")
+                        self.token = None
+                        token = self._get_token()
+                        # Update envelope with new token
+                        envelope = f'''<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="{SOAP_NS}" xmlns:tem="{SERVICE_NS}" xmlns:free="{DATA_NS}">
+  <soap:Body>
+    <tem:Search>
+      <tem:SearchModel>
+        <free:NumarPagina>{page}</free:NumarPagina>
+        <free:RezultatePagina>{results_per_page}</free:RezultatePagina>
+        {search_an}
+        {search_numar}
+        {search_text}
+        {search_titlu}
+      </tem:SearchModel>
+      <tem:tokenKey>{token}</tem:tokenKey>
+    </tem:Search>
+  </soap:Body>
+</soap:Envelope>'''
+                    continue
 
-        return records
+                resp.raise_for_status()
+
+                # Parse response
+                root = ET.fromstring(resp.content)
+                records = []
+
+                # Find all Legi elements
+                for legi in root.iter():
+                    if legi.tag.endswith("Legi"):
+                        record = {}
+                        for child in legi:
+                            # Strip namespace prefix from tag
+                            tag = child.tag.split("}")[-1] if "}" in child.tag else child.tag
+                            record[tag] = child.text or ""
+                        if record:
+                            records.append(record)
+
+                return records
+
+            except Exception as e:
+                last_error = e
+                backoff = (2 ** attempt) + random.uniform(0, 1)
+                logger.warning(
+                    f"SOAP request failed (attempt {attempt + 1}/{max_retries}): {e}. "
+                    f"Backing off {backoff:.1f}s"
+                )
+                time.sleep(backoff)
+
+                # Refresh token after failures
+                if attempt >= 2:
+                    self.token = None
+                    try:
+                        token = self._get_token()
+                        envelope = f'''<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="{SOAP_NS}" xmlns:tem="{SERVICE_NS}" xmlns:free="{DATA_NS}">
+  <soap:Body>
+    <tem:Search>
+      <tem:SearchModel>
+        <free:NumarPagina>{page}</free:NumarPagina>
+        <free:RezultatePagina>{results_per_page}</free:RezultatePagina>
+        {search_an}
+        {search_numar}
+        {search_text}
+        {search_titlu}
+      </tem:SearchModel>
+      <tem:tokenKey>{token}</tem:tokenKey>
+    </tem:Search>
+  </soap:Body>
+</soap:Envelope>'''
+                    except Exception as token_err:
+                        logger.error(f"Failed to refresh token: {token_err}")
+
+        # All retries exhausted
+        logger.error(f"All {max_retries} retries failed for page {page}: {last_error}")
+        return []
 
     def _paginate_year(
-        self, year: int, max_pages: Optional[int] = None
+        self, year: int, max_pages: Optional[int] = None, max_consecutive_empty: int = 3
     ) -> Generator[dict, None, None]:
         """
         Generator that paginates through all legislation for a given year.
 
         Yields individual legislation records (raw dicts from the API).
+
+        Args:
+            year: Year to fetch legislation for
+            max_pages: Maximum number of pages to fetch (None = unlimited)
+            max_consecutive_empty: How many consecutive empty responses before giving up
+                                   (helps recover from temporary server issues)
         """
         page = 1
         results_per_page = 50  # API supports up to 50 per page
+        consecutive_empty = 0
+        total_yielded = 0
 
         while True:
             if max_pages and page > max_pages:
@@ -212,15 +292,36 @@ class RoLegislationScraper(BaseScraper):
             records = self._search(page=page, results_per_page=results_per_page, year=str(year))
 
             if not records:
-                logger.info(f"No more records for year {year} on page {page}")
-                return
+                consecutive_empty += 1
+                logger.warning(
+                    f"Empty response for year {year}, page {page} "
+                    f"(consecutive empty: {consecutive_empty}/{max_consecutive_empty})"
+                )
+
+                if consecutive_empty >= max_consecutive_empty:
+                    logger.info(
+                        f"Stopping pagination for year {year} after {max_consecutive_empty} "
+                        f"consecutive empty responses. Total yielded: {total_yielded}"
+                    )
+                    return
+
+                # Wait a bit longer before retrying on empty response
+                wait_time = 5 * consecutive_empty
+                logger.info(f"Waiting {wait_time}s before trying next page...")
+                time.sleep(wait_time)
+                page += 1
+                continue
+
+            # Reset consecutive empty counter on success
+            consecutive_empty = 0
 
             for record in records:
                 yield record
+                total_yielded += 1
 
             # If we got fewer than requested, we've reached the end
             if len(records) < results_per_page:
-                logger.info(f"Fetched all records for year {year} ({page} pages)")
+                logger.info(f"Fetched all records for year {year} ({page} pages, {total_yielded} total)")
                 return
 
             page += 1

@@ -1,0 +1,16 @@
+{
+  "_id": "capital-allowances-manual_ca10020",
+  "_source": "UK/HMRC",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-15T15:35:45.101720+00:00",
+  "title": "CA10020 - Scope of manual",
+  "text": "This manual contains guidance about capital allowances.\n\nCapital allowances let taxpayers write off the cost of certain capital assets against taxable income. They take the place of depreciation charged in the commercial accounts, which is not normally deductible for tax purposes.\n\nNot every type of capital expenditure qualifies for capital allowances. For example, expenditure on the following does not qualify:\n\n\n• commercial buildings (apart from expenditure on buildings qualifying for Research & Development Allowances or Structures and Buildings Allowances)\n\n• residential buildings\n\n• land\n\n• intangibles, such as trademarks and goodwill.\n\nCurrent types of capital allowances\n\nThe capital allowances currently available are given for capital expenditure on:\n\n\n• the provision of machinery or plant (see CA20000)\n\n• mineral extraction (see CA50000)\n\n• research and development (see CA60000)\n\n• know how (See CA70000. This guidance does not apply for companies. For companies, see the Corporate intangibles research and development manual)\n\n• patents (see CA75000. This guidance does not apply for companies. For companies, see the Corporate intangibles research and development manual)\n\n• dredging (see CA80000 )\n\n• the construction or acquisition of new buildings and structures for non-residential use (see CA90000 onwards).",
+  "date": "2020-06-03",
+  "url": "https://www.gov.uk/hmrc-internal-manuals/capital-allowances-manual/ca10020",
+  "manual_title": "Capital Allowances Manual",
+  "manual_slug": "capital-allowances-manual",
+  "section_id": "CA10020",
+  "updated_at": "2020-06-03T10:03:21+01:00",
+  "first_published_at": "2016-04-16T08:40:51+01:00",
+  "language": "en"
+}

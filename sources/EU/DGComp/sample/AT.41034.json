@@ -1,0 +1,26 @@
+{
+  "_id": "AT.41034",
+  "_source": "EU/DGComp",
+  "_type": "regulatory_decisions",
+  "_fetched_at": "2026-03-15T07:36:02.088906",
+  "case_number": "AT.41034",
+  "case_type": "Antitrust",
+  "instrument": "Antitrust & Cartels",
+  "title": "Exclusion of AI competitors from WhatsApp",
+  "text": "On 04/12/2025, the Commission decided to initiate antitrust proceedings in case AT.40134 – \nExclusion of AI competitors from WhatsApp within the meaning of Article 11(6) of Council \nRegulation No 1/2003 and Article 2(1) of Commission Regulation No 773/2004. \nThe proceedings were opened with a view to adopting a decision in application of Chapter III \nof Council Regulation No 1/2003 and concerns the update of WhatsApp Business Application \nProgramming Interface (API) terms, announced by Meta Platforms, Inc. in October 2025, that \nwould prevent third party AI providers from offering their services through WhatsApp in the \nEEA, while Meta’s own AI service, “Meta AI”, would remain available through WhatsApp in \nthe EEA. For AI providers already present on WhatsApp, the update will apply as of 15 \nJanuary 2026, while for other AI providers, the update has been applicable since 15 October \n2025. This decision to initiate antitrust proceedings covers the EEA with the exception of \nItaly. \nThe initiation of proceedings does not signify that the Commission has made a definitive \nfinding of an infringement but merely signifies that the Commission will deal with the case as \na matter of priority.",
+  "date": "2025-12-04",
+  "url": "https://competition-cases.ec.europa.eu/cases/AT.41034",
+  "pdf_url": "https://ec.europa.eu/competition/antitrust/cases1/202551/AT_41034_23.pdf",
+  "sectors": [
+    "K.62.9 - Other information technology and computer service activities"
+  ],
+  "companies": [
+    "Meta Platforms, Inc."
+  ],
+  "legal_basis": [
+    "Art. 102 TFEU + Art. 54 EEA"
+  ],
+  "decision_types": [
+    "Initiation of Proceedings"
+  ]
+}

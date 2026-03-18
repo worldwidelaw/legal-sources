@@ -1,0 +1,16 @@
+{
+  "_id": "capital-gains-manual_cg10100",
+  "_source": "UK/HMRC",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-15T15:34:32.547005+00:00",
+  "title": "CG10100 - Finding deleted or updated guidance",
+  "text": "If you need to refer to guidance that has been deleted or to previous versions of updated content, you can use the UK Government Web Archive (UKGWA), managed by the National Archives. The archive contains records of the Capital Gains Manual dating back to 2003. It takes regular snapshots of GOV.UK and HMRC manuals, preserving the content exactly as they appeared on the selected date.\n\nThe format of the National Archives web archive may change over time. If you find that any of the following suggestions are no longer useful, please use the feedback function on this page.\n\n\n\nArchives for live pages\n\nTo view an archived version of a live page, combine the following URL with the URL of the page you want to see:\n\n•\n\nhttps://webarchive.nationalarchives.gov.uk/ukgwa/timeline/\n\nFor example, to view the Capital Gains Manual, use\n\n•\n\nhttps://webarchive.nationalarchives.gov.uk/ukgwa/timeline/https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual\n\n\n\nArchives for deleted pages\n\nIf the page you want to view has been deleted, select a date and then choose the manual and page you wish to view from the following A-Z index timelines:\n\n•\n\nGOV.UK HMRC manuals landing page archive timeline(December 2014 to date)\n\n•\n\nHMRC website's library manuals A to Z archive timeline(July 2008 to June 2016)\n\n•\n\nHMRC website's manuals A to Z archive timeline(April 2005 to March 2008)\n\n•\n\nInland Revenue website's manuals A to Z timeline (July 2003 to March 2005)\n\nWhen viewing a page in the National Archives, you can select the Timeline option to return to the full list of archive dates for that page.\n\n\n\nAdditional sources\n\nCommercial tax and accountancy information services also provide access to superseded or obsolete guidance.",
+  "date": "2026-03-12",
+  "url": "https://www.gov.uk/hmrc-internal-manuals/capital-gains-manual/cg10100",
+  "manual_title": "Capital Gains Manual",
+  "manual_slug": "capital-gains-manual",
+  "section_id": "CG10100",
+  "updated_at": "2026-03-12T00:00:00+00:00",
+  "first_published_at": "2016-03-12T09:55:46+00:00",
+  "language": "en"
+}

@@ -1,0 +1,36 @@
+source:
+  id: "DE/Bundeskartellamt"
+  name: "German Federal Cartel Office (Bundeskartellamt)"
+  country: "DE"
+  jurisdiction: "national"
+  language: "de"
+  url: "https://www.bundeskartellamt.de"
+  data_types:
+    - "regulatory_decisions"
+
+  description: |
+    German Federal Cartel Office decisions including:
+    - Kartellverbot (cartel prohibition)
+    - Missbrauchsaufsicht (abuse of dominance)
+    - Fusionskontrolle (merger control)
+    Coverage: 2000-present
+
+fetch:
+  method: "html_scrape_pdf"
+  rate_limit: 1.5
+  max_concurrent: 1
+
+schema:
+  key_fields:
+    - "_id"
+    - "case_number"
+    - "decision_date"
+
+  document_fields:
+    - "text"
+    - "title"
+    - "case_number"
+    - "decision_date"
+    - "decision_type"
+    - "procedure_type"
+    - "url"

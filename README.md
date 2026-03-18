@@ -13,7 +13,7 @@ All sources in this repository are **open data** -- publicly available legal inf
 
 ## What's Here
 
-This repository contains **227 data source definitions** and **188 working collection scripts** that download and normalize open legal data from government portals worldwide. Each script follows a standard interface so that any developer can run, test, or improve it.
+This repository contains **243 collection scripts** across 50+ countries that download and normalize open legal data from government portals worldwide. Each script follows a standard interface so that any developer can run, test, or improve it. Some sources are marked as blocked (CAPTCHA, IP restrictions, etc.) -- their scripts are included so developers can review and potentially contribute fixes.
 
 ```
 sources/

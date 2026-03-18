@@ -72,6 +72,53 @@ LISTING_PAGES = [
         "doc_type": "publication",
         "category": "autres_publications",
     },
+    # Recueils main page
+    {
+        "url": f"{BASE_URL}/normes-comptables-francaises/recueils-des-normes-comptables",
+        "doc_type": "recueil",
+        "category": "recueils_main",
+    },
+]
+
+# Detail pages with recueils (consolidated standards by sector and year)
+RECUEIL_DETAIL_PAGES = [
+    # Plan Comptable Général (PCG) - different years
+    f"{BASE_URL}/pcg-reglement-ndeg-2014-03-du-5-juin-2014-relatif-au-plan-comptable-general",
+    f"{BASE_URL}/pcg-2016",
+    f"{BASE_URL}/pcg-2017",
+    f"{BASE_URL}/pcg-2019",
+    f"{BASE_URL}/pcg-2023",
+    # Industrial and commercial enterprises - different years
+    f"{BASE_URL}/entreprises-industrielles-et-commerciales-juillet-2014",
+    f"{BASE_URL}/entreprises-industrielles-et-commerciales-novembre-2014",
+    f"{BASE_URL}/entreprises-industrielles-et-commerciales-2016",
+    f"{BASE_URL}/entreprises-industrielles-et-commerciales-2017",
+    f"{BASE_URL}/entreprises-industrielles-et-commerciales-2018",
+    f"{BASE_URL}/entreprises-industrielles-et-commerciales-2020",
+    f"{BASE_URL}/entreprises-industrielles-et-commerciales-2021",
+    f"{BASE_URL}/entreprises-industrielles-et-commerciales-2022",
+    f"{BASE_URL}/entreprises-industrielles-et-commerciales-2023",
+    f"{BASE_URL}/entreprises-industrielles-et-commerciales-2024",
+    # Banking sector
+    f"{BASE_URL}/entreprises-du-secteur-bancaire-version-decembre-2015",
+    f"{BASE_URL}/entreprises-du-secteur-bancaire-version-au-30-decembre-2020",
+    # Insurance sector
+    f"{BASE_URL}/entreprises-dassurance-version-consolidee-au-31-decembre-2016",
+    f"{BASE_URL}/entreprises-dassurance-version-consolidee-au-31-decembre-2018",
+    f"{BASE_URL}/entreprises-dassurance-version-consolidee-au-30-decembre-2020",
+    f"{BASE_URL}/entreprises-dassurance-version-consolidee-au-31-decembre-2023",
+    # Non-profit sector
+    f"{BASE_URL}/entites-du-secteur-non-lucratif-en-vigueur-au-1er-janvier-2023",
+    f"{BASE_URL}/entites-du-secteur-non-lucratif-en-vigueur-au-1er-janvier-2024",
+    # Asset management
+    f"{BASE_URL}/entreprises-du-secteur-de-la-gestion-dactifs-en-vigueur-au-1er-octobre-2023",
+    # Consolidated accounts
+    f"{BASE_URL}/comptes-consolides-des-societes-commerciales-et-des-entreprises-publiques-version-consolidee-du",
+    f"{BASE_URL}/comptes-consolides-des-entreprises-du-secteur-bancaire-version-consolidee-du-reglement-crc-ndeg99",
+    f"{BASE_URL}/comptes-consolides-et-combines-des-entreprises-regies-par-le-code-des-assurances-et-des",
+    f"{BASE_URL}/reglement-ndeg-2020-01-du-6-mars-2020-relatif-aux-comptes-consolides-version-recueil-au-1er-janvier",
+    f"{BASE_URL}/reglement-ndeg-2020-01-du-6-mars-2020-relatif-aux-comptes-consolides-version-recueil-au-1er-0",
+    f"{BASE_URL}/reglement-ndeg-2020-01-du-6-mars-2020-relatif-aux-comptes-consolides-version-recueil-au-1er-1",
 ]
 
 # Paths
@@ -408,6 +455,8 @@ def normalize(raw: dict) -> dict:
         _type = 'doctrine'
     elif doc_type == 'publication':
         _type = 'doctrine'
+    elif doc_type == 'recueil':
+        _type = 'legislation'  # recueils are consolidated legislation
     else:
         _type = 'legislation'
 
@@ -427,6 +476,47 @@ def normalize(raw: dict) -> dict:
         'doc_type': doc_type,
         'pdf_size': raw.get('pdf_size'),
     }
+
+
+def fetch_recueil_detail_page(session: requests.Session, page_url: str) -> list[dict]:
+    """Fetch PDF URLs from a recueil detail page."""
+    pdfs = []
+
+    print(f"Fetching recueil page: {page_url}", file=sys.stderr)
+    try:
+        response = session.get(page_url, timeout=30)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Error fetching recueil page {page_url}: {e}", file=sys.stderr)
+        return pdfs
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Extract page title
+    title_tag = soup.find('h1')
+    page_title = title_tag.get_text().strip() if title_tag else ""
+
+    # Find PDF links
+    seen_pdfs = set()
+    for link in soup.find_all('a', href=True):
+        href = link['href']
+        if href.lower().endswith('.pdf'):
+            full_url = urljoin(BASE_URL, href)
+            if full_url in seen_pdfs:
+                continue
+            seen_pdfs.add(full_url)
+
+            pdfs.append({
+                'url': full_url,
+                'version': 'recueil',
+                'link_text': link.get_text().strip(),
+                'doc_type': 'recueil',
+                'page_title': page_title,
+                'detail_url': page_url,
+            })
+
+    print(f"Found {len(pdfs)} PDFs on recueil page", file=sys.stderr)
+    return pdfs
 
 
 def fetch_all(session: requests.Session) -> Generator[dict, None, None]:
@@ -474,17 +564,38 @@ def fetch_all(session: requests.Session) -> Generator[dict, None, None]:
             if raw and raw.get('text'):
                 yield normalize(raw)
 
+    # Process recueil detail pages (consolidated standards by sector/year)
+    print(f"\n=== Processing recueil detail pages ({len(RECUEIL_DETAIL_PAGES)} pages) ===", file=sys.stderr)
+
+    for page_url in RECUEIL_DETAIL_PAGES:
+        time.sleep(RATE_LIMIT_DELAY)
+        pdf_infos = fetch_recueil_detail_page(session, page_url)
+
+        for pdf_info in pdf_infos:
+            if pdf_info['url'] in fetched_urls:
+                continue
+            fetched_urls.add(pdf_info['url'])
+
+            time.sleep(RATE_LIMIT_DELAY)
+            raw = fetch_document_with_text(session, pdf_info)
+            if raw and raw.get('text'):
+                yield normalize(raw)
+
 
 def fetch_sample(session: requests.Session, count: int = 15) -> list[dict]:
     """Fetch a sample of documents from various categories."""
     records = []
     fetched_urls = set()
 
+    # Allocate samples: 2/3 from listing pages, 1/3 from recueil pages
+    listing_samples = max(count * 2 // 3, 10)
+    recueil_samples = count - listing_samples
+
     # Sample from each listing category
-    samples_per_category = max(3, count // len(LISTING_PAGES))
+    samples_per_category = max(2, listing_samples // len(LISTING_PAGES))
 
     for listing in LISTING_PAGES:
-        if len(records) >= count:
+        if len(records) >= listing_samples:
             break
 
         listing_url = listing["url"]
@@ -499,7 +610,7 @@ def fetch_sample(session: requests.Session, count: int = 15) -> list[dict]:
 
         category_count = 0
         for detail_info in detail_pages[:samples_per_category + 2]:  # extra buffer
-            if category_count >= samples_per_category or len(records) >= count:
+            if category_count >= samples_per_category or len(records) >= listing_samples:
                 break
 
             time.sleep(RATE_LIMIT_DELAY)
@@ -520,8 +631,36 @@ def fetch_sample(session: requests.Session, count: int = 15) -> list[dict]:
                     category_count += 1
                     print(f"  Extracted {len(raw['text'])} chars", file=sys.stderr)
 
-                    if len(records) >= count:
+                    if len(records) >= listing_samples:
                         break
+
+    # Sample from recueil detail pages
+    print(f"\n=== Sampling from recueil pages ===", file=sys.stderr)
+    recueil_count = 0
+    for page_url in RECUEIL_DETAIL_PAGES[:recueil_samples + 3]:  # extra buffer
+        if recueil_count >= recueil_samples or len(records) >= count:
+            break
+
+        time.sleep(RATE_LIMIT_DELAY)
+        pdf_infos = fetch_recueil_detail_page(session, page_url)
+
+        # Take first PDF from each recueil page
+        for pdf_info in pdf_infos[:1]:
+            if pdf_info['url'] in fetched_urls:
+                continue
+            fetched_urls.add(pdf_info['url'])
+
+            print(f"Fetching {pdf_info['url']}...", file=sys.stderr)
+            time.sleep(RATE_LIMIT_DELAY)
+
+            raw = fetch_document_with_text(session, pdf_info)
+            if raw and raw.get('text'):
+                records.append(normalize(raw))
+                recueil_count += 1
+                print(f"  Extracted {len(raw['text'])} chars", file=sys.stderr)
+
+                if len(records) >= count:
+                    break
 
     return records
 

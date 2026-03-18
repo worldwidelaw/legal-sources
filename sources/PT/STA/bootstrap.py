@@ -18,6 +18,10 @@ Data:
   - License: Public (open government data)
   - Full text: HTML content with legal arguments, facts, and decision
 
+Note: Pre-2002 decisions (~50,000+ records) do not have full text in the DGSI database.
+The normalize() method returns None for these records to skip them during ingestion.
+Expected usable records: ~30,000-40,000 with full text (post-2002 decisions).
+
 Usage:
   python bootstrap.py bootstrap          # Full initial pull
   python bootstrap.py bootstrap --sample # Fetch 12 sample records for validation
@@ -410,13 +414,21 @@ class STAScraper(BaseScraper):
 
             start += PAGE_SIZE
 
-    def normalize(self, raw: dict) -> dict:
+    def normalize(self, raw: dict) -> Optional[dict]:
         """
         Transform raw decision data into standard schema.
 
         CRITICAL: Includes full text in the 'text' field.
+        Returns None if full text is not available (pre-2002 decisions).
         """
         listing = raw.get("listing_data", {})
+
+        # Get full text first - skip records without full text
+        full_text = raw.get("full_text", "")
+        if not full_text or len(full_text.strip()) < 100:
+            # Pre-2002 decisions don't have full text available in DGSI
+            # Skip these records rather than ingesting empty text
+            return None
 
         # Get identifiers
         case_number = raw.get("case_number", listing.get("case_number", ""))
@@ -434,9 +446,6 @@ class STAScraper(BaseScraper):
         # Get date
         date_str = raw.get("date", listing.get("session_date", ""))
         iso_date = self._parse_date(date_str)
-
-        # Get full text
-        full_text = raw.get("full_text", "")
 
         # Get summary
         summary = raw.get("summary", "")

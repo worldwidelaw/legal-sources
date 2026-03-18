@@ -26,7 +26,7 @@ class StorageManager:
     Simple file-based storage using JSON Lines format.
 
     Why JSONL and not a database?
-    - Zero dependencies (no PostgreSQL/SQLite setup needed in local)
+    - Zero dependencies (no PostgreSQL/SQLite setup needed in Cowork)
     - Git-friendly (text-based, diffable)
     - Easily convertible to any database later
     - Works on any system without configuration

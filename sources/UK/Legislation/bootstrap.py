@@ -371,15 +371,31 @@ class UKLegislationScraper(BaseScraper):
 
     def normalize(self, raw: dict) -> dict:
         """Normalize a raw record to the standard schema."""
+        # Defensive check: if raw is not a dict, skip it
+        if not isinstance(raw, dict):
+            logger.error(f"normalize() received non-dict: {type(raw).__name__}")
+            return None
+
+        doc_id = raw.get("doc_id", "")
+        if not doc_id:
+            logger.warning("normalize() received record without doc_id")
+            return None
+
+        text = raw.get("text", "")
+        if not text:
+            logger.warning(f"normalize() received record without text: {doc_id}")
+            return None
+
         return {
-            "_id": raw["doc_id"],
+            "_id": doc_id,
             "_source": "UK/Legislation",
             "_type": "legislation",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
-            "title": raw["title"],
-            "text": raw["text"],
+            "title": raw.get("title", ""),
+            "text": text,
             "date": raw.get("date", ""),
-            "url": raw["url"],
+            "url": raw.get("url", ""),
+            "doc_id": doc_id,  # Required by schema
             "legislation_type": raw.get("legislation_type", ""),
             "year": raw.get("year", ""),
             "number": raw.get("number", ""),
@@ -417,51 +433,55 @@ class UKLegislationScraper(BaseScraper):
 def main():
     """CLI entry point."""
     scraper = UKLegislationScraper()
-    
+
     if len(sys.argv) < 2:
         print("Usage: python bootstrap.py <command> [options]")
-        print("Commands: bootstrap, update, test-api")
-        print("Options: --sample")
+        print("Commands: bootstrap, bootstrap-fast, update, test-api")
+        print("Options: --sample, --sample-size N, --workers N, --batch-size N")
         sys.exit(1)
-    
+
     command = sys.argv[1]
-    
+
     if command == "test-api":
         success = scraper.test_api()
         sys.exit(0 if success else 1)
-    
+
     elif command == "bootstrap":
         sample_mode = "--sample" in sys.argv
-        
+        sample_size = 15
+
+        for i, arg in enumerate(sys.argv):
+            if arg == "--sample-size" and i + 1 < len(sys.argv):
+                sample_size = int(sys.argv[i + 1])
+
         if sample_mode:
-            logger.info("Running in SAMPLE mode (10+ records)")
-            records = list(scraper.fetch_sample())
+            logger.info(f"Running in SAMPLE mode (n={sample_size})")
+            stats = scraper.bootstrap(sample_mode=True, sample_size=sample_size)
         else:
-            logger.info("Running FULL bootstrap")
-            records = list(scraper.fetch_all())
-        
-        # Save records
-        sample_dir = scraper.source_dir / "sample"
-        sample_dir.mkdir(exist_ok=True)
-        
-        for i, raw in enumerate(records):
-            normalized = scraper.normalize(raw)
-            filename = f"{normalized['_id'].replace('/', '_')}.json"
-            filepath = sample_dir / filename
-            with open(filepath, "w", encoding="utf-8") as f:
-                json.dump(normalized, f, indent=2, ensure_ascii=False)
-            logger.info(f"Saved: {filename} ({len(normalized.get('text', ''))} chars)")
-        
-        logger.info(f"Total records saved: {len(records)}")
+            logger.info("Running FULL bootstrap via BaseScraper")
+            stats = scraper.bootstrap()
+
+        logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2, default=str)}")
+
+    elif command == "bootstrap-fast":
+        workers = 5
+        batch_size = 100
+
+        for i, arg in enumerate(sys.argv):
+            if arg == "--workers" and i + 1 < len(sys.argv):
+                workers = int(sys.argv[i + 1])
+            if arg == "--batch-size" and i + 1 < len(sys.argv):
+                batch_size = int(sys.argv[i + 1])
+
+        logger.info(f"Running FAST bootstrap (workers={workers}, batch_size={batch_size})")
+        stats = scraper.bootstrap_fast(max_workers=workers, batch_size=batch_size)
+        logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2, default=str)}")
     
     elif command == "update":
-        from datetime import timedelta
-        since = datetime.now(timezone.utc) - timedelta(days=30)
-        logger.info(f"Fetching updates since {since.isoformat()}")
-        
-        records = list(scraper.fetch_updates(since))
-        logger.info(f"Found {len(records)} updated records")
-    
+        logger.info("Running incremental update via BaseScraper")
+        stats = scraper.update()
+        logger.info(f"Update complete: {json.dumps(stats, indent=2, default=str)}")
+
     else:
         print(f"Unknown command: {command}")
         sys.exit(1)

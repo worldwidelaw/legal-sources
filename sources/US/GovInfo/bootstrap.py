@@ -563,6 +563,107 @@ def fetch_sample(client: GovInfoBulkData) -> List[Dict]:
     return all_records
 
 
+def fetch_all(sample: bool = False) -> Generator[Dict, None, None]:
+    """
+    Fetch all documents from GovInfo bulk data.
+
+    This is the standard interface expected by the VPS bootstrap runner.
+
+    Args:
+        sample: If True, fetch only a small sample (10-15 records)
+
+    Yields:
+        Normalized document records
+    """
+    client = GovInfoBulkData()
+
+    if sample:
+        # Yield sample records
+        records = fetch_sample(client)
+        for record in records:
+            yield record
+    else:
+        # Full fetch - iterate through all collections
+        print("Starting full GovInfo bulk data fetch...")
+
+        # Congressional Bills (recent congress)
+        congress = 119
+        for session in [1, 2]:
+            for bill_type in ["hr", "s", "hjres", "sjres", "hconres", "sconres"]:
+                print(f"Fetching BILLS/{congress}/{session}/{bill_type}...")
+                try:
+                    files = client.list_bills_congress(congress, session, bill_type)
+                    time.sleep(REQUEST_DELAY)
+
+                    xml_files = [f for f in files if f.get("fileExtension") == "xml"]
+                    for f in xml_files:
+                        url = f.get("link")
+                        name = f.get("name", "")
+
+                        if not url or not name.endswith(".xml"):
+                            continue
+
+                        xml_content = client.fetch_xml_file(url)
+                        time.sleep(REQUEST_DELAY)
+
+                        if not xml_content:
+                            continue
+
+                        full_text, metadata = extract_text_from_bill_xml(xml_content)
+                        if len(full_text) < 200:
+                            continue
+
+                        doc_id = name.replace(".xml", "")
+                        record = normalize(doc_id, full_text, metadata, "BILLS", url)
+                        yield record
+                except Exception as e:
+                    print(f"  Error fetching {bill_type}: {e}")
+
+        # Public Laws (recent congress)
+        for congress in [118, 117]:
+            print(f"Fetching PLAW/{congress}...")
+            try:
+                items = client.list_plaw_congress(congress)
+                time.sleep(REQUEST_DELAY)
+
+                for item in items:
+                    if not item.get("folder"):
+                        continue
+
+                    if not item.get("name", "").startswith("publ"):
+                        continue
+
+                    path = f"PLAW/{congress}/{item['name']}"
+                    files = client._request_json(path)
+                    time.sleep(REQUEST_DELAY)
+
+                    xml_files = [f for f in files.get("files", []) if f.get("fileExtension") == "xml"]
+                    for f in xml_files[:1]:
+                        url = f.get("link")
+                        name = f.get("name", "")
+
+                        if not url:
+                            continue
+
+                        xml_content = client.fetch_xml_file(url)
+                        time.sleep(REQUEST_DELAY)
+
+                        if not xml_content:
+                            continue
+
+                        full_text, metadata = extract_text_from_plaw_xml(xml_content)
+                        if len(full_text) < 200:
+                            continue
+
+                        doc_id = name.replace(".xml", "")
+                        if not metadata.get("title"):
+                            metadata["title"] = f"Public Law {congress}-{item['name'].replace('publ', '')}"
+                        record = normalize(doc_id, full_text, metadata, "PLAW", url)
+                        yield record
+            except Exception as e:
+                print(f"  Error fetching PLAW/{congress}: {e}")
+
+
 def save_samples(records: List[Dict]) -> None:
     """Save sample records to the sample directory."""
     SAMPLE_DIR.mkdir(parents=True, exist_ok=True)

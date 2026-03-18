@@ -1,0 +1,17 @@
+{
+  "_id": "IE/DPC/case-study/access-request-complaints/refusal-of-access-request-of-a-non-customer",
+  "_source": "IE/DPC",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-08T21:40:18.113375+00:00",
+  "title": "Refusal of Access Request of a non-customer",
+  "text": "Resources\nGuidance\nLaw\nBlogs\nPodcasts\nPublications\nCase Studies\nHome\nResources\nCase Studies\nAccess Request Complaints\nCase Studies\nAccess Request Complaints\nSearch\nSearch\nAccess Request Complaints\n2024\nRefusal of Access Request of a non-customer\nThe DPC received a complaint from an individual in relation to an access request made to an internet service provider. According to the individual, they rang the company regarding the possibility of switching broadband services and considered that the level of service received from the customer service agent was unsatisfactory. As a result, they made an access request for a copy of their personal data processed by the company.\nIn response to the individual’s access request, the company sought further information from the individual including an account number.  The individual informed the company they could not supply an account number, as they were not a customer, merely a potential customer enquiring about switching their broadband service. In their response, the company advised the individual that without an account number they could not process the access request. On foot of this response, the individual proceeded to make a complaint to the DPC. Following receipt of this complaint, the DPC corresponded with the internet service provider to ascertain why the access request could not be processed without an account number, and to comply with the individual’s access request.\nThe company promptly responded to the DPC accepting that the agent who responded to the individual should not have informed them that they could not process the access request. They also outlined that the agent involved did not follow the correct process for dealing with access requests from non-customers, and advised that additional data protection training would be provided to the agent. The company also provided the individual with a copy of their personal data. The individual confirmed that while they did receive a copy of their personal data, the matter was only resolved following the DPC’s intervention.\nKey Takeaway\nUnder Article 15(3) of the GDPR, there is an obligation for an organisation to provide a copy of the personal data, whether the individual is a customer of the organisation or not. This particular case highlights the importance of data protection training including refresher training for all employees in customer facing roles to ensure that an individual’s right to access to their personal data is upheld in all instances and that appropriate and accurate information is provided to the public by organisations.",
+  "date": "2024-01-01",
+  "url": "http://www.dataprotection.ie/en/dpc-guidance/case-studies/access-request-complaints/refusal-access-request-non-customer",
+  "pdf_url": null,
+  "organization": null,
+  "fine_amount": null,
+  "gdpr_articles": [],
+  "pdf_size": null,
+  "category": "access-request-complaints",
+  "record_type": "case_study"
+}

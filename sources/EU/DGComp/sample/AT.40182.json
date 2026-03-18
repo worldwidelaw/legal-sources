@@ -1,0 +1,27 @@
+{
+  "_id": "AT.40182",
+  "_source": "EU/DGComp",
+  "_type": "regulatory_decisions",
+  "_fetched_at": "2026-03-15T07:36:04.628002",
+  "case_number": "AT.40182",
+  "case_type": "Antitrust",
+  "instrument": "Antitrust & Cartels",
+  "title": "Pioneer (vertical restraints)",
+  "text": "On 2 February 2017, the European Commission initiated formal antitrust proceedings \nagainst Pioneer Corporation, Pioneer Europe N.V. and all legal entities directly or \nindirectly controlled by them, in relation to suspected agreements that fix the retail \nprice or impose a minimum sale price and/or impose territorial restrictions in relation \nto electrical products in the Economic European Area. \n \nThe Commission suspects that Pioneer may have breached EU rules prohibiting anti-\ncompetitive agreements (Article 101 of the Treaty on the Functioning of the European \nUnion and Article 53 of the EEA Agreement). The initiation of proceedings is based \non Article 2(1) of Commission Regulation No 773/2004. \n \nIn particular, the Commission intends to investigate whether agreements between \nPioneer and its retailers amounted to fixing the retail price or imposing a minimum \nsale price and/or territorial restrictions on Pioneer's retailers. \n \nThe initiation of proceedings does not signify that the Commission has made a \ndefinitive finding of an infringement but merely signifies that the Commission will deal \nwith the case as a matter of priority.",
+  "date": "2018-07-24",
+  "url": "https://competition-cases.ec.europa.eu/cases/AT.40182",
+  "pdf_url": "https://ec.europa.eu/competition/antitrust/cases/dec_docs/40182/40182_102_4.pdf",
+  "sectors": [
+    "G.47.91 - Retail sale via mail order houses or via Internet"
+  ],
+  "companies": [
+    "Pioneer Corporation"
+  ],
+  "legal_basis": [
+    "Art. 101 TFEU"
+  ],
+  "decision_types": [
+    "Initiation of Proceedings",
+    "Cooperation Decision"
+  ]
+}

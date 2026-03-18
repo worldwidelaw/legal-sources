@@ -1,0 +1,75 @@
+source:
+  id: DE/LBA
+  name: German Federal Aviation Authority - Airworthiness Directives
+  country: DE
+  type: regulatory_decisions
+  description: >
+    Airworthiness Directives (Lufttüchtigkeitsanweisungen - LTAs) issued by the
+    German Luftfahrt-Bundesamt (LBA). These are legally binding regulatory decisions
+    that mandate safety actions for aircraft operators. The database contains
+    directives from 1990 to present.
+
+  url: https://www2.lba.de/LTAs/
+  api_docs: null
+
+  auth:
+    type: none
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1.0
+
+schema:
+  key_fields:
+    - _id
+    - lta_number
+
+  fields:
+    _id:
+      type: string
+      description: Unique identifier (LTA-YYYY-NNN format)
+    _source:
+      type: string
+      description: Source identifier (DE/LBA)
+    _type:
+      type: string
+      description: Document type (regulatory_decision)
+    _fetched_at:
+      type: datetime
+      description: Timestamp when document was fetched
+    title:
+      type: string
+      description: Title/subject of the directive
+    lta_number:
+      type: string
+      description: Official LTA number (YYYY-NNN or YYYY-NNNRX)
+    text:
+      type: string
+      description: Full text content of the directive
+    date:
+      type: date
+      description: Publication date (ISO 8601)
+    aircraft_type:
+      type: string
+      description: Type of aircraft (Flugzeug, Hubschrauber, etc.)
+    manufacturer:
+      type: string
+      description: Type Certificate holder/manufacturer
+    model:
+      type: string
+      description: Aircraft model designation
+    easa_ad:
+      type: string
+      description: Related EASA Airworthiness Directive reference
+    url:
+      type: string
+      description: Direct URL to the PDF
+    language:
+      type: string
+      description: Document language (de)
+
+notes:
+  - PDFs are downloaded and text extracted using PyPDF2
+  - LTAs follow predictable URL pattern allowing systematic discovery
+  - Approximately 250-300 LTAs issued per year since 1990
+  - Full archive contains approximately 9,000+ directives

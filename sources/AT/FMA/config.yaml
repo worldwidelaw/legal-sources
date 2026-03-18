@@ -1,0 +1,44 @@
+# AT/FMA - Austrian Financial Market Authority (Finanzmarktaufsicht)
+# Source configuration
+
+source_id: AT/FMA
+name: Austrian Financial Market Authority (FMA)
+country: AT
+url: https://www.fma.gv.at
+description: Regulatory decisions, sanctions, and warnings from Austria's Financial Market Authority
+
+data_types:
+  - regulatory_decisions
+  - sanctions
+  - warnings
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  max_workers: 3
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "category"
+      type: "string"
+      required: false

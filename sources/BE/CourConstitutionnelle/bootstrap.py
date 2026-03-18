@@ -217,7 +217,7 @@ def normalize(raw: dict) -> dict:
     return raw
 
 
-def bootstrap_sample(sample_dir: Path, limit: int = None):
+def bootstrap_sample(sample_dir: Path, limit: int = None, start_year: int = None, end_year: int = None):
     """Create sample data for testing."""
     sample_dir.mkdir(parents=True, exist_ok=True)
 
@@ -225,7 +225,7 @@ def bootstrap_sample(sample_dir: Path, limit: int = None):
     is_sample = limit is not None and limit <= 100
 
     records = []
-    for record in fetch_all(sample=is_sample, limit=limit):
+    for record in fetch_all(sample=is_sample, limit=limit, start_year=start_year, end_year=end_year):
         records.append(record)
         
         # Save individual file
@@ -278,13 +278,13 @@ def main():
     elif args.command == "sample" or args.sample:
         # Sample mode: fetch limited records (default 100)
         limit = args.limit if args.limit else 100
-        bootstrap_sample(sample_dir, limit=limit)
+        bootstrap_sample(sample_dir, limit=limit, start_year=args.start_year, end_year=args.end_year)
 
     elif args.command == "bootstrap":
         # Full bootstrap: fetch all records (no limit by default)
         # When running full bootstrap, we still save to sample dir but with no limit
         limit = args.limit if args.limit else None
-        bootstrap_sample(sample_dir, limit=limit)
+        bootstrap_sample(sample_dir, limit=limit, start_year=args.start_year, end_year=args.end_year)
 
 
 if __name__ == "__main__":

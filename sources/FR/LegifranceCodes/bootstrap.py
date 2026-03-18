@@ -370,7 +370,15 @@ def fetch_code_articles(client: PISTEApiClient, code_info: dict, max_articles: i
     # Extract article references from TOC
     article_refs = list(extract_articles_from_toc(toc))
     total = len(article_refs)
-    print(f"    Found {total} articles")
+    print(f"    Found {total} articles in TOC")
+
+    # Filter out repealed articles (ABROGE status) BEFORE limiting
+    active_refs = [ref for ref in article_refs if ref.get("etat") != "ABROGE"]
+    skipped_abroge = len(article_refs) - len(active_refs)
+    if skipped_abroge > 0:
+        print(f"    Skipping {skipped_abroge} ABROGE (repealed) articles")
+    article_refs = active_refs
+    print(f"    {len(article_refs)} active (VIGUEUR) articles")
 
     if max_articles > 0:
         article_refs = article_refs[:max_articles]
@@ -386,6 +394,12 @@ def fetch_code_articles(client: PISTEApiClient, code_info: dict, max_articles: i
 
             # Skip if no meaningful text
             if len(record.get("text", "")) < 50:
+                continue
+
+            # Secondary filter: skip articles with ABROGE* status from article API
+            # (TOC may show VIGUEUR but article API returns more specific status)
+            article_etat = record.get("etat", "")
+            if article_etat.startswith("ABROGE"):
                 continue
 
             yield record

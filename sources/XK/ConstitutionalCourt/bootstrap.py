@@ -253,7 +253,7 @@ class KosovoConstitutionalCourtAPI:
 
 
 def save_sample(records: List[Dict], sample_dir: Path):
-    """Save sample records to JSONL file."""
+    """Save sample records for inspection."""
     sample_dir.mkdir(parents=True, exist_ok=True)
 
     # Save individual samples for inspection
@@ -262,13 +262,25 @@ def save_sample(records: List[Dict], sample_dir: Path):
         with open(sample_dir / filename, "w", encoding="utf-8") as f:
             json.dump(record, f, ensure_ascii=False, indent=2)
 
-    # Save all samples to JSONL
+    # Save all samples to JSONL in sample directory
     jsonl_path = sample_dir / "samples.jsonl"
     with open(jsonl_path, "w", encoding="utf-8") as f:
         for record in records:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
     logger.info(f"Saved {len(records)} samples to {sample_dir}")
+
+
+def save_records(records: List[Dict], data_dir: Path):
+    """Save records to data/records.jsonl for VPS pipeline ingestion."""
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    jsonl_path = data_dir / "records.jsonl"
+    with open(jsonl_path, "w", encoding="utf-8") as f:
+        for record in records:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    logger.info(f"Saved {len(records)} records to {jsonl_path}")
 
 
 def validate_samples(records: List[Dict]) -> bool:
@@ -310,6 +322,7 @@ def main():
 
     script_dir = Path(__file__).parent
     sample_dir = script_dir / "sample"
+    data_dir = script_dir / "data"
 
     api = KosovoConstitutionalCourtAPI()
 
@@ -328,7 +341,11 @@ def main():
             logger.error("No records fetched")
             sys.exit(1)
 
+        # Save to sample/ for inspection
         save_sample(records, sample_dir)
+
+        # Save to data/records.jsonl for VPS pipeline
+        save_records(records, data_dir)
 
         if validate_samples(records):
             print(f"Bootstrap complete: {len(records)} records with full text")
@@ -336,6 +353,20 @@ def main():
         else:
             print("Validation failed")
             sys.exit(1)
+
+    elif command == "bootstrap-full" or command == "--full":
+        # Alias for full bootstrap (for VPS pipeline compatibility)
+        records = list(api.fetch_all(sample_mode=False))
+
+        if not records:
+            logger.error("No records fetched")
+            sys.exit(1)
+
+        save_sample(records, sample_dir)
+        save_records(records, data_dir)
+
+        print(f"Bootstrap complete: {len(records)} records with full text")
+        sys.exit(0)
 
     elif command == "update":
         # For incremental updates, fetch last 30 days
@@ -345,6 +376,7 @@ def main():
 
         if records:
             save_sample(records, sample_dir)
+            save_records(records, data_dir)
             print(f"Update complete: {len(records)} new records")
         else:
             print("No new records")

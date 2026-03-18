@@ -495,11 +495,13 @@ class RadaLegislationScraper(BaseScraper):
 
         # Skip full-text download in metadata-only mode (for bulk TSV ingest)
         if not self.metadata_only:
-            if dokid:
+            if dataset == "perv" and dokid:
                 # Primary legislation: fetch from data.rada.gov.ua HTML files
+                # These files only exist for perv records, not for laws TSV
                 full_text = self._get_document_text(dokid)
-            elif nreg and dataset == "laws":
-                # Laws TSV records: try fetching from zakon.rada.gov.ua
+            elif nreg:
+                # All other records (including laws TSV): fetch from zakon.rada.gov.ua
+                # This works for any nreg regardless of dokid value
                 zakon_url = f"https://zakon.rada.gov.ua/laws/show/{nreg}/print"
                 html_content = self._fetch_html(zakon_url, timeout=30)
                 if html_content:

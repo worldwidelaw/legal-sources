@@ -1,0 +1,38 @@
+source:
+  id: EU/ECB
+  name: European Central Bank (ECB)
+  url: https://eur-lex.europa.eu/browse/institutions/bank.html
+  country: EU
+  data_types:
+    - regulatory_decisions
+  description: >
+    ECB legal acts from EUR-Lex including decisions, regulations, guidelines,
+    opinions and recommendations. Covers monetary policy, banking supervision (SSM),
+    payment systems, statistics, and institutional provisions.
+
+schema:
+  key_fields:
+    - celex
+  date_fields:
+    - date
+  required_fields:
+    - celex
+    - title
+    - date
+    - text
+
+fetch:
+  sparql_endpoint: https://publications.europa.eu/webapi/rdf/sparql
+  eurlex_base: https://eur-lex.europa.eu
+  ecb_author_uri: http://publications.europa.eu/resource/authority/corporate-body/ECB
+  rate_limit_seconds: 1.5
+  timeout_seconds: 120
+  user_agent: WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)
+
+auth:
+  required: false
+
+license:
+  type: reuse
+  url: https://eur-lex.europa.eu/content/legal-notice/legal-notice.html
+  notes: EUR-Lex content is open data. ECB documents reusable under standard EU terms.

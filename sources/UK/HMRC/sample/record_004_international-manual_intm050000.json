@@ -1,0 +1,16 @@
+{
+  "_id": "international-manual_intm050000",
+  "_source": "UK/HMRC",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-15T15:35:00.697685+00:00",
+  "title": "INTM050000 - Data protection",
+  "text": "HMRC will:\n\n\n• process personal data under article 6(e) of the General Data Protection Regulation (GDPR) HMRC Privacy Notice\n\n• process special category data under article 9 of the GDPR and schedule 1 of the Data Protection Act (DPA) 2018 HMRC appropriate Policy document\n\n• retain personal data in line with the HMRC Records Management and Retention and Disposal Policy.\n\nAny sharing of personal data outside of HMRC will follow the:\n\n\n• data sharing guidance within the HMRC Privacy Notice\n\n• contracts and data sharing guidance published on the ICO website\n\n• HMRC Information Disclosure Guide available on GOV.UK.",
+  "date": "2021-06-10",
+  "url": "https://www.gov.uk/hmrc-internal-manuals/international-manual/intm050000",
+  "manual_title": "International Manual",
+  "manual_slug": "international-manual",
+  "section_id": "INTM050000",
+  "updated_at": "2021-06-10T10:23:39+01:00",
+  "first_published_at": "2021-06-10T10:23:54+01:00",
+  "language": "en"
+}

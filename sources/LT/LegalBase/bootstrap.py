@@ -5,12 +5,14 @@ LT/LegalBase -- Lithuanian Legal Database (TAR) Data Fetcher
 Fetches Lithuanian legislation from the data.gov.lt Open Data API.
 
 Strategy:
-  - Use the REST API at get.data.gov.lt/datasets/gov/lrsk/teises_aktai/Dokumentas
-  - Paginate using cursor-based pagination (_page.next)
+  - Use the JSONL streaming endpoint at get.data.gov.lt/datasets/gov/lrsk/teises_aktai/Dokumentas/:all/:format/jsonl
+  - Stream line-by-line (no pagination issues)
   - Full text is directly available in the tekstas_lt field
+  - Fixed Issue #229: Cursor pagination was returning 500 errors after page 1
 
 Endpoints:
-  - Documents: https://get.data.gov.lt/datasets/gov/lrsk/teises_aktai/Dokumentas
+  - Documents (streaming): https://get.data.gov.lt/datasets/gov/lrsk/teises_aktai/Dokumentas/:all/:format/jsonl
+  - Documents (paginated, broken): https://get.data.gov.lt/datasets/gov/lrsk/teises_aktai/Dokumentas
   - Dataset info: https://data.gov.lt/datasets/2613/
 
 Data:
@@ -54,8 +56,10 @@ logger = logging.getLogger("legal-data-hunter.LT.legalbase")
 # Base URL for the data.gov.lt API
 BASE_URL = "https://get.data.gov.lt"
 DOCUMENTS_ENDPOINT = "/datasets/gov/lrsk/teises_aktai/Dokumentas"
+# Streaming JSONL endpoint (avoids cursor pagination issues - Issue #229)
+DOCUMENTS_STREAM_ENDPOINT = "/datasets/gov/lrsk/teises_aktai/Dokumentas/:all/:format/jsonl"
 
-# Default page size
+# Default page size (for paginated endpoint, unused with streaming)
 DEFAULT_LIMIT = 100
 
 
@@ -103,7 +107,10 @@ class LegalBaseScraper(BaseScraper):
 
     def _fetch_page(self, cursor: Optional[str] = None, limit: int = DEFAULT_LIMIT) -> Dict[str, Any]:
         """
-        Fetch a page of documents from the API.
+        Fetch a page of documents from the paginated API.
+
+        NOTE: This is kept for compatibility but the cursor pagination has issues
+        (returns 500 errors after page 1). Use _stream_all() instead for full fetches.
 
         Args:
             cursor: Pagination cursor (base64 encoded)
@@ -116,7 +123,8 @@ class LegalBaseScraper(BaseScraper):
         params = {"_limit": limit}
 
         if cursor:
-            # Cursor is passed as a query parameter
+            # Cursor pagination is broken - the API returns 500 errors
+            # when combining cursor with other params
             url = f"{url}?_page={cursor}&_limit={limit}"
             params = None
 
@@ -141,45 +149,65 @@ class LegalBaseScraper(BaseScraper):
             logger.error(f"API request failed: {e}")
             return {"_data": [], "_page": {}}
 
+    def _stream_all(self) -> Generator[dict, None, None]:
+        """
+        Stream all documents using JSONL endpoint.
+
+        This avoids the cursor pagination issues (Issue #229) by using the
+        streaming JSONL endpoint which returns all documents line-by-line.
+        """
+        url = f"{BASE_URL}{DOCUMENTS_STREAM_ENDPOINT}"
+
+        logger.info(f"Starting JSONL stream from {url}")
+
+        try:
+            with requests.get(
+                url,
+                stream=True,
+                timeout=300,  # Longer timeout for streaming
+                headers={
+                    "User-Agent": "WorldWideLaw/1.0",
+                    "Accept": "application/x-ndjson",
+                }
+            ) as resp:
+                resp.raise_for_status()
+
+                for line in resp.iter_lines(decode_unicode=True):
+                    if line:
+                        try:
+                            doc = json.loads(line)
+                            yield doc
+                        except json.JSONDecodeError as e:
+                            logger.warning(f"Failed to parse line: {e}")
+                            continue
+
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Stream request failed: {e}")
+            raise
+
     def fetch_all(self) -> Generator[dict, None, None]:
         """
         Yield all documents from the Lithuanian Legal Database.
 
-        Iterates through all pages using cursor-based pagination.
+        Uses JSONL streaming endpoint to avoid cursor pagination issues (Issue #229).
+        The data.gov.lt API returns 500 errors when using cursor pagination with
+        multiple parameters, so we use the :all/:format/jsonl endpoint instead.
         """
-        cursor = None
-        page_num = 0
         total_fetched = 0
 
-        while True:
-            page_num += 1
-            logger.info(f"Fetching page {page_num}...")
-
-            result = self._fetch_page(cursor=cursor)
-            documents = result.get("_data", [])
-
-            if not documents:
-                logger.info(f"No more documents. Total fetched: {total_fetched}")
-                break
-
-            for doc in documents:
+        try:
+            for doc in self._stream_all():
                 total_fetched += 1
+                if total_fetched % 1000 == 0:
+                    logger.info(f"Streamed {total_fetched} documents...")
                 yield doc
 
-            # Check for next page
-            page_info = result.get("_page", {})
-            next_cursor = page_info.get("next")
+            logger.info(f"Stream complete. Total fetched: {total_fetched}")
 
-            if not next_cursor:
-                logger.info(f"Reached last page. Total fetched: {total_fetched}")
-                break
-
-            cursor = next_cursor
-
-            # Safety limit for full bootstrap
-            if page_num > 10000:
-                logger.warning("Reached page limit (10000), stopping")
-                break
+        except Exception as e:
+            logger.error(f"Streaming failed after {total_fetched} documents: {e}")
+            # If streaming fails, we can't fall back to pagination (it's broken)
+            raise
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """
@@ -282,8 +310,8 @@ class LegalBaseScraper(BaseScraper):
         """Quick connectivity test."""
         print("Testing LT/LegalBase API endpoints...")
 
-        # Test API endpoint
-        print("\n1. Testing documents endpoint...")
+        # Test paginated endpoint (limited use)
+        print("\n1. Testing paginated documents endpoint...")
         try:
             result = self._fetch_page(limit=3)
             docs = result.get("_data", [])
@@ -303,15 +331,19 @@ class LegalBaseScraper(BaseScraper):
         except Exception as e:
             print(f"   ERROR: {e}")
 
-        # Test pagination
-        print("\n2. Testing pagination...")
+        # Test JSONL streaming endpoint (preferred)
+        print("\n2. Testing JSONL streaming endpoint...")
         try:
-            result = self._fetch_page(limit=2)
-            page_info = result.get("_page", {})
-            next_cursor = page_info.get("next")
-            print(f"   Has next page: {bool(next_cursor)}")
-            if next_cursor:
-                print(f"   Next cursor: {next_cursor[:50]}...")
+            count = 0
+            for doc in self._stream_all():
+                count += 1
+                if count == 1:
+                    print(f"   First doc ID: {doc.get('dokumento_id', 'N/A')}")
+                    print(f"   First doc title: {doc.get('pavadinimas', 'N/A')[:60]}...")
+                if count >= 5:  # Just test first 5
+                    break
+            print(f"   Successfully streamed {count} documents")
+            print("   NOTE: Streaming works - cursor pagination has known issues")
 
         except Exception as e:
             print(f"   ERROR: {e}")

@@ -1,0 +1,37 @@
+source:
+  id: EU/ESMA
+  name: European Securities and Markets Authority (ESMA)
+  description: EU securities regulator - guidelines, Q&As, decisions, opinions, and technical standards
+  country: EU
+  data_types:
+    - regulatory_decisions
+  url: https://www.esma.europa.eu
+
+fetch:
+  base_url: https://www.esma.europa.eu
+  library_url: https://www.esma.europa.eu/databases-library/esma-library
+  rate_limit_seconds: 2.0
+  timeout_seconds: 120
+  max_retries: 3
+
+schema:
+  key_fields:
+    - document_id
+    - reference
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  optional_fields:
+    - document_type
+    - reference
+    - section
+    - language
+
+auth:
+  type: none

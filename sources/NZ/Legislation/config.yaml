@@ -1,0 +1,133 @@
+# ===================================================================
+# NZ/Legislation -- New Zealand Legislation
+# ===================================================================
+# Official collection of NZ Acts, Bills, and Secondary Legislation.
+# Full text is available in XML format via sitemap discovery.
+# ===================================================================
+
+source:
+  id: "NZ/Legislation"
+  country: "NZ"
+  name: "New Zealand Legislation"
+  url: "https://www.legislation.govt.nz"
+  description: |
+    Official New Zealand Legislation website maintained by the
+    Parliamentary Counsel Office. Contains:
+    - Public, Local, Private, Imperial, and Provincial Acts
+    - Government and Members' Bills
+    - Secondary Legislation (regulations, orders, etc.)
+    - Amendment Papers (SOPs)
+    Full text available in XML format with structured markup.
+    Approximately 42,000 documents available.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"  # XML files are publicly accessible without API key
+
+rate_limit:
+  requests_per_second: 0.5    # 1 request every 2 seconds (be respectful)
+  burst: 3
+
+api:
+  type: "sitemap"
+  sitemap_url: "https://www.legislation.govt.nz/sitemap.xml"
+  xml_format_suffix: ".xml"  # Append to base URL to get XML content
+  legislation_types:
+    - act
+    - bill
+    - secondary-legislation
+    - amendment-paper
+  act_subtypes:
+    - public
+    - local
+    - private
+    - imperial
+    - provincial
+  bill_subtypes:
+    - government
+    - members
+    - local
+    - private
+
+data_model:
+  type: "legislation"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "versioned"  # Multiple versions exist per act
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "_id"
+      description: "Document ID derived from URL path (e.g., act_public_1991_69)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Official title of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation (plain text extracted from XML)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Assent date (for acts) or introduction date (for bills)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to the legislation on legislation.govt.nz"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "legislation_type"
+      description: "Type: act, bill, secondary-legislation, amendment-paper"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "legislation_subtype"
+      description: "Subtype: public, local, private, imperial, provincial, government, members"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "year"
+      description: "Year of enactment or introduction"
+      type: "integer"
+      role: "temporal_key"
+      required: false
+    - name: "number"
+      description: "Legislation number within its year"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "version_date"
+      description: "Date of this version (reprint date)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+  secondary_fields:
+    - name: "administering_ministry"
+      description: "Ministry responsible for administering this legislation"
+    - name: "commencement"
+      description: "Commencement information"
+    - name: "status"
+      description: "in_force, repealed, not_in_force"
+    - name: "long_title"
+      description: "The full 'An Act to...' title from the front matter"
+    - name: "reprint_note"
+      description: "Notes about changes since last reprint"
+
+notes: |
+  - ~42,000 documents (acts + bills + secondary legislation + SOPs)
+  - Full XML available at URL + ".xml" suffix
+  - Uses custom XML schema with semantic markup
+  - Historical acts going back to imperial laws from 1267
+  - Bills include current parliamentary proceedings
+  - API exists but requires key; XML files are public

@@ -1,0 +1,50 @@
+source:
+  id: AT/BWB
+  name: Austrian Competition Authority Decisions (BWB/Kartellgericht)
+  country: AT
+  url: https://www.bwb.gv.at
+  type: api
+  data_types:
+    - regulatory_decisions
+    - case_law
+  auth: none
+  notes: |
+    Fetches cartel and competition law decisions from RIS OGD API v2.6.
+    Includes decisions from:
+    - Kartellgericht (OLG Wien) - first instance cartel court
+    - Kartellobergericht (OGH) - appellate cartel court
+    Filters by KartG (Cartel Act) and WettbG (Competition Act) norms.
+
+schedule:
+  bootstrap: manual
+  update: weekly
+
+api:
+  base_url: https://data.bka.gv.at/ris/api/v2.6
+  endpoints:
+    judikatur: /Judikatur
+  rate_limit:
+    requests_per_second: 1
+  pagination:
+    type: offset
+    param: Seitennummer
+    items_per_page: 100
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: ecli
+      type: string
+      required: false
+    - name: geschaeftszahl
+      type: string
+      required: false
+    - name: text
+      type: string
+      required: true
+  date_fields:
+    - entscheidungsdatum
+    - date_published
+    - date_changed

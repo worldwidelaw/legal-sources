@@ -1,130 +1,140 @@
 [
   {
-    "reference": "article 1 du Code civil",
     "expected_id": "LEGIARTI000006419280",
-    "variants": [
+    "description": "Code civil - Article 1",
+    "citations": [
+      "Article 1 du Code civil",
+      "article 1 du code civil",
+      "Art. 1 du Code civil",
+      "art. 1 code civil",
       "C. civ., art. 1",
-      "art. 1 code civil"
+      "C.civ., art. 1",
+      "CC art. 1"
     ]
   },
   {
-    "reference": "article 2 du Code civil",
     "expected_id": "LEGIARTI000006419281",
-    "variants": [
-      "C. civ., art. 2",
-      "art. 2 code civil"
+    "description": "Code civil - Article 2",
+    "citations": [
+      "Article 2 du Code civil",
+      "art. 2 code civil",
+      "C. civ., art. 2"
     ]
   },
   {
-    "reference": "article 111-1 du Code pénal",
     "expected_id": "LEGIARTI000006417175",
-    "variants": [
+    "description": "Code pénal - Article 111-1",
+    "citations": [
+      "Article 111-1 du Code pénal",
+      "Article 111-1 du Code penal",
+      "art. 111-1 code pénal",
       "C. pén., art. 111-1",
-      "art. 111-1 code pénal"
+      "C. pen., art. 111-1",
+      "CP art. 111-1"
     ]
   },
   {
-    "reference": "article 111-2 du Code pénal",
     "expected_id": "LEGIARTI000006417176",
-    "variants": [
-      "C. pén., art. 111-2",
-      "art. 111-2 code pénal"
+    "description": "Code pénal - Article 111-2",
+    "citations": [
+      "Article 111-2 du Code pénal",
+      "art. 111-2 CP"
     ]
   },
   {
-    "reference": "article L1 du Code du travail",
     "expected_id": "LEGIARTI000018764571",
-    "variants": [
+    "description": "Code du travail - Article L1",
+    "citations": [
+      "Article L1 du Code du travail",
+      "Article L. 1 du Code du travail",
+      "art. L1 code du travail",
       "C. trav., art. L1",
-      "art. L1 code du travail"
+      "CT art. L1"
     ]
   },
   {
-    "reference": "article L2 du Code du travail",
     "expected_id": "LEGIARTI000042654546",
-    "variants": [
-      "C. trav., art. L2",
-      "art. L2 code du travail"
+    "description": "Code du travail - Article L2",
+    "citations": [
+      "Article L2 du Code du travail",
+      "art. L. 2 code du travail",
+      "C. trav., art. L2"
     ]
   },
   {
-    "reference": "article L110-1 du Code de commerce",
     "expected_id": "LEGIARTI000044072567",
-    "variants": [
-      "C. com., art. L110-1",
-      "art. L110-1 code de commerce"
+    "description": "Code de commerce - Article L110-1",
+    "citations": [
+      "Article L110-1 du Code de commerce",
+      "Article L. 110-1 du Code de commerce",
+      "art. L110-1 code de commerce",
+      "C. com., art. L110-1"
     ]
   },
   {
-    "reference": "article L110-2 du Code de commerce",
     "expected_id": "LEGIARTI000006219126",
-    "variants": [
-      "C. com., art. L110-2",
-      "art. L110-2 code de commerce"
+    "description": "Code de commerce - Article L110-2",
+    "citations": [
+      "Article L110-2 du Code de commerce",
+      "art. L. 110-2 code de commerce"
     ]
   },
   {
-    "reference": "article liminaire du Code de la consommation",
-    "expected_id": "LEGIARTI000049464063",
-    "variants": [
-      "C. conso., art. liminaire",
-      "art. liminaire code de la consommation"
-    ]
-  },
-  {
-    "reference": "article L111-1 du Code de la consommation",
     "expected_id": "LEGIARTI000044142438",
-    "variants": [
-      "C. conso., art. L111-1",
-      "art. L111-1 code de la consommation"
+    "description": "Code de la consommation - Article L111-1",
+    "citations": [
+      "Article L111-1 du Code de la consommation",
+      "Article L. 111-1 du Code de la consommation",
+      "art. L111-1 code de la consommation",
+      "C. conso., art. L111-1"
     ]
   },
   {
-    "reference": "article 1 du Code de procédure civile",
     "expected_id": "LEGIARTI000006410094",
-    "variants": [
+    "description": "Code de procédure civile - Article 1",
+    "citations": [
+      "Article 1 du Code de procédure civile",
+      "Article 1 du Code de procedure civile",
+      "art. 1 code de procédure civile",
       "C. pr. civ., art. 1",
-      "art. 1 code de procédure civile"
+      "CPC art. 1"
     ]
   },
   {
-    "reference": "article 2 du Code de procédure civile",
     "expected_id": "LEGIARTI000006410095",
-    "variants": [
-      "C. pr. civ., art. 2",
-      "art. 2 code de procédure civile"
+    "description": "Code de procédure civile - Article 2",
+    "citations": [
+      "Article 2 du Code de procédure civile",
+      "art. 2 CPC"
     ]
   },
   {
-    "reference": "article préliminaire du Code de procédure pénale",
-    "expected_id": "LEGIARTI000044568200",
-    "variants": [
-      "C. pr. pén., art. préliminaire",
-      "art. préliminaire code de procédure pénale"
-    ]
-  },
-  {
-    "reference": "article 1 du Code de procédure pénale",
     "expected_id": "LEGIARTI000024496929",
-    "variants": [
+    "description": "Code de procédure pénale - Article 1",
+    "citations": [
+      "Article 1 du Code de procédure pénale",
+      "Article 1 du Code de procedure penale",
+      "art. 1 code de procédure pénale",
       "C. pr. pén., art. 1",
-      "art. 1 code de procédure pénale"
+      "CPP art. 1"
     ]
   },
   {
-    "reference": "article 1 A du Code général des impôts",
     "expected_id": "LEGIARTI000006302199",
-    "variants": [
-      "CGI, art. 1 A",
-      "art. 1 A code général des impôts"
+    "description": "Code général des impôts - Article 1 A",
+    "citations": [
+      "Article 1 A du Code général des impôts",
+      "Article 1A du Code general des impots",
+      "art. 1 A CGI",
+      "CGI art. 1A"
     ]
   },
   {
-    "reference": "article 4 A du Code général des impôts",
     "expected_id": "LEGIARTI000006302200",
-    "variants": [
-      "CGI, art. 4 A",
-      "art. 4 A code général des impôts"
+    "description": "Code général des impôts - Article 4 A",
+    "citations": [
+      "Article 4 A du Code général des impôts",
+      "art. 4A CGI"
     ]
   }
 ]

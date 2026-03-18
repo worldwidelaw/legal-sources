@@ -2,13 +2,14 @@
 """
 IE/DPC - Irish Data Protection Commission
 
-Fetches DPC enforcement decisions from the official website.
+Fetches DPC enforcement decisions, court judgments, and case studies.
 Ireland hosts EU headquarters for Meta, Google, Apple, Microsoft, TikTok etc.,
 making DPC decisions highly significant for EU-wide GDPR enforcement.
 
-Data source:
-- https://www.dataprotection.ie/en/dpc-guidance/law/decisions-made-under-data-protection-act-2018
-- Decisions published as PDFs with full text
+Data sources:
+- Decisions: https://www.dataprotection.ie/en/dpc-guidance/law/decisions-made-under-data-protection-act-2018
+- Judgments: https://www.dataprotection.ie/en/dpc-guidance/law/judgments
+- Case Studies: https://www.dataprotection.ie/en/dpc-guidance/case-studies/*
 
 License: Irish Public Sector Open Licence
 
@@ -43,8 +44,28 @@ except ImportError:
 SOURCE_ID = "IE/DPC"
 BASE_URL = "https://www.dataprotection.ie"
 DECISIONS_URL = f"{BASE_URL}/en/dpc-guidance/law/decisions-made-under-data-protection-act-2018"
+JUDGMENTS_URL = f"{BASE_URL}/en/dpc-guidance/law/judgments"
+CASE_STUDIES_URL = f"{BASE_URL}/en/dpc-guidance/case-studies"
 RATE_LIMIT_DELAY = 2.0
 USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+
+# Case study categories
+CASE_STUDY_CATEGORIES = [
+    'access-request-complaints',
+    'accuracy',
+    'cctv',
+    'cross-border-complaints',
+    'data-breach-notification',
+    'disclosure-unauthorised-disclosure',
+    'electronic-direct-marketing',
+    'erasure',
+    'general-accountability',
+    'law-enforcement-directive',
+    'misc',
+    'objection-to-processing',
+    'purpose-limitation',
+    'transparency',
+]
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent
@@ -293,17 +314,343 @@ def fetch_decision_with_text(session: requests.Session, decision: dict, max_pdf_
     return decision
 
 
+def fetch_judgment_urls(session: requests.Session) -> list[dict]:
+    """Fetch all judgment URLs from the judgments page."""
+    judgments = []
+
+    print("Fetching judgments listing page...", file=sys.stderr)
+    try:
+        response = session.get(JUDGMENTS_URL, timeout=30)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Error fetching judgments page: {e}", file=sys.stderr)
+        return judgments
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Find all links that look like judgment links (contain "v" and DPC-related)
+    for link in soup.find_all('a', href=True):
+        href = link['href']
+        text = link.get_text().strip()
+
+        # Skip empty links or non-judgment links
+        if not text or len(text) < 10:
+            continue
+
+        # Look for case-style names (X v Y format)
+        if ' v ' not in text.lower() and ' v. ' not in text.lower():
+            continue
+
+        # Must reference DPC or Data Protection
+        if 'dpc' not in text.lower() and 'data protection' not in text.lower():
+            continue
+
+        # Normalize URL
+        if href.startswith('http'):
+            full_url = href
+        else:
+            full_url = urljoin(BASE_URL, href)
+
+        # Skip if already seen
+        if full_url in [j['url'] for j in judgments]:
+            continue
+
+        # Extract date from title if present
+        date = None
+        date_patterns = [
+            r'(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})',
+            r'(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})',
+        ]
+        months = {
+            'January': '01', 'February': '02', 'March': '03', 'April': '04',
+            'May': '05', 'June': '06', 'July': '07', 'August': '08',
+            'September': '09', 'October': '10', 'November': '11', 'December': '12'
+        }
+        for pattern in date_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                groups = match.groups()
+                if len(groups) == 3:
+                    day = groups[0].zfill(2)
+                    month = months.get(groups[1].title(), '01')
+                    year = groups[2]
+                    date = f"{year}-{month}-{day}"
+                elif len(groups) == 2:
+                    month = months.get(groups[0].title(), '01')
+                    year = groups[1]
+                    date = f"{year}-{month}-01"
+                break
+
+        judgments.append({
+            'url': full_url,
+            'title': text,
+            'date': date,
+        })
+
+    print(f"Found {len(judgments)} judgment links", file=sys.stderr)
+    return judgments
+
+
+def fetch_judgment_text(session: requests.Session, judgment_info: dict) -> Optional[dict]:
+    """Fetch judgment PDF and extract text."""
+    url = judgment_info['url']
+
+    # Remove fragment (e.g., #view=fitH)
+    if '#' in url:
+        url = url.split('#')[0]
+
+    # Check if URL is a PDF (external court sites link directly to PDFs)
+    is_pdf = (url.lower().endswith('.pdf') or
+              '/pdf/' in url.lower() or
+              '/alfresco/' in url.lower() or  # courts.ie alfresco links are PDFs
+              'viewer/pdf' in url.lower())
+
+    if is_pdf:
+        # Direct PDF link
+        try:
+            head_resp = session.head(url, timeout=20)
+            content_length = head_resp.headers.get('Content-Length')
+            if content_length:
+                size_mb = int(content_length) / (1024 * 1024)
+                if size_mb > 15.0:
+                    print(f"Skipping large PDF ({size_mb:.1f} MB): {url}", file=sys.stderr)
+                    return None
+
+            response = session.get(url, timeout=180)
+            response.raise_for_status()
+            text = extract_text_from_pdf(response.content)
+
+            if not text or len(text) < 100:
+                print(f"Warning: Could not extract text from {url}", file=sys.stderr)
+                return None
+
+            judgment_info['text'] = text
+            judgment_info['pdf_url'] = url
+            judgment_info['pdf_size'] = len(response.content)
+            return judgment_info
+
+        except requests.RequestException as e:
+            print(f"Error fetching PDF {url}: {e}", file=sys.stderr)
+            return None
+    else:
+        # Internal DPC page with PDF links
+        try:
+            response = session.get(url, timeout=30)
+            response.raise_for_status()
+        except requests.RequestException as e:
+            print(f"Error fetching judgment page {url}: {e}", file=sys.stderr)
+            return None
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Find PDF links
+        pdf_urls = []
+        for link in soup.find_all('a', href=True):
+            href = link['href']
+            if href.lower().endswith('.pdf'):
+                pdf_url = urljoin(BASE_URL, href) if not href.startswith('http') else href
+                pdf_urls.append(pdf_url)
+
+        if not pdf_urls:
+            print(f"No PDF found for judgment {url}", file=sys.stderr)
+            return None
+
+        pdf_url = pdf_urls[0]
+        try:
+            response = session.get(pdf_url, timeout=180)
+            response.raise_for_status()
+            text = extract_text_from_pdf(response.content)
+
+            if not text or len(text) < 100:
+                print(f"Warning: Could not extract text from {pdf_url}", file=sys.stderr)
+                return None
+
+            judgment_info['text'] = text
+            judgment_info['pdf_url'] = pdf_url
+            judgment_info['pdf_size'] = len(response.content)
+            return judgment_info
+
+        except requests.RequestException as e:
+            print(f"Error downloading PDF {pdf_url}: {e}", file=sys.stderr)
+            return None
+
+
+def fetch_case_study_urls(session: requests.Session, category: str) -> list[dict]:
+    """Fetch all case study URLs from a category listing page."""
+    case_studies = []
+    url = f"{CASE_STUDIES_URL}/{category}"
+
+    try:
+        response = session.get(url, timeout=30)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Error fetching category {category}: {e}", file=sys.stderr)
+        return case_studies
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Find all case study boxes
+    boxes = soup.find_all('div', class_='faq-section-results-box')
+
+    for box in boxes:
+        # Extract title and URL from the h3 link
+        h3 = box.find('h3')
+        if not h3:
+            continue
+
+        link = h3.find('a', href=True)
+        if not link:
+            continue
+
+        href = link['href']
+        title = link.get_text(strip=True)
+
+        # Get the full URL
+        if href.startswith('http'):
+            detail_url = href
+        else:
+            detail_url = urljoin(BASE_URL, href)
+
+        # Extract year from the datetime element
+        year = None
+        time_elem = box.find('time', class_='datetime')
+        if time_elem:
+            year = time_elem.get_text(strip=True)
+
+        # Extract summary text
+        summary = ''
+        p = box.find('p')
+        if p:
+            summary = p.get_text(strip=True)
+
+        case_studies.append({
+            'url': detail_url,
+            'title': title,
+            'year': year,
+            'category': category,
+            'summary': summary,
+        })
+
+    return case_studies
+
+
+def fetch_case_study_detail(session: requests.Session, case_info: dict) -> Optional[dict]:
+    """Fetch full text from a case study detail page."""
+    url = case_info['url']
+
+    try:
+        response = session.get(url, timeout=30)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Error fetching case study {url}: {e}", file=sys.stderr)
+        return None
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Find the main content area
+    main = soup.find('main') or soup.find('article')
+    if not main:
+        main = soup
+
+    # Get all text, then clean it up
+    text = main.get_text(separator='\n', strip=True)
+
+    # Remove navigation/boilerplate at the start
+    # Look for the title and start from there
+    title = case_info.get('title', '')
+    if title and title in text:
+        # Find where the case study content starts
+        idx = text.find(title)
+        if idx > 0:
+            # Find the second occurrence (first is nav, second is content)
+            idx2 = text.find(title, idx + len(title))
+            if idx2 > 0:
+                text = text[idx2:]
+
+    # Clean up: remove footer content
+    footer_markers = [
+        'Your Data',
+        'Data Protection: The Basics',
+        'Contact us',
+        'Data Protection Commission',
+        '6 Pembroke Row',
+    ]
+    for marker in footer_markers:
+        if marker in text:
+            idx = text.find(marker)
+            if idx > 0 and idx < len(text) - 100:
+                text = text[:idx]
+            break
+
+    # Clean up whitespace
+    text = re.sub(r'\n\s*\n\s*\n+', '\n\n', text)
+    text = text.strip()
+
+    if len(text) < 100:
+        print(f"Warning: case study too short ({len(text)} chars): {url}", file=sys.stderr)
+        return None
+
+    # Extract date from year
+    date = None
+    year = case_info.get('year')
+    if year and re.match(r'^20\d{2}$', year):
+        date = f"{year}-01-01"
+
+    return {
+        'title': case_info.get('title', ''),
+        'text': text,
+        'date': date,
+        'category': case_info.get('category'),
+        'url': url,
+        '_record_type': 'case_study',
+    }
+
+
+def fetch_case_studies(session: requests.Session) -> Generator[dict, None, None]:
+    """Fetch all case studies from all categories."""
+    for category in CASE_STUDY_CATEGORIES:
+        print(f"Fetching case studies from category: {category}", file=sys.stderr)
+
+        # Get list of case study URLs in this category
+        case_study_urls = fetch_case_study_urls(session, category)
+        print(f"  Found {len(case_study_urls)} case studies", file=sys.stderr)
+
+        for case_info in case_study_urls:
+            time.sleep(RATE_LIMIT_DELAY)
+
+            detail = fetch_case_study_detail(session, case_info)
+            if detail and detail.get('text'):
+                yield detail
+
+
 def normalize(raw: dict) -> dict:
-    """Transform raw DPC decision data into normalized schema."""
-    # Create unique ID from URL path
-    url_path = urlparse(raw.get('url', '')).path
-    slug = url_path.rstrip('/').split('/')[-1] or 'unknown'
-    doc_id = f"{SOURCE_ID}/{slug}"
+    """Transform raw DPC data into normalized schema."""
+    record_type = raw.get('_record_type', 'decision')
+
+    # Create unique ID
+    if record_type == 'case_study':
+        # For case studies, use category + hash of title
+        category = raw.get('category', 'misc')
+        title_slug = re.sub(r'[^a-z0-9]+', '-', raw.get('title', 'unknown').lower())[:50]
+        doc_id = f"{SOURCE_ID}/case-study/{category}/{title_slug}"
+        doc_type = 'doctrine'
+    elif record_type == 'judgment':
+        # For judgments, create a slug from the title since URLs are external PDFs
+        title = raw.get('title', 'unknown')
+        title_slug = re.sub(r'[^a-z0-9]+', '-', title.lower())[:60].strip('-')
+        doc_id = f"{SOURCE_ID}/judgment/{title_slug}"
+        doc_type = 'case_law'
+    else:
+        # Decision
+        url_path = urlparse(raw.get('url', '')).path
+        slug = url_path.rstrip('/').split('/')[-1] or 'unknown'
+        doc_id = f"{SOURCE_ID}/{slug}"
+        doc_type = 'case_law'
 
     return {
         '_id': doc_id,
         '_source': SOURCE_ID,
-        '_type': 'case_law',
+        '_type': doc_type,
         '_fetched_at': datetime.now(timezone.utc).isoformat(),
         'title': raw.get('title', ''),
         'text': raw.get('text', ''),
@@ -314,11 +661,15 @@ def normalize(raw: dict) -> dict:
         'fine_amount': raw.get('fine_amount'),
         'gdpr_articles': raw.get('gdpr_articles', []),
         'pdf_size': raw.get('pdf_size'),
+        'category': raw.get('category'),  # For case studies
+        'record_type': record_type,
     }
 
 
 def fetch_all(session: requests.Session) -> Generator[dict, None, None]:
-    """Fetch all DPC decisions."""
+    """Fetch all DPC decisions, judgments, and case studies."""
+    # 1. Fetch decisions
+    print("=== Fetching DPC Decisions ===", file=sys.stderr)
     decision_pages = fetch_decision_page_urls(session)
 
     for decision_info in decision_pages:
@@ -332,23 +683,48 @@ def fetch_all(session: requests.Session) -> Generator[dict, None, None]:
 
         full_decision = fetch_decision_with_text(session, details)
         if full_decision and full_decision.get('text'):
+            full_decision['_record_type'] = 'decision'
             yield normalize(full_decision)
+
+    # 2. Fetch judgments
+    print("\n=== Fetching Court Judgments ===", file=sys.stderr)
+    judgment_urls = fetch_judgment_urls(session)
+
+    for judgment_info in judgment_urls:
+        time.sleep(RATE_LIMIT_DELAY)
+
+        full_judgment = fetch_judgment_text(session, judgment_info)
+        if full_judgment and full_judgment.get('text'):
+            full_judgment['_record_type'] = 'judgment'
+            yield normalize(full_judgment)
+
+    # 3. Fetch case studies
+    print("\n=== Fetching Case Studies ===", file=sys.stderr)
+    for case_study in fetch_case_studies(session):
+        yield normalize(case_study)
 
 
 def fetch_sample(session: requests.Session, count: int = 15, save_dir: Path = None) -> list[dict]:
-    """Fetch a sample of decisions. Saves incrementally to avoid data loss."""
+    """Fetch a sample of all content types. Saves incrementally to avoid data loss."""
     records = []
     save_dir = save_dir or SAMPLE_DIR
     save_dir.mkdir(parents=True, exist_ok=True)
 
-    decision_pages = fetch_decision_page_urls(session)
+    # Allocate samples across content types: 5 decisions, 5 judgments, 5 case studies
+    decisions_target = min(5, count // 3 + 1)
+    judgments_target = min(5, count // 3 + 1)
+    case_studies_target = count - decisions_target - judgments_target
 
-    # Sort to get most recent decisions (usually at top of list)
-    for decision_info in decision_pages[:count + 10]:
-        if len(records) >= count:
+    # 1. Fetch decisions
+    print("=== Fetching DPC Decisions ===", file=sys.stderr)
+    decision_pages = fetch_decision_page_urls(session)
+    decision_count = 0
+
+    for decision_info in decision_pages[:decisions_target + 5]:
+        if decision_count >= decisions_target:
             break
 
-        print(f"Fetching {decision_info['url']}...", file=sys.stderr)
+        print(f"Fetching decision: {decision_info['url'][:60]}...", file=sys.stderr)
         time.sleep(RATE_LIMIT_DELAY)
 
         details = fetch_decision_details(session, decision_info)
@@ -359,16 +735,62 @@ def fetch_sample(session: requests.Session, count: int = 15, save_dir: Path = No
 
         full_decision = fetch_decision_with_text(session, details)
         if full_decision and full_decision.get('text'):
+            full_decision['_record_type'] = 'decision'
             record = normalize(full_decision)
             records.append(record)
+            decision_count += 1
 
             # Save incrementally
             filepath = save_dir / f"record_{len(records)-1:04d}.json"
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(record, f, ensure_ascii=False, indent=2)
 
-            print(f"  Extracted {len(full_decision['text'])} chars, saved to {filepath.name}", file=sys.stderr)
+            print(f"  [Decision] {len(full_decision['text'])} chars -> {filepath.name}", file=sys.stderr)
 
+    # 2. Fetch judgments
+    print("\n=== Fetching Court Judgments ===", file=sys.stderr)
+    judgment_urls = fetch_judgment_urls(session)
+    judgment_count = 0
+
+    for judgment_info in judgment_urls[:judgments_target + 5]:
+        if judgment_count >= judgments_target:
+            break
+
+        print(f"Fetching judgment: {judgment_info['title'][:50]}...", file=sys.stderr)
+        time.sleep(RATE_LIMIT_DELAY)
+
+        full_judgment = fetch_judgment_text(session, judgment_info)
+        if full_judgment and full_judgment.get('text'):
+            full_judgment['_record_type'] = 'judgment'
+            record = normalize(full_judgment)
+            records.append(record)
+            judgment_count += 1
+
+            filepath = save_dir / f"record_{len(records)-1:04d}.json"
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(record, f, ensure_ascii=False, indent=2)
+
+            print(f"  [Judgment] {len(full_judgment['text'])} chars -> {filepath.name}", file=sys.stderr)
+
+    # 3. Fetch case studies
+    print("\n=== Fetching Case Studies ===", file=sys.stderr)
+    case_study_count = 0
+
+    for case_study in fetch_case_studies(session):
+        if case_study_count >= case_studies_target:
+            break
+
+        record = normalize(case_study)
+        records.append(record)
+        case_study_count += 1
+
+        filepath = save_dir / f"record_{len(records)-1:04d}.json"
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(record, f, ensure_ascii=False, indent=2)
+
+        print(f"  [CaseStudy] {len(case_study.get('text', ''))} chars -> {filepath.name}", file=sys.stderr)
+
+    print(f"\nTotal: {decision_count} decisions, {judgment_count} judgments, {case_study_count} case studies", file=sys.stderr)
     return records
 
 

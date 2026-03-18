@@ -1,0 +1,38 @@
+source:
+  id: "EU/DGComp"
+  country: "EU"
+  name: "EU Competition Directorate-General (DG COMP)"
+  description: "European Commission competition decisions - antitrust, cartels, mergers, state aid"
+  url: "https://competition-cases.ec.europa.eu"
+  data_types:
+    - regulatory_decisions
+
+schema:
+  key_fields:
+    - case_number
+    - case_type
+    - title
+    - decision_date
+    - url
+    - text
+
+api:
+  type: "bulk_download"
+  endpoints:
+    antitrust: "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-AT.json"
+    mergers: "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-M.json"
+    state_aid: "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-SA.json"
+    dma: "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-DMA.json"
+    fsr: "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-FSR.json"
+  auth: "none"
+  rate_limit:
+    requests_per_second: 2
+    delay_seconds: 1
+
+pagination:
+  type: "none"
+  notes: "Bulk JSON files updated daily"
+
+documentation:
+  - "https://competition-policy.ec.europa.eu/about/news/dg-competitions-case-data-available-open-data-2025-03-18_en"
+  - "https://data.europa.eu/euodp/en/data/dataset/competition-cases-database"

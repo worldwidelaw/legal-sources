@@ -60,7 +60,7 @@ API_BASE_URL = "https://bopaazurefunctions.azurewebsites.net"
 BLOB_STORAGE_URL = "https://bopadocuments.blob.core.windows.net/bopa-documents"
 
 # API function codes (extracted from bopa.ad public JavaScript).
-# These are public API keys, not secrets. Set via env vars or use defaults.
+# Set via env vars or extract from the bopa.ad JS bundle.
 API_CODES = {
     "GetDocumentsByBOPA": os.environ.get("BOPA_CODE_DOCUMENTS", ""),
     "GetFilters": os.environ.get("BOPA_CODE_FILTERS", ""),

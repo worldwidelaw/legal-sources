@@ -15,8 +15,13 @@ court in Portugal for administrative and tax matters.
 
 - **Administrative contentious** (Secção do Contencioso Administrativo): since 1950
 - **Tax and customs contentious** (Secção do Contencioso Tributário): since 1963
-- **Full text available**: from 2002 onwards
-- **Total decisions**: ~89,300
+- **Full text available**: from 2002 onwards only
+- **Total decisions in database**: ~89,300
+- **Usable records with full text**: ~30,000-40,000 (post-2002)
+
+> **Note**: Pre-2002 decisions (~50,000+ records) exist in the DGSI database but contain
+> only metadata without full text. These records are skipped during ingestion since
+> full text is a mandatory field. The expected yield is approximately 30K-40K records.
 
 ## Case Types
 

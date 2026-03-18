@@ -1,0 +1,38 @@
+source:
+  id: BE/FSMA
+  name: Belgian Financial Services and Markets Authority
+  country: BE
+  url: https://www.fsma.be
+  data_types:
+    - regulatory_decisions
+  language:
+    - fr
+    - nl
+  description: |
+    Administrative sanctions and settlement agreements from the Belgian FSMA.
+    Includes settlement agreements (règlements transactionnels / minnelijke schikkingen)
+    and sanctions committee decisions.
+
+fetcher:
+  type: html_scraper
+  schedule: weekly
+  rate_limit: 2.0
+  requires:
+    - pdfplumber
+    - beautifulsoup4
+    - requests
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - decision_type
+  text_field: text
+  date_field: date
+
+notes: |
+  Data sourced from the official FSMA website.
+  Decisions are published as PDFs in French or Dutch.
+  The FSMA is Belgium's financial services regulator, overseeing
+  banks, insurance companies, and financial markets.

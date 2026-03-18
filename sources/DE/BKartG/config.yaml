@@ -1,0 +1,38 @@
+source:
+  id: DE/BKartG
+  name: German Cartel Court (BGH Kartellsenat)
+  country: DE
+  url: https://www.rechtsprechung-im-internet.de
+  description: |
+    Case law from the Cartel Senate (Kartellsenat) of the German Federal Court
+    of Justice (Bundesgerichtshof). The Kartellsenat handles appeals in competition
+    law matters including antitrust, cartel enforcement, and merger control cases.
+
+    Data is sourced from rechtsprechung-im-internet.de, the official German federal
+    court decision database operated by the Federal Office of Justice.
+  data_types:
+    - case_law
+  language: de
+  license: Public Domain (§ 5 UrhG - amtliche Werke)
+  auth: none
+
+fetcher:
+  type: xml_toc
+  toc_url: https://www.rechtsprechung-im-internet.de/rii-toc.xml
+  filter: gericht="BGH Kartellsenat"
+  rate_limit: 1.5  # seconds between requests
+  timeout: 60
+
+schema:
+  key_fields:
+    - _id
+    - ecli
+    - aktenzeichen
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url

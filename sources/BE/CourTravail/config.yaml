@@ -1,0 +1,42 @@
+source_id: BE/CourTravail
+name: Belgian Labour Courts
+country: BE
+url: https://juportal.be
+data_types:
+  - case_law
+auth:
+  type: none
+license: Open Government Data
+
+# Labour Courts (Cour du Travail / Arbeidshof) - appellate level
+# Plus Labour Tribunals (Tribunal du Travail / Arbeidsrechtbank) - first instance
+# ECLI court codes:
+#   - CTANT: Cour du Travail Antwerp
+#   - CTBRL: Cour du Travail Brussels
+#   - CTGND: Cour du Travail Ghent
+#   - CTLIE: Cour du Travail Liège
+#   - CTMNS: Cour du Travail Mons
+#   - TTANT, TTBRL, TTGND, TTLIE, TTMNS: Tribunaux du Travail (first instance)
+
+endpoints:
+  sitemap_index: https://juportal.just.fgov.be/JUPORTAsitemap/{year}/{month}/{day}/sitemap_index_1.xml
+  sitemap: https://juportal.just.fgov.be/JUPORTAsitemap/{year}/{month}/{day}/sitemap_{n}.xml
+  content: https://juportal.be/content/{ecli}
+  robots: https://juportal.be/robots.txt
+
+schema:
+  key_fields:
+    - ecli
+    - date
+    - court
+    - language
+
+rate_limit:
+  requests_per_second: 1
+  delay_between_requests: 1.5
+
+notes: |
+  Belgian Labour Courts case law from JUPORTAL.
+  Covers all 5 judicial districts for both appellate courts (Cour du Travail)
+  and first instance tribunals (Tribunal du Travail).
+  Data available from approximately 2017 onwards via ECLI sitemaps.

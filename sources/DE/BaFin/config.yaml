@@ -1,0 +1,41 @@
+source_id: DE/BaFin
+name: German Federal Financial Supervisory Authority (BaFin)
+country: DE
+url: https://www.bafin.de
+data_types:
+  - regulatory_decisions
+auth: none
+
+description: |
+  BaFin (Bundesanstalt für Finanzdienstleistungsaufsicht) is Germany's integrated
+  financial regulatory authority. This source fetches regulatory circulars (Rundschreiben)
+  which provide binding guidance on financial regulation, including MaRisk, MaComp,
+  anti-money laundering requirements, and supervisory practices.
+
+fetcher:
+  method: html_scrape
+  base_url: https://www.bafin.de
+  search_url: https://www.bafin.de/SiteGlobals/Forms/Suche/Expertensuche_Formular.html
+  rate_limit: 1.5  # seconds between requests
+  format: html
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - url
+  optional_fields:
+    - topic
+    - description
+    - reference
+    - authority
+
+update_frequency: weekly
+estimated_documents: 126
+language: de
+license: public_domain
+notes: |
+  Documents are official government works and public domain under German law (§ 5 UrhG).
+  BaFin circulars (Rundschreiben) provide binding regulatory guidance for banks,
+  insurance companies, and financial service providers in Germany.

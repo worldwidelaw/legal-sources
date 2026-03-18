@@ -26,8 +26,8 @@ auth:
   notes: "Token obtained via GetToken SOAP call (no registration needed)"
 
 rate_limit:
-  requests_per_second: 0.5    # 1 request every 2 seconds (conservative)
-  burst: 3
+  requests_per_second: 0.33   # 1 request every 3 seconds (very conservative to avoid 500s)
+  burst: 2
 
 api:
   type: "soap"

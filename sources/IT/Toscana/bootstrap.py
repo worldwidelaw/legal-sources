@@ -213,6 +213,17 @@ def parse_nir_xml(xml_content: bytes, filename: str) -> Optional[dict]:
     else:
         doc_id = f"IT/Toscana/{filename}"
 
+    # Ensure title is never null - fall back to document identifier or filename
+    if not title:
+        if doc_type_name and doc_number and doc_date:
+            title = f"{doc_type_name.capitalize()} n. {doc_number} del {format_date(doc_date)}"
+        elif urn:
+            # Extract meaningful info from URN like "urn:nir:regione.toscana:legge:2020-01-15;5"
+            title = f"Documento {urn.split(':')[-1]}" if ':' in urn else f"Documento {filename}"
+        else:
+            # Last resort: use filename
+            title = f"Documento {filename.replace('.xml', '').replace('_', ' ')}"
+
     return {
         "_id": doc_id,
         "_source": SOURCE_ID,

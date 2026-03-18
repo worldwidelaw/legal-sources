@@ -1,0 +1,25 @@
+{
+  "_id": "AT.40394",
+  "_source": "EU/DGComp",
+  "_type": "regulatory_decisions",
+  "_fetched_at": "2026-03-15T07:35:53.137123",
+  "case_number": "AT.40394",
+  "case_type": "Antitrust",
+  "instrument": "Antitrust & Cartels",
+  "title": "Aspen",
+  "text": "On 15 May 2017, the European Commission initiated formal antitrust proceedings against \nAspen Pharmacare Holdings Limited and all legal entities directly or indirectly controlled by \nit, including Aspen Pharma Trading Limited and Aspen Pharma Ireland Limited for a \nsuspected breach of EU rules prohibiting abuse of market dominance (Article 102 of the \nTreaty on the Functioning of the European Union and and Article 54 of the Agreement on the \nEuropean Economic Area). The initiation of proceedings is based on Article 11(6) of the \nAntitrust Regulation (Council Regulation No 1/2003) and Article 2(1) of its implementing \nRegulation (Commission Regulation No 773/2004). \nThe Commission intends to investigate information that Aspen has imposed unfair and \nexcessive prices in the form of significant price increases for medicinal products containing \nthe Active Pharmaceutical Ingredients chlorambucil, melphalan, mercaptopurine, busulfan \nand tioguanine in the EEA Member States except Italy (\"the Member States\"). The \nCommission will also investigate information that to impose such price increases, Aspen has \nmade use of unfair, abusive negotiation practices with national authorities and/or hindered \nparallel trade between the Member States. Information suggests that, among others, these \nnegotiation practices have included reducing the direct medicine supply and/or threatening \nsupply reductions, as well as defining EEA-wide stock allocation strategies and implementing \nthem in cooperation and/or agreement with local wholesalers. \nThe initiation of proceedings does not signify that the Commission has made a definitive \nfinding of an infringement but merely signifies that the Commission will deal with the case as \na matter of priority.",
+  "date": "2021-02-10",
+  "url": "https://competition-cases.ec.europa.eu/cases/AT.40394",
+  "pdf_url": "https://ec.europa.eu/competition/antitrust/cases/dec_docs/40394/40394_235_3.pdf",
+  "sectors": [
+    "C.21.2 - Manufacture of pharmaceutical preparations"
+  ],
+  "companies": [],
+  "legal_basis": [
+    "Art. 102 TFEU"
+  ],
+  "decision_types": [
+    "Initiation of Proceedings",
+    "Commitment Decision"
+  ]
+}

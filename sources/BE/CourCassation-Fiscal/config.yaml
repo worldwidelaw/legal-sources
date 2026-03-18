@@ -1,0 +1,78 @@
+source:
+  id: BE/CourCassation-Fiscal
+  country: BE
+  name: Belgian Court of Cassation - Tax Cases
+  description: |
+    Belgian Supreme Court tax/fiscal case law from JUPORTAL (juportal.be).
+    Filtered subset of Court of Cassation decisions focusing on tax matters.
+    Identified by role number prefix "F." and fiscal-related subjects/keywords.
+
+  data_types:
+    - case_law
+
+  url: https://juportal.be
+  auth: none
+
+  # Sitemap-based discovery (EU ECLI format)
+  sitemap_base: https://juportal.just.fgov.be/JUPORTAsitemap
+  content_base: https://juportal.be/content
+
+  # Court code for filtering
+  court_code: CASS
+
+  # Languages supported
+  languages:
+    - fr
+    - nl
+    - de
+
+schema:
+  # Primary identifier and key fields
+  key_fields:
+    - name: ecli
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: true
+    - name: court
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: false
+    - name: language
+      type: string
+      required: false
+    - name: abstract
+      type: string
+      required: false
+    - name: role_number
+      type: string
+      required: false
+    - name: chamber
+      type: string
+      required: false
+    - name: subjects
+      type: array
+      required: false
+    - name: keywords
+      type: array
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - ecli
+
+rate_limits:
+  requests_per_second: 0.66
+  delay_between_requests: 1.5
+
+license:
+  type: Open Government Data
+  attribution: JUPORTAL - SPF Justice / FOD Justitie
+  url: https://juportal.be
