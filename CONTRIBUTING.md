@@ -124,6 +124,19 @@ Before submitting a pull request:
 - [ ] No secrets or API keys in the code (use `.env.template` for required credentials)
 - [ ] Rate limiting is configured appropriately (be respectful of government servers)
 
+## Contributor License Agreement (CLA)
+
+All contributors must sign our [Contributor License Agreement (CLA)](CLA.md) before their pull requests can be merged. The CLA bot will automatically prompt you on your first PR.
+
+**Why?** This project is dual-licensed: open source under AGPL-3.0, and separately available under a commercial license. The CLA ensures all contributions can be included in both licensing models.
+
+Signing is simple -- just comment on your PR with:
+> I have read the CLA Document and I hereby sign the CLA
+
+## License
+
+All contributions to this project are licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE). By submitting a contribution, you agree that your work will be licensed under this license.
+
 ## Code of Conduct
 
 - Be respectful of rate limits — these are government servers, not your stress test target

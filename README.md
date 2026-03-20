@@ -124,4 +124,6 @@ We welcome contributions from developers, legal researchers, and **especially go
 
 ## License
 
-[Apache License 2.0](LICENSE) -- use it freely, contribute back if you can.
+This project is licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE). You are free to use, modify, and distribute this software, provided that any modified versions made available over a network also make their source code available under the same license.
+
+**Commercial Licensing**: If you wish to use this software without the AGPL-3.0 obligations (e.g., in a proprietary product or SaaS), commercial licenses are available. Contact [zacharie@goodlegal.fr](mailto:zacharie@goodlegal.fr) for details.
