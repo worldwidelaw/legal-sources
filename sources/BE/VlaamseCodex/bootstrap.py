@@ -40,7 +40,7 @@ def get_session() -> requests.Session:
     session = requests.Session()
     session.headers.update({
         "Accept": "application/json",
-        "User-Agent": "WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)"
+        "User-Agent": "LegalDataHunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)"
     })
     return session
 

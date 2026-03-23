@@ -37,7 +37,7 @@ BASE_URL = "https://www.amf-france.org"
 RSS_FEED_URL = "https://www.amf-france.org/fr/flux-rss/display/31"
 
 HEADERS = {
-    "User-Agent": "World Wide Law/1.0 (EU Legal Research; Open Data Collection)",
+    "User-Agent": "Legal Data Hunter/1.0 (EU Legal Research; Open Data Collection)",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
 }

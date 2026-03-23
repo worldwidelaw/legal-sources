@@ -45,7 +45,7 @@ class BKartGFetcher:
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)',
+            'User-Agent': 'Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'de-DE,de;q=0.9,en;q=0.8',
         })
@@ -114,7 +114,7 @@ class BKartGFetcher:
         try:
             # Use a fresh request to avoid cookie interference
             response = requests.get(zip_url, timeout=60, headers={
-                'User-Agent': 'WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)',
+                'User-Agent': 'Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)',
                 'Accept': '*/*',
             })
             response.raise_for_status()

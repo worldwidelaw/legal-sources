@@ -58,7 +58,7 @@ FULL_ZIP_URL = f"{CKAN_BASE}/dataset/{DATASET_ID}/resource/bf0ec116-ad4e-4572-a4
 
 # Request headers
 HEADERS = {
-    "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+    "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
     "Accept": "text/html,application/xhtml+xml,*/*",
 }
 

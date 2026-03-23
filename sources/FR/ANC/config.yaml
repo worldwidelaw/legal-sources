@@ -17,7 +17,7 @@ source:
 
 fetch:
   rate_limit: 2.0  # seconds between requests
-  user_agent: WorldWideLaw/1.0 (Open Data Research)
+  user_agent: LegalDataHunter/1.0 (Open Data Research)
 
 schema:
   key_fields:

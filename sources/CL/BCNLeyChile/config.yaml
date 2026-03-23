@@ -1,0 +1,97 @@
+# ===================================================================
+# CL/BCNLeyChile -- Biblioteca del Congreso Nacional - Ley Chile
+# ===================================================================
+# Chile's official legislation database. 410,000+ norms with full text.
+# Internal JSON API at nuevo.leychile.cl/servicios. Paginated search.
+# Laws, decrees, resolutions, DFL from 1811 to present.
+# Free access, no authentication required.
+# ===================================================================
+
+source:
+  id: "CL/BCNLeyChile"
+  country: "CL"
+  name: "BCN Ley Chile (Biblioteca del Congreso Nacional)"
+  url: "https://www.bcn.cl/leychile/"
+  description: |
+    Official Chilean legislation database operated by the National
+    Congress Library (Biblioteca del Congreso Nacional). Contains
+    laws, decrees, resolutions, DFL, and other normative acts.
+    410,000+ norms with full text. Also provides Linked Open Data
+    via datos.bcn.cl SPARQL endpoint (metadata only).
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "Be respectful to the BCN servers. 1 req/s for full text retrieval."
+
+api:
+  type: "rest"
+  base_url: "https://nuevo.leychile.cl/servicios"
+  endpoints:
+    search: "/buscarjson?string=&tipoNorma=0&page_num={page}&itemsporpagina={per_page}&orden=2"
+    norm_json: "/Navegar/get_norma_json?idNorma={id}&idVersion=&idLey=&tipoVersion=Vigente&cve=&agrupa_partes=1"
+
+data_model:
+  type: "legislation"
+  primary_key: "idNorma"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "idNorma"
+      description: "BCN unique norm identifier"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "tipo_norma"
+      description: "Norm type (Ley, Decreto, Resolución, DFL, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "numero"
+      description: "Norm number"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Norm title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "organismo"
+      description: "Issuing body/ministry"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "url"
+      description: "URL to norm on Ley Chile"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - Internal JSON API discovered by reverse-engineering Angular SPA
+  - Search endpoint returns paginated results with IDNORMA for each norm
+  - Full text fetched via get_norma_json endpoint, returns HTML sections
+  - datos.bcn.cl SPARQL endpoint has metadata only, not full text
+  - 410,000+ total norms (as of March 2026)
+  - Language: Spanish
+  - Free access, no API key required
+  - User-Agent header required (blocks default curl/python-requests)

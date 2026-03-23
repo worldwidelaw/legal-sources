@@ -82,7 +82,7 @@ class ConstitutionalCourtScraper(BaseScraper):
         super().__init__(source_dir)
 
         self.headers = {
-            "User-Agent": "WorldWideLaw/1.0 (EU Legal Research; contact@example.com)",
+            "User-Agent": "Legal-Data-Hunter/1.0 (EU Legal Research; contact@example.com)",
             "Accept": "application/json",
         }
 

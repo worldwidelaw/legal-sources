@@ -48,7 +48,7 @@ class UKEFetcher:
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)',
+            'User-Agent': 'Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)',
             'Accept': 'application/json, text/plain, */*',
             'Accept-Language': 'pl-PL,pl;q=0.9,en;q=0.5',
         })

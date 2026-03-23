@@ -1,0 +1,80 @@
+# ===================================================================
+# CoE/CODICES -- Venice Commission CODICES Database
+# ===================================================================
+# REST API for constitutional court decisions from 86 countries.
+# Full text via HTML files. No auth required.
+# API: https://codices.coe.int/api
+# ===================================================================
+
+source:
+  id: "CoE/CODICES"
+  country: "CoE"
+  name: "Venice Commission CODICES Database"
+  url: "https://codices.coe.int/"
+  description: |
+    Constitutional court decisions from 86 countries via the Venice
+    Commission CODICES database. REST API provides precis (summaries)
+    with EN/FR translations, thesaurus classification, and links to
+    full-text HTML documents.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "REST API, be polite"
+
+api:
+  type: "rest"
+  base_url: "https://codices.coe.int/api"
+  endpoints:
+    search: "/search"
+    precis: "/precis/{guid}"
+    fulltext: "/fulltext/{guid}"
+    static_files: "/staticFiles/{path}"
+    tree: "/precis/tree?countryCode={code}"
+  response_format: "json"
+
+data_model:
+  type: "case_law"
+  primary_key: "reference_code"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "reference_code"
+      description: "CODICES reference (e.g., GER-2025-3-036)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to decision on CODICES"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - REST API, no auth
+  - 86 countries, 10,000+ decisions
+  - Bilingual summaries (EN/FR)
+  - Full text via HTML static files

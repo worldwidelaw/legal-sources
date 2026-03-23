@@ -37,7 +37,7 @@ BASE_URL = "https://www.amf-france.org"
 SANCTION_API_URL = "https://www.amf-france.org/fr/rest/listing_sanction/91,184,183,325,90,461,89,242,86,462,181/all/all"
 
 HEADERS = {
-    "User-Agent": "World Wide Law/1.0 (EU Legal Research; Open Data Collection)",
+    "User-Agent": "Legal Data Hunter/1.0 (EU Legal Research; Open Data Collection)",
     "Accept": "application/json,text/html,application/xhtml+xml,*/*;q=0.8",
     "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
 }

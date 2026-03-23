@@ -79,7 +79,7 @@ class OireachtasScraper(BaseScraper):
         self.api_client = HttpClient(
             base_url=API_BASE,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "application/json",
             },
             timeout=60,
@@ -88,7 +88,7 @@ class OireachtasScraper(BaseScraper):
         self.data_client = HttpClient(
             base_url=DATA_BASE,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "application/xml",
             },
             timeout=120,

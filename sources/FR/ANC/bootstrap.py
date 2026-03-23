@@ -44,7 +44,7 @@ except ImportError:
 SOURCE_ID = "FR/ANC"
 BASE_URL = "https://www.anc.gouv.fr"
 RATE_LIMIT_DELAY = 1.5  # seconds between requests
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 
 # All listing pages to scrape
 LISTING_PAGES = [

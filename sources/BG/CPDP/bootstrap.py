@@ -1,5 +1,5 @@
 """
-World Wide Law - Bulgarian Data Protection Authority (CPDP) Scraper
+Legal Data Hunter - Bulgarian Data Protection Authority (CPDP) Scraper
 
 Fetches decisions and opinions from the Bulgarian Commission for Personal Data Protection.
 Data source: https://cpdp.bg (WordPress REST API)

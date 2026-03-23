@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK Gambling Commission Scraper
+Legal Data Hunter - UK Gambling Commission Scraper
 
 Fetches regulatory content from gamblingcommission.gov.uk using:
   - Sitemaps for URL discovery
@@ -101,7 +101,7 @@ class UKGCScraper(BaseScraper):
         self.client = HttpClient(
             base_url=self.BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             },
             timeout=30,

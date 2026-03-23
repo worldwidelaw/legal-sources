@@ -46,7 +46,7 @@ def get_session() -> requests.Session:
     """Create a requests session with appropriate headers."""
     session = requests.Session()
     session.headers.update({
-        "User-Agent": "WorldWideLaw/1.0 (EU Legal Data Collection; +https://github.com/)",
+        "User-Agent": "LegalDataHunter/1.0 (EU Legal Data Collection; +https://github.com/)",
         "Accept": "application/xml, text/xml, */*",
         "Accept-Language": "en-US,en;q=0.9,el;q=0.8",
     })

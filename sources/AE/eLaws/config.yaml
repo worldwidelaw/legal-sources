@@ -1,0 +1,67 @@
+# ===================================================================
+# AE/eLaws -- UAE Ministry of Justice Legal Portal
+# ===================================================================
+# UAE federal legislation since 1971 + court decisions. .NET Web API
+# with POST-based search across 16 databases. Full text via HTML files.
+# Arabic + English content. No authentication required.
+# ===================================================================
+
+source:
+  id: "AE/eLaws"
+  country: "AE"
+  name: "UAE Ministry of Justice Legal Portal (eLaws)"
+  url: "https://elaws.moj.gov.ae/"
+  description: |
+    UAE federal laws, decrees, court decisions from the Ministry of Justice.
+    16 databases covering legislation (Arabic/English), civil/criminal court
+    decisions, Federal Supreme Court, constitutional court, legislative opinions,
+    and international treaties. ~21,000+ documents from 1971 to present.
+
+data_types:
+  - legislation
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  notes: "ASP.NET backend. Be respectful with rate limiting."
+
+api:
+  type: "rest"
+  base_url: "https://elaws.moj.gov.ae/api/Laws/"
+  endpoints:
+    search: "Search"
+    databases: "GetDatabases"
+
+schema:
+  key_fields:
+    - name: "reference"
+      description: "Document reference ID"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Document title (FinalTitle)"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Law date"
+      type: "date"
+      role: "temporal_key"
+    - name: "database"
+      description: "Source database key"
+      type: "string"
+      role: "classification"
+
+notes: |
+  - POST /api/Laws/Search with JSON body: Key, Page, CountPerPage
+  - 16 databases: AL1 (legislation AR), EL1 (legislation EN), court decisions, treaties
+  - Full text from HTML files at relative URLs from Link field in search results
+  - URL-encode paths (Arabic folder names) and replace backslashes
+  - Arabic + English content across separate databases

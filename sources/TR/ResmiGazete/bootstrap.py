@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - Turkish Official Gazette (Resmi Gazete) Scraper
+Legal Data Hunter - Turkish Official Gazette (Resmi Gazete) Scraper
 
 Fetches legislation from the Turkish Official Gazette archive:
   - GET /eskiler/{YYYY}/{MM}/{YYYYMMDD}.htm   (daily index page)

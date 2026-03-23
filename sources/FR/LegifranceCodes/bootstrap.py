@@ -33,7 +33,7 @@ load_dotenv()
 SOURCE_ID = "FR/LegifranceCodes"
 API_BASE_URL = "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app"
 TOKEN_URL = "https://oauth.piste.gouv.fr/api/oauth/token"
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 REQUEST_DELAY = 0.5  # seconds between requests
 
 # Paths

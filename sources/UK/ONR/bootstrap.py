@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK Office for Nuclear Regulation Scraper
+Legal Data Hunter - UK Office for Nuclear Regulation Scraper
 
 Fetches ONR documents from two sources:
 1. RSS feeds at onr.org.uk (news + publications with HTML content)
@@ -75,7 +75,7 @@ class UKONRScraper(BaseScraper):
         self.onr_client = HttpClient(
             base_url=ONR_BASE,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "text/html,application/xhtml+xml,application/xml",
             },
             timeout=30,
@@ -83,7 +83,7 @@ class UKONRScraper(BaseScraper):
         self.govuk_client = HttpClient(
             base_url=GOVUK_BASE,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "application/json",
             },
             timeout=30,
@@ -129,7 +129,7 @@ class UKONRScraper(BaseScraper):
             import requests
             resp = requests.get(
                 url,
-                headers={"User-Agent": "WorldWideLaw/1.0 (legal research project)"},
+                headers={"User-Agent": "LegalDataHunter/1.0 (legal research project)"},
                 timeout=30,
                 allow_redirects=True,
             )

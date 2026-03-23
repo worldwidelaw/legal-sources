@@ -1,27 +1,30 @@
 #!/usr/bin/env python3
 """
-World Wide Law — Source Runner
+Legal Data Hunter — Session Runner
 
-CLI for running and testing legal data scrapers.
+This is the entry point that the Cowork shortcut calls.
+It reads the manifest, finds the next task, and executes it.
 
 Usage:
-  python runner.py status                              # Show project status summary
-  python runner.py next                                # Show the next source to build
-  python runner.py test <source>                       # Test a source's scraper (sample mode)
-  python runner.py sample <source>                     # Run sample mode for a source
-  python runner.py fast <source>                       # Run bootstrap_fast on a source
-  python runner.py batch [--max-parallel 3]            # Run multiple sources in parallel
-  python runner.py retrieve-test <source>              # Run retrieve.py tests for a source
-  python runner.py retrieve-next                       # Find next source needing a retrieve script
+  python runner.py next               # Build the next planned scraper
+  python runner.py status             # Show project status summary
+  python runner.py test <source>      # Test a specific source's scraper
+  python runner.py sample <source>    # Run sample mode for a source
+  python runner.py fast <source>      # Run bootstrap_fast on a source
+  python runner.py stress-test <source> [--duration 60] # Discover API rate limits
+  python runner.py batch [--max-parallel 3]             # Run multiple sources in parallel
+  python runner.py retrieve-test <source>  # Test a source's retrieve.py
+  python runner.py retrieve-next           # Find next source needing retrieve script
 """
 
 import sys
 import yaml
 import json
+import time
 import subprocess
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, List
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 PROJECT_ROOT = Path(__file__).parent
@@ -41,8 +44,31 @@ def save_manifest(manifest: dict):
         yaml.dump(manifest, f, default_flow_style=False, allow_unicode=True)
 
 
+def read_inbox() -> str:
+    """Read INBOX.md contents."""
+    inbox_path = PROJECT_ROOT / "INBOX.md"
+    if inbox_path.exists():
+        return inbox_path.read_text()
+    return ""
+
+
+def read_blocked() -> List[dict]:
+    """Parse BLOCKED.md and return list of blocked items."""
+    blocked_path = PROJECT_ROOT / "BLOCKED.md"
+    if not blocked_path.exists():
+        return []
+    # Simple parsing — look for ### headers with status
+    content = blocked_path.read_text()
+    # Return raw content for the AI to parse
+    return content
+
+
 def get_next_source(manifest: dict) -> Optional[dict]:
-    """Find the highest-priority source with status 'planned' or 'needs_maintenance'."""
+    """Find the highest-priority source with status 'planned' or 'needs_maintenance'.
+
+    Priority order: all 'planned' sources first, then 'needs_maintenance'.
+    Within each group, sort by priority field (lower = higher priority).
+    """
     sources = manifest.get("sources", [])
     planned = [s for s in sources if s.get("status") == "planned"]
     if planned:
@@ -53,6 +79,55 @@ def get_next_source(manifest: dict) -> Optional[dict]:
         maintenance.sort(key=lambda s: (s.get("priority", 99), s.get("id", "")))
         return maintenance[0]
     return None
+
+
+def get_next_retrieve_source(manifest: dict) -> Optional[dict]:
+    """Find the next complete source that needs a retrieve script.
+
+    Returns the highest-priority complete source that:
+    - Has status 'complete'
+    - Does NOT have retrieve: true in manifest
+    - Does NOT already have a retrieve.py file
+    """
+    sources = manifest.get("sources", [])
+    candidates = []
+    for s in sources:
+        if s.get("status") != "complete":
+            continue
+        if s.get("retrieve"):
+            continue
+        source_dir = PROJECT_ROOT / "sources" / s["id"].replace("/", "/")
+        retrieve_path = source_dir / "retrieve.py"
+        if retrieve_path.exists():
+            continue
+        candidates.append(s)
+    if candidates:
+        candidates.sort(key=lambda s: (s.get("priority", 99), s.get("id", "")))
+        return candidates[0]
+    return None
+
+
+def run_retrieve_test(source_id: str) -> bool:
+    """Run retrieve tests for a source.
+
+    Returns True if all tests pass, False otherwise.
+    """
+    source_dir = PROJECT_ROOT / "sources" / source_id.replace("/", "/")
+    retrieve_path = source_dir / "retrieve.py"
+
+    if not retrieve_path.exists():
+        print(f"No retrieve.py found for {source_id}")
+        return False
+
+    result = subprocess.run(
+        [sys.executable, str(retrieve_path), "--test"],
+        capture_output=True, text=True
+    )
+    print(result.stdout)
+    if result.stderr:
+        print(f"STDERR: {result.stderr}")
+
+    return result.returncode == 0
 
 
 def get_status_summary(manifest: dict) -> dict:
@@ -79,16 +154,126 @@ def get_status_summary(manifest: dict) -> dict:
     }
 
 
+def run_stress_test(source_id: str, duration: int = 60):
+    """
+    Empirically discover the rate limit of a source's API.
+
+    Sends lightweight requests at increasing rates, observing when
+    429s or errors appear. Reports the sustainable rate.
+    """
+    source_dir = PROJECT_ROOT / "sources" / source_id.replace("/", "/")
+    config_path = source_dir / "config.yaml"
+
+    if not config_path.exists():
+        print(f"No config.yaml found for {source_id}")
+        sys.exit(1)
+
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
+
+    # Try multiple config patterns to find the base URL
+    base_url = (
+        config.get("api", {}).get("base_url")
+        or config.get("source", {}).get("url")
+        or config.get("endpoints", {}).get("portal")
+        or config.get("endpoints", {}).get("toc", "").rsplit("/", 1)[0]
+    )
+    if not base_url:
+        print(f"No base_url found in config for {source_id}")
+        sys.exit(1)
+
+    try:
+        import requests
+    except ImportError:
+        print("Install requests: pip install requests")
+        sys.exit(1)
+
+    print(f"Stress-testing {source_id} at {base_url}")
+    print(f"Duration: {duration}s\n")
+
+    # Test rates: 1, 2, 5, 10, 20, 50 req/sec
+    test_rates = [1, 2, 5, 10, 20, 50]
+    results = {}
+    session = requests.Session()
+    session.headers["User-Agent"] = "LegalDataHunter/1.0 (Stress Test)"
+
+    for rate in test_rates:
+        delay = 1.0 / rate
+        successes = 0
+        errors_429 = 0
+        errors_other = 0
+        phase_duration = min(duration // len(test_rates), 15)
+        start = time.monotonic()
+
+        print(f"Testing {rate} req/s for {phase_duration}s...", end=" ", flush=True)
+
+        while time.monotonic() - start < phase_duration:
+            try:
+                resp = session.head(base_url, timeout=10, allow_redirects=True)
+                if resp.status_code == 429:
+                    errors_429 += 1
+                    retry_after = int(resp.headers.get("Retry-After", 5))
+                    time.sleep(retry_after)
+                elif resp.status_code < 400:
+                    successes += 1
+                else:
+                    errors_other += 1
+            except Exception:
+                errors_other += 1
+            time.sleep(delay)
+
+        total = successes + errors_429 + errors_other
+        results[rate] = {
+            "success": successes,
+            "429s": errors_429,
+            "errors": errors_other,
+            "total": total,
+            "success_pct": round(100 * successes / total, 1) if total > 0 else 0,
+        }
+        print(f"✓ {successes}/{total} ok, {errors_429} throttled, {errors_other} errors")
+
+        # Stop escalating if we're getting throttled
+        if errors_429 > total * 0.1:
+            print(f"  → Throttling detected at {rate} req/s, stopping escalation")
+            break
+
+    # Determine safe rate
+    safe_rate = 1
+    for rate, res in sorted(results.items()):
+        if res["429s"] == 0 and res["errors"] <= res["total"] * 0.05:
+            safe_rate = rate
+
+    print(f"\n{'='*50}")
+    print(f"RESULT: Safe sustainable rate for {source_id}: {safe_rate} req/s")
+    print(f"{'='*50}")
+
+    # Save to discovered_limits.yaml
+    limits_path = PROJECT_ROOT / "discovered_limits.yaml"
+    limits = {}
+    if limits_path.exists():
+        with open(limits_path, "r") as f:
+            limits = yaml.safe_load(f) or {}
+
+    limits[source_id] = {
+        "safe_rate": safe_rate,
+        "tested_at": datetime.now(timezone.utc).isoformat(),
+        "details": results,
+    }
+    with open(limits_path, "w") as f:
+        yaml.dump(limits, f, default_flow_style=False)
+    print(f"Saved to {limits_path}")
+
+
 def _run_source_fast(source_id: str):
     """Run bootstrap_fast for a single source (for use in parallel batch)."""
-    source_dir = PROJECT_ROOT / "sources" / source_id
+    source_dir = PROJECT_ROOT / "sources" / source_id.replace("/", "/")
     bootstrap_path = source_dir / "bootstrap.py"
     if not bootstrap_path.exists():
         return source_id, "error", "No bootstrap.py"
 
     result = subprocess.run(
         [sys.executable, str(bootstrap_path), "bootstrap-fast"],
-        capture_output=True, text=True, timeout=7200,
+        capture_output=True, text=True, timeout=7200,  # 2 hour timeout
     )
     if result.returncode == 0:
         return source_id, "ok", result.stdout[-200:] if result.stdout else ""
@@ -97,18 +282,26 @@ def _run_source_fast(source_id: str):
 
 
 def run_batch(manifest: dict, max_parallel: int = 3):
-    """Run multiple sources in parallel."""
+    """
+    Run multiple sources in parallel.
+
+    Picks the top N highest-priority planned or complete sources
+    (targeting different servers) and runs bootstrap_fast concurrently.
+    """
     sources = manifest.get("sources", [])
 
+    # Get sources that have bootstrap.py and are either planned or complete
     runnable = []
     for s in sources:
         if s.get("status") in ("complete", "planned"):
-            source_dir = PROJECT_ROOT / "sources" / s["id"]
+            source_dir = PROJECT_ROOT / "sources" / s["id"].replace("/", "/")
             if (source_dir / "bootstrap.py").exists():
                 runnable.append(s)
 
+    # Sort by priority
     runnable.sort(key=lambda s: (s.get("priority", 99), s.get("id", "")))
 
+    # Deduplicate by country (different servers)
     seen_countries = set()
     batch = []
     for s in runnable:
@@ -127,18 +320,21 @@ def run_batch(manifest: dict, max_parallel: int = 3):
     print()
 
     with ProcessPoolExecutor(max_workers=max_parallel) as executor:
-        futures = {executor.submit(_run_source_fast, s["id"]): s["id"] for s in batch}
+        futures = {
+            executor.submit(_run_source_fast, s["id"]): s["id"]
+            for s in batch
+        }
         for future in as_completed(futures):
             source_id, status, detail = future.result()
-            mark = "+" if status == "ok" else "x"
-            print(f"  [{mark}] {source_id}: {status}")
+            emoji = "✓" if status == "ok" else "✗"
+            print(f"  {emoji} {source_id}: {status}")
             if detail:
                 print(f"    {detail.strip()[:200]}")
 
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python runner.py [status|next|test|sample|fast|batch|retrieve-test|retrieve-next] [source_id]")
+        print("Usage: python runner.py [next|status|test|sample|fast|stress-test|batch|retrieve-test|retrieve-next] [source_id]")
         sys.exit(1)
 
     command = sys.argv[1]
@@ -146,10 +342,9 @@ def main():
 
     if command == "status":
         summary = get_status_summary(manifest)
-        print(json.dumps(summary, indent=2))
-        print(f"\nTotal: {summary['total_sources']} sources")
-        for status, count in sorted(summary["by_status"].items()):
-            print(f"  {status}: {count}")
+        parts = [f"Total: {summary['total_sources']}"]
+        parts.extend(f"{s}: {c}" for s, c in sorted(summary["by_status"].items()))
+        print(" | ".join(parts))
 
     elif command == "next":
         next_source = get_next_source(manifest)
@@ -174,10 +369,11 @@ def main():
             print("Usage: python runner.py test <source_id>")
             sys.exit(1)
         source_id = sys.argv[2]
-        source_dir = PROJECT_ROOT / "sources" / source_id
+        source_dir = PROJECT_ROOT / "sources" / source_id.replace("/", "/")
         bootstrap_path = source_dir / "bootstrap.py"
         if bootstrap_path.exists():
             print(f"Testing {source_id}...")
+            import subprocess
             result = subprocess.run(
                 [sys.executable, str(bootstrap_path), "bootstrap", "--sample"],
                 capture_output=True, text=True
@@ -193,7 +389,7 @@ def main():
             print("Usage: python runner.py sample <source_id>")
             sys.exit(1)
         source_id = sys.argv[2]
-        source_dir = PROJECT_ROOT / "sources" / source_id
+        source_dir = PROJECT_ROOT / "sources" / source_id.replace("/", "/")
         bootstrap_path = source_dir / "bootstrap.py"
         if bootstrap_path.exists():
             print(f"Running sample for {source_id}...")
@@ -212,24 +408,36 @@ def main():
             print("Usage: python runner.py fast <source_id> [--workers N] [--batch-size N]")
             sys.exit(1)
         source_id = sys.argv[2]
-        source_dir = PROJECT_ROOT / "sources" / source_id
+        source_dir = PROJECT_ROOT / "sources" / source_id.replace("/", "/")
         bootstrap_path = source_dir / "bootstrap.py"
         if bootstrap_path.exists():
+            # Parse optional args
             workers = 5
-            batch_size = 100
+            batch = 100
             for i, arg in enumerate(sys.argv[3:], 3):
                 if arg == "--workers" and i + 1 < len(sys.argv):
                     workers = int(sys.argv[i + 1])
                 if arg == "--batch-size" and i + 1 < len(sys.argv):
-                    batch_size = int(sys.argv[i + 1])
-            print(f"Running fast bootstrap for {source_id} (workers={workers}, batch={batch_size})...")
-            subprocess.run(
+                    batch = int(sys.argv[i + 1])
+            print(f"Running fast bootstrap for {source_id} (workers={workers}, batch={batch})...")
+            result = subprocess.run(
                 [sys.executable, str(bootstrap_path), "bootstrap-fast",
-                 "--workers", str(workers), "--batch-size", str(batch_size)],
-                text=True
+                 "--workers", str(workers), "--batch-size", str(batch)],
+                capture_output=False, text=True
             )
         else:
             print(f"No bootstrap.py found for {source_id}")
+
+    elif command == "stress-test":
+        if len(sys.argv) < 3:
+            print("Usage: python runner.py stress-test <source_id> [--duration 60]")
+            sys.exit(1)
+        source_id = sys.argv[2]
+        duration = 60
+        for i, arg in enumerate(sys.argv[3:], 3):
+            if arg == "--duration" and i + 1 < len(sys.argv):
+                duration = int(sys.argv[i + 1])
+        run_stress_test(source_id, duration)
 
     elif command == "batch":
         max_parallel = 3
@@ -243,42 +451,20 @@ def main():
             print("Usage: python runner.py retrieve-test <source_id>")
             sys.exit(1)
         source_id = sys.argv[2]
-        retrieve_path = PROJECT_ROOT / "sources" / source_id / "retrieve.py"
-        if retrieve_path.exists():
-            print(f"Running retrieve tests for {source_id}...")
-            result = subprocess.run(
-                [sys.executable, str(retrieve_path), "--test"],
-                capture_output=True, text=True
-            )
-            print(result.stdout)
-            if result.stderr:
-                print(f"STDERR: {result.stderr}")
-            sys.exit(result.returncode)
-        else:
-            print(f"No retrieve.py found for {source_id}")
-            sys.exit(1)
+        print(f"Running retrieve tests for {source_id}...")
+        success = run_retrieve_test(source_id)
+        sys.exit(0 if success else 1)
 
     elif command == "retrieve-next":
-        sources = manifest.get("sources", [])
-        for s in sorted(sources, key=lambda s: (s.get("priority", 99), s.get("id", ""))):
-            if s.get("status") != "complete":
-                continue
-            sid = s["id"]
-            source_dir = PROJECT_ROOT / "sources" / sid
-            sample_dir = source_dir / "sample"
-            if not sample_dir.exists():
-                continue
-            sample_files = list(sample_dir.glob("record_*.json"))
-            if not sample_files:
-                continue
-            if (source_dir / "retrieve.py").exists():
-                continue
-            print(f"Next source needing retrieve script: {sid}")
-            print(f"  Name: {s.get('name', '')}")
-            print(f"  Data types: {s.get('data_types', [])}")
-            print(f"  Samples: {len(sample_files)}")
-            sys.exit(0)
-        print("All complete sources with samples already have retrieve scripts.")
+        next_source = get_next_retrieve_source(manifest)
+        if next_source:
+            print(f"Next source needing retrieve script: {next_source['id']}")
+            print(f"  Name: {next_source['name']}")
+            print(f"  Priority: {next_source.get('priority', '?')}")
+            print(f"  Data types: {next_source.get('data_types', [])}")
+            print(f"  URL: {next_source.get('url', 'N/A')}")
+        else:
+            print("All complete sources have retrieve scripts or are not eligible.")
 
     else:
         print(f"Unknown command: {command}")

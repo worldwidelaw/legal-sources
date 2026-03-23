@@ -117,7 +117,7 @@ def search_documents(
     }
 
     headers = {
-        "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+        "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
         "Accept": "application/json",
     }
 
@@ -143,7 +143,7 @@ def get_document_detail(uuid: str, timeout: int = 30) -> Optional[dict]:
     """
     params = {"guid": uuid}
     headers = {
-        "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+        "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
         "Accept": "application/json",
     }
 

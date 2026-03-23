@@ -74,7 +74,7 @@ class ParliamentScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (EU Legal Research; contact@example.com)",
+                "User-Agent": "Legal-Data-Hunter/1.0 (EU Legal Research; contact@example.com)",
                 "Accept": "application/json",
             },
             timeout=60,
@@ -122,7 +122,7 @@ class ParliamentScraper(BaseScraper):
             self.rate_limiter.wait()
 
             resp = requests.get(url, timeout=60, headers={
-                "User-Agent": "WorldWideLaw/1.0",
+                "User-Agent": "Legal-Data-Hunter/1.0",
                 "Accept": "application/json",
             })
 

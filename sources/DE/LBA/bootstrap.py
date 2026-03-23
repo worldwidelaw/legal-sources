@@ -51,7 +51,7 @@ class LBAFetcher:
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)'
+            'User-Agent': 'Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)'
         })
 
     def _check_lta_exists(self, lta_nr: str) -> bool:

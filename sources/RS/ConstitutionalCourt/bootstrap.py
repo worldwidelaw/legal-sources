@@ -1,5 +1,5 @@
 """
-World Wide Law - Serbian Constitutional Court Scraper
+Legal Data Hunter - Serbian Constitutional Court Scraper
 
 Fetches case law from the Serbian Constitutional Court (Ustavni sud).
 Data source: https://ustavni.sud.rs

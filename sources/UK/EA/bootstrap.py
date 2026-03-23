@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK Environment Agency Scraper
+Legal Data Hunter - UK Environment Agency Scraper
 
 Fetches regulatory guidance and publications from GOV.UK using:
   - GET /api/search.json?filter_organisations=environment-agency (document discovery)
@@ -89,7 +89,7 @@ class UKEAScraper(BaseScraper):
         self.client = HttpClient(
             base_url=self.BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "application/json",
             },
             timeout=30,

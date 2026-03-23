@@ -42,7 +42,7 @@ schema:
 fetch:
   method: sitemap_scrape
   rate_limit: 1.5
-  user_agent: "World Wide Law/1.0 (EU Legal Research)"
+  user_agent: "Legal Data Hunter/1.0 (EU Legal Research)"
   notes: |
     Uses XML sitemap to discover decision URLs.
     Full text extracted from HTML body field.

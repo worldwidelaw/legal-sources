@@ -1,5 +1,5 @@
 """
-World Wide Law - Azerbaijan Supreme Court Scraper
+Legal Data Hunter - Azerbaijan Supreme Court Scraper
 
 Fetches case law from the Azerbaijan Supreme Court (Ali Məhkəməsi).
 Data source: https://sc.supremecourt.gov.az/decision-search/

@@ -48,7 +48,7 @@ class ConstitutionalCourtFetcher:
     def __init__(self, delay: float = DEFAULT_DELAY):
         self.session = requests.Session()
         self.session.headers.update({
-            "User-Agent": "WorldWideLaw/1.0 (Legal research project)",
+            "User-Agent": "LegalDataHunter/1.0 (Legal research project)",
             "Accept": "application/json, text/javascript, */*; q=0.01",
             "Accept-Language": "bs,en;q=0.9",
         })

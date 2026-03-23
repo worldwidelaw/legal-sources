@@ -53,7 +53,7 @@ logger = logging.getLogger("legal-data-hunter.NL.wetten_overheid_nl")
 
 # SRU API endpoint for BWB (Basis Wetten Bestand)
 SRU_ENDPOINT = "https://zoekservice.overheid.nl/sru/Search"
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 
 # XML namespaces used in SRU responses
 NAMESPACES = {
@@ -86,7 +86,7 @@ class WettenOverheidScraper(BaseScraper):
 
         self.client = HttpClient(
             base_url=SRU_ENDPOINT,
-            headers={"User-Agent": "WorldWideLaw/1.0 (Open Data Research)"},
+            headers={"User-Agent": "LegalDataHunter/1.0 (Open Data Research)"},
             timeout=60,
         )
 

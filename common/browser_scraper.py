@@ -1,5 +1,5 @@
 """
-Browser-based scraper for World Wide Law.
+Browser-based scraper for Legal Data Hunter.
 
 Uses Playwright for sites that require JavaScript execution:
 - Cloudflare-protected pages

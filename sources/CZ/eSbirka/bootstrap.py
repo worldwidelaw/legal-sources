@@ -58,7 +58,7 @@ class ESbirkaFetcher:
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)'
+            'User-Agent': 'Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)'
         })
         # Disable SSL verification (their cert sometimes has issues)
         self.session.verify = False

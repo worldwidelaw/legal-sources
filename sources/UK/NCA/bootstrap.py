@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK National Crime Agency Scraper
+Legal Data Hunter - UK National Crime Agency Scraper
 
 Fetches NCA publications via GOV.UK Content API (no authentication required).
 ~161 documents covering AML guidance, policy papers, annual reports,
@@ -69,7 +69,7 @@ class UKNCAScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "application/json",
             },
             timeout=30,

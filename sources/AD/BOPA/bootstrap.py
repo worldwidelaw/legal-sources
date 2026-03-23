@@ -31,7 +31,6 @@ Usage:
   python bootstrap.py test               # Quick connectivity test
 """
 
-import os
 import sys
 import json
 import logging
@@ -59,10 +58,10 @@ logger = logging.getLogger("legal-data-hunter.AD.BOPA")
 API_BASE_URL = "https://bopaazurefunctions.azurewebsites.net"
 BLOB_STORAGE_URL = "https://bopadocuments.blob.core.windows.net/bopa-documents"
 
-# API function codes (extracted from bopa.ad public JavaScript).
-# Set via env vars or extract from the bopa.ad JS bundle.
+# API function codes (from bopa.ad JavaScript, publicly visible)
+# Override via env vars BOPA_CODE_DOCS / BOPA_CODE_FILTERS / BOPA_CODE_FILTERS_LAWS
 API_CODES = {
-    "GetDocumentsByBOPA": os.environ.get("BOPA_CODE_DOCUMENTS", ""),
+    "GetDocumentsByBOPA": os.environ.get("BOPA_CODE_DOCS", ""),
     "GetFilters": os.environ.get("BOPA_CODE_FILTERS", ""),
     "GetFiltersLaws": os.environ.get("BOPA_CODE_FILTERS_LAWS", ""),
 }
@@ -94,7 +93,7 @@ class AndorraBOPAScraper(BaseScraper):
         self.api_client = HttpClient(
             base_url=API_BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "application/json",
                 "Content-Type": "application/json",
             },
@@ -104,7 +103,7 @@ class AndorraBOPAScraper(BaseScraper):
         self.blob_client = HttpClient(
             base_url=BLOB_STORAGE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "text/html",
             },
             timeout=60,

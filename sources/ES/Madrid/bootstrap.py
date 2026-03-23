@@ -54,7 +54,7 @@ BASE_URL = "https://www.bocm.es"
 
 # Headers for requests
 HEADERS = {
-    "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+    "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
     "Accept": "application/xml, text/xml, */*",
     "Accept-Language": "es",
 }

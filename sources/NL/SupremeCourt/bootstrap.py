@@ -58,7 +58,7 @@ CONTENT_ENDPOINT = "https://data.rechtspraak.nl/uitspraken/content"
 # Court identifier for Hoge Raad
 HOGE_RAAD_CREATOR = "http://standaarden.overheid.nl/owms/terms/Hoge_Raad_der_Nederlanden"
 
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 
 # XML namespaces used in content responses
 NAMESPACES = {

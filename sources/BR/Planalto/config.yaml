@@ -1,0 +1,81 @@
+# ===================================================================
+# BR/Planalto -- Brazil Federal Legislation (via Senate API + normas.leg.br)
+# ===================================================================
+# Two-step approach:
+#   1. Senate Open Data API lists federal norms by type/year
+#   2. normas.leg.br API provides full text in structured JSON-LD
+# Both APIs are open, no authentication required.
+# ===================================================================
+
+source:
+  id: "BR/Planalto"
+  country: "BR"
+  name: "Brazil Planalto Federal Legislation"
+  url: "https://normas.leg.br"
+  description: |
+    All Brazilian federal normative acts: laws (LEI), complementary laws (LCP),
+    decrees (DEC), constitutional amendments (EMC), provisional measures (MPV),
+    legislative decrees (DLG), and more. Discovery via Senate Open Data API,
+    full text via normas.leg.br JSON-LD API. 200K+ documents since 1808.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "Senate API: 10 req/sec. normas.leg.br: be conservative (1 req/sec)."
+
+api:
+  type: "rest"
+  base_url: "https://legis.senado.leg.br/dadosabertos"
+  full_text_base_url: "https://normas.leg.br/api/public"
+  endpoints:
+    list: "/legislacao/lista"
+    detail: "/legislacao/{id}"
+    normas_full: "/normas?urn={urn}&tipo_documento=maior-detalhe"
+  response_format: "xml+json"
+
+data_model:
+  type: "legislation"
+  primary_key: "urn"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "urn"
+      description: "LexML URN identifier (e.g., urn:lex:br:federal:lei:2024-01-08;14790)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Official name of the norm"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation from normas.leg.br"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of signature (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to normas.leg.br page"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - Senate API returns XML with document metadata and ID
+  - normas.leg.br returns Schema.org JSON-LD with article-level text
+  - Text contains LexML XML markup that must be stripped
+  - Coverage: all federal normative acts since 1808
+  - Language: Portuguese

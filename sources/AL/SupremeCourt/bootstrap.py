@@ -50,7 +50,7 @@ class AlbanianSupremeCourtFetcher:
     def __init__(self, sample_dir: Optional[str] = None):
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'WorldWideLaw/1.0 (research project)',
+            'User-Agent': 'LegalDataHunter/1.0 (research project)',
             'Accept': 'application/json'
         })
         self.sample_dir = Path(sample_dir) if sample_dir else Path(__file__).parent / 'sample'

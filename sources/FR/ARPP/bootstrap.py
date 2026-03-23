@@ -32,7 +32,7 @@ MAX_PAGES = 120  # Safety limit
 
 SESSION = requests.Session()
 SESSION.headers.update({
-    "User-Agent": "WorldWideLaw/1.0 (academic research; legal data collection)",
+    "User-Agent": "LegalDataHunter/1.0 (academic research; legal data collection)",
     "Accept": "text/html,application/xhtml+xml",
 })
 

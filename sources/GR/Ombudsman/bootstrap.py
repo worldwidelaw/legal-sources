@@ -90,7 +90,7 @@ class OmbudsmanScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "application/json",
             },
             timeout=120,
@@ -192,7 +192,7 @@ class OmbudsmanScraper(BaseScraper):
             self.rate_limiter.wait()
             url = f"{BASE_URL}/api/files/download/{file_id}"
             resp = requests.get(url, timeout=60, stream=True, headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
             })
 
             if resp.status_code != 200:

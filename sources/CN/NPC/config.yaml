@@ -1,0 +1,68 @@
+# ===================================================================
+# CN/NPC -- National Laws Database (国家法律法规数据库)
+# ===================================================================
+# China's official legislation database maintained by the NPC.
+# 29,000+ laws and regulations. Full text via DOCX download.
+# POST search API + GET details + signed S3 download URLs.
+# ===================================================================
+
+source:
+  id: "CN/NPC"
+  country: "CN"
+  name: "National Laws Database (国家法律法规数据库)"
+  url: "https://flk.npc.gov.cn/"
+  description: |
+    Official Chinese legislation database maintained by the Standing
+    Committee of the National People's Congress. Contains national laws,
+    administrative regulations, local regulations, judicial interpretations.
+    29,000+ documents. Chinese language. Free access.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "Conservative rate limit for Chinese government servers."
+
+api:
+  type: "rest"
+  base_url: "https://flk.npc.gov.cn"
+  endpoints:
+    search: "/law-search/search/list (POST)"
+    details: "/law-search/search/flfgDetails?bbbs={id} (GET)"
+    download: "/law-search/download/pc?bbbs={id}&format=docx (GET)"
+
+schema:
+  key_fields:
+    - name: "bbbs"
+      description: "Unique document identifier (UUID)"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Law/regulation title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text extracted from DOCX"
+      type: "string"
+      role: "content"
+    - name: "gbrq"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+    - name: "flxz"
+      description: "Law type classification"
+      type: "string"
+      role: "classification"
+
+notes: |
+  - Vue SPA with JSON API discovered via reverse engineering
+  - Search: POST /law-search/search/list with searchType, pageNum, pageSize
+  - Details: GET /law-search/search/flfgDetails?bbbs={id}
+  - Full text: Download DOCX via signed S3 URL from download endpoint
+  - Requires python-docx for text extraction
+  - Language: Chinese (Simplified)

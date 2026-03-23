@@ -99,7 +99,7 @@ class SupremeCourtScraper(BaseScraper):
         self.client = HttpClient(
             base_url=RIIGIKOHUS_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "text/html,application/xml,application/xhtml+xml",
                 "Accept-Language": "et,en;q=0.9",
             },
@@ -109,7 +109,7 @@ class SupremeCourtScraper(BaseScraper):
         self.rikos_client = HttpClient(
             base_url=RIKOS_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "text/html,application/xhtml+xml",
                 "Accept-Language": "et,en;q=0.9",
             },

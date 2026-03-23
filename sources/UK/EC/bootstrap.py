@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK Electoral Commission (EC) Scraper
+Legal Data Hunter - UK Electoral Commission (EC) Scraper
 
 Fetches Electoral Commission enforcement decisions (investigations into
 political parties, campaigners, etc.) from the Wayback Machine archive.
@@ -70,7 +70,7 @@ class UKECScraper(BaseScraper):
         self.client = HttpClient(
             base_url="https://web.archive.org",
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "text/html",
                 "Accept-Encoding": "gzip, deflate",
             },
@@ -92,7 +92,7 @@ class UKECScraper(BaseScraper):
                     "fl": "timestamp,statuscode",
                     "filter": "statuscode:200",
                 },
-                headers={"User-Agent": "WorldWideLaw/1.0"},
+                headers={"User-Agent": "LegalDataHunter/1.0"},
                 timeout=30,
             )
             if resp.status_code == 200:
@@ -115,7 +115,7 @@ class UKECScraper(BaseScraper):
             resp = requests.get(
                 url,
                 headers={
-                    "User-Agent": "WorldWideLaw/1.0",
+                    "User-Agent": "LegalDataHunter/1.0",
                     "Accept-Encoding": "gzip, deflate",
                 },
                 timeout=60,

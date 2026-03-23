@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="World Wide Law — Legal data scrapers for 50+ countries. Interactive dashboard tracking progress across 40+ countries.">
-<title>World Wide Law</title>
+<meta name="description" content="Legal Data Hunter — Indexing legal data sources worldwide. Interactive dashboard tracking progress across 40+ countries.">
+<title>Legal Data Hunter</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
 /* ═══ 1. CSS Variables — Mondrian-inspired warm palette ═══ */
@@ -918,7 +918,7 @@ footer a { color: var(--blue); }
         <div class="live-dot" id="liveDot"></div>
         <span id="liveStatus">Loading...</span>
       </div>
-      <a href="https://github.com/worldwidelaw/legal-sources" target="_blank" class="gh-link" title="View on GitHub">
+      <a href="https://github.com/ZachLaik/LegalDataHunter" target="_blank" class="gh-link" title="View on GitHub">
         <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         <span>Star on GitHub</span>
       </a>
@@ -1021,10 +1021,10 @@ footer a { color: var(--blue); }
   </div>
 
   <footer>
-    <div style="font-family:Georgia,serif;font-size:13px">World Wide Law &mdash; Open-source legal data for 50+ countries.</div>
+    <div style="font-family:Georgia,serif;font-size:13px">Legal Data Hunter &mdash; Indexing EU legal data, one source at a time.</div>
     <div style="margin-top:4px">
-      <a href="https://github.com/worldwidelaw/legal-sources" target="_blank">GitHub</a>
-      &middot; <a href="https://github.com/worldwidelaw/legal-sources" target="_blank">Dashboard</a>
+      <a href="https://github.com/zachlaik/LegalDataHunter" target="_blank">GitHub (Hunter)</a>
+      &middot; <a href="https://github.com/ZachLaik/legal-data-pipeline" target="_blank">GitHub (Pipeline)</a>
       &middot; <span id="footerTimestamp"></span>
       &middot; Auto-refreshes every 60s
     </div>
@@ -1037,8 +1037,8 @@ footer a { color: var(--blue); }
 const DATA_URL = 'status.json';
 const GEO_URL = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
 const GEO_CACHE_KEY = 'ldh_geo_world_v2';
-const REPO_URL = 'https://github.com/worldwidelaw/legal-sources';
-const PIPELINE_REPO_URL = 'https://github.com/worldwidelaw/legal-sources';
+const REPO_URL = 'https://github.com/zachlaik/LegalDataHunter';
+const PIPELINE_REPO_URL = 'https://github.com/ZachLaik/legal-data-pipeline';
 
 // World GeoJSON uses ISO alpha-3 codes as feature.id; map to alpha-2
 const ISO3_TO_ISO2 = {
@@ -1686,7 +1686,7 @@ function openSuggestedDrawer(dataCode, geoCode, nameOverride, flagOverride) {
 
   document.getElementById('drawerSources').innerHTML = `
     <div class="drawer-suggested-notice">
-      <strong>${meta.name}</strong> is not yet part of the World Wide Law index.
+      <strong>${meta.name}</strong> is not yet part of the Legal Data Hunter index.
       Help us expand coverage by suggesting data sources for this country!
     </div>
     <div class="source-card" style="border-style:dashed;border-color:var(--gold)">
@@ -1709,8 +1709,10 @@ function openSuggestedDrawer(dataCode, geoCode, nameOverride, flagOverride) {
   S.drawerOpen = true;
 }
 
-// ═══ Feedback System (GitHub Issues) ═══
-const FEEDBACK_REPO = 'worldwidelaw/legal-sources';
+// ═══ Feedback System (GitHub Issues via PAT) ═══
+const FEEDBACK_TOKEN = 'GITHUB_PAT_PLACEHOLDER';
+const FEEDBACK_REPO = 'ZachLaik/LegalDataHunter';
+const ADMIN_KEY = 'ADMIN_KEY_PLACEHOLDER';
 let _feedbackCtx = {};
 
 function issueLink(sourceId, type, icon, label) {
@@ -1887,6 +1889,17 @@ async function submitFeedback() {
   const def = FORM_DEFS[type];
   if (!def) return;
 
+  // Rate limit: 1 submission per 30s
+  const lastSubmit = parseInt(localStorage.getItem('ldh_last_submit') || '0');
+  if (Date.now() - lastSubmit < 30000) {
+    showToast('Please wait before submitting again.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('modalSubmit');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
   const username = (document.getElementById('fb_username')?.value || '').trim();
   if (username) localStorage.setItem('ldh_username', username);
 
@@ -1895,14 +1908,96 @@ async function submitFeedback() {
   const body = mainBody + credit;
   const title = def.issueTitle(context);
 
-  // Open GitHub issue in new tab (no PAT needed)
-  const url = `https://github.com/${FEEDBACK_REPO}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}&labels=${encodeURIComponent(def.labels.filter(l => l !== 'pending-review').join(','))}`;
-  window.open(url, '_blank');
-  closeFeedbackModal();
-  showToast('Opening GitHub to submit your feedback...', 'success');
+  try {
+    const res = await fetch(`https://api.github.com/repos/${FEEDBACK_REPO}/issues`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${FEEDBACK_TOKEN}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github+json',
+      },
+      body: JSON.stringify({ title, labels: def.labels, body }),
+    });
+    if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+    localStorage.setItem('ldh_last_submit', String(Date.now()));
+    closeFeedbackModal();
+    showToast('Thank you! Your feedback has been submitted.', 'success');
+  } catch (e) {
+    console.error('Feedback submission failed:', e);
+    showToast('Submission failed. Please try again later.', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Submit';
+  }
 }
 
-function loadAdminPanel() {} // removed for open-source version
+// ═══ Admin Review Panel ═══
+async function loadAdminPanel() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('admin') !== ADMIN_KEY) return;
+
+  document.getElementById('adminPanel').style.display = 'block';
+
+  try {
+    const res = await fetch(`https://api.github.com/repos/${FEEDBACK_REPO}/issues?labels=pending-review&state=open&per_page=50`);
+    if (!res.ok) throw new Error(`${res.status}`);
+    const issues = await res.json();
+
+    if (issues.length === 0) {
+      document.getElementById('adminIssues').innerHTML = '<div style="color:var(--text-dim);font-size:13px">No pending submissions.</div>';
+      return;
+    }
+
+    let html = '';
+    for (const issue of issues) {
+      const labels = issue.labels.filter(l => l.name !== 'pending-review').map(l =>
+        `<span class="admin-issue-label">${l.name}</span>`
+      ).join('');
+      html += `<div class="admin-issue" id="admin_${issue.number}">
+        <div class="admin-issue-header">
+          <span class="admin-issue-title">${issue.title}</span>
+          <div class="admin-issue-labels">${labels}</div>
+        </div>
+        <div class="admin-issue-body">${issue.body || ''}</div>
+        <div class="admin-issue-actions">
+          <button class="admin-btn admin-btn-approve" onclick="adminApprove(${issue.number})">Approve</button>
+          <button class="admin-btn admin-btn-reject" onclick="adminReject(${issue.number})">Reject</button>
+        </div>
+      </div>`;
+    }
+    document.getElementById('adminIssues').innerHTML = html;
+  } catch (e) {
+    document.getElementById('adminIssues').innerHTML = `<div style="color:var(--red);font-size:13px">Failed to load: ${e.message}</div>`;
+  }
+}
+
+async function adminApprove(issueNum) {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${FEEDBACK_REPO}/issues/${issueNum}/labels/pending-review`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${FEEDBACK_TOKEN}`, 'Accept': 'application/vnd.github+json' },
+    });
+    if (!res.ok) throw new Error(`${res.status}`);
+    document.getElementById(`admin_${issueNum}`).style.opacity = '0.3';
+    showToast(`Issue #${issueNum} approved.`, 'success');
+  } catch (e) {
+    showToast(`Failed to approve: ${e.message}`, 'error');
+  }
+}
+
+async function adminReject(issueNum) {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${FEEDBACK_REPO}/issues/${issueNum}`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${FEEDBACK_TOKEN}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github+json' },
+      body: JSON.stringify({ state: 'closed', state_reason: 'not_planned' }),
+    });
+    if (!res.ok) throw new Error(`${res.status}`);
+    document.getElementById(`admin_${issueNum}`).style.opacity = '0.3';
+    showToast(`Issue #${issueNum} rejected.`, 'success');
+  } catch (e) {
+    showToast(`Failed to reject: ${e.message}`, 'error');
+  }
+}
 
 // ═══ Render ═══
 function render() {

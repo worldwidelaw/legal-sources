@@ -1,0 +1,76 @@
+# ===================================================================
+# CO/DatosGovCo -- Colombia Constitutional Court Rulings
+# ===================================================================
+# Socrata SODA API for metadata + Corte Constitucional relatoria for full text.
+# All Constitutional Court rulings from 1992 to present.
+# API: https://www.datos.gov.co/resource/v2k4-2t8s.json
+# ===================================================================
+
+source:
+  id: "CO/DatosGovCo"
+  country: "CO"
+  name: "Colombia Constitutional Court Rulings (Datos Abiertos)"
+  url: "https://www.datos.gov.co/Justicia-y-Derecho/Sentencias-proferidas-por-la-Corte-Constitucional/v2k4-2t8s"
+  description: |
+    Colombian Constitutional Court rulings via Socrata SODA API for metadata
+    and the Corte Constitucional relatoria website for full text. Covers all
+    rulings (tutela, constitucionalidad, unificación) from 1992 to present.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "Socrata API has app token throttling; relatoria is polite scraping"
+
+api:
+  type: "rest"
+  base_url: "https://www.datos.gov.co/resource/v2k4-2t8s.json"
+  endpoints:
+    metadata: "/resource/v2k4-2t8s.json"
+    full_text: "https://www.corteconstitucional.gov.co/relatoria/{year}/{sentencia}.htm"
+  response_format: "json"
+
+data_model:
+  type: "case_law"
+  primary_key: "sentencia"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "sentencia"
+      description: "Ruling ID (e.g., T-012/92)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Ruling title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the ruling"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Ruling date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to ruling on relatoria"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - Socrata SODA API for metadata, relatoria for full text
+  - Covers 1992 to present
+  - Language: Spanish
+  - License: Open Data (datos.gov.co)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law — Retrieve Script Template
+Legal Data Hunter — Retrieve Script Template
 
 Copy this file to sources/{COUNTRY}/{SOURCE}/retrieve.py
 and implement the resolve() and parse_reference() methods.

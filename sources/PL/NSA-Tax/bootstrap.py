@@ -406,6 +406,38 @@ class NSATaxScraper(BaseScraper):
             "legal_bases": legal_bases,
         }
 
+    def bootstrap_fast(self, **kwargs) -> dict:
+        """Override: NSA uses session-based pagination that breaks with
+        adaptive rate limiting. Use standard sequential fetch instead."""
+        logger.info("bootstrap_fast: using sequential fetch (session-based pagination)")
+        stats = {
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "mode": "fast-sequential",
+            "records_fetched": 0,
+            "records_new": 0,
+            "records_updated": 0,
+            "errors": 0,
+        }
+        for raw in self.fetch_all(use_checkpoint=True):
+            try:
+                record = self.normalize(raw)
+                if record is None:
+                    stats["errors"] += 1
+                    continue
+                dedup_key = self._dedup_key(record)
+                if not self.storage.exists(dedup_key):
+                    self.storage.write(dedup_key, record)
+                    stats["records_new"] += 1
+                else:
+                    self.storage.write(dedup_key, record)
+                    stats["records_updated"] += 1
+                stats["records_fetched"] += 1
+            except Exception as e:
+                logger.warning(f"Error processing record: {e}")
+                stats["errors"] += 1
+        stats["finished_at"] = datetime.now(timezone.utc).isoformat()
+        return stats
+
     # -- Custom commands ----------------------------------------------------
 
     def test_api(self):

@@ -1,5 +1,5 @@
 """
-World Wide Law - Cyprus Supreme Court Case Law Scraper
+Legal Data Hunter - Cyprus Supreme Court Case Law Scraper
 
 Fetches case law from CyLaw (cylaw.org) - Cyprus Supreme Court Decisions.
 Data source: http://www.cylaw.org/apofaseis/aad/

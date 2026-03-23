@@ -76,7 +76,7 @@ class MoniteurBelgeScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept-Language": "fr,nl,de",
             },
             timeout=60,

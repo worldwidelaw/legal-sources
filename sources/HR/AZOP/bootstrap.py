@@ -98,7 +98,7 @@ class CroatianDPAScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "text/html,application/xhtml+xml,application/xml",
                 "Accept-Language": "hr,en",
             },
@@ -147,7 +147,7 @@ class CroatianDPAScraper(BaseScraper):
         try:
             self.rate_limiter.wait()
             resp = self.client.session.get(pdf_url, timeout=60, headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
             })
             resp.raise_for_status()
 
@@ -223,7 +223,7 @@ class CroatianDPAScraper(BaseScraper):
         try:
             self.rate_limiter.wait()
             resp = self.client.session.get(post_url, timeout=60, headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept-Language": "hr,en",
             })
             resp.raise_for_status()

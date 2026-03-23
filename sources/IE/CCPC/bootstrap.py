@@ -33,7 +33,7 @@ def curl_get(url: str, timeout: int = 30) -> Optional[str]:
     try:
         result = subprocess.run(
             ['curl', '-sL', '--max-time', str(timeout), '-H',
-             'User-Agent: Mozilla/5.0 (compatible; WorldWideLaw/1.0)', url],
+             'User-Agent: Mozilla/5.0 (compatible; LegalDataHunter/1.0)', url],
             capture_output=True, text=True, timeout=timeout + 5
         )
         if result.returncode == 0:
@@ -102,7 +102,7 @@ def get_total_pages() -> int:
     try:
         result = subprocess.run(
             ['curl', '-sI', '--max-time', '15', '-H',
-             'User-Agent: Mozilla/5.0 (compatible; WorldWideLaw/1.0)',
+             'User-Agent: Mozilla/5.0 (compatible; LegalDataHunter/1.0)',
              f"{API_URL}?per_page={PER_PAGE}"],
             capture_output=True, text=True, timeout=20
         )

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK IPSO (Press Standards) Scraper
+Legal Data Hunter - UK IPSO (Press Standards) Scraper
 
 Fetches IPSO press complaints rulings and resolution statements.
 WordPress site with paginated HTML listing, no authentication needed.
@@ -81,7 +81,7 @@ class UKIPSOScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "text/html",
             },
             timeout=30,

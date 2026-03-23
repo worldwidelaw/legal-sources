@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK Advertising Standards Authority (ASA) Scraper
+Legal Data Hunter - UK Advertising Standards Authority (ASA) Scraper
 
 Fetches rulings from the ASA using:
   - POST /_filteredRuling/ (AJAX listing endpoint, returns HTML fragments)

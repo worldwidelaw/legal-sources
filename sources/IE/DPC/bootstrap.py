@@ -47,7 +47,7 @@ DECISIONS_URL = f"{BASE_URL}/en/dpc-guidance/law/decisions-made-under-data-prote
 JUDGMENTS_URL = f"{BASE_URL}/en/dpc-guidance/law/judgments"
 CASE_STUDIES_URL = f"{BASE_URL}/en/dpc-guidance/case-studies"
 RATE_LIMIT_DELAY = 2.0
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 
 # Case study categories
 CASE_STUDY_CATEGORIES = [

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK Competition Appeal Tribunal (CAT) Scraper
+Legal Data Hunter - UK Competition Appeal Tribunal (CAT) Scraper
 
 Fetches judgments from the CAT using:
   - GET /sitemap.xml (discover all judgment URLs)

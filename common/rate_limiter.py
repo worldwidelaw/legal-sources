@@ -1,5 +1,5 @@
 """
-Rate limiter for World Wide Law.
+Rate limiter for Legal Data Hunter.
 
 Token-bucket algorithm with configurable rate and burst.
 Respects robots.txt and source-specific rate limits.

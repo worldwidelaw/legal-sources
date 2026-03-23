@@ -1,5 +1,5 @@
 """
-World Wide Law - Turkish Court of Cassation (Yargitay) Scraper
+Legal Data Hunter - Turkish Court of Cassation (Yargitay) Scraper
 
 Fetches case law from the Turkish Court of Cassation (Yargıtay).
 Data source: Bedesten API (https://bedesten.adalet.gov.tr)

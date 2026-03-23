@@ -41,7 +41,7 @@ SRU_QUERIES = [
 ]
 
 RATE_LIMIT_DELAY = 1.5
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 
 SCRIPT_DIR = Path(__file__).parent
 SAMPLE_DIR = SCRIPT_DIR / "sample"

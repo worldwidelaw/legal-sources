@@ -27,7 +27,7 @@ fetch:
   ecb_author_uri: http://publications.europa.eu/resource/authority/corporate-body/ECB
   rate_limit_seconds: 1.5
   timeout_seconds: 120
-  user_agent: WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)
+  user_agent: Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)
 
 auth:
   required: false

@@ -14,7 +14,7 @@ fetcher:
   base_url: https://www.concourt.am
   decisions_path: /decisions/cc-decision/
   rate_limit_seconds: 2
-  user_agent: "WorldWideLaw/1.0 (research project; +https://github.com/worldwidelaw/legal-sources)"
+  user_agent: "LegalDataHunter/1.0 (research project; +https://github.com/ZachLaik/LegalDataHunter)"
   years: 2000-present
 
 schema:

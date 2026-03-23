@@ -60,7 +60,7 @@ def get_session() -> requests.Session:
     session = requests.Session()
     session.headers.update({
         'Accept': 'application/json',
-        'User-Agent': 'WorldWideLaw/1.0 (research; https://github.com/worldwidelaw/legal-sources)',
+        'User-Agent': 'LegalDataHunter/1.0 (research; https://github.com/ZachLaik/LegalDataHunter)',
     })
     return session
 
@@ -187,7 +187,7 @@ def download_pdf(url: str) -> Optional[bytes]:
     session = requests.Session()
     session.headers.update({
         'Accept': 'application/pdf',
-        'User-Agent': 'WorldWideLaw/1.0',
+        'User-Agent': 'LegalDataHunter/1.0',
     })
 
     try:

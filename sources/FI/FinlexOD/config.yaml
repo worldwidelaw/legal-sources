@@ -1,0 +1,78 @@
+# ===================================================================
+# FI/FinlexOD -- Finland Finlex Open Data (Legislation + Case Law)
+# ===================================================================
+# REST API for legislation (Akoma Ntoso XML) + SPARQL for case law.
+# API: https://opendata.finlex.fi/finlex/avoindata/v1
+# SPARQL: http://ldf.fi/finlex/sparql
+# ===================================================================
+
+source:
+  id: "FI/FinlexOD"
+  country: "FI"
+  name: "Finland Finlex Open Data (Linked Data)"
+  url: "https://www.finlex.fi/en/open-data"
+  description: |
+    Finnish legislation and case law as structured open data.
+    REST API provides Akoma Ntoso XML for legislation.
+    SPARQL endpoint provides full text for KKO/KHO case law.
+
+data_types:
+  - legislation
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 1
+  notes: "REST API returns 429 when exceeded. SPARQL endpoint is slow."
+
+api:
+  type: "rest+sparql"
+  base_url: "https://opendata.finlex.fi/finlex/avoindata/v1"
+  sparql_url: "http://ldf.fi/finlex/sparql"
+  endpoints:
+    statute_list: "/akn/fi/act/statute/list?format=json&page={page}&limit=10"
+    consolidated_list: "/akn/fi/act/statute-consolidated/list?format=json&page={page}&limit=10"
+  response_format: "json+xml"
+
+data_model:
+  type: "legislation+case_law"
+  primary_key: "document_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "document_id"
+      description: "Unique ID (ELI URI or ECLI)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text from XML/SPARQL"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue/decision date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "ELI or ECLI URI"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - Legislation via REST API (Akoma Ntoso XML)
+  - Case law via SPARQL (KKO Supreme Court, KHO Supreme Administrative Court)
+  - Language: Finnish (fin)
+  - License: CC BY 4.0

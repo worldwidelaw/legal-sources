@@ -37,7 +37,7 @@ PDF_BASE_FR = "https://fr.const-court.be/public/f"
 PDF_BASE_NL = "https://nl.const-court.be/public/n"
 
 HEADERS = {
-    "User-Agent": "World Wide Law/1.0 (EU Legal Research)",
+    "User-Agent": "Legal Data Hunter/1.0 (EU Legal Research)",
     "Accept": "application/pdf,*/*",
     "Accept-Language": "fr-BE,fr;q=0.9,nl-BE;q=0.8,en;q=0.7",
 }

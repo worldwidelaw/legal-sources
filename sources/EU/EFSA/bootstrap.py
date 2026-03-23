@@ -41,7 +41,7 @@ class EFSAFetcher:
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources; mailto:contact@example.com)',
+            'User-Agent': 'Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter; mailto:contact@example.com)',
             'Accept': 'application/json',
         })
 

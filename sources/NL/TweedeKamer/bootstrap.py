@@ -67,7 +67,7 @@ class TweedeKamerScraper(BaseScraper):
         self.client = HttpClient(
             base_url=ODATA_BASE,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "application/json",
             },
             timeout=60,

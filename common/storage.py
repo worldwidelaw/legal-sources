@@ -1,5 +1,5 @@
 """
-Storage manager for World Wide Law.
+Storage manager for Legal Data Hunter.
 
 Handles reading/writing individual records as JSON-lines files,
 organized by source. Designed for simplicity and portability —

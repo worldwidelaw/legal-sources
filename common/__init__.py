@@ -1,5 +1,5 @@
 """
-World Wide Law - Common Libraries
+Legal Data Hunter - Common Libraries
 Shared infrastructure for building EU legal data scrapers.
 """
 

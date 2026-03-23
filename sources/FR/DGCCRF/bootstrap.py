@@ -29,7 +29,7 @@ PAGE_SIZE = 20
 
 SESSION = requests.Session()
 SESSION.headers.update({
-    "User-Agent": "WorldWideLaw/1.0 (academic research; legal data collection)",
+    "User-Agent": "LegalDataHunter/1.0 (academic research; legal data collection)",
     "Accept": "application/json",
 })
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK Tax & Chancery Tribunal Decisions Scraper
+Legal Data Hunter - UK Tax & Chancery Tribunal Decisions Scraper
 
 Fetches tax tribunal decisions from GOV.UK using:
   - GET /api/search.json?filter_format=tax_tribunal_decision (discovery)
@@ -91,7 +91,7 @@ class UKFTTTaxScraper(BaseScraper):
         self.client = HttpClient(
             base_url=self.BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "application/json",
             },
             timeout=30,
@@ -100,7 +100,7 @@ class UKFTTTaxScraper(BaseScraper):
         self.pdf_client = HttpClient(
             base_url="https://assets.publishing.service.gov.uk",
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
             },
             timeout=60,
         )
@@ -147,7 +147,7 @@ class UKFTTTaxScraper(BaseScraper):
         try:
             import requests
             resp = requests.get(url, headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
             }, timeout=60, stream=True)
             if resp.status_code != 200:
                 logger.warning(f"PDF download returned {resp.status_code}: {url}")

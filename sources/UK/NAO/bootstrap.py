@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK National Audit Office Scraper
+Legal Data Hunter - UK National Audit Office Scraper
 
 Fetches NAO audit reports via WordPress REST API at nao.org.uk.
 No authentication required. ~2,745 reports covering value for money,
@@ -66,7 +66,7 @@ class UKNAOScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "application/json",
             },
             timeout=30,

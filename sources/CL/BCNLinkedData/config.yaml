@@ -1,0 +1,77 @@
+# ===================================================================
+# CL/BCNLinkedData -- Chile BCN Linked Open Data (SPARQL + LeyChile XML)
+# ===================================================================
+# SPARQL endpoint for metadata, LeyChile XML for full text.
+# 410,000+ Chilean norms. Open data, no auth required.
+# SPARQL: https://datos.bcn.cl/sparql
+# ===================================================================
+
+source:
+  id: "CL/BCNLinkedData"
+  country: "CL"
+  name: "Chile BCN Linked Open Data - Legislation"
+  url: "https://datos.bcn.cl/es/"
+  description: |
+    Chilean legislation from the Biblioteca del Congreso Nacional (BCN)
+    Linked Open Data platform. Metadata via SPARQL endpoint, full text
+    via LeyChile XML download. Covers laws (leyes), decrees (decretos),
+    decree-laws, and other norm types.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "Virtuoso SPARQL + LeyChile XML, be gentle"
+
+api:
+  type: "sparql"
+  base_url: "https://datos.bcn.cl/sparql"
+  endpoints:
+    sparql: "/sparql"
+    xml_full_text: "https://www.leychile.cl/Consulta/obtxml?opt=7&idNorma={idNorma}"
+  response_format: "json"
+
+data_model:
+  type: "legislation"
+  primary_key: "leychile_code"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "leychile_code"
+      description: "LeyChile numeric ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Official title of the norm"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation from XML"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to LeyChile page"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - SPARQL for metadata, LeyChile XML for full text
+  - 16,000+ laws, 170,000+ decrees, 360,000+ total norms
+  - Language: Spanish
+  - License: Open Data (BCN)

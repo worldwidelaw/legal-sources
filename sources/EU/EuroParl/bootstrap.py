@@ -98,7 +98,7 @@ class EuroParlFetcher:
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)',
+            'User-Agent': 'Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)',
             'Accept': 'application/ld+json'
         })
 
@@ -151,7 +151,7 @@ class EuroParlFetcher:
         try:
             # Need different headers for HTML
             headers = {
-                'User-Agent': 'WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)',
+                'User-Agent': 'Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)',
                 'Accept': 'text/html'
             }
             response = self._make_request(url, headers=headers, silent=True)

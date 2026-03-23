@@ -30,7 +30,7 @@ SOURCE_ID = "LI/StGH"
 
 # Request settings
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) WorldWideLaw/1.0"
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) LegalDataHunter/1.0"
 }
 REQUEST_DELAY = 1.5  # Seconds between requests
 

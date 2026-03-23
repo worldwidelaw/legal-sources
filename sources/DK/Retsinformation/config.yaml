@@ -1,0 +1,76 @@
+# ===================================================================
+# DK/Retsinformation -- Denmark Official Law Database
+# ===================================================================
+# Harvest API for daily document sync + ELI XML for full text.
+# API: https://api.retsinformation.dk/v1/Documents
+# Rate limit: 1 request per 10 seconds, available 03:00-23:45.
+# ===================================================================
+
+source:
+  id: "DK/Retsinformation"
+  country: "DK"
+  name: "Denmark Retsinformation (Official Law Database)"
+  url: "https://www.retsinformation.dk/"
+  description: |
+    Official Danish legal information system. Harvest API provides
+    daily document updates with XML full text via ELI URIs.
+    Covers statutes, executive orders, circulars from 1985 onwards.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.1
+  burst: 1
+  notes: "API enforces 1 req/10 sec. Available 03:00-23:45 Danish time."
+
+api:
+  type: "rest"
+  base_url: "https://api.retsinformation.dk"
+  endpoints:
+    documents: "/v1/Documents"
+    xml: "http://retsinformation.dk/eli/accn/{accession}/xml"
+  response_format: "json+xml"
+
+data_model:
+  type: "legislation"
+  primary_key: "accession_number"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "accession_number"
+      description: "Unique accession number (e.g., B20250139505)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text from XML"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Change/publication date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "ELI URI"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - Harvest API returns docs changed per day (last 10 days)
+  - XML via ELI accession number
+  - Language: Danish
+  - Rate limit: 1 req / 10 sec

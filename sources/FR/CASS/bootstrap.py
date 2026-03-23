@@ -34,7 +34,7 @@ import yaml
 # Configuration
 SOURCE_ID = "FR/CASS"
 BASE_URL = "https://echanges.dila.gouv.fr/OPENDATA/CASS/"
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 REQUEST_DELAY = 1.0  # seconds between requests
 
 # Global dump pattern (contains full archive - 500K+ records, ~248MB)

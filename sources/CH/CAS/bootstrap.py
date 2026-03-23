@@ -56,7 +56,7 @@ DETAIL_ENDPOINT = f"{API_BASE}/CaseLawDocument"
 PDF_BASE = f"{API_BASE}/pdf"
 
 RATE_LIMIT_DELAY = 1.5
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent

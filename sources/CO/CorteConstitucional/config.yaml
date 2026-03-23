@@ -1,0 +1,68 @@
+# ===================================================================
+# CO/CorteConstitucional -- Colombian Constitutional Court
+# ===================================================================
+# 29,000+ Constitutional Court decisions (Tutela, Constitucionalidad,
+# Sentencias Unificadas). Metadata via Socrata SODA API at datos.gov.co.
+# Full text via HTML pages at corteconstitucional.gov.co/relatoria/.
+# Free access, no authentication required.
+# ===================================================================
+
+source:
+  id: "CO/CorteConstitucional"
+  country: "CO"
+  name: "Colombian Constitutional Court (Corte Constitucional)"
+  url: "https://www.corteconstitucional.gov.co/relatoria/"
+  description: |
+    Colombian Constitutional Court decisions from 1992 to present.
+    Metadata from Socrata open data portal (datos.gov.co). Full text
+    from the Court's relatoria website. Includes Tutela,
+    Constitucionalidad, and Sentencia Unificada decisions. Spanish.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  notes: "Socrata API is generous. Relatoria is plain HTML, moderate rate."
+
+api:
+  type: "rest"
+  base_url: "https://www.datos.gov.co/resource/v2k4-2t8s.json"
+  endpoints:
+    search: "?$limit={limit}&$offset={offset}&$order=fecha_sentencia DESC"
+    full_text: "https://www.corteconstitucional.gov.co/relatoria/{year}/{type}-{num}-{yy}.htm"
+
+schema:
+  key_fields:
+    - name: "sentencia"
+      description: "Decision identifier (e.g. T-012/92)"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Decision title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Decision date"
+      type: "date"
+      role: "temporal_key"
+    - name: "decision_type"
+      description: "Type: Tutela, Constitucionalidad, or Sentencia Unificada"
+      type: "string"
+      role: "classification"
+
+notes: |
+  - Socrata SODA API for metadata (no auth, paginated with $limit/$offset)
+  - Full text from relatoria HTML pages (windows-1252 encoding)
+  - URL pattern: /relatoria/{YYYY}/{TYPE}-{NUM}-{YY}.htm
+  - Decision types: T (Tutela), C (Constitucionalidad), SU (Sentencia Unificada)
+  - 29,000+ decisions from 1992 to present
+  - Language: Spanish

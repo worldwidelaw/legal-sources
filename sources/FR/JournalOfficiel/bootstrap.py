@@ -31,7 +31,7 @@ import yaml
 # Configuration
 SOURCE_ID = "FR/JournalOfficiel"
 BASE_URL = "https://echanges.dila.gouv.fr/OPENDATA/LEGI/"
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 REQUEST_DELAY = 1.0  # seconds between requests
 CHECKPOINT_INTERVAL = 500  # Save checkpoint every N records
 

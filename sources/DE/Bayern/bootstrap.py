@@ -75,7 +75,7 @@ def fetch_page(url: str, retries: int = 3) -> Optional[str]:
                 headers={
                     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9",
                     "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
-                    "User-Agent": "WorldWideLaw/1.0 (research; contact@example.com)"
+                    "User-Agent": "LegalDataHunter/1.0 (research; contact@example.com)"
                 },
                 timeout=30
             )
@@ -111,7 +111,7 @@ def fetch_rss_feed() -> List[Dict]:
             RSS_FEED_URL,
             headers={
                 "Accept": "application/xml,application/rss+xml,text/xml",
-                "User-Agent": "WorldWideLaw/1.0 (research; contact@example.com)"
+                "User-Agent": "LegalDataHunter/1.0 (research; contact@example.com)"
             },
             timeout=30
         )

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK Recognised Professional Bodies (Insolvency) Scraper
+Legal Data Hunter - UK Recognised Professional Bodies (Insolvency) Scraper
 
 Fetches Insolvency Service guidance and regulatory documents via GOV.UK
 Content API. Covers insolvency practitioner regulation, debt relief,
@@ -73,7 +73,7 @@ class UKRPBScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "application/json",
             },
             timeout=30,

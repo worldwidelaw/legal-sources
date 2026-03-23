@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK HMRC Excise Decisions Scraper
+Legal Data Hunter - UK HMRC Excise Decisions Scraper
 
 Fetches HMRC excise duty guidance and regulatory documents via the GOV.UK
 Content API (no authentication required). Filters HMRC content by excise
@@ -78,7 +78,7 @@ class UKHMRCExciseScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "application/json",
             },
             timeout=30,

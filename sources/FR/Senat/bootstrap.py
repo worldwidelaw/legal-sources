@@ -36,7 +36,7 @@ INDEXES = [
     f"{BASE_URL}/depots.xml",      # Deposited texts
     f"{BASE_URL}/adoptions.xml",   # Adopted texts
 ]
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 REQUEST_DELAY = 0.5  # seconds between requests
 
 # Akoma Ntoso namespace

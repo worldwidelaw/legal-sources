@@ -37,7 +37,7 @@ import yaml
 
 SOURCE_ID = "FR/CE-Fiscal"
 BASE_URL = "https://opendata.justice-administrative.fr"
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 REQUEST_DELAY = 1.0
 
 # Chambers that primarily handle fiscal/tax matters

@@ -65,7 +65,7 @@ def get_session() -> requests.Session:
     session = requests.Session()
     session.headers.update({
         'Accept': 'application/json',
-        'User-Agent': 'WorldWideLaw/1.0 (research; https://github.com/worldwidelaw/legal-sources)',
+        'User-Agent': 'LegalDataHunter/1.0 (research; https://github.com/ZachLaik/LegalDataHunter)',
     })
     return session
 
@@ -133,7 +133,7 @@ def download_attachment(storage_id: str) -> bytes:
     session = requests.Session()
     session.headers.update({
         'Accept': 'application/octet-stream',
-        'User-Agent': 'WorldWideLaw/1.0',
+        'User-Agent': 'LegalDataHunter/1.0',
     })
     encoded_id = quote(storage_id, safe='')
     url = f"{API_BASE}/bilagor/{encoded_id}"

@@ -126,7 +126,7 @@ class QBZScraper(BaseScraper):
 
         self.session = requests.Session()
         self.session.headers.update({
-            "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+            "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "sq,en;q=0.9",
         })

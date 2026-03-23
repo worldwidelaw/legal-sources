@@ -74,7 +74,7 @@ class CAFederalLegislationScraper(BaseScraper):
         self.client = HttpClient(
             base_url=API_BASE,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "application/xml, text/xml",
             },
             timeout=60,

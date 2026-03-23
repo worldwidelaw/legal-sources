@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK Information Commissioner (ICO) Scraper
+Legal Data Hunter - UK Information Commissioner (ICO) Scraper
 
 Fetches ICO decision notices and enforcement actions using:
   - POST /api/search (paginated JSON API, 25 results/page)
@@ -83,7 +83,7 @@ class UKICOScraper(BaseScraper):
         self.client = HttpClient(
             base_url=self.BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "application/json",
                 "Content-Type": "application/json",
             },
@@ -147,7 +147,7 @@ class UKICOScraper(BaseScraper):
         try:
             import requests
             resp = requests.get(url, headers={
-                "User-Agent": "WorldWideLaw/1.0",
+                "User-Agent": "LegalDataHunter/1.0",
             }, timeout=60)
             if resp.status_code != 200:
                 return None

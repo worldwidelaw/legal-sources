@@ -72,7 +72,7 @@ class GreekSupremeCourtScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "text/html,application/xhtml+xml",
                 "Accept-Language": "el,en",
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -104,7 +104,7 @@ class GreekSupremeCourtScraper(BaseScraper):
                 f"{BASE_URL}/nomologia/apofaseis_result.asp?S=1",
                 data=form_data,
                 headers={
-                    "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                    "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                     "Content-Type": "application/x-www-form-urlencoded",
                     "Accept": "text/html,application/xhtml+xml",
                 },

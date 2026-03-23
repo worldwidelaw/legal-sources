@@ -117,7 +117,7 @@ def fetch_sparql(query: str, session: requests.Session) -> list:
     """Execute a SPARQL query and return results."""
     headers = {
         "Accept": "application/sparql-results+json",
-        "User-Agent": "WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)"
+        "User-Agent": "LegalDataHunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)"
     }
     
     for attempt in range(MAX_RETRIES):
@@ -141,7 +141,7 @@ def fetch_sparql(query: str, session: requests.Session) -> list:
 def fetch_xml_content(xml_url: str, session: requests.Session) -> Optional[dict]:
     """Fetch and parse XML content from a legislation URL."""
     headers = {
-        "User-Agent": "WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)"
+        "User-Agent": "LegalDataHunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)"
     }
     
     for attempt in range(MAX_RETRIES):

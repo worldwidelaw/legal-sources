@@ -41,7 +41,7 @@ SOURCE_ID = "FR/Judilibre"
 SANDBOX_URL = "https://sandbox-api.piste.gouv.fr/cassation/judilibre/v1.0"
 PRODUCTION_URL = "https://api.piste.gouv.fr/cassation/judilibre/v1.0"
 
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 REQUEST_DELAY = 0.5  # seconds between requests
 JURISDICTIONS = ["cc", "ca", "tj", "tcom"]  # All jurisdictions: Cour de cassation, Cours d'appel, Tribunaux judiciaires, Tribunaux de commerce
 

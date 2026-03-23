@@ -1,5 +1,5 @@
 """
-World Wide Law - Serbian Supreme Court Scraper
+Legal Data Hunter - Serbian Supreme Court Scraper
 
 Fetches case law from the Serbian Supreme Court (Vrhovni sud).
 Data source: https://vrh.sud.rs

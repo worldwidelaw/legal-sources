@@ -43,7 +43,7 @@ REQUEST_DELAY = 2.0
 # Session for HTTP requests
 session = requests.Session()
 session.headers.update({
-    "User-Agent": "WorldWideLaw/1.0 (Academic Research; https://github.com/worldwidelaw/legal-sources)"
+    "User-Agent": "LegalDataHunter/1.0 (Academic Research; https://github.com/ZachLaik/LegalDataHunter)"
 })
 
 

@@ -67,7 +67,7 @@ class TaiwanMOJScraper(BaseScraper):
         super().__init__(source_dir)
         self.session = requests.Session()
         self.session.headers.update({
-            "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+            "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
         })
         self._chinese_laws: Optional[Dict[str, dict]] = None
         self._english_laws: Optional[Dict[str, dict]] = None

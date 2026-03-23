@@ -89,7 +89,7 @@ class CassScraper(BaseScraper):
         self.client = HttpClient(
             base_url=CONTENT_BASE,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept-Language": "fr,nl,de",
             },
             timeout=60,
@@ -98,7 +98,7 @@ class CassScraper(BaseScraper):
         self.sitemap_client = HttpClient(
             base_url=SITEMAP_BASE,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
             },
             timeout=60,
         )

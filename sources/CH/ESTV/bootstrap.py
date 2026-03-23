@@ -82,7 +82,7 @@ PUBLICATION_PAGES = [
 
 RATE_LIMIT_DELAY = 2.0
 MAX_PDF_SIZE_MB = 25.0
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent

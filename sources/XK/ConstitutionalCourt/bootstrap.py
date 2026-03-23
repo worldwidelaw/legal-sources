@@ -56,7 +56,7 @@ REQUEST_TIMEOUT = 60
 
 # HTTP headers
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; WorldWideLaw/1.0; +https://github.com/worldwidelaw/legal-sources)",
+    "User-Agent": "Mozilla/5.0 (compatible; LegalDataHunter/1.0; +https://github.com/ZachLaik/LegalDataHunter)",
     "Accept": "application/json",
     "Content-Type": "application/json",
 }

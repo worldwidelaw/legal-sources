@@ -91,7 +91,7 @@ class AADEScraper(BaseScraper):
         self.client = HttpClient(
             base_url=API_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "application/json",
             },
             timeout=60,
@@ -120,7 +120,7 @@ class AADEScraper(BaseScraper):
 
             # Stream the response to check size before loading
             resp = requests.get(url, timeout=60, stream=True, headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
             })
 
             if resp.status_code != 200:

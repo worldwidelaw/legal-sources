@@ -1,0 +1,80 @@
+# ===================================================================
+# BR/QueridoDiario -- Querido Diário (Brazilian Municipal Gazettes)
+# ===================================================================
+# Open REST API for 5,000+ Brazilian municipalities' official gazettes.
+# Full text search with JSON output. CC-BY 4.0 license.
+# API docs: https://api.queridodiario.ok.org.br/docs
+# ===================================================================
+
+source:
+  id: "BR/QueridoDiario"
+  country: "BR"
+  name: "Querido Diário - Brazilian Municipal Official Gazettes"
+  url: "https://queridodiario.ok.org.br"
+  description: |
+    Querido Diário is an open-source project by Open Knowledge Brasil that
+    collects, processes, and makes available official gazettes from Brazilian
+    municipalities. REST API provides full-text search across thousands of
+    cities' official publications including laws, decrees, contracts, and
+    administrative acts. Full text available via TXT download URLs.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "No official rate limit but ~60 req/min recommended"
+
+api:
+  type: "rest"
+  base_url: "https://api.queridodiario.ok.org.br"
+  endpoints:
+    search: "/gazettes"
+    cities: "/cities"
+    themes: "/gazettes/by_theme/themes/"
+  response_format: "json"
+
+data_model:
+  type: "legislation"
+  primary_key: "gazette_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "gazette_id"
+      description: "Unique gazette identifier (territory_id + date + hash)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Gazette title (territory name + edition)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the official gazette"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to gazette PDF"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - API provides search results with excerpts; full text via txt_url
+  - Each gazette is a full municipal official gazette edition
+  - Coverage: 5,000+ municipalities, growing
+  - Language: Portuguese
+  - License: CC-BY 4.0

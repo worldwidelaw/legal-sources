@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK Immigration & Asylum Chamber Scraper
+Legal Data Hunter - UK Immigration & Asylum Chamber Scraper
 
 Fetches tribunal decisions from GOV.UK using:
   - GET /api/search.json?filter_format=utaac_decision (UTAAC decisions)
@@ -83,7 +83,7 @@ class UKIACScraper(BaseScraper):
         self.client = HttpClient(
             base_url=self.BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "application/json",
             },
             timeout=30,
@@ -130,7 +130,7 @@ class UKIACScraper(BaseScraper):
         try:
             import requests
             resp = requests.get(url, headers={
-                "User-Agent": "WorldWideLaw/1.0",
+                "User-Agent": "LegalDataHunter/1.0",
             }, timeout=60)
             if resp.status_code != 200:
                 return None

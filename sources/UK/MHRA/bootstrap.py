@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK MHRA (Medicines & Healthcare Products) Scraper
+Legal Data Hunter - UK MHRA (Medicines & Healthcare Products) Scraper
 
 Fetches MHRA regulatory documents via:
   - GOV.UK Search API (paginated discovery of all MHRA publications)
@@ -71,7 +71,7 @@ class UKMHRAScraper(BaseScraper):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
         self.http = HttpClient(
-            headers={"Accept": "application/json", "User-Agent": "WorldWideLaw/1.0"},
+            headers={"Accept": "application/json", "User-Agent": "LegalDataHunter/1.0"},
             timeout=30,
         )
 

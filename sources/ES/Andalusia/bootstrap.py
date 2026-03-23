@@ -75,7 +75,7 @@ class AndalusiaScraper(BaseScraper):
 
         self.session = requests.Session()
         self.session.headers.update({
-            "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+            "User-Agent": "Legal-Data-Hunter/1.0 (Open Data Research)",
             "Accept": "application/json",
         })
 

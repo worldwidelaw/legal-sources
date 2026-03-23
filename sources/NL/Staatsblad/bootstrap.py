@@ -76,7 +76,7 @@ class StaatsbladScraper(BaseScraper):
 
         self.client = HttpClient(
             base_url=SRU_ENDPOINT,
-            headers={"User-Agent": "WorldWideLaw/1.0 (Open Data Research)"},
+            headers={"User-Agent": "LegalDataHunter/1.0 (Open Data Research)"},
             timeout=60,
         )
 

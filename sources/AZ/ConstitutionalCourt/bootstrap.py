@@ -1,5 +1,5 @@
 """
-World Wide Law - Azerbaijan Constitutional Court Scraper
+Legal Data Hunter - Azerbaijan Constitutional Court Scraper
 
 Fetches case law from the Azerbaijan Constitutional Court (Konstitusiya Məhkəməsi).
 Data source: https://www.constcourt.gov.az

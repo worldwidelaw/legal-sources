@@ -36,7 +36,7 @@ class TSVFetcher:
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)',
+            'User-Agent': 'Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)',
         })
 
     def _get(self, url: str, params: dict = None, timeout: int = 60) -> Optional[requests.Response]:

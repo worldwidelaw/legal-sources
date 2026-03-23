@@ -118,7 +118,7 @@ class GovernmentGazetteScraper(BaseScraper):
         self.session = requests.Session()
         self.session.mount('https://', SSLAdapter())
         self.session.headers.update({
-            "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+            "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
             "Host": API_HOST,
             "Accept": "application/pdf,*/*",
         })

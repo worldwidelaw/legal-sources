@@ -53,7 +53,7 @@ DETAIL_URL = f"{BASE_URL}/ugyadatlap"
 RECENT_DECISIONS_URL = f"{BASE_URL}/a-legfrissebb-dontesek/"
 
 HEADERS = {
-    "User-Agent": "World Wide Law/1.0 (EU Legal Research)",
+    "User-Agent": "Legal Data Hunter/1.0 (EU Legal Research)",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "hu-HU,hu;q=0.9,en;q=0.8",
 }

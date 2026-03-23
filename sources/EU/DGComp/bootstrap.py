@@ -55,7 +55,7 @@ class DGCompScraper(BaseScraper):
         super().__init__(SOURCE_DIR)
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)'
+            'User-Agent': 'Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)'
         })
 
     def _make_request(self, url: str, timeout: int = 120) -> Optional[requests.Response]:

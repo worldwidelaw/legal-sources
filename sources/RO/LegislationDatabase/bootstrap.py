@@ -77,7 +77,7 @@ class RoLegislationScraper(BaseScraper):
             base_url="",  # Using full URLs for SOAP
             headers={
                 "Content-Type": "text/xml; charset=utf-8",
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
             },
             timeout=60,
         )

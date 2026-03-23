@@ -41,7 +41,7 @@ def curl_get(url: str, timeout: int = 30) -> Optional[str]:
     try:
         result = subprocess.run(
             ['curl', '-sL', '--max-time', str(timeout), '-H',
-             'User-Agent: Mozilla/5.0 (compatible; WorldWideLaw/1.0)', url],
+             'User-Agent: Mozilla/5.0 (compatible; LegalDataHunter/1.0)', url],
             capture_output=True, text=True, timeout=timeout + 5
         )
         if result.returncode == 0:
@@ -57,7 +57,7 @@ def curl_download(url: str, output_path: str, timeout: int = 60) -> bool:
     try:
         result = subprocess.run(
             ['curl', '-sL', '--max-time', str(timeout), '-H',
-             'User-Agent: Mozilla/5.0 (compatible; WorldWideLaw/1.0)',
+             'User-Agent: Mozilla/5.0 (compatible; LegalDataHunter/1.0)',
              '-o', output_path, url],
             capture_output=True, text=True, timeout=timeout + 5
         )

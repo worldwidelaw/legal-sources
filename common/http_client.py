@@ -1,5 +1,5 @@
 """
-HTTP client wrapper for World Wide Law.
+HTTP client wrapper for Legal Data Hunter.
 
 Centralized HTTP handling with:
 - Automatic retries with exponential backoff
@@ -62,7 +62,7 @@ class HttpClient:
         if proxy:
             self.session.proxies = {"http": proxy, "https": proxy}
 
-        self.session.headers.setdefault("User-Agent", "WorldWideLaw/1.0 (Open Data Research)")
+        self.session.headers.setdefault("User-Agent", "LegalDataHunter/1.0 (Open Data Research)")
 
         retry_strategy = Retry(
             total=max_retries,

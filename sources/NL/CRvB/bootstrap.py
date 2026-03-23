@@ -39,7 +39,7 @@ SEARCH_URL = f"{API_BASE}/uitspraken/zoeken"
 CONTENT_URL = f"{API_BASE}/uitspraken/content"
 
 RATE_LIMIT_DELAY = 2.0
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 
 SCRIPT_DIR = Path(__file__).parent
 SAMPLE_DIR = SCRIPT_DIR / "sample"

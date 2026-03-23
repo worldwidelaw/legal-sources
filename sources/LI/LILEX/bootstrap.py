@@ -24,7 +24,7 @@ RATE_LIMIT_DELAY = 1.0  # seconds between requests
 
 # Request headers
 HEADERS = {
-    "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+    "User-Agent": "LegalDataHunter/1.0 (legal research project)",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "de,en;q=0.5"
 }

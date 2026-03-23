@@ -31,7 +31,7 @@ RATE_LIMIT_DELAY = 1.5
 
 SESSION = requests.Session()
 SESSION.headers.update({
-    "User-Agent": "WorldWideLaw/1.0 (academic research; legal data collection)",
+    "User-Agent": "LegalDataHunter/1.0 (academic research; legal data collection)",
     "Accept": "text/html,application/xhtml+xml",
 })
 

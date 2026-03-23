@@ -33,7 +33,7 @@ api:
   type: "rest"
   base_url: "https://opendata.finlex.fi/finlex/avoindata/v1"
   headers:
-    User-Agent: "WorldWideLaw/1.0 (Open Data Research)"
+    User-Agent: "LegalDataHunter/1.0 (Open Data Research)"
   endpoints:
     statute_list: "/akn/fi/act/statute/list"
     statute_consolidated_list: "/akn/fi/act/statute-consolidated/list"

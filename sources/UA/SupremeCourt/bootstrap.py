@@ -132,7 +132,7 @@ class SupremeCourtScraper(BaseScraper):
 
         self.session = requests.Session()
         self.session.headers.update({
-            "User-Agent": "WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)",
+            "User-Agent": "LegalDataHunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)",
             "Accept": "*/*",
         })
         self.last_request_time = 0

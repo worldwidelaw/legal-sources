@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK Maritime and Coastguard Agency (MCA) Scraper
+Legal Data Hunter - UK Maritime and Coastguard Agency (MCA) Scraper
 
 Fetches MCA maritime safety guidance, detailed guides, and statutory
 guidance via the GOV.UK Content API (no authentication required).
@@ -65,7 +65,7 @@ class UKMCAScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "application/json",
             },
             timeout=30,

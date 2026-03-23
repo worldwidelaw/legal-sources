@@ -1,5 +1,5 @@
 """
-World Wide Law — Bulgarian State Gazette Scraper
+Legal Data Hunter — Bulgarian State Gazette Scraper
 
 Fetches legislative materials from the Bulgarian State Gazette (Държавен вестник)
 published by the Bulgarian National Assembly.

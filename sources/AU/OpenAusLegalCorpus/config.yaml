@@ -1,0 +1,75 @@
+# ===================================================================
+# AU/OpenAusLegalCorpus -- Open Australian Legal Corpus (HuggingFace)
+# ===================================================================
+# State-level legislation and case law from the Open Australian Legal
+# Corpus. Excludes federal sources already covered by AU/FedCourt and
+# AU/FederalRegister. Covers NSW, QLD, WA, SA, TAS, Norfolk Island,
+# plus High Court of Australia.
+# ===================================================================
+
+source:
+  id: "AU/OpenAusLegalCorpus"
+  country: "AU"
+  name: "Open Australian Legal Corpus (States + High Court)"
+  url: "https://huggingface.co/datasets/isaacus/open-australian-legal-corpus"
+  description: |
+    State-level legislation and case law from the Open Australian Legal
+    Corpus on HuggingFace. Covers NSW Caselaw (117K+ decisions), NSW
+    Legislation, QLD Legislation, WA Legislation, SA Legislation, TAS
+    Legislation, Norfolk Island, and High Court of Australia. Federal
+    Court and Federal Register excluded (covered by AU/FedCourt and
+    AU/FederalRegister). 232K total docs, ~170K after exclusions.
+    CC-BY-4.0.
+
+data_types:
+  - legislation
+  - case_law
+
+auth:
+  type: "none"
+
+api:
+  type: "bulk"
+  base_url: "https://huggingface.co/datasets/isaacus/open-australian-legal-corpus"
+  notes: "Streamed via HuggingFace datasets library. 10 Parquet shards, ~2.3GB compressed."
+
+data_model:
+  type: "mixed"
+  primary_key: "version_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "version_id"
+      description: "Unique document version identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document citation/title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to original source"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - Streamed from HuggingFace to avoid 5GB+ download
+  - Excludes federal_court_of_australia and federal_register_of_legislation
+  - NSW Caselaw is 50% of total corpus (117K decisions)
+  - VIC, ACT, NT are NOT covered in this dataset
+  - CC-BY-4.0 license

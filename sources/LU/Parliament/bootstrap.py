@@ -191,7 +191,7 @@ def fetch_all(legislatures: list = None) -> Generator[Dict[str, Any], None, None
     """Fetch all parliamentary questions from specified legislatures."""
     session = requests.Session()
     session.headers.update({
-        'User-Agent': 'WorldWideLaw/1.0 (https://github.com/legal-data-hunter)',
+        'User-Agent': 'LegalDataHunter/1.0 (https://github.com/legal-data-hunter)',
         'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, */*',
     })
 

@@ -33,7 +33,7 @@ import requests
 # Configuration
 SOURCE_ID = "US/OpenStates"
 API_BASE = "https://v3.openstates.org"
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research; contact@legaldatahunter.com)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research; contact@legaldatahunter.com)"
 REQUEST_DELAY = 1.0  # seconds between requests
 
 # Paths

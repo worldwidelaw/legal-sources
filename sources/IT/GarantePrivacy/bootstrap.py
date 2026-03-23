@@ -69,7 +69,7 @@ class GarantePrivacyScraper(BaseScraper):
         self.client = HttpClient(
             base_url="",
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                 "Accept-Language": "it-IT,it;q=0.9,en;q=0.8",
             },

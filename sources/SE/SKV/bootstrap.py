@@ -74,7 +74,7 @@ class SwedishSKVScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "application/atom+xml, text/html, application/json",
                 "Accept-Language": "sv,en",
             },
@@ -97,7 +97,7 @@ class SwedishSKVScraper(BaseScraper):
 
             try:
                 resp = self.client.session.get(feed_url, timeout=60, headers={
-                    "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                    "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                     "Accept": "application/atom+xml, text/xml",
                 })
                 resp.raise_for_status()
@@ -169,7 +169,7 @@ class SwedishSKVScraper(BaseScraper):
         try:
             self.rate_limiter.wait()
             resp = self.client.session.get(doc_url, timeout=60, headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "text/html",
             })
             resp.raise_for_status()
@@ -329,7 +329,7 @@ class SwedishSKVScraper(BaseScraper):
         """Quick connectivity test."""
         try:
             resp = self.client.session.get(ATOM_FEED_URL, timeout=30, headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "application/atom+xml",
             })
             resp.raise_for_status()

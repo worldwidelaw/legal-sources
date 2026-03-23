@@ -91,7 +91,7 @@ class RechtspraakScraper:
         self.session.mount("http://", adapter)
 
         self.session.headers.update({
-            "User-Agent": "WorldWideLaw/1.0 (Open Data Research; contact@example.com)",
+            "User-Agent": "LegalDataHunter/1.0 (Open Data Research; contact@example.com)",
             "Accept": "application/xml, application/atom+xml, text/xml, */*",
         })
 

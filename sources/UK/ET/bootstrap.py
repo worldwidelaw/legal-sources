@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK Employment Tribunals Scraper
+Legal Data Hunter - UK Employment Tribunals Scraper
 
 Fetches employment tribunal decisions from GOV.UK using:
   - GET /api/search.json?filter_format=employment_tribunal_decision (discovery)
@@ -63,7 +63,7 @@ class UKETScraper(BaseScraper):
         self.client = HttpClient(
             base_url=self.BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "application/json",
             },
             timeout=30,

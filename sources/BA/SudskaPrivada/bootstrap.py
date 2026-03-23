@@ -1,5 +1,5 @@
 """
-World Wide Law - Bosnia & Herzegovina Judicial Practice Portal Scraper
+Legal Data Hunter - Bosnia & Herzegovina Judicial Practice Portal Scraper
 
 Fetches case law from the BiH Judicial Practice Portal (Sudska praksa).
 Data source: https://sudskapraksa.pravosudje.ba

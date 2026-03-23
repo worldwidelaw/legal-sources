@@ -50,7 +50,7 @@ CATEGORIES = [
 YEARS = list(range(2000, datetime.now().year + 1))
 
 HEADERS = {
-    "User-Agent": "WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources; EU Legal Research)",
+    "User-Agent": "Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter; EU Legal Research)",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,application/pdf,*/*;q=0.8",
     "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
 }

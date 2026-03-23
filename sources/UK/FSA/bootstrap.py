@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK Food Standards Agency Scraper
+Legal Data Hunter - UK Food Standards Agency Scraper
 
 Fetches FSA publications via the internal search API:
   - GET /search-api?keywords=&page=N (paginated, 10 items/page, full text in body.#markup)
@@ -69,7 +69,7 @@ class UKFSAScraper(BaseScraper):
         self.client = HttpClient(
             base_url=self.BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "application/json",
             },
             timeout=30,

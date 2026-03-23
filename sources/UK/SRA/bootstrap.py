@@ -29,7 +29,7 @@ SOURCE_ID = "UK/SRA"
 SAMPLE_DIR = Path(__file__).parent / "sample"
 
 HEADERS = {
-    "User-Agent": "WorldWideLaw/1.0 (Open Data Research; github.com/worldwidelaw/legal-sources)",
+    "User-Agent": "LegalDataHunter/1.0 (Open Data Research; github.com/ZachLaik/LegalDataHunter)",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 }
 

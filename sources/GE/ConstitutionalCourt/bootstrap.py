@@ -24,7 +24,7 @@ from bs4 import BeautifulSoup
 
 BASE_URL = "https://www.constcourt.ge"
 LIST_URL = f"{BASE_URL}/ka/judicial-acts"
-USER_AGENT = "WorldWideLaw/1.0 (+https://github.com/worldwidelaw/legal-sources)"
+USER_AGENT = "LegalDataHunter/1.0 (+https://github.com/ZachLaik/LegalDataHunter)"
 REQUEST_DELAY = 2  # seconds between requests
 
 

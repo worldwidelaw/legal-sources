@@ -38,7 +38,7 @@ SAMPLE_DIR = Path(__file__).parent / "sample"
 SOURCE_ID = "UK/FCA"
 
 HEADERS = {
-    "User-Agent": "WorldWideLaw/1.0 (Open Data Research; github.com/worldwidelaw/legal-sources)",
+    "User-Agent": "LegalDataHunter/1.0 (Open Data Research; github.com/ZachLaik/LegalDataHunter)",
     "Accept": "*/*",
 }
 

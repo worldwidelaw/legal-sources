@@ -31,7 +31,7 @@ logger = logging.getLogger("legal-data-hunter")
 
 class BaseScraper(ABC):
     """
-    Abstract base class for all World Wide Law scrapers.
+    Abstract base class for all Legal Data Hunter scrapers.
 
     Each data source implements:
       - fetch_all()       -> generator yielding all documents (for bootstrap)

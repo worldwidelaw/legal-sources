@@ -89,7 +89,7 @@ class AustraliaFederalRegisterScraper(BaseScraper):
         self.client = HttpClient(
             base_url=API_BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "application/json",
             },
             timeout=120,  # Long timeout for document downloads
@@ -98,7 +98,7 @@ class AustraliaFederalRegisterScraper(BaseScraper):
         self.doc_client = HttpClient(
             base_url=API_BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
             },
             timeout=120,
         )

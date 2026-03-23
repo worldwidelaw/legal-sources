@@ -40,7 +40,7 @@ PDF_ENDPOINT = f"{BASE_URL}/arr.php"
 RECENT_DECISIONS_URL = f"{BASE_URL}/?lang=fr&page=lastmonth_{{mm}}"
 
 HEADERS = {
-    "User-Agent": "World Wide Law/1.0 (EU Legal Research)",
+    "User-Agent": "Legal Data Hunter/1.0 (EU Legal Research)",
     "Accept": "application/pdf,text/html,*/*",
     "Accept-Language": "fr-BE,fr;q=0.9,nl-BE;q=0.8,en;q=0.7",
 }

@@ -60,7 +60,7 @@ SANCTIONS_URL_NL = f"{BASE_URL}/nl/minnelijke-schikkingen"
 SANCTIONS_URL_EN = f"{BASE_URL}/en/administrative-sanctions"
 
 RATE_LIMIT_DELAY = 2.0
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent

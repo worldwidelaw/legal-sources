@@ -1,22 +1,35 @@
 #!/usr/bin/env python3
 """
-World Wide Law — Dashboard Data Generator
+Legal Data Hunter — Dashboard Data Generator
 
-Reads manifest.yaml, status.yaml files, and sample data.
+Reads manifest.yaml, BLOCKED.md, status.yaml files, sample data, and session logs.
+Queries Neon PostgreSQL directly for live indexing metrics when NEON_DATABASE_URL is set,
+falls back to INDEX.yaml when offline.
+
 Outputs docs/status.json for the GitHub Pages dashboard.
 
 Usage:
-    python3 generate_dashboard.py
+    python3 generate_dashboard.py                          # uses INDEX.yaml fallback
+    NEON_DATABASE_URL=postgresql://... python3 generate_dashboard.py   # live Neon query
 """
 
 import json
+import os
+import re
+import sys
 import yaml
 from datetime import datetime, timezone
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).parent
 DOCS_DIR = PROJECT_ROOT / "docs"
+PIPELINE_INDEX = Path.home() / "legal-data-pipeline" / "INDEX.yaml"
+PIPELINE_REPO_URL = "https://github.com/ZachLaik/legal-data-pipeline"
 
+# ─── Neon connection (optional) ───
+# Set NEON_DATABASE_URL env var or create .env in project root.
+# If unavailable, falls back to reading INDEX.yaml.
+_ENV_FILE = PROJECT_ROOT / ".env"
 COUNTRY_NAMES = {
     # Supranational
     "EU": "European Union", "CoE": "Council of Europe",
@@ -80,12 +93,213 @@ def load_manifest():
         return yaml.safe_load(f)
 
 
+def _load_neon_database_url():
+    """Load NEON_DATABASE_URL from environment or .env file."""
+    url = os.environ.get("NEON_DATABASE_URL")
+    if url:
+        return url
+    # Try .env file in project root
+    if _ENV_FILE.exists():
+        for line in _ENV_FILE.read_text().splitlines():
+            line = line.strip()
+            if line.startswith("NEON_DATABASE_URL=") and not line.startswith("#"):
+                return line.split("=", 1)[1].strip().strip('"').strip("'")
+    return None
+
+
+def _query_neon_live(database_url):
+    """Query Neon PostgreSQL directly for live indexing metrics.
+
+    Returns a lookup dict keyed by source ID with per-table row counts,
+    so sources present in multiple tables (e.g., AT/RIS in legislation AND case_law)
+    are correctly counted without overwriting.
+    """
+    try:
+        import psycopg2
+    except ImportError:
+        print("  psycopg2 not installed — pip install psycopg2-binary", file=sys.stderr)
+        return None
+
+    try:
+        conn = psycopg2.connect(database_url, connect_timeout=10)
+    except Exception as e:
+        print(f"  Neon connection failed: {e}", file=sys.stderr)
+        return None
+
+    lookup = {}
+    try:
+        with conn.cursor() as cur:
+            # ── Per-source row counts for all tables ──
+            # Store per-table counts separately to avoid overwriting
+            for table in ("legislation", "case_law", "doctrine"):
+                cur.execute(f"""
+                    SELECT source, COUNT(*) FROM {table} GROUP BY source
+                """)
+                for source, count in cur.fetchall():
+                    if source not in lookup:
+                        lookup[source] = {
+                            "legislation_rows": 0,
+                            "case_law_rows": 0,
+                            "doctrine_rows": 0,
+                            "neon_rows": 0,
+                            "status": "pending",
+                        }
+                    lookup[source][f"{table}_rows"] = count
+
+            # ── Compute totals and determine primary data_type ──
+            for source, data in lookup.items():
+                leg = data.get("legislation_rows", 0)
+                case = data.get("case_law_rows", 0)
+                doc = data.get("doctrine_rows", 0)
+                total = leg + case + doc
+                data["neon_rows"] = total
+                data["status"] = "ok" if total > 0 else "pending"
+                # Set data_type to the table with most rows (for backwards compatibility)
+                if leg >= case and leg >= doc:
+                    data["data_type"] = "legislation"
+                elif case >= leg and case >= doc:
+                    data["data_type"] = "case_law"
+                else:
+                    data["data_type"] = "doctrine"
+
+            # ── Date ranges per source (all tables) ──
+            for table in ("legislation", "case_law", "doctrine"):
+                cur.execute(f"""
+                    SELECT source,
+                           EXTRACT(YEAR FROM MIN(date))::int,
+                           EXTRACT(YEAR FROM MAX(date))::int,
+                           COUNT(*)
+                    FROM {table}
+                    WHERE date IS NOT NULL
+                    GROUP BY source
+                """)
+                for source, min_yr, max_yr, cnt in cur.fetchall():
+                    if source in lookup:
+                        # Merge date ranges across tables
+                        existing = lookup[source].get("date_range")
+                        if existing:
+                            lookup[source]["date_range"] = {
+                                "min_year": min(existing["min_year"], min_yr) if existing["min_year"] and min_yr else (existing["min_year"] or min_yr),
+                                "max_year": max(existing["max_year"], max_yr) if existing["max_year"] and max_yr else (existing["max_year"] or max_yr),
+                                "total_with_date": existing["total_with_date"] + cnt,
+                            }
+                        else:
+                            lookup[source]["date_range"] = {
+                                "min_year": min_yr,
+                                "max_year": max_yr,
+                                "total_with_date": cnt,
+                            }
+
+            # ── Last ingested timestamp per source (all tables) ──
+            for table in ("legislation", "case_law", "doctrine"):
+                cur.execute(f"""
+                    SELECT source, MAX(ingested_at) FROM {table} GROUP BY source
+                """)
+                for source, ts in cur.fetchall():
+                    if source in lookup and ts:
+                        existing = lookup[source].get("last_ingested")
+                        if existing:
+                            # Keep the most recent timestamp
+                            if ts.isoformat() > existing:
+                                lookup[source]["last_ingested"] = ts.isoformat()
+                        else:
+                            lookup[source]["last_ingested"] = ts.isoformat()
+
+    except Exception as e:
+        print(f"  Neon query error: {e}", file=sys.stderr)
+        conn.close()
+        return None
+
+    conn.close()
+
+    # Build normalized variants for fuzzy matching (same as INDEX.yaml loader)
+    normalized = {}
+    for sid, val in lookup.items():
+        normalized[sid] = val
+        normalized[sid.lower()] = val
+        normalized[sid.lower().replace("_", ".")] = val
+        normalized[sid.lower().replace(".", "_")] = val
+
+    return normalized
+
+
+def _load_pipeline_index_yaml():
+    """Fallback: load indexing data from the legal-data-pipeline INDEX.yaml.
+
+    Builds a lookup keyed by normalized source ID (lowercase) with both
+    dot-separated and underscore-separated variants for fuzzy matching.
+    """
+    if not PIPELINE_INDEX.exists():
+        return {}
+    try:
+        with open(PIPELINE_INDEX) as f:
+            data = yaml.safe_load(f) or {}
+        raw = data.get("sources", {})
+        lookup = {}
+        for sid, val in raw.items():
+            lookup[sid] = val
+            lookup[sid.lower()] = val
+            lookup[sid.lower().replace("_", ".")] = val
+            lookup[sid.lower().replace(".", "_")] = val
+        return lookup
+    except Exception:
+        return {}
+
+
+def load_pipeline_index():
+    """Load indexing data — live from Neon if available, else INDEX.yaml fallback."""
+    neon_url = _load_neon_database_url()
+    if neon_url:
+        print("Querying Neon PostgreSQL for live indexing data...")
+        result = _query_neon_live(neon_url)
+        if result is not None:
+            source_count = len({k for k in result if "/" in k and k == k})  # rough unique
+            print(f"  Live data loaded: {len(result)} entries from Neon")
+            return result
+        print("  Falling back to INDEX.yaml...")
+
+    print("Loading indexing data from INDEX.yaml...")
+    return _load_pipeline_index_yaml()
+
+
+def parse_blocked_md():
+    path = PROJECT_ROOT / "BLOCKED.md"
+    if not path.exists():
+        return []
+    content = path.read_text()
+    blockers = []
+    # Split on ### headers
+    sections = re.split(r'^### ', content, flags=re.MULTILINE)
+    for section in sections[1:]:  # skip preamble
+        lines = section.strip().split('\n')
+        header = lines[0].strip()
+        # Extract source_id from header (e.g., "BE/MoniteurBelge — description")
+        source_id = header.split(' ')[0] if ' ' in header else header
+        description = header.split(' — ', 1)[1] if ' — ' in header else ''
+        body = '\n'.join(lines[1:])
+        # Extract status
+        status_match = re.search(r'\*\*Status:\*\*\s*(.+)', body)
+        status = status_match.group(1).strip() if status_match else 'unknown'
+        # Extract reason
+        reason_match = re.search(r'\*\*Reason:\*\*\s*(.+)', body)
+        reason = reason_match.group(1).strip() if reason_match else description
+        blockers.append({
+            "source_id": source_id,
+            "description": description,
+            "status": status,
+            "reason": reason,
+            "details": body.strip()[:500],
+        })
+    return blockers
+
+
 def get_source_details(source_id):
     """Read status.yaml and count samples for a source."""
     parts = source_id.split('/')
     if len(parts) != 2:
         return {}
     country, name = parts
+    # Find the actual directory (case-insensitive match)
     country_dir = PROJECT_ROOT / "sources" / country
     if not country_dir.exists():
         return {}
@@ -95,32 +309,40 @@ def get_source_details(source_id):
             source_dir = d
             break
     if not source_dir:
+        # Try exact match
         source_dir = country_dir / name
     if not source_dir or not source_dir.exists():
         return {}
 
     details = {}
+    # Read status.yaml
     status_path = source_dir / "status.yaml"
     if status_path.exists():
         try:
             with open(status_path) as f:
                 status_data = yaml.safe_load(f) or {}
+            details["last_run"] = status_data.get("last_run")
             details["total_records"] = status_data.get("total_records", 0)
+            details["last_error"] = status_data.get("last_error")
+            history = status_data.get("run_history", [])
+            if history:
+                last = history[-1]
+                details["last_records_fetched"] = last.get("records_fetched", 0)
+                details["last_samples_saved"] = last.get("sample_records_saved", 0)
+                details["last_errors"] = last.get("errors", 0)
         except Exception:
             pass
 
-    # Check for retrieve.py and test cases
-    details["has_retrieve"] = (source_dir / "retrieve.py").exists()
-    test_file = source_dir / "retrieve_tests.json"
-    if test_file.exists():
-        try:
-            with open(test_file) as f:
-                tests = json.load(f)
-            details["retrieve_test_count"] = len(tests)
-        except Exception:
-            details["retrieve_test_count"] = 0
-    else:
-        details["retrieve_test_count"] = 0
+    # Fallback: read total_records from data/index.json if status.yaml didn't have it
+    if not details.get("total_records"):
+        data_index = source_dir / "data" / "index.json"
+        if data_index.exists():
+            try:
+                with open(data_index) as f:
+                    idx = json.load(f)
+                details["total_records"] = len(idx)
+            except Exception:
+                pass
 
     # Count sample files and compute avg text length
     sample_dir = source_dir / "sample"
@@ -129,7 +351,7 @@ def get_source_details(source_id):
         details["sample_count"] = len(sample_files)
         total_text_len = 0
         count = 0
-        for sf in sample_files[:10]:
+        for sf in sample_files[:10]:  # only check first 10 for performance
             try:
                 with open(sf) as f:
                     data = json.load(f)
@@ -153,10 +375,61 @@ def get_source_details(source_id):
     return details
 
 
+def get_session_logs(limit=10):
+    """Read recent session logs."""
+    logs_dir = PROJECT_ROOT / "logs"
+    if not logs_dir.exists():
+        return [], ""
+    log_files = sorted(logs_dir.glob("session_*.log"), reverse=True)
+    sessions = []
+    latest_log = ""
+    for i, lf in enumerate(log_files[:limit]):
+        try:
+            content = lf.read_text()
+            # Parse timestamp from filename: session_YYYYMMDD-HHMMSS.log
+            match = re.search(r'session_(\d{8})-(\d{6})\.log', lf.name)
+            if match:
+                ts = f"{match.group(1)[:4]}-{match.group(1)[4:6]}-{match.group(1)[6:8]}T{match.group(2)[:2]}:{match.group(2)[2:4]}:{match.group(2)[4:6]}"
+            else:
+                ts = lf.name
+            # Parse end time and compute duration
+            end_match = re.search(r'Session ended at (.+?)(?:\n|$)', content)
+            duration = None
+            if end_match and match:
+                try:
+                    start = datetime.strptime(f"{match.group(1)}{match.group(2)}", "%Y%m%d%H%M%S")
+                    # Try to parse end time
+                    end_str = end_match.group(1).strip().split(' (')[0]
+                    # Duration from filename diff
+                except Exception:
+                    pass
+            # Extract a useful snippet
+            lines = content.strip().split('\n')
+            snippet_lines = [l for l in lines if l.strip() and not l.startswith('=')]
+            snippet = '\n'.join(snippet_lines[:5]) if snippet_lines else "(empty)"
+
+            session = {
+                "timestamp": ts,
+                "filename": lf.name,
+                "snippet": snippet[:300],
+                "has_error": "Error:" in content or "fatal:" in content,
+                "pushed": "Safety net: pushing" in content or "git push" in content.lower(),
+            }
+            sessions.append(session)
+            if i == 0:
+                latest_log = content
+        except Exception:
+            pass
+    return sessions, latest_log
+
+
 def generate():
     manifest = load_manifest()
     sources = manifest.get("sources", [])
+    neon_live = bool(_load_neon_database_url())
+    pipeline_index = load_pipeline_index()
 
+    # Summary
     by_status = {}
     by_country = {}
     for s in sources:
@@ -173,6 +446,7 @@ def generate():
             }
         by_country[country]["total"] += 1
         by_country[country][status] = by_country[country].get(status, 0) + 1
+        # Track consolidated code coverage
         preferred = s.get("preferred_for", [])
         if "legislation" in preferred:
             by_country[country]["has_consolidated_codes"] = True
@@ -181,6 +455,7 @@ def generate():
     total = len(sources)
     complete = by_status.get("complete", 0)
 
+    # Sources with details
     sources_out = []
     for s in sources:
         source_data = {
@@ -195,25 +470,82 @@ def generate():
             "notes": (s.get("notes") or "")[:200],
             "auth": s.get("auth", "none"),
         }
+        # Add details for non-planned sources
         if s.get("status") != "planned":
             details = get_source_details(s.get("id", ""))
             source_data.update(details)
+        # Merge pipeline indexing data (try exact, lowercase, dot/underscore variants)
+        sid = s.get("id", "")
+        pi = pipeline_index.get(sid) or pipeline_index.get(sid.lower())
+        if pi:
+            source_data["indexing"] = {
+                "status": pi.get("status", "pending"),
+                "neon_rows": pi.get("neon_rows", 0),
+                "legislation_rows": pi.get("legislation_rows", 0),
+                "case_law_rows": pi.get("case_law_rows", 0),
+                "doctrine_rows": pi.get("doctrine_rows", 0),
+                "data_type": pi.get("data_type"),
+                "data_source": pi.get("data_source"),
+                "last_ingested": pi.get("last_ingested"),
+                "date_range": pi.get("date_range"),
+            }
         sources_out.append(source_data)
 
+    # Sort: complete first, then maintenance, then blocked, then planned; within each by priority
     status_order = {"complete": 0, "needs_maintenance": 1, "blocked": 2, "in_progress": 3, "planned": 4}
     sources_out.sort(key=lambda x: (status_order.get(x["status"], 9), x["priority"], x["id"]))
 
+    # Blockers
+    blockers = parse_blocked_md()
+
+    # Session logs
+    sessions, latest_log = get_session_logs(limit=10)
+
+    # Next source (planned first, then needs_maintenance)
+    actionable = [s for s in sources if s.get("status") in ("planned", "needs_maintenance")]
+    actionable.sort(key=lambda s: (
+        0 if s.get("status") == "planned" else 1,
+        s.get("priority", 99),
+        s.get("id", ""),
+    ))
+    next_source = actionable[0]["id"] if actionable else None
+
+    # Indexing summary
+    indexed_sources = [s for s in sources_out if s.get("indexing")]
+    total_neon_rows = sum(s["indexing"]["neon_rows"] for s in indexed_sources)
+    indexed_ok = sum(1 for s in indexed_sources if s["indexing"]["status"] == "ok")
+    pipeline_source_count = len(indexed_sources)
+    # Use per-table row counts if available (from Neon live), otherwise fall back to data_type filter
+    legislation_rows = sum(
+        s["indexing"].get("legislation_rows", 0) or (
+            s["indexing"]["neon_rows"] if s["indexing"].get("data_type") == "legislation" else 0
+        )
+        for s in indexed_sources if s["indexing"]["status"] == "ok"
+    )
+    case_law_rows = sum(
+        s["indexing"].get("case_law_rows", 0) or (
+            s["indexing"]["neon_rows"] if s["indexing"].get("data_type") == "case_law" else 0
+        )
+        for s in indexed_sources if s["indexing"]["status"] == "ok"
+    )
+    doctrine_rows = sum(
+        s["indexing"].get("doctrine_rows", 0) or (
+            s["indexing"]["neon_rows"] if s["indexing"].get("data_type") == "doctrine" else 0
+        )
+        for s in indexed_sources if s["indexing"]["status"] == "ok"
+    )
+
+    # Consolidated codes coverage
     countries_with_legislation = [c for c, d in by_country.items()
                                   if any("legislation" in s.get("data_types", [])
                                          for s in sources if s.get("country") == c)]
     countries_with_consolidated = [c for c, d in by_country.items() if d.get("has_consolidated_codes")]
     countries_gazette_only = [c for c in countries_with_legislation if c not in countries_with_consolidated]
 
-    sources_with_samples = sum(1 for s in sources_out if s.get("sample_count", 0) > 0)
-    sources_with_retrieve = sum(1 for s in sources_out if s.get("has_retrieve"))
-
+    # Build output
     output = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
+        "indexing_data_source": "neon_live" if neon_live else "index_yaml",
         "summary": {
             "total": total,
             "complete": complete,
@@ -229,15 +561,23 @@ def generate():
                 len(countries_with_consolidated) / len(countries_with_legislation) * 100, 1
             ) if countries_with_legislation else 0,
         },
-        "retrieve_coverage": {
-            "total_with_samples": sources_with_samples,
-            "total_with_retrieve": sources_with_retrieve,
-            "percent": round(sources_with_retrieve / sources_with_samples * 100, 1) if sources_with_samples else 0,
+        "indexing_summary": {
+            "total_pipeline_sources": pipeline_source_count,
+            "indexed_ok": indexed_ok,
+            "total_neon_rows": total_neon_rows,
+            "legislation_rows": legislation_rows,
+            "case_law_rows": case_law_rows,
+            "doctrine_rows": doctrine_rows,
         },
+        "next_source": next_source,
         "by_country": by_country,
         "sources": sources_out,
+        "blockers": blockers,
+        "recent_sessions": sessions,
+        "latest_session_log": latest_log[:5000],
     }
 
+    # Write output
     DOCS_DIR.mkdir(exist_ok=True)
     with open(DOCS_DIR / "status.json", "w") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)

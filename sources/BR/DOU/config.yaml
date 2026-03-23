@@ -1,0 +1,80 @@
+# ===================================================================
+# BR/DOU -- Diário Oficial da União (Brazilian Federal Official Gazette)
+# ===================================================================
+# All federal laws, decrees, regulations published in the Official
+# Gazette. Uses the journal listing endpoint which embeds JSON
+# containing article metadata, then fetches individual article pages
+# for full text. No authentication required for web access.
+# ===================================================================
+
+source:
+  id: "BR/DOU"
+  country: "BR"
+  name: "Diário Oficial da União (DOU)"
+  url: "https://www.in.gov.br/"
+  description: |
+    Brazilian Federal Official Gazette. All federal legislation, decrees,
+    regulations, administrative acts must be published here. Uses the
+    journal listing page (leiturajornal) which returns embedded JSON with
+    article metadata, then fetches individual articles for full text.
+    Coverage from 2020-01-01 onward (digital-only era).
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "Rate limiting for article page fetches from in.gov.br"
+
+api:
+  type: "scraping"
+  base_url: "https://www.in.gov.br"
+  endpoints:
+    journal_listing: "/leiturajornal?secao={section}&data={date}"
+    search: "/consulta/-/buscar/dou?q=*&s={section}&exactDate=personalizado&publishFrom={from}&publishTo={to}&sortType=0"
+    article: "/en/web/dou/-/{urlTitle}"
+
+data_model:
+  type: "legislation"
+  primary_key: "classPK"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "classPK"
+      description: "Unique DOU article identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Publication title/identifier"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the published act"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to article on in.gov.br"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - Journal listing pages embed JSON in <script> tags
+  - Individual article pages have full text in article body
+  - Sections: DO1 (laws/decrees), DO2 (personnel), DO3 (contracts)
+  - Requires browser-like User-Agent header
+  - Language: Portuguese

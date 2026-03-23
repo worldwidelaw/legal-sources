@@ -51,7 +51,7 @@ SAMPLE_DIR = SOURCE_DIR / "sample"
 # HTTP session with user agent
 session = requests.Session()
 session.headers.update({
-    "User-Agent": "Mozilla/5.0 (compatible; WorldWideLaw/1.0; +https://github.com/legal-data-hunter)",
+    "User-Agent": "Mozilla/5.0 (compatible; LegalDataHunter/1.0; +https://github.com/legal-data-hunter)",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.5",
 })

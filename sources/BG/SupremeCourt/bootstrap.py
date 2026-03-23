@@ -1,5 +1,5 @@
 """
-World Wide Law - Bulgarian Supreme Court of Cassation Scraper
+Legal Data Hunter - Bulgarian Supreme Court of Cassation Scraper
 
 Fetches case law from the Bulgarian Supreme Court of Cassation (ВКС).
 Data source: http://domino.vks.bg (Domino database) and https://www.vks.bg (JSP system)

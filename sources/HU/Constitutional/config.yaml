@@ -34,4 +34,4 @@ schema:
 fetch:
   method: scrape_nextjs
   rate_limit: 1.5
-  user_agent: "World Wide Law/1.0 (EU Legal Research)"
+  user_agent: "Legal Data Hunter/1.0 (EU Legal Research)"

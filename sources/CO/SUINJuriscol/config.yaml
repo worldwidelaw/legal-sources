@@ -1,0 +1,79 @@
+# ===================================================================
+# CO/SUINJuriscol -- Colombian SUIN-Juriscol Legal Database
+# ===================================================================
+# Colombian normative legislation via SUIN-Juriscol sitemaps + HTML.
+# robots.txt explicitly allows viewDocument.asp access.
+# Sitemaps provide all document URLs. Full text in HTML.
+#
+# URL: https://www.suin-juriscol.gov.co/
+# robots.txt: allows /viewDocument.asp?ruta=*/*
+# Sitemaps: sitemapleyes.xml (11,679 laws), sitemapdecreto*.xml, etc.
+# ===================================================================
+
+source:
+  id: "CO/SUINJuriscol"
+  country: "CO"
+  name: "SUIN-Juriscol (Normative Information System)"
+  url: "https://www.suin-juriscol.gov.co/"
+  description: |
+    Sistema Único de Información Normativa (SUIN-Juriscol) from the
+    Colombian Ministry of Justice. Contains laws, decrees, constitutional
+    acts, resolutions, and related norms from 1864 to present. Full text
+    available via HTML pages. 11,679 laws + thousands of decrees.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "sitemap_scrape"
+  base_url: "https://www.suin-juriscol.gov.co"
+  sitemaps:
+    - "https://www.suin-juriscol.gov.co/sitemapleyes.xml"
+  ssl_verify: false  # Self-signed certificate
+
+data_model:
+  type: "legislation"
+  primary_key: "ruta"
+  update_strategy: "upsert"
+  dedup_key:
+    - "ruta"
+
+schema:
+  key_fields:
+    - name: "ruta"
+      description: "SUIN internal route ID (e.g., Leyes/30019921)"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Law title and number"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the law"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Date of enactment"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      description: "URL on SUIN-Juriscol"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - SSL certificate issue: use verify=False
+  - robots.txt allows scraping viewDocument pages
+  - Full text in div#TextoNorma
+  - Sitemaps list all document URLs
+  - 11,679 laws in sitemapleyes.xml alone
+  - Additional sitemaps for decrees, resolutions, etc.
+  - Text extraction: strip HTML tags, clean whitespace
+  - Language: Spanish

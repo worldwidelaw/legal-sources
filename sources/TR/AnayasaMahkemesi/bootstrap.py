@@ -1,5 +1,5 @@
 """
-World Wide Law - Turkish Constitutional Court Scraper
+Legal Data Hunter - Turkish Constitutional Court Scraper
 
 Fetches case law from the Turkish Constitutional Court (Anayasa Mahkemesi).
 Data sources:

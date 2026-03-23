@@ -73,7 +73,7 @@ class NZLegislationScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "application/xml, text/xml, */*",
             },
             timeout=120,  # Long timeout for large XML files

@@ -1,5 +1,5 @@
 """
-World Wide Law - Bulgarian Constitutional Court Scraper
+Legal Data Hunter - Bulgarian Constitutional Court Scraper
 
 Fetches case law from the Bulgarian Constitutional Court (Konstitutsionyat sud).
 Data source: https://www.constcourt.bg

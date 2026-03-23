@@ -1,0 +1,75 @@
+# ===================================================================
+# CO/SecretariaSenado -- Colombia Secretaria del Senado Laws
+# ===================================================================
+# Full text of all Colombian laws via basedoc HTML pages.
+# Laws numbered globally ~1-2430+ with year suffixes.
+# URL pattern: http://www.secretariasenado.gov.co/senado/basedoc/ley_{NUM}_{YEAR}.html
+# ===================================================================
+
+source:
+  id: "CO/SecretariaSenado"
+  country: "CO"
+  name: "Colombia Secretaria del Senado Laws"
+  url: "http://www.secretariasenado.gov.co/senado/basedoc/"
+  description: |
+    Full text of Colombian laws from the Senate Secretariat website.
+    Consolidated text with vigency tracking. Covers laws from 1887 to present.
+    HTML scraping with clean text extraction.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "Polite scraping of government site"
+
+api:
+  type: "html_scraping"
+  base_url: "http://www.secretariasenado.gov.co/senado/basedoc"
+  endpoints:
+    law_page: "/ley_{num:04d}_{year}.html"
+  response_format: "html"
+
+data_model:
+  type: "legislation"
+  primary_key: "law_number"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "law_number"
+      description: "Law number (e.g., 2300)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Law title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full consolidated text of the law"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year of the law"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to law page"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - HTML scraping from basedoc pages
+  - Laws numbered globally ~1-2430+
+  - Consolidated text with vigency annotations
+  - Language: Spanish

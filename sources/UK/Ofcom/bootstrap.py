@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK Ofcom Scraper
+Legal Data Hunter - UK Ofcom Scraper
 
 Fetches Ofcom regulatory documents via:
   - GOV.UK Search API (paginated discovery of all Ofcom publications)
@@ -69,7 +69,7 @@ class UKOfcomScraper(BaseScraper):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
         self.http = HttpClient(
-            headers={"Accept": "application/json", "User-Agent": "WorldWideLaw/1.0"},
+            headers={"Accept": "application/json", "User-Agent": "LegalDataHunter/1.0"},
             timeout=30,
         )
 

@@ -55,7 +55,7 @@ BASE_URL = "https://hj.tribunalconstitucional.es"
 
 # Headers for requests
 HEADERS = {
-    "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+    "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
     "Accept": "text/html,application/xhtml+xml",
     "Accept-Language": "es-ES,es;q=0.9",
 }

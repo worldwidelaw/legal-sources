@@ -31,7 +31,7 @@ from bs4 import BeautifulSoup
 BASE_URL = "https://www.concourt.am"
 DECISIONS_PATH = "/decisions/cc-decision/"
 RATE_LIMIT = 2  # seconds between requests
-USER_AGENT = "WorldWideLaw/1.0 (research project; +https://github.com/worldwidelaw/legal-sources)"
+USER_AGENT = "LegalDataHunter/1.0 (research project; +https://github.com/ZachLaik/LegalDataHunter)"
 
 # Armenian month names for date parsing
 ARMENIAN_MONTHS = {

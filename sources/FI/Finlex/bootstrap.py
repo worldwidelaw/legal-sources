@@ -75,7 +75,7 @@ class FinlexScraper(BaseScraper):
 
         self.client = HttpClient(
             base_url=API_BASE,
-            headers={"User-Agent": "WorldWideLaw/1.0 (Open Data Research)"},
+            headers={"User-Agent": "LegalDataHunter/1.0 (Open Data Research)"},
             timeout=60,
         )
 

@@ -90,7 +90,7 @@ class SenatoScraper(BaseScraper):
         # Use HttpClient without base_url to avoid trailing slash issues
         self.http_client = HttpClient(
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
             },
             timeout=60,
         )

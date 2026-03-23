@@ -77,7 +77,7 @@ class DiarioRepublicaScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept-Language": "pt,en",
             },
             timeout=60,

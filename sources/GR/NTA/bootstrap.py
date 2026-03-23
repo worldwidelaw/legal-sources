@@ -78,7 +78,7 @@ class NTAScraper(BaseScraper):
         self.client = HttpClient(
             base_url=API_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "application/json",
             },
             timeout=60,
@@ -98,7 +98,7 @@ class NTAScraper(BaseScraper):
             url = f"{BASE_URL}/doc/{ada}"
 
             resp = requests.get(url, timeout=60, stream=True, headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
             })
 
             if resp.status_code != 200:

@@ -60,7 +60,7 @@ PDF_URL = "https://pdf.arlis.am/{uniqid}"
 
 # Request headers
 HEADERS = {
-    "User-Agent": "WorldWideLaw/1.0 (EU Legal Research; contact@example.com)",
+    "User-Agent": "Legal-Data-Hunter/1.0 (EU Legal Research; contact@example.com)",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "hy,en;q=0.9",
 }

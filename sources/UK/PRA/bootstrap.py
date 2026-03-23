@@ -47,7 +47,7 @@ PUB_TYPES = {
 }
 
 HEADERS = {
-    "User-Agent": "WorldWideLaw/1.0 (Open Data Research; github.com/worldwidelaw/legal-sources)",
+    "User-Agent": "LegalDataHunter/1.0 (Open Data Research; github.com/ZachLaik/LegalDataHunter)",
     "Accept": "*/*",
     "X-Requested-With": "XMLHttpRequest",
 }

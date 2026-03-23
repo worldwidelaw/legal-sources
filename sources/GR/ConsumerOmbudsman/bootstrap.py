@@ -84,7 +84,7 @@ class GreekConsumerOmbudsmanScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "text/html,application/xhtml+xml,application/xml",
                 "Accept-Language": "el,en",
             },

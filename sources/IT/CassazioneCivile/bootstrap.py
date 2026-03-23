@@ -109,7 +109,7 @@ class CassazioneCivileScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "Mozilla/5.0 WorldWideLaw/1.0",
+                "User-Agent": "Mozilla/5.0 LegalDataHunter/1.0",
                 "Accept": "application/json",
             },
             timeout=60,

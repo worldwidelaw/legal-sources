@@ -115,7 +115,7 @@ def fetch_all(max_docs: Optional[int] = None) -> Generator[dict, None, None]:
     """Fetch all ARCEP decisions with full text."""
     session = requests.Session()
     session.headers.update({
-        'User-Agent': 'WorldWideLaw/1.0 (Open Data Collection for Research)',
+        'User-Agent': 'Legal-Data-Hunter/1.0 (Open Data Collection for Research)',
         'Accept': 'text/html,application/xhtml+xml,application/pdf',
         'Accept-Language': 'fr,en;q=0.9'
     })

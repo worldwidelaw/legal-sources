@@ -53,7 +53,7 @@ logger = logging.getLogger("legal-data-hunter.PL.DziennikUrzedowy")
 
 # API configuration
 BASE_URL = "https://api.sejm.gov.pl"
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 
 # Years to scrape (starting with 2024 which has full HTML text)
 # 2025+ acts often have textHTML=false (only PDF available) so we start with 2024

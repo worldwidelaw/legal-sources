@@ -41,7 +41,7 @@ class BundesratFetcher:
         self.api_key = api_key or os.getenv('DIP_API_KEY') or DEFAULT_API_KEY
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'WorldWideLaw/1.0 (https://github.com/worldwidelaw/legal-sources)',
+            'User-Agent': 'Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)',
             'Authorization': f'ApiKey {self.api_key}',
             'Accept': 'application/json'
         })

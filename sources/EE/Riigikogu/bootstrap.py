@@ -118,7 +118,7 @@ class RiigikoguScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "application/json",
                 "Accept-Language": "et,en;q=0.9",
             },
@@ -190,7 +190,7 @@ class RiigikoguScraper(BaseScraper):
             resp = requests.get(
                 url,
                 headers={
-                    "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                    "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                     "Accept": "*/*",
                 },
                 timeout=60,

@@ -38,7 +38,7 @@ BASE_URL = "https://www.paragraf.rs"
 SITEMAP_URL = "https://www.paragraf.rs/sitemap-1.xml"
 PROPISI_URL = "https://www.paragraf.rs/propisi.html"
 REQUEST_DELAY = 2.0  # seconds between requests
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research; +https://github.com/worldwidelaw/legal-sources)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research; +https://github.com/ZachLaik/LegalDataHunter)"
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent

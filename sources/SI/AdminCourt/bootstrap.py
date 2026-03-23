@@ -75,7 +75,7 @@ class SlovenianAdminCourtScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "text/html,application/xhtml+xml",
                 "Accept-Language": "sl,en",
             },
@@ -101,7 +101,7 @@ class SlovenianAdminCourtScraper(BaseScraper):
 
         time.sleep(RATE_LIMIT_SECONDS)
         resp = self.client.session.get(url, timeout=60, headers={
-            "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+            "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
         })
         resp.raise_for_status()
         html_content = resp.text
@@ -144,7 +144,7 @@ class SlovenianAdminCourtScraper(BaseScraper):
         time.sleep(RATE_LIMIT_SECONDS)
         try:
             resp = self.client.session.get(url, timeout=60, headers={
-                "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
             })
             resp.raise_for_status()
         except Exception as e:

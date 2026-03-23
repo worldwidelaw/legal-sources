@@ -58,7 +58,7 @@ API_URL = "https://www.boe.es/datosabiertos/api"
 
 # Headers for API requests
 API_HEADERS = {
-    "User-Agent": "WorldWideLaw/1.0 (Open Data Research)",
+    "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
     "Accept": "application/xml",
     "Accept-Language": "es",
 }

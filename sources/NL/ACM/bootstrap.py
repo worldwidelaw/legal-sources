@@ -43,7 +43,7 @@ BASE_URL = "https://www.acm.nl"
 SITEMAP_INDEX_URL = f"{BASE_URL}/sitemap.xml"
 
 RATE_LIMIT_DELAY = 2.0
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 
 # Publication types we want (doctrine: decisions, regulations, opinions, etc.)
 WANTED_TYPES = {

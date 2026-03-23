@@ -31,7 +31,7 @@ import requests
 # Configuration
 SOURCE_ID = "US/GovInfo"
 BULK_DATA_BASE = "https://www.govinfo.gov/bulkdata"
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research; contact@legaldatahunter.com)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research; contact@legaldatahunter.com)"
 REQUEST_DELAY = 0.3  # seconds between requests
 
 # Collections available via bulk data

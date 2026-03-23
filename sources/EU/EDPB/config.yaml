@@ -1,0 +1,76 @@
+# ===================================================================
+# EU/EDPB -- European Data Protection Board Documents
+# ===================================================================
+# HTML scraping of EDPB document listing + PDF text extraction.
+# No public API; Drupal site with JSON:API disabled.
+# ===================================================================
+
+source:
+  id: "EU/EDPB"
+  country: "EU"
+  name: "European Data Protection Board Documents"
+  url: "https://www.edpb.europa.eu/our-work-tools/documents/our-documents_en"
+  description: |
+    GDPR binding decisions, guidelines, opinions, letters, reports.
+    ~670 documents covering data protection enforcement across EU.
+    Full text extracted from PDFs via PyPDF2.
+
+data_types:
+  - doctrine
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "WAF returns 429 on rapid requests. 2-second delay between requests."
+
+api:
+  type: "scraping"
+  base_url: "https://www.edpb.europa.eu"
+  endpoints:
+    listing: "/our-work-tools/documents/our-documents_en?page={page}"
+    pdf: "/system/files/{path}"
+  response_format: "html+pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "document_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "document_id"
+      description: "Unique document ID derived from URL slug"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Document page URL"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - 67 pages of documents (10 per page, ~670 total)
+  - Full text from PDF downloads via PyPDF2
+  - Publication types: Guidelines, Opinions, Binding Decisions, Letters, Reports
+  - Language: English (EN versions)

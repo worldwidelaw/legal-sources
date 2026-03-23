@@ -1,0 +1,92 @@
+# ===================================================================
+# AU/FedCourt -- Federal Court of Australia Judgments
+# ===================================================================
+# Federal Court case law via the Open Australian Legal Corpus on
+# HuggingFace, supplemented by the official RSS feed for updates.
+#
+# Primary: HuggingFace dataset (isaacus/open-australian-legal-corpus)
+# Updates: RSS feed at judgments.fedcourt.gov.au/rss/fca-judgments
+# Note: Direct access to judgments.fedcourt.gov.au is Cloudflare-
+#       protected. AustLII returns 410 for automated access.
+# ===================================================================
+
+source:
+  id: "AU/FedCourt"
+  country: "AU"
+  name: "Federal Court of Australia Judgments"
+  url: "https://www.fedcourt.gov.au/digital-law-library/judgments"
+  description: |
+    Federal Court of Australia judgments from 1977 to present. Full text
+    sourced from the Open Australian Legal Corpus (HuggingFace). Includes
+    single judge (FCA) and full court (FCAFC) decisions. 50K+ judgments
+    covering constitutional, administrative, IP, competition, tax, and
+    other federal matters.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "huggingface_dataset"
+  dataset_id: "isaacus/open-australian-legal-corpus"
+  split: "corpus"
+  filter_field: "source"
+  filter_value: "federal_court_of_australia"
+  rss_feed: "https://www.judgments.fedcourt.gov.au/rss/fca-judgments"
+
+data_model:
+  type: "case_law"
+  primary_key: "version_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "version_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "version_id"
+      description: "Unique document version ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case name with citation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the judgment"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Judgment date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to original judgment"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "citation"
+      description: "Medium neutral citation (e.g., [2023] FCA 1430)"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - Full text sourced from Open Australian Legal Corpus (HuggingFace)
+  - Dataset uses streaming to avoid downloading full 5GB+ corpus
+  - Filters for source == "federal_court_of_australia"
+  - Includes FCA (single judge) and FCAFC (full court) decisions
+  - Text already extracted from HTML/DOCX by corpus maintainers
+  - RSS feed available for recent judgments (last ~30 days)
+  - Direct scraping blocked by Cloudflare (judgments.fedcourt.gov.au)
+  - AustLII returns 410 for automated access

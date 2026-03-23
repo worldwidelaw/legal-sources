@@ -1,5 +1,5 @@
 """
-World Wide Law — Scraper Template
+Legal Data Hunter — Scraper Template
 
 Copy this file to sources/{COUNTRY}/{SOURCE}/bootstrap.py
 and implement the three abstract methods.

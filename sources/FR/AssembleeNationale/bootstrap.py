@@ -37,7 +37,7 @@ BASE_URL = "https://data.assemblee-nationale.fr"
 FULL_TEXT_BASE = "https://www.assemblee-nationale.fr/dyn/docs/"
 METADATA_BASE = "https://www.assemblee-nationale.fr/dyn/opendata/"
 DOCUMENTS_ZIP_URL = "https://data.assemblee-nationale.fr/static/openData/repository/17/loi/dossiers_legislatifs/Dossiers_Legislatifs.json.zip"
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 REQUEST_DELAY = 1.0  # seconds between requests
 
 # Paths

@@ -39,7 +39,7 @@ except ImportError:
 # Configuration
 SOURCE_ID = "US/CourtListener"
 BASE_URL = "https://www.courtlistener.com/api/rest/v4"
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research; contact@legaldatahunter.com)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research; contact@legaldatahunter.com)"
 REQUEST_DELAY = 0.75  # seconds between requests
 
 # Paths

@@ -59,7 +59,7 @@ SKIP_CATEGORIES = {
 
 session = requests.Session()
 session.headers.update({
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) WorldWideLaw/1.0 (research)"
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) LegalDataHunter/1.0 (research)"
 })
 
 

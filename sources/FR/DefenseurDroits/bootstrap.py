@@ -30,7 +30,7 @@ MAX_RETRIES = 3
 
 SESSION = requests.Session()
 SESSION.headers.update({
-    "User-Agent": "WorldWideLaw/1.0 (academic research; +https://github.com/worldwidelaw/legal-sources)",
+    "User-Agent": "LegalDataHunter/1.0 (academic research; +https://github.com/ZachLaik/LegalDataHunter)",
     "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.5",
 })
 

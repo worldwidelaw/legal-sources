@@ -1,0 +1,75 @@
+# ===================================================================
+# GH/GhaLII -- Ghana Legal Information Institute
+# ===================================================================
+# Legislation from PeachJam/AfricanLII platform with Akoma Ntoso HTML.
+# Judgments blocked by robots.txt — legislation only.
+# ===================================================================
+
+source:
+  id: "GH/GhaLII"
+  country: "GH"
+  name: "Ghana Legal Information Institute (GhaLII)"
+  url: "https://ghalii.org/"
+  description: |
+    Ghanaian legislation (Acts of Parliament) from 1960 onwards.
+    Full text embedded as Akoma Ntoso HTML. ~520 acts across 10 pages.
+    Judgments excluded (blocked by robots.txt).
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.2
+  burst: 1
+  notes: "robots.txt requires 5-second crawl delay."
+
+api:
+  type: "scraping"
+  base_url: "https://ghalii.org"
+  endpoints:
+    listing: "/legislation/?page={page}"
+    document: "/akn/gh/act/{year}/{number}/eng@{date}"
+  response_format: "html"
+
+data_model:
+  type: "legislation"
+  primary_key: "akn_uri"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "document_id"
+      description: "AKN URI path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text from Akoma Ntoso HTML"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication/enactment date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Full URL to document"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - PeachJam/AfricanLII platform
+  - Full text via la-akoma-ntoso HTML element
+  - 5-second crawl delay per robots.txt
+  - Judgments excluded (robots.txt disallows /akn/gh/judgment/)

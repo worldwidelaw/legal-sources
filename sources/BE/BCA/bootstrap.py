@@ -43,7 +43,7 @@ BASE_URL = "https://www.belgiancompetition.be"
 DECISIONS_URL = f"{BASE_URL}/en/decisions"
 
 RATE_LIMIT_DELAY = 2.0
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent

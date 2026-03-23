@@ -68,7 +68,7 @@ logger = logging.getLogger("legal-data-hunter.UA.RadaLegislation")
 
 # API configuration
 BASE_URL = "https://data.rada.gov.ua"
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 
 
 class RadaLegislationScraper(BaseScraper):

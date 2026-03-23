@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK HM Land Registry (HMLR) Scraper
+Legal Data Hunter - UK HM Land Registry (HMLR) Scraper
 
 Fetches HM Land Registry practice guides, detailed guides, and statutory
 guidance via the GOV.UK Content API (no authentication required).
@@ -82,7 +82,7 @@ class UKHMLRScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "WorldWideLaw/1.0 (legal research project)",
+                "User-Agent": "LegalDataHunter/1.0 (legal research project)",
                 "Accept": "application/json",
             },
             timeout=30,

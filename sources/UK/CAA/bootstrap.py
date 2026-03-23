@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-World Wide Law - UK Civil Aviation Authority (CAA) Scraper
+Legal Data Hunter - UK Civil Aviation Authority (CAA) Scraper
 
 Fetches regulatory publications from the CAA using:
   - GET /data-and-publications/publications/publication-series/ (series index)

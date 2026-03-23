@@ -48,7 +48,7 @@ SEARCH_URL_FR = f"{BASE_URL_FR}/citoyen/chercher?q=&search_category[]=taxonomy%3
 SEARCH_URL_NL = f"{BASE_URL_NL}/burger/zoeken?q=&search_category[]=taxonomy%3Apublications&search_type[]=decision&s=recent&l=50"
 
 RATE_LIMIT_DELAY = 2.0
-USER_AGENT = "WorldWideLaw/1.0 (Open Data Research)"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent

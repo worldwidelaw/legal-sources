@@ -1,5 +1,5 @@
 """
-World Wide Law - Turkish Council of State (Danistay) Scraper
+Legal Data Hunter - Turkish Council of State (Danistay) Scraper
 
 Fetches case law from the Turkish Council of State (Danıştay).
 Data sources:

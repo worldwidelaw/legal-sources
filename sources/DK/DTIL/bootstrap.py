@@ -76,7 +76,7 @@ class DatatilsynetScraper(BaseScraper):
 
         self.http = HttpClient(
             base_url=BASE_URL,
-            headers={"User-Agent": "WorldWideLaw/1.0 (Open Data Research)"},
+            headers={"User-Agent": "LegalDataHunter/1.0 (Open Data Research)"},
             timeout=60,
         )
 

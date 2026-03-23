@@ -1,5 +1,5 @@
 """
-Schema validation for World Wide Law.
+Schema validation for Legal Data Hunter.
 
 Validates normalized records against expected schemas defined in config.yaml.
 Ensures data quality before storage.

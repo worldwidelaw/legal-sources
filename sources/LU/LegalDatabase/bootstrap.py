@@ -119,7 +119,7 @@ class LegalDatabaseScraper(BaseScraper):
 
         self.session = requests.Session()
         self.session.headers.update({
-            "User-Agent": "WorldWideLaw/1.0 (EU Legal Research; contact@example.com)",
+            "User-Agent": "Legal-Data-Hunter/1.0 (EU Legal Research; contact@example.com)",
             "Accept": "application/sparql-results+json",
         })
         self.last_request_time = 0

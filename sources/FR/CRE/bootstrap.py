@@ -173,7 +173,7 @@ def fetch_documents(listing_url: str, doc_type: str, url_path: str, max_docs: Op
     """Fetch all documents from a listing page category."""
     session = requests.Session()
     session.headers.update({
-        'User-Agent': 'WorldWideLaw/1.0 (Open Data Collection for Research)',
+        'User-Agent': 'Legal-Data-Hunter/1.0 (Open Data Collection for Research)',
         'Accept': 'text/html,application/xhtml+xml',
         'Accept-Language': 'fr,en;q=0.9'
     })

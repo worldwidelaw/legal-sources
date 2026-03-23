@@ -1,0 +1,76 @@
+# ===================================================================
+# HK/eLegislation -- Hong Kong e-Legislation
+# ===================================================================
+# Hong Kong legislation via official e-Legislation XML bulk download.
+# robots.txt allows access. Data available as ZIP of XML files.
+#
+# URL: https://www.elegislation.gov.hk/
+# Bulk download: https://www.elegislation.gov.hk/opendata/eng_ord_xml.zip
+# XML schema: HKLM 1.0 (http://www.xml.gov.hk/schemas/hklm/1.0)
+# ===================================================================
+
+source:
+  id: "HK/eLegislation"
+  country: "HK"
+  name: "Hong Kong e-Legislation"
+  url: "https://www.elegislation.gov.hk/"
+  description: |
+    Official Hong Kong e-Legislation database from the Department of Justice.
+    Contains all Hong Kong Ordinances (primary legislation) in XML format.
+    Bulk download provides 1,372 XML files with full text, metadata, and
+    structured markup. Covers legislation from colonial era to present.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "bulk_download"
+  base_url: "https://www.elegislation.gov.hk"
+  bulk_zip: "https://www.elegislation.gov.hk/opendata/eng_ord_xml.zip"
+  xml_schema: "http://www.xml.gov.hk/schemas/hklm/1.0"
+
+data_model:
+  type: "legislation"
+  primary_key: "cap_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "cap_number"
+
+schema:
+  key_fields:
+    - name: "cap_number"
+      description: "Chapter number (e.g., 1, 100, 132CM)"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Ordinance name (e.g., Cap. 1 Interpretation and General Clauses Ordinance)"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the ordinance"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Date of the version (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      description: "URL on e-Legislation"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Bulk ZIP download (~225MB) with 1,372 XML ordinance files
+  - XML uses HKLM 1.0 namespace schema
+  - Namespace-aware parsing required (hk, dc, dcterms, xhtml namespaces)
+  - Includes metadata: docName, docType, docNumber, docStatus, date
+  - Full text extracted recursively from <main> element
+  - Some ordinances are repealed (docStatus: Repealed)
+  - Language: English

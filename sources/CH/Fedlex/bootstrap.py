@@ -36,7 +36,7 @@ def sparql_query(query: str, timeout: int = 60, max_retries: int = 4) -> dict:
     """Execute SPARQL query with retry and exponential backoff."""
     headers = {
         "Accept": "application/sparql-results+json",
-        "User-Agent": "WorldWideLaw/1.0 (research project)"
+        "User-Agent": "LegalDataHunter/1.0 (research project)"
     }
 
     last_exc = None
@@ -135,7 +135,7 @@ def fetch_html_content(url: str) -> Optional[str]:
     """Fetch HTML content from URL."""
     try:
         headers = {
-            "User-Agent": "WorldWideLaw/1.0 (research project)",
+            "User-Agent": "LegalDataHunter/1.0 (research project)",
             "Accept": "text/html,application/xhtml+xml"
         }
         response = requests.get(url, headers=headers, timeout=30)
