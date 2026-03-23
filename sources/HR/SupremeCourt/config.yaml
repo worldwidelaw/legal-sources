@@ -6,7 +6,7 @@ source:
 
 data:
   types:
-    - case_law
+    - caselaw
   language: hrv
   coverage: All Croatian courts including Supreme Court (Vrhovni sud), High Courts, County Courts, Commercial Courts, Administrative Courts
   volume: 883,000+ published decisions

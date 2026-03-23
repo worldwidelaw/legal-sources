@@ -2,7 +2,7 @@ source:
   id: BE/APD
   name: Belgian Data Protection Authority (APD/GBA)
   country: BE
-  type: case_law
+  type: caselaw
   url: https://www.autoriteprotectiondonnees.be
   language: [fr, nl]
 

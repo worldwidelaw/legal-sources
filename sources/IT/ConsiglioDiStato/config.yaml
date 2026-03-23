@@ -4,7 +4,7 @@ source:
   country: IT
   url: https://www.giustizia-amministrativa.it
   data_types:
-    - case_law
+    - caselaw
   auth: none
   license: CC BY 4.0
 
@@ -36,7 +36,7 @@ schema:
   normalized_fields:
     - _id: "IT:GA:{court}:{year}:{decision_number}"
     - _source: IT/ConsiglioDiStato
-    - _type: case_law
+    - _type: caselaw
     - title: "{decision_type} n. {decision_number}/{year} - {section}"
     - text: Full decision text extracted from XML
     - date: Publication date (ISO 8601)

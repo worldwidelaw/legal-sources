@@ -1,0 +1,42 @@
+source:
+  id: PL/KNF
+  name: Polish Financial Supervision Authority (KNF)
+  country: 'PL'
+  url: https://dziennikurzedowy.knf.gov.pl
+  type: doctrine
+
+api:
+  type: rest_json
+  base_url: https://dziennikurzedowy.knf.gov.pl
+  auth: none
+  endpoints:
+    search: POST /api/SearchLegalAct {"query":""}
+    pdf: GET /GetActPdf.ashx?year={year}&book=0&position={position}
+    types: GET /api/legalacttype
+    keywords: GET /api/keywords
+  rate_limit:
+    requests_per_minute: 30
+    delay_seconds: 1.5
+
+data:
+  format: json+pdf
+  language: pol
+  encoding: utf-8
+  license: Public domain (official government journal)
+  coverage:
+    estimated_records: 496
+  notes: |
+    Official Journal of the KNF (Dziennik Urzedowy KNF) containing
+    resolutions (uchwaly), communications (komunikaty), decisions (decyzje),
+    announcements (ogloszenia), notices (obwieszczenia), and orders (zarzadzenia).
+    Full text extracted from PDF downloads. Documents from 2012-2026.
+
+schema:
+  key_fields:
+    - _id
+    - url
+  required_fields:
+    - title
+    - text
+    - date
+    - url

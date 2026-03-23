@@ -1,0 +1,58 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK HM Land Registry (HMLR) Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/HMLR"
+  country: "UK"
+  name: "UK HM Land Registry"
+  url: "https://www.gov.uk/government/organisations/land-registry"
+  description: |
+    HM Land Registry practice guides, detailed guides, and statutory
+    guidance via GOV.UK Content API. ~273 documents with full HTML text.
+    No authentication required.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "public_timestamp"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - ~123 practice guides, ~145 detailed guides, ~5 statutory guidance
+  - GOV.UK Content API (no auth needed)
+  - Full text from HTML publications and inline body content
+  - Open Government Licence v3.0

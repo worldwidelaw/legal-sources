@@ -1,0 +1,36 @@
+source:
+  id: UK/PHSO
+  name: UK Parliamentary and Health Service Ombudsman (PHSO)
+  country: UK
+  url: https://decisions.ombudsman.org.uk
+  data_types:
+    - case_law
+  description: |
+    Decisions from the UK Parliamentary and Health Service Ombudsman.
+    Covers complaints about UK government departments, NHS hospitals,
+    and other public organisations. ~3,100+ decisions from April 2021 onward.
+  license: Open Government Licence v3.0
+  language: en
+  auth: none
+
+api:
+  base_url: https://api.ombudsman.org.uk/dpp
+  list_endpoint: /decisions
+  detail_endpoint: /decision
+  rate_limit: 1.0
+  page_size: 10
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+    - complaint_type
+    - organisation
+    - outcome
+    - decision_type

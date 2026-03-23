@@ -1,0 +1,48 @@
+# Configuration for HR/AZOP (Croatian Data Protection Authority)
+# Agencija za zaštitu osobnih podataka (AZOP)
+
+source:
+  id: HR/AZOP
+  name: Croatian Data Protection Authority (AZOP)
+  country: HR
+  url: https://azop.hr
+  description: >
+    GDPR enforcement decisions, opinions, and recommendations from the
+    Croatian Data Protection Authority (Agencija za zaštitu osobnih podataka).
+    Includes anonymized administrative decisions (PDFs), expert opinions (HTML),
+    and data protection guidelines.
+
+data_model:
+  types:
+    - doctrine
+  update_strategy: append_only
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: category
+      type: string
+      required: true
+    - name: language
+      type: string
+      required: false

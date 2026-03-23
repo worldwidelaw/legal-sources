@@ -1,0 +1,12 @@
+{
+  "_id": "cdeef2f9-efe7-4e66-8e3f-ef75705070fe",
+  "_source": "UK/ORR",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T17:05:01.138284+00:00",
+  "title": "ORR: workforce management information",
+  "text": "This data covers:\n\npayroll staff by grade\n\nnon-payroll staff by type\n\nheadcount staff numbers\n\nfull-time equivalent staff numbers\n\nstaff costs",
+  "description": "Documents relating to workforce management information summary data for the Office of Rail and Road.",
+  "date": "2021-09-14",
+  "url": "https://www.gov.uk/government/collections/orr-workforce-management-information",
+  "document_type": "document_collection"
+}

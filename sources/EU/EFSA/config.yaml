@@ -1,0 +1,45 @@
+id: EU/EFSA
+name: European Food Safety Authority (EFSA)
+country: EU
+data_types:
+  - doctrine
+description: >
+  EFSA (European Food Safety Authority) scientific opinions, assessments,
+  guidance documents, and technical reports. These are official EU doctrine
+  covering food safety, nutrition, animal health, plant protection, and
+  environmental risk assessment.
+
+  Data source: CrossRef API (DOI prefix 10.2903 for EFSA Journal)
+
+  The EFSA Journal is an open access peer-reviewed scientific journal that
+  publishes the scientific outputs of EFSA including:
+  - Scientific Opinions (risk assessments)
+  - Technical Reports
+  - Scientific Reports
+  - Guidance documents
+  - Statements
+  - Event reports
+
+url: https://www.efsa.europa.eu
+api_url: https://api.crossref.org/works?filter=prefix:10.2903
+rss_feed: https://www.efsa.europa.eu/en/publications/rss
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  delay_between_requests: 1.0
+
+schema:
+  key_fields:
+    - doi
+    - title
+    - date
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date

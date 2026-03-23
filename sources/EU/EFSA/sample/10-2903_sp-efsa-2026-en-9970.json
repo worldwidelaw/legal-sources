@@ -1,0 +1,29 @@
+{
+  "_id": "10-2903_sp-efsa-2026-en-9970",
+  "_source": "EU/EFSA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-19T07:07:02.887720",
+  "doi": "10.2903/sp.efsa.2026.en-9970",
+  "title": "A review on the genus Draeculacephala with a focus on Draeculacephala robinsoni",
+  "text": "Abstract The recent introduction in Europe of Draeculacephala robinsoni Hamilton (1967), an alien sharpshooter species vector of Xylella fastidiosa (Xf) and originally native to North America, poses an additional threat to European agriculture. To the best of our knowledge, D. robinsoni has never been investigated as a vector of Xf; however, available knowledge on the Draeculacephala genus, including data of a closely related species D. minerva, can help in understanding where future research efforts should be addressed, and identifying the ecosystems most at risk. The species was first identified in 2022 on several grasses in northeastern Spain and southern France and it is now expanding across these regions where it can be found in ryegrass, barley and rice fields. It is very important to note that D. robinsoni was recently detected in Occitanie (France) where X. fastidiosa is currently present. This encounter might change the bacterial epidemiology scenario in Europe, leading to unpredictable outcomes and posing a threat to several European crops, including vineyards, olives and almonds. In this review, we provide an updated picture on the systematics, biology, ecology, habitat, host range and transmission biology for the genus Draeculacephala with a focus on D. robinsoni discussing its possible role in the epidemiology of X. fastidiosa‐related diseases across the Mediterranean region.",
+  "date": "2026-03-01",
+  "url": "https://doi.org/10.2903/sp.efsa.2026.en-9970",
+  "authors": [
+    "R. López‐Gómez",
+    "M. Morente",
+    "A. Boucherf",
+    "G. Spadavecchia",
+    "C. Lago",
+    "A. Moreno",
+    "V. Mazzoni",
+    "M.V. Rossi Stacconi",
+    "J. Sabate",
+    "D. Cornara",
+    "A. Fereres"
+  ],
+  "journal": "EFSA Supporting Publications",
+  "volume": "23",
+  "issue": "3",
+  "document_type": "scientific_output",
+  "subjects": []
+}

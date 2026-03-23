@@ -3,7 +3,7 @@ name: Belgian Labour Courts
 country: BE
 url: https://juportal.be
 data_types:
-  - case_law
+  - caselaw
 auth:
   type: none
 license: Open Government Data

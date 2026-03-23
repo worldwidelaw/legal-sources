@@ -1,0 +1,63 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Ofcom Config
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/Ofcom"
+  country: "UK"
+  name: "UK Communications Regulator (Ofcom)"
+  url: "https://www.gov.uk/government/organisations/ofcom"
+  description: |
+    Ofcom regulatory documents, reports, guidance, and publications
+    via GOV.UK Search API + Content API. ~370 documents.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+  endpoints:
+    search:
+      path: "/api/search.json"
+      method: "GET"
+    content:
+      path: "/api/content"
+      method: "GET"
+
+data_model:
+  type: "doctrine"
+  primary_key: "link"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - ~370 documents (regulatory reports, guidance, statistics, consultations)
+  - GOV.UK Search API for discovery, Content API for full text
+  - Open Government Licence v3.0

@@ -1,0 +1,49 @@
+source:
+  id: GR/NCRTV
+  country: GR
+  name: National Council for Radio and Television (Εθνικό Συμβούλιο Ραδιοτηλεόρασης - ΕΣΡ)
+  description: |
+    Decisions of the Greek National Council for Radio and Television (ESR/NCRTV),
+    the independent authority regulating broadcast media in Greece. Covers sanctions,
+    licensing, content regulation, and advertising compliance decisions.
+    Hosted on a DSpace repository managed by EKT (National Documentation Centre).
+  url: https://www.esr.gr
+
+data:
+  types:
+    - doctrine
+  format: PDF (via DSpace repository)
+  language: el
+  license: Public Domain
+
+access:
+  method: HTML scraping + PDF download
+  auth: none
+  rate_limit: 1 request/second
+  base_url: http://repository-esr.ekt.gr
+  endpoints:
+    search: /esr/handle/20.500.12039/20/simple-search?filterquery={year}&filtername=search_ekt.year&filtertype=equals&rpp=100&start={offset}
+    item: /esr/handle/20.500.12039/{item_id}
+    bitstream: /esr/bitstream/20.500.12039/{item_id}/1/{ref}.pdf
+  notes: |
+    DSpace repository with ~10,000+ decisions. No REST API or OAI-PMH available.
+    Decisions are organized by year with PDF bitstreams containing full text.
+    Each decision has a reference number in format NUMBER-YEAR (e.g., 230-2024).
+
+schema:
+  key_fields:
+    - name: decision_ref
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+    - name: subject
+      type: string
+      required: false
+    - name: station
+      type: string
+      required: false
+    - name: medium
+      type: string
+      required: false

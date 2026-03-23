@@ -1,0 +1,24 @@
+{
+  "_id": "10-2903_sp-efsa-2026-en-9986",
+  "_source": "EU/EFSA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-19T07:07:02.891768",
+  "doi": "10.2903/sp.efsa.2026.en-9986",
+  "title": "Preparatory work for the evaluation of the safety of hydroxycitric acid and plant preparations containing hydroxycitric acid",
+  "text": "Abstract This report is the outcome of an EFSA procurement (OC/EFSA/MESE/2022/03 – SC11) reviewing relevant scientific information related to the evaluation of the safety of hydroxycitric acid and plant preparations containing hydroxycitric acid. Three subquestion were answered through systematic review methodology. Sub‐question 2a was about the causal relationship between hydroxycitric acid (HCA) as single substance and the a priori identified adverse effect, subquestion 2b was about the causal relationship between intake of plant preparations and food containing HCA and the a priori identified adverse effect. Subquestion 5a was about the content of HCA in foods (including food supplements) and preparations of plant. Subquestions 2a and 2b were answered together with the same search string and screening process. The search strategy was run on three databases, PubMed Embase, and Cochrane (Cochrane used only for subquestions 2a,b) and identified records were imported in Distiller SR software where the selection of relevant studies was carried out. Screening was carried out in parallel by two reviewers and conflicts were solved trough consensus. At the end 67 and 15 papers were included for subquestions 2a,b and subquestion 5a, respectively.",
+  "date": "2026-03-01",
+  "url": "https://doi.org/10.2903/sp.efsa.2026.en-9986",
+  "authors": [
+    "Alessandra Tata",
+    "Filippo Marzoli",
+    "Honoria Ocagli",
+    "Ileana Baldi",
+    "Dario Gregori",
+    "Simone Belluco"
+  ],
+  "journal": "EFSA Supporting Publications",
+  "volume": "23",
+  "issue": "3",
+  "document_type": "scientific_output",
+  "subjects": []
+}

@@ -1,0 +1,98 @@
+# ES/Madrid -- Madrid Regional Legislation (BOCM) Configuration
+# Source: Boletín Oficial de la Comunidad de Madrid (BOCM)
+# URL: https://www.bocm.es
+# Data types: legislation
+# License: Open Data (free public access, Decree 2/2010)
+
+source:
+  id: "ES/Madrid"
+  name: "BOCM - Boletín Oficial de la Comunidad de Madrid"
+  country: "ES"
+  url: "https://www.bocm.es"
+  description: "Official gazette of the Community of Madrid. Regional legislation, regulations, and official announcements."
+
+data_types:
+  - legislation
+
+api:
+  type: "xml"
+  base_url: "https://www.bocm.es"
+  format: "xml"
+  documentation: "https://www.bocm.es/rss"
+  endpoints:
+    bulletins_rss: "/boletines.rss"
+    latest_bulletin: "/ultimo-boletin.xml"
+    summaries_rss: "/sumarios.rss"
+    document_xml: "/boletin/CM_Orden_BOCM/{year}/{month}/{day}/BOCM-{date}-{order}.xml"
+  notes: |
+    XML documents available at predictable URLs based on date and order number.
+    Each bulletin contains multiple orders, each with full XML including text.
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+data_model:
+  type: "legislation"
+  primary_key: "identifier"
+  update_strategy: "upsert"
+  dedup_key:
+    - "identifier"
+
+schema:
+  total_fields: 18
+  key_fields:
+    - name: "identifier"
+      description: "BOCM document identifier (e.g., BOCM-20260318-1)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation/order"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601 format)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to document on BOCM website"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "rango"
+      description: "Document type (LEY, DECRETO, ORDEN, RESOLUCIÓN, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+  secondary_fields:
+    - name: "departamento"
+      description: "Issuing department/ministry"
+    - name: "seccion"
+      description: "Section of the bulletin"
+    - name: "diario_numero"
+      description: "Bulletin number"
+    - name: "fecha_disposicion"
+      description: "Date of the provision/order"
+    - name: "organismo"
+      description: "Issuing body/agency"
+    - name: "language"
+      description: "Language of the document (es)"
+
+notes: |
+  - Full text available via XML endpoint: /boletin/CM_Orden_BOCM/YYYY/MM/DD/BOCM-YYYYMMDD-N.xml
+  - XML structure includes <metadatos>, <analisis>, and <texto> elements
+  - RSS feeds provide list of recent bulletins and documents
+  - Also available as PDF, EPUB, and JSON-LD formats
+  - Data goes back to 1983 according to the calendar interface
+  - Free public access per Decree 2/2010

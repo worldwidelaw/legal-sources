@@ -8,7 +8,7 @@ source:
     and social matters since 1958.
 
   data_types:
-    - case_law
+    - caselaw
 
   url: https://juportal.be
   auth: none

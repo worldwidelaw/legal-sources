@@ -1,0 +1,63 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK MHRA (Medicines & Healthcare Products) Config
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/MHRA"
+  country: "UK"
+  name: "UK Medicines Agency (MHRA)"
+  url: "https://www.gov.uk/government/organisations/medicines-and-healthcare-products-regulatory-agency"
+  description: |
+    MHRA regulatory guidance, drug/device safety alerts, and publications
+    via GOV.UK Search API + Content API. ~4,300 documents.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+  endpoints:
+    search:
+      path: "/api/search.json"
+      method: "GET"
+    content:
+      path: "/api/content"
+      method: "GET"
+
+data_model:
+  type: "doctrine"
+  primary_key: "link"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - ~4,300 documents (safety alerts, guidance, press releases)
+  - GOV.UK Search API for discovery, Content API for full text
+  - Open Government Licence v3.0

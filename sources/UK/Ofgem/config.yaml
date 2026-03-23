@@ -1,0 +1,63 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Ofgem Config
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/Ofgem"
+  country: "UK"
+  name: "UK Gas and Electricity Markets Authority (Ofgem)"
+  url: "https://www.gov.uk/government/organisations/ofgem"
+  description: |
+    Ofgem regulatory documents, reports, guidance, and publications
+    via GOV.UK Search API + Content API. ~132 documents.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+  endpoints:
+    search:
+      path: "/api/search.json"
+      method: "GET"
+    content:
+      path: "/api/content"
+      method: "GET"
+
+data_model:
+  type: "doctrine"
+  primary_key: "link"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - ~132 documents (corporate reports, policy papers, consultation outcomes, guidance)
+  - GOV.UK Search API for discovery, Content API for full text
+  - Open Government Licence v3.0

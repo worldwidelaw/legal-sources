@@ -1,0 +1,13 @@
+{
+  "_id": "government_publications_the-temple-of-the-jedi-order",
+  "_source": "UK/CC",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T22:35:05.999741+00:00",
+  "title": "The Temple of the Jedi Order",
+  "text": "Decision of the Commission dated 16 December 2016.\n\nThe commission considered an application by the Temple of the Jedi Order for registration as a charity and concluded that the organisation was not established for exclusivity charitable purposes and could not be registered. The commission was not satisfied that Jediism is a religion in charity law.\n\nThis is a significant decision because the commission had to consider the definition of religion in charity law.",
+  "date": "2016-12-19",
+  "url": "https://www.gov.uk/government/publications/the-temple-of-the-jedi-order",
+  "description": "Decision of the Charity Commission on The Temple of the Jedi Order.",
+  "doc_type": "decision",
+  "schema_name": "publication"
+}

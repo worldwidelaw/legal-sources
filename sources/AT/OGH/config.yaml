@@ -3,7 +3,7 @@ source:
   country: AT
   name: Austrian Supreme Court (Oberster Gerichtshof)
   data_types:
-    - case_law
+    - caselaw
   auth: none
   url: https://www.ris.bka.gv.at/Jus/
 

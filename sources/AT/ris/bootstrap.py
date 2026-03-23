@@ -205,6 +205,7 @@ class RISScraper(BaseScraper):
             "date_effective": br_kons.get("Inkrafttretensdatum"),
             "date_expired": br_kons.get("Ausserkrafttretensdatum"),
             "indizes": self._flatten_item(br_kons.get("Indizes", {})),
+            "abkuerzung": br_kons.get("Abkuerzung", ""),
             "gesetzesnummer": br_kons.get("Gesetzesnummer", ""),
             "schlagworte": br_kons.get("Schlagworte", ""),
             "gesamte_rechtsvorschrift_url": br_kons.get(
@@ -302,8 +303,14 @@ class RISScraper(BaseScraper):
         Download and extract full text from content URLs.
 
         Prefers XML format for structured text extraction. Falls back to
-        HTML if XML is not available. Returns cleaned plain text.
+        HTML if XML is not available.
+
+        Returns (full_text, section_heading) tuple. section_heading is
+        extracted from <ueberschrift typ="para" ct="text"> in XML content
+        (the paragraph/section heading within the law).
         """
+        section_heading = ""
+
         # Try XML first (cleanest for text extraction)
         xml_url = content_urls.get("xml")
         if xml_url:
@@ -316,8 +323,17 @@ class RISScraper(BaseScraper):
                 root = ET.fromstring(resp.content)
                 text_parts = []
 
+                # Extract section heading from <ueberschrift typ="para" ct="text">
+                ns = root.tag.split("}")[0] + "}" if "}" in root.tag else ""
+                for ueber in root.iter(f"{ns}ueberschrift"):
+                    if ueber.get("typ") == "para" and ueber.get("ct") == "text":
+                        heading = "".join(ueber.itertext()).strip()
+                        if heading:
+                            section_heading = heading
+                            break  # Use the first paragraph-level heading
+
                 # Extract text from all <absatz> (paragraph) elements
-                for absatz in root.iter("absatz"):
+                for absatz in root.iter(f"{ns}absatz" if ns else "absatz"):
                     text = absatz.text or ""
                     # Also get text from child elements
                     for child in absatz.iter():
@@ -329,10 +345,24 @@ class RISScraper(BaseScraper):
                     if text:
                         text_parts.append(text)
 
+                # If no paragraphs found with namespace, try without
+                if not text_parts and ns:
+                    for absatz in root.iter("absatz"):
+                        text = absatz.text or ""
+                        for child in absatz.iter():
+                            if child.text:
+                                text += " " + child.text
+                            if child.tail:
+                                text += " " + child.tail
+                        text = text.strip()
+                        if text:
+                            text_parts.append(text)
+
                 # If no paragraphs, try other text-containing elements
                 if not text_parts:
                     for elem in root.iter():
-                        if elem.tag in ["titel", "untertitel", "absatz", "text", "betreff"]:
+                        tag = elem.tag.split("}")[-1] if "}" in elem.tag else elem.tag
+                        if tag in ["titel", "untertitel", "absatz", "text", "betreff"]:
                             text = "".join(elem.itertext()).strip()
                             if text:
                                 text_parts.append(text)
@@ -345,7 +375,7 @@ class RISScraper(BaseScraper):
                 full_text = re.sub(r"\s+", " ", full_text)
 
                 if full_text.strip():
-                    return full_text.strip()
+                    return full_text.strip(), section_heading
 
             except Exception as e:
                 logger.warning(f"Failed to fetch XML content from {xml_url}: {e}")
@@ -372,14 +402,14 @@ class RISScraper(BaseScraper):
                 text = text.strip()
 
                 if text:
-                    return text
+                    return text, section_heading
 
             except Exception as e:
                 logger.warning(f"Failed to fetch HTML content from {html_url}: {e}")
 
         # If all else fails, return empty string
         logger.warning(f"Could not fetch full text from any URL: {content_urls}")
-        return ""
+        return "", section_heading
 
     # -- Abstract method implementations ------------------------------------
 
@@ -465,8 +495,25 @@ class RISScraper(BaseScraper):
         # Download full text from content URLs
         content_urls = parsed.get("content_urls", {})
         full_text = ""
+        section_heading = ""
         if content_urls:
-            full_text = self._download_full_text(content_urls)
+            full_text, section_heading = self._download_full_text(content_urls)
+
+        # Build section_path for legislation records
+        # Format: "LawName > §X HeadingText" (matches FR/LegifranceCodes convention)
+        section_path = ""
+        if doc_type == "legislation":
+            law_name = (parsed.get("abkuerzung") or parsed.get("title", "")).strip()
+            art_para = parsed.get("artikel_paragraph", "").strip()
+            if law_name and art_para and art_para != "§ 0":
+                parts = [law_name]
+                if section_heading:
+                    parts.append(f"{art_para} {section_heading}")
+                else:
+                    parts.append(art_para)
+                section_path = " > ".join(parts)
+            elif law_name and section_heading:
+                section_path = f"{law_name} > {section_heading}"
 
         # Use title as fallback if no full text is available
         url = parsed.get("document_url", "")
@@ -483,6 +530,7 @@ class RISScraper(BaseScraper):
             "text": full_text,  # MANDATORY FULL TEXT
             "date": date,
             "url": url,
+            "section_path": section_path,
             # All other parsed fields
             **parsed,
         }

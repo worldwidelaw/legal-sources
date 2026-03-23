@@ -25,10 +25,10 @@ api:
 
 data:
   types:
-    - case_law
+    - caselaw
     - legislation
   coverage:
-    case_law: 251000+
+    caselaw: 251000+
     legislation: 57000+
   states:
     - Baden-Württemberg

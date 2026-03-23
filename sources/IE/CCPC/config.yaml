@@ -1,0 +1,25 @@
+source:
+  id: IE/CCPC
+  name: Irish Competition Authority (CCPC)
+  country: IE
+  url: https://www.ccpc.ie
+  data_types:
+    - doctrine
+  auth: none
+  license: public_domain
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - url
+
+fetch:
+  method: wp_rest_api
+  base_url: https://www.ccpc.ie/business
+  endpoint: /wp-json/wp/v2/posts
+  per_page: 100
+  rate_limit:
+    delay_seconds: 1.0

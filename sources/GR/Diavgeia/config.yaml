@@ -11,7 +11,7 @@ source:
     All public sector organizations must publish their decisions online.
     Contains 71+ million administrative decisions since 2010.
   data_types:
-    - administrative_decisions
+    - doctrine
   license: CC-BY
   auth: none
 

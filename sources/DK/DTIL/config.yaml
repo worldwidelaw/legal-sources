@@ -1,0 +1,45 @@
+# DK/DTIL -- Danish Data Protection Authority (Datatilsynet)
+# GDPR enforcement decisions from the Danish DPA
+
+source:
+  id: "DK/DTIL"
+  name: "Danish Data Protection Authority (Datatilsynet)"
+  country: "DK"
+  url: "https://www.datatilsynet.dk"
+  data_types:
+    - doctrine
+  auth:
+    type: none
+
+# Discovery strategy:
+# 1. Parse sitemap at /Handlers/Sitemap.ashx for decision URLs
+# 2. Filter URLs matching /afgoerelser/afgoerelser/YYYY/mon/slug pattern
+# 3. Fetch each HTML page and extract full text content
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  max_workers: 3
+
+schema:
+  key_fields:
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: case_number
+      type: string
+      required: false
+    - name: url
+      type: string
+      required: true

@@ -3,7 +3,7 @@ name: Montenegro Constitutional Court (Ustavni sud Crne Gore)
 country: ME
 url: http://www.ustavnisud.me
 data_types:
-  - case_law
+  - caselaw
 license: public
 auth: none
 language: sr

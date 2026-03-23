@@ -1,0 +1,34 @@
+source_id: PL/UOKIK
+name: Polish Competition Authority (UOKiK) Decisions
+country: PL
+url: https://decyzje.uokik.gov.pl
+data_types:
+  - doctrine
+auth:
+  type: none
+api:
+  base_url: https://decyzje.uokik.gov.pl
+  listing: /bp/dec_prez.nsf/UOKiK?OpenForm&Start=1&Count=10000&ExpandView
+  document: /bp/dec_prez.nsf/0/{UNID}?OpenDocument
+  metadata: /bp/dec_prez.nsf/0/{UNID}?editDocument&act=Decyzja
+rate_limit:
+  requests_per_second: 1.0
+  burst: 3
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+    - case_number
+    - practice_type
+    - industry
+    - region
+    - penalty

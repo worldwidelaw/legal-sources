@@ -17,8 +17,24 @@ access:
 
 schema:
   key_fields:
-    - _id
-    - import_id
+    - name: _id
+      type: string
+      required: true
+    - name: import_id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: false
   text_field: text
   date_field: date
   title_field: title

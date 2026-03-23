@@ -335,7 +335,7 @@ class EBAFetcher:
         return {
             '_id': raw_doc['document_id'],
             '_source': 'EU/EBA',
-            '_type': 'regulatory_decision',
+            '_type': 'doctrine',
             '_fetched_at': datetime.now().isoformat(),
             'document_id': raw_doc['document_id'],
             'document_type': raw_doc.get('document_type', 'unknown'),

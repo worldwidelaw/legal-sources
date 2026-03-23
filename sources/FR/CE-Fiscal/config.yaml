@@ -1,0 +1,56 @@
+# FR/CE-Fiscal - French Council of State Tax Chamber Decisions
+source_id: FR/CE-Fiscal
+name: French Council of State - Tax Chamber
+country: FR
+language: fr
+data_types:
+  - case_law
+
+api:
+  type: zip_archive
+  base_url: https://opendata.justice-administrative.fr
+  endpoints:
+    CE:
+      name: Conseil d'État (Supreme Administrative Court)
+      dir: /DCE/
+      zip_pattern: /DCE/{year}/{month:02d}/CE_{year}{month:02d}.zip
+
+format: xml
+schema:
+  key_fields:
+    - Numero_ECLI
+    - Numero_Dossier
+  metadata_fields:
+    - Code_Juridiction
+    - Nom_Juridiction
+    - Date_Lecture
+    - Type_Decision
+    - Type_Recours
+    - Formation_Jugement
+    - Solution
+  text_field: Texte_Integral
+
+# Fiscal filtering
+fiscal_chambers:
+  - "8ème chambre"
+  - "3ème et 8ème chambres réunies"
+  - "8ème et 3ème chambres réunies"
+  - "9ème chambre"
+  - "9ème et 10ème chambres réunies"
+  - "10ème et 9ème chambres réunies"
+
+rate_limit:
+  requests_per_second: 1
+  delay_between_requests: 1.0
+
+license:
+  name: Licence Ouverte / Open Licence
+  url: https://www.etalab.gouv.fr/licence-ouverte-open-licence
+  commercial_use: true
+
+coverage:
+  start_date: 2021-09-30
+  notes: >
+    Fiscal/tax decisions from the Conseil d'État.
+    Filtered from the same open data archives as FR/CouncilState.
+    Identified by fiscal chamber assignment AND/OR fiscal keyword content.

@@ -4,7 +4,7 @@ source:
   description: EU securities regulator - guidelines, Q&As, decisions, opinions, and technical standards
   country: EU
   data_types:
-    - regulatory_decisions
+    - doctrine
   url: https://www.esma.europa.eu
 
 fetch:

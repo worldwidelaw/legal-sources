@@ -5,7 +5,7 @@ source:
   country: GE
   language: ka
   data_types:
-    - case_law
+    - caselaw
   license: public
   update_frequency: daily
 

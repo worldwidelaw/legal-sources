@@ -1,0 +1,28 @@
+source:
+  id: "FI/VERO"
+  country: "FI"
+  name: "Finnish Tax Administration (Vero)"
+  description: "Tax guidance, preliminary rulings, decisions, and statements from Verohallinto"
+  url: "https://www.vero.fi"
+  data_types:
+    - doctrine
+
+schema:
+  key_fields:
+    - document_id
+    - title
+    - date
+    - url
+    - doc_type
+    - diary_number
+    - text
+
+api:
+  type: "scraping"
+  endpoints:
+    sitemap: "https://www.vero.fi/sitemap.xml"
+    base: "https://www.vero.fi/syventavat-vero-ohjeet/"
+  auth: "none"
+  rate_limit:
+    requests_per_second: 1
+    delay_seconds: 1

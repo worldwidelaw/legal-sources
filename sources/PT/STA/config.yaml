@@ -2,7 +2,7 @@
 #
 # Source: Supremo Tribunal Administrativo (STA)
 # URL: https://www.dgsi.pt/jsta.nsf
-# Data type: case_law
+# Data type: caselaw
 # Auth: none
 # License: Public (open government data)
 #
@@ -28,7 +28,7 @@ source:
   name: Portuguese Supreme Administrative Court (Supremo Tribunal Administrativo)
   country: PT
   data_types:
-    - case_law
+    - caselaw
   url: https://www.dgsi.pt/jsta.nsf
   language: pt
   auth: none

@@ -1,0 +1,35 @@
+source_id: FR/ANJ
+name: French Gaming Authority (ANJ - Autorité nationale des jeux)
+country: FR
+url: https://www.anj.fr
+description: |
+  Regulatory decisions from the French Gaming Authority (ANJ).
+  Includes sanctions, approvals, deliberations, and other regulatory decisions.
+  ~3200 decisions from 2010 to present, published as PDF documents.
+
+data_types:
+  - doctrine
+
+auth:
+  type: none
+
+api:
+  type: drupal_views_ajax
+  endpoint: https://www.anj.fr/views/ajax
+  listing_page: https://www.anj.fr/decisions
+
+rate_limit:
+  requests_per_minute: 20
+  delay_seconds: 2
+
+schema:
+  key_fields:
+    - _id
+    - node_id
+  text_field: text
+  date_field: date
+
+notes: |
+  Uses Drupal Views AJAX endpoint for paginated listing.
+  Full text extracted from PDF downloads via pdfplumber.
+  Categories include sanctions, approvals, deliberation minutes, etc.

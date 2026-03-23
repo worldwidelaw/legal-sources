@@ -1,0 +1,36 @@
+source:
+  id: DE/BRAK
+  name: German Federal Bar Association (BRAK)
+  country: DE
+  url: https://www.brak.de
+  data_types:
+    - doctrine
+  description: >
+    Legal news, case law commentary, and professional guidance from the
+    Bundesrechtsanwaltskammer (BRAK). Content includes legal analysis of court
+    decisions, regulatory updates, professional ethics guidance, and bar
+    association news. Full text extracted from HTML article pages via paginated
+    news listing (111 pages, ~1,440 articles).
+  auth: none
+  license: Public domain (§ 5 UrhG amtliche Werke)
+
+fetch:
+  method: html_listing_scrape
+  listing_url: https://www.brak.de/newsroom/news/
+  pagination_param: tx_wwt3list_recordlist[page]
+  total_pages: 111
+  articles_per_page: 13
+  rate_limit: 1.5
+  timeout: 30
+  estimated_total: 1440
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+    - tags

@@ -1,0 +1,13 @@
+{
+  "_id": "government_publications_tra-imports-dashboard",
+  "_source": "UK/TRA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T19:34:07.278841+00:00",
+  "title": "Post Investigation Trade Flow Monitor",
+  "text": "About the TRA\n\nThe Trade Remedies Authority (TRA) is an Arms-Length Body of the Department for Business and Trade. The TRA investigates allegations of unfair international trade practices which are harming UK producers, as well as unforeseen surges of imports. It does this to establish whether measures should be put in place to address the injury caused, normally in the form of duties.\n\nAbout the dashboard\n\nThe dashboard has been retitled Post‑Investigation Trade Flow Monitor (formerly Imports Dashboard) to ensure greater distinction from other TRA products.\n\nThis dashboard summarises monthly UK imports data sourced from HMRC, Overseas Trade in Goods Statistics. It provides insights into goods imported into the UK that have been, or are currently subject to investigation by the TRA, allowing users to monitor trends and analyse data relevant to our specific cases.\n\nThis dashboard exclusively covers goods subject to anti-dumping measures and countervailing measures, but it does not cover goods that are subject to safeguard measures.\n\nStructure of the dashboard\n\nThe dashboard consists of the following pages:\n\n\nThe homepage provides an introduction and high-level overview of the dashboard\n\n\n\n\nCountries page presents an overview of the countries subject to UK trade remedy measures, along with the type of trade remedy and the specific commodities involved in each case.\n\n\n\n\nInvestigations page presents an overview of UK anti-dumping and subsidy investigations, highlighting trends in import values before, during and after the lifecycle of each case.\n\n\n\nFeedback\n\nFor feedback or requests, please contact: statistics@traderemedies.gov.uk.\n\nPost-Investigation Trade Flow Monitor\n\nhttps://app.powerbi.com/view?r=eyJrIjoiZTljYzE0M2YtOTAwZS00MDFkLTg2NTUtYzFmOGExMTVlZGUyIiwidCI6IjZkMDVjNDYyLTI5NTYtNGVjNC1hMGQ0LTQ4MDE4MWM4NDlmOSJ9",
+  "date": "2026-01-15T15:16:46+00:00",
+  "url": "https://www.gov.uk/government/publications/tra-imports-dashboard",
+  "description": "This interactive dashboard tracks imports of goods subject to UK trade remedies, including those still under investigation. ",
+  "document_type": "transparency",
+  "language": "en"
+}

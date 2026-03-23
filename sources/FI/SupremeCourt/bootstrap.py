@@ -2,16 +2,16 @@
 """
 FI/SupremeCourt -- Finnish Supreme Court (Korkein oikeus)
 
-Fetches case law decisions with full text from the LawSampo Linked Open Data service.
+Fetches case law decisions with full text from two sources:
+  - LawSampo SPARQL endpoint (pre-2022 cases, ~6000 judgments)
+  - Finlex website RSC endpoint (2022+ cases, ~300+ judgments)
 
-Data source: LawSampo SPARQL endpoint (http://ldf.fi/lawsampo/sparql)
-Coverage: KKO precedents (6,000+ judgments)
-Data range: Historical through 2021 (LawSampo data update)
+Data range: 1980-present
 
 Strategy:
-  - Discovery: SPARQL query for all KKO Judgment records
-  - Full text: lss:html property contains the full HTML text
-  - Metadata: ECLI, date, keywords from SPARQL
+  - Pre-2022: SPARQL query on LawSampo for KKO Judgment records
+  - 2022+: Finlex Next.js RSC endpoint for case listing and full text
+  - Full text: LawSampo lss:html property or Finlex highlightable spans
 
 Usage:
   python bootstrap.py bootstrap           # Full initial pull
@@ -210,32 +210,166 @@ class SupremeCourtScraper(BaseScraper):
             logger.warning(f"Error extracting text from HTML: {e}")
             return ""
 
+    # -- Finlex RSC methods (2022+ cases) -------------------------------------
+
+    FINLEX_BASE = "https://www.finlex.fi/fi/oikeuskaytanto/korkein-oikeus/ennakkopaatokset"
+
+    def _fetch_finlex_case_ids(self, year: int) -> List[str]:
+        """Fetch case numbers for a given year from Finlex RSC listing."""
+        self.rate_limiter.wait()
+        try:
+            resp = self.session.get(
+                f"{self.FINLEX_BASE}/{year}",
+                headers={"RSC": "1"},
+                timeout=30,
+            )
+            content = resp.content.decode("utf-8")
+            case_ids = sorted(set(re.findall(rf"KKO:{year}:(\d+)", content)), key=int)
+            logger.info(f"Finlex {year}: found {len(case_ids)} cases")
+            return case_ids
+        except Exception as e:
+            logger.error(f"Failed to list Finlex cases for {year}: {e}")
+            return []
+
+    def _fetch_finlex_case(self, year: int, number: str) -> Optional[Dict]:
+        """Fetch a single case from Finlex RSC and return a raw dict."""
+        self.rate_limiter.wait()
+        try:
+            resp = self.session.get(
+                f"{self.FINLEX_BASE}/{year}/{number}",
+                headers={"RSC": "1"},
+                timeout=30,
+            )
+            content = resp.content.decode("utf-8")
+
+            # Extract highlightable text spans (Finnish content comes first)
+            raw_spans = re.findall(
+                r'"highlightable","children":"((?:[^"\\]|\\.)*)"', content
+            )
+            decoded_spans = []
+            for s in raw_spans:
+                try:
+                    decoded_spans.append(json.loads('"' + s + '"'))
+                except Exception:
+                    decoded_spans.append(s)
+
+            # Extract ECLI
+            ecli_match = re.search(r"ECLI:[A-Z:0-9]+", content)
+            ecli = ecli_match.group(0) if ecli_match else f"ECLI:FI:KKO:{year}:{number}"
+
+            # Extract date
+            date_match = re.search(r'"dateTime":"([^"]+)"', content)
+            date_str = date_match.group(1)[:10] if date_match else None
+
+            return {
+                "_finlex": True,
+                "ecli": ecli,
+                "date": date_str,
+                "year": year,
+                "number": number,
+                "spans": decoded_spans,
+            }
+        except Exception as e:
+            logger.error(f"Failed to fetch Finlex KKO:{year}:{number}: {e}")
+            return None
+
+    def _paginate_finlex(
+        self, start_year: int = 2022, end_year: Optional[int] = None
+    ) -> Generator[Dict, None, None]:
+        """Yield raw case dicts from Finlex for years >= start_year."""
+        if end_year is None:
+            end_year = datetime.now().year
+        for year in range(start_year, end_year + 1):
+            case_numbers = self._fetch_finlex_case_ids(year)
+            for num in case_numbers:
+                case = self._fetch_finlex_case(year, num)
+                if case:
+                    yield case
+
     # -- Abstract method implementations ---------------------------------------
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """
-        Yield all KKO judgments from LawSampo.
+        Yield all KKO judgments: LawSampo (pre-2022) + Finlex (2022+).
         """
+        # Pre-2022 from LawSampo
         for binding in self._paginate_judgments(page_size=100):
             yield binding
+        # 2022+ from Finlex
+        for case in self._paginate_finlex(start_year=2022):
+            yield case
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """
-        Yield judgments from recent pages.
-
-        Since LawSampo is updated periodically (not real-time), we just
-        fetch the most recent pages and let deduplication handle the rest.
+        Yield recent judgments. LawSampo recent pages + Finlex current year.
         """
         for binding in self._paginate_judgments(page_size=50, max_pages=5):
             yield binding
+        current_year = datetime.now().year
+        for case in self._paginate_finlex(start_year=current_year - 1, end_year=current_year):
+            yield case
 
     def normalize(self, raw: dict) -> Optional[dict]:
         """
-        Transform SPARQL binding into standard schema.
+        Transform SPARQL binding or Finlex RSC data into standard schema.
 
-        CRITICAL: Extracts and includes FULL TEXT from HTML.
+        CRITICAL: Extracts and includes FULL TEXT.
         """
-        # Extract values from SPARQL binding
+        # Finlex RSC case (2022+)
+        if raw.get("_finlex"):
+            return self._normalize_finlex(raw)
+
+        # LawSampo SPARQL binding (pre-2022)
+        return self._normalize_lawsampo(raw)
+
+    def _normalize_finlex(self, raw: dict) -> Optional[dict]:
+        """Normalize a Finlex RSC case."""
+        spans = raw.get("spans", [])
+        ecli = raw.get("ecli", "")
+        date = raw.get("date")
+        year = raw.get("year")
+        number = raw.get("number", "")
+
+        # Build full text from spans - take only Finnish text (before Swedish)
+        # Swedish section typically starts with a heading containing Swedish words
+        fi_spans = []
+        for s in spans:
+            # Stop at Swedish section (common markers)
+            if re.match(r"^(Högsta domstolen|Tingsrätten|Hovrätten|Besvärst)", s):
+                break
+            fi_spans.append(s)
+
+        full_text = "\n".join(fi_spans)
+
+        if len(full_text) < 200:
+            logger.warning(f"Text too short for {ecli}: {len(full_text)} chars")
+            return None
+
+        doc_id = ecli.replace(":", "_") if ecli else f"KKO_{year}_{number}"
+        url = f"https://www.finlex.fi/fi/oikeuskaytanto/korkein-oikeus/ennakkopaatokset/{year}/{number}"
+        title = f"KKO:{year}:{number}"
+
+        return {
+            "_id": doc_id,
+            "_source": "FI/SupremeCourt",
+            "_type": "case_law",
+            "_fetched_at": datetime.now(timezone.utc).isoformat(),
+            "title": title,
+            "text": full_text,
+            "date": date,
+            "url": url,
+            "ecli": ecli,
+            "judgment_number": number,
+            "year": year,
+            "judgment_uri": None,
+            "finlex_url": url,
+            "court": "Korkein oikeus",
+            "court_en": "Supreme Court",
+            "language": "fi",
+        }
+
+    def _normalize_lawsampo(self, raw: dict) -> Optional[dict]:
+        """Normalize a LawSampo SPARQL binding."""
         judgment_uri = raw.get("judgment", {}).get("value", "")
         label = raw.get("label", {}).get("value", "")
         ecli = raw.get("ecli", {}).get("value", "")
@@ -244,27 +378,22 @@ class SupremeCourtScraper(BaseScraper):
         finlex_url = raw.get("finlex_url", {}).get("value", "")
         html_text = raw.get("html_text", {}).get("value", "")
 
-        # Skip if no full text
         if not html_text:
             logger.warning(f"No HTML text for {ecli}")
             return None
 
-        # Extract clean text from HTML
         full_text = self._extract_text_from_html(html_text)
 
         if len(full_text) < 200:
             logger.warning(f"Text too short for {ecli}: {len(full_text)} chars")
             return None
 
-        # Build ID from ECLI
         doc_id = ecli.replace(":", "_") if ecli else judgment_uri.split("/")[-1]
 
-        # Parse date
         date = None
         if issued:
-            date = issued[:10]  # ISO format YYYY-MM-DD
+            date = issued[:10]
 
-        # Extract year from ECLI or date
         year = None
         if ecli:
             match = re.search(r':(\d{4}):', ecli)
@@ -273,21 +402,17 @@ class SupremeCourtScraper(BaseScraper):
         elif date:
             year = int(date[:4])
 
-        # URL - prefer finlex_url, fall back to KKO website
-        url = finlex_url or f"https://www.korkeinoikeus.fi/fi/index/ennakkopaatokset.html"
+        url = finlex_url or "https://www.korkeinoikeus.fi/fi/index/ennakkopaatokset.html"
 
         return {
-            # Required base fields
             "_id": doc_id,
             "_source": "FI/SupremeCourt",
             "_type": "case_law",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
-            # Standard fields
             "title": label or f"KKO {number}" if number else ecli,
-            "text": full_text,  # MANDATORY FULL TEXT
+            "text": full_text,
             "date": date,
             "url": url,
-            # Case-specific metadata
             "ecli": ecli,
             "judgment_number": number,
             "year": year,
@@ -348,8 +473,10 @@ WHERE {
 
     def run_sample(self, n: int = 12) -> dict:
         """
-        Fetch a sample of judgments with full text.
+        Fetch a sample of judgments with full text from both sources.
         """
+        import itertools
+
         sample_dir = self.source_dir / "sample"
         sample_dir.mkdir(exist_ok=True)
 
@@ -358,30 +485,41 @@ WHERE {
         errors = []
         text_lengths = []
 
-        for binding in self._paginate_judgments(page_size=50, max_pages=1):
+        # Mix LawSampo (pre-2022) and Finlex (2022+) sources
+        lawsampo_gen = self._paginate_judgments(page_size=50, max_pages=1)
+        current_year = datetime.now().year
+        finlex_gen = self._paginate_finlex(start_year=current_year - 1, end_year=current_year)
+
+        # Take 6 from each source for a balanced sample
+        half = n // 2
+        sources = itertools.chain(
+            itertools.islice(lawsampo_gen, half + 5),
+            itertools.islice(finlex_gen, half + 5),
+        )
+
+        for raw in sources:
             if saved >= n:
                 break
 
             checked += 1
-            ecli = binding.get("ecli", {}).get("value", "")
+            ecli_val = raw.get("ecli", raw.get("ecli", {}).get("value", "") if isinstance(raw.get("ecli"), dict) else "")
 
             try:
-                normalized = self.normalize(binding)
+                normalized = self.normalize(raw)
 
                 if not normalized:
-                    errors.append(f"{ecli}: Normalization returned None")
+                    errors.append(f"{ecli_val}: Normalization returned None")
                     continue
 
                 if not normalized.get("text"):
-                    errors.append(f"{ecli}: No text content")
+                    errors.append(f"{ecli_val}: No text content")
                     continue
 
                 text_len = len(normalized.get("text", ""))
                 if text_len < 500:
-                    errors.append(f"{ecli}: Text too short ({text_len} chars)")
+                    errors.append(f"{ecli_val}: Text too short ({text_len} chars)")
                     continue
 
-                # Save to sample directory
                 safe_name = re.sub(r'[^\w\-]', '_', normalized["_id"])
                 sample_path = sample_dir / f"{safe_name}.json"
                 with open(sample_path, "w", encoding="utf-8") as f:
@@ -389,11 +527,11 @@ WHERE {
 
                 saved += 1
                 text_lengths.append(text_len)
-                logger.info(f"  Saved {ecli}: {text_len} chars")
+                logger.info(f"  Saved {normalized.get('ecli', '')}: {text_len} chars (year={normalized.get('year')})")
 
             except Exception as e:
-                errors.append(f"{ecli}: {str(e)}")
-                logger.error(f"Error processing {ecli}: {e}")
+                errors.append(f"{ecli_val}: {str(e)}")
+                logger.error(f"Error processing {ecli_val}: {e}")
 
         stats = {
             "sample_records_saved": saved,

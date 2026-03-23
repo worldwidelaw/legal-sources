@@ -18,7 +18,7 @@ country: UA
 url: https://supreme.court.gov.ua
 
 data_types:
-  - case_law
+  - caselaw
 
 auth:
   type: none

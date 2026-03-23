@@ -4,7 +4,7 @@ source:
   country: BE
   url: https://www.fsma.be
   data_types:
-    - regulatory_decisions
+    - doctrine
   language:
     - fr
     - nl

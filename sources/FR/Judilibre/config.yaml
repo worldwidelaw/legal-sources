@@ -6,7 +6,7 @@ name: Judilibre (Cour de Cassation)
 country: FR
 language: fr
 data_types:
-  - case_law
+  - caselaw
 
 # Data access via PISTE API
 api:

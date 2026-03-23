@@ -1,0 +1,82 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Employment Tribunals Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/ET"
+  country: "UK"
+  name: "UK Employment Tribunals"
+  url: "https://www.gov.uk/employment-tribunal-decisions"
+  description: |
+    UK Employment Tribunal decisions published on GOV.UK. Covers unfair
+    dismissal, discrimination, wages, redundancy, and other employment
+    law cases from England, Wales, and Scotland. ~130,000 decisions.
+    Full text via GOV.UK Content Store API (hidden_indexable_content).
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+  endpoints:
+    search:
+      path: "/api/search.json"
+      method: "GET"
+      description: "GOV.UK Search API for listing ET decisions"
+    content:
+      path: "/api/content/{path}"
+      method: "GET"
+      description: "GOV.UK Content Store API for full decision text"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "content_id"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "content_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "decision_date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "categories"
+      type: "list"
+      role: "classification"
+    - name: "country"
+      type: "string"
+      role: "classification"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~130,000 decisions (England & Wales ~113K, Scotland ~17K)
+  - Full text via Content Store hidden_indexable_content field
+  - Categories: unfair-dismissal, discrimination, wages, redundancy, etc.
+  - No authentication required

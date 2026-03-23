@@ -1,0 +1,28 @@
+{
+  "_id": "UK/FSA/185",
+  "_source": "UK/FSA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T16:21:57.643640+00:00",
+  "id": "185",
+  "title": "Committees of the FSA Board",
+  "text": "The FSA Board appointed an Audit and Risk Assurance Committee and Business Committee to exercise some of its responsibilities and to advise it on others.\n\nBusiness Committee The Business Committee is a body which exists to provide appropriate high-level oversight of operational matters, including performance and use of resources (financial and human resources), at Board level and to hold the Executive to account on delivery of its plans and policies. Business Committee meetings will not be held in public, but a report of each meeting will be included on the agenda for each FSA Board meeting and published so that it is clear to interested parties and the public on what basis it has taken its’ recommendations to the Board to approve and what evidence it has considered in reaching them.  Papers considered by the Business Committee will be published as an annex to the report to the Board unless there are particular reasons why specific papers cannot be published. Committee Members \tTimothy Riley – Chair\n\tProfessor Susan Jebb\n\tAlison Austin\n\tFiona Gately\n\tDr Rhian Hayward\n\tLouise Hoste\n\tSteve Ruddy Audit and Risk Assurance Committee The Audit and Risk Assurance Committee (ARAC) is a committee of the FSA Board. ARAC is responsible for reviewing, in a non-executive capacity, the reliability of assurances on governance, risk management and the control environment. It is also responsible for reviewing the integrity of financial statements and the Food Standards Agency Annual Report and Accounts. Committee Members \tAnthony Harbinson - Chair\n\tTimothy Riley\n\tSir Frank Atherton\n\tClare Evans\n\tDr Sue Paterson Executive Attendees \tKatie Pettifer – Chief Executive Committee Terms of Reference The Terms of Reference for both the Business Committee and ARAC can be found within the Board Operating Framework.",
+  "content_type": "About us",
+  "filter_type": "About us",
+  "date": "2019-08-05",
+  "nation": [
+    {
+      "id": "31",
+      "label": "England"
+    },
+    {
+      "id": "33",
+      "label": "Northern Ireland"
+    },
+    {
+      "id": "32",
+      "label": "Wales"
+    }
+  ],
+  "url": "https://www.food.gov.uk/about-us/committees-of-the-fsa-board",
+  "updated_at": "2026-03-18"
+}

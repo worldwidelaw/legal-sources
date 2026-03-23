@@ -2,7 +2,7 @@ source:
   id: SI/SupremeCourt
   name: Slovenian Case Law Database (sodnapraksa.si)
   country: SI
-  type: case_law
+  type: caselaw
   url: https://www.sodnapraksa.si
   description: |
     Slovenian court decisions from the Supreme Court and other courts.

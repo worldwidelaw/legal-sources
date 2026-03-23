@@ -18,7 +18,7 @@ source:
     administrative tribunals. Public JSON API with Lucene-style query syntax.
 
 data_types:
-  - case_law
+  - caselaw
 
 auth:
   type: "none"
@@ -43,7 +43,7 @@ api:
     view: "colapsada"
 
 data_model:
-  type: "case_law"
+  type: "caselaw"
   primary_key: "uuid"
   update_strategy: "upsert"
 

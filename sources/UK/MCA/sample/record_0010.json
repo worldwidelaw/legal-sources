@@ -1,0 +1,13 @@
+{
+  "_id": "government_publications_port-marine-safety-code",
+  "_source": "UK/MCA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T23:14:41.252299+00:00",
+  "title": "Ports and marine facilities safety code",
+  "text": "Sets out a national standard for port marine safety.\n\nThe code applies to all harbour authorities and other marine facilities, berths and terminals in the UK.\n\nThis information is used in conjunction with practical guidance issued in ‘\nA guide to good practice on port marine operations\n’.",
+  "date": "2025-04-15",
+  "url": "https://www.gov.uk/government/publications/port-marine-safety-code",
+  "description": "Safety code for harbour authorities with statutory powers and duties in the UK.",
+  "doc_type": "guidance",
+  "schema_name": "publication"
+}

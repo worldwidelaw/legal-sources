@@ -54,16 +54,22 @@ class DomsdatabasenFetcher:
             'Accept': 'application/json, application/xml, */*'
         })
 
-    def _make_request(self, url: str, accept: str = 'application/json') -> Optional[requests.Response]:
-        """Make a request with error handling"""
-        try:
-            headers = {'Accept': accept}
-            response = self.session.get(url, headers=headers, timeout=60)
-            response.raise_for_status()
-            return response
-        except requests.RequestException as e:
-            logger.error(f"Request failed for {url}: {e}")
-            return None
+    def _make_request(self, url: str, accept: str = 'application/json', retries: int = 2) -> Optional[requests.Response]:
+        """Make a request with error handling and retries"""
+        for attempt in range(retries + 1):
+            try:
+                headers = {'Accept': accept}
+                response = self.session.get(url, headers=headers, timeout=120)
+                response.raise_for_status()
+                return response
+            except requests.RequestException as e:
+                if attempt < retries:
+                    wait = 3 * (attempt + 1)
+                    logger.warning(f"Request attempt {attempt+1} failed for {url}: {e}. Retrying in {wait}s...")
+                    time.sleep(wait)
+                else:
+                    logger.error(f"Request failed for {url} after {retries+1} attempts: {e}")
+                    return None
 
     def _clean_html(self, html_content: str) -> str:
         """Clean HTML content to plain text"""
@@ -147,54 +153,106 @@ class DomsdatabasenFetcher:
             return data.get('contentHtml', '')
         return None
 
-    def discover_max_case_id(self) -> int:
-        """Discover the maximum case ID by checking recent RSS feed."""
-        max_id = 0
-        for case_id in self.fetch_cases_from_rss(time_years=1):
-            try:
-                id_num = int(case_id)
-                if id_num > max_id:
-                    max_id = id_num
-            except ValueError:
-                continue
-        return max_id
+    def fetch_case_ids_advanced(self, page_size: int = 10) -> Iterator[str]:
+        """
+        Discover all case IDs via the advanced search endpoint (paginated).
 
-    def fetch_all(self, limit: int = None, use_id_enumeration: bool = True) -> Iterator[Dict[str, Any]]:
+        Yields:
+            Case IDs as strings
+        """
+        page_index = 0
+        total_yielded = 0
+        total_count = None
+        max_retries = 3
+        consecutive_failures = 0
+        max_consecutive_failures = 5
+
+        while True:
+            payload = {
+                "searchValue": "",
+                "pageIndex": page_index,
+                "pageSize": page_size,
+                "sortingParameter": 1,
+                "descendingOrder": True
+            }
+            data = None
+            for attempt in range(max_retries):
+                try:
+                    response = self.session.post(
+                        f"{API_BASE}/Case/advanced",
+                        json=payload,
+                        headers={'Accept': 'application/json', 'Content-Type': 'application/json'},
+                        timeout=120
+                    )
+                    response.raise_for_status()
+                    data = response.json()
+                    consecutive_failures = 0
+                    break
+                except Exception as e:
+                    logger.warning(f"Advanced search page {page_index} attempt {attempt+1}/{max_retries} failed: {e}")
+                    if attempt < max_retries - 1:
+                        wait = 5 * (attempt + 1)
+                        logger.info(f"Retrying in {wait}s...")
+                        time.sleep(wait)
+
+            if data is None:
+                consecutive_failures += 1
+                logger.error(f"Advanced search page {page_index} failed after {max_retries} retries")
+                if consecutive_failures >= max_consecutive_failures:
+                    logger.error(f"Too many consecutive failures ({max_consecutive_failures}), stopping")
+                    break
+                # Skip this page and try the next one
+                page_index += 1
+                time.sleep(3)
+                continue
+
+            if total_count is None:
+                total_count = data.get('totalCount', 0)
+                logger.info(f"Advanced search: {total_count} total cases across {data.get('pageCount', '?')} pages")
+
+            cases = data.get('cases', [])
+            if not cases:
+                break
+
+            for case in cases:
+                case_id = case.get('id')
+                if case_id:
+                    yield str(case_id)
+                    total_yielded += 1
+
+            page_index += 1
+            time.sleep(2)  # Rate limiting between pages
+
+        logger.info(f"Discovered {total_yielded} case IDs via advanced search")
+
+    def fetch_all(self, limit: int = None, use_advanced: bool = True) -> Iterator[Dict[str, Any]]:
         """
         Fetch all court cases with full text.
 
         Args:
             limit: Maximum number of cases to fetch (None for all)
-            use_id_enumeration: If True, enumerate by ID (for full bootstrap).
-                              If False, use RSS feed only (for samples/updates).
+            use_advanced: If True, use advanced search for complete discovery.
+                         If False, use RSS feed (for quick samples).
 
         Yields:
             Raw case dictionaries with documents
         """
         count = 0
-        consecutive_failures = 0
-        max_consecutive_failures = 20  # Stop after 20 consecutive missing IDs
 
-        if use_id_enumeration:
-            # Discover the current max ID from RSS
-            max_id = self.discover_max_case_id()
-            if max_id == 0:
-                max_id = 11000  # Fallback estimate
-            logger.info(f"Enumerating case IDs from 1 to ~{max_id}...")
+        if use_advanced:
+            # Use advanced search endpoint for complete case discovery
+            seen_ids = set()
+            for case_id in self.fetch_case_ids_advanced(page_size=10):
+                if case_id in seen_ids:
+                    continue
+                seen_ids.add(case_id)
 
-            for case_id in range(1, max_id + 100):  # Add buffer for new cases
                 logger.info(f"Fetching case {case_id} [{count + 1}]...")
-                case_data = self.fetch_case(str(case_id))
+                case_data = self.fetch_case(case_id)
 
                 if not case_data:
-                    consecutive_failures += 1
-                    if consecutive_failures >= max_consecutive_failures:
-                        logger.info(f"Stopping after {max_consecutive_failures} consecutive missing IDs at {case_id}")
-                        break
-                    time.sleep(0.3)
+                    time.sleep(0.5)
                     continue
-
-                consecutive_failures = 0
 
                 # Fetch full document content for each document
                 documents = case_data.get('documents', [])
@@ -215,7 +273,7 @@ class DomsdatabasenFetcher:
 
                 time.sleep(0.5)  # Rate limiting between cases
         else:
-            # RSS-based discovery (for samples and recent updates)
+            # RSS-based discovery (for quick samples)
             seen_ids = set()
             logger.info("Fetching case IDs from RSS feed...")
 
@@ -384,11 +442,10 @@ def main():
         is_sample = '--sample' in sys.argv
         target_count = 12 if is_sample else None  # No limit for full bootstrap
 
-        # Use RSS for samples (faster), ID enumeration for full bootstrap
-        use_id_enum = not is_sample
+        # Use advanced search for both sample and full (RSS only returns ~10 items)
         limit_arg = target_count + 10 if target_count else None
 
-        for raw_case in fetcher.fetch_all(limit=limit_arg, use_id_enumeration=use_id_enum):
+        for raw_case in fetcher.fetch_all(limit=limit_arg, use_advanced=True):
             if target_count and sample_count >= target_count:
                 break
 

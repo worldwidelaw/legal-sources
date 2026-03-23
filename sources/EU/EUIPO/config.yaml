@@ -1,0 +1,48 @@
+source:
+  id: "EU/EUIPO"
+  name: "EU Intellectual Property Office (EUIPO)"
+  country: "EU"
+  language: "en"
+
+  endpoints:
+    search_office: "https://euipo.europa.eu/caselaw/officesearch/json/{lang}"
+    search_rcd: "https://euipo.europa.eu/caselaw/rcdsearch/json/{lang}"
+    base: "https://euipo.europa.eu"
+
+  data_types:
+    - case_law
+
+  decision_types:
+    - OPPOSITION        # Trademark opposition decisions
+    - CANCELLATION      # Cancellation/invalidity decisions
+    - EXAMINATION       # Examination decisions
+    - APPEAL            # Board of Appeal decisions
+
+  rate_limit:
+    requests_per_second: 0.5
+    delay_between_requests: 2
+
+  schema:
+    key_fields:
+      - _id
+      - case_number
+      - decision_type
+      - title
+      - text
+      - date
+
+    field_mappings:
+      _id: "uniqueSolrKey"
+      title: "entityName"
+      date: "date"
+      url: "url"
+
+fetch:
+  sample_count: 15
+  results_per_page: 50
+  max_documents: 1000
+
+license:
+  type: "Open Data"
+  url: "https://www.euipo.europa.eu/en/legal-notice"
+  notes: "EUIPO decisions are public documents. eSearch Case Law database is freely accessible."

@@ -6,7 +6,7 @@ name: "Dutch Court Decisions (rechtspraak.nl)"
 country: "NL"
 language: "nl"
 data_types:
-  - case_law
+  - caselaw
 
 # Data endpoints (no authentication required)
 endpoints:

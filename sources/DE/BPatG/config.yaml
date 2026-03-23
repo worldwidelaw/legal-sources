@@ -3,7 +3,7 @@ name: German Federal Patent Court (BPatG)
 country: DE
 url: https://www.rechtsprechung-im-internet.de
 data_types:
-  - case_law
+  - caselaw
 auth: none
 schedule: weekly
 rate_limit: 1.5  # seconds between requests

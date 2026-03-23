@@ -12,7 +12,7 @@ description: |
   Published in German, French, and Italian.
 
 data_types:
-  - regulatory_decisions
+  - doctrine
 
 auth:
   type: none

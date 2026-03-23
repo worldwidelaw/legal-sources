@@ -1,0 +1,24 @@
+source:
+  id: PT/CNPD
+  name: Portuguese Data Protection Authority (CNPD)
+  country: PT
+  url: https://www.cnpd.pt
+  data_types:
+    - doctrine
+  auth: none
+  schedule: weekly
+  description: >
+    GDPR enforcement decisions, opinions (pareceres), deliberations, guidelines,
+    and regulations from the Portuguese Data Protection Authority (Comissão
+    Nacional de Proteção de Dados). PDFs downloaded and text extracted via pypdf.
+    Focus on post-RGPD (2018+) decisions. ~600+ documents.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - entity
+    - decision_type

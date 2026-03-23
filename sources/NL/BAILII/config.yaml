@@ -12,7 +12,7 @@ source:
     Data is provided via a RESTful API with XML responses containing full text.
   url: https://data.rechtspraak.nl
   data_types:
-    - case_law
+    - caselaw
   license: CC0 / Public Domain
   auth: none
 

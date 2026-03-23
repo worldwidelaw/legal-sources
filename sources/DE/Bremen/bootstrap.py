@@ -316,15 +316,8 @@ class BremenFetcher:
         # Parse date from v_datum field
         date = self._parse_german_date(raw_doc.get('v_datum', ''))
 
-        # Determine document type
+        # All laws, regulations, statutes, directives are classified as legislation
         doc_type = 'legislation'
-        title_lower = title.lower()
-        if 'verordnung' in title_lower:
-            doc_type = 'regulation'
-        elif 'satzung' in title_lower:
-            doc_type = 'statute'
-        elif 'verfügung' in title_lower:
-            doc_type = 'directive'
 
         # Get the subject area
         subject_area = raw_doc.get('metadaten_sachgebietsfelder_r', '')

@@ -33,8 +33,15 @@ BASE_URL = "https://fbihvlada.gov.ba"
 LAWS_INDEX_URL = f"{BASE_URL}/bs/zakoni"
 REQUEST_DELAY = 1.5  # seconds between requests
 
-# Years with chronological registers available
-YEARS = list(range(2019, datetime.now().year + 1))
+# Document type configurations: (index_page, url_keyword, register_url_keyword, start_year)
+DOC_TYPES = [
+    ("zakoni", "-zakon-", "zakona", 2019),
+    ("uredbe", "-uredb", "uredbi", 2019),
+    ("odluke", "-odluk", "odluka", 2007),
+]
+
+# Years with chronological registers available (zakoni only from 2019; odluke from 2007)
+YEARS = list(range(2007, datetime.now().year + 1))
 
 
 def get_session() -> requests.Session:
@@ -48,91 +55,104 @@ def get_session() -> requests.Session:
     return session
 
 
-def get_year_register_url(year: int) -> str:
+def discover_register_urls(session: requests.Session, doc_type: str) -> list[tuple]:
     """
-    Get URL for chronological register of a specific year.
-
-    Args:
-        year: The year to get register for
+    Discover all year register URLs for a given document type by scraping the index page.
 
     Returns:
-        URL string for the year's register
+        List of (year, url) tuples
     """
-    if year == 2026:
-        return f"{BASE_URL}/bs/hronoloski-registar-zakona-objavljenih-u-sluzbenim-novinama-fbih-u-2026-godini"
-    elif year == 2025:
-        return f"{BASE_URL}/bs/hronoloski-registar-zakona-objavljenih-u-sluzbenim-novinama-fbih-u-2025-godini"
-    elif year == 2023:
-        # Note: URL has typo "hronocoski" instead of "hronoloski"
-        return f"{BASE_URL}/bs/hronocoski-registar-zakona-objavljenih-u-sluzbenim-novinama-federacije-bih-u-2023-godini"
-    else:
-        return f"{BASE_URL}/bs/hronoloski-registar-zakona-objavljenih-u-sluzbenim-novinama-federacije-bih-u-{year}-godini"
-
-
-def list_laws_for_year(session: requests.Session, year: int) -> list[dict]:
-    """
-    Get list of laws from a year's chronological register.
-
-    Args:
-        session: requests session
-        year: year to fetch laws for
-
-    Returns:
-        List of dicts with law metadata
-    """
-    url = get_year_register_url(year)
-
+    index_url = f"{BASE_URL}/bs/{doc_type}"
     try:
-        response = session.get(url, timeout=30)
+        response = session.get(index_url, timeout=30)
         response.raise_for_status()
     except requests.RequestException as e:
-        print(f"Failed to fetch {year} register: {e}", file=sys.stderr)
+        print(f"Failed to fetch {doc_type} index: {e}", file=sys.stderr)
         return []
 
     soup = BeautifulSoup(response.text, "html.parser")
-    laws = []
+    registers = []
+    for link in soup.find_all("a", href=True):
+        href = link.get("href", "")
+        if "registar" in href.lower() and "godini" in href.lower():
+            # Extract year from URL
+            year_match = re.search(r'u-(\d{4})-godin', href)
+            if year_match:
+                year = int(year_match.group(1))
+                full_url = urljoin(BASE_URL, href)
+                registers.append((year, full_url))
 
-    # Find all law links - they are in the content area
-    # Pattern: /bs/{number}-zakon-...
+    return sorted(registers, key=lambda x: x[0], reverse=True)
+
+
+def list_documents_from_register(
+    session: requests.Session, register_url: str, url_keyword: str, year: int
+) -> list[dict]:
+    """
+    Get list of documents from a year register page.
+
+    Args:
+        session: requests session
+        register_url: URL of the register page
+        url_keyword: keyword to match in document URLs (e.g., '-zakon-', '-odluk')
+        year: year for metadata
+
+    Returns:
+        List of dicts with document metadata
+    """
+    try:
+        response = session.get(register_url, timeout=30)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Failed to fetch register {register_url}: {e}", file=sys.stderr)
+        return []
+
+    soup = BeautifulSoup(response.text, "html.parser")
+    docs = []
+
     for link in soup.find_all("a", href=True):
         href = link.get("href", "")
 
-        # Match law URLs: /bs/{number}-zakon-...  or ../../bs/{number}-zakon-...
-        if "-zakon-" in href.lower() or "-zakon-" in href.lower():
-            # Clean the URL
-            if href.startswith("../../"):
-                href = href.replace("../../", "/")
+        if url_keyword not in href.lower():
+            continue
 
-            # Extract law number from URL
-            match = re.search(r'/(\d+)-zakon-', href)
-            if not match:
-                match = re.search(r'/(\d+)-zakon-', href)
+        # Skip navigation/language links
+        if href.startswith("/bs/") and "registar" in href:
+            continue
+        if href.startswith("/hr/") or href.startswith("/sr/") or href.startswith("/en/"):
+            continue
 
-            law_number = match.group(1) if match else None
+        # Clean the URL
+        if href.startswith("../../"):
+            href = "/" + href.lstrip("./")
 
-            # Get the title from link text or href
-            title = link.get_text(strip=True)
-            if not title:
-                # Extract from URL
-                path_part = href.split("/")[-1]
-                title = path_part.replace("-", " ").title()
+        # Extract document number from URL
+        match = re.search(r'/(\d+)-', href)
+        doc_number = match.group(1) if match else None
 
-            # Build full URL
-            if href.startswith("http"):
-                full_url = href
+        title = link.get_text(strip=True)
+        if not title:
+            path_part = href.split("/")[-1]
+            title = path_part.replace("-", " ").title()
+
+        if href.startswith("http"):
+            full_url = href
+        else:
+            # Ensure proper absolute URL - avoid path duplication
+            if href.startswith("/"):
+                full_url = BASE_URL + href
             else:
-                full_url = urljoin(BASE_URL, href)
+                full_url = urljoin(BASE_URL + "/", href)
 
-            # Avoid duplicates
-            if not any(l["url"] == full_url for l in laws):
-                laws.append({
-                    "url": full_url,
-                    "title": title,
-                    "law_number": law_number,
-                    "year": year,
-                })
+        if not any(d["url"] == full_url for d in docs):
+            docs.append({
+                "url": full_url,
+                "title": title,
+                "law_number": doc_number,
+                "year": year,
+            })
 
-    return laws
+    return docs
 
 
 class ContentExtractor(HTMLParser):
@@ -347,9 +367,9 @@ def normalize(raw: dict) -> dict:
     }
 
 
-def fetch_all(session: requests.Session, max_docs: int = 1000) -> Iterator[dict]:
+def fetch_all(session: requests.Session, max_docs: int = 10000) -> Iterator[dict]:
     """
-    Fetch all laws.
+    Fetch all legislation documents (zakoni, uredbe, odluke).
 
     Args:
         session: requests session
@@ -360,26 +380,36 @@ def fetch_all(session: requests.Session, max_docs: int = 1000) -> Iterator[dict]
     """
     count = 0
 
-    for year in sorted(YEARS, reverse=True):
+    for doc_type_name, url_keyword, _reg_kw, _start_year in DOC_TYPES:
         if count >= max_docs:
             break
 
-        print(f"Fetching laws for {year}...", file=sys.stderr)
-        laws = list_laws_for_year(session, year)
-        print(f"  Found {len(laws)} laws", file=sys.stderr)
+        print(f"\n=== Fetching {doc_type_name} ===", file=sys.stderr)
+        registers = discover_register_urls(session, doc_type_name)
+        print(f"  Found {len(registers)} year registers", file=sys.stderr)
+        time.sleep(REQUEST_DELAY)
 
-        for law_info in laws:
+        for year, register_url in registers:
             if count >= max_docs:
                 break
 
-            print(f"  Fetching: {law_info.get('title', law_info['url'])[:50]}...", file=sys.stderr)
-
-            raw = fetch_law(session, law_info)
-            if raw and raw.get("text"):
-                yield normalize(raw)
-                count += 1
-
+            print(f"\n  {doc_type_name} {year}...", file=sys.stderr)
+            docs = list_documents_from_register(session, register_url, url_keyword, year)
+            print(f"    Found {len(docs)} documents", file=sys.stderr)
             time.sleep(REQUEST_DELAY)
+
+            for doc_info in docs:
+                if count >= max_docs:
+                    break
+
+                print(f"    Fetching: {doc_info.get('title', doc_info['url'])[:50]}...", file=sys.stderr)
+
+                raw = fetch_law(session, doc_info)
+                if raw and raw.get("text"):
+                    yield normalize(raw)
+                    count += 1
+
+                time.sleep(REQUEST_DELAY)
 
 
 def fetch_updates(session: requests.Session, since: str) -> Iterator[dict]:
@@ -420,54 +450,63 @@ def bootstrap_sample(output_dir: Path, sample_size: int = 12):
     print(f"Fetching {sample_size} sample documents...", file=sys.stderr)
     print(f"Source: {LAWS_INDEX_URL}", file=sys.stderr)
 
-    # Fetch from recent years
     count = 0
     total_chars = 0
 
-    for year in sorted(YEARS, reverse=True):
+    # Sample from each document type (4 each for 12 total)
+    per_type = max(4, sample_size // len(DOC_TYPES))
+
+    for doc_type_name, url_keyword, _reg_kw, _start_year in DOC_TYPES:
         if count >= sample_size:
             break
 
-        print(f"\nFetching laws for {year}...", file=sys.stderr)
-        laws = list_laws_for_year(session, year)
-        print(f"  Found {len(laws)} laws", file=sys.stderr)
-
+        type_count = 0
+        print(f"\n=== Sampling {doc_type_name} ===", file=sys.stderr)
+        registers = discover_register_urls(session, doc_type_name)
         time.sleep(REQUEST_DELAY)
 
-        for law_info in laws:
-            if count >= sample_size:
+        for year, register_url in registers:
+            if type_count >= per_type or count >= sample_size:
                 break
 
-            print(f"\n  Processing: {law_info.get('title', law_info['url'])[:60]}...", file=sys.stderr)
-
-            raw = fetch_law(session, law_info)
-            if not raw:
-                print("    Skipping (fetch failed)", file=sys.stderr)
-                continue
-
-            normalized = normalize(raw)
-
-            # Validate
-            text_len = len(normalized.get("text", ""))
-            if text_len < 500:
-                print(f"    Skipping (text too short: {text_len} chars)", file=sys.stderr)
-                continue
-
-            # Save to file
-            filename = f"{normalized['_id']}.json"
-            filepath = output_dir / filename
-
-            with open(filepath, "w", encoding="utf-8") as f:
-                json.dump(normalized, f, ensure_ascii=False, indent=2)
-
-            print(f"    Saved: {filename}", file=sys.stderr)
-            print(f"    Title: {normalized['title'][:60]}", file=sys.stderr)
-            print(f"    Text: {text_len:,} chars", file=sys.stderr)
-
-            total_chars += text_len
-            count += 1
-
+            print(f"\n  {doc_type_name} {year}...", file=sys.stderr)
+            docs = list_documents_from_register(session, register_url, url_keyword, year)
+            print(f"    Found {len(docs)} documents", file=sys.stderr)
             time.sleep(REQUEST_DELAY)
+
+            for doc_info in docs[:per_type - type_count]:
+                if type_count >= per_type or count >= sample_size:
+                    break
+
+                print(f"\n  Processing: {doc_info.get('title', doc_info['url'])[:60]}...", file=sys.stderr)
+
+                raw = fetch_law(session, doc_info)
+                if not raw:
+                    print("    Skipping (fetch failed)", file=sys.stderr)
+                    continue
+
+                normalized = normalize(raw)
+
+                text_len = len(normalized.get("text", ""))
+                if text_len < 500:
+                    print(f"    Skipping (text too short: {text_len} chars)", file=sys.stderr)
+                    continue
+
+                filename = f"{normalized['_id']}.json"
+                filepath = output_dir / filename
+
+                with open(filepath, "w", encoding="utf-8") as f:
+                    json.dump(normalized, f, ensure_ascii=False, indent=2)
+
+                print(f"    Saved: {filename}", file=sys.stderr)
+                print(f"    Title: {normalized['title'][:60]}", file=sys.stderr)
+                print(f"    Text: {text_len:,} chars", file=sys.stderr)
+
+                total_chars += text_len
+                count += 1
+                type_count += 1
+
+                time.sleep(REQUEST_DELAY)
 
     print(f"\n{'='*60}", file=sys.stderr)
     print(f"Sample complete:", file=sys.stderr)

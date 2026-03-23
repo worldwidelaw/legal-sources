@@ -8,7 +8,7 @@ source:
     Identified by role number prefix "F." and fiscal-related subjects/keywords.
 
   data_types:
-    - case_law
+    - caselaw
 
   url: https://juportal.be
   auth: none

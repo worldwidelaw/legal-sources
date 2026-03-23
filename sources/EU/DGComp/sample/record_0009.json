@@ -1,0 +1,29 @@
+{
+  "_id": "EU-DGCOMP-AT.39177",
+  "_source": "EU/DGComp",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-21T13:36:13.854993+00:00",
+  "case_number": "AT.39177",
+  "case_type": "Antitrust",
+  "instrument": "Antitrust & Cartels",
+  "title": "Which ? / DFB + Mastercard + FIFA",
+  "text": "",
+  "date": "2005-05-02",
+  "url": "https://competition-cases.ec.europa.eu/cases/AT.39177",
+  "pdf_url": null,
+  "sectors": [
+    "R.93.19 - Other sports activities"
+  ],
+  "companies": [
+    "MasterCard International Incorporated",
+    "Fédération Internationale de Football Association",
+    "Which",
+    "Deutscher Fussball-Bund"
+  ],
+  "legal_basis": [
+    "Art. 101 TFEU + Art. 102 TFEU"
+  ],
+  "decision_types": [
+    "Closure of Proceedings"
+  ]
+}

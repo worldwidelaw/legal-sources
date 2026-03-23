@@ -1,0 +1,48 @@
+name: CNMV - Comisión Nacional del Mercado de Valores
+source_id: ES/CNMV
+country: ES
+data_types:
+  - doctrine
+
+url: https://www.cnmv.es/Portal/Consultas/RegistroSanciones/verRegSanciones
+license: Open Government License
+update_frequency: weekly
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: text
+      type: string
+      required: true
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  max_workers: 3
+
+notes: |
+  CNMV sanctions registry includes:
+  - Sanctions for very serious infractions (infracciones muy graves)
+  - Sanctions for serious infractions (infracciones graves)
+  - Information about administrative appeals
+
+  Data source: HTML scraping of paginated sanctions registry
+  Full text extracted from BOE PDF documents
+  Sanctions retained for 5 years after publication

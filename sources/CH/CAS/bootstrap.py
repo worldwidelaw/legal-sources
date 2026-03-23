@@ -111,7 +111,7 @@ def extract_text_from_pdf(pdf_content: bytes) -> str:
 def fetch_case_list(session: requests.Session, page: int = 1, page_size: int = 50) -> dict:
     """Fetch a page of cases from the CAS API."""
     params = {
-        "pageNumber": page,
+        "currentPage": page,
         "pageSize": page_size,
     }
 

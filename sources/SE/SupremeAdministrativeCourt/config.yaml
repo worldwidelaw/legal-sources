@@ -3,7 +3,7 @@ source:
   name: Swedish Supreme Administrative Court (Högsta förvaltningsdomstolen)
   country: SE
   url: https://www.domstol.se/hogsta-forvaltningsdomstolen/avgoranden/
-  type: case_law
+  type: caselaw
   language: sv
   license: public_domain
   court: Högsta förvaltningsdomstolen

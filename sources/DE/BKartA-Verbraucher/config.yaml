@@ -1,0 +1,41 @@
+source:
+  id: DE/BKartA-Verbraucher
+  name: German Consumer Protection (vzbv)
+  country: DE
+  url: https://www.vzbv.de
+  data_types:
+    - doctrine
+  description: >
+    Consumer protection publications, position papers, court rulings, and policy
+    statements from the Verbraucherzentrale Bundesverband (vzbv) - the German
+    Federation of Consumer Organizations. Content includes Stellungnahmen (position
+    papers), Urteile (court ruling summaries), Faktenblätter (fact sheets), and
+    policy news (Meldungen). Full text extracted from HTML article pages.
+  auth: none
+  license: Public domain (§ 5 UrhG amtliche Werke)
+
+fetch:
+  method: sitemap_html_scrape
+  sitemap_url: https://www.vzbv.de/sitemap.xml
+  sitemap_pages: 3
+  content_path_prefixes:
+    - /meldungen/
+    - /urteile/
+    - /publikationen/
+    - /pressemitteilungen/
+    - /stellungnahmen/
+  rate_limit: 1.5
+  timeout: 30
+  estimated_total: 1500
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+    - category
+    - content_type

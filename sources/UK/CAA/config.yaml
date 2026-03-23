@@ -1,0 +1,94 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Civil Aviation Authority Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/CAA"
+  country: "UK"
+  name: "UK Civil Aviation Authority (CAA)"
+  url: "https://www.caa.co.uk"
+  description: |
+    UK Civil Aviation Authority publications including Civil Aviation
+    Publications (CAPs), Official Record Series (ORS), Airworthiness
+    Directives, Safety Notices, Information Notices, and other regulatory
+    documents. Full text extracted from PDFs.
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - doctrine
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "html_pdf"
+  base_url: "https://www.caa.co.uk"
+  endpoints:
+    series_index:
+      path: "/data-and-publications/publications/publication-series/"
+      method: "GET"
+      description: "Index of all 47 publication series"
+    series_listing:
+      path: "/data-and-publications/publications/publication-series/{series_slug}/"
+      method: "GET"
+      description: "Document listing for a specific series"
+    document:
+      path: "/data-and-publications/publications/documents/content/{slug}/"
+      method: "GET"
+      description: "Individual document page with metadata and PDF download link"
+    pdf_download:
+      path: "/publication/download/{id}"
+      method: "GET"
+      description: "Direct PDF download endpoint"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "doctrine"
+  primary_key: "document_slug"
+  update_strategy: "upsert"
+  versioning: "version_date"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "document_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "status"
+      type: "string"
+      role: "classification"
+    - name: "series"
+      type: "string"
+      role: "classification"
+    - name: "categories"
+      type: "list"
+      role: "classification"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~5,000+ publications across 47 series
+  - Full text extracted from PDF downloads using pdfminer
+  - Publications include CAPs, ORS, ADs, Safety Notices, etc.
+  - No authentication required
+  - Sitemap does not cover document pages; series pages used as index

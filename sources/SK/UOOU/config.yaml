@@ -1,0 +1,51 @@
+# Configuration for SK/UOOU (Slovak Data Protection Authority)
+# Úrad na ochranu osobných údajov Slovenskej republiky
+
+source:
+  id: SK/UOOU
+  name: Slovak Data Protection Authority (ÚOOÚ)
+  country: SK
+  url: https://dataprotection.gov.sk
+  description: >
+    Methodological guidelines, EDPB guidance translations, and annual reports
+    from the Slovak Office for Personal Data Protection. The Slovak DPA does
+    not publish enforcement decisions publicly; this source covers their
+    published doctrine (guidelines, opinions, recommendations).
+
+data_model:
+  types:
+    - doctrine
+  update_strategy: append_only
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: category
+      type: string
+      required: true
+    - name: language
+      type: string
+      required: false
+    - name: file_url
+      type: string
+      required: false

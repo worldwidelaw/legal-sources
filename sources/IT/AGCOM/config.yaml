@@ -1,0 +1,34 @@
+# IT/AGCOM - Italian Communications Authority (AGCOM)
+# Source: https://www.agcom.it
+# Data: Telecom/media regulatory decisions (delibere, determine)
+
+name: Italian Communications Authority (AGCOM)
+country: IT
+source_id: IT/AGCOM
+url: https://www.agcom.it
+
+data_types:
+  - doctrine
+
+license: Open Data (Italian public data)
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+  max_workers: 2
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - delibera_number  # e.g. "57/26/CONS"
+    - category         # Delibera, Determina, etc.
+    - sector           # Media, Servizi postali, Comunicazioni elettroniche, etc.
+    - date             # Document date
+    - text             # Full text extracted from PDF

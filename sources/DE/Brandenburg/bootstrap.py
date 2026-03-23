@@ -280,10 +280,8 @@ class BrandenburgFetcher:
         # Parse date
         date = self._parse_german_date(raw_doc.get('valid_from', ''))
 
-        # Determine type based on URL/ID
+        # All laws and regulations are classified as legislation
         doc_type = 'legislation'
-        if 'verordnung' in law_id.lower():
-            doc_type = 'regulation'
 
         return {
             '_id': f"BB-{law_id}",

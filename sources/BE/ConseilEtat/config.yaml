@@ -4,7 +4,7 @@ source:
   country: BE
   url: https://www.raadvst-consetat.be
   data_types:
-    - case_law
+    - caselaw
   auth: none
   license: Open Government Data
 

@@ -333,7 +333,7 @@ class LBAFetcher:
         return {
             '_id': f"LTA-{lta_nr}",
             '_source': 'DE/LBA',
-            '_type': 'regulatory_decision',
+            '_type': 'doctrine',
             '_fetched_at': datetime.now().isoformat(),
             'title': raw_doc.get('title', f"LTA {lta_nr}"),
             'lta_number': lta_nr,

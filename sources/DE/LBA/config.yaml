@@ -2,7 +2,7 @@ source:
   id: DE/LBA
   name: German Federal Aviation Authority - Airworthiness Directives
   country: DE
-  type: regulatory_decisions
+  type: doctrine
   description: >
     Airworthiness Directives (Lufttüchtigkeitsanweisungen - LTAs) issued by the
     German Luftfahrt-Bundesamt (LBA). These are legally binding regulatory decisions

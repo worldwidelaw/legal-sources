@@ -1,0 +1,47 @@
+# Configuration for HR/AdminCourt (Croatian High Administrative Court)
+# Visoki upravni sud Republike Hrvatske
+
+source:
+  id: HR/AdminCourt
+  name: Croatian High Administrative Court (Visoki upravni sud)
+  country: HR
+  url: https://odluke.sudovi.hr
+  description: >
+    Second-instance administrative court decisions from the Croatian High
+    Administrative Court via the unified odluke.sudovi.hr portal.
+    ~7,600 anonymized decisions with full text.
+
+data_model:
+  types:
+    - case_law
+  update_strategy: append_only
+  dedup_key:
+    - case_number
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  key_fields:
+    - name: case_number
+      type: string
+      required: true
+    - name: ecli
+      type: string
+      required: false
+    - name: decision_type
+      type: string
+      required: false

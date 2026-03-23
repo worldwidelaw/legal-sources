@@ -1,0 +1,13 @@
+{
+  "_id": "government_publications_mgn-280-small-vessels-in-commercial-use-for-sport",
+  "_source": "UK/MCA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T23:14:29.043434+00:00",
+  "title": "MGN 280 (M) Construction standards for small vessels in sport use",
+  "text": "Notice to:\n\nall owners & operators of small commercial code vessels\n\nboat builders\n\ndesigners\n\nsurveyors",
+  "date": "2004-10-28",
+  "url": "https://www.gov.uk/government/publications/mgn-280-small-vessels-in-commercial-use-for-sport",
+  "description": "Contains the small commercial vessel (SCV) code text  and advises how the standards of the SCV code may be used for already coded vessels.",
+  "doc_type": "guidance",
+  "schema_name": "publication"
+}

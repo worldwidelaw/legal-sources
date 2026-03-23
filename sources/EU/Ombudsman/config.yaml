@@ -1,0 +1,50 @@
+# EU/Ombudsman -- European Ombudsman Decisions
+# Decisions on complaints against EU institutions and bodies
+
+source:
+  id: EU/Ombudsman
+  name: European Ombudsman
+  country: EU
+  url: https://www.ombudsman.europa.eu
+  description: >
+    European Ombudsman decisions on complaints about maladministration
+    by EU institutions and bodies. Covers access to documents, transparency,
+    recruitment, contracts, and fundamental rights. ~5,600 decisions available.
+  data_types:
+    - case_law
+  license: Open
+  auth: none
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true
+
+  optional_fields:
+    - case_id
+    - case_ref
+    - institution
+    - topics
+    - keywords
+    - summary
+
+endpoints:
+  search: https://www.ombudsman.europa.eu/rest/documents
+  content: https://www.ombudsman.europa.eu/rest/docVersionContents/{techKey}
+
+rate_limit:
+  requests_per_second: 2
+  delay_between_requests: 0.5

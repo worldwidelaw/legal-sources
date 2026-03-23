@@ -1,0 +1,25 @@
+{
+  "_id": "EU-DGCOMP-AT.38195",
+  "_source": "EU/DGComp",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-21T13:36:15.148361+00:00",
+  "case_number": "AT.38195",
+  "case_type": "Antitrust",
+  "instrument": "Antitrust & Cartels",
+  "title": "Neste Markkinointi Oy + Kaustisen Motelli Oy",
+  "text": "",
+  "date": "2001-07-11",
+  "url": "https://competition-cases.ec.europa.eu/cases/AT.38195",
+  "pdf_url": null,
+  "sectors": [
+    "G.47.30 - Retail sale of automotive fuel in specialised stores"
+  ],
+  "companies": [
+    "Neste Markkinointi Oy",
+    "Kautisen Motelli Oy"
+  ],
+  "legal_basis": [
+    "Art. 101 TFEU"
+  ],
+  "decision_types": []
+}

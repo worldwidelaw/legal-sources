@@ -1,0 +1,48 @@
+# Configuration for SE/IMY (Swedish Data Protection Authority)
+# Integritetsskyddsmyndigheten (IMY)
+
+source:
+  id: SE/IMY
+  name: Swedish Data Protection Authority (IMY)
+  country: SE
+  url: https://www.imy.se
+  description: >
+    GDPR supervision decisions from the Swedish Authority for Privacy Protection
+    (Integritetsskyddsmyndigheten). Includes enforcement decisions, sanctions,
+    and supervision outcomes covering data protection, camera surveillance,
+    and credit checks.
+
+data_model:
+  types:
+    - doctrine
+  update_strategy: append_only
+  dedup_key:
+    - url
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  key_fields:
+    - name: status
+      type: string
+      required: true
+    - name: categories
+      type: array
+      required: false
+    - name: pdf_url
+      type: string
+      required: false

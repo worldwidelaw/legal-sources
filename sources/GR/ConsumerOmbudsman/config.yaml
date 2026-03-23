@@ -1,0 +1,46 @@
+source:
+  id: GR/ConsumerOmbudsman
+  country: GR
+  name: Hellenic Consumer Ombudsman (Συνήγορος του Καταναλωτή)
+  description: |
+    Recommendations and findings of the Hellenic Consumer Ombudsman,
+    an independent authority for out-of-court resolution of consumer disputes.
+    Publishes written recommendations (Συστάσεις) and findings (Πορίσματα)
+    covering insurance, energy, financial services, transport, health, etc.
+  url: https://www.synigoroskatanaloti.gr
+
+data:
+  types:
+    - doctrine
+  format: HTML + PDF
+  language: el
+  license: Public (Official Government Authority)
+
+access:
+  method: HTML scraping + PDF download
+  auth: none
+  rate_limit: 1 request/second
+  base_url: https://www.synigoroskatanaloti.gr
+  endpoints:
+    list: /systaseis-porismata?page={page}
+    detail: /el/{slug}
+    pdf: /sites/default/files/recommendations/attached_files/{path}
+  notes: |
+    Drupal-based site. List pages have 6 items each, 56 pages (~336 items).
+    Each recommendation has an attached PDF with the full text.
+    Page text contains a summary; PDF contains the complete recommendation.
+
+schema:
+  key_fields:
+    - name: slug
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+    - name: category
+      type: string
+      required: false
+    - name: outcome
+      type: string
+      required: false

@@ -1,0 +1,58 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Recognised Professional Bodies (Insolvency) Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/RPB"
+  country: "UK"
+  name: "UK Recognised Professional Bodies (Insolvency)"
+  url: "https://www.gov.uk/government/organisations/insolvency-service"
+  description: |
+    Insolvency Service guidance, manuals, and regulatory documents via
+    GOV.UK Content API. Covers insolvency practitioner regulation,
+    debt relief, bankruptcy guidance, and RPB disciplinary matters.
+    No authentication required.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "public_timestamp"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - ~260+ insolvency guidance documents via GOV.UK Content API
+  - Insolvency Service detailed guides, manual sections, and guidance
+  - Open Government Licence v3.0

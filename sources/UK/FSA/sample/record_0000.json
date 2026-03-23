@@ -1,0 +1,32 @@
+{
+  "_id": "UK/FSA/28651",
+  "_source": "UK/FSA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T16:21:53.137893+00:00",
+  "id": "28651",
+  "title": "MOMA Foods is recalling various porridge pots and sachet products because of possible mouse contamination",
+  "text": "MOMA Foods is recalling various porridge pots and sachet products because of possible mouse contamination at the manufacturing site.\n\nMOMA Foods is recalling various porridge pots and sachet products because of possible mouse contamination at the manufacturing site.",
+  "content_type": "Food alert",
+  "filter_type": "Food alert",
+  "date": "2026-03-22",
+  "nation": [
+    {
+      "id": "31",
+      "label": "England"
+    },
+    {
+      "id": "33",
+      "label": "Northern Ireland"
+    },
+    {
+      "id": "296",
+      "label": "Scotland"
+    },
+    {
+      "id": "32",
+      "label": "Wales"
+    }
+  ],
+  "url": "https://www.food.gov.uk/news-alerts/alert/fsa-prin-13-2026",
+  "updated_at": "2026-03-22T12:40:18"
+}

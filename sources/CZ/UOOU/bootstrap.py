@@ -347,7 +347,7 @@ class UOOUFetcher:
         return {
             '_id': doc_id,
             '_source': 'CZ/UOOU',
-            '_type': 'regulatory_decision',
+            '_type': 'doctrine',
             '_fetched_at': datetime.now().isoformat(),
             'title': raw_doc.get('title', ''),
             'case_number': case_number,

@@ -4,7 +4,7 @@ source:
   country: UK
   url: https://www.fca.org.uk
   data_types:
-    - regulatory_decisions
+    - doctrine
   description: |
     Decision notices and final notices from the UK Financial Conduct Authority.
     Includes enforcement actions, bans, fines, and regulatory decisions against

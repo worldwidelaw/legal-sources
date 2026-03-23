@@ -1,38 +1,58 @@
+# EU/DGComp -- EU Competition Directorate-General (DG COMP)
+# European Commission competition decisions - antitrust, cartels, mergers, state aid
+
 source:
-  id: "EU/DGComp"
-  country: "EU"
-  name: "EU Competition Directorate-General (DG COMP)"
-  description: "European Commission competition decisions - antitrust, cartels, mergers, state aid"
-  url: "https://competition-cases.ec.europa.eu"
+  id: EU/DGComp
+  name: EU Competition Directorate-General (DG COMP)
+  country: EU
+  url: https://competition-cases.ec.europa.eu
+  description: >
+    European Commission competition decisions from the DG COMP Open Data portal.
+    Covers antitrust/cartel cases and merger decisions. Data provided as daily-updated
+    JSON files with links to decision PDFs for full text extraction.
   data_types:
-    - regulatory_decisions
+    - doctrine
+  license: Open
+  auth: none
 
 schema:
   key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true
+
+  optional_fields:
     - case_number
     - case_type
-    - title
-    - decision_date
-    - url
-    - text
+    - instrument
+    - sectors
+    - companies
+    - legal_basis
+    - decision_types
+    - pdf_url
 
-api:
-  type: "bulk_download"
-  endpoints:
-    antitrust: "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-AT.json"
-    mergers: "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-M.json"
-    state_aid: "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-SA.json"
-    dma: "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-DMA.json"
-    fsr: "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-FSR.json"
-  auth: "none"
-  rate_limit:
-    requests_per_second: 2
-    delay_seconds: 1
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
 
-pagination:
-  type: "none"
-  notes: "Bulk JSON files updated daily"
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  max_workers: 3
 
-documentation:
-  - "https://competition-policy.ec.europa.eu/about/news/dg-competitions-case-data-available-open-data-2025-03-18_en"
-  - "https://data.europa.eu/euodp/en/data/dataset/competition-cases-database"
+endpoints:
+  antitrust: https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-AT.json
+  mergers: https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-M.json

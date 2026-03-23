@@ -1,0 +1,29 @@
+# BA/SudskaPrivada - BiH Judicial Practice Portal
+# Source: https://sudskapraksa.pravosudje.ba
+# Method: REST API + PDF full text extraction
+
+source_id: BA/SudskaPrivada
+country: BA
+name: BiH Judicial Practice Portal (Sudska praksa)
+data_types:
+  - case_law
+
+api:
+  base_url: https://sudskapraksa.pravosudje.ba
+  case_law_documents: /api/case-law-documents
+  case_decisions: /api/case-decisions
+  attachment_download: /api/case-law-documents/attachments/{id}/download
+  decision_attachment_download: /api/case-decisions/attachments/{id}/download
+
+# Rate limiting
+rate_limit:
+  requests_per_second: 0.5  # 1 request every 2 seconds
+
+schema:
+  key_fields:
+    - name: case_number
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false

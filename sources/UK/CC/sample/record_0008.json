@@ -1,0 +1,13 @@
+{
+  "_id": "government_publications_general-medical-council",
+  "_source": "UK/CC",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T22:35:18.082320+00:00",
+  "title": "General Medical Council",
+  "text": "Decision made by the Charity Commission on 2 April 2001.\n\nThe commission considered an application from the General Medical Council for registration as a charity. It concluded that the organisation is charitable, following major changes to its structure and activities since the Inland Revenue ruled in 1928 that it was not charitable.\n\nThis decision is significant because it considered how a professional body, with clear private benefits to its members, can operate for the public benefit by maintaining standards to promote health.",
+  "date": "2001-04-02",
+  "url": "https://www.gov.uk/government/publications/general-medical-council",
+  "description": "Decision of the Charity Commission on General Medical Council.",
+  "doc_type": "decision",
+  "schema_name": "publication"
+}

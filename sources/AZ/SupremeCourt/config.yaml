@@ -6,7 +6,7 @@ source_id: AZ/SupremeCourt
 country: AZ
 name: Azerbaijan Supreme Court
 data_types:
-  - case_law
+  - caselaw
 
 api:
   base_url: https://sc.supremecourt.gov.az

@@ -402,7 +402,7 @@ class BVLFetcher:
         return {
             '_id': f"bvl_psm_{kennr.replace('-', '_')}",
             '_source': 'DE/BVL',
-            '_type': 'regulatory_decisions',
+            '_type': 'doctrine',
             '_fetched_at': datetime.now().isoformat(),
             'title': f"{mittelname} ({kennr}) - Pflanzenschutzmittel-Zulassung",
             'text': raw_doc.get('text', ''),

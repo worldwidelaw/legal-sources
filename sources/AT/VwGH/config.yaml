@@ -17,7 +17,7 @@ source:
     welfare, asylum, public procurement, and regulatory matters. Data via RIS OGD API.
 
 data_types:
-  - case_law
+  - caselaw
 
 auth:
   type: "none"
@@ -40,7 +40,7 @@ api:
     max_page_size: "OneHundred"   # 100 results per page
 
 data_model:
-  type: "case_law"
+  type: "caselaw"
   primary_key: "_id"
   update_strategy: "upsert"
   versioning: "temporal"

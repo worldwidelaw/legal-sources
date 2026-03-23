@@ -212,7 +212,7 @@ def parse_case(case_data: dict) -> Optional[dict]:
     return {
         "_id": case_id,
         "_source": SOURCE_ID,
-        "_type": "regulatory_decisions",
+        "_type": "doctrine",
         "_fetched_at": datetime.now(timezone.utc).isoformat(),
         "title": case_data.get("title", ""),
         "text": text,

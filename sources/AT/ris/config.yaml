@@ -21,7 +21,7 @@ source:
 
 data_types:
   - legislation
-  - case_law
+  - caselaw
 
 auth:
   type: "none"
@@ -44,7 +44,7 @@ api:
   applications:
     legislation:
       - BrKons        # Consolidated federal law
-    case_law:
+    caselaw:
       - Justiz        # General courts (OGH, OLG, LG, BG)
       - Vfgh          # Constitutional Court
       - Vwgh          # Supreme Administrative Court
@@ -56,7 +56,7 @@ api:
     max_page_size: "OneHundred"   # 100 results per page
 
 data_model:
-  type: "mixed"                   # Both legislation and case_law
+  type: "mixed"                   # Both legislation and caselaw
   primary_key: "doc_id"
   update_strategy: "upsert"
   versioning: "temporal"
@@ -72,7 +72,7 @@ schema:
       role: "primary_key"
       required: true
     - name: "doc_type"
-      description: "legislation or case_law"
+      description: "legislation or caselaw"
       type: "string"
       role: "classification"
       required: true

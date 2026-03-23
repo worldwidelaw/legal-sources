@@ -1,0 +1,28 @@
+source:
+  id: NL/Belastingdienst
+  name: Dutch Tax Administration (Belastingdienst)
+  country: NL
+  url: https://zoek.officielebekendmakingen.nl
+  data_types:
+    - doctrine
+  auth: none
+  license: Public Domain (Dutch government publications)
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - url
+    - doc_type
+    - subjects
+
+fetch:
+  method: sru_api
+  sru_url: https://zoek.officielebekendmakingen.nl/sru/Search
+  queries:
+    - 'creator="ministerie van financiën" AND type="ander besluit van algemene strekking"'
+    - 'creator="ministerie van financiën" AND type="beleidsregel"'
+  full_text_url_pattern: "https://zoek.officielebekendmakingen.nl/{identifier}.xml"
+  rate_limit_delay: 1.5

@@ -1,0 +1,11 @@
+{
+  "_id": "arcom-texte-8663bdc7-ff1a-4b59-bf1c-e2ba5ed3254e",
+  "_source": "FR/CSA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-21T21:36:29.529785+00:00",
+  "title": "Avis Videolan",
+  "text": "L’association VideoLAN a adressé le 15 mars 2012 une demande d'avis sur le fondement de l'article L. 331-36 du code de la propriété intellectuelle relatif à la mission de régulation de la Haute autorité dans le domaine des mesures techniques de protection.\n\r\n\r\nLa saisine porte sur la question de savoir de quelle manière l’association VideoLAN peut « mettre à disposition des utilisateurs une version du logiciel VLC media player permettant la lecture de l’ensemble des disques couramment regroupés sous l’appellation « Blu-Ray » et comportant des mesures techniques de protection, dans le respect de ses statuts et de l’esprit du logiciel ».\n\r\n\r\nL'Hadopi a procédé à l'audition d'acteurs français et étrangers et a ouvert une consultation publique du 6 au 26 février 2013 sur la question générale de savoir si «la documentation technique et les interfaces de programmation » visés à l’article L. 331-32 du code de la propriété intellectuelle intègrent les clefs de déchiffrement d’un contenu protégé et plus généralement les secrets nécessaires.\n\r\n\r\nDans le cadre de son avis téléchargeable ci-après, le Collège de la Haute autorité s’est prononcé sur les exceptions dites de décompilation et d’ingénierie inverse revendiquées par l’association VideoLAN et a précisé la nature et les conditions d’accès des informations nécessaires à l’interopérabilité que pouvait solliciter un éditeur de logiciel sur le fondement de l’article L. 331-32.",
+  "date": "2024-03-21",
+  "url": "https://www.arcom.fr/se-documenter/espace-juridique/textes-juridiques/avis-videolan",
+  "decision_type": "texte_juridique"
+}

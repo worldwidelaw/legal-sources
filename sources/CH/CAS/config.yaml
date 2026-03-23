@@ -4,7 +4,7 @@ source:
   country: CH
   url: https://www.tas-cas.org
   data_types:
-    - case_law
+    - caselaw
   language:
     - en
     - fr

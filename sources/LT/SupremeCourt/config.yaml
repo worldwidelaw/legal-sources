@@ -7,7 +7,7 @@ description: |
   administrative law matters in Lithuania.
 
 data_types:
-  - case_law
+  - caselaw
 
 url: https://liteko.teismai.lt/
 dataset_url: https://data.gov.lt/datasets/1938/

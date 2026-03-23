@@ -3,7 +3,7 @@ name: Icelandic Supreme Court (Hæstiréttur)
 country: IS
 language: isl
 data_types:
-  - case_law
+  - caselaw
 license: Public Domain
 url: https://www.haestirettur.is/domar/
 fetch_method: html_scrape

@@ -17,7 +17,7 @@ source:
     Data from DILA's CASS database via bulk XML downloads.
 
 data_types:
-  - case_law
+  - caselaw
 
 # ── Data Access ───────────────────────────────────────────────────
 access:
@@ -41,7 +41,7 @@ rate_limit:
 
 # ── Data Model ────────────────────────────────────────────────────
 data_model:
-  type: "case_law"
+  type: "caselaw"
   primary_key: "_id"
   update_strategy: "upsert"
 

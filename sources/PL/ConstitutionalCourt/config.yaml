@@ -3,7 +3,7 @@ source:
   name: Polish Constitutional Court (Trybunał Konstytucyjny)
   country: PL
   data_types:
-    - case_law
+    - caselaw
   url: https://trybunal.gov.pl
   api_url: https://www.saos.org.pl/api
   license: CC-BY

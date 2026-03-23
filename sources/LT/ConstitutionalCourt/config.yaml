@@ -4,7 +4,7 @@ source:
   name: Lithuanian Constitutional Court (Konstitucinis Teismas)
   url: https://www.lrkt.lt
   data_types:
-    - case_law
+    - caselaw
   auth: none
   license: CC BY 4.0
   notes: |

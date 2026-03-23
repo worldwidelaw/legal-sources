@@ -4,7 +4,7 @@ source:
   country: ME
   url: https://sudovi.me/vrhs/odluke/
   data_types:
-    - case_law
+    - caselaw
   language: me
   license: Public Domain
   update_frequency: daily

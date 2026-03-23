@@ -1,0 +1,45 @@
+source:
+  id: EU/OLAF
+  name: EU Anti-Fraud Office (OLAF)
+  description: |
+    OLAF investigation reports, press releases, and news articles about EU anti-fraud activities.
+    Content includes investigation outcomes, fraud prevention initiatives, customs operations,
+    and cooperation with member state authorities.
+  url: https://anti-fraud.ec.europa.eu
+  country: EU
+  language: en
+  data_types:
+    - doctrine
+
+fetch:
+  method: html_scrape
+  base_url: https://anti-fraud.ec.europa.eu
+  news_listing: /media-corner/news_en
+  pagination:
+    type: query_param
+    param: page
+    start: 0
+  rate_limit:
+    requests_per_second: 0.5
+    delay_between_requests: 2.0
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+
+auth:
+  type: none
+
+schedule:
+  update_frequency: weekly
+  full_refresh_frequency: monthly

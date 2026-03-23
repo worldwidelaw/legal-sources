@@ -8,7 +8,7 @@ source:
     Includes merger decisions, market investigations, consumer enforcement,
     competition cases, regulatory references, and digital markets unit cases.
   data_types:
-    - regulatory_decisions
+    - doctrine
   language: en
   license: Open Government Licence v3.0
 

@@ -1,0 +1,11 @@
+{
+  "_id": "arcom-texte-dc38d1f2-d58f-4265-9a8f-9b2ff1d2bf81",
+  "_source": "FR/CSA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-21T21:36:29.529006+00:00",
+  "title": "Règlement de différend : l'Hadopi saisie d'une demande de la société Cosmos",
+  "text": "La société Cosmos exerce une activité de conseil en systèmes et logiciels informatiques dans le cadre de laquelle elle a conclu un contrat de services avec la société R-Concept visant notamment à réaliser la migration du référentiel de cette société vers un nouveau serveur commercialisé par la société Sage. Dans le cadre de l’exécution de ce contrat, la société Cosmos a été confrontée à un mot de passe technique empêchant d’accéder au nouveau serveur.\n\r\n\r\nAux termes de sa saisine du 1er avril 2021, la société Cosmos reproche à la société Sage la mise en place d’une mesure technique de protection, en l’espèce un code d’accès, portant sur une base de données et empêchant l’interopérabilité des logiciels en cause.\n\r\n\r\nIl a résulté de l’instruction, des constations techniques faites par l’expert dans son rapport mais également à l’appui du rapport du rapporteur du 21 juin 2021 que la mesure technique de protection ne portait pas sur une base de données ni plus largement sur un objet protégé par le droit d’auteur ou un droit voisin ainsi que l’exige les dispositions des articles L. 331-5, L. 331-13 et L. 331-31 du code de la propriété intellectuelle.\n\r\n\r\nPar conséquent, la Haute Autorité a, par délibération du 23 juillet 2021, décidé qu’elle n’était pas compétente pour connaître du différend dont elle avait été saisie et a par conséquent rejeté la demande de la société Cosmos comme irrecevable",
+  "date": "2024-03-21",
+  "url": "https://www.arcom.fr/se-documenter/espace-juridique/textes-juridiques/reglement-de-differend-lhadopi-saisie-dune-demande-de-la-societe-cosmos",
+  "decision_type": "texte_juridique"
+}

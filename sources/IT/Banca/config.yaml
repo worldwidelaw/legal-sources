@@ -1,0 +1,32 @@
+# IT/Banca - Bank of Italy (Banca d'Italia) Supervision
+# Source: https://www.bancaditalia.it
+# Data: Banking supervision circulars, dispositions, communications, and sanctions
+
+name: Bank of Italy - Supervision
+country: IT
+source_id: IT/Banca
+url: https://www.bancaditalia.it
+
+data_types:
+  - doctrine
+
+license: Open Data (Italian public data)
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+  max_workers: 2
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - doc_type      # circolare, disposizione, comunicazione, sanzione
+    - date          # Document date
+    - text          # Full text (from PDF or HTML)

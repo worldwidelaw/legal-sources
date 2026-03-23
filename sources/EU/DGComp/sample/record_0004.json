@@ -1,0 +1,22 @@
+{
+  "_id": "EU-DGCOMP-AT.39173",
+  "_source": "EU/DGComp",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-21T13:36:11.717154+00:00",
+  "case_number": "AT.39173",
+  "case_type": "Antitrust",
+  "instrument": "Antitrust & Cartels",
+  "title": "Gas sector inquiry",
+  "text": "",
+  "date": "2007-01-10",
+  "url": "https://competition-cases.ec.europa.eu/cases/AT.39173",
+  "pdf_url": null,
+  "sectors": [
+    "D.35.2 - Manufacture of gas; distribution of gaseous fuels through mains"
+  ],
+  "companies": [],
+  "legal_basis": [],
+  "decision_types": [
+    "Sector Inquiry - Final Report"
+  ]
+}

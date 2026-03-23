@@ -1,0 +1,23 @@
+source:
+  id: RO/ANAF
+  name: Romanian Tax Authority (ANAF)
+  country: RO
+  url: https://www.anaf.ro
+  data_types:
+    - doctrine
+  auth: none
+  schedule: weekly
+  description: >
+    Tax doctrine from the Romanian National Tax Administration Agency (ANAF).
+    Covers fiscal bulletins (noutati legislative), ANAF orders (OPANAF), and
+    circulars. PDFs downloaded from static.anaf.ro, text extracted via pypdf.
+    ~300+ documents with full text.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - doc_type

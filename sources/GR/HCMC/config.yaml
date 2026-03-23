@@ -1,0 +1,40 @@
+source:
+  id: GR/HCMC
+  country: GR
+  name: Hellenic Capital Market Commission (Επιτροπή Κεφαλαιαγοράς)
+  description: |
+    Decisions, circulars, and press releases of the Hellenic Capital Market Commission,
+    the Greek securities regulator. Covers sanctions, regulatory circulars, licensing
+    decisions, and board meeting summaries.
+  url: http://www.hcmc.gr
+
+data:
+  types:
+    - doctrine
+  format: PDF (via Liferay elib portal)
+  language: el
+  license: Public (Official Government Authority)
+
+access:
+  method: HTML scraping + PDF download
+  auth: none
+  rate_limit: 1 request/second
+  base_url: http://www.hcmc.gr
+  endpoints:
+    decisions: /el_GR/web/portal/elib/decisions?catyear={year}
+    circulars: /el_GR/web/portal/elib/circulars?catyear={year}
+    press: /el_GR/web/portal/elib/press?catyear={year}
+    pdf: /vdrv/elib/{uuid}
+  notes: |
+    Liferay portal with year-based document listing (2007-2026).
+    HTTP only (no HTTPS). PDFs downloaded from /vdrv/elib/ URLs.
+    No REST API available.
+
+schema:
+  key_fields:
+    - name: category
+      type: string
+      required: false
+    - name: year
+      type: integer
+      required: false

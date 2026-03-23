@@ -1,0 +1,33 @@
+# IT/AgenziaDogane - Italian Customs Agency (ADM)
+# Source: https://www.adm.gov.it
+# Data: Customs and excise circulars, resolutions, and directorial determinations
+
+name: Italian Customs Agency (Agenzia delle Dogane)
+country: IT
+source_id: IT/AgenziaDogane
+url: https://www.adm.gov.it
+
+data_types:
+  - doctrine
+
+license: Open Data (Italian public data)
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+  max_workers: 2
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - doc_number    # e.g. "Circolare 7/2026"
+    - doc_type      # circolare, risoluzione, determinazione
+    - date          # Document date
+    - text          # Full text extracted from PDF

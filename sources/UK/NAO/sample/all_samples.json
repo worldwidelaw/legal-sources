@@ -1,0 +1,275 @@
+[
+  {
+    "_id": "nao_62710_the-uks-resilience-to-severe-space-weather",
+    "_source": "UK/NAO",
+    "_type": "doctrine",
+    "_fetched_at": "2026-03-22T23:33:43.768039+00:00",
+    "title": "The UK’s resilience to severe space weather",
+    "text": "Background to the report\n\nThe Cabinet Office sets out the most serious acute risks facing the UK in the government’s classified National Security Risk Assessment (NSRA) and public-facing National Risk Register. Severe space weather has been on the National Risk Register since 2011 as one of the most serious natural and environmental hazards. In 2025, the government considered the likelihood of a severe space weather event occurring within the next five years to be 5–25%.\n\nSpace weather originates from solar activity and mostly causes no tangible disruption. Severe space weather can, however, disrupt a range of technologies. For example, an event could cause the widespread disruption of air travel for multiple weeks, localised power outages in the UK, and disruption to satellite services such as satellite navigation and timing services used by many sectors.\n\nScope of the report\n\nThis report examines the government’s work to increase the UK’s resilience to the risk of severe space weather. It forms part of a broader programme of reviews examining preparedness for a range of risks on the NSRA and is intended to provide insights useful for the management of other risks. It covers:\n\nthe extent to which the government understands the risks and potential cascading effects of severe space weather, and the adequacy of governance arrangements in place to oversee preparedness\n\nthe adequacy of the UK’s forecasting capability\n\nthe adequacy and completeness of the government’s response plans\n\nConcluding remarks\n\nThe government has identified severe space weather as a risk with potentially significant impacts that the UK must adequately prepare for and respond to. Since it first included it in the UK’s National Risk Register in 2011, the government has invested in developing and enhancing the UK’s forecasting capability and encouraged awareness of the risk it presents. The Met Office is well respected internationally, has built the UK’s forecasting capability and is taking steps to increase its resilience while taking account of the developing science and user needs. The government has drawn on expertise in the scientific community to inform its assessment of the risk and has begun collating and exercising departmental response plans.\n\nHowever, there are a number of issues that could undermine the UK’s ability to prepare for and respond effectively to a severe space weather emergency which the government needs to resolve. Roles and responsibilities for managing the risk remain unclear, accountabilities could be stronger, and the government has yet to set out what outcome it is looking to achieve and the level of residual impacts it is willing to accept (risk appetite). There is more the government can do to engage local responders and businesses in planning to ensure the effectiveness of its whole-of-society response.\n\nThe centre of government has an incomplete understanding of how sectors plan to respond to a severe space weather emergency, including whether they plan to use risk-specific or generic response plans, and the testing of response plans through simulation exercises has been limited, constraining understanding of vulnerabilities. Now that responsibility for coordinating the risk sits with DSIT, as the parent department for the Met Office and policy owner for the UK civil space sector, it brings the opportunity to reinvigorate the government’s ambition and address the gaps in its approach.",
+    "date": "2026-03-20",
+    "url": "https://www.nao.org.uk/reports/the-uks-resilience-to-severe-space-weather/",
+    "excerpt": "This National Audit Office (NAO) report examines the government’s work to increase the UK’s resilience to the risk of severe space weather.",
+    "report_type_ids": [
+      217
+    ],
+    "department_ids": [
+      256
+    ],
+    "topic_ids": [
+      345,
+      247
+    ]
+  },
+  {
+    "_id": "nao_62670_investigation-into-the-afghan-resettlement-schemes",
+    "_source": "UK/NAO",
+    "_type": "doctrine",
+    "_fetched_at": "2026-03-22T23:33:43.769275+00:00",
+    "title": "Investigation into the Afghan resettlement schemes",
+    "text": "Background to the report\n\nBetween October 2001 and late August 2021, the UK had a military presence in Afghanistan. During this 20-year period, the UK government employed local Afghan citizens. This work sometimes came with significant risk to those Afghan citizens and their families, who feared reprisals from the Taliban.\n\nFrom 2010, the UK ran a variety of schemes to resettle certain groups of Afghan citizens in specific circumstances. Although the schemes closed to new applicants in July 2025, there are still large numbers of people going through the resettlement process and the government anticipates that resettlement and integration activity will continue until 2032-33.\n\nResponsibilities for different elements of the schemes are spread across several different departments and have changed over time.\n\nScope of the report\n\nThis report looks across government at all the Afghan resettlement schemes that have operated since 2021.\n\nIt provides transparency on the resettlement of eligible people to date, at a point where the schemes have been closed to new entrants but many people have yet to complete the resettlement process. It does not seek to examine and report on the overall value for money of the schemes.\n\nThe government also operates other resettlement routes, including the UK Resettlement Scheme (UKRS) and the Homes for Ukraine scheme, which are separate from the Afghan schemes and not included in the report.\n\nVideo summary\n\nWatch Helen Holden, the report director, summarise our findings.\n\nConcluding remarks\n\nBetween 2021 and 2025 the government resettled around 38,000 Afghan citizens in the UK, including many people who worked with British forces during the UK’s military presence in Afghanistan. The government closed its Afghan schemes in 2025 but still expects to resettle around 9,000 more people who were already in the resettlement system, by 2029.\n\nDepartments worked together to respond to a complex and high-pressure situation, taking on responsibilities for different groups of people and for the various stages of the resettlement process.\n\nHowever, the response lacked overall clear governance, shared information and performance measurement, producing inefficiency which is likely to have increased costs and worsened outcomes for resettled people, compared with taking a more coordinated and planned approach earlier.\n\nIn 2024, the government recognised the need for a more effective delivery model and developed the ARP to combine the previously separate schemes. While progress has been made, important elements of effective programme management for the ARP are not yet in place.\n\nThese will be vital to how government manages remaining risks, including processing outstanding cases, managing the flow of individuals into the UK and into settled accommodation, and minimising the risk of people becoming homeless.",
+    "date": "2026-03-18",
+    "url": "https://www.nao.org.uk/reports/investigation-into-the-afghan-resettlement-schemes/",
+    "excerpt": "Government must overcome challenges to ensure its programme to resettle thousands of Afghan citizens in the UK is successfully completed.",
+    "report_type_ids": [
+      217
+    ],
+    "department_ids": [
+      256
+    ],
+    "topic_ids": [
+      153,
+      332,
+      149
+    ]
+  },
+  {
+    "_id": "nao_62483_investigation-into-the-governments-intervention-in-british-steels-scunthorpe-site",
+    "_source": "UK/NAO",
+    "_type": "doctrine",
+    "_fetched_at": "2026-03-22T23:33:43.770428+00:00",
+    "title": "Investigation into the government’s intervention in British Steel’s Scunthorpe site",
+    "text": "Background to the report\n\nSteel is used in construction, defence, manufacturing and transportation. The UK steel industry has faced challenges from high energy costs, excess supply in the global market, and the need to decarbonise steel production. The government has long monitored these challenges and has taken steps to support the industry, for example by cutting energy costs for businesses, issuing guidance for the public sector to procure domestically where possible, and providing grant funding for decarbonisation initiatives. Despite long-term declines in output and employment in the steel sector, the UK has an active industry, with producers operating various types of steelworks in sites across the UK.\n\nBritish Steel has a production capacity of three million tonnes per year. It employed 4,052 permanent staff as at 31 January 2026, and its products are used in sectors including rail, construction and engineering. Key customers include Network Rail; British Steel currently supplies 80% of Network Rail’s steel requirements under a £500 million contract. British Steel’s integrated steelworks site at Scunthorpe, Lincolnshire, has the last remaining operational blast furnaces in the UK, which make primary steel using imported raw materials. Integrated processes on site use the main product (steel) and by-products (energy) from the blast furnaces to produce products such as rail tracks and wire rod.\nTransition from blast to electric arc furnaces was a key matter of discussion between the government and Jingye Group (Jingye), the owner of British Steel, between 2023 and 2025. There were several rounds of engagement and proposals for the transition, but none were mutually acceptable. In March 2025, Jingye announced it was losing £700,000 a day due to challenging market conditions, tariffs, and high environmental costs, and said it would launch a consultation on the closure of its blast furnaces – a process that is costly and complicated to reverse. The government, led by DBT, intervened to prevent what it considered would be an imminent and disorderly closure of the blast furnaces.\n\nScope of the report\n\nThis investigation examines the government’s 2025 intervention in British\nSteel’s Scunthorpe site, led by DBT. It focuses on:\n\nthe wider context and background of the intervention\n\nevents leading up to the intervention\n\nthe current operations, costs, and risks\n\nfuture considerations\n\nThis investigation does not evaluate the value for money of this intervention or compare the effectiveness of this intervention with other government interventions in the steel sector or more broadly.\n\nConclusions\n\nDBT moved quickly to prevent the disorderly closure of blast furnaces which it considered was imminent, and to avoid potential job losses and the likely economic shock if primary steelmaking had stopped in Scunthorpe. DBT’s engagement with the sector meant that it had an understanding of the likely impact, both locally and on key supply chains. \n\nThe government has spent £377 million on its intervention so far, with no clear end date. The intervention has not stabilised the company’s finances, and costs will continue to increase until the intervention has ended. Using emergency measures to intervene comes with risks and DBT intervened without a clear exit strategy.\n\nA year on, DBT is considering options for the longer-term future of British Steel. It recognises that transition or transformation of British Steel will come at a cost, and decisions need to be made quickly to prevent further costs. DBT needs to ensure the approach is aligned with its forthcoming steel strategy and ministerial objectives for the sector as a whole.\n\nDBT should use the learning from this intervention to help it be prepared for future economic shocks (both in steel and other sectors), such as taking a strategic approach when it needs to respond quickly, supporting the resilience of supply chains, and balancing the risks and cost pressures on other government objectives. \n\nThe government should ensure that its new steel strategy minimises the need for further emergency interventions by addressing the risks to a viable domestic supply of steel that meets the UK’s strategic requirements.",
+    "date": "2026-03-16",
+    "url": "https://www.nao.org.uk/reports/investigation-into-the-governments-intervention-in-british-steels-scunthorpe-site/",
+    "excerpt": "This investigation examines the government’s 2025 intervention in British Steel’s Scunthorpe site, led by DBT.",
+    "report_type_ids": [
+      217
+    ],
+    "department_ids": [
+      168
+    ],
+    "topic_ids": [
+      134,
+      181,
+      192,
+      345,
+      247
+    ]
+  },
+  {
+    "_id": "nao_62622_dsits-investment-in-research-infrastructure",
+    "_source": "UK/NAO",
+    "_type": "doctrine",
+    "_fetched_at": "2026-03-22T23:33:43.771819+00:00",
+    "title": "DSIT’s investment in research infrastructure",
+    "text": "Background to the report\n\nThe Department for Science, Innovation and Technology (DSIT) is responsible for “positioning the UK at the forefront of global scientific and technological advancement” and believes six ‘frontier technologies’ will have a particularly important role in stimulating economic growth.\n\nAvailability of research infrastructure – facilities used by scientists and industry to conduct research such as laboratories, specialised equipment, and supercomputers – will be critical in determining how rapidly the sector grows. UK Research and Innovation (UKRI), a non-departmental public body sponsored by DSIT, spent £1.1 billion on infrastructure to support research and innovation in 2024-25.\n\nBuilding, maintaining, and upgrading research infrastructure comes at large cost, requiring strategic decision-making to ensure that most crucial research infrastructure is accessible within the budget available. Our\n 2016 study examining spending on research infrastructure\n found that government had not used good quality information to inform investment decisions. We recommended a more structured and strategic process for deciding what to fund.\n\nSince then, UKRI has made changes to how it manages spending on infrastructure, including publishing a roadmap outlining its understanding of the research and innovation infrastructure landscape. DSIT was established in 2023 to bring a more dedicated focus to supporting research and innovation within government. \n\nScope of the report\n\nThis study examines how effectively DSIT and UKRI work together to develop and operate research infrastructure that meets the needs of government, researchers and industry. It looks at:\n\nhow well DSIT understands the research infrastructure landscape\n\nhow DSIT and UKRI determine what infrastructure to fund\n\nwhether DSIT and UKRI are working effectively to deliver the research infrastructure the UK needs\n\nwhether existing research infrastructure assets are being used in a way which achieves the best possible outcomes\n\nVideo summary\n\nCharles Nancarrow, the report’s director, summarises our findings.\n\nConclusions\n\nAcademic and private sector researchers depend on publicly financed research infrastructure to make scientific advances and develop innovative products and solutions to global problems.\n\nSince we last reported, DSIT has started providing a clearer direction on the technologies it believes are particularly strategically important to the UK, and its expectations about how much money UKRI should spend supporting the government’s policy priorities.\n\nUKRI has also introduced a more consistent and professional approach to funding research infrastructure, for example ensuring all projects have strong investment cases, meaning these projects have made, and will continue to make, significant contributions to global science.\n\nDSIT and UKRI have also shown that the UK government can take action quickly in particularly fast-moving and strategically important areas.\n\nWhile UKRI and DSIT now have a clearer understanding of future infrastructure requirements than they had previously, UKRI can still do more to manage its research infrastructure as a portfolio – including balancing acquisition of new capabilities with maintenance and renewal of existing infrastructure – some of which can no longer be used for its intended purpose.\n\nThere is also scope for UKRI to improve the value for money of its infrastructure projects by ensuring they adhere more closely to good practice, particularly around addressing over–optimism at early stages of project delivery.",
+    "date": "2026-03-13",
+    "url": "https://www.nao.org.uk/reports/dsits-investment-in-research-infrastructure/",
+    "excerpt": "Background to the report The Department for Science, Innovation and Technology (DSIT) is responsible for “positioning the UK at the forefront of global scientific and technological advancement” and believes six ‘frontier technologies’ will have a particularly important role in stimulating economic growth. Availability of research infrastructure – facilities used by scientists and industry to conduct […]",
+    "report_type_ids": [
+      217
+    ],
+    "department_ids": [
+      348
+    ],
+    "topic_ids": [
+      134,
+      249
+    ]
+  },
+  {
+    "_id": "nao_62595_northern-powerhouse-rail",
+    "_source": "UK/NAO",
+    "_type": "doctrine",
+    "_fetched_at": "2026-03-22T23:33:43.773078+00:00",
+    "title": "Northern Powerhouse Rail",
+    "text": "Background to the report\n\nThe north of England contains several large cities – including Leeds, Liverpool, Manchester, Newcastle and Sheffield – which are poorly served by transport connections. This creates a barrier to improved productivity as it is harder than it should be for people to travel between cities for work and for leisure.\n\nSince 2014, the government has been considering plans to enable increased economic growth in the region. This includes improving east–west rail connections across the north of England through the Northern Powerhouse Rail programme.\n\nIn January 2026, as part of its wider Northern Growth Strategy, the government announced its plans for Northern Powerhouse Rail. The programme will involve building new rail lines and stations, as well as upgrades to existing lines and stations.\n\nTogether this is expected to provide more frequent trains and shorter journey times between Liverpool and Manchester to the west of the Pennines, and Leeds, York and other cities to the east. It builds upon an existing rail upgrade programme in the region, the Transpennine Route Upgrade between Manchester and York.\n\nThe Department for Transport (DfT) is the department responsible for funding and overseeing delivery as the sponsor for Northern Powerhouse Rail. Two of DfT’s arm’s-length bodies are responsible for parts of the programme – Network Rail for delivering existing line upgrades to the east of the Pennines, and High Speed Two Limited (HS2 Ltd) for developing the plans between Liverpool and Manchester.\n\nDfT has also been working with the Ministry of Housing, Communities and Local Government (MHCLG); Transport for the North, as the sub-national transport body for the region; and with local government bodies, who will be involved with delivering the wider benefits enabled by the programme.\n\nScope of the report\n\nDfT has been working on plans for Northern Powerhouse Rail for over a decade. As it now develops the programme’s business case, this report examines how DfT is setting up the programme for success. It assesses:\n\nthe progress DfT has made with the programme since 2014\n\nhow DfT is setting up the programme and addressing key challenges\n\nhow DfT is learning relevant lessons from other major programmes\n\nThe fieldwork for this report was completed between October 2025 and February 2026, the majority ahead of the government’s announcement in January 2026 on its plans for Northern Powerhouse Rail.\n\nAs a result, many of the areas examined remain work in progress, and the NAO expects to report further on the programme in the future. The report does not examine the government’s wider growth plans for the north or progress on the Transpennine Route Upgrade programme.\n\nVideo summary\n\nJonny Mood, the report’s director, summarises our findings.\n\nConclusions\n\nThe government has long considered that improving the rail service and infrastructure in the north of England is a vital enabler for economic growth and productivity.\n\nDfT has now provided greater clarity over what it will do as part of the Northern Powerhouse Rail programme. However, it has taken over a decade to get to this stage given the significant scope changes during this period.\n\nThese changes created uncertainty and pushed back delivery of benefits, such as more frequent and faster rail services that would help improve job opportunities in the region. DfT has begun taking steps to set up the programme for success, including identifying key lessons from other programmes to incorporate into its management.\n\nBetter transport will help enable growth but, to ensure that the government’s vision for economic growth in the north is achieved, further work is needed by DfT to ensure that the programme aligns with national and local growth plans.\n\nThis will need to be supported by effective cross-government working at both national and local levels to maximise the intended benefits within the resources available.\n\nDfT will need to continue to draw on further learning as it continues its planning of the programme to help manage it effectively and secure value for money.",
+    "date": "2026-03-11",
+    "url": "https://www.nao.org.uk/reports/northern-powerhouse-rail/",
+    "excerpt": "Northern Powerhouse Rail’s success is dependent on better cross-government working and stronger ties to the government’s economic strategy.",
+    "report_type_ids": [
+      217
+    ],
+    "department_ids": [
+      143
+    ],
+    "topic_ids": [
+      134,
+      189,
+      196,
+      252,
+      250,
+      149,
+      140,
+      235,
+      139,
+      322,
+      144
+    ]
+  },
+  {
+    "_id": "nao_62561_the-financial-resilience-of-dcms-sponsored-museums-and-galleries",
+    "_source": "UK/NAO",
+    "_type": "doctrine",
+    "_fetched_at": "2026-03-22T23:33:44.418190+00:00",
+    "title": "The financial resilience of DCMS-sponsored museums and galleries",
+    "text": "Background to the report\n\nThe Department for Culture, Media & Sport (DCMS) sponsors and directly funds 15 museums and galleries in England. Between 2019 and 2024, the museums and galleries included seven of the top 10 most visited free visitor attractions in England. \n\nThe museums and galleries are nationally and internationally significant, contributing to the UK’s influence overseas, through international loans from their collections, touring and promoting exhibitions internationally, and research projects.\n\nDCMS gave grant-in-aid of £484 million to these bodies in 2024-25. They also receive funding from other government sources, such as the National Lottery Heritage Fund and tax reliefs, and raise their own income from, for example, commercial activities and fundraising. In 2024-25, they employed over 6,800 permanent staff, received 42 million visitors, and had a total net asset value of almost £9 billion.\n\nScope of the report\n\nThis report reviews how well the 15 DCMS-sponsored museums and galleries and DCMS have managed museums and galleries’ financial challenges after DCMS started to end its extra COVID-19 pandemic funding from its peak in 2021-22. \n\nWe have made recommendations for DCMS to support improvements in its oversight of the sector, and recommendations for museums and galleries on how they manage future financial challenges. We have also identified good practice from museums and galleries’ approaches that may be useful to other museums and galleries and other sectors.\n\nThe report covers:\n\nthe finances of the 15 DCMS-sponsored museums and galleries since the pandemic\n\nthe responses of the museums and galleries to the financial challenges faced since the pandemic\n\nDCMS’s oversight of museums and galleries’ financial resilience and achievement of objectives\n\nVideo summary\n\nSimon Bittlestone, the report’s director, summarises our findings.\n\nConclusions\n\nDCMS and the museums and galleries have worked in partnership to oversee museums and galleries’ continued operations as government funding reduced from the exceptional amounts provided during the pandemic. This has required DCMS to provide additional funding to some museums and galleries that it identified faced the greatest financial risks. \n\nMuseums and galleries have managed increasing costs and found ways to increase self-generated income through a range of innovative and commercially minded strategies, despite lower overall visitor numbers than before the pandemic.\n\nMuseums and galleries are now more reliant on self-generated sources of income that are vulnerable to wider economic factors, and they are using cost-containment measures that can only go so far before they risk the achievement of objectives. Museums and galleries will need to navigate these challenges through good financial management and planning, with DCMS having overarching responsibility for ensuring whether they can care for and provide free access to their collections.\n\nTherefore, DCMS must ensure that it has structures in place to identify early warning signs, should museums and galleries start struggling to manage their financial risks, so it can intervene early – potentially before additional funding is required. \n\nIts work to address gaps in its oversight and monitoring of museums and galleries’ financial resilience is therefore important to ensuring it can fulfil its oversight role most effectively. It also has an opportunity to do more in its convening role to support museums and galleries in dealing with common challenges, such as the threat from cyber-attacks.",
+    "date": "2026-03-09",
+    "url": "https://www.nao.org.uk/reports/the-financial-resilience-of-dcms-sponsored-museums-and-galleries/",
+    "excerpt": "This National Audit Office report reviews how well the 15 DCMS-sponsored museums and galleries and DCMS have manages financial challenges.",
+    "report_type_ids": [
+      217
+    ],
+    "department_ids": [
+      150
+    ],
+    "topic_ids": [
+      318,
+      181,
+      151
+    ]
+  },
+  {
+    "_id": "nao_62545_update-on-government-shared-services-2026",
+    "_source": "UK/NAO",
+    "_type": "doctrine",
+    "_fetched_at": "2026-03-22T23:33:45.062605+00:00",
+    "title": "Update on government shared services",
+    "text": "Background to the report\n\nSince 2004, central government has sought to cut the cost of services through the sharing of back-office functions between departments. This work has been led by Cabinet Office.\n\nThe aim of using shared services is to standardise processes and services, reducing costs while improving data consistency. This involves moving to a common IT system known as an Enterprise Resource Planning (ERP) system. The private sector and local authorities often claim savings from implementing shared service centres.\n\nIn March 2021, Cabinet Office refreshed its delivery model, moving away from the idea of individual departments procuring their own single software platforms and, instead, having five cloud-based shared service centres operational by 2028.\n\nIt is intended to facilitate convergence, bringing government departments into alignment on procedures, processes, definitions and data standards.\n\nScope of the report\n\nThis report examines how Cabinet Office and the clusters are progressing with implementing the 2021 Shared Services Strategy. It examines whether:\n\nCabinet Office has a good understanding of progress since we last reported on shared services in 2022\n\nclusters are on track to deliver the Shared Services Strategy to time and budget, including the intended longer-term improvements\n\nthe government can manage interdependencies and interoperability between shared services and other developments elsewhere in government\n\nConclusions\n\nThe Shared Services Strategy aims to standardise processes and systems across government, offering potential for significant efficiencies. Since our last report in 2022, clusters have made some progress with operational delivery, improving governance structures, developing implementation plans and moving forward  with procurement. However, some fundamental issues continue to jeopardise delivery of five interoperable clusters.\n\nThere is no single owner in the centre of government with a clear mandate to secure departmental onboarding, which leaves buy-in uncertain and timelines at risk. The absence of a strong technical lead has resulted in inconsistent ERP configurations and data convergence, undermining interoperability and data standards. \n\nWhen combined with fragmented governance of interdependencies, this creates a real risk that the strategy will not be delivered to time or budget. Unless these gaps are addressed urgently, the government will not achieve the full benefits it set out to achieve and may incur increased costs.",
+    "date": "2026-03-06",
+    "url": "https://www.nao.org.uk/reports/update-on-government-shared-services-2026/",
+    "excerpt": "Government efforts to pool ‘back office’ functions into a central, shared services structure are still facing uncertainty and delay.",
+    "report_type_ids": [
+      217
+    ],
+    "department_ids": [
+      166,
+      256
+    ],
+    "topic_ids": [
+      331,
+      187,
+      185,
+      184
+    ]
+  },
+  {
+    "_id": "nao_62303_taxing-large-businesses",
+    "_source": "UK/NAO",
+    "_type": "doctrine",
+    "_fetched_at": "2026-03-22T23:33:45.706255+00:00",
+    "title": "Taxing large businesses",
+    "text": "Background to the report\n\nHM Revenue & Customs’ (HMRC’s) large business directorate works with around 2,000 of the UK’s largest business groups to ensure they comply with tax rules. This covers most groups with an annual turnover in the UK of more than £200 million, and those which HMRC considers have particularly complex tax affairs or are operating in a complex business sector.\n\nAround two-fifths of the taxes that HMRC collects come through large businesses, including those that large businesses pay directly and those they pay on behalf of their employees and customers. Their size means they are in regular contact with HMRC, with it investigating around half of all large business groups at any one time.\n\nGiven the complexity of the businesses, and the scale of the tax revenues involved, HMRC takes a more hands-on approach with large businesses than with other taxpayers. It divides the large business population into 19 business sectors so that teams can focus on the issues facing each sector. The large business directorate has approximately 2,500 full-time equivalent staff, costing £166 million in staff pay in 2024-25.\n\nScope of the report\n\nThis report examines whether HMRC’s approach to large business tax compliance is delivering value for money. It covers:\n\nthe taxes paid by large businesses;\n\nHMRC’s approach to working with large businesses;\n\nthe effectiveness of HMRC’s approach.\n\nWe designed our work to test the effectiveness and productivity of HMRC’s approach, with our focus on the work of the large business directorate. We have not examined in detail how each of the tax regimes affecting large businesses operate, nor the rules determining how much each business should pay. We have not examined the amount of tax paid by individual businesses, nor whether these amounts are correct.\n\nVideo summary\n\nLouise Bladen, the report’s director, summarises our findings.\n\nConclusions\n\nThere is little doubt that HMRC’s compliance work with large businesses offers good value for money. HMRC collected £337 billion in taxes from large businesses in 2024-25, including those taxes that large businesses pay directly and those they pay on behalf of their employees and customers. Large businesses also carry particularly significant tax risks, and so HMRC’s enhanced focus on them through a separate directorate makes sense. \n\nLarge businesses rate their experience of dealing with HMRC highly, relative to other customer groups, and the size of the large-business tax gap, relative to revenue, is low. The collection of £15.8 billion in additional taxes by this directorate, bringing in £95 for every £1 spent on staff pay – four times more than what HMRC achieves across all taxpayers – represents good return on investment. HMRC’s performance, in terms of the taxes its compliance activity brings in and the time it takes to resolve interventions, has recovered to pre-pandemic levels.",
+    "date": "2026-02-27",
+    "url": "https://www.nao.org.uk/reports/taxing-large-businesses/",
+    "excerpt": "This report examines whether HMRC’s approach to large business tax compliance is delivering value for money.",
+    "report_type_ids": [
+      217
+    ],
+    "department_ids": [
+      162
+    ],
+    "topic_ids": [
+      163,
+      164
+    ]
+  },
+  {
+    "_id": "nao_62169_unlocking-land-for-housing",
+    "_source": "UK/NAO",
+    "_type": "doctrine",
+    "_fetched_at": "2026-03-22T23:33:46.353825+00:00",
+    "title": "Unlocking land for housing",
+    "text": "Background to the report\n\nThe government has set a milestone to deliver 1.5 million new homes over this Parliament to July 2029. This will require building more than 300,000 homes per annum on average, a level of housebuilding that was last achieved in the 1960s. \n\nThe government says a chronic undersupply of land underpins the housing crisis. It believes there is suitable land in England for housebuilding that is not being developed by the market as it is not profitable or attractive enough for developers to build on in its current form. This can be due to factors such as the need for remediation work, a lack of infrastructure such as roads, or pieces of land making up a site being owned by different people or companies.\n\nThe Ministry for Housing, Communities & Local Government (MHCLG) aims to address these market failures, boost the supply of land for housing development and ultimately increase the supply of housing via several ‘unlocking land’ programmes. These programmes include providing grant funding, recoverable loans, acquiring land and providing capacity support. \n\nMHCLG is accountable for the support delivered by its delivery partners: Homes England (the government’s housing and regeneration agency in England), One Public Estate (a partnership between the Cabinet Office, the Local Government Association and MHCLG), the Greater London Authority and mayoral strategic authorities.\n\nMHCLG plans to launch the National Housing Delivery Fund (NHDF), from 1 April 2026. The NHDF will comprise grant funding to be delivered by Homes England and other partners, and financial transactions such as loans and investments delivered through a new National Housing Bank (the Bank) created as a subsidiary of Homes England. MHCLG expects both the NHDF and the Bank will support wider activity beyond the scope of the unlocking land programmes that are the focus of this report.\n\nScope of the report\n\nThis report assesses whether MHCLG’s programmes to increase the supply of suitable land for housing development are effectively supporting the government’s ambitions to build the right homes in the right places. These programmes include activities such as capacity support, funding for infrastructure, land assembly, or viability gap funding; they are aimed at ‘unlocking’ sites.\n\nIt examines whether MHCLG:\n\nhas unlocked land to deliver the right homes in the right places\n\nis learning and innovating to improve the productivity of its land unlocking programmes\n\nalongside Homes England, is putting in place an approach to unlock the right land in the right places to support future housing targets\n\nVideo summary\n\nHelen Hodgson, the report’s director, summarises our findings.\n\nConclusion\n\nSince 2016-17, the Ministry for Housing, Communities & Local Government (MHCLG) has allocated £10.5 billion of funding to unlock land for housing, through a variety of programmes that utilise different funding types, including grants, loans and equity investments. MHCLG expects that this funding will have been spent on unlocking land by March 2034. This land will provide the capacity for building 713,000 homes, with homes expected to be built on this land for decades to come. \n\nMHCLG monitors the status of unlocking land activity for the projects it helps fund, it also knows how many homes have been built by housing developers on the land it has helped to unlock across the majority of its funds. However, it did not set out to track how many homes have been built on land unlocked by the Home Building Funds and the Brownfield, Infrastructure and Land Fund but is now working with Homes England to do so on these funds. \n\nTo be able to fully demonstrate value for money on these programmes, MHCLG needs to continue to monitor housebuilding over the long term and should consider what further measures it can take to embed monitoring of housebuilding across all its programmes.\n\nMHCLG and Homes England have ongoing evaluations and have drawn on an understanding of what works in their existing programmes to evolve their intervention strategies. Efforts include implementing ongoing engagement instead of set bidding periods, maintaining continuous pipelines of projects, and offering a more flexible mix of funding options. It has also revised its assessment criteria to better account for non-monetisable benefits to facilitate more investment in areas of lower land values.\n\nMHCLG aims to establish the new National Housing Delivery Fund to bring together all the funding for unlocking land and set up a housing bank, as a subsidiary of Homes England, from 1 April 2026. To be able to demonstrate value for money and be successful, MHCLG will need to swiftly build on the work it has started and set out its long-term ambitions, provide clarity about its investment priorities to the market and decision-makers in local authorities, and to have a clear articulation and management of risk.",
+    "date": "2026-02-11",
+    "url": "https://www.nao.org.uk/reports/unlocking-land-for-housing/",
+    "excerpt": "The NAO examines whether MHCLG’s work to increase the supply of suitable land for housing development will help deliver 1.5m new homes.",
+    "report_type_ids": [
+      217
+    ],
+    "department_ids": [
+      148
+    ],
+    "topic_ids": [
+      332,
+      149
+    ]
+  },
+  {
+    "_id": "nao_62167_the-access-to-work-scheme",
+    "_source": "UK/NAO",
+    "_type": "doctrine",
+    "_fetched_at": "2026-03-22T23:33:46.974356+00:00",
+    "title": "The Access to Work scheme",
+    "text": "Background to the report\n \n\nAccess to Work is a demand-led grant scheme to help people get, or stay in, work if they have a physical or mental health condition or disability. Funding may pay for things like specialist equipment, support workers such as a British Sign Language interpreter, the costs of travelling to work and physical adaptations to the workplace. \n\nThe Department for Work & Pensions (DWP) typically approves support for individuals for three years, up to a maximum annual total, which was £69,260 in 2024-25 and 2025-26.\n\nIn March 2025, the government published a green paper setting out proposals to reform the country’s incapacity and disability benefits system. This included proposals for the future of Access to Work in order to consider how public resources can generate the most value for the greatest number of people.\n\nConcerns have been raised in Parliament and by stakeholders about the backlogs and delays, and the impact these may have on the employment of people with disabilities and health conditions. In its 2024 election manifesto, the Labour Party said it would tackle the backlog of Access to Work claims.\n\nScope of the report\n\nOur investigation was to provide transparency over DWP’s operation of Access to Work and inform public debate about the future of the scheme.\n\nThe report covers:\n\nthe purpose of the Access to Work scheme;\n\ntake-up of the scheme; and\n\nhow DWP is managing the increased take-up of the scheme\n\nOur work was not designed to assess whether Access to Work is providing value for money.\n\nVideo summary\n\nMark Parrett, Senior Audit Manager, summarises our findings.",
+    "date": "2026-02-06",
+    "url": "https://www.nao.org.uk/reports/the-access-to-work-scheme/",
+    "excerpt": "The NAO investigates DWP’s operation of the Access to Work scheme to help inform public debate on its future.",
+    "report_type_ids": [
+      217
+    ],
+    "department_ids": [
+      146
+    ],
+    "topic_ids": [
+      259,
+      147
+    ]
+  },
+  {
+    "_id": "nao_62320_the-costs-of-tackling-drug-harms-in-prisons",
+    "_source": "UK/NAO",
+    "_type": "doctrine",
+    "_fetched_at": "2026-03-22T23:33:47.623800+00:00",
+    "title": "The costs of tackling drug harms in prisons",
+    "text": "Background to the report\n\nIn April 2025, approximately 40,000 people in prisons in England and Wales (50%) had an identified drug problem. Misuse of illicit drugs by people in prison creates or exacerbates risks to their health, well-being and personal safety.\n\nBetween December 2022 and December 2024, the Prisons and Probation Ombudsman investigated 833 deaths, of which 136 (16%) were drug-related.\n\nConveyance, supply and use of illicit drugs also increase risks to the safety and stability of the prison regime. Availability of drugs inside prisons creates an illicit economy that can fuel debt, which can lead to assault, extortion or self-harm. Prisoners who are using illicit drugs often reoffend after leaving prison.\n\nScope of the report\n\nThis report focuses on how the prison and health services are using public funds to tackle drug harms in prisons. It examines:\n\nhow well the Ministry of Justice (MoJ), HMPPS, Department of Health & Social Care (DHSC), NHSE and wider government understand the scale and nature of drug harms in prisons\n\nthe funding available for HMPPS and NHSE to tackle drug harms in prisons, and how resources are prioritised\n\nhow effectively resources have been used and how well the prison and health services work together\n\nVideo summary\n\nJenny George, the report’s director, summarises our findings.\n\nConclusions\n\nIllicit drugs in prison pose significant challenges to successful offender rehabilitation, prisoners’ physical and mental health, the safety of staff and prisoners, and the stability of the prison environment. Tackling drug harms in prison involves restricting the supply of drugs into prison and supporting people in prison to reduce their drug misuse, both through drug treatment and recovery services and by creating a prison environment that incentivises sustainable drug-free living.\n\nThis works best where there is good liaison between HMPPS and health services, with a shared understanding of need and well-aligned incentives for staff to support prisoners’ treatment and recovery. However, in a context of wider pressures on prison capacity, prison staff reported they lacked the influence needed to improve health-related services, while NHS staff did not always feel sufficiently involved in decisions on prison operations and were reliant on prison staff to enable those services to be delivered safely.\n\nIt is impractical to calculate a precise cost of tackling drug harms in prisons, making it impossible to assess overall value for money of drug treatment and recovery. However, HMPPS significantly underspent budgets intended for security improvements and initiatives to support prisoners. We also heard prison staff voice their frustration at the slow pace of urgent repairs and improvements.\n\nMeanwhile, our estimate is that drug treatment funding has decreased in real terms. Better performance information, continued willingness to innovate, continued learning from robust evaluation and, above all, a renewed commitment to cross-government partnership working will be essential for the government to direct resources to where they will have greatest impact.",
+    "date": "2026-02-04",
+    "url": "https://www.nao.org.uk/reports/the-costs-of-tackling-drug-harms-in-prisons/",
+    "excerpt": "This National Audit Office (NAO) report focuses on how the prison and health services are using public funds to tackle drug harms in prisons.",
+    "report_type_ids": [
+      217
+    ],
+    "department_ids": [
+      170,
+      141
+    ],
+    "topic_ids": [
+      142,
+      171,
+      237
+    ]
+  },
+  {
+    "_id": "nao_62292_mods-management-of-losses-from-fraud-and-other-economic-crime",
+    "_source": "UK/NAO",
+    "_type": "doctrine",
+    "_fetched_at": "2026-03-22T23:33:48.268556+00:00",
+    "title": "MoD’s management of losses from fraud and other economic crime",
+    "text": "Background to the report\n\nThe Ministry of Defence (MoD) is, like all parts of government, vulnerable to various types of economic crime and misconduct including fraud, bribery and corruption.\n\nIt faces particular challenges in safeguarding public expenditure, with high expenditure, complex procurement and supply chains, and a workforce split between the Civil Service and Armed Forces.\n\nTo tackle these challenges, the MoD has both a counter-fraud team and several Defence police authorities, which span both the criminal and service justice systems, involved in responding to such threats. \n\nThe NAO has received whistleblowing disclosures over recent years indicating that individual allegations of economic crime and misconduct can take a long time to resolve or do not reach a satisfactory resolution, and that overall the MoD could manage fraud and economic crime far more effectively.\n\nScope of the report\n\nThis report investigates and provides transparency over the MoD’s management of its losses from fraud and economic crime. It covers:\n\nhow the MoD is set up to make savings by tackling fraud\n\nthe MoD’s understanding of its fraud risks\n\nhow the MoD handles fraud investigations, and the outcomes of its work\n\nareas the MoD could improve to realise greater savings from\nits counter‑fraud work\n\nThe report does not provide details of individual fraud investigations.\n\nConclusions\n\nThe MoD has an opportunity to save money through better coordination and management of its counter-fraud and economic crime activity. It is still improving its understanding of its fraud risk, but it is highly likely that the amount it investigates, recovers and prevents is considerably less than the loss it incurs.\n\nThe MoD also reports a much lower financial return than other departments that invest a similar amount in counter-fraud activity. This is despite having stronger enforcement powers with its own in-house police services.\n\nUsing this resource more effectively will require the MoD to reform the way it goes about tackling fraud and other economic crime, which would enable it to achieve real savings that could be used to enhance its defence capability.",
+    "date": "2026-01-30",
+    "url": "https://www.nao.org.uk/reports/mods-management-of-losses-from-fraud-and-other-economic-crime/",
+    "excerpt": "The Ministry of Defence could make significant savings if it better managed its losses from fraud and other forms of economic crime.",
+    "report_type_ids": [
+      217
+    ],
+    "department_ids": [
+      137
+    ],
+    "topic_ids": [
+      142,
+      138,
+      195,
+      186
+    ]
+  }
+]

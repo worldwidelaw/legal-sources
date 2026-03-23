@@ -1,0 +1,49 @@
+source:
+  id: "US/EveryCRSReport"
+  country: "US"
+  name: "Congressional Research Service Reports"
+  url: "https://www.everycrsreport.com"
+  description: |
+    23K+ nonpartisan policy and legal analysis reports from the Congressional
+    Research Service. CSV index with PDF/HTML full text. No auth required.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest"
+  base_url: "https://www.everycrsreport.com"
+  endpoints:
+    index: "/reports.csv"
+    report_json: "/reports/{number}.json"
+    files: "/files/{filename}"
+
+schema:
+  key_fields:
+    - name: "number"
+      description: "CRS report number (e.g., R45770, IF12033)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Report title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the report"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Latest publication date"
+      type: "date"
+      role: "temporal_key"
+      required: true

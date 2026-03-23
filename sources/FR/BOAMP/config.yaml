@@ -1,0 +1,29 @@
+source:
+  id: FR/BOAMP
+  name: "French Public Procurement (BOAMP)"
+  country: FR
+  url: https://www.boamp.fr
+  data_types:
+    - doctrine
+  auth: none
+  license: "Licence Ouverte (Open Licence 2.0)"
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+    - buyer_name
+    - contract_type
+    - nature
+    - procedure
+
+fetch:
+  rate_limit_delay: 0.5
+  page_size: 20
+  api_base: https://boamp-datadila.opendatasoft.com/api/v2/catalog/datasets/boamp/records

@@ -1,0 +1,44 @@
+source:
+  id: "CA/OpenParliament"
+  country: "CA"
+  name: "OpenParliament (Hansard, Bills, Votes)"
+  url: "https://openparliament.ca"
+  description: |
+    30+ years of House of Commons debates (Hansard), bills, and votes.
+    Free REST API (JSON). No auth. Legislative history and parliamentary doctrine.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest"
+  base_url: "https://api.openparliament.ca"
+  endpoints:
+    debates: "/debates/"
+    speeches: "/speeches/"
+    bills: "/bills/"
+
+schema:
+  key_fields:
+    - name: "debate_date"
+      description: "Date of the debate"
+      type: "date"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Debate topic/heading"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of all speeches in the debate"
+      type: "string"
+      role: "content"
+      required: true

@@ -3,7 +3,7 @@ name: German Federal Financial Supervisory Authority (BaFin)
 country: DE
 url: https://www.bafin.de
 data_types:
-  - regulatory_decisions
+  - doctrine
 auth: none
 
 description: |

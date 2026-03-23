@@ -32,7 +32,7 @@ from urllib.parse import unquote
 import pdfplumber
 import requests
 
-SITEMAP_URL = "https://www.fca.org.uk/sitemap.xml?page=2"
+SITEMAP_INDEX_URL = "https://www.fca.org.uk/sitemap.xml"
 BASE_URL = "https://www.fca.org.uk"
 SAMPLE_DIR = Path(__file__).parent / "sample"
 SOURCE_ID = "UK/FCA"
@@ -43,14 +43,39 @@ HEADERS = {
 }
 
 
-def fetch_sitemap() -> List[Tuple[str, str, str]]:
+def fetch_sitemap_index() -> List[str]:
     """
-    Fetch and parse the FCA sitemap to extract notice URLs.
+    Fetch the sitemap index to get all sitemap page URLs.
+
+    Returns:
+        List of sitemap page URLs
+    """
+    resp = requests.get(SITEMAP_INDEX_URL, headers=HEADERS, timeout=60)
+    resp.raise_for_status()
+
+    root = ET.fromstring(resp.content)
+    ns = {"ns": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+
+    sitemap_urls = []
+    for sitemap_elem in root.findall(".//ns:sitemap", ns):
+        loc = sitemap_elem.find("ns:loc", ns)
+        if loc is not None and loc.text:
+            sitemap_urls.append(loc.text)
+
+    return sitemap_urls
+
+
+def fetch_sitemap_page(sitemap_url: str) -> List[Tuple[str, str, str]]:
+    """
+    Fetch and parse a single sitemap page to extract notice URLs.
+
+    Args:
+        sitemap_url: URL of the sitemap page
 
     Returns:
         List of tuples: (url, lastmod, notice_type)
     """
-    resp = requests.get(SITEMAP_URL, headers=HEADERS, timeout=60)
+    resp = requests.get(sitemap_url, headers=HEADERS, timeout=60)
     resp.raise_for_status()
 
     root = ET.fromstring(resp.content)
@@ -75,6 +100,32 @@ def fetch_sitemap() -> List[Tuple[str, str, str]]:
             notices.append((url, mod_date, "final_notice"))
 
     return notices
+
+
+def fetch_sitemap() -> List[Tuple[str, str, str]]:
+    """
+    Fetch and parse all FCA sitemap pages to extract notice URLs.
+
+    Returns:
+        List of tuples: (url, lastmod, notice_type)
+    """
+    # First get all sitemap page URLs
+    sitemap_urls = fetch_sitemap_index()
+    print(f"Found {len(sitemap_urls)} sitemap pages")
+
+    all_notices = []
+    for sitemap_url in sitemap_urls:
+        print(f"  Fetching: {sitemap_url}")
+        try:
+            notices = fetch_sitemap_page(sitemap_url)
+            all_notices.extend(notices)
+            print(f"    Found {len(notices)} notices")
+            time.sleep(0.5)  # Rate limiting between sitemap pages
+        except requests.RequestException as e:
+            print(f"    Warning: Failed to fetch {sitemap_url}: {e}")
+            continue
+
+    return all_notices
 
 
 def extract_text_from_pdf(url: str) -> Optional[str]:
@@ -205,7 +256,7 @@ def parse_notice(url: str, text: str, notice_type: str, lastmod: str) -> dict:
     return {
         "_id": doc_id,
         "_source": SOURCE_ID,
-        "_type": "regulatory_decisions",
+        "_type": "doctrine",
         "_fetched_at": datetime.now(timezone.utc).isoformat(),
         "title": metadata["title"],
         "text": text,
@@ -439,8 +490,18 @@ def main():
             success = bootstrap_sample(args.count)
             sys.exit(0 if success else 1)
         else:
-            print("Full bootstrap not implemented yet. Use --sample flag.")
-            sys.exit(1)
+            # Full bootstrap - output records as NDJSON to stdout
+            print("Starting full bootstrap of UK/FCA notices...", file=sys.stderr)
+            count = 0
+            for record in fetch_all():
+                try:
+                    normalized = normalize(record)
+                    print(json.dumps(normalized, ensure_ascii=False))
+                    count += 1
+                except ValueError as e:
+                    print(f"Skipping invalid record: {e}", file=sys.stderr)
+            print(f"Full bootstrap complete: {count} records", file=sys.stderr)
+            sys.exit(0)
 
     elif args.command == "update":
         print("Update command not implemented yet.")

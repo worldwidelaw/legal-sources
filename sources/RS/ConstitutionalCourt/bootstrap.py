@@ -108,6 +108,11 @@ class SerbianConstitutionalCourtScraper(BaseScraper):
             # If first page has results despite total count being 0, continue
 
         while True:
+            # Stop if we've fetched enough records (server returns results indefinitely)
+            if total_count > 0 and offset >= total_count:
+                logger.info(f"Reached total count ({total_count}), stopping pagination")
+                break
+
             logger.info(f"Fetching page at offset {offset}")
             predmet_ids = self._fetch_search_page(offset)
 

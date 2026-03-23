@@ -3,7 +3,7 @@ name: HUDOC (European Court of Human Rights)
 country: CoE
 url: https://hudoc.echr.coe.int
 data_types:
-  - case_law
+  - caselaw
 
 auth:
   type: none

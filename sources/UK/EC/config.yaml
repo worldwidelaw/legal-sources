@@ -1,0 +1,58 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Electoral Commission (EC) Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/EC"
+  country: "UK"
+  name: "UK Electoral Commission"
+  url: "https://www.electoralcommission.org.uk"
+  description: |
+    Electoral Commission enforcement decisions (investigations into
+    political parties and campaigners). ~193 decisions with full text
+    including subject, offence, decision, and reasoning.
+    Fetched via Wayback Machine (live site is Cloudflare-protected).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://web.archive.org"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "metadata"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - ~193 enforcement decisions (investigations)
+  - Data from Wayback Machine snapshot (live site behind Cloudflare)
+  - Full text includes: subject, offence, decision, and reasoning
+  - Open data (published by UK public body)

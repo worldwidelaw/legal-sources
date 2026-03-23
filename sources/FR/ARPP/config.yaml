@@ -1,0 +1,28 @@
+source:
+  id: FR/ARPP
+  name: "French Advertising Regulator (ARPP/JDP)"
+  country: FR
+  url: https://www.jdp-pub.org
+  data_types:
+    - doctrine
+  auth: none
+  license: "Public"
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+    - decision_number
+    - outcome
+    - sector
+
+fetch:
+  rate_limit_delay: 1.5
+  page_size: 10
+  base_url: https://www.jdp-pub.org/avis/

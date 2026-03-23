@@ -1,0 +1,28 @@
+{
+  "_id": "UK/FSA/28591",
+  "_source": "UK/FSA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T16:21:56.315668+00:00",
+  "id": "28591",
+  "title": "Man pleads guilty in NFCU investigation into food safety and ‘smokies’ offences",
+  "text": "Following an investigation by the Food Standard Agency’s National Food Crime Unit (NFCU), a man has pleaded guilty to food safety and ‘smokies’ offences.   Carmello Gale, aged 71, from Llandysul in Wales, pleaded guilty at Isleworth Crown Court...\n\nFollowing an investigation by the Food Standard Agency’s National Food Crime Unit (NFCU), a man has pleaded guilty to food safety and ‘smokies’ offences.   Carmello Gale, aged 71, from Llandysul in Wales, pleaded guilty at Isleworth Crown Court to conspiring to place unsafe food, namely smokie meat, on the market which is an offence under the Food Safety and Hygiene (England) Regulations 2013 and the Criminal Law Act 1977.   Gale was granted bail by the court pending sentencing, which will take place in due course.   ‘Smokies’ refers primarily to skin-on sheep meat, produced by singeing the fleece off the unskinned carcass, giving it a golden-brown colour and smoky odour. Their production is illegal in the UK, resulting in the process being carried out in unapproved premises which are unlikely to comply with the strict hygiene standards and requirements for meat or food preparation.    \"Carmello Gale is considered a significant figure in the illegal smokies trade, with the investigation uncovering his involvement in the wide-scale distribution of smokies across the UK.   This guilty plea reflects the work of everyone involved in this investigation. I would like thank to our colleagues at Food Standards Scotland, Ceredigion County Council, Dyfed-Powys Police, Southwark Council, Swansea Council, and Tarian Regional Organised Crime Unit in South Wales, for their support.   The NFCU will not stop in its efforts to identify, investigate and bring to justice those who seek to exploit our food system. If anyone has suspicions or concerns regarding smokies or food fraud, you can contact your local Trading Standards or discuss it with us confidentially on 0800 028 1180.”   Neil Castle, Deputy Head of the National Food Crime Unit",
+  "content_type": "News",
+  "filter_type": "News",
+  "date": "2026-03-18",
+  "nation": [
+    {
+      "id": "31",
+      "label": "England"
+    },
+    {
+      "id": "33",
+      "label": "Northern Ireland"
+    },
+    {
+      "id": "32",
+      "label": "Wales"
+    }
+  ],
+  "url": "https://www.food.gov.uk/news-alerts/news/man-pleads-guilty-in-nfcu-investigation-into-food-safety-and-smokies-offences",
+  "updated_at": "2026-03-18T16:11:02"
+}

@@ -1,0 +1,27 @@
+source:
+  id: FR/DGCCRF
+  name: "French Consumer Protection (DGCCRF - RappelConso)"
+  country: FR
+  url: https://rappel.conso.gouv.fr
+  data_types:
+    - doctrine
+  auth: none
+  license: "Licence Ouverte (Open Licence 2.0)"
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+    - category
+    - nature_juridique
+
+fetch:
+  rate_limit_delay: 0.5
+  page_size: 20
+  api_base: https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/rappelconso-v2-gtin-trie/records

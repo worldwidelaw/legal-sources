@@ -1,0 +1,34 @@
+{
+  "_id": "EU-DGCOMP-AT.38074",
+  "_source": "EU/DGComp",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-21T13:36:15.796045+00:00",
+  "case_number": "AT.38074",
+  "case_type": "Antitrust",
+  "instrument": "Antitrust & Cartels",
+  "title": "VODAFONE + 10",
+  "text": "",
+  "date": "2001-02-01",
+  "url": "https://competition-cases.ec.europa.eu/cases/AT.38074",
+  "pdf_url": null,
+  "sectors": [
+    "J.61.20 - Wireless telecommunications activities"
+  ],
+  "companies": [
+    "Société Française du Radiotéléphone",
+    "Airtel Móvil",
+    "Tele.ring Telecom Service GmbH",
+    "Mannesmann Mobilfunk GmbH",
+    "Vodafone",
+    "Europolitan AB",
+    "Belgacom Mobile",
+    "Telecel SA - Comunicaçoes Pessoais",
+    "Panafon",
+    "Libertel",
+    "Omnitel Pronto Italia"
+  ],
+  "legal_basis": [
+    "Art. 101 TFEU + Art. 102 TFEU"
+  ],
+  "decision_types": []
+}

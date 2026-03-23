@@ -9,7 +9,7 @@ description: |
   antitrust decisions, opinions, and interim measures.
 
 data_types:
-  - case_law
+  - caselaw
 
 license: Open Licence 2.0 (Etalab)
 language: fr

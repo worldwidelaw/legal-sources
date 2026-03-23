@@ -3,7 +3,7 @@ source:
   name: Kosovo Constitutional Court (Gjykata Kushtetuese)
   country: XK
   data_types:
-    - case_law
+    - caselaw
   auth: none
   url: https://gjk-ks.org
   api_base: https://api.webgjk-ks.org

@@ -18,7 +18,7 @@ source:
     present. Bilingual (English/French). Full text available in HTML format.
 
 data_types:
-  - case_law
+  - caselaw
 
 auth:
   type: "none"
@@ -39,7 +39,7 @@ api:
     start_year: 1970
 
 data_model:
-  type: "case_law"
+  type: "caselaw"
   primary_key: "item_id"
   update_strategy: "append_only"
   versioning: "none"

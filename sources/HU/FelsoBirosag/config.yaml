@@ -2,7 +2,7 @@ source:
   id: HU/FelsoBirosag
   name: Hungarian Supreme Court (Kúria)
   country: HU
-  data_type: case_law
+  data_type: caselaw
   url: https://kuria-birosag.hu
   license: Public Domain
   language: hu

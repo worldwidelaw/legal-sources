@@ -327,7 +327,7 @@ class BulgarianCPDPScraper(BaseScraper):
         return {
             "_id": _id,
             "_source": "BG/CPDP",
-            "_type": "regulation",  # Using "regulation" as closest valid type for DPA decisions
+            "_type": "doctrine",  # Using "regulation" as closest valid type for DPA decisions
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
 
             # Standard required fields

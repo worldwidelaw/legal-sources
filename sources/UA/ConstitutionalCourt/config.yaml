@@ -23,7 +23,7 @@ source:
 
 # ── Data Types ────────────────────────────────────────────────────
 data_types:
-  - case_law
+  - caselaw
 
 # ── Authentication ────────────────────────────────────────────────
 auth:
@@ -53,7 +53,7 @@ api:
 
 # ── Data Model ────────────────────────────────────────────────────
 data_model:
-  type: "case_law"
+  type: "caselaw"
   primary_key: "nreg"
   update_strategy: "upsert"
   versioning: "orgdat"

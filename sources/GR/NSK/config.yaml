@@ -1,0 +1,60 @@
+# GR/NSK -- Greek Legal Council of the State (Νομικό Συμβούλιο του Κράτους)
+# Official legal opinions (γνωμοδοτήσεις) from 1951 to present
+
+source_id: GR/NSK
+name: Legal Council of the State (NSK)
+country: GR
+url: https://www.nsk.gr
+
+data_types:
+  - doctrine  # Official government legal opinions
+
+# No authentication required - open data
+auth:
+  type: none
+
+# Rate limiting - be conservative with government site
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# Data model
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+# Schema validation
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - url
+  key_fields:
+    - name: consult_id
+      type: integer
+      required: true
+    - name: opinion_number
+      type: integer
+      required: true
+    - name: year
+      type: integer
+      required: true
+    - name: president
+      type: string
+      required: false
+    - name: rapporteur
+      type: string
+      required: false
+    - name: provisions
+      type: string
+      required: false
+    - name: keywords
+      type: array
+      required: false
+    - name: status
+      type: string
+      required: false

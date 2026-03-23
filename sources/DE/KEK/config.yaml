@@ -1,0 +1,33 @@
+source:
+  id: DE/KEK
+  name: German Media Concentration Commission (KEK)
+  country: DE
+  url: https://www.kek-online.de
+  data_types:
+    - doctrine
+  description: >
+    Media concentration decisions and reports from the Kommission zur Ermittlung
+    der Konzentration im Medienbereich (KEK). Content includes decisions on
+    broadcasting license applications, media ownership changes, and concentration
+    reports. Full text extracted from HTML article pages via initial listing +
+    AJAX pagination.
+  auth: none
+  license: Public domain (§ 5 UrhG amtliche Werke)
+
+fetch:
+  method: html_ajax_scrape
+  listing_url: https://www.kek-online.de/presse/pressemitteilungen/
+  ajax_url: /presse/pressemitteilungen/wwt3listreadmore.json
+  rate_limit: 1.5
+  timeout: 30
+  estimated_total: 65
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url

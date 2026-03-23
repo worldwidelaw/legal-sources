@@ -1,0 +1,22 @@
+source:
+  id: RO/ANSPDCP
+  name: Romanian Data Protection Authority (ANSPDCP)
+  country: RO
+  url: https://www.dataprotection.ro
+  data_types:
+    - case_law
+  auth: none
+  schedule: weekly
+  description: >
+    GDPR enforcement decisions from the Romanian National Supervisory Authority
+    for Personal Data Processing (ANSPDCP). Sanctions page lists ~280+ decisions
+    from 2019-2026. Full text available inline as HTML on individual pages.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - fine_amount

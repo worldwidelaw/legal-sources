@@ -1,0 +1,19 @@
+{
+  "_id": "10-2903_sp-efsa-2026-en-9993",
+  "_source": "EU/EFSA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-19T07:07:02.895594",
+  "doi": "10.2903/sp.efsa.2026.en-9993",
+  "title": "Approach for the dietary risk assessment of copper compounds under different plant protection product (PPP) regulatory frameworks",
+  "text": "Abstract As copper is ubiquitous in the environment, is an essential micronutrient and it's not used only as a pesticide, EFSA has recently conducted a comprehensive dietary risk assessment based on food consumption data from the EFSA Comprehensive Database and occurrence data. This approach differs from the standard methodology for pesticide residues which relies on the Pesticide Residue Intake Model (PRIMo) for the consumer dietary risk assessment of pesticide residues in the context of setting and reviewing MRLs and in the peer review of pesticides. Therefore, there is a need to clarify the methodology to be used by applicants and Member States when assessing the consumer dietary risk of Plant Protection Products (PPP) uses of copper compounds under different PPP regulatory frameworks taking into account the exposure available tools. This technical report therefore proposes a harmonised stepwise approach for the screening of the dietary risk assessment of copper compounds under various PPP regulatory frameworks, using PRIMo 3.1. A case study on bulb vegetables, head cabbages, and dry beans illustrates the application of the approach.",
+  "date": "2026-03-01",
+  "url": "https://doi.org/10.2903/sp.efsa.2026.en-9993",
+  "authors": [
+    "European Food Safety Authority (EFSA)"
+  ],
+  "journal": "EFSA Supporting Publications",
+  "volume": "23",
+  "issue": "3",
+  "document_type": "risk_assessment",
+  "subjects": []
+}

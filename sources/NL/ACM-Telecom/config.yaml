@@ -1,0 +1,21 @@
+source:
+  id: NL/ACM-Telecom
+  name: Dutch ACM - Telecom/Energy Regulatory Decisions
+  country: NL
+  language:
+    - nl
+  url: https://www.acm.nl
+  data_types:
+    - doctrine
+  auth: none
+  license: CC-0 (Public Domain)
+
+schema:
+  key_fields:
+    - url
+  date_field: date
+  text_field: text
+
+schedule:
+  update_frequency: weekly
+  full_refresh_frequency: quarterly

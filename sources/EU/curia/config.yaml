@@ -10,7 +10,7 @@ source:
     eurlex_base: "https://eur-lex.europa.eu"
 
   data_types:
-    - case_law
+    - caselaw
 
   document_types:
     - JUDG      # Judgments from Court of Justice

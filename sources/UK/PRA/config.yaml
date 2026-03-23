@@ -1,0 +1,30 @@
+source:
+  id: UK/PRA
+  name: UK Prudential Regulation Authority (PRA)
+  country: UK
+  url: https://www.bankofengland.co.uk/prudential-regulation
+  language: en
+  data_types:
+    - doctrine
+  description: >
+    PRA publications including policy statements, supervisory statements,
+    consultation papers, and letters from the Bank of England's Prudential
+    Regulation Authority covering banking and insurance regulation.
+  license: Open Government Licence v3.0
+  method: BoE internal News API + HTML extraction
+  auth: none
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - publication_type
+    - url
+
+fetcher:
+  rate_limit: 1.5
+  timeout: 60
+  max_retries: 3
+  sample_count: 15

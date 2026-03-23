@@ -3,7 +3,7 @@ name: Caselaw Access Project (Harvard/HuggingFace)
 country: US
 url: https://huggingface.co/datasets/common-pile/caselaw_access_project
 data_types:
-  - case_law
+  - caselaw
 
 auth:
   type: none

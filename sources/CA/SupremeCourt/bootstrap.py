@@ -95,26 +95,35 @@ class CASupremeCourtScraper(BaseScraper):
             return None
 
     def _get_year_cases(self, year: int) -> List[str]:
-        """Get all case item IDs for a given year."""
-        url = f"/scc-csc/scc-csc/en/{year}/nav_date.do?iframe=true"
-        self.rate_limiter.wait()
+        """Get all case item IDs for a given year, handling pagination."""
+        all_ids = set()
+        page = 1
+        pattern = r'/scc-csc/scc-csc/en/item/(\d+)/index\.do'
 
-        try:
-            resp = self.client.get(url)
-            resp.raise_for_status()
-            content = resp.text
+        while True:
+            url = f"/scc-csc/scc-csc/en/{year}/nav_date.do?page={page}&iframe=true"
+            self.rate_limiter.wait()
 
-            # Extract item IDs using regex
-            # Pattern: /scc-csc/scc-csc/en/item/{id}/index.do
-            pattern = r'/scc-csc/scc-csc/en/item/(\d+)/index\.do'
-            item_ids = list(set(re.findall(pattern, content)))
+            try:
+                resp = self.client.get(url)
+                resp.raise_for_status()
+                ids = set(re.findall(pattern, resp.text))
+                new_ids = ids - all_ids
 
-            logger.info(f"Year {year}: found {len(item_ids)} cases")
-            return item_ids
+                if not new_ids:
+                    break
 
-        except Exception as e:
-            logger.error(f"Error fetching year {year}: {e}")
-            return []
+                all_ids.update(new_ids)
+                page += 1
+
+            except Exception as e:
+                # 404 on last page is expected (no more pages)
+                if '404' not in str(e):
+                    logger.error(f"Error fetching year {year} page {page}: {e}")
+                break
+
+        logger.info(f"Year {year}: found {len(all_ids)} cases across {page - 1} page(s)")
+        return list(all_ids)
 
     def _get_case_content(self, item_id: str) -> Optional[dict]:
         """Fetch full case content for a given item ID."""
@@ -377,49 +386,35 @@ def main():
 
     if len(sys.argv) < 2:
         print("Usage: python bootstrap.py <command> [options]")
-        print("Commands: bootstrap, update, test-api")
+        print("Commands: bootstrap, bootstrap-fast, update, test-api")
         print("Options: --sample")
         sys.exit(1)
 
     command = sys.argv[1]
+    sample_mode = "--sample" in sys.argv
 
     if command == "test-api":
         success = scraper.test_api()
         sys.exit(0 if success else 1)
 
     elif command == "bootstrap":
-        sample_mode = "--sample" in sys.argv
+        stats = scraper.bootstrap(sample_mode=sample_mode, sample_size=15)
+        print(f"\nBootstrap complete: {json.dumps(stats, indent=2)}")
 
-        if sample_mode:
-            logger.info("Running in SAMPLE mode (12+ records)")
-            records = list(scraper.fetch_sample())
-        else:
-            logger.info("Running FULL bootstrap")
-            records = list(scraper.fetch_all())
-
-        # Save records
-        sample_dir = scraper.source_dir / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        for i, raw in enumerate(records):
-            normalized = scraper.normalize(raw)
-            # Sanitize filename
-            safe_id = normalized['_id'].replace('/', '_').replace(',', '_').replace(' ', '_')
-            filename = f"{safe_id}.json"
-            filepath = sample_dir / filename
-            with open(filepath, "w", encoding="utf-8") as f:
-                json.dump(normalized, f, indent=2, ensure_ascii=False)
-            logger.info(f"Saved: {filename} ({len(normalized.get('text', ''))} chars)")
-
-        logger.info(f"Total records saved: {len(records)}")
+    elif command == "bootstrap-fast":
+        workers = 3
+        batch_size = 100
+        for i, arg in enumerate(sys.argv):
+            if arg == "--workers" and i + 1 < len(sys.argv):
+                workers = int(sys.argv[i + 1])
+            if arg == "--batch-size" and i + 1 < len(sys.argv):
+                batch_size = int(sys.argv[i + 1])
+        stats = scraper.bootstrap_fast(max_workers=workers, batch_size=batch_size)
+        print(f"\nBootstrap-fast complete: {json.dumps(stats, indent=2)}")
 
     elif command == "update":
-        from datetime import timedelta
-        since = datetime.now(timezone.utc) - timedelta(days=30)
-        logger.info(f"Fetching updates since {since.isoformat()}")
-
-        records = list(scraper.fetch_updates(since))
-        logger.info(f"Found {len(records)} updated records")
+        stats = scraper.update()
+        print(f"\nUpdate complete: {json.dumps(stats, indent=2)}")
 
     else:
         print(f"Unknown command: {command}")

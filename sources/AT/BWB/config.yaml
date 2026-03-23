@@ -5,8 +5,8 @@ source:
   url: https://www.bwb.gv.at
   type: api
   data_types:
-    - regulatory_decisions
-    - case_law
+    - doctrine
+    - caselaw
   auth: none
   notes: |
     Fetches cartel and competition law decisions from RIS OGD API v2.6.

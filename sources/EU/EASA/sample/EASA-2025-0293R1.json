@@ -1,0 +1,20 @@
+{
+  "_id": "EASA-2025-0293R1",
+  "_source": "EU/EASA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-19T03:41:17.103291",
+  "document_number": "2025-0293R1",
+  "document_type": "AD",
+  "title": "Fuselage – Inner Flange Glare Frames – Inspection",
+  "text": "Explanatory Statement for\nAbsence of AD document\nAt this time, there are no Airbus A400M aeroplanes in civil service.\nFor this reason, no publicly available AD document exists and this AD record (ADR) is created for\ninformation only. The content is only made available by EASA to the concerned design approval\nholder(s) and competent military airworthiness authorities, represented by CQC. The AD content\nis understood to be a recommendation to the affected military authorities to issue their own AD.\nThe ‘applicable AD’ for this subject, containing the legally valid requirements for the military\naeroplane(s), is the document issued by the responsible military authority, depending on the\ncountry where the affected aeroplane is registered.\nFor a copy of the applicable (military) AD, contact the responsible military authority.\nThe list of CQC AD recommendations is available here for download, under EXPERT AREA.",
+  "date": "2026-03-17",
+  "effective_date": null,
+  "issuing_authority": "EU",
+  "approval_holder": "AIRBUS MILITARY SL",
+  "aircraft_type": "A400M",
+  "easa_approval_number": "",
+  "revision": "",
+  "supersedes": "",
+  "url": "https://ad.easa.europa.eu/ad/2025-0293R1",
+  "pdf_url": "https://ad.easa.europa.eu/blob/A400M_Explanatory_Statement.pdf/ADR_2025-0293R1_1"
+}

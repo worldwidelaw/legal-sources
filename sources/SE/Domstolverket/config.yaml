@@ -6,7 +6,7 @@ description: >
   (kammarrätter), and specialized courts. Complements SE/SupremeCourt (HDO)
   and SE/SupremeAdministrativeCourt (HFD).
 
-data_type: case_law
+data_type: caselaw
 jurisdiction: Sweden
 country: SE
 language: swe

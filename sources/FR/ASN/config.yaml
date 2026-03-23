@@ -1,0 +1,29 @@
+source:
+  id: FR/ASN
+  name: French Nuclear Safety Authority (ASN/ASNR)
+  country: FR
+  url: https://reglementation-controle.asnr.fr
+  data_types:
+    - doctrine
+  auth: none
+  license: Open data (French public authority)
+  language: fr
+  description: >
+    Nuclear safety incident notices from the Autorité de sûreté nucléaire
+    et de radioprotection (ASNR). Includes incident reports for nuclear
+    installations with INES classifications.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - facility
+    - ines_level
+
+fetch:
+  rate_limit_delay: 1.5
+  items_per_page: 15
+  max_pages: 208

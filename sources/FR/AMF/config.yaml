@@ -6,7 +6,7 @@ name: Autorité des Marchés Financiers (AMF)
 country: FR
 language: fr
 data_types:
-  - case_law  # Sanctions decisions from Commission des sanctions
+  - caselaw  # Sanctions decisions from Commission des sanctions
   - doctrine  # Regulatory doctrine (positions, recommendations, instructions)
 
 # Data access via RSS feeds + PDF extraction

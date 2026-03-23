@@ -1,0 +1,57 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Maritime and Coastguard Agency (MCA) Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/MCA"
+  country: "UK"
+  name: "UK Maritime and Coastguard Agency"
+  url: "https://www.gov.uk/government/organisations/maritime-and-coastguard-agency"
+  description: |
+    MCA maritime safety guidance, detailed guides, and statutory guidance
+    via GOV.UK Content API. ~958 documents with full HTML text.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "public_timestamp"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - ~825 guidance, ~89 detailed guides, ~44 statutory guidance
+  - GOV.UK Content API (no auth needed)
+  - Full text from HTML publications and inline body content
+  - Open Government Licence v3.0

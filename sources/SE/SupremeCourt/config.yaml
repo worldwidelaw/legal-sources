@@ -19,7 +19,7 @@ api_base: https://rattspraxis.etjanst.domstol.se/api/v1
 api_docs: https://rattspraxis.etjanst.domstol.se/openapi/puh-openapi.yaml
 
 data_types:
-  - case_law
+  - caselaw
 
 license: Open data (public domain court decisions)
 license_url: https://www.domstol.se/om-webbplatsen-och-digitala-kanaler/oppna-data/
@@ -43,7 +43,7 @@ schema:
       description: Source identifier (SE/SupremeCourt)
     _type:
       type: string
-      description: Document type (case_law)
+      description: Document type (caselaw)
     _fetched_at:
       type: datetime
       description: ISO 8601 timestamp when record was fetched

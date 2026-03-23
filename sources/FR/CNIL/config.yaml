@@ -3,7 +3,7 @@ source_id: FR/CNIL
 country: FR
 data_types:
   - doctrine
-  - case_law  # sanctions are quasi-judicial
+  - caselaw  # sanctions are quasi-judicial
 
 url: https://echanges.dila.gouv.fr/OPENDATA/CNIL/
 license: Licence Ouverte 2.0

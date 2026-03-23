@@ -474,7 +474,7 @@ class AgenziEntrateScraper(BaseScraper):
         return {
             "_id": doc_id,
             "_source": "IT/AgenziEntrate",
-            "_type": "other",  # Administrative guidance (circolari, interpelli, risoluzioni)
+            "_type": "doctrine",  # Administrative guidance (circolari, interpelli, risoluzioni)
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             "title": title,
             "text": full_text,

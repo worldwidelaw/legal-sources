@@ -1,0 +1,37 @@
+source:
+  id: "US/IRS_IRB"
+  country: "US"
+  name: "Internal Revenue Bulletins (Revenue Rulings, Procedures)"
+  url: "https://www.irs.gov/irb"
+  description: |
+    Weekly Internal Revenue Bulletins from the IRS containing revenue rulings,
+    revenue procedures, Treasury decisions, notices, and announcements.
+    Full text HTML. No auth required.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: "bulletin_id"
+      description: "IRB identifier (e.g., 2026-13_IRB)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Bulletin title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the bulletin"
+      type: "string"
+      role: "content"
+      required: true

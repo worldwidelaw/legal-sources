@@ -1,0 +1,12 @@
+{
+  "_id": "aa0a4d03-444b-4190-8f31-fc9d1ee12536",
+  "_source": "UK/ORR",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T17:05:02.385123+00:00",
+  "title": "ORR: workforce management information, February 2026",
+  "text": "The Office of Rail and Road (\nORR\n) publishes details about staff numbers and payroll costs for payroll and non-payroll staff on a monthly basis.\n\nORR's headcount and payroll data for February 2026\n\nhttps://www.orr.gov.uk/sites/default/files/2026-03/workforce-data-february-2026.csv",
+  "description": "Reports on departmental staff numbers and costs.",
+  "date": "2026-03-20",
+  "url": "https://www.gov.uk/government/publications/orr-workforce-management-information-february-2026",
+  "document_type": "transparency"
+}

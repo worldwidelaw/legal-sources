@@ -8,7 +8,7 @@ source:
     - nl
   url: https://www.belgiancompetition.be
   data_types:
-    - regulatory_decisions
+    - doctrine
   auth: none
   license: Belgian Federal Government Open Data
 

@@ -1,0 +1,60 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Immigration & Asylum Chamber Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/IAC"
+  country: "UK"
+  name: "UK Immigration and Asylum Chamber"
+  url: "https://www.gov.uk/administrative-appeals-tribunal-decisions"
+  description: |
+    UK Upper Tribunal (Administrative Appeals Chamber) decisions and asylum
+    support tribunal decisions published on GOV.UK. ~2,075 decisions total.
+    Full text via hidden_indexable_content or PDF extraction.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+
+data_model:
+  type: "case_law"
+  primary_key: "content_id"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+schema:
+  key_fields:
+    - name: "content_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "decision_type"
+      type: "string"
+      role: "classification"
+
+notes: |
+  - Language: English
+  - ~1,975 UTAAC decisions + ~100 asylum support decisions
+  - Full text from hidden_indexable_content or PDF extraction
+  - No authentication required

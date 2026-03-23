@@ -1,0 +1,33 @@
+# LU/CNPD - Luxembourg Data Protection Authority (CNPD)
+# Source: https://cnpd.public.lu
+# Data: Decisions, opinions - doctrine
+
+name: Luxembourg Data Protection Authority (CNPD)
+country: LU
+source_id: LU/CNPD
+url: https://cnpd.public.lu
+
+data_types:
+  - doctrine
+
+license: Open Data (Luxembourg public data)
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  max_workers: 3
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - reference
+    - doc_type
+    - date
+    - text

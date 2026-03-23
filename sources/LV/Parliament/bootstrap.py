@@ -365,7 +365,7 @@ class ParliamentScraper(BaseScraper):
             # Required base fields
             "_id": str(transcript_id),
             "_source": "LV/Parliament",
-            "_type": "parliamentary_proceedings",
+            "_type": "doctrine",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             # Standard fields
             "title": title,

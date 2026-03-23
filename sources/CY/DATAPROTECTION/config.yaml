@@ -9,7 +9,7 @@ source:
   description: "Decisions from the Commissioner for Personal Data Protection of Cyprus"
   language: "ell"  # Greek (with some English)
   data_types:
-    - regulatory_decisions
+    - doctrine
 
 auth:
   type: none

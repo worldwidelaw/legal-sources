@@ -1,0 +1,58 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK HMRC Excise Decisions Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/HMRC-Excise"
+  country: "UK"
+  name: "UK HMRC Excise Decisions"
+  url: "https://www.gov.uk/government/organisations/hm-revenue-customs"
+  description: |
+    HMRC excise duty guidance and regulatory documents via GOV.UK Content API.
+    Covers excise warehousing, duty suspension, alcohol/tobacco/fuel duty,
+    and related regulatory guidance. No authentication required.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "public_timestamp"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - Excise duty guidance and regulatory documents from HMRC
+  - GOV.UK Content API (no auth needed)
+  - Filtered by HMRC org + excise keyword search
+  - Open Government Licence v3.0

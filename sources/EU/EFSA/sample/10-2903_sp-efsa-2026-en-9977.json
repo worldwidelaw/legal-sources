@@ -1,0 +1,26 @@
+{
+  "_id": "10-2903_sp-efsa-2026-en-9977",
+  "_source": "EU/EFSA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-19T07:07:02.893782",
+  "doi": "10.2903/sp.efsa.2026.en-9977",
+  "title": "Pest survey card on Liriomyza sativae",
+  "text": "Abstract This document provides the conclusions of the pest survey card that was prepared in the context of the EFSA mandate on plant pest surveillance (M‐2020‐0114) at the request of the European Commission. The full pest survey card for Liriomyza sativae is published and available online in the EFSA Pest Survey Card gallery at the following link and will be updated whenever new information becomes available: https://efsa.europa.eu/plants/planthealth/monitoring/surveillance/liriomyza-sativae",
+  "date": "2026-03-01",
+  "url": "https://doi.org/10.2903/sp.efsa.2026.en-9977",
+  "authors": [
+    "European Food Safety Authority (EFSA)",
+    "Liberata Gualtieri",
+    "Francesco Nugnes",
+    "Umberto Bernardo",
+    "Giandomenico Corrado",
+    "Loredana Sigillo",
+    "Josep Anton Jaques Miret",
+    "Francesca Salinari"
+  ],
+  "journal": "EFSA Supporting Publications",
+  "volume": "23",
+  "issue": "3",
+  "document_type": "scientific_output",
+  "subjects": []
+}

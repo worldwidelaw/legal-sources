@@ -1,0 +1,13 @@
+{
+  "_id": "government_collections_sanctions-enforcement-action",
+  "_source": "UK/NCA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T23:38:14.211566+00:00",
+  "title": "Sanctions enforcement action",
+  "text": "This page lists published monetary penalties, prosecution outcomes and disclosure notices imposed by:\n\nOffice of Financial Sanctions Implementation (OFSI), responsible for civil enforcement of financial sanctions and the Oil Price Cap\n\nNational Crime Agency (NCA), responsible for investigating and prosecuting criminal breaches of financial sanctions and transport sanctions\n\nOffice of Trade Sanctions Implementation (OTSI), responsible for civil enforcement of trade sanctions relating to UK services and international trade where the goods and services do not cross the UK border\n\nHM Revenue and Customs (HMRC), responsible for the enforcement of trade sanctions within its role as the UK’s customs body\n\nIt also lists case studies, blogposts and annual reviews containing key lessons from enforcement actions in the relevant year.",
+  "date": "2026-01-06",
+  "url": "https://www.gov.uk/government/collections/sanctions-enforcement-action",
+  "description": "Case studies and key lessons that industry can learn from enforcement actions taken by the enforcement bodies under UK sanctions regulations. ",
+  "doc_type": "document_collection",
+  "schema_name": "document_collection"
+}

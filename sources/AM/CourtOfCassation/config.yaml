@@ -9,7 +9,7 @@ source:
   api_url: https://cassationcourt.am/api/precedent-single-decision
   license: Public Domain
   data_types:
-    - case_law
+    - caselaw
 
 schema:
   key_fields:

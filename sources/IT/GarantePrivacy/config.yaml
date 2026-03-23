@@ -4,7 +4,7 @@ source:
   country: IT
   url: https://www.garanteprivacy.it
   data_types:
-    - case_law
+    - caselaw
     - doctrine
   auth:
     type: none
@@ -34,7 +34,7 @@ schema:
   normalized_fields:
     - _id: "IT:GPDP:{docweb_id}"
     - _source: IT/GarantePrivacy
-    - _type: case_law or doctrine
+    - _type: caselaw or doctrine
     - title: Provvedimento title
     - text: Full decision text
     - date: Decision date (ISO 8601)

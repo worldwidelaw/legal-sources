@@ -1,0 +1,34 @@
+source:
+  id: UK/TRA
+  name: UK Trade Remedies Authority (TRA)
+  country: UK
+  url: https://www.gov.uk/government/organisations/trade-remedies-authority
+  description: >
+    UK Trade Remedies Authority publications including anti-dumping decisions,
+    countervailing duty determinations, safeguard measures, investigation notices,
+    guidance, and corporate reports. Fetched via GOV.UK Search + Content APIs.
+  data_types:
+    - doctrine
+  language: en
+  license: Open Government Licence v3.0
+
+api:
+  search_endpoint: https://www.gov.uk/api/search.json
+  content_endpoint: https://www.gov.uk/api/content
+  auth: none
+  rate_limit: 10 requests per second
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - document_type
+    - description
+  date_field: date
+
+fetch:
+  sample_size: 15
+  per_page: 50
+  delay_seconds: 0.2

@@ -12,7 +12,7 @@ source:
     High Courts (Østre and Vestre Landsret), district courts (byretter), and the
     Maritime and Commercial High Court. Contains both civil and criminal cases.
   data_types:
-    - case_law
+    - caselaw
   language: da
   license: Public Domain (Danish Copyright Law §9)
 
@@ -37,7 +37,7 @@ schema:
   fields:
     _id: Unique identifier (format: DK-DDB-{case_id})
     _source: Source identifier (DK/CourtOfAppeal)
-    _type: Document type (case_law)
+    _type: Document type (caselaw)
     _fetched_at: ISO 8601 timestamp when fetched
     title: Case headline/description
     text: Full text of the judgment (cleaned from HTML)
@@ -59,3 +59,5 @@ notes: |
   Full text is provided as HTML and cleaned to plain text.
   The database was launched in January 2022 and contains cases from 2020 onwards.
   Some documents may be anonymized to protect personal information.
+  Uses POST /api/Case/advanced for paginated case discovery (~8,095 cases total).
+  Individual case details and documents fetched via GET endpoints.

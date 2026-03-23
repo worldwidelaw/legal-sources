@@ -167,7 +167,7 @@ def normalize(raw: Dict[str, Any]) -> Dict[str, Any]:
     return {
         '_id': _id,
         '_source': SOURCE_ID,
-        '_type': 'parliamentary_proceedings',
+        '_type': 'doctrine',
         '_fetched_at': datetime.now(timezone.utc).isoformat(),
         'title': raw.get('title', '') or f"Question parlementaire {question_number}",
         'text': full_text,

@@ -1,0 +1,49 @@
+# GR/HellenicParliament -- Greek Legislation (Raptarchis Code)
+# Permanent Greek Legislation Code: ~47K legal resources from 1834-2015
+
+source:
+  id: GR/HellenicParliament
+  name: Hellenic Parliament - Raptarchis Greek Legal Code
+  country: GR
+  url: https://huggingface.co/datasets/AI-team-UoA/greek_legal_code
+  description: >
+    Permanent Greek Legislation Code (Raptarchis), a comprehensive catalogue
+    of Greek legislation from 1834 to 2015. Contains ~47,000 legal resources
+    organized into 47 thematic volumes, 389 chapters, and 2,285 subjects.
+    Full text of laws, decrees, ministerial decisions, and regulations.
+    Original source: e-Themis portal, Ministry of Interior.
+    Data accessed via HuggingFace dataset AI-team-UoA/greek_legal_code.
+  data_types:
+    - legislation
+  license: Open
+  auth: none
+
+# Schema for normalized records
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true
+
+  optional_fields:
+    - volume_id
+    - volume_name
+    - law_number
+    - law_type
+
+# Rate limiting (not needed for local parquet files)
+rate_limit:
+  requests_per_second: 10
+  delay_between_requests: 0.0

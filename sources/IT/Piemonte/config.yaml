@@ -5,17 +5,30 @@ source:
   url: https://arianna.consiglioregionale.piemonte.it/
   data_types:
     - legislation
-  auth: none
+  auth:
+    type: none
   license: CC0 1.0 Universal (Italian public sector information)
 
 schema:
   key_fields:
-    - _id
-    - law_number
-    - year
-  date_fields:
-    - date
-    - date_bur
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: true
+    - name: "law_number"
+      type: "string"
+      required: true
+    - name: "year"
+      type: "string"
+      required: true
 
 rate_limits:
   requests_per_second: 1.0

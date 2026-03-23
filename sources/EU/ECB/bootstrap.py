@@ -339,7 +339,7 @@ OFFSET {offset}
         return {
             '_id': f"ECB-{celex}",
             '_source': 'EU/ECB',
-            '_type': 'regulatory_decision',
+            '_type': 'doctrine',
             '_fetched_at': datetime.now().isoformat(),
             'celex': celex,
             'document_type': raw_doc.get('document_type', 'legal_act'),

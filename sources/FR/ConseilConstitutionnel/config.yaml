@@ -3,7 +3,7 @@ source:
   name: French Constitutional Council (Conseil constitutionnel)
   country: FR
   data_types:
-    - case_law
+    - caselaw
   language: fr
   url: https://www.conseil-constitutionnel.fr
   license: Open Licence 2.0

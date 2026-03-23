@@ -3,7 +3,7 @@ source:
   name: Norwegian Supreme Court (Høyesterett)
   country: 'NO'
   url: https://lovdata.no/register/avgjørelser
-  type: case_law
+  type: caselaw
 
 api:
   type: html_paginated

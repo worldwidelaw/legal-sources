@@ -1,0 +1,13 @@
+{
+  "_id": "government_publications_environment-foundation",
+  "_source": "UK/CC",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T22:35:19.371278+00:00",
+  "title": "Environment Foundation",
+  "text": "Decision made by the Charity Commission on 24 January 2003.\n\nThe commission considered an application from Environment Foundation for registration as a charity. The commission concluded that with some changes to its objects, the organisation would be established for exclusively charitable purposes and could register as a charity.\n\nThis decision is significant because it recognises a new charitable purpose of the promotion of sustainable development for the benefit of the public.",
+  "date": "2003-01-24",
+  "url": "https://www.gov.uk/government/publications/environment-foundation",
+  "description": "Decision of the Charity Commission on Environment Foundation.",
+  "doc_type": "decision",
+  "schema_name": "publication"
+}

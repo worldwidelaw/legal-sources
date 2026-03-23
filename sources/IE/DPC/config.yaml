@@ -4,7 +4,7 @@ source:
   country: IE
   url: https://www.dataprotection.ie
   data_types:
-    - case_law   # enforcement decisions
+    - caselaw   # enforcement decisions
     - doctrine   # court judgments involving DPC
   license: Irish Public Sector Open Licence
   auth: none

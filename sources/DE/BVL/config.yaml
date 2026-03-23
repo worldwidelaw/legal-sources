@@ -3,7 +3,7 @@ name: German Federal Office for Consumer Protection (BVL) - Plant Protection Pro
 country: DE
 language: de
 data_types:
-  - regulatory_decisions
+  - doctrine
 
 endpoints:
   base_url: https://psm-api.bvl.bund.de/ords/psm/api-v1

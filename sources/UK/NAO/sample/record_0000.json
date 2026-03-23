@@ -1,0 +1,21 @@
+{
+  "_id": "nao_62710_the-uks-resilience-to-severe-space-weather",
+  "_source": "UK/NAO",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T23:33:43.768039+00:00",
+  "title": "The UK’s resilience to severe space weather",
+  "text": "Background to the report\n\nThe Cabinet Office sets out the most serious acute risks facing the UK in the government’s classified National Security Risk Assessment (NSRA) and public-facing National Risk Register. Severe space weather has been on the National Risk Register since 2011 as one of the most serious natural and environmental hazards. In 2025, the government considered the likelihood of a severe space weather event occurring within the next five years to be 5–25%.\n\nSpace weather originates from solar activity and mostly causes no tangible disruption. Severe space weather can, however, disrupt a range of technologies. For example, an event could cause the widespread disruption of air travel for multiple weeks, localised power outages in the UK, and disruption to satellite services such as satellite navigation and timing services used by many sectors.\n\nScope of the report\n\nThis report examines the government’s work to increase the UK’s resilience to the risk of severe space weather. It forms part of a broader programme of reviews examining preparedness for a range of risks on the NSRA and is intended to provide insights useful for the management of other risks. It covers:\n\nthe extent to which the government understands the risks and potential cascading effects of severe space weather, and the adequacy of governance arrangements in place to oversee preparedness\n\nthe adequacy of the UK’s forecasting capability\n\nthe adequacy and completeness of the government’s response plans\n\nConcluding remarks\n\nThe government has identified severe space weather as a risk with potentially significant impacts that the UK must adequately prepare for and respond to. Since it first included it in the UK’s National Risk Register in 2011, the government has invested in developing and enhancing the UK’s forecasting capability and encouraged awareness of the risk it presents. The Met Office is well respected internationally, has built the UK’s forecasting capability and is taking steps to increase its resilience while taking account of the developing science and user needs. The government has drawn on expertise in the scientific community to inform its assessment of the risk and has begun collating and exercising departmental response plans.\n\nHowever, there are a number of issues that could undermine the UK’s ability to prepare for and respond effectively to a severe space weather emergency which the government needs to resolve. Roles and responsibilities for managing the risk remain unclear, accountabilities could be stronger, and the government has yet to set out what outcome it is looking to achieve and the level of residual impacts it is willing to accept (risk appetite). There is more the government can do to engage local responders and businesses in planning to ensure the effectiveness of its whole-of-society response.\n\nThe centre of government has an incomplete understanding of how sectors plan to respond to a severe space weather emergency, including whether they plan to use risk-specific or generic response plans, and the testing of response plans through simulation exercises has been limited, constraining understanding of vulnerabilities. Now that responsibility for coordinating the risk sits with DSIT, as the parent department for the Met Office and policy owner for the UK civil space sector, it brings the opportunity to reinvigorate the government’s ambition and address the gaps in its approach.",
+  "date": "2026-03-20",
+  "url": "https://www.nao.org.uk/reports/the-uks-resilience-to-severe-space-weather/",
+  "excerpt": "This National Audit Office (NAO) report examines the government’s work to increase the UK’s resilience to the risk of severe space weather.",
+  "report_type_ids": [
+    217
+  ],
+  "department_ids": [
+    256
+  ],
+  "topic_ids": [
+    345,
+    247
+  ]
+}

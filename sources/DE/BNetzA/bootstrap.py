@@ -419,7 +419,7 @@ class BNetzAFetcher:
         return {
             '_id': doc_id,
             '_source': 'DE/BNetzA',
-            '_type': 'regulatory_decision',
+            '_type': 'doctrine',
             '_fetched_at': datetime.now().isoformat(),
             'title': title,
             'text': raw_doc.get('text', ''),

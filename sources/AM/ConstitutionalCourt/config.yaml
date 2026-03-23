@@ -4,7 +4,7 @@ source:
   country: AM
   url: https://www.concourt.am
   data_types:
-    - case_law
+    - caselaw
   auth: none
   license: Public domain (official government publication)
   update_frequency: daily

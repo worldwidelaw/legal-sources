@@ -426,13 +426,13 @@ class AlbanianSupremeCourtFetcher:
                             if not file_url:
                                 continue
 
-                            title_obj = attachment.get('title', {})
-                            title = title_obj.get('text_sq', '') or title_obj.get('text_en', '')
+                            title_obj = attachment.get('title') or {}
+                            title = title_obj.get('text_sq', '') or title_obj.get('text_en', '') or ''
 
                             # Parse month from title
                             month = None
                             for month_name, month_num in self.ALBANIAN_MONTHS.items():
-                                if month_name in title.lower():
+                                if title and month_name in title.lower():
                                     month = month_num
                                     break
 

@@ -1,0 +1,27 @@
+source:
+  id: "FI/FCCA"
+  country: "FI"
+  name: "Finnish Competition and Consumer Authority (KKV)"
+  description: "Competition, merger, and consumer protection decisions from KKV"
+  url: "https://www.kkv.fi"
+  data_types:
+    - doctrine
+
+schema:
+  key_fields:
+    - decision_id
+    - title
+    - date
+    - url
+    - category
+    - text
+
+api:
+  type: "scraping"
+  endpoints:
+    sitemap: "https://www.kkv.fi/sitemap.xml"
+    decisions: "https://www.kkv.fi/paatokset/"
+  auth: "none"
+  rate_limit:
+    requests_per_second: 1
+    delay_seconds: 1

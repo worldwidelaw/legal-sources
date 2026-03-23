@@ -3,7 +3,7 @@ name: German Federal Institute for Drugs and Medical Devices (BfArM) - Rote-Hand
 country: DE
 language: de
 data_types:
-  - regulatory_decisions
+  - doctrine
 
 endpoints:
   base_url: https://www.bfarm.de

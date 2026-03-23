@@ -1,0 +1,22 @@
+{
+  "_id": "EU-DGCOMP-AT.39172",
+  "_source": "EU/DGComp",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-21T13:36:10.920915+00:00",
+  "case_number": "AT.39172",
+  "case_type": "Antitrust",
+  "instrument": "Antitrust & Cartels",
+  "title": "Electricity sector inquiry",
+  "text": "",
+  "date": "2007-01-10",
+  "url": "https://competition-cases.ec.europa.eu/cases/AT.39172",
+  "pdf_url": null,
+  "sectors": [
+    "D.35.1 - Electric power generation, transmission and distribution"
+  ],
+  "companies": [],
+  "legal_basis": [],
+  "decision_types": [
+    "Sector Inquiry - Final Report"
+  ]
+}

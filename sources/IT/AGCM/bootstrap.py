@@ -314,7 +314,7 @@ class AGCMScraper(BaseScraper):
         return {
             "_id": doc_id,
             "_source": "IT/AGCM",
-            "_type": "regulatory_decision",
+            "_type": "doctrine",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             "title": title,
             "text": full_text,

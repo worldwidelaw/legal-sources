@@ -8,7 +8,7 @@ source:
   country: CZ
   url: https://sbirka.nsoud.cz
   data_types:
-    - case_law
+    - caselaw
   auth: none
   license: "Open Government Data"
   language: cs

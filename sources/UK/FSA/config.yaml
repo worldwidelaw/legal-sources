@@ -1,0 +1,66 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Food Standards Agency Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/FSA"
+  country: "UK"
+  name: "UK Food Standards Agency (FSA)"
+  url: "https://www.food.gov.uk"
+  description: |
+    UK Food Standards Agency guidance, research, consultations, and
+    regulatory content. ~3,500 documents covering food safety standards,
+    business guidance, consumer guidance, and board papers.
+    Full text via internal search API returning JSON with HTML body.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "json_api"
+  base_url: "https://www.food.gov.uk"
+  endpoints:
+    search:
+      path: "/search-api"
+      method: "GET"
+      description: "FSA internal search API returning full document content"
+
+data_model:
+  type: "doctrine"
+  primary_key: "id"
+  update_strategy: "upsert"
+  versioning: "updated"
+
+schema:
+  key_fields:
+    - name: "id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "content_type"
+      type: "string"
+      role: "classification"
+
+notes: |
+  - Language: English (+ Welsh translations)
+  - ~3,500 documents (guidance, research, consultations, alerts, board papers)
+  - Full text via /search-api with body.#markup field
+  - No authentication required

@@ -11,7 +11,7 @@ source:
     Data is sourced from rechtsprechung-im-internet.de, the official German federal
     court decision database operated by the Federal Office of Justice.
   data_types:
-    - case_law
+    - caselaw
   language: de
   license: Public Domain (§ 5 UrhG - amtliche Werke)
   auth: none

@@ -1,0 +1,30 @@
+name: EIOPA
+country: EU
+description: European Insurance and Occupational Pensions Authority - Guidelines, Opinions, Decisions, Technical Standards, Reports
+url: https://www.eiopa.europa.eu
+data_types:
+  - guidelines
+  - opinions
+  - decisions
+  - technical_standards
+  - supervisory_statements
+  - reports
+auth: none
+rate_limit: 2.0  # seconds between requests
+schema:
+  key_fields:
+    - document_id
+    - document_type
+    - title
+    - date
+    - text
+    - url
+document_types:
+  - guideline
+  - opinion
+  - decision
+  - technical_standard
+  - supervisory_statement
+  - report
+  - call_for_advice
+  - consultation

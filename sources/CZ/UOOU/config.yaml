@@ -5,7 +5,7 @@ source:
   country: CZ
   url: https://uoou.gov.cz
   data_types:
-    - regulatory_decisions
+    - doctrine
   description: >
     Data protection enforcement decisions from the Czech Office for Personal
     Data Protection (ÚOOÚ). Includes completed inspection summaries covering
@@ -31,7 +31,7 @@ schema:
   normalized_fields:
     _id: Unique identifier based on case number and URL slug
     _source: "CZ/UOOU"
-    _type: "regulatory_decision"
+    _type: "doctrine"
     _fetched_at: ISO 8601 timestamp
     title: Title of the inspection (usually "Obchodní společnost" + case number)
     case_number: Case reference number (e.g., "00037/24")

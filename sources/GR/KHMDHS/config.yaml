@@ -1,0 +1,53 @@
+# Configuration for GR/KHMDHS (Central Electronic Registry of Public Procurement)
+# ΚΗΜΔΗΣ - Κεντρικό Ηλεκτρονικό Μητρώο Δημοσίων Συμβάσεων
+
+source:
+  id: GR/KHMDHS
+  name: Central Electronic Registry of Public Procurement (KHMDHS)
+  country: GR
+  url: https://cerpp.eprocurement.gov.gr
+  description: >
+    Greek public procurement registry (ΚΗΜΔΗΣ). All public procurement requests,
+    notices, contracts, and payments above EUR 2,500 threshold. REST API with
+    PDF attachments containing full text of procurement documents.
+
+data_model:
+  types:
+    - doctrine  # Administrative procurement documents
+  update_strategy: append_only
+  dedup_key:
+    - reference_number
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  key_fields:
+    - name: reference_number
+      type: string
+      required: true
+    - name: organization
+      type: string
+      required: false
+    - name: total_cost
+      type: number
+      required: false
+    - name: contract_type
+      type: string
+      required: false
+    - name: nuts_code
+      type: string
+      required: false

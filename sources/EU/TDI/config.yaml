@@ -1,0 +1,31 @@
+source:
+  id: "EU/TDI"
+  country: "EU"
+  name: "EU Trade Defence Instruments"
+  description: "EU anti-dumping, countervailing duty, and safeguard decisions published in the Official Journal"
+  url: "https://trade.ec.europa.eu/tdi"
+  data_types:
+    - doctrine
+
+schema:
+  key_fields:
+    - celex_id
+    - title
+    - date
+    - url
+    - tdi_type
+    - text
+
+api:
+  type: "multiple"
+  endpoints:
+    sparql: "https://publications.europa.eu/webapi/rdf/sparql"
+    fulltext: "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:{celex}"
+  auth: "none"
+  rate_limit:
+    requests_per_second: 2
+    delay_seconds: 1
+
+pagination:
+  type: "offset"
+  page_size: 500

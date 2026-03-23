@@ -9,7 +9,7 @@ source:
   name: Bundesverwaltungsgericht (BVerwG)
   name_en: German Federal Administrative Court
   country: DE
-  type: case_law
+  type: caselaw
   url: https://www.rechtsprechung-im-internet.de
   language: de
   license: Public Domain (§ 5 UrhG - amtliche Werke)

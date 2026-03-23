@@ -1,0 +1,56 @@
+# PL/NSA-Tax - Polish Supreme Administrative Court - Financial Chamber (Tax)
+# Tax decisions from Izba Finansowa (Financial Chamber) of NSA
+# https://orzeczenia.nsa.gov.pl
+#
+# Coverage: ~14,500 tax-related administrative court decisions
+# Source: CBOSA filtered by Financial Chamber case numbers (III FSK, III FZ, III FPS)
+# License: Public domain (official court decisions)
+
+source_id: PL/NSA-Tax
+name: Polish Supreme Administrative Court - Tax (Izba Finansowa)
+country: PL
+url: https://orzeczenia.nsa.gov.pl
+
+data_types:
+  - case_law
+
+auth:
+  type: none
+
+api:
+  base_url: https://orzeczenia.nsa.gov.pl
+  search_endpoint: /cbo/search
+  document_endpoint: /doc/{id}
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 3
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "case_number"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "court"
+      type: "string"
+      required: true
+    - name: "judges"
+      type: "list"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true

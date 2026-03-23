@@ -1,0 +1,13 @@
+{
+  "_id": "rappelconso-21703",
+  "_source": "FR/DGCCRF",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-21T22:41:16.638862+00:00",
+  "title": "Rappel volontaire (sans arrêté préfectoral) - gysflash 18.12 pl-e - (gys)",
+  "text": "Produit: gysflash 18.12 pl-e\n\nMarque: gys\n\nModèles/Références: gysflash 18.12 pl-e\n\nNature juridique du rappel: volontaire (sans arrêté préfectoral)\n\nMotif du rappel: risque de choc électrique lors de l’installation du produit dans le véhicule.\n\nRisques encourus: choc électrique\n\nDescription complémentaire du risque: erreur dans la notice concernant le branchement 230 v. si le client respecte la notice, la phase et la terre sont inversées.\n\nConduites à tenir: contacter le point de vente\n\nModalités de compensation: autre (voir informations complémentaires)\n\nZone géographique: france entière\n\nDistributeurs: amazon / ouest batterie / leroux brochard herouville st clair / armor energie / rubix plateforme ploisy\n\nInformations complémentaires: chargeur (18 a) dédié à la recharge des batteries de servitude que l'on retrouve dans les véhicules de loisirs (camping-car, caravanes…) et dans le nautisme de plaisance.\n\nInformations publiques: risque de choc électrique lors de l’installation du produit dans le véhicule. erreur dans la notice concernant le branchement 230 v. si le client¤respecte la notice, la phase et la terre sont inversées. cependant, le produit ne peut pas fonctionner dans ce cas : s’il démarre et charge les batteries, cela signifie que le branchement est conforme et que le risque est écarté.",
+  "date": "2026-03-19",
+  "url": "https://rappel.conso.gouv.fr/fiche-rappel/21703/interne",
+  "category": "appareils électriques, outils",
+  "subcategory": "appareils électriques, électroménager",
+  "nature_juridique": "volontaire (sans arrêté préfectoral)"
+}

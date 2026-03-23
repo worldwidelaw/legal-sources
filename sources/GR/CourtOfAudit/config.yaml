@@ -1,0 +1,52 @@
+# GR/CourtOfAudit - Hellenic Court of Audit (Ελεγκτικό Συνέδριο)
+# Greece's supreme audit institution
+
+source:
+  id: "GR/CourtOfAudit"
+  name: "Hellenic Court of Audit"
+  name_local: "Ελεγκτικό Συνέδριο"
+  country: "GR"
+  url: "https://www.elsyn.gr"
+  description: >
+    Greece's supreme audit institution responsible for auditing state finances,
+    public procurement, and pension matters. Publishes decisions (Απόφαση),
+    acts (Πράξη), and advisory opinions (Γνωμοδότηση) on public finance law.
+  data_types:
+    - case_law
+  coverage:
+    start_year: 2016
+    languages:
+      - el
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - year
+    - decision_type
+    - decision_type_en
+    - number
+    - chamber
+    - url
+    - pdf_urls

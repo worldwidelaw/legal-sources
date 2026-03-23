@@ -1,0 +1,26 @@
+source:
+  id: FR/CSA
+  name: "French Audiovisual Regulator (ARCOM)"
+  country: FR
+  url: https://www.arcom.fr
+  data_types:
+    - doctrine
+  auth: none
+  license: "Licence Ouverte (Open Licence 2.0)"
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+    - decision_type
+
+fetch:
+  rate_limit_delay: 1.0
+  page_size: 50
+  api_base: https://www.arcom.fr/jsonapi

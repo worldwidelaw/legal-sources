@@ -19,7 +19,7 @@ source:
 
 # ── Data Types ────────────────────────────────────────────────────
 data_types:
-  - case_law
+  - caselaw
 
 # ── Authentication ────────────────────────────────────────────────
 auth:
@@ -41,7 +41,7 @@ api:
 
 # ── Data Model ────────────────────────────────────────────────────
 data_model:
-  type: "case_law"
+  type: "caselaw"
   primary_key: "act_id"
   update_strategy: "append_only"
   versioning: "none"

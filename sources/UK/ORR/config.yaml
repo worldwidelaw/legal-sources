@@ -1,0 +1,63 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Office of Rail and Road (ORR) Config
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/ORR"
+  country: "UK"
+  name: "UK Office of Rail and Road"
+  url: "https://www.gov.uk/government/organisations/office-of-rail-and-road"
+  description: |
+    ORR regulatory decisions, guidance, and publications via GOV.UK
+    Search API + Content API. ~736 documents.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+  endpoints:
+    search:
+      path: "/api/search.json"
+      method: "GET"
+    content:
+      path: "/api/content"
+      method: "GET"
+
+data_model:
+  type: "doctrine"
+  primary_key: "link"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - ~736 documents (regulatory decisions, guidance, statistics)
+  - GOV.UK Search API for discovery, Content API for full text
+  - Open Government Licence v3.0

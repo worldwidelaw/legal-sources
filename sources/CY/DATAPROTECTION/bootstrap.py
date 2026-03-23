@@ -484,7 +484,7 @@ class CyprusDataProtectionScraper(BaseScraper):
             # Required base fields
             "_id": doc_id,
             "_source": "CY/DATAPROTECTION",
-            "_type": "other",  # regulatory_decision is closest to "other"
+            "_type": "doctrine",  # regulatory_decision is closest to "other"
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             # Standard fields
             "title": title,

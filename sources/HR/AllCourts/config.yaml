@@ -2,7 +2,7 @@ id: HR/AllCourts
 name: Croatian Court Decisions (All Courts - odluke.sudovi.hr)
 country: HR
 data_types:
-  - case_law
+  - caselaw
 url: https://odluke.sudovi.hr
 auth: none
 license: Open Government Data

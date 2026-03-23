@@ -1,0 +1,80 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Environment Agency Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/EA"
+  country: "UK"
+  name: "UK Environment Agency"
+  url: "https://www.gov.uk/government/organisations/environment-agency"
+  description: |
+    UK Environment Agency guidance, statutory guidance, notices, and
+    detailed guides published on GOV.UK. Covers environmental permits,
+    enforcement, waste management, water quality, and regulatory guidance.
+    ~11,000+ documents. Full text via GOV.UK Content Store JSON API.
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - doctrine
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+  endpoints:
+    search:
+      path: "/api/search.json"
+      method: "GET"
+      description: "GOV.UK Search API for listing EA documents"
+    content:
+      path: "/api/content/{path}"
+      method: "GET"
+      description: "GOV.UK Content Store API for full document JSON"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "doctrine"
+  primary_key: "content_id"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "content_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "document_type"
+      type: "string"
+      role: "classification"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~11,000+ documents across multiple types
+  - Full text via GOV.UK Content Store JSON API (no scraping needed)
+  - Document types: detailed_guide (inline body), guidance/statutory_guidance
+    (children pages or PDF attachments), notice (short content)
+  - No authentication required

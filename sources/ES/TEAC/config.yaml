@@ -1,0 +1,29 @@
+source:
+  id: ES/TEAC
+  name: Spanish Tax Administrative Tribunal (TEAC)
+  country: ES
+  data_types:
+    - caselaw
+  url: https://serviciostelematicosext.hacienda.gob.es/TEAC/DYCTEA/
+  language: es
+  license: public_domain
+  update_frequency: monthly
+  auth: none
+
+endpoints:
+  base_url: https://serviciostelematicosext.hacienda.gob.es/TEAC/DYCTEA
+  search_url: https://serviciostelematicosext.hacienda.gob.es/TEAC/DYCTEA/criterios.aspx
+  criterion_url: https://serviciostelematicosext.hacienda.gob.es/TEAC/DYCTEA/criterio.aspx
+  resolution_url: https://serviciostelematicosext.hacienda.gob.es/TEAC/DYCTEA/textoresolucion.aspx
+
+schema:
+  key_fields:
+    - _id
+    - resolution_number
+    - date
+    - title
+    - text
+
+rate_limit:
+  requests_per_second: 1
+  delay_between_pages: 1.5

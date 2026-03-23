@@ -1,0 +1,75 @@
+source:
+  id: "CA/A2AJ"
+  country: "CA"
+  name: "A2AJ Canadian Legal Data (Multi-Court Case Law)"
+  url: "https://a2aj.ca/canadian-legal-data/"
+  description: |
+    Access to Algorithmic Justice (York University) Canadian Legal Data API.
+    191K+ full-text decisions from 14 courts/tribunals: SCC, FCA, FC, ONCA,
+    BCCA, BCSC, TCC, SST, RAD, RPD, CHRT, CMAC, RLLR, YKCA.
+    Also covers ~5,800 federal statutes and regulations.
+    Free REST API, no auth required.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest"
+  base_url: "https://api.a2aj.ca"
+  endpoints:
+    coverage: "/coverage"
+    search: "/search"
+    fetch: "/fetch"
+  pagination:
+    type: "date_windowing"
+    max_results_per_search: 50
+    notes: "No offset/cursor. Must use narrow date windows to iterate."
+
+schema:
+  key_fields:
+    - name: "citation"
+      description: "Canadian neutral citation (e.g., 2020 SCC 5)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case name"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (unofficial_text_en)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to upstream source"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "court"
+      description: "Court/tribunal code (e.g., SCC, FC, ONCA)"
+      type: "string"
+      role: "classification"
+      required: true
+
+notes: |
+  - API v0.2.0, contact: a2aj@yorku.ca
+  - No auth, no documented rate limits (be polite: 2 req/s)
+  - Full text in unofficial_text_en / unofficial_text_fr
+  - Search endpoint max 50 results, no pagination
+  - Use date windowing + dataset filter to iterate all documents
+  - Citation is the unique ID
+  - upstream_license varies by court (mostly CC BY-NC 4.0)

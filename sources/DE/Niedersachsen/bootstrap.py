@@ -284,16 +284,8 @@ class NiedersachsenFetcher:
         doc_id = raw_doc.get('doc_id', '')
         title = raw_doc.get('title', '')
 
-        # Determine document type
-        normtyp = raw_doc.get('normtyp', '').lower()
-        if 'gesetz' in normtyp:
-            doc_type = 'legislation'
-        elif 'verordnung' in normtyp:
-            doc_type = 'regulation'
-        elif 'verwaltungsvorschrift' in normtyp:
-            doc_type = 'administrative_regulation'
-        else:
-            doc_type = 'legislation'
+        # All laws, regulations, and administrative rules are classified as legislation
+        doc_type = 'legislation'
 
         # Try to extract date from text
         date = None

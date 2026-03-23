@@ -1,0 +1,50 @@
+# PL/UKE - Polish Office of Electronic Communications (Urząd Komunikacji Elektronicznej)
+# Official Journal (Dziennik Urzędowy UKE)
+# https://edziennik.uke.gov.pl
+#
+# Coverage: 937 legal acts (2012-2026)
+# Source: Dziennik Urzędowy UKE - Official Journal
+# License: Public domain (official government journal)
+
+source_id: PL/UKE
+name: Polish Office of Electronic Communications (UKE) Official Journal
+country: PL
+url: https://edziennik.uke.gov.pl
+
+data_types:
+  - doctrine
+
+auth:
+  type: none
+
+api:
+  base_url: https://edziennik.uke.gov.pl
+  search_endpoint: POST /api/SearchLegalAct
+  pdf_endpoint: /GetActPdf.ashx?year={year}&book=0&position={position}
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 3
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: true
+    - name: "url"
+      type: "string"
+      required: true

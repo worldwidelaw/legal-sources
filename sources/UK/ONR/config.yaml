@@ -1,0 +1,58 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Office for Nuclear Regulation Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/ONR"
+  country: "UK"
+  name: "UK Office for Nuclear Regulation"
+  url: "https://www.onr.org.uk"
+  description: |
+    ONR regulatory documents via RSS feeds + GOV.UK Content API.
+    Covers inspection reports, news, research reports, and regulatory guidance.
+    No authentication required.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "json_api"
+  base_url: "https://www.onr.org.uk"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "date"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - ~750+ documents from ONR RSS feeds (news + publications with HTML content)
+  - Plus ~68 documents via GOV.UK Content API
+  - .docx/.pdf publications are skipped (no extraction tool available)
+  - Open Government Licence v3.0

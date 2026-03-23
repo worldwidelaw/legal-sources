@@ -1,0 +1,18 @@
+{
+  "_id": "EEA-7e2bdd8eb1ca4f0ab1df2ec356b55dfd",
+  "_source": "EU/EEA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-19T06:06:29.131543",
+  "uid": "7e2bdd8eb1ca4f0ab1df2ec356b55dfd",
+  "title": "Sustainability of Europe's mobility systems 2025",
+  "description": "The EU is moving toward a sustainable mobility system to provide more affordable and cleaner transport for passengers and goods. However, air pollution, noise and greenhouse gas (GHG) emissions are unresolved challenges that will require persistent attention in the coming years.",
+  "text": "The EU is moving toward a sustainable mobility system to provide more affordable and cleaner transport for passengers and goods. However, air pollution, noise and greenhouse gas (GHG) emissions are unresolved challenges that will require persistent attention in the coming years.\n\n",
+  "date": "2026-02-10",
+  "url": "https://www.eea.europa.eu/en/analysis/publications/sustainability-of-europes-mobility-systems-2025",
+  "content_type": "web_report",
+  "topics": [
+    "Transport and mobility"
+  ],
+  "geo_coverage": [],
+  "language": "en"
+}

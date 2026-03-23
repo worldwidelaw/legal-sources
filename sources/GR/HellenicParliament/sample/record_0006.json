@@ -1,0 +1,14 @@
+{
+  "_id": "GR-RAPT-8de610b0f8e459e5",
+  "_source": "GR/HellenicParliament",
+  "_type": "legislation",
+  "_fetched_at": "2026-03-21T11:44:13.491810+00:00",
+  "title": "19. ΝΟΜΟΘΕΤ. ΔΙΑΤΑΓΜΑ υπ’ αριθ. 2528 της 13/22 Αυγ. 1953 (ΦΕΚ Α΄ 222) Περί εισφοράς υπέρ του Ταμείου Ασφαλίσεως Αρτεργατών.",
+  "text": "19. ΝΟΜΟΘΕΤ. ΔΙΑΤΑΓΜΑ υπ’ αριθ. 2528 της 13/22 Αυγ. 1953 (ΦΕΚ Α΄ 222) Περί εισφοράς υπέρ του Ταμείου Ασφαλίσεως Αρτεργατών.",
+  "date": "1953-01-01",
+  "url": "https://huggingface.co/datasets/AI-team-UoA/greek_legal_code",
+  "volume_id": 19,
+  "volume_name": "ΕΚΠΑΙΔΕΥΤΙΚΗ ΝΟΜΟΘΕΣΙΑ",
+  "law_number": null,
+  "law_type": "legislation"
+}

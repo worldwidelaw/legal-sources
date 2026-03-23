@@ -1,0 +1,38 @@
+source:
+  id: HU/NAIH
+  name: Hungarian Data Protection Authority (NAIH)
+  country: HU
+  url: https://www.naih.hu
+  data_types:
+    - doctrine
+  auth: none
+  license: public_domain
+
+schema:
+  key_fields:
+    - _id
+    - case_number
+    - title
+    - date
+    - text
+    - section
+    - url
+
+fetch:
+  method: html_scraping
+  base_url: https://www.naih.hu
+  sections:
+    - path: /hatarozatok-vegzesek
+      type: decisions
+      label: GDPR Decisions
+    - path: /adatvedelmi-allasfoglalasok
+      type: opinions
+      label: Privacy Opinions
+    - path: /adatvedelmi-ajanlasok
+      type: recommendations
+      label: Recommendations
+  pagination:
+    param: start
+    step: 50
+  rate_limit:
+    delay_seconds: 1.5

@@ -6,7 +6,7 @@ id: CY/SupremeCourt
 country: CY
 name: Cyprus Supreme Court
 data_types:
-  - case_law
+  - caselaw
 url: http://www.cylaw.org/apofaseis/aad/
 license: Open Access - Cyprus Bar Association
 

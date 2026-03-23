@@ -1,0 +1,90 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — Turkish Official Gazette Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "TR/ResmiGazete"
+  country: "TR"
+  name: "Turkish Official Gazette (Resmi Gazete)"
+  url: "https://www.resmigazete.gov.tr"
+  description: |
+    Official Gazette of the Republic of Turkey (Resmî Gazete).
+    Published daily since 1920. Contains legislation as published,
+    presidential decrees, appointments, regulatory decisions,
+    international treaties, and official announcements.
+    Complements TR/Mevzuat (consolidated versions) with as-published text.
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - legislation
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "json_api_plus_html"
+  base_url: "https://www.resmigazete.gov.tr"
+  endpoints:
+    filter:
+      path: "/Home/Filter"
+      method: "POST"
+      description: "DataTable-style search/filter API returning JSON"
+    gazette_index:
+      path: "/eskiler/{YYYY}/{MM}/{YYYYMMDD}.htm"
+      method: "GET"
+      description: "HTML index page listing all items in a gazette issue"
+    gazette_document:
+      path: "/eskiler/{YYYY}/{MM}/{YYYYMMDD}-{N}.htm"
+      method: "GET"
+      description: "Individual document full text (Word-exported HTML)"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "legislation"
+  primary_key: "document_id"
+  update_strategy: "append_only"
+  versioning: "none"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "document_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "gazette_number"
+      type: "string"
+      role: "identifier"
+    - name: "law_number"
+      type: "string"
+      role: "identifier"
+    - name: "legislation_type"
+      type: "string"
+      role: "classification"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: Turkish (UTF-8)
+  - Coverage: 1920-present, daily publication
+  - JSON filter API for search, static HTM files for full text
+  - Individual documents at /eskiler/YYYY/MM/YYYYMMDD-N.htm
+  - Complements TR/Mevzuat which has consolidated (current) legislation

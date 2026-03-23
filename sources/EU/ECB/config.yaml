@@ -4,7 +4,7 @@ source:
   url: https://eur-lex.europa.eu/browse/institutions/bank.html
   country: EU
   data_types:
-    - regulatory_decisions
+    - doctrine
   description: >
     ECB legal acts from EUR-Lex including decisions, regulations, guidelines,
     opinions and recommendations. Covers monetary policy, banking supervision (SSM),

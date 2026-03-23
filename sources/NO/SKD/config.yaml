@@ -1,0 +1,51 @@
+source:
+  id: NO/SKD
+  name: Norwegian Tax Administration (Skatteetaten)
+  country: 'NO'
+  url: https://www.skatteetaten.no/rettskilder/
+  type: doctrine
+
+api:
+  type: html_crawl
+  base_url: https://www.skatteetaten.no
+  auth: none
+  index_method: allthedata_json
+  categories:
+    - /rettskilder/type/uttalelser/prinsipputtalelser/
+    - /rettskilder/type/uttalelser/bfu/
+    - /rettskilder/type/uttalelser/uttalelser/
+    - /rettskilder/type/uttalelser/domskommentarer/
+    - /rettskilder/type/vedtak/skatteklagenemnda/
+    - /rettskilder/type/vedtak/klagenemnda-for-merverdiavgift/
+    - /rettskilder/type/vedtak/klagevedtak-arveavgift/
+    - /rettskilder/type/rundskriv-retningslinjer-og-andre-rettskilder/avgiftsrundskriv/
+    - /rettskilder/type/rundskriv-retningslinjer-og-andre-rettskilder/rundskriv/
+    - /rettskilder/type/retningslinjer/
+    - /rettskilder/type/horinger/
+  rate_limit:
+    requests_per_minute: 30
+    delay_seconds: 1.5
+
+data:
+  format: html
+  language: nob
+  encoding: utf-8
+  license: NLOD 2.0 (Norwegian License for Open Government Data)
+  coverage:
+    estimated_records: 5200
+  notes: |
+    Tax doctrine from Skatteetaten: principle statements (prinsipputtalelser),
+    binding advance rulings (BFU), case commentaries, tax appeals board decisions
+    (Skatteklagenemnda), VAT appeals (Klagenemnda for MVA), circulars, and guidelines.
+    Index obtained via embedded 'allthedata' JS variable on listing pages.
+    Full text fetched from individual document HTML pages.
+
+schema:
+  key_fields:
+    - _id
+    - url
+  required_fields:
+    - title
+    - text
+    - date
+    - url

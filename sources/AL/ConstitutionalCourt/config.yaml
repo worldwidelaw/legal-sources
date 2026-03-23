@@ -18,7 +18,7 @@ source:
     session decisions. Language: Albanian (sq).
 
 data_types:
-  - case_law
+  - caselaw
 
 auth:
   type: "none"
@@ -43,7 +43,7 @@ api:
     max_page_size: 100
 
 data_model:
-  type: "case_law"
+  type: "caselaw"
   primary_key: "_id"
   update_strategy: "upsert"
   dedup_key:

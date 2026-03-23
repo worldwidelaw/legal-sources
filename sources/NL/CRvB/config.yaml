@@ -1,0 +1,27 @@
+source:
+  id: NL/CRvB
+  name: Dutch Central Appeals Tribunal
+  country: NL
+  url: https://www.rechtspraak.nl
+  data_types:
+    - case_law
+  auth: none
+  license: Public Domain (Dutch court decisions)
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - url
+    - ecli
+    - court
+    - subject
+    - procedure
+
+fetch:
+  method: rechtspraak_api
+  api_url: https://data.rechtspraak.nl/uitspraken/zoeken
+  instantie: Centrale Raad van Beroep
+  rate_limit_delay: 2.0

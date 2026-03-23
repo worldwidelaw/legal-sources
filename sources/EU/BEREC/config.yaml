@@ -1,0 +1,38 @@
+source:
+  id: EU/BEREC
+  name: Body of European Regulators for Electronic Communications (BEREC)
+  description: EU telecom regulatory body - guidelines, opinions, decisions, reports, and regulatory best practices
+  country: EU
+  data_types:
+    - doctrine
+  url: https://www.berec.europa.eu
+
+fetch:
+  base_url: https://www.berec.europa.eu
+  search_url: https://www.berec.europa.eu/en/search-documents
+  rate_limit_seconds: 2.0
+  timeout_seconds: 120
+  max_retries: 3
+  items_per_page: 50
+
+schema:
+  key_fields:
+    - document_id
+    - document_number
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  optional_fields:
+    - document_number
+    - author
+    - document_type
+    - language
+
+auth:
+  type: none

@@ -1,0 +1,84 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Advertising Standards Authority Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/ASA"
+  country: "UK"
+  name: "UK Advertising Standards Authority (ASA)"
+  url: "https://www.asa.org.uk"
+  description: |
+    Advertising Standards Authority (ASA) rulings on advertising complaints.
+    Covers adjudications on advertising across all media in the UK.
+    Published weekly. Coverage: ~5 years of rulings available online.
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - doctrine
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "html_ajax"
+  base_url: "https://www.asa.org.uk"
+  endpoints:
+    listing:
+      path: "/page-types/ruling_page/_filteredRuling/"
+      method: "POST"
+      description: "AJAX endpoint returning HTML fragments of ruling listings"
+    ruling:
+      path: "/rulings/{slug}.html"
+      method: "GET"
+      description: "Individual ruling page with full text"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "doctrine"
+  primary_key: "ruling_url"
+  update_strategy: "append_only"
+  versioning: "none"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "ruling_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "advertiser"
+      type: "string"
+      role: "identifier"
+    - name: "decision"
+      type: "string"
+      role: "classification"
+    - name: "medium"
+      type: "string"
+      role: "classification"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - Coverage: ~5 years of rulings
+  - ~864 rulings/year, published weekly (Wednesdays)
+  - Uses Cloudflare, needs conservative rate limiting
+  - AJAX listing returns HTML fragments, 20 items per page

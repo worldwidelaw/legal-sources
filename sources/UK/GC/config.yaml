@@ -1,0 +1,58 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Gambling Commission Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/GC"
+  country: "UK"
+  name: "UK Gambling Commission"
+  url: "https://www.gamblingcommission.gov.uk"
+  description: |
+    UK Gambling Commission regulatory actions, public statements, guidance,
+    and consultation responses. ~2,000+ documents. Full text via HTML scraping
+    of server-rendered pages discovered through sitemaps.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.gamblingcommission.gov.uk"
+
+data_model:
+  type: "doctrine"
+  primary_key: "url"
+  update_strategy: "upsert"
+  versioning: "lastmod"
+
+schema:
+  key_fields:
+    - name: "url"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "content_type"
+      type: "string"
+      role: "classification"
+
+notes: |
+  - Language: English
+  - ~2,000+ documents (regulatory actions, guidance, consultations, reports)
+  - Full text from server-rendered HTML
+  - Rate limit: 40 req/window
+  - No authentication required

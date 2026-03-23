@@ -8,7 +8,7 @@ url: https://www.fma.gv.at
 description: Regulatory decisions, sanctions, and warnings from Austria's Financial Market Authority
 
 data_types:
-  - regulatory_decisions
+  - doctrine
   - sanctions
   - warnings
 

@@ -6,7 +6,7 @@ source:
   language: "de"
   url: "https://www.bundeskartellamt.de"
   data_types:
-    - "regulatory_decisions"
+    - "doctrine"
 
   description: |
     German Federal Cartel Office decisions including:

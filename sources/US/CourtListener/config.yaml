@@ -2,7 +2,7 @@ source:
   id: US/CourtListener
   name: CourtListener (Case Law)
   country: US
-  type: case_law
+  type: caselaw
   url: https://www.courtlistener.com
   description: >
     CourtListener is a free legal research platform from the Free Law Project.

@@ -1,0 +1,24 @@
+{
+  "_id": "nao_62545_update-on-government-shared-services-2026",
+  "_source": "UK/NAO",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T23:33:45.062605+00:00",
+  "title": "Update on government shared services",
+  "text": "Background to the report\n\nSince 2004, central government has sought to cut the cost of services through the sharing of back-office functions between departments. This work has been led by Cabinet Office.\n\nThe aim of using shared services is to standardise processes and services, reducing costs while improving data consistency. This involves moving to a common IT system known as an Enterprise Resource Planning (ERP) system. The private sector and local authorities often claim savings from implementing shared service centres.\n\nIn March 2021, Cabinet Office refreshed its delivery model, moving away from the idea of individual departments procuring their own single software platforms and, instead, having five cloud-based shared service centres operational by 2028.\n\nIt is intended to facilitate convergence, bringing government departments into alignment on procedures, processes, definitions and data standards.\n\nScope of the report\n\nThis report examines how Cabinet Office and the clusters are progressing with implementing the 2021 Shared Services Strategy. It examines whether:\n\nCabinet Office has a good understanding of progress since we last reported on shared services in 2022\n\nclusters are on track to deliver the Shared Services Strategy to time and budget, including the intended longer-term improvements\n\nthe government can manage interdependencies and interoperability between shared services and other developments elsewhere in government\n\nConclusions\n\nThe Shared Services Strategy aims to standardise processes and systems across government, offering potential for significant efficiencies. Since our last report in 2022, clusters have made some progress with operational delivery, improving governance structures, developing implementation plans and moving forward  with procurement. However, some fundamental issues continue to jeopardise delivery of five interoperable clusters.\n\nThere is no single owner in the centre of government with a clear mandate to secure departmental onboarding, which leaves buy-in uncertain and timelines at risk. The absence of a strong technical lead has resulted in inconsistent ERP configurations and data convergence, undermining interoperability and data standards. \n\nWhen combined with fragmented governance of interdependencies, this creates a real risk that the strategy will not be delivered to time or budget. Unless these gaps are addressed urgently, the government will not achieve the full benefits it set out to achieve and may incur increased costs.",
+  "date": "2026-03-06",
+  "url": "https://www.nao.org.uk/reports/update-on-government-shared-services-2026/",
+  "excerpt": "Government efforts to pool ‘back office’ functions into a central, shared services structure are still facing uncertainty and delay.",
+  "report_type_ids": [
+    217
+  ],
+  "department_ids": [
+    166,
+    256
+  ],
+  "topic_ids": [
+    331,
+    187,
+    185,
+    184
+  ]
+}

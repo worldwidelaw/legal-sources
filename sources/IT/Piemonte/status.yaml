@@ -1,6 +1,6 @@
 last_bootstrap: null
 last_error: '''str'' object has no attribute ''get'''
-last_run: '2026-02-21T11:40:19.149730+00:00'
+last_run: '2026-03-22T02:41:52.973335+00:00'
 run_history:
 - error_message: '''str'' object has no attribute ''get'''
   errors: 0
@@ -11,4 +11,68 @@ run_history:
   records_updated: 0
   sample_records_saved: 0
   started_at: '2026-02-21T11:40:18.965479+00:00'
+- error_message: '''str'' object has no attribute ''get'''
+  errors: 0
+  finished_at: '2026-03-22T02:36:20.420084+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-03-22T02:36:19.212413+00:00'
+- error_message: '''str'' object has no attribute ''get'''
+  errors: 0
+  finished_at: '2026-03-22T02:38:14.491030+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-03-22T02:37:11.366746+00:00'
+- error_message: '''str'' object has no attribute ''get'''
+  errors: 0
+  finished_at: '2026-03-22T02:38:48.862266+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-03-22T02:38:47.515407+00:00'
+- error_message: '''str'' object has no attribute ''get'''
+  errors: 0
+  finished_at: '2026-03-22T02:38:57.052940+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-03-22T02:38:55.880315+00:00'
+- errors: 0
+  finished_at: '2026-03-22T02:40:51.460048+00:00'
+  records_fetched: 12
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 12
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-03-22T02:39:38.580827+00:00'
+- errors: 0
+  finished_at: '2026-03-22T02:41:52.973335+00:00'
+  records_fetched: 12
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 12
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-03-22T02:41:39.697178+00:00'
 total_records: 0

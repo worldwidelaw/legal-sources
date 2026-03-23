@@ -1,0 +1,54 @@
+source:
+  id: "CA/BCLaws"
+  country: "CA"
+  name: "British Columbia Laws (Official XML API)"
+  url: "https://www.bclaws.gov.bc.ca"
+  description: |
+    Official BC Laws CIVIX REST API. All British Columbia acts and regulations
+    in structured XML. No authentication required. Queen's Printer Licence.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest"
+  base_url: "https://www.bclaws.gov.bc.ca/civix"
+  endpoints:
+    content: "/content/complete/statreg/"
+    document: "/document/id/complete/statreg/{doc_id}/xml"
+    search: "/search/complete/statreg"
+
+schema:
+  key_fields:
+    - name: "doc_id"
+      description: "CIVIX document ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act or regulation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the act/regulation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year enacted or last updated"
+      type: "string"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to BC Laws page"
+      type: "string"
+      role: "reference"
+      required: true

@@ -1,0 +1,39 @@
+source:
+  id: GR/RAAEY
+  country: GR
+  name: Energy Regulatory Authority (RAAEY)
+  name_native: Ρυθμιστική Αρχή Αποβλήτων, Ενέργειας και Υδάτων
+  url: https://www.raaey.gr
+  data_url: https://diavgeia.gov.gr/luminapi/opendata
+  description: >
+    Greek Energy, Waste and Water Regulatory Authority (RAAEY, formerly RAE)
+    decisions and regulatory acts. Fetches from the Diavgeia transparency portal.
+    Covers regulatory acts (Α.2) and individual administrative decisions (2.4.7.1).
+  data_types:
+    - doctrine
+  auth: none
+  license: CC-BY
+  coverage:
+    start_date: "2010-01-01"
+    jurisdictions:
+      - GR
+  update_frequency: daily
+  notes: >
+    RAAEY was renamed from RAE by Law 5037/2023. Regulates energy, waste,
+    and water sectors. Data accessed via Diavgeia API using organization UID 22793.
+
+api:
+  base_url: https://diavgeia.gov.gr/luminapi
+  organization_uid: "22793"
+  decision_types:
+    - "Α.2"      # ΚΑΝΟΝΙΣΤΙΚΗ ΠΡΑΞΗ (Regulatory Act)
+    - "2.4.7.1"  # ΛΟΙΠΕΣ ΑΤΟΜΙΚΕΣ ΔΙΟΙΚΗΤΙΚΕΣ ΠΡΑΞΕΙΣ (Individual Admin Acts)
+  rate_limit: 2.0
+  page_size: 50
+
+schema:
+  key_fields:
+    - ada
+    - subject
+    - issue_date
+    - protocol_number

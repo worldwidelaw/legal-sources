@@ -3,7 +3,7 @@ name: Estonian Supreme Court (Riigikohus)
 country: EE
 url: https://www.riigikohus.ee
 data_types:
-  - case_law
+  - caselaw
 auth:
   type: none
 license: Public Domain (Estonian State)

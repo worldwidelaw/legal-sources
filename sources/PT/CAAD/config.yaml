@@ -1,0 +1,24 @@
+source:
+  id: PT/CAAD
+  name: Portuguese Tax Arbitration Centre (CAAD)
+  country: PT
+  url: https://caad.org.pt
+  data_types:
+    - case_law
+  auth: none
+  schedule: weekly
+  description: >
+    Tax and administrative arbitration decisions from CAAD (Centro de Arbitragem
+    Administrativa). Covers ~10,100+ tax arbitration decisions and ~340+
+    administrative arbitration decisions. Full text available in HTML on
+    decision pages. Paginated listing with 100 results per page.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - case_number
+    - tax_type

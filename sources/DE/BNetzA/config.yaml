@@ -3,7 +3,7 @@ name: German Network Agency (Bundesnetzagentur) Decisions
 url: https://www.bundesnetzagentur.de/DE/Beschlusskammern/BDB/start.html
 country: DE
 data_types:
-  - regulatory_decisions
+  - doctrine
 schema:
   key_fields:
     - _id

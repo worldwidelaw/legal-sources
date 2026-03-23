@@ -1,0 +1,12 @@
+{
+  "_id": "eb3ed2b8-5820-403c-af78-ccb27f4fa394",
+  "_source": "UK/MHRA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T17:03:07.389778+00:00",
+  "title": "Archiving and retention of clinical trial records",
+  "text": "The guidance outlines the responsibilities for archiving and retaining clinical trial records to ensure compliance with Good Clinical Practice (GCP) and regulatory requirements.\n\nSponsors and investigators must maintain essential documents that demonstrate the trial was conducted according to protocol and regulations. These records include trial master files, investigator site files, and supporting documentation such as informed consent forms and case report forms. Proper archiving safeguards data integrity and enables verification of trial conduct long after completion.\n\nRetention periods are defined by law and vary depending on the type of trial and applicable regulations, but generally, records should be kept for at least 25 years after the trial ends. Sponsors must ensure secure storage, controlled access, and protection against unauthorised alteration or destruction. Electronic records should meet standards for authenticity and reliability, and any transfer of records must preserve their integrity. The guidance emphasises that clear agreements between sponsors and investigators are essential to determine who is responsible for archiving and maintaining these records.\n\nArchiving and retention of clinical trial records\n\nHTML",
+  "description": "Information on clinical trial record retention and archiving requirements including requirements for ownership, data integrity, and transitional provisions.",
+  "date": "2026-01-12",
+  "url": "https://www.gov.uk/government/publications/archiving-and-retention-of-clinical-trial-records",
+  "document_type": "guidance"
+}

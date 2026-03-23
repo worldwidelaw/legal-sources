@@ -447,7 +447,7 @@ def normalize(raw: dict) -> dict:
     return {
         '_id': doc_id,
         '_source': SOURCE_ID,
-        '_type': 'regulatory_decision',
+        '_type': 'doctrine',
         '_fetched_at': datetime.now(timezone.utc).isoformat(),
         'title': title,
         'text': raw.get('text', ''),

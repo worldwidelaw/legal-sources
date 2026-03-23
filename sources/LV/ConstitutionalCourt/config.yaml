@@ -3,7 +3,7 @@ name: Latvian Constitutional Court (Satversmes tiesa)
 country: LV
 language: lv
 data_types:
-  - case_law
+  - caselaw
 
 endpoints:
   base_url: https://www.satv.tiesa.gov.lv

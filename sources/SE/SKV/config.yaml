@@ -1,0 +1,51 @@
+# Configuration for SE/SKV (Swedish Tax Agency - Skatteverket)
+# SKVFS regulations via lagen.nu
+
+source:
+  id: SE/SKV
+  name: Swedish Tax Agency (Skatteverket)
+  country: SE
+  url: https://lagen.nu/dataset/myndfs?rpubl_forfattningssamling=skvfs
+  description: >
+    Swedish Tax Agency (Skatteverket) regulations and guidelines (SKVFS -
+    Skatteverkets författningssamling). Covers tax tables, vehicle valuations,
+    employer obligations, maritime income deductions, and other tax-related
+    regulations. Full text extracted from OCR'd PDFs via lagen.nu.
+
+data_model:
+  types:
+    - doctrine
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  key_fields:
+    - name: skvfs_number
+      type: string
+      required: true
+    - name: decision_date
+      type: string
+      required: false
+    - name: entry_into_force
+      type: string
+      required: false
+    - name: issn
+      type: string
+      required: false

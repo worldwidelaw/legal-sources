@@ -1,0 +1,58 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK National Audit Office Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/NAO"
+  country: "UK"
+  name: "UK National Audit Office"
+  url: "https://www.nao.org.uk"
+  description: |
+    NAO audit reports via WordPress REST API. Covers value for money,
+    financial audit, and investigation reports across all UK government
+    departments. No authentication required.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "json_api"
+  base_url: "https://www.nao.org.uk"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "modified_gmt"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - ~2,745 audit reports from the National Audit Office
+  - WordPress REST API at /wp-json/wp/v2/report (no auth)
+  - Content includes report summaries with background, scope, and key findings
+  - Open Parliament Licence

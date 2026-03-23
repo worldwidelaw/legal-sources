@@ -3,7 +3,7 @@ name: Czech Constitutional Court (Ústavní soud)
 country: CZ
 language: cs
 data_types:
-  - case_law
+  - caselaw
 
 endpoints:
   nalus_search: https://nalus.usoud.cz/Search/Search.aspx

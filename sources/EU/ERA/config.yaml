@@ -1,0 +1,55 @@
+source:
+  id: EU/ERA
+  name: European Union Agency for Railways
+  country: EU
+  url: https://www.era.europa.eu
+  data_types:
+    - doctrine
+  description: >
+    ERA opinions, technical advice, and recommendations on EU railway safety
+    and interoperability. Includes formal opinions addressed to Member States,
+    technical advice to the European Commission, and recommendations on railway
+    regulations and standards.
+  auth: none
+  rate_limit: 1 request per 2 seconds
+
+schema:
+  key_fields:
+    - document_number
+    - document_type
+  fields:
+    document_number:
+      type: string
+      description: Official ERA reference (e.g., "ERA/OPI/2026-1", "ERA1226")
+    document_type:
+      type: string
+      description: Type of document (opinion, technical_advice, recommendation)
+    title:
+      type: string
+      description: Document title
+    date:
+      type: date
+      description: Publication date
+    topic:
+      type: string
+      description: Subject area or topic of the document
+    addressee:
+      type: string
+      description: Recipient of the document (e.g., France, European Commission)
+    amoc:
+      type: boolean
+      description: Acceptable Means of Compliance indicator
+    risc:
+      type: boolean
+      description: Railway Interoperability and Safety Committee indicator
+    text:
+      type: text
+      description: Full text content extracted from PDF
+
+fetcher:
+  type: scrape_with_pdf
+  endpoints:
+    - https://www.era.europa.eu/library/documents-regulations/opinions-and-technical-advices
+    - https://www.era.europa.eu/library/documents-regulations/era-recommendations_en
+  pdf_extraction: pdfplumber
+  pagination: query-based

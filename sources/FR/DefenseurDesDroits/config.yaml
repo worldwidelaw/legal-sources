@@ -2,7 +2,7 @@ source_id: FR/DefenseurDesDroits
 name: Défenseur des Droits (French Ombudsman)
 country: FR
 data_types:
-  - case_law
+  - caselaw
   - doctrine
 url: https://juridique.defenseurdesdroits.fr
 license: Licence Ouverte 2.0

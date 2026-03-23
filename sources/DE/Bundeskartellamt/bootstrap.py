@@ -344,7 +344,7 @@ class BundeskartellamtFetcher:
         return {
             "_id": doc_id,
             "_source": SOURCE_ID,
-            "_type": "regulatory_decisions",
+            "_type": "doctrine",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             "case_number": case_number,
             "title": title,

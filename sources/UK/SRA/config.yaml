@@ -1,0 +1,36 @@
+# UK/SRA - Solicitors Regulation Authority & Solicitors Disciplinary Tribunal
+#
+# Regulatory decisions from SRA and tribunal judgments from SDT.
+# SRA publishes regulatory settlements, fines, conditions, and interventions.
+# SDT publishes tribunal decisions on solicitor misconduct.
+#
+# Data sources:
+#   - SRA RSS feed: https://www.sra.org.uk/contact-centre/rss/recent-decisions/
+#   - SRA decision pages: https://www.sra.org.uk/consumers/solicitor-check/{id}/
+#   - SDT case archive: https://solicitorstribunal.org.uk/case/
+# License: Open Government Licence / public decisions
+
+source_id: UK/SRA
+country: UK
+name: UK Solicitors Regulation Authority
+url: https://www.sra.org.uk
+
+data_types:
+  - doctrine
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - decision_type
+    - outcome

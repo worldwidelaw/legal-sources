@@ -81,6 +81,15 @@ class PiemonteScraper(BaseScraper):
             "Accept": "application/xml, text/xml, */*",
         })
 
+    @staticmethod
+    def _parse_norm_date(norm: str) -> str:
+        """Parse 8-digit date that may be YYYYMMDD or DDMMYYYY."""
+        # If first 4 chars look like a year (19xx or 20xx), treat as YYYYMMDD
+        if norm[:2] in ('19', '20'):
+            return f"{norm[:4]}-{norm[4:6]}-{norm[6:8]}"
+        # Otherwise DDMMYYYY
+        return f"{norm[4:8]}-{norm[2:4]}-{norm[0:2]}"
+
     def _extract_text_from_xml(self, xml_content: str) -> tuple[str, dict]:
         """
         Parse NIR (Norme in Rete) XML and extract full text content and metadata.
@@ -123,16 +132,14 @@ class PiemonteScraper(BaseScraper):
                     metadata['law_number'] = elem.text.strip()
                 elif tag_name == 'dataDoc':
                     norm = elem.get('norm', '')
-                    if norm:
-                        # Convert 20240314 to 2024-03-14
-                        if len(norm) == 8:
-                            metadata['date'] = f"{norm[:4]}-{norm[4:6]}-{norm[6:8]}"
+                    if norm and len(norm) == 8:
+                        metadata['date'] = self._parse_norm_date(norm)
                     elif elem.text:
                         metadata['date_str'] = elem.text.strip()
                 elif tag_name == 'pubblicazione':
                     norm = elem.get('norm', '')
                     if norm and len(norm) == 8:
-                        metadata['date_bur'] = f"{norm[:4]}-{norm[4:6]}-{norm[6:8]}"
+                        metadata['date_bur'] = self._parse_norm_date(norm)
                     metadata['bur_number'] = elem.get('num', '')
                 elif tag_name == 'urn':
                     metadata['urn'] = elem.get('valore', '')

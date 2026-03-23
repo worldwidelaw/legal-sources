@@ -1,0 +1,42 @@
+source_id: EU/ACER
+name: EU Agency for the Cooperation of Energy Regulators (ACER)
+country: EU
+data_types:
+  - doctrine
+url: https://www.acer.europa.eu
+description: |
+  ACER (Agency for the Cooperation of Energy Regulators) official documents
+  including Individual Decisions, Board of Appeal Decisions, Opinions, and
+  Recommendations on EU energy regulatory matters.
+
+auth:
+  type: none
+
+endpoints:
+  individual_decisions: https://www.acer.europa.eu/documents/official-documents/individual-decisions
+  board_of_appeal: https://www.acer.europa.eu/documents/official-documents/board-of-appeal-decisions
+  opinions: https://www.acer.europa.eu/documents/official-documents/opinions
+  recommendations: https://www.acer.europa.eu/documents/official-documents/recommendations
+
+schema:
+  key_fields:
+    - _id
+    - decision_number
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+  optional_fields:
+    - decision_number
+    - document_type
+    - sector
+
+rate_limit:
+  requests_per_second: 0.5
+  delay_between_pages: 1.0
+
+license: Open Government Data

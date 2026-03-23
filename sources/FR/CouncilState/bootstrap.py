@@ -237,6 +237,12 @@ def normalize(raw: dict) -> dict:
     else:
         url = f"https://opendata.justice-administrative.fr/recherche/"
 
+    # Determine court tier based on court type
+    # CE (Conseil d'État) = tier 1 (Supreme)
+    # CAA (Cours Administratives d'Appel) = tier 2 (Appeals)
+    # TA (Tribunaux Administratifs) = tier 3 (First Instance)
+    court_tier = {"CE": 1, "CAA": 2, "TA": 3}.get(court_type, 2)
+
     return {
         "_id": doc_id,
         "_source": SOURCE_ID,
@@ -251,6 +257,7 @@ def normalize(raw: dict) -> dict:
         "court": raw.get('nom_juridiction'),
         "court_code": raw.get('code_juridiction'),
         "court_type": court_type,  # CE, CAA, or TA
+        "court_tier": court_tier,  # 1=Supreme, 2=Appeals, 3=First Instance
         "decision_type": raw.get('type_decision'),
         "appeal_type": raw.get('type_recours'),
         "publication_code": raw.get('code_publication'),

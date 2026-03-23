@@ -1,0 +1,24 @@
+{
+  "_id": "EU-DGCOMP-AT.34950",
+  "_source": "EU/DGComp",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-21T13:36:10.920846+00:00",
+  "case_number": "AT.34950",
+  "case_type": "Antitrust",
+  "instrument": "Antitrust & Cartels",
+  "title": "ECO EMBALLAGES",
+  "text": "",
+  "date": "2001-06-15",
+  "url": "https://competition-cases.ec.europa.eu/cases/AT.34950",
+  "pdf_url": null,
+  "sectors": [
+    "E.38.3 - Materials recovery"
+  ],
+  "companies": [],
+  "legal_basis": [
+    "Art. 101 TFEU"
+  ],
+  "decision_types": [
+    "Old milestones - Negative clearance decision"
+  ]
+}

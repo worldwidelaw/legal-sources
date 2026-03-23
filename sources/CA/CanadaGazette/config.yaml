@@ -1,0 +1,49 @@
+source:
+  id: "CA/CanadaGazette"
+  country: "CA"
+  name: "Canada Gazette (Official Gazette)"
+  url: "https://gazette.gc.ca"
+  description: |
+    Canada Gazette Part II (official regulations). RSS feed provides index
+    of gazette issues, each containing individual statutory orders and
+    regulations (SOR/DORS) with full text HTML.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rss_scraping"
+  base_url: "https://gazette.gc.ca"
+  endpoints:
+    rss_part2: "/rss/p2-eng.xml"
+    rss_part1: "/rss/p1-eng.xml"
+
+schema:
+  key_fields:
+    - name: "regulation_id"
+      description: "SOR/DORS identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Regulation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the regulation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: true

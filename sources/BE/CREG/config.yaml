@@ -8,7 +8,7 @@ description: |
   transmission system operation, and energy market oversight.
 
 data_types:
-  - regulatory_decisions
+  - doctrine
   - studies
   - notes
   - reports

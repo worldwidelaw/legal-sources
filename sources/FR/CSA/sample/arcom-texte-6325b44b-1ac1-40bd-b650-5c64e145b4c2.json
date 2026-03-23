@@ -1,0 +1,11 @@
+{
+  "_id": "arcom-texte-6325b44b-1ac1-40bd-b650-5c64e145b4c2",
+  "_source": "FR/CSA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-21T21:36:29.530383+00:00",
+  "title": "Avis BNF",
+  "text": "La Bibliothèque Nationale de France (BnF) a adressé en février 2012 une demande d’avis concernant la présence de mesures techniques de protection (MTP) sur les documents dont elle est destinataire au titre du dépôt légal. La BnF bénéficie au titre du dépôt légal d’exceptions de reproduction à des fins de collecte, de conservation et de consultation sur place en application du code du patrimoine.\n\r\n\r\nCertaines mesures techniques de protection présentes sur les œuvres entraveraient, voire rendraient impossible, la reproduction des documents concernés et limiteraient en outre l’installation des documents sur les postes de consultation mis à disposition par la BnF et ce, malgré des dispositions du code du patrimoine censées prévenir de telles limitations.\n\r\n\r\nAfin de disposer d’une information éclairée sur la situation décrite par la BNF, la Haute Autorité a rencontré un certain nombre de développeurs et éditeurs de logiciels ou de documents multimédias pour mieux saisir les éventuels freins au respect des obligations en matière de dépôt légal. Dans son avis rendu le 30 janvier 2013 l’Hadopi a recommandé une modification du régime du dépôt légal pour permettre à la BnF de disposer d’une version non protégée des documents numériques, ce qui implique une réflexion plus large sur le périmètre et les modalités du dépôt légal des documents numériques.",
+  "date": "2024-03-21",
+  "url": "https://www.arcom.fr/se-documenter/espace-juridique/textes-juridiques/avis-bnf",
+  "decision_type": "texte_juridique"
+}

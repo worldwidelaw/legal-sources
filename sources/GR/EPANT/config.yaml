@@ -1,0 +1,54 @@
+# Configuration for GR/EPANT (Hellenic Competition Commission)
+# EPANT - Epitropi Antagonismou (Επιτροπή Ανταγωνισμού)
+
+source:
+  id: GR/EPANT
+  name: Hellenic Competition Commission (EPANT)
+  country: GR
+  url: https://www.epant.gr
+  description: >
+    Competition law decisions from the Hellenic Competition Commission.
+    Includes cartel decisions, merger clearances, abuse of dominance cases,
+    and commitment decisions under Greek Law 3959/2011 and EU competition law.
+
+data_model:
+  types:
+    - case_law  # Competition authority decisions are case law
+  update_strategy: append_only
+  dedup_key:
+    - decision_number
+    - year
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  key_fields:
+    - name: decision_number
+      type: integer
+      required: true
+    - name: year
+      type: integer
+      required: true
+    - name: decision_type
+      type: string
+      required: false
+    - name: relevant_market
+      type: string
+      required: false
+    - name: companies
+      type: string
+      required: false

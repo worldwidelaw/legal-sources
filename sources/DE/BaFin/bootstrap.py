@@ -316,7 +316,7 @@ class BaFinFetcher:
         return {
             '_id': f"bafin_{doc_id}",
             '_source': 'DE/BaFin',
-            '_type': 'regulatory_decisions',
+            '_type': 'doctrine',
             '_fetched_at': datetime.now().isoformat(),
             'title': title,
             'text': raw_doc.get('text', ''),

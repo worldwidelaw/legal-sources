@@ -5,7 +5,7 @@ source:
   country: BA
   url: https://www.ustavnisud.ba
   data_types:
-    - case_law
+    - caselaw
   languages:
     - bs  # Bosnian
     - hr  # Croatian

@@ -4,7 +4,7 @@ source:
   country: NL
   url: https://www.autoriteitpersoonsgegevens.nl
   data_types:
-    - case_law  # Enforcement decisions (boetebesluiten, besluiten)
+    - caselaw  # Enforcement decisions (boetebesluiten, besluiten)
     - doctrine  # Guidelines, advice, Woo decisions
   language: nl
   auth: none

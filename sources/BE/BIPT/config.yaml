@@ -4,7 +4,7 @@ source:
   country: BE
   url: https://www.bipt.be
   data_types:
-    - regulatory_decisions
+    - doctrine
   license: Open Data - Belgian Federal Government
   languages:
     - fr

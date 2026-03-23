@@ -10,7 +10,7 @@ source:
   description: "Italian Supreme Court case law from SentenzeWeb (civil and criminal decisions)"
 
 data_types:
-  - case_law
+  - caselaw
 
 auth:
   type: "none"  # Public Solr API, no authentication required
@@ -31,7 +31,7 @@ coverage:
   date_range: "2010-present (rolling 5+ years)"
 
 data_model:
-  type: "case_law"
+  type: "caselaw"
   primary_key: "_id"
   update_strategy: "upsert"
   dedup_key:

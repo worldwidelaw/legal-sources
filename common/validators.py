@@ -19,7 +19,7 @@ REQUIRED_BASE_FIELDS = {
     "_fetched_at": str,  # ISO 8601
 }
 
-VALID_TYPES = {"legislation", "case_law", "regulation", "directive", "treaty", "parliamentary_proceedings", "other"}
+VALID_TYPES = {"legislation", "case_law", "regulation", "directive", "treaty", "parliamentary_proceedings", "doctrine", "other"}
 
 
 class SchemaValidator:

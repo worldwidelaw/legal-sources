@@ -14,6 +14,7 @@ The CELLAR endpoint at publications.europa.eu/resource/celex/{CELEX} with
 appropriate Accept headers returns full text in XHTML format.
 """
 
+import gc
 import json
 import logging
 import re
@@ -83,11 +84,11 @@ class EurLexFetcher:
     def _discover_celex_via_sparql(self, resource_types: List[str],
                                     limit: int = 1000,
                                     offset: int = 0,
-                                    min_year: int = 2020) -> List[Dict[str, Any]]:
+                                    year: int = 2024) -> List[Dict[str, Any]]:
         """
-        Discover valid CELEX IDs using SPARQL endpoint.
+        Discover valid CELEX IDs using SPARQL endpoint for a specific year.
 
-        This replaces brute-force CELEX enumeration with efficient metadata query.
+        Uses year-based filtering to avoid SPARQL OFFSET limits (~10K).
         Returns list of dicts with celex, date, and doc_type fields.
         """
         # Build FILTER clause for resource types
@@ -104,8 +105,8 @@ WHERE {{
   OPTIONAL {{ ?work cdm:work_date_document ?date . }}
   OPTIONAL {{ ?work cdm:resource_legal_in-force ?inforce . }}
   FILTER({type_filters})
-  FILTER(!CONTAINS(?celex, "R("))  # Exclude corrigenda
-  FILTER(YEAR(?date) >= {min_year})
+  FILTER(!CONTAINS(?celex, "R("))
+  FILTER(YEAR(?date) = {year})
 }}
 ORDER BY DESC(?date)
 LIMIT {limit}
@@ -238,26 +239,27 @@ OFFSET {offset}
 
         return ""
 
-    def fetch_all(self, max_docs: int = None, min_year: int = 1990,
-                  checkpoint_file: str = None) -> Iterator[Dict[str, Any]]:
+    def fetch_all(self, max_docs: int = None, min_year: int = 1952,
+                  max_year: int = None, checkpoint_file: str = None) -> Iterator[Dict[str, Any]]:
         """
-        Fetch all available documents using SPARQL discovery + CELLAR content retrieval.
+        Fetch all available documents using year-based SPARQL pagination + CELLAR full text.
 
-        This approach:
-        1. Uses SPARQL to discover valid CELEX IDs (no more 404 brute-forcing)
-        2. Fetches full text via CELLAR content negotiation
-        3. Supports pagination for large result sets
-        4. Supports checkpoint/resume for interrupted fetches
+        Iterates year-by-year from max_year down to min_year to avoid the SPARQL
+        endpoint's ~10K OFFSET ceiling. Within each year, paginates with OFFSET/LIMIT.
 
         Args:
             max_docs: Maximum documents to fetch. None = unlimited (fetch all).
-            min_year: Minimum document year to include. Default 1990 for full coverage.
+            min_year: Earliest document year to include. Default 1952 (ECSC founding).
+            max_year: Latest document year. Default = current year.
             checkpoint_file: Path to checkpoint file for resume support.
         """
+        if max_year is None:
+            max_year = datetime.now().year
+
         fetched = 0
-        offset = 0
         batch_size = 500
-        fetched_celex_ids = set()
+        resume_year = max_year
+        resume_offset = 0
 
         # Load checkpoint if exists
         if checkpoint_file:
@@ -266,109 +268,100 @@ OFFSET {offset}
                 try:
                     with open(checkpoint_path, 'r') as f:
                         checkpoint = json.load(f)
-                        offset = checkpoint.get('offset', 0)
+                        resume_year = checkpoint.get('current_year', max_year)
+                        resume_offset = checkpoint.get('offset', 0)
                         fetched = checkpoint.get('fetched', 0)
-                        fetched_celex_ids = set(checkpoint.get('fetched_celex_ids', []))
-                        logger.info(f"Resuming from checkpoint: offset={offset}, fetched={fetched}")
+                        logger.info(f"Resuming from checkpoint: year={resume_year}, offset={resume_offset}, fetched={fetched}")
                 except Exception as e:
                     logger.warning(f"Failed to load checkpoint: {e}")
 
         # Document types to fetch
         doc_types = ['REG', 'REG_IMPL', 'REG_DEL', 'DIR', 'DIR_IMPL', 'DIR_DEL', 'DEC', 'DEC_IMPL']
 
-        while True:
-            # Check max_docs limit if set
+        for year in range(resume_year, min_year - 1, -1):
             if max_docs is not None and fetched >= max_docs:
-                logger.info(f"Reached max_docs limit ({max_docs})")
                 break
 
-            # Discover documents via SPARQL
-            logger.info(f"Discovering documents via SPARQL (offset={offset}, min_year={min_year})...")
-            documents = self._discover_celex_via_sparql(
-                resource_types=doc_types,
-                limit=batch_size,
-                offset=offset,
-                min_year=min_year
-            )
+            offset = resume_offset if year == resume_year else 0
+            year_fetched = 0
+            year_celex_ids = set()  # Per-year dedup only — reset each year to save memory
 
-            if not documents:
-                logger.info("No more documents found via SPARQL - pagination complete")
-                break
-
-            # Fetch full text for each discovered document
-            docs_in_batch = 0
-            for doc_meta in documents:
-                # Check max_docs limit if set
+            while True:
                 if max_docs is not None and fetched >= max_docs:
                     break
 
-                celex = doc_meta['celex']
+                logger.info(f"SPARQL discovery: year={year}, offset={offset}...")
+                documents = self._discover_celex_via_sparql(
+                    resource_types=doc_types,
+                    limit=batch_size,
+                    offset=offset,
+                    year=year
+                )
 
-                # Skip if already fetched (from checkpoint resume)
-                if celex in fetched_celex_ids:
-                    continue
+                if not documents:
+                    break
 
-                if max_docs is not None:
-                    logger.info(f"Fetching full text for {celex} ({fetched + 1}/{max_docs})...")
-                else:
-                    logger.info(f"Fetching full text for {celex} (total: {fetched + 1})...")
+                for doc_meta in documents:
+                    if max_docs is not None and fetched >= max_docs:
+                        break
 
-                doc_content = self._fetch_document_via_cellar(celex, silent=True)
+                    celex = doc_meta['celex']
+                    if celex in year_celex_ids:
+                        continue
 
-                if doc_content and doc_content.get('text'):
-                    fetched_celex_ids.add(celex)
-                    yield {
-                        'celex': celex,
-                        'title': doc_content.get('title', f"Document {celex}"),
-                        'url': f"{BASE_URL}/legal-content/EN/TXT/?uri=CELEX:{celex}",
-                        'date_str': doc_meta.get('date_str'),
-                        'doc_type': doc_meta.get('doc_type', 'REG'),
-                        'in_force': doc_meta.get('in_force', False),
-                        'html': doc_content.get('html', ''),
-                        'text': doc_content['text']
-                    }
-                    fetched += 1
-                    docs_in_batch += 1
+                    doc_content = self._fetch_document_via_cellar(celex, silent=True)
 
-                    if max_docs is not None:
-                        logger.info(f"Successfully fetched {celex} ({fetched}/{max_docs})")
+                    if doc_content and doc_content.get('text'):
+                        year_celex_ids.add(celex)
+                        yield {
+                            'celex': celex,
+                            'title': doc_content.get('title', f"Document {celex}"),
+                            'url': f"{BASE_URL}/legal-content/EN/TXT/?uri=CELEX:{celex}",
+                            'date_str': doc_meta.get('date_str'),
+                            'doc_type': doc_meta.get('doc_type', 'REG'),
+                            'in_force': doc_meta.get('in_force', False),
+                            'text': doc_content['text']
+                        }
+                        fetched += 1
+                        year_fetched += 1
+
+                        if fetched % 50 == 0:
+                            logger.info(f"Progress: {fetched} docs total, {year_fetched} from {year}")
+                            if checkpoint_file:
+                                self._save_checkpoint_v2(checkpoint_file, year, offset, fetched)
                     else:
-                        logger.info(f"Successfully fetched {celex} (total: {fetched})")
+                        logger.debug(f"No text for {celex}")
 
-                    # Save checkpoint periodically (every 50 docs)
-                    if checkpoint_file and fetched % 50 == 0:
-                        self._save_checkpoint(checkpoint_file, offset, fetched, fetched_celex_ids)
-                else:
-                    logger.warning(f"No text available for {celex}")
+                    time.sleep(0.5)  # Rate limiting
 
-                time.sleep(0.5)  # Rate limiting
+                offset += batch_size
 
-            offset += batch_size
+                if checkpoint_file:
+                    self._save_checkpoint_v2(checkpoint_file, year, offset, fetched)
 
-            # Save checkpoint after each batch
-            if checkpoint_file:
-                self._save_checkpoint(checkpoint_file, offset, fetched, fetched_celex_ids)
+                if len(documents) < batch_size:
+                    break
 
-            # If we got fewer documents than batch_size, we've reached the end
-            if len(documents) < batch_size:
-                logger.info("Received fewer documents than batch size - reached end of data")
-                break
+            logger.info(f"Year {year} complete: {year_fetched} documents fetched")
+            # Free per-year tracking and force garbage collection
+            del year_celex_ids
+            gc.collect()
 
         logger.info(f"fetch_all complete. Total documents fetched: {fetched}")
 
-    def _save_checkpoint(self, checkpoint_file: str, offset: int, fetched: int,
-                         fetched_celex_ids: set):
-        """Save checkpoint for resume support"""
+    def _save_checkpoint_v2(self, checkpoint_file: str, current_year: int,
+                            offset: int, fetched: int):
+        """Save lightweight checkpoint (year + offset only, no celex ID set)"""
         try:
             checkpoint_path = Path(checkpoint_file)
             with open(checkpoint_path, 'w') as f:
                 json.dump({
+                    'current_year': current_year,
                     'offset': offset,
                     'fetched': fetched,
-                    'fetched_celex_ids': list(fetched_celex_ids),
                     'timestamp': datetime.now().isoformat()
                 }, f)
-            logger.debug(f"Checkpoint saved: offset={offset}, fetched={fetched}")
+            logger.debug(f"Checkpoint saved: year={current_year}, offset={offset}, fetched={fetched}")
         except Exception as e:
             logger.warning(f"Failed to save checkpoint: {e}")
 
@@ -380,7 +373,7 @@ OFFSET {offset}
         """
         since_year = since.year
 
-        for doc in self.fetch_all(max_docs=None, min_year=since_year):
+        for doc in self.fetch_all(max_docs=None, min_year=since_year, max_year=datetime.now().year):
             if doc.get('date_str'):
                 try:
                     # Parse ISO date from SPARQL
@@ -454,23 +447,26 @@ def main():
         if is_sample:
             target_count = 15
             min_year = 2024
+            max_year = datetime.now().year
             checkpoint_file = None
             logger.info("Fetching sample documents (15 records from 2024+)...")
         elif is_full:
             target_count = None  # Unlimited
-            min_year = 1990
+            min_year = 1952
+            max_year = datetime.now().year
             checkpoint_file = str(Path(__file__).parent / 'checkpoint.json')
-            logger.info("Fetching ALL documents (full bootstrap with checkpoint support)...")
+            logger.info("Fetching ALL documents (year-by-year from present to 1952)...")
         else:
             target_count = 100
             min_year = 2020
+            max_year = datetime.now().year
             checkpoint_file = None
             logger.info("Fetching 100 documents from 2020+ (use --full for complete bootstrap)...")
 
         sample_count = 0
 
         for raw_doc in fetcher.fetch_all(max_docs=target_count, min_year=min_year,
-                                          checkpoint_file=checkpoint_file):
+                                          max_year=max_year, checkpoint_file=checkpoint_file):
             if target_count is not None and sample_count >= target_count:
                 break
 
@@ -510,7 +506,7 @@ def main():
 
         print("Testing EUR-Lex fetcher with SPARQL discovery...")
         count = 0
-        for raw_doc in fetcher.fetch_all(max_docs=5, min_year=2024):
+        for raw_doc in fetcher.fetch_all(max_docs=5, min_year=2024, max_year=datetime.now().year):
             normalized = fetcher.normalize(raw_doc)
             print(f"\n--- Document {count + 1} ---")
             print(f"ID: {normalized['_id']}")

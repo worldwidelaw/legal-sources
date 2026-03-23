@@ -1,0 +1,85 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Competition Appeal Tribunal Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/CAT"
+  country: "UK"
+  name: "UK Competition Appeal Tribunal (CAT)"
+  url: "https://www.catribunal.org.uk"
+  description: |
+    Competition Appeal Tribunal judgments and decisions. Covers competition
+    law appeals, regulatory appeals, and damages claims. ~1,000+ judgments
+    from 2001 to present. Full text extracted from PDF downloads.
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "html_pdf"
+  base_url: "https://www.catribunal.org.uk"
+  endpoints:
+    sitemap:
+      path: "/sitemap.xml"
+      method: "GET"
+      description: "XML sitemap with ~1,041 judgment URLs"
+    judgment:
+      path: "/judgments/{slug}"
+      method: "GET"
+      description: "Individual judgment page with metadata and PDF link"
+    pdf:
+      path: "/sites/cat/files/{path}"
+      method: "GET"
+      description: "PDF download for full judgment text"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "neutral_citation"
+  update_strategy: "append_only"
+  versioning: "none"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "neutral_citation"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "case_number"
+      type: "string"
+      role: "identifier"
+    - name: "summary"
+      type: "string"
+      role: "content"
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - Coverage: 2001 to present (~1,041 judgments)
+  - Full text from PDF downloads via pdfminer/pdfplumber
+  - Sitemap used for document discovery
+  - Not on UK National Archives Find Case Law service

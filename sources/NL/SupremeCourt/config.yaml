@@ -6,7 +6,7 @@ source:
 
 data:
   types:
-    - case_law
+    - caselaw
   format: xml
   language: nl
   coverage: 1999-present

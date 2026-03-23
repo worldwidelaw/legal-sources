@@ -1,0 +1,57 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK National Crime Agency Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/NCA"
+  country: "UK"
+  name: "UK National Crime Agency (AML Unit)"
+  url: "https://www.nationalcrimeagency.gov.uk"
+  description: |
+    NCA publications via GOV.UK Content API. Covers AML guidance, policy papers,
+    annual reports, sanctions enforcement, and transparency documents.
+    No authentication required.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "public_timestamp"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - ~161 NCA publications via GOV.UK Content API
+  - NCA's own site (Joomla) is blocked by Azure WAF
+  - Open Government Licence v3.0

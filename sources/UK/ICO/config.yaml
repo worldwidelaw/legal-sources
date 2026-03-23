@@ -1,0 +1,63 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK Information Commissioner (ICO) Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/ICO"
+  country: "UK"
+  name: "UK Information Commissioner (ICO)"
+  url: "https://ico.org.uk"
+  description: |
+    ICO decision notices (FOI/EIR/DPA) and enforcement actions. ~25,600
+    decisions from 2005-present. JSON search API for metadata + PDF
+    downloads for full text.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "json_api"
+  base_url: "https://ico.org.uk"
+  endpoints:
+    search:
+      path: "/api/search"
+      method: "POST"
+
+data_model:
+  type: "doctrine"
+  primary_key: "id"
+  update_strategy: "upsert"
+  versioning: "createdDateTime"
+
+schema:
+  key_fields:
+    - name: "id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - ~25,440 decision notices + ~209 enforcement actions
+  - JSON POST API for paginated search
+  - Full text from PDF downloads
+  - Crawl-delay: 6 seconds (per robots.txt)
+  - Open Government Licence v3.0

@@ -1,0 +1,31 @@
+source:
+  id: "EU/TED"
+  country: "EU"
+  name: "EU Tenders Electronic Daily (TED)"
+  description: "EU public procurement notices and contract awards"
+  url: "https://ted.europa.eu"
+  data_types:
+    - doctrine
+
+schema:
+  key_fields:
+    - notice_id
+    - title
+    - date
+    - url
+    - notice_type
+    - text
+
+api:
+  type: "rest"
+  endpoints:
+    search: "https://api.ted.europa.eu/v3/notices/search"
+    notice_xml: "https://ted.europa.eu/en/notice/{id}/xml"
+  auth: "none"
+  rate_limit:
+    requests_per_minute: 700
+    delay_seconds: 0.5
+
+pagination:
+  type: "cursor"
+  page_size: 250

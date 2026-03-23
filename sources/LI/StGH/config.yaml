@@ -3,7 +3,7 @@ name: Liechtenstein Constitutional Court (Staatsgerichtshof)
 country: LI
 language: deu
 data_types:
-  - case_law
+  - caselaw
 license: Open Government Data
 url: https://www.stgh.li/urteile
 fetch_method: html_scrape

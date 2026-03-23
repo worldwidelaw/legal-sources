@@ -18,7 +18,7 @@ name: UK Case Law (National Archives)
 url: https://caselaw.nationalarchives.gov.uk
 
 data_types:
-  - case_law
+  - caselaw
 
 auth:
   type: none

@@ -432,7 +432,7 @@ class OireachtasScraper(BaseScraper):
             # Required base fields
             "_id": doc_id,
             "_source": "IE/Oireachtas",
-            "_type": "parliamentary_proceedings",
+            "_type": "doctrine",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             # Standard fields
             "title": title,

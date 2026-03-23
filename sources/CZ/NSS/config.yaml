@@ -3,7 +3,7 @@ name: Czech Supreme Administrative Court (Nejvyšší správní soud)
 country: CZ
 language: cs
 data_types:
-  - case_law
+  - caselaw
 
 endpoints:
   collection_base: https://sbirka.nssoud.cz

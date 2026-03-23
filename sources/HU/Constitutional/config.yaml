@@ -2,7 +2,7 @@ source:
   id: HU/Constitutional
   name: Hungarian Constitutional Court (Alkotmánybíróság)
   country: HU
-  data_type: case_law
+  data_type: caselaw
   url: https://alkotmanybirosag.hu
   license: Public Domain
   language: hu

@@ -13,7 +13,7 @@ description: |
 
 data_types:
   - doctrine       # Regulatory deliberations (~3,500 documents)
-  - case_law       # CoRDiS dispute resolution decisions (~470 documents)
+  - caselaw       # CoRDiS dispute resolution decisions (~470 documents)
 
 license: Licence Ouverte 2.0
 

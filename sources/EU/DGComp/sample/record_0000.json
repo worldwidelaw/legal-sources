@@ -1,0 +1,26 @@
+{
+  "_id": "EU-DGCOMP-AT.35803",
+  "_source": "EU/DGComp",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-21T13:36:10.920606+00:00",
+  "case_number": "AT.35803",
+  "case_type": "Antitrust",
+  "instrument": "Antitrust & Cartels",
+  "title": "IPEX Consortium",
+  "text": "",
+  "date": "1995-10-20",
+  "url": "https://competition-cases.ec.europa.eu/cases/AT.35803",
+  "pdf_url": "https://ec.europa.eu/competition/antitrust/cases1/202508/AT_35803_2560633_5_4.pdf",
+  "sectors": [
+    "H.50.20 - Sea and coastal freight water transport"
+  ],
+  "companies": [
+    "Andrew Weir Shipping",
+    "DSR-Senator Lines",
+    "Compagnie Maritime d'affretement"
+  ],
+  "legal_basis": [
+    "Art. 101 TFEU"
+  ],
+  "decision_types": []
+}

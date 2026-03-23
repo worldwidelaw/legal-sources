@@ -7,7 +7,7 @@ source:
   name_en: Greek Supreme Court (Areios Pagos)
   country: GR
   data_types:
-    - case_law
+    - caselaw
   url: https://www.areiospagos.gr
   description: >
     Supreme civil and criminal court case law from Greece.

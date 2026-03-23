@@ -1,7 +1,7 @@
 # ES/ConstitutionalCourt -- Spanish Constitutional Court Configuration
 # Source: Tribunal Constitucional de España - Sistema HJ
 # URL: https://hj.tribunalconstitucional.es
-# Data types: case_law
+# Data types: caselaw
 # License: Public domain (official court decisions)
 
 source:
@@ -12,7 +12,7 @@ source:
   description: "Spanish Constitutional Court decisions. Full text via HJ search system."
 
 data_types:
-  - case_law
+  - caselaw
 
 api:
   type: "html_scraping"
@@ -35,7 +35,7 @@ rate_limit:
   burst: 3
 
 data_model:
-  type: "case_law"
+  type: "caselaw"
   primary_key: "ecli"
   update_strategy: "append_only"
   versioning: "none"

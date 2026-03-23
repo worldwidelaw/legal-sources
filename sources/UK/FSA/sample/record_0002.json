@@ -1,0 +1,20 @@
+{
+  "_id": "UK/FSA/28616",
+  "_source": "UK/FSA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T16:21:53.139157+00:00",
+  "id": "28616",
+  "title": "Seggiano recalls two nougat products because of undeclared milk and soy lecithin",
+  "text": "Seggiano is recalling Seggiano Chocolate Covered Torrone because it contains soy lecithin, and Seggiano Pistachio and Chocolate Covered Torrone because it contains milk and soy lecithin which are not mentioned on the label.\n\nSeggiano is recalling Seggiano Chocolate Covered Torrone because it contains soy lecithin, and Seggiano Pistachio and Chocolate Covered Torrone because it contains milk and soy lecithin which are not mentioned on the label.",
+  "content_type": "Allergy alert",
+  "filter_type": "Allergy alert",
+  "date": "2026-03-19",
+  "nation": [
+    {
+      "id": "31",
+      "label": "England"
+    }
+  ],
+  "url": "https://www.food.gov.uk/news-alerts/alert/fsa-aa-18-2026",
+  "updated_at": "2026-03-19T21:10:41"
+}

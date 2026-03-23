@@ -1,0 +1,52 @@
+source:
+  id: DK/SKAT
+  name: Danish Tax Authority (Skattestyrelsen)
+  country: DK
+  url: https://www.retsinformation.dk
+  data_types:
+    - doctrine
+  description: |
+    Danish tax doctrine including binding rulings (bindende svar) and decisions
+    from Skatterådet and Skattestyrelsen published on Retsinformation.
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: rest
+  base_url: https://www.retsinformation.dk
+  format: xml
+  endpoints:
+    eli_retsinfo: "/eli/retsinfo/{year}/{number}/dan/xml"
+
+schema:
+  key_fields:
+    - name: accession_number
+      type: string
+      required: true
+    - name: document_id
+      type: string
+      required: false
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+
+fetch:
+  strategy: scan_years
+  year_start: 2020
+  year_end: current
+  number_start: 9000
+  number_end: 11000
+  filter_ministry: Skatteministeriet
+  filter_document_types:
+    - AFG  # Afgørelser (Decisions/Rulings)

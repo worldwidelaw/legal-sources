@@ -1,0 +1,24 @@
+source_id: TR/MevzuatHF
+name: Turkish Legislation (Hugging Face Dataset)
+country: TR
+url: https://huggingface.co/datasets/muhammetakkurt/mevzuat-gov-dataset
+description: >
+  Turkish legislation from Hugging Face dataset, originally scraped from
+  mevzuat.gov.tr. Contains 907 Turkish laws with full text articles.
+  Alternative to TR/Mevzuat which is VPS-blocked.
+
+data_types:
+  - legislation
+
+schema:
+  key_fields:
+    - kanun_numarasi
+
+auth:
+  type: none
+
+endpoints:
+  huggingface: muhammetakkurt/mevzuat-gov-dataset
+
+license: MIT
+language: tr

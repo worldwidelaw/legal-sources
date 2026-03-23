@@ -3,7 +3,7 @@ source:
   name: "AMF Enforcement Committee Decisions (Décisions de la Commission des sanctions)"
   country: FR
   data_types:
-    - case_law
+    - caselaw
     - enforcement
   url: https://www.amf-france.org/fr/sanctions-transactions/decisions-de-la-commission-des-sanctions
   auth: none

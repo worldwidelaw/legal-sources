@@ -1,0 +1,49 @@
+source:
+  id: "US/PresidentialDocuments"
+  country: "US"
+  name: "Presidential Documents (Executive Orders, Proclamations)"
+  url: "https://www.federalregister.gov"
+  description: |
+    Executive orders, proclamations, memoranda, and other presidential documents
+    from the Federal Register API. No auth required. Full text via XML/HTML/TXT.
+    ~8,400+ documents.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest"
+  base_url: "https://www.federalregister.gov/api/v1"
+  endpoints:
+    documents: "/documents.json"
+    document: "/documents/{number}.json"
+
+schema:
+  key_fields:
+    - name: "document_number"
+      description: "Federal Register document number"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the presidential document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Signing date or publication date"
+      type: "date"
+      role: "temporal_key"
+      required: true

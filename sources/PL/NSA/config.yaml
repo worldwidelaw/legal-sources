@@ -12,7 +12,7 @@ country: PL
 url: https://orzeczenia.nsa.gov.pl
 
 data_types:
-  - case_law
+  - caselaw
 
 auth:
   type: none

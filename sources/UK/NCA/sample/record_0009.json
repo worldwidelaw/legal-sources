@@ -1,0 +1,13 @@
+{
+  "_id": "government_organisations_national-crime-agency_about",
+  "_source": "UK/NCA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T23:38:22.584317+00:00",
+  "title": "About us",
+  "text": "The National Crime Agency (NCA) is the UKs law enforcement agency responsible for fighting serious and organised crime.",
+  "date": "2013-10-07",
+  "url": "https://www.gov.uk/government/organisations/national-crime-agency/about",
+  "description": "The National Crime Agency, also known as the NCA, is a crime-fighting law enforcement agency responsible for leading the UK’s fight to cut serious and organised crime.",
+  "doc_type": "about",
+  "schema_name": "corporate_information_page"
+}

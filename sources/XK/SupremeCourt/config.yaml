@@ -2,7 +2,7 @@ name: Kosovo Supreme Court (EULEX-published judgments)
 country: XK
 source_id: XK/SupremeCourt
 data_types:
-  - case_law
+  - caselaw
 url: https://www.eulex-kosovo.eu/en/judgments/
 auth: none
 languages:

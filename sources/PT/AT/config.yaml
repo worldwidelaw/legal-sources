@@ -1,0 +1,24 @@
+source:
+  id: PT/AT
+  name: Portuguese Tax Authority (AT)
+  country: PT
+  url: https://info.portaldasfinancas.gov.pt
+  data_types:
+    - doctrine
+  auth: none
+  schedule: weekly
+  description: >
+    Tax circulars, official letters, and binding rulings from the Portuguese Tax
+    and Customs Authority (Autoridade Tributária e Aduaneira). Covers IRS, IRC,
+    IVA, IMI, IMT, stamp duty, and customs doctrine. Documents are PDFs hosted
+    on SharePoint, discovered via Azure Cognitive Search API.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - doc_type
+    - classification

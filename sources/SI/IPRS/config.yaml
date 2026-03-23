@@ -1,0 +1,47 @@
+# Configuration for SI/IPRS (Slovenian Data Protection Authority)
+# Informacijski pooblaščenec (IP RS) - GDPR and data protection opinions
+
+source:
+  id: SI/IPRS
+  name: Slovenian Data Protection Authority (IP RS)
+  country: SI
+  url: https://www.ip-rs.si
+  description: >
+    Data protection opinions and decisions from Slovenia's Information Commissioner
+    (Informacijski pooblaščenec). Covers GDPR opinions (~4,248), ZVOP-2 opinions
+    (~2,124), and freedom of information decisions (~6,004). Full text in Slovenian.
+
+data_model:
+  types:
+    - doctrine
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  key_fields:
+    - name: reference_number
+      type: string
+      required: false
+    - name: categories
+      type: string
+      required: false
+    - name: collection
+      type: string
+      required: false

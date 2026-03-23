@@ -1,0 +1,40 @@
+source:
+  id: GR/AADE
+  country: GR
+  name: Greek Tax Authority (AADE)
+  name_native: Ανεξάρτητη Αρχή Δημοσίων Εσόδων
+  url: https://www.aade.gr
+  data_url: https://diavgeia.gov.gr/luminapi/opendata
+  description: >
+    Greek Independent Authority for Public Revenue (AADE) tax circulars and
+    official interpretations. Fetches AADE doctrine documents from the Diavgeia
+    transparency portal, which publishes all Greek government decisions.
+  data_types:
+    - doctrine
+  auth: none
+  license: CC-BY
+  coverage:
+    start_date: "2016-01-01"
+    jurisdictions:
+      - GR
+  update_frequency: daily
+  notes: >
+    AADE was established in 2016 as an independent authority. Tax circulars
+    (εγκύκλιοι) provide official interpretations of tax law. Data accessed
+    via Diavgeia API using organization UID 100029495.
+
+api:
+  base_url: https://diavgeia.gov.gr/luminapi
+  organization_uid: "100029495"
+  decision_types:
+    - "Α.3"  # ΕΓΚΥΚΛΙΟΣ (Circular)
+    - "Α.4"  # ΓΝΩΜΟΔΟΤΗΣΗ (Opinion)
+  rate_limit: 2.0
+  page_size: 50
+
+schema:
+  key_fields:
+    - ada
+    - subject
+    - issue_date
+    - protocol_number

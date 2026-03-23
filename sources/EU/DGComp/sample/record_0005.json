@@ -1,0 +1,22 @@
+{
+  "_id": "EU-DGCOMP-AT.39052",
+  "_source": "EU/DGComp",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-21T13:36:11.717181+00:00",
+  "case_number": "AT.39052",
+  "case_type": "Cartel",
+  "instrument": "Antitrust & Cartels",
+  "title": "Publication paper",
+  "text": "",
+  "date": "2004-05-10",
+  "url": "https://competition-cases.ec.europa.eu/cases/AT.39052",
+  "pdf_url": null,
+  "sectors": [
+    "C.17.2 - Manufacture of articles of paper and paperboard"
+  ],
+  "companies": [],
+  "legal_basis": [
+    "Art. 101 TFEU"
+  ],
+  "decision_types": []
+}

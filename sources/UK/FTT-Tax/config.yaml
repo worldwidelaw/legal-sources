@@ -1,0 +1,64 @@
+# ═══════════════════════════════════════════════════════════════════
+# World Wide Law — UK First-tier Tribunal Tax Chamber Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/FTT-Tax"
+  country: "UK"
+  name: "UK First-tier Tribunal - Tax Chamber"
+  url: "https://www.gov.uk/tax-and-chancery-tribunal-decisions"
+  description: |
+    UK Tax and Chancery Tribunal decisions published on GOV.UK. ~1,400
+    decisions covering income tax, VAT, SDLT, NIC, and other tax disputes.
+    Full text from PDF attachments via GOV.UK Content Store API.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+  endpoints:
+    search:
+      path: "/api/search.json"
+      method: "GET"
+    content:
+      path: "/api/content/{path}"
+      method: "GET"
+
+data_model:
+  type: "case_law"
+  primary_key: "content_id"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+schema:
+  key_fields:
+    - name: "content_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - ~1,400 decisions
+  - Full text extracted from PDF attachments
+  - No authentication required

@@ -300,9 +300,9 @@ class FMAScraper(BaseScraper):
         date = self._parse_date(raw.get("pubDate", ""))
 
         # Determine document type based on category
-        # Using "other" as regulatory decisions is not a standard type
+        # FMA regulatory decisions (sanctions, warnings) are administrative decisions
         category = raw.get("category", "")
-        doc_type = "other"  # FMA regulatory decisions, sanctions, warnings
+        doc_type = "case_law"  # FMA regulatory decisions, sanctions, warnings
 
         return {
             # Required base fields

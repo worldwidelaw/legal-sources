@@ -1,0 +1,36 @@
+source:
+  id: EU/ADR
+  name: EU Domain Dispute Resolution (.eu)
+  country: EU
+  url: https://eu.adr.eu
+  data_types:
+    - case_law
+  description: >
+    .eu domain name dispute resolution decisions from the Czech Arbitration Court
+    (CAC). Full panel decisions with factual background, legal analysis, and
+    reasoning. Covers domain disputes since 2006. 155 pages x 10 decisions per page.
+  auth: none
+  license: Public (published by Czech Arbitration Court)
+
+fetch:
+  method: html_paginated_scrape
+  listing_url: https://eu.adr.eu/decisions/list
+  detail_url: https://eu.adr.eu/decisions/detail
+  pagination_param: grid-page
+  total_pages: 16
+  items_per_page: 100
+  rate_limit: 1.5
+  timeout: 30
+  estimated_total: 1550
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+    - case_number
+    - domain_name

@@ -1,0 +1,18 @@
+{
+  "_id": "UK/CAA/ad-isr-i-35-2026-01-01",
+  "_source": "UK/CAA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T15:38:03.261985+00:00",
+  "title": "AD ISR-I-35-2026-01-01: Model Boeing 747-400 aircraft converted to freighters in accordance with CAAI STC SA-151 or SA-152 (or validated equivalent, e.g. FAA ST01676SE/ST01706SE): Crew oxygen supply",
+  "text": "State of Israel\nMinistry of Transport\nCivil Aviation Authority\nAD ISR I-35-26-01-01\nDate: 1 January, 2026\nAIRWORTHINESS DIRECTIVE\nThis Airworthiness Directive, issued by the Civil Aviation Authority of Israel in\naccordance with the Israeli Air Navigation Regulations applies to an aircraft for which our\nrecords list as under your registration or you as the registered owner. It affects aviation\nsafety and requires your immediate attention. No person may operate an aircraft to which\nan airworthiness directive applies, except in accordance with that directive.\nAPPLIES TO: Model Boeing 747-400 aircraft converted to freighters in\naccordance with CAAI STC SA-151 (or validated equivalent,\ne.g. FAA ST01676SE) or CAAI STC SA-152 (or validated\nequivalent, e.g. FAA ST01706SE).\nSUBJECT: Potential of arcing, fire and/or loss of crew oxygen supply due\nto insufficient clearances between electrical wiring and flexible\noxygen hose.\nREASON: On one converted aircraft, the crew oxygen bottle flexible hose\n(Boeing P/N 96431-2) was found ruptured and arcing / heat\ndamage was identified on ANCRA Cargo Loading System (CLS\nwiring is installed per ANCRA FAA STC ST01899LA as part of\nIAI CAAI STC SA151 aircraft conversion) wire harness (P/N\nW9914-301-12), near STA 680.\nThis was caused by chafing of the oxygen hose against the\nwire harness, probably due to an incorrect installation of the\noxygen hose.\nAs the general installation configuration is similar to the one in\nCAAI STC SA152 (CLS wiring is installed per ANCRA FAA STC\nST01926LA), these aircraft are also included in this directive.\nACTION: 1. Inspect the affected area per CAAI approved IAI Service\nBulletin SB 366-35-157.\n2. If there are findings immediately contact IAI for further\ninstructions.\n3. If there are no signs of wear or chafing on either the oxygen\ntubes or electrical wires or harnesses, one ferry flight for\nmaintenance purposes is permitted if required.\nCOMPLIANCE: Before next flight.\nEFECTIVE DATE: 1 January, 2026.\nFOR FURTHER INFORMATION CONTACT: Mr. Liran Cohen, A/C certification\ndepartment, CAAI - P.O. Box 1101, 3 Golan Street, Airport City, Israel, 70151,\nTelephone: +972-3-9774529, E-mail: cohenli@mot.gov.il\n_ ____________________________________________________________________________\nState of Israel Ministry of Transport / Civil Aviation Authority\nGolan House / Golan St. P.O.B. 1101 / Airport City 70100 / Israel / Tel. +972.3.9774545 / www.gov.il",
+  "description": "We use necessary cookies to make our website work. We'd also like to use optional cookies to understand how you use it, and to help us improve it.For more information, please read ourcookie policy.",
+  "date": "2026-01-01",
+  "url": "https://www.caa.co.uk/data-and-publications/publications/documents/content/ad-isr-i-35-2026-01-01/",
+  "pdf_url": "https://www.caa.co.uk/publication/download/26619",
+  "status": "Current",
+  "edition": "1",
+  "series": "Emergency airworthiness directives",
+  "categories": [
+    "Maintenance and engineering"
+  ]
+}

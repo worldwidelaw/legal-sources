@@ -2,7 +2,7 @@ name: AEPD - Agencia Española de Protección de Datos
 source_id: ES/AEPD
 country: ES
 data_types:
-  - case_law
+  - caselaw
 
 url: https://www.aepd.es/informes-y-resoluciones/resoluciones
 license: Open Government License

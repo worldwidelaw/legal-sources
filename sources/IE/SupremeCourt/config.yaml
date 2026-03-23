@@ -9,7 +9,7 @@ source:
 
   url: https://www2.courts.ie/Judgments
   data_types:
-    - case_law
+    - caselaw
 
   auth:
     type: none

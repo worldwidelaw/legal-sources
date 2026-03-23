@@ -370,7 +370,7 @@ class ESMAFetcher:
         return {
             '_id': raw_doc['document_id'],
             '_source': 'EU/ESMA',
-            '_type': 'regulatory_decision',
+            '_type': 'doctrine',
             '_fetched_at': datetime.now().isoformat(),
             'document_id': raw_doc['document_id'],
             'reference': raw_doc.get('reference', ''),
@@ -397,8 +397,8 @@ def main():
             target_count = 15
             logger.info("Fetching sample documents (15 records)...")
         else:
-            target_count = 50
-            logger.info("Fetching 50 documents (use --sample for quick test)...")
+            target_count = None  # Fetch ALL documents
+            logger.info("Fetching ALL ESMA library documents (use --sample for quick test)...")
 
         sample_count = 0
 

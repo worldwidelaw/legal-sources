@@ -1,0 +1,20 @@
+{
+  "_id": "UK/FSA/28646",
+  "_source": "UK/FSA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T16:21:53.138576+00:00",
+  "id": "28646",
+  "title": "Dunnes Stores recalls Dunnes Stores 8 Plain Tortilla Wraps because they may contain metal pieces",
+  "text": "Dunnes Stores is recalling Dunnes Stores 8 Plain Tortilla Wraps because of the possible presence of metal pieces.\n\nDunnes Stores is recalling Dunnes Stores 8 Plain Tortilla Wraps because of the possible presence of metal pieces.",
+  "content_type": "Food alert",
+  "filter_type": "Food alert",
+  "date": "2026-03-20",
+  "nation": [
+    {
+      "id": "33",
+      "label": "Northern Ireland"
+    }
+  ],
+  "url": "https://www.food.gov.uk/news-alerts/alert/fsa-prin-12-2026",
+  "updated_at": "2026-03-20T16:46:00"
+}

@@ -3,7 +3,7 @@ name: "Albanian Supreme Court (Gjykata e Lartë)"
 country: "AL"
 language: "sq"
 data_types:
-  - case_law
+  - caselaw
 url: "https://www.gjykataelarte.gov.al"
 
 description: |

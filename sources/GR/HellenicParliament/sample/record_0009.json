@@ -1,0 +1,14 @@
+{
+  "_id": "GR-RAPT-0be0d4d82fa7aae8",
+  "_source": "GR/HellenicParliament",
+  "_type": "legislation",
+  "_fetched_at": "2026-03-21T11:44:14.210831+00:00",
+  "title": "9. ΑΠΟΦΑΣΙΣ ΥΠΟΥΡΓΟΥ ΠΑΙΔΕΙΑΣ Αριθ.146967 της 23 Νοεμ. 1964/19 Ιαν.",
+  "text": "9. ΑΠΟΦΑΣΙΣ ΥΠΟΥΡΓΟΥ ΠΑΙΔΕΙΑΣ Αριθ.146967 της 23 Νοεμ. 1964/19 Ιαν.  1965 (ΦΕΚ Β΄ 39) Περί των διδασκομένων και εξεταζομένων μαθημάτων εν τη Ιατρική Σχολή του Πανεπιστημίου Αθηνών, Τμηματικών και Πτυχιακών εξετάσεων.",
+  "date": "1964-01-01",
+  "url": "https://huggingface.co/datasets/AI-team-UoA/greek_legal_code",
+  "volume_id": 44,
+  "volume_name": "ΧΩΡΟΤΑΞΙΑ",
+  "law_number": "1965",
+  "law_type": "legislative_decree"
+}

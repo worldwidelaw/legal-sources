@@ -2,7 +2,7 @@ id: LU/SupremeCourt
 name: Luxembourg Court of Cassation (Cour de Cassation)
 country: LU
 data_types:
-  - case_law
+  - caselaw
 url: https://justice.public.lu
 auth: none
 priority: 2

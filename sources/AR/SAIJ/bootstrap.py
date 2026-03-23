@@ -335,6 +335,129 @@ def test_api():
         return False
 
 
+def fetch_all(max_records: int = None, output_file: str = None) -> Generator[dict, None, None]:
+    """
+    Fetch all case law documents from SAIJ.
+
+    Args:
+        max_records: Maximum number of records to fetch (None = all)
+        output_file: Optional path to write JSONL output
+
+    Yields:
+        Normalized document records
+    """
+    # We focus on Sumarios which have inline text content
+    # Fallos often only have PDFs which require additional processing
+    facets = "Total|Tipo de Documento/Jurisprudencia/Sumario"
+
+    # First, get total count
+    result = search_documents(offset=0, page_size=1, facets=facets)
+    total = result.get("searchResults", {}).get("totalSearchResults", 0)
+    logger.info(f"Total available Sumario records: {total:,}")
+
+    if max_records:
+        total = min(total, max_records)
+        logger.info(f"Limiting to {total:,} records")
+
+    page_size = 50  # API seems to handle 50 well
+    fetched = 0
+    errors = 0
+
+    output_fh = None
+    if output_file:
+        output_fh = open(output_file, "w", encoding="utf-8")
+
+    try:
+        for offset in range(0, total, page_size):
+            try:
+                result = search_documents(offset=offset, page_size=page_size, facets=facets)
+                doc_list = result.get("searchResults", {}).get("documentResultList", [])
+
+                if not doc_list:
+                    logger.warning(f"No documents at offset {offset}")
+                    break
+
+                for doc in doc_list:
+                    try:
+                        abstract_str = doc.get("documentAbstract", "{}")
+                        parsed = parse_document_abstract(abstract_str)
+
+                        if not parsed:
+                            errors += 1
+                            continue
+
+                        # Get full details for richer text content
+                        uuid = parsed.get("metadata", {}).get("uuid")
+                        if uuid:
+                            time.sleep(0.3)  # Rate limit
+                            detail = get_document_detail(uuid)
+                            if detail:
+                                doc_data = detail.get("document", {})
+                                parsed = {
+                                    "metadata": doc_data.get("metadata", parsed.get("metadata", {})),
+                                    "content": doc_data.get("content", parsed.get("content", {}))
+                                }
+
+                        normalized = normalize(parsed)
+
+                        # Skip records without meaningful text
+                        if not normalized.get("text") or len(normalized["text"]) < 50:
+                            errors += 1
+                            continue
+
+                        fetched += 1
+
+                        if output_fh:
+                            output_fh.write(json.dumps(normalized, ensure_ascii=False) + "\n")
+
+                        yield normalized
+
+                        if fetched % 100 == 0:
+                            logger.info(f"Progress: {fetched:,}/{total:,} records ({fetched*100//total}%)")
+
+                        if max_records and fetched >= max_records:
+                            break
+
+                    except Exception as e:
+                        logger.warning(f"Error processing document: {e}")
+                        errors += 1
+
+                if max_records and fetched >= max_records:
+                    break
+
+                time.sleep(1)  # Rate limit between pages
+
+            except Exception as e:
+                logger.error(f"Error fetching page at offset {offset}: {e}")
+                time.sleep(5)  # Back off on error
+
+    finally:
+        if output_fh:
+            output_fh.close()
+
+    logger.info(f"Fetch complete: {fetched:,} records, {errors:,} errors")
+
+
+def bootstrap_full(output_dir: Path = None):
+    """
+    Full bootstrap: fetch all records and save to JSONL.
+    """
+    if output_dir is None:
+        output_dir = SOURCE_DIR
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_file = output_dir / "records.jsonl"
+
+    logger.info(f"Starting full bootstrap to {output_file}")
+
+    count = 0
+    for record in fetch_all(output_file=str(output_file)):
+        count += 1
+
+    logger.info(f"Bootstrap complete: {count:,} records saved to {output_file}")
+    return count > 0
+
+
 def bootstrap_sample():
     """Fetch and save sample records for validation."""
     SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
@@ -392,8 +515,8 @@ def main():
             success = bootstrap_sample()
             sys.exit(0 if success else 1)
         else:
-            logger.error("Full bootstrap not implemented yet. Use --sample")
-            sys.exit(1)
+            success = bootstrap_full()
+            sys.exit(0 if success else 1)
 
 
 if __name__ == "__main__":

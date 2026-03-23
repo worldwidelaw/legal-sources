@@ -20,9 +20,9 @@ api:
 
 data:
   types:
-    - case_law
+    - caselaw
   coverage:
-    case_law: 23000+
+    caselaw: 23000+
   courts:
     - Verfassungsgerichtshof Bayern (Constitutional Court)
     - Bayerischer Verwaltungsgerichtshof (VGH)

@@ -489,8 +489,70 @@ def main():
             print(f"Fetched {count} records")
 
         else:
-            print("Use --sample for sample mode or --recent for recent data")
-            sys.exit(1)
+            # Full bootstrap: fetch all documents by year, month by month
+            print("Starting full bootstrap (all years, month by month)...")
+            DATA_DIR.mkdir(parents=True, exist_ok=True)
+            count = 0
+            current_year = datetime.now().year
+            current_month = datetime.now().month
+            with open(DATA_DIR / "records.jsonl", "w", encoding="utf-8") as f:
+                for year in range(current_year, 1993, -1):
+                    for month in range(12, 0, -1):
+                        if year == current_year and month > current_month:
+                            continue
+                        start = f"{year}-{month:02d}-01"
+                        if month == 12:
+                            end = f"{year}-{month:02d}-31"
+                        else:
+                            # Last day of month
+                            import calendar
+                            last_day = calendar.monthrange(year, month)[1]
+                            end = f"{year}-{month:02d}-{last_day:02d}"
+
+                        print(f"  Fetching {start} to {end}...")
+                        page = 1
+                        month_count = 0
+                        while True:
+                            result = api.get_documents(
+                                page=page,
+                                per_page=100,
+                                conditions={
+                                    "publication_date[gte]": start,
+                                    "publication_date[lte]": end,
+                                }
+                            )
+                            documents = result.get("results", [])
+                            if not documents:
+                                break
+
+                            for doc in documents:
+                                doc_number = doc.get("document_number")
+                                if not doc_number:
+                                    continue
+                                try:
+                                    full_doc = api.get_document(doc_number)
+                                    time.sleep(REQUEST_DELAY)
+                                    full_text = api.get_full_text(full_doc)
+                                    time.sleep(REQUEST_DELAY)
+                                    if len(full_text) < 100:
+                                        continue
+                                    record = normalize(full_doc, full_text)
+                                    f.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
+                                    count += 1
+                                    month_count += 1
+                                except Exception as e:
+                                    print(f"    Error {doc_number}: {e}", file=sys.stderr)
+
+                            total_pages = result.get("total_pages", 1)
+                            if page >= total_pages:
+                                break
+                            page += 1
+                            time.sleep(REQUEST_DELAY)
+
+                        if month_count > 0:
+                            print(f"    {month_count} documents ({count} total)")
+
+            print(f"Full bootstrap complete: {count} records")
 
     elif args.command == "updates":
         since = datetime.strptime(args.since, "%Y-%m-%d").replace(tzinfo=timezone.utc)

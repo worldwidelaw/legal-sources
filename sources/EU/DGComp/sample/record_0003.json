@@ -1,0 +1,25 @@
+{
+  "_id": "EU-DGCOMP-AT.39294",
+  "_source": "EU/DGComp",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-21T13:36:11.717065+00:00",
+  "case_number": "AT.39294",
+  "case_type": "Antitrust",
+  "instrument": "Antitrust & Cartels",
+  "title": "Microsoft (ECIS complaint)",
+  "text": "On 25/06/2010, the Commission decided to close antitrust proceedings in case AT.39294 – \nMicrosoft (ECIS), initiated by the decision of 21/12/2007.",
+  "date": "2006-02-22",
+  "url": "https://competition-cases.ec.europa.eu/cases/AT.39294",
+  "pdf_url": "https://ec.europa.eu/competition/antitrust/cases/dec_docs/39294/39294_1264_5.pdf",
+  "sectors": [
+    "C.26.2 - Manufacture of computers and peripheral equipment"
+  ],
+  "companies": [
+    "Microsoft Corporation",
+    "European Committee for Interoperable Systems"
+  ],
+  "legal_basis": [
+    "Art. 101 TFEU + Art. 102 TFEU"
+  ],
+  "decision_types": []
+}

@@ -14,7 +14,7 @@ country: PL
 url: https://www.saos.org.pl
 
 data_types:
-  - case_law
+  - caselaw
 
 auth:
   type: none

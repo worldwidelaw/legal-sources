@@ -368,7 +368,7 @@ class BfArMFetcher:
         return {
             '_id': rhb_id,
             '_source': 'DE/BfArM',
-            '_type': 'regulatory_decisions',
+            '_type': 'doctrine',
             '_fetched_at': datetime.now().isoformat(),
             'title': title,
             'text': raw_doc.get('text', ''),

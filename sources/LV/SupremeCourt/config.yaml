@@ -3,7 +3,7 @@ name: Latvian Supreme Court (Senāts)
 country: LV
 language: lv
 data_types:
-  - case_law
+  - caselaw
 
 endpoints:
   base_url: https://manas.tiesas.lv/eTiesasMvc

@@ -409,7 +409,7 @@ class SejmScraper(BaseScraper):
             return {
                 "_id": doc_id,
                 "_source": "PL/Sejm",
-                "_type": "parliamentary_proceedings",
+                "_type": "doctrine",
                 "_fetched_at": datetime.now(timezone.utc).isoformat(),
                 "title": title,
                 "text": raw.get("full_text", ""),  # MANDATORY FULL TEXT
@@ -447,7 +447,7 @@ class SejmScraper(BaseScraper):
             return {
                 "_id": doc_id,
                 "_source": "PL/Sejm",
-                "_type": "parliamentary_proceedings",
+                "_type": "doctrine",
                 "_fetched_at": datetime.now(timezone.utc).isoformat(),
                 "title": raw.get("title", ""),
                 "text": full_text,  # MANDATORY FULL TEXT
@@ -468,7 +468,7 @@ class SejmScraper(BaseScraper):
             return {
                 "_id": f"PL/Sejm/unknown/{datetime.now(timezone.utc).timestamp()}",
                 "_source": "PL/Sejm",
-                "_type": "parliamentary_proceedings",
+                "_type": "doctrine",
                 "_fetched_at": datetime.now(timezone.utc).isoformat(),
                 "title": raw.get("title", "Unknown"),
                 "text": raw.get("full_text", ""),

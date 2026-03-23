@@ -7,7 +7,7 @@ source:
   name_en: Supreme Court of Georgia
   country: GE
   data_types:
-    - case_law
+    - caselaw
   url: https://www.supremecourt.ge
   description: >
     Supreme Court case law from Georgia covering administrative, civil,

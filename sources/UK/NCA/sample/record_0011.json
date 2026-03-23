@@ -1,0 +1,13 @@
+{
+  "_id": "government_publications_national-crime-agency-workforce-management-information-january-2026",
+  "_source": "UK/NCA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-22T23:38:25.777796+00:00",
+  "title": "National Crime Agency: workforce management information January 2026",
+  "text": "The National Crime Agency (NCA) publishes details about staff numbers and payroll costs for payroll and non-payroll staff on a monthly basis.",
+  "date": "2026-02-13",
+  "url": "https://www.gov.uk/government/publications/national-crime-agency-workforce-management-information-january-2026",
+  "description": "Reports on departmental staff numbers and costs.",
+  "doc_type": "transparency",
+  "schema_name": "publication"
+}

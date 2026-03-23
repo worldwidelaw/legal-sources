@@ -1,0 +1,35 @@
+# IT/UIBM - Italian Patent and Trademark Office (UIBM)
+# Source: https://uibm.mise.gov.it
+# Data: Trademark opposition, nullity, and cancellation decisions
+
+name: Italian Patent Office (UIBM)
+country: IT
+source_id: IT/UIBM
+url: https://uibm.mise.gov.it
+
+data_types:
+  - doctrine
+
+license: Open Data (Italian public data)
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  max_workers: 3
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - wpn           # Case/opposition number
+    - wpn_linked    # Linked trademark application number
+    - type          # Decision type (Opposizione, Nullità, Decadenza)
+    - result        # Outcome (Accolta, Rigettata, etc.)
+    - date          # Decision date
+    - text          # Full decision text (extracted from PDF)

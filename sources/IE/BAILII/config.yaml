@@ -3,7 +3,7 @@ source:
   name: BAILII Irish Courts
   country: IE
   data_types:
-    - case_law
+    - caselaw
   url: https://www.bailii.org
   auth: none
   license: BAILII Terms (free-of-charge access, attribution required)

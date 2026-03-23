@@ -6,7 +6,7 @@ name: "German Federal Finance Court (Bundesfinanzhof)"
 country: "DE"
 language: "de"
 data_types:
-  - case_law
+  - caselaw
 
 # Data endpoints (no authentication required)
 endpoints:

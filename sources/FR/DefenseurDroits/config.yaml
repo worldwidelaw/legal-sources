@@ -1,0 +1,33 @@
+source:
+  id: FR/DefenseurDroits
+  name: French Rights Defender (Défenseur des droits)
+  country: FR
+  data_types:
+    - case_law
+  language: fr
+  url: https://juridique.defenseurdesdroits.fr
+  license: Open Data
+  notes: >
+    French ombudsman decisions via PMB library catalog.
+    Covers recommendations, settlements, court observations, reform proposals,
+    and decisions from predecessor bodies (HALDE, etc.). ~15,000+ records with full text.
+
+schema:
+  key_fields:
+    - _id
+    - decision_number
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+
+api:
+  type: html_scraping
+  base_url: https://juridique.defenseurdesdroits.fr
+  format: html
+  rate_limit: 2

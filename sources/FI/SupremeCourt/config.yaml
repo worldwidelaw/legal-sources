@@ -4,7 +4,7 @@ country: FI
 url: https://www.korkeinoikeus.fi
 
 data_types:
-  - case_law
+  - caselaw
 
 auth:
   type: none

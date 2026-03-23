@@ -357,7 +357,7 @@ class TweedeKamerScraper(BaseScraper):
             # Required base fields
             "_id": verslag_id,
             "_source": "NL/TweedeKamer",
-            "_type": "parliamentary_proceedings",
+            "_type": "doctrine",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             # Standard fields
             "title": title,
