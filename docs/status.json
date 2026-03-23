@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-23T10:56:08.942581+00:00",
+  "generated_at": "2026-03-23T10:56:45.895869+00:00",
   "summary": {
     "total": 539,
     "complete": 359,
@@ -820,7 +820,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 37648
+      "avg_text_length": 28632
     },
     {
       "id": "AM/ConstitutionalCourt",
@@ -838,7 +838,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 19865
+      "avg_text_length": 20944
     },
     {
       "id": "AR/InfoLEG",
@@ -856,7 +856,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 6481
+      "avg_text_length": 6320
     },
     {
       "id": "AR/SAIJ",
@@ -874,7 +874,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 28,
-      "avg_text_length": 554
+      "avg_text_length": 479
     },
     {
       "id": "AT/RIS",
@@ -896,7 +896,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 1450
+      "avg_text_length": 1777
     },
     {
       "id": "AT/VwGH",
@@ -915,7 +915,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 1021
+      "avg_text_length": 979
     },
     {
       "id": "AU/FederalRegister",
@@ -934,7 +934,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 340937
+      "avg_text_length": 350286
     },
     {
       "id": "AZ/ConstitutionalCourt",
@@ -953,7 +953,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 25640
+      "avg_text_length": 25994
     },
     {
       "id": "BA/ConstitutionalCourt",
@@ -971,7 +971,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 13,
-      "avg_text_length": 12926
+      "avg_text_length": 12030
     },
     {
       "id": "BA/SluzbenGlasnik",
@@ -991,7 +991,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 13813
+      "avg_text_length": 4514
     },
     {
       "id": "BA/SudskaPrivada",
@@ -1010,7 +1010,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 16306
+      "avg_text_length": 21371
     },
     {
       "id": "BE/MoniteurBelge",
@@ -1029,7 +1029,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 19249
+      "avg_text_length": 15899
     },
     {
       "id": "BE/VlaamseCodex",
@@ -1047,7 +1047,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 7288
+      "avg_text_length": 5249
     },
     {
       "id": "BG/StateGazette",
@@ -1066,7 +1066,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 23043
+      "avg_text_length": 15008
     },
     {
       "id": "CA/A2AJ",
@@ -1084,7 +1084,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 77454
+      "avg_text_length": 78737
     },
     {
       "id": "CA/BCLaws",
@@ -1102,7 +1102,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 21564
+      "avg_text_length": 21566
     },
     {
       "id": "CA/FederalLegislation",
@@ -1120,7 +1120,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 52807
+      "avg_text_length": 41563
     },
     {
       "id": "CA/SupremeCourt",
@@ -1139,7 +1139,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 27,
-      "avg_text_length": 120892
+      "avg_text_length": 148669
     },
     {
       "id": "CH/Entscheidsuche",
@@ -1159,7 +1159,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 21454
+      "avg_text_length": 32664
     },
     {
       "id": "CH/Fedlex",
@@ -1179,7 +1179,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 8033
+      "avg_text_length": 7754
     },
     {
       "id": "CH/Kantone",
@@ -1197,7 +1197,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 17,
-      "avg_text_length": 14572
+      "avg_text_length": 19827
     },
     {
       "id": "CoE/HUDOC",
@@ -1215,7 +1215,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 19,
-      "avg_text_length": 35663
+      "avg_text_length": 33288
     },
     {
       "id": "DE/BAG",
@@ -1233,7 +1233,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 31178
+      "avg_text_length": 23941
     },
     {
       "id": "DE/BFH",
@@ -1251,7 +1251,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 27499
+      "avg_text_length": 29504
     },
     {
       "id": "DE/BGBl",
@@ -1290,7 +1290,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 13,
-      "avg_text_length": 5938
+      "avg_text_length": 4605
     },
     {
       "id": "DE/BaFin",
@@ -1308,7 +1308,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 17,
-      "avg_text_length": 28725
+      "avg_text_length": 28224
     },
     {
       "id": "DE/Bundeskartellamt",
@@ -1326,7 +1326,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 13,
-      "avg_text_length": 350453
+      "avg_text_length": 261481
     },
     {
       "id": "DK/Lovdata",
@@ -1347,7 +1347,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 17162
+      "avg_text_length": 30391
     },
     {
       "id": "EE/RiigiTeatajaLoomal",
@@ -1385,7 +1385,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 107745
+      "avg_text_length": 106063
     },
     {
       "id": "ES/BOE",
@@ -1406,7 +1406,7 @@
       "has_retrieve": true,
       "retrieve_test_count": 12,
       "sample_count": 12,
-      "avg_text_length": 278645
+      "avg_text_length": 230894
     },
     {
       "id": "EU/CURIA",
@@ -1424,7 +1424,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 52307
+      "avg_text_length": 52725
     },
     {
       "id": "EU/DGComp",
@@ -1443,7 +1443,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 30,
-      "avg_text_length": 71121
+      "avg_text_length": 43674
     },
     {
       "id": "EU/EBA",
@@ -1462,7 +1462,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 114028
+      "avg_text_length": 110709
     },
     {
       "id": "EU/ECB",
@@ -1480,7 +1480,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 23298
+      "avg_text_length": 31362
     },
     {
       "id": "EU/ESMA",
@@ -1498,7 +1498,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 18,
-      "avg_text_length": 27618
+      "avg_text_length": 37397
     },
     {
       "id": "EU/EUR-Lex",
@@ -1517,7 +1517,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 30,
-      "avg_text_length": 9907
+      "avg_text_length": 7596
     },
     {
       "id": "FI/Finlex",
@@ -1539,7 +1539,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 7768
+      "avg_text_length": 7277
     },
     {
       "id": "FR/JournalOfficiel",
@@ -1560,7 +1560,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 5277
+      "avg_text_length": 6554
     },
     {
       "id": "FR/LegifranceCodes",
@@ -1581,7 +1581,7 @@
       "has_retrieve": true,
       "retrieve_test_count": 14,
       "sample_count": 14,
-      "avg_text_length": 546
+      "avg_text_length": 877
     },
     {
       "id": "GE/ConstitutionalCourt",
@@ -1599,7 +1599,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 43587
+      "avg_text_length": 43586
     },
     {
       "id": "GE/SupremeCourt",
@@ -1618,7 +1618,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 22523
+      "avg_text_length": 19932
     },
     {
       "id": "GR/ConsumerOmbudsman",
@@ -1637,7 +1637,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 10111
+      "avg_text_length": 10789
     },
     {
       "id": "GR/CourtOfAudit",
@@ -1673,7 +1673,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 30,
-      "avg_text_length": 7123
+      "avg_text_length": 7416
     },
     {
       "id": "GR/EPANT",
@@ -1692,7 +1692,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 3748
+      "avg_text_length": 3481
     },
     {
       "id": "GR/GovernmentGazette",
@@ -1712,7 +1712,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 52503
+      "avg_text_length": 48968
     },
     {
       "id": "GR/HellenicParliament",
@@ -1731,7 +1731,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 2791
+      "avg_text_length": 9317
     },
     {
       "id": "GR/NCRTV",
@@ -1750,7 +1750,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 49465
+      "avg_text_length": 55698
     },
     {
       "id": "GR/NSK",
@@ -1768,7 +1768,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 1327
+      "avg_text_length": 1315
     },
     {
       "id": "HR/AllCourts",
@@ -1786,7 +1786,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 2483
+      "avg_text_length": 2651
     },
     {
       "id": "HR/OfficialGazette",
@@ -1805,7 +1805,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 27772
+      "avg_text_length": 35123
     },
     {
       "id": "HU/Constitutional",
@@ -1823,7 +1823,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 20,
-      "avg_text_length": 17363
+      "avg_text_length": 24200
     },
     {
       "id": "HU/NJT",
@@ -1842,7 +1842,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 6439
+      "avg_text_length": 4452
     },
     {
       "id": "IE/Acts",
@@ -1861,7 +1861,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 11827
+      "avg_text_length": 11815
     },
     {
       "id": "IE/SupremeCourt",
@@ -1880,7 +1880,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 60187
+      "avg_text_length": 47088
     },
     {
       "id": "IS/Lagasafn",
@@ -1900,7 +1900,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 242116
+      "avg_text_length": 242181
     },
     {
       "id": "IT/AGCM",
@@ -1918,7 +1918,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 32818
+      "avg_text_length": 30569
     },
     {
       "id": "IT/AgenziEntrate",
@@ -1937,7 +1937,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 16163
+      "avg_text_length": 16365
     },
     {
       "id": "IT/GazzettaUfficiale",
@@ -1956,7 +1956,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 117267
+      "avg_text_length": 109445
     },
     {
       "id": "IT/Normattiva",
@@ -1977,7 +1977,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 41920
+      "avg_text_length": 45947
     },
     {
       "id": "LI/LILEX",
@@ -1997,7 +1997,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 297724
+      "avg_text_length": 279145
     },
     {
       "id": "LT/LegalBase",
@@ -2016,7 +2016,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 8818
+      "avg_text_length": 10585
     },
     {
       "id": "LU/LegalDatabase",
@@ -2035,7 +2035,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 6489
+      "avg_text_length": 6477
     },
     {
       "id": "LV/ConstitutionalCourt",
@@ -2054,7 +2054,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 6974
+      "avg_text_length": 6384
     },
     {
       "id": "LV/LegislativeDatabase",
@@ -2073,7 +2073,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 704
+      "avg_text_length": 479
     },
     {
       "id": "ME/ConstitutionalCourt",
@@ -2091,7 +2091,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 41629
+      "avg_text_length": 47596
     },
     {
       "id": "ME/SluzbenList",
@@ -2111,7 +2111,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 22,
-      "avg_text_length": 50350
+      "avg_text_length": 70562
     },
     {
       "id": "MT/GovernmentGazette",
@@ -2130,7 +2130,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 134352
+      "avg_text_length": 234335
     },
     {
       "id": "NL/Rechtspraak",
@@ -2148,7 +2148,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 22,
-      "avg_text_length": 16187
+      "avg_text_length": 14424
     },
     {
       "id": "NL/Staatsblad",
@@ -2167,7 +2167,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 10057
+      "avg_text_length": 7293
     },
     {
       "id": "NL/wetten.overheid.nl",
@@ -2201,7 +2201,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 10486
+      "avg_text_length": 10298
     },
     {
       "id": "NO/Lovdata",
@@ -2219,7 +2219,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 15380
+      "avg_text_length": 15413
     },
     {
       "id": "NZ/Legislation",
@@ -2238,7 +2238,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 4723
+      "avg_text_length": 5363
     },
     {
       "id": "PL/DziennikUrzedowy",
@@ -2257,7 +2257,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 5324
+      "avg_text_length": 5293
     },
     {
       "id": "PT/DiarioRepublica",
@@ -2276,7 +2276,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 9699
+      "avg_text_length": 17335
     },
     {
       "id": "RO/LegislationDatabase",
@@ -2295,7 +2295,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 1791
+      "avg_text_length": 1690
     },
     {
       "id": "RS/ConstitutionalCourt",
@@ -2314,7 +2314,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 23362
+      "avg_text_length": 22739
     },
     {
       "id": "RS/SluzbenGlasnik",
@@ -2334,7 +2334,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 85811
+      "avg_text_length": 52884
     },
     {
       "id": "RS/SupremeCourt",
@@ -2353,7 +2353,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 10410
+      "avg_text_length": 10241
     },
     {
       "id": "SE/SvenskaForfattningssamlingen",
@@ -2390,7 +2390,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 14084
+      "avg_text_length": 13779
     },
     {
       "id": "SK/CollectionOfLaws",
@@ -2409,7 +2409,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 3009
+      "avg_text_length": 7408
     },
     {
       "id": "TR/AnayasaMahkemesi",
@@ -2428,7 +2428,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 18367
+      "avg_text_length": 22845
     },
     {
       "id": "TR/Danistay",
@@ -2447,7 +2447,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 32651
+      "avg_text_length": 29308
     },
     {
       "id": "TR/MevzuatHF",
@@ -2465,7 +2465,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 24452
+      "avg_text_length": 22820
     },
     {
       "id": "TR/Yargitay",
@@ -2484,7 +2484,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 4416
+      "avg_text_length": 4308
     },
     {
       "id": "TW/MOJ",
@@ -2522,7 +2522,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 19849
+      "avg_text_length": 21212
     },
     {
       "id": "UA/RadaLegislation",
@@ -2543,7 +2543,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 20,
-      "avg_text_length": 27959
+      "avg_text_length": 18202
     },
     {
       "id": "UA/SupremeCourt",
@@ -2562,7 +2562,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 15898
+      "avg_text_length": 15813
     },
     {
       "id": "UK/CMA",
@@ -2580,7 +2580,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 6654
+      "avg_text_length": 7036
     },
     {
       "id": "UK/CaseLaw",
@@ -2598,7 +2598,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 72660
+      "avg_text_length": 56664
     },
     {
       "id": "UK/FCA",
@@ -2616,7 +2616,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 41787
+      "avg_text_length": 41870
     },
     {
       "id": "UK/HMRC",
@@ -2655,7 +2655,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 141790
+      "avg_text_length": 92670
     },
     {
       "id": "US/CaselawAccessProject",
@@ -2673,7 +2673,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 5708
+      "avg_text_length": 6053
     },
     {
       "id": "US/EveryCRSReport",
@@ -2691,7 +2691,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 50991
+      "avg_text_length": 51421
     },
     {
       "id": "US/FederalRegister",
@@ -2709,7 +2709,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 46939
+      "avg_text_length": 41701
     },
     {
       "id": "US/GovInfo",
@@ -2727,7 +2727,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 11,
-      "avg_text_length": 33485
+      "avg_text_length": 43016
     },
     {
       "id": "US/PresidentialDocuments",
@@ -2745,7 +2745,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 6973
+      "avg_text_length": 7366
     },
     {
       "id": "XK/ConstitutionalCourt",
@@ -2783,7 +2783,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 100,
-      "avg_text_length": 80932
+      "avg_text_length": 70797
     },
     {
       "id": "AL/ConstitutionalCourt",
@@ -2802,7 +2802,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 33119
+      "avg_text_length": 17747
     },
     {
       "id": "AL/SupremeCourt",
@@ -2820,7 +2820,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 30,
-      "avg_text_length": 4963
+      "avg_text_length": 5020
     },
     {
       "id": "AM/ARLIS",
@@ -2839,7 +2839,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 17229
+      "avg_text_length": 15976
     },
     {
       "id": "AT/Bundesgesetzblatt",
@@ -2858,7 +2858,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 72735
+      "avg_text_length": 61090
     },
     {
       "id": "AT/FMA",
@@ -2877,7 +2877,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 1191
+      "avg_text_length": 1294
     },
     {
       "id": "AT/Landesrecht",
@@ -2896,7 +2896,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 819
+      "avg_text_length": 713
     },
     {
       "id": "AT/OGH",
@@ -2915,7 +2915,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 2716
+      "avg_text_length": 2579
     },
     {
       "id": "AT/OGH-Arbeitsrecht",
@@ -2948,7 +2948,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 5571
+      "avg_text_length": 7331
     },
     {
       "id": "AZ/Qanun",
@@ -2967,7 +2967,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 20991
+      "avg_text_length": 31526
     },
     {
       "id": "BA/Brcko",
@@ -2985,7 +2985,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 54117
+      "avg_text_length": 47807
     },
     {
       "id": "BA/FBiH",
@@ -3003,7 +3003,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 23469
+      "avg_text_length": 13166
     },
     {
       "id": "BA/RS",
@@ -3021,7 +3021,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 71640
+      "avg_text_length": 96922
     },
     {
       "id": "BE/APD",
@@ -3039,7 +3039,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 13676
+      "avg_text_length": 12679
     },
     {
       "id": "BE/BCA",
@@ -3057,7 +3057,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 154334
+      "avg_text_length": 154416
     },
     {
       "id": "BE/BIPT",
@@ -3075,7 +3075,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 39340
+      "avg_text_length": 45991
     },
     {
       "id": "BE/CASS",
@@ -3094,7 +3094,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 5932
+      "avg_text_length": 6377
     },
     {
       "id": "BE/CREG",
@@ -3112,7 +3112,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 144502
+      "avg_text_length": 66533
     },
     {
       "id": "BE/ConseilEtat",
@@ -3130,7 +3130,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 100,
-      "avg_text_length": 7963
+      "avg_text_length": 14960
     },
     {
       "id": "BE/CourCassation-Fiscal",
@@ -3149,7 +3149,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 5072
+      "avg_text_length": 7298
     },
     {
       "id": "BE/CourConstitutionnelle",
@@ -3168,7 +3168,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 111,
-      "avg_text_length": 36660
+      "avg_text_length": 116100
     },
     {
       "id": "BE/CourTravail",
@@ -3186,7 +3186,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 26999
+      "avg_text_length": 20356
     },
     {
       "id": "BE/FSMA",
@@ -3204,7 +3204,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 7705
+      "avg_text_length": 8235
     },
     {
       "id": "BG/CPDP",
@@ -3223,7 +3223,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 3628
+      "avg_text_length": 5012
     },
     {
       "id": "BG/ConstitutionalCourt",
@@ -3242,7 +3242,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 8729
+      "avg_text_length": 7746
     },
     {
       "id": "BG/SupremeCourt",
@@ -3261,7 +3261,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 10300
+      "avg_text_length": 11043
     },
     {
       "id": "CA/CanadaGazette",
@@ -3279,7 +3279,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 13026
+      "avg_text_length": 12855
     },
     {
       "id": "CH/CAS",
@@ -3297,7 +3297,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 97676
+      "avg_text_length": 95177
     },
     {
       "id": "CH/COMCO",
@@ -3315,7 +3315,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 425070
+      "avg_text_length": 434762
     },
     {
       "id": "CH/ESTV",
@@ -3333,7 +3333,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 31639
+      "avg_text_length": 22496
     },
     {
       "id": "CY/CYLAW",
@@ -3352,7 +3352,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 110567
+      "avg_text_length": 106060
     },
     {
       "id": "CY/DATAPROTECTION",
@@ -3371,7 +3371,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 38905
+      "avg_text_length": 30701
     },
     {
       "id": "CY/SupremeCourt",
@@ -3390,7 +3390,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 29585
+      "avg_text_length": 28385
     },
     {
       "id": "CZ/ConstitutionalCourt",
@@ -3408,7 +3408,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 7517
+      "avg_text_length": 6607
     },
     {
       "id": "CZ/NSS",
@@ -3426,7 +3426,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 24135
+      "avg_text_length": 22806
     },
     {
       "id": "CZ/SupremeCourt",
@@ -3444,7 +3444,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 9352
+      "avg_text_length": 10805
     },
     {
       "id": "CZ/UOOU",
@@ -3462,7 +3462,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 2394
+      "avg_text_length": 2307
     },
     {
       "id": "DE/BGH",
@@ -3480,7 +3480,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 17694
+      "avg_text_length": 17985
     },
     {
       "id": "DE/BKartG",
@@ -3498,7 +3498,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 13093
+      "avg_text_length": 12194
     },
     {
       "id": "DE/BMF",
@@ -3534,7 +3534,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 38865
+      "avg_text_length": 38441
     },
     {
       "id": "DE/BPatG",
@@ -3552,7 +3552,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 17936
+      "avg_text_length": 20744
     },
     {
       "id": "DE/BVL",
@@ -3570,7 +3570,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 5767
+      "avg_text_length": 5184
     },
     {
       "id": "DE/BVerwG",
@@ -3588,7 +3588,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 100,
-      "avg_text_length": 348
+      "avg_text_length": 356
     },
     {
       "id": "DE/BfArM",
@@ -3606,7 +3606,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 5346
+      "avg_text_length": 5370
     },
     {
       "id": "DE/Brandenburg",
@@ -3624,7 +3624,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 23,
-      "avg_text_length": 10274
+      "avg_text_length": 17957
     },
     {
       "id": "DE/Bremen",
@@ -3642,7 +3642,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 13460
+      "avg_text_length": 18022
     },
     {
       "id": "DE/Bundesrat",
@@ -3660,7 +3660,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 92718
+      "avg_text_length": 110196
     },
     {
       "id": "DE/Bundestag",
@@ -3678,7 +3678,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 229145
+      "avg_text_length": 263474
     },
     {
       "id": "DK/CourtOfAppeal",
@@ -3696,7 +3696,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 22,
-      "avg_text_length": 30381
+      "avg_text_length": 17049
     },
     {
       "id": "DK/DTIL",
@@ -3715,7 +3715,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 14681
+      "avg_text_length": 14047
     },
     {
       "id": "DK/KFST",
@@ -3734,7 +3734,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 12101
+      "avg_text_length": 11203
     },
     {
       "id": "DK/SKAT",
@@ -3772,7 +3772,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 121126
+      "avg_text_length": 130604
     },
     {
       "id": "EE/AKI",
@@ -3790,7 +3790,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 22107
+      "avg_text_length": 20180
     },
     {
       "id": "EE/Riigikogu",
@@ -3808,7 +3808,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 11758
+      "avg_text_length": 11732
     },
     {
       "id": "EE/SupremeCourt",
@@ -3826,7 +3826,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 27,
-      "avg_text_length": 33435
+      "avg_text_length": 25560
     },
     {
       "id": "ES/AEPD",
@@ -3845,7 +3845,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 38709
+      "avg_text_length": 50747
     },
     {
       "id": "ES/Andalucia",
@@ -3878,7 +3878,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 10243
+      "avg_text_length": 10287
     },
     {
       "id": "ES/BasqueCountry",
@@ -3896,7 +3896,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 3275
+      "avg_text_length": 3046
     },
     {
       "id": "ES/CNMV",
@@ -3934,7 +3934,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 22950
+      "avg_text_length": 21572
     },
     {
       "id": "ES/ConstitutionalCourt",
@@ -3953,7 +3953,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 154684
+      "avg_text_length": 157849
     },
     {
       "id": "ES/Madrid",
@@ -3972,7 +3972,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 5020
+      "avg_text_length": 4449
     },
     {
       "id": "ES/TEAC",
@@ -4008,7 +4008,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 47418
+      "avg_text_length": 51665
     },
     {
       "id": "EU/AMLA",
@@ -4026,7 +4026,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 34134
+      "avg_text_length": 14415
     },
     {
       "id": "EU/BEREC",
@@ -4044,7 +4044,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 57274
+      "avg_text_length": 63018
     },
     {
       "id": "EU/EASA",
@@ -4062,7 +4062,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 10909
+      "avg_text_length": 11156
     },
     {
       "id": "EU/ECJ-Tax",
@@ -4080,7 +4080,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 37259
+      "avg_text_length": 49817
     },
     {
       "id": "EU/EFSA",
@@ -4098,7 +4098,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 20,
-      "avg_text_length": 1067
+      "avg_text_length": 1137
     },
     {
       "id": "EU/EIOPA",
@@ -4116,7 +4116,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 38165
+      "avg_text_length": 43659
     },
     {
       "id": "EU/EMA",
@@ -4134,7 +4134,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 8550
+      "avg_text_length": 8487
     },
     {
       "id": "EU/ERA",
@@ -4152,7 +4152,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 14,
-      "avg_text_length": 69623
+      "avg_text_length": 118053
     },
     {
       "id": "EU/EUIPO",
@@ -4170,7 +4170,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 11596
+      "avg_text_length": 19823
     },
     {
       "id": "EU/EuroParl",
@@ -4188,7 +4188,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 13,
-      "avg_text_length": 20959
+      "avg_text_length": 21777
     },
     {
       "id": "EU/OLAF",
@@ -4206,7 +4206,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 3538
+      "avg_text_length": 3989
     },
     {
       "id": "EU/Ombudsman",
@@ -4225,7 +4225,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 8070
+      "avg_text_length": 7541
     },
     {
       "id": "EU/TDI",
@@ -4243,7 +4243,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 86321
+      "avg_text_length": 79681
     },
     {
       "id": "EU/TED",
@@ -4261,7 +4261,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 15270
+      "avg_text_length": 31628
     },
     {
       "id": "FI/Eduskunta",
@@ -4280,7 +4280,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 91006
+      "avg_text_length": 104244
     },
     {
       "id": "FI/FCCA",
@@ -4298,7 +4298,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 4127
+      "avg_text_length": 4199
     },
     {
       "id": "FI/SupremeAdministrativeCourt",
@@ -4316,7 +4316,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 44939
+      "avg_text_length": 42088
     },
     {
       "id": "FI/SupremeCourt",
@@ -4334,7 +4334,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 20232
+      "avg_text_length": 17991
     },
     {
       "id": "FI/TSV",
@@ -4352,7 +4352,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 14,
-      "avg_text_length": 40111
+      "avg_text_length": 39172
     },
     {
       "id": "FI/VERO",
@@ -4370,7 +4370,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 18270
+      "avg_text_length": 2457
     },
     {
       "id": "FR/ADLC",
@@ -4402,7 +4402,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 181514
+      "avg_text_length": 187346
     },
     {
       "id": "FR/ANC",
@@ -4421,7 +4421,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 13,
-      "avg_text_length": 430295
+      "avg_text_length": 437629
     },
     {
       "id": "FR/ANJ",
@@ -4439,7 +4439,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 1579
+      "avg_text_length": 1554
     },
     {
       "id": "FR/ANSM",
@@ -4457,7 +4457,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 817
+      "avg_text_length": 833
     },
     {
       "id": "FR/AssembleeNationale",
@@ -4476,7 +4476,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 10776
+      "avg_text_length": 11223
     },
     {
       "id": "FR/BOAMP",
@@ -4494,7 +4494,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 550
+      "avg_text_length": 980
     },
     {
       "id": "FR/Bofip",
@@ -4512,7 +4512,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 9737
+      "avg_text_length": 6128
     },
     {
       "id": "FR/CADA",
@@ -4530,7 +4530,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 3991
+      "avg_text_length": 3822
     },
     {
       "id": "FR/CASS",
@@ -4549,7 +4549,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 12797
+      "avg_text_length": 11450
     },
     {
       "id": "FR/CE-Fiscal",
@@ -4568,7 +4568,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 9319
+      "avg_text_length": 7685
     },
     {
       "id": "FR/CNIL",
@@ -4587,7 +4587,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 3548
+      "avg_text_length": 3704
     },
     {
       "id": "FR/CSA",
@@ -4605,7 +4605,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 2544
+      "avg_text_length": 745
     },
     {
       "id": "FR/CdesC",
@@ -4623,7 +4623,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 3742
+      "avg_text_length": 2995
     },
     {
       "id": "FR/ConseilConstitutionnel",
@@ -4641,7 +4641,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 100,
-      "avg_text_length": 3286
+      "avg_text_length": 3267
     },
     {
       "id": "FR/ConventionsCollectives",
@@ -4660,7 +4660,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 121577
+      "avg_text_length": 465857
     },
     {
       "id": "FR/CouncilState",
@@ -4679,7 +4679,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 11679
+      "avg_text_length": 7862
     },
     {
       "id": "FR/DGCCRF",
@@ -4697,7 +4697,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 18,
-      "avg_text_length": 1207
+      "avg_text_length": 1209
     },
     {
       "id": "FR/DefenseurDroits",
@@ -4715,7 +4715,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 1965
+      "avg_text_length": 2045
     },
     {
       "id": "FR/Halde",
@@ -4733,7 +4733,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 179
+      "avg_text_length": 203
     },
     {
       "id": "FR/Judilibre",
@@ -4754,7 +4754,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 8537
+      "avg_text_length": 7822
     },
     {
       "id": "FR/Senat",
@@ -4773,7 +4773,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 15541
+      "avg_text_length": 13728
     },
     {
       "id": "FR/ServicePublic",
@@ -4791,7 +4791,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 8375
+      "avg_text_length": 5892
     },
     {
       "id": "GE/Matsne",
@@ -4810,7 +4810,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 113158
+      "avg_text_length": 127020
     },
     {
       "id": "GR/AADE",
@@ -4828,7 +4828,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 24,
-      "avg_text_length": 54850
+      "avg_text_length": 14375
     },
     {
       "id": "GR/ADAE",
@@ -4846,7 +4846,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 7267
+      "avg_text_length": 7627
     },
     {
       "id": "GR/DPA",
@@ -4865,7 +4865,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 51724
+      "avg_text_length": 61253
     },
     {
       "id": "GR/EETT",
@@ -4883,7 +4883,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 20143
+      "avg_text_length": 13310
     },
     {
       "id": "GR/GNCHR",
@@ -4901,7 +4901,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 2368
+      "avg_text_length": 2428
     },
     {
       "id": "GR/HCMC",
@@ -4920,7 +4920,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 35925
+      "avg_text_length": 42383
     },
     {
       "id": "GR/KHMDHS",
@@ -4939,7 +4939,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 36146
+      "avg_text_length": 36188
     },
     {
       "id": "GR/NTA",
@@ -4957,7 +4957,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 11477
+      "avg_text_length": 7318
     },
     {
       "id": "GR/Ombudsman",
@@ -4975,7 +4975,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 88622
+      "avg_text_length": 86496
     },
     {
       "id": "GR/RAAEY",
@@ -4993,7 +4993,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 159721
+      "avg_text_length": 161181
     },
     {
       "id": "GR/SupremeCourt",
@@ -5012,7 +5012,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 34663
+      "avg_text_length": 37656
     },
     {
       "id": "HR/AZOP",
@@ -5031,7 +5031,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 59301
+      "avg_text_length": 59289
     },
     {
       "id": "HR/AdminCourt",
@@ -5050,7 +5050,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 8456
+      "avg_text_length": 8512
     },
     {
       "id": "HR/SupremeCourt",
@@ -5069,7 +5069,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 3060
+      "avg_text_length": 3012
     },
     {
       "id": "HU/FelsoBirosag",
@@ -5087,7 +5087,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 85,
-      "avg_text_length": 23680
+      "avg_text_length": 15634
     },
     {
       "id": "HU/NAIH",
@@ -5105,7 +5105,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 35274
+      "avg_text_length": 42897
     },
     {
       "id": "HU/NAV",
@@ -5123,7 +5123,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 65944
+      "avg_text_length": 54411
     },
     {
       "id": "HU/Parlament",
@@ -5142,7 +5142,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 2496
+      "avg_text_length": 2270
     },
     {
       "id": "IE/CCPC",
@@ -5160,7 +5160,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 2599
+      "avg_text_length": 3158
     },
     {
       "id": "IE/DPC",
@@ -5179,7 +5179,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 67899
+      "avg_text_length": 37864
     },
     {
       "id": "IE/Oireachtas",
@@ -5198,7 +5198,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 144352
+      "avg_text_length": 156576
     },
     {
       "id": "IE/Revenue",
@@ -5216,7 +5216,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 16320
+      "avg_text_length": 17072
     },
     {
       "id": "IS/SupremeCourt",
@@ -5236,7 +5236,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 34848
+      "avg_text_length": 31113
     },
     {
       "id": "IT/AGCOM",
@@ -5254,7 +5254,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 14829
+      "avg_text_length": 44843
     },
     {
       "id": "IT/AgenziaDogane",
@@ -5272,7 +5272,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 39550
+      "avg_text_length": 42096
     },
     {
       "id": "IT/Banca",
@@ -5290,7 +5290,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 10589
+      "avg_text_length": 18216
     },
     {
       "id": "IT/Camera",
@@ -5308,7 +5308,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 13,
-      "avg_text_length": 35141
+      "avg_text_length": 37267
     },
     {
       "id": "IT/CassazioneCivile",
@@ -5327,7 +5327,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 13148
+      "avg_text_length": 12312
     },
     {
       "id": "IT/CassazioneLavoro",
@@ -5392,7 +5392,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 6258
+      "avg_text_length": 6023
     },
     {
       "id": "IT/EmiliaRomagna",
@@ -5411,7 +5411,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 1104
+      "avg_text_length": 1156
     },
     {
       "id": "IT/GarantePrivacy",
@@ -5430,7 +5430,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 24481
+      "avg_text_length": 24373
     },
     {
       "id": "IT/Lazio",
@@ -5449,7 +5449,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 1105
+      "avg_text_length": 1173
     },
     {
       "id": "IT/Lombardia",
@@ -5468,7 +5468,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 28018
+      "avg_text_length": 26294
     },
     {
       "id": "IT/Piemonte",
@@ -5487,7 +5487,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 4604
+      "avg_text_length": 4538
     },
     {
       "id": "IT/Senato",
@@ -5506,7 +5506,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 10129
+      "avg_text_length": 8688
     },
     {
       "id": "IT/TAR",
@@ -5538,7 +5538,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 16321
+      "avg_text_length": 22630
     },
     {
       "id": "IT/UIBM",
@@ -5556,7 +5556,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 29298
+      "avg_text_length": 26699
     },
     {
       "id": "IT/Veneto",
@@ -5575,7 +5575,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 8558
+      "avg_text_length": 7363
     },
     {
       "id": "LI/StGH",
@@ -5593,7 +5593,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 38294
+      "avg_text_length": 39361
     },
     {
       "id": "LT/ConstitutionalCourt",
@@ -5612,7 +5612,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 12689
+      "avg_text_length": 10757
     },
     {
       "id": "LT/Parliament",
@@ -5631,7 +5631,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 2132
+      "avg_text_length": 1226
     },
     {
       "id": "LU/ACD",
@@ -5649,7 +5649,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 7133
+      "avg_text_length": 8256
     },
     {
       "id": "LU/CNPD",
@@ -5667,7 +5667,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 33895
+      "avg_text_length": 40931
     },
     {
       "id": "LU/Parliament",
@@ -5686,7 +5686,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 4017
+      "avg_text_length": 4314
     },
     {
       "id": "LU/SupremeCourt",
@@ -5704,7 +5704,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 36555
+      "avg_text_length": 39344
     },
     {
       "id": "LV/Parliament",
@@ -5723,7 +5723,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 221087
+      "avg_text_length": 228149
     },
     {
       "id": "LV/SupremeCourt",
@@ -5742,7 +5742,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 3345
+      "avg_text_length": 4454
     },
     {
       "id": "NL/ACM",
@@ -5760,7 +5760,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 45827
+      "avg_text_length": 58614
     },
     {
       "id": "NL/ACM-Telecom",
@@ -5778,7 +5778,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 72456
+      "avg_text_length": 107817
     },
     {
       "id": "NL/AFM",
@@ -5796,7 +5796,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 3258
+      "avg_text_length": 3659
     },
     {
       "id": "NL/AP",
@@ -5815,7 +5815,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 10257
+      "avg_text_length": 15508
     },
     {
       "id": "NL/Belastingdienst",
@@ -5833,7 +5833,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 16,
-      "avg_text_length": 14788
+      "avg_text_length": 46958
     },
     {
       "id": "NL/CRvB",
@@ -5851,7 +5851,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 13791
+      "avg_text_length": 15055
     },
     {
       "id": "NL/DNB",
@@ -5869,7 +5869,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 14,
-      "avg_text_length": 1472
+      "avg_text_length": 1463
     },
     {
       "id": "NL/HR-Belasting",
@@ -5887,7 +5887,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 3103
+      "avg_text_length": 4810
     },
     {
       "id": "NL/SupremeCourt",
@@ -5905,7 +5905,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 8288
+      "avg_text_length": 9011
     },
     {
       "id": "NL/TweedeKamer",
@@ -5923,7 +5923,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 226718
+      "avg_text_length": 278235
     },
     {
       "id": "NO/DTIL",
@@ -5941,7 +5941,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 4849
+      "avg_text_length": 5309
     },
     {
       "id": "NO/KONKURR",
@@ -5959,7 +5959,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 611
+      "avg_text_length": 537
     },
     {
       "id": "NO/SKD",
@@ -5977,7 +5977,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 10150
+      "avg_text_length": 6962
     },
     {
       "id": "PL/ConstitutionalCourt",
@@ -5996,7 +5996,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 72437
+      "avg_text_length": 50535
     },
     {
       "id": "PL/KNF",
@@ -6014,7 +6014,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 38742
+      "avg_text_length": 38364
     },
     {
       "id": "PL/NSA-Tax",
@@ -6033,7 +6033,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 28903
+      "avg_text_length": 39134
     },
     {
       "id": "PL/Sejm",
@@ -6051,7 +6051,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 4211
+      "avg_text_length": 4314
     },
     {
       "id": "PL/SupremeCourt",
@@ -6070,7 +6070,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 5014
+      "avg_text_length": 5831
     },
     {
       "id": "PL/UKE",
@@ -6106,7 +6106,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 103953
+      "avg_text_length": 106614
     },
     {
       "id": "PL/UOKIK",
@@ -6124,7 +6124,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 44975
+      "avg_text_length": 43082
     },
     {
       "id": "PL/URE",
@@ -6142,7 +6142,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 20998
+      "avg_text_length": 35117
     },
     {
       "id": "PT/AT",
@@ -6160,7 +6160,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 4670
+      "avg_text_length": 4148
     },
     {
       "id": "PT/AdC",
@@ -6178,7 +6178,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 538
+      "avg_text_length": 536
     },
     {
       "id": "PT/CAAD",
@@ -6196,7 +6196,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 36751
+      "avg_text_length": 39752
     },
     {
       "id": "PT/CNPD",
@@ -6214,7 +6214,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 24191
+      "avg_text_length": 26005
     },
     {
       "id": "PT/ConstitutionalCourt",
@@ -6233,7 +6233,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 34468
+      "avg_text_length": 32840
     },
     {
       "id": "PT/STA",
@@ -6252,7 +6252,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 38846
+      "avg_text_length": 39259
     },
     {
       "id": "PT/SupremeCourt",
@@ -6271,7 +6271,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 53729
+      "avg_text_length": 55618
     },
     {
       "id": "RO/ANAF",
@@ -6289,7 +6289,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 1206
+      "avg_text_length": 1105
     },
     {
       "id": "RO/ANSPDCP",
@@ -6307,7 +6307,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 3838
+      "avg_text_length": 3770
     },
     {
       "id": "SE/IMY",
@@ -6326,7 +6326,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 26259
+      "avg_text_length": 22362
     },
     {
       "id": "SE/RiksdagenDB",
@@ -6344,7 +6344,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 261774
+      "avg_text_length": 206516
     },
     {
       "id": "SE/SKV",
@@ -6381,7 +6381,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 8999
+      "avg_text_length": 8412
     },
     {
       "id": "SE/SupremeCourt",
@@ -6399,7 +6399,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 11409
+      "avg_text_length": 11264
     },
     {
       "id": "SI/AdminCourt",
@@ -6455,7 +6455,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 100,
-      "avg_text_length": 6659
+      "avg_text_length": 10581
     },
     {
       "id": "SK/SupremeCourt",
@@ -6474,7 +6474,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 17973
+      "avg_text_length": 15327
     },
     {
       "id": "SK/UOOU",
@@ -6512,7 +6512,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 10462
+      "avg_text_length": 9373
     },
     {
       "id": "UK/ASA",
@@ -6531,7 +6531,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 8066
+      "avg_text_length": 6654
     },
     {
       "id": "UK/CAA",
@@ -6550,7 +6550,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 56808
+      "avg_text_length": 59863
     },
     {
       "id": "UK/CAT",
@@ -6569,7 +6569,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 96861
+      "avg_text_length": 103736
     },
     {
       "id": "UK/EA",
@@ -6588,7 +6588,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 10658
+      "avg_text_length": 8751
     },
     {
       "id": "UK/ET",
@@ -6607,7 +6607,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 5415
+      "avg_text_length": 16828
     },
     {
       "id": "UK/FSA",
@@ -6626,7 +6626,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 5234
+      "avg_text_length": 5762
     },
     {
       "id": "UK/FTT-Tax",
@@ -6645,7 +6645,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 57679
+      "avg_text_length": 52620
     },
     {
       "id": "UK/GC",
@@ -6664,7 +6664,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 4076
+      "avg_text_length": 5204
     },
     {
       "id": "UK/IAC",
@@ -6683,7 +6683,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 44693
+      "avg_text_length": 41639
     },
     {
       "id": "UK/ICO",
@@ -6702,7 +6702,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 12461
+      "avg_text_length": 11622
     },
     {
       "id": "UK/MHRA",
@@ -6721,7 +6721,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 2349
+      "avg_text_length": 1371
     },
     {
       "id": "UK/ORR",
@@ -6740,7 +6740,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 675
+      "avg_text_length": 180
     },
     {
       "id": "UK/Ofcom",
@@ -6759,7 +6759,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 2418
+      "avg_text_length": 2427
     },
     {
       "id": "UK/Ofgem",
@@ -6778,7 +6778,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 1769
+      "avg_text_length": 2617
     },
     {
       "id": "UK/Ofwat",
@@ -6797,7 +6797,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 1066
+      "avg_text_length": 1897
     },
     {
       "id": "UK/PHSO",
@@ -6815,7 +6815,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 17977
+      "avg_text_length": 19228
     },
     {
       "id": "UK/PRA",
@@ -6833,7 +6833,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 43043
+      "avg_text_length": 32609
     },
     {
       "id": "UK/TPR",
@@ -6851,7 +6851,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 22847
+      "avg_text_length": 27731
     },
     {
       "id": "UK/TRA",
@@ -6869,7 +6869,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 2143
+      "avg_text_length": 1947
     },
     {
       "id": "AD/BOPA",
@@ -6888,7 +6888,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 9815
+      "avg_text_length": 9735
     },
     {
       "id": "CA/OpenParliament",
@@ -6906,7 +6906,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 25004
+      "avg_text_length": 24856
     },
     {
       "id": "DE/BKartA-Verbraucher",
@@ -6924,7 +6924,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 3695
+      "avg_text_length": 4450
     },
     {
       "id": "DE/BRAK",
@@ -6942,7 +6942,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 3874
+      "avg_text_length": 4260
     },
     {
       "id": "DE/BSG",
@@ -6960,7 +6960,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 24614
+      "avg_text_length": 21393
     },
     {
       "id": "DE/Bayern",
@@ -6978,7 +6978,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 34593
+      "avg_text_length": 29558
     },
     {
       "id": "DE/KEK",
@@ -6996,7 +6996,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 6622
+      "avg_text_length": 6161
     },
     {
       "id": "DE/NRW",
@@ -7014,7 +7014,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 5367
+      "avg_text_length": 8334
     },
     {
       "id": "DE/Sachsen",
@@ -7032,7 +7032,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 5084
+      "avg_text_length": 7952
     },
     {
       "id": "EU/ADR",
@@ -7050,7 +7050,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 16334
+      "avg_text_length": 15529
     },
     {
       "id": "FR/AMF",
@@ -7069,7 +7069,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 141327
+      "avg_text_length": 153384
     },
     {
       "id": "FR/ARCEP",
@@ -7088,7 +7088,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 10105
+      "avg_text_length": 6960
     },
     {
       "id": "FR/ARPP",
@@ -7106,7 +7106,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 10192
+      "avg_text_length": 6524
     },
     {
       "id": "FR/ASN",
@@ -7124,7 +7124,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 3184
+      "avg_text_length": 3209
     },
     {
       "id": "FR/CRE",
@@ -7143,7 +7143,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 23785
+      "avg_text_length": 24137
     },
     {
       "id": "FR/DefenseurDesDroits",
@@ -7162,7 +7162,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 23,
-      "avg_text_length": 17968
+      "avg_text_length": 18872
     },
     {
       "id": "MC/JournalMonaco",
@@ -7181,7 +7181,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 1458
+      "avg_text_length": 1344
     },
     {
       "id": "SE/Domstolverket",
@@ -7199,7 +7199,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 20,
-      "avg_text_length": 32391
+      "avg_text_length": 36667
     },
     {
       "id": "SM/Legisammarino",
@@ -7218,7 +7218,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 27,
-      "avg_text_length": 8776
+      "avg_text_length": 16560
     },
     {
       "id": "UK/CC",
@@ -7237,7 +7237,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 15736
+      "avg_text_length": 15359
     },
     {
       "id": "UK/EC",
@@ -7256,7 +7256,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 456
+      "avg_text_length": 474
     },
     {
       "id": "UK/HMLR",
@@ -7275,7 +7275,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 76226
+      "avg_text_length": 75242
     },
     {
       "id": "UK/HMRC-Excise",
@@ -7294,7 +7294,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 39313
+      "avg_text_length": 38592
     },
     {
       "id": "UK/IPSO",
@@ -7313,7 +7313,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 12820
+      "avg_text_length": 14023
     },
     {
       "id": "UK/MCA",
@@ -7332,7 +7332,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 5143
+      "avg_text_length": 5535
     },
     {
       "id": "UK/NAO",
@@ -7351,7 +7351,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 3002
+      "avg_text_length": 3382
     },
     {
       "id": "UK/NCA",
@@ -7370,7 +7370,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 8036
+      "avg_text_length": 9130
     },
     {
       "id": "UK/ONR",
@@ -7389,7 +7389,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 3056
+      "avg_text_length": 3203
     },
     {
       "id": "UK/RPB",
@@ -7408,7 +7408,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 18640
+      "avg_text_length": 5741
     },
     {
       "id": "UK/SRA",
@@ -7426,7 +7426,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 25,
-      "avg_text_length": 5053
+      "avg_text_length": 5055
     },
     {
       "id": "US/IRS_IRB",
@@ -7444,7 +7444,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 184974
+      "avg_text_length": 234547
     },
     {
       "id": "AM/CourtOfCassation",
@@ -7462,7 +7462,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 19,
-      "avg_text_length": 201
+      "avg_text_length": 292
     },
     {
       "id": "AM/Datalex",
@@ -7707,7 +7707,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 6932
+      "avg_text_length": 6794
     },
     {
       "id": "NL/HogeRaad",
@@ -7754,7 +7754,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 13617
+      "avg_text_length": 12723
     },
     {
       "id": "PT/TC",
@@ -7800,7 +7800,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 11361
+      "avg_text_length": 21068
     },
     {
       "id": "US/CongressGov",
@@ -7989,7 +7989,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 6306
+      "avg_text_length": 6608
     },
     {
       "id": "AT/E-Control",
@@ -8443,7 +8443,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 14,
-      "avg_text_length": 44808
+      "avg_text_length": 47729
     },
     {
       "id": "DE/RheinlandPfalz",
@@ -8643,7 +8643,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 15,
-      "avg_text_length": 18911
+      "avg_text_length": 17968
     },
     {
       "id": "EU/EPO",
@@ -8662,7 +8662,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 9181
+      "avg_text_length": 9560
     },
     {
       "id": "FR/CNDA",
@@ -8863,7 +8863,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 9911
+      "avg_text_length": 9501
     },
     {
       "id": "LT/VDAI",
@@ -9376,7 +9376,7 @@
       "has_retrieve": false,
       "retrieve_test_count": 0,
       "sample_count": 12,
-      "avg_text_length": 17688
+      "avg_text_length": 19385
     },
     {
       "id": "RO/HighCourt",
