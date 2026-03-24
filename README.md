@@ -9,7 +9,7 @@ All sources in this repository are **open data** -- publicly available legal inf
 ## Live Dashboard & API
 
 - **Dashboard**: [legaldatahunter.com](https://legaldatahunter.com) -- track coverage, explore sources, submit feedback
-- **Search API**: Available at [legaldatahunter.com](https://legaldatahunter.com) -- search across 6M+ indexed legal documents
+- **Search API**: Available at [legaldatahunter.com](https://legaldatahunter.com) -- search across 14M+ indexed legal documents
 
 ## What's Here
 
