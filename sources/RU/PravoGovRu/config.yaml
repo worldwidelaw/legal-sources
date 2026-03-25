@@ -1,0 +1,115 @@
+# ===================================================================
+# RU/PravoGovRu -- Russia Official Legal Portal (pravo.gov.ru)
+# ===================================================================
+# Primary data: RusLawOD dataset on HuggingFace (304K+ federal laws
+# with full text, 1991-2025). Original source is pravo.gov.ru/proxy/ips/
+# which is IP-restricted to Russian networks.
+# Supplementary: publication.pravo.gov.ru REST API for metadata.
+# Dataset: https://huggingface.co/datasets/irlspbru/RusLawOD
+# ===================================================================
+
+source:
+  id: "RU/PravoGovRu"
+  country: "RU"
+  name: "Russia Official Legal Portal (pravo.gov.ru)"
+  url: "https://pravo.gov.ru/"
+  description: |
+    Russian federal legislation: laws, presidential decrees, government
+    resolutions, and regulatory acts. Data sourced from the RusLawOD
+    open dataset (irlspbru/RusLawOD on HuggingFace), which contains
+    304,382 legislative texts extracted from pravo.gov.ru's IPS system.
+    Covers 1991-2025, 194 million tokens. Russian language.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "dataset"
+  dataset_source: "huggingface"
+  dataset_id: "irlspbru/RusLawOD"
+  supplementary_api:
+    type: "rest"
+    base_url: "http://publication.pravo.gov.ru/api"
+    endpoints:
+      documents: "/Documents"
+      document_types: "/DocumentTypes"
+      public_blocks: "/PublicBlocks"
+      signatory_authorities: "/SignatoryAuthorities"
+
+data_model:
+  type: "legislation"
+  primary_key: "pravogovruNd"
+  update_strategy: "upsert"
+  dedup_key:
+    - "pravogovruNd"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "pravogovruNd"
+      description: "Document ID from pravo.gov.ru IPS system"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document heading/title (headingIPS)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation (textIPS)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date (docdateIPS)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to pravo.gov.ru document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "doc_type"
+      description: "Document type (law, decree, resolution, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "author"
+      description: "Issuing authority (doc_author_normal_formIPS)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "status"
+      description: "Legal status (in force, amended, repealed)"
+      type: "string"
+      role: "classification"
+      required: false
+  secondary_fields:
+    - name: "doc_number"
+      description: "Document number (docNumberIPS)"
+    - name: "issued_by"
+      description: "Issued by (issuedByIPS)"
+    - name: "signed"
+      description: "Signed by (signedIPS)"
+    - name: "classifier"
+      description: "Legal classifier (classifierByIPS)"
+    - name: "is_widely_used"
+      description: "Flag for widely-used legislation"
+
+notes: |
+  - 304,382 legislative documents with full text (1991-2025)
+  - Data from RusLawOD v5 (updated January 2026)
+  - Original source is pravo.gov.ru IPS system (IP-restricted to Russia)
+  - publication.pravo.gov.ru API provides supplementary metadata + PDFs
+  - PDFs from publication API are image-based scans (no text layer)
+  - Language: Russian
+  - License: Open data (Russian government publications)

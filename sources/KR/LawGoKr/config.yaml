@@ -1,0 +1,51 @@
+id: KR/LawGoKr
+name: Korean Law Information Center (KLIC) Open API
+country: KR
+url: https://open.law.go.kr/
+description: >
+  Official Korean government DRF API for all statutes. 5,500+ current laws including
+  acts, presidential decrees, ministerial ordinances, treaties. Full text via XML.
+  No registration required (mobile endpoint).
+data_types:
+  - legislation
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: law_type
+      type: string
+      required: false
+    - name: law_id
+      type: string
+      required: false
+    - name: promulgation_number
+      type: string
+      required: false

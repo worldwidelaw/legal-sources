@@ -1,0 +1,23 @@
+{
+  "_id": "IRMCT-13",
+  "_source": "INTL/IRMCTCaseLaw",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-24T05:04:38.227765+00:00",
+  "title": "Appeal Judgement",
+  "text": "13. Pursuant to Article 23(2) of the Statute and Rule 98ter(C) of the Rules, Trial Chambers have an obligation to set out a reasoned opinion in writing.[1] This right is one of the elements of the fair trial requirement embodied in Articles 20 and 21 of the Statute. In the Furundzija Appeal Judgement, the Appeals Chamber held that Article 23 of the Statute treats the right of an accused to a reasoned opinion as one of the elements of the fair trial requirement embodied in Articles 20 and 21 of the Statute.[2] With regard to legal findings, this obligation does not require a Trial Chamber to discuss at length all of the case-law of the International Tribunal on a given legal issue but only to identify the precedents upon which its findings are based. With regard to factual findings, a Trial Chamber is required only to make findings on those facts which are essential to the determination of guilt on a particular count. It is not necessary to refer to the testimony of every witness or every piece of evidence on the trial record.[3] In short, a Trial Chamber should limit itself to indicating in a clear and articulate, yet concise manner, which, among the wealth of jurisprudence available on a given issue and the myriad of facts that emerged at trial, are the legal and factual findings on the basis of which it reached the decision either to convict or acquit an individual. A reasoned opinion consistent with the guidelines provided here allows for a useful exercise of the right of appeal by the Parties and enables the Appeals Chamber to understand and review the Trial Chamber’s findings as well as its evaluation of the evidence.[4] While the Appeals Chamber appreciates the care with which the Trial Chamber has expressed itself in the Trial Judgement, the Appeals Chamber is constrained to observe that the Trial Chamber might have been more sparing in its efforts in this respect.\n[1] Naletilić and Martinović Appeal Judgement, para. 603; Kvočka et al. Appeal Judgement, para. 23; Kunarac et al. Appeal Judgement, para. 41; Furundžija Appeal Judgement, para. 69.\n[2] Furundžija Appeal Judgement, para. 69. See also Naletilić and Martinović Appeal Judgement, para. 603; Kunarac et al. Appeal Judgement, para. 41.\n[3] Kvocka et al. Appeal Judgement, para. 23; Kordić and Čerkez Appeal Judgement, para. 382; Kupreškić et al. Appeal Judgement, para. 39; Čelebići Appeal Judgement, para. 498.\n[4] Kunarac et al. Appeal Judgement, para. 41.",
+  "date": "2008-04-22",
+  "url": "https://cld.irmct.org/assets/filings/Judgement-Hadzihasanovic.pdf",
+  "case_name": "HADŽIHASANOVIĆ & KUBURA",
+  "tribunal": "ICTR",
+  "notions": [
+    "Standard of appellate review | Length of Trial Judgement"
+  ],
+  "statutes": {
+    "ictr_statute": "Article 19;\r\nArticle 20;\r\nArticle 22(2)",
+    "icty_statute": "Article 23(2)",
+    "ictr_rules": "Rule 88(C)",
+    "icty_rules": "Rule 98 ter(C)"
+  },
+  "extract_id": 13,
+  "pdf_url": "https://cld.irmct.org/assets/filings/Judgement-Hadzihasanovic.pdf"
+}

@@ -1,0 +1,88 @@
+# ===================================================================
+# IN/HighCourtAWS -- Indian High Court Judgments (AWS Open Data)
+# ===================================================================
+# 15.9 million High Court judgment PDFs + JSON metadata on AWS S3.
+# CC-BY-4.0 license. Covers 25 High Courts across India.
+#
+# Primary: AWS S3 bucket (indian-high-court-judgments) in ap-south-1
+# Structure: metadata/json/year=YYYY/court=X_Y/bench=ZZZ/*.json
+#            data/pdf/year=YYYY/court=X_Y/bench=ZZZ/*.pdf
+# ===================================================================
+
+source:
+  id: "IN/HighCourtAWS"
+  country: "IN"
+  name: "Indian High Court Judgments (AWS Open Data)"
+  url: "https://registry.opendata.aws/indian-high-court-judgments/"
+  description: |
+    Indian High Court judgments from 25 High Courts (45 benches), dating
+    back to 1950. Approximately 16.7 million judgments totaling ~1.11 TB.
+    Sourced from the eCourts website and hosted on AWS Open Data Registry.
+    Full text extracted from PDF judgments. Updated quarterly.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 5
+  burst: 10
+
+api:
+  type: "s3_public"
+  bucket: "indian-high-court-judgments"
+  region: "ap-south-1"
+  base_url: "https://s3.ap-south-1.amazonaws.com/indian-high-court-judgments"
+  metadata_prefix: "metadata/json/"
+  pdf_prefix: "data/pdf/"
+
+data_model:
+  type: "case_law"
+  primary_key: "cnr_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "cnr_number"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "cnr_number"
+      description: "Case Number Record (unique identifier)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the judgment"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "S3 URL to original PDF"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "court_name"
+      description: "Name of the High Court"
+      type: "string"
+      role: "metadata"
+      required: true
+
+notes: |
+  - Uses AWS S3 REST API (no credentials needed, public bucket)
+  - JSON metadata contains court info, case parties, judges, PDF path
+  - Full text extracted from PDFs using pdfplumber
+  - 16.7M judgments across 25 High Courts from 1950 to present
+  - Updated quarterly by dataset maintainers
+  - PDF text is primarily in English (Indian court language)

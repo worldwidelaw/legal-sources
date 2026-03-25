@@ -1,0 +1,36 @@
+source:
+  id: "HR/ConstitutionalCourt"
+  name: "Croatian Constitutional Court (Ustavni sud)"
+  country: HR
+  url: "https://sljeme.usud.hr"
+  data_types:
+    - case_law
+  auth: none
+  language: hrv
+  description: >
+    Constitutional Court of Croatia case law from 2007-present.
+    Includes constitutional complaints, abstract review, election disputes.
+    Full text extracted from DOCX attachments on the IBM Domino/XPages platform.
+
+schema:
+  key_fields:
+    - name: signatura
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: decision_type
+      type: string
+      required: false
+    - name: outcome
+      type: string
+      required: false
+    - name: date
+      type: string
+      required: false
+
+fetch:
+  rate_limit: 2.0
+  timeout: 60
+  retry: 3

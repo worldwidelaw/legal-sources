@@ -1,0 +1,30 @@
+source_id: "LV/AllCourts"
+name: "Latvian Courts Portal (elieta.lv)"
+country: "LV"
+language: "lv"
+data_types:
+  - case_law
+
+endpoints:
+  search: "https://gateway.elieta.lv/api/v1/PublicMaterial"
+  download: "https://gateway.elieta.lv/api/v1/PublicMaterialDownload/{materialFileId}"
+  portal: "https://www.elieta.lv/web/"
+
+schema:
+  key_fields:
+    - "id"
+    - "ecliCode"
+    - "caseNumber"
+  date_format: "unix_timestamp"
+  text_field: "text"
+
+license:
+  name: "Public Domain (Latvian Court Decisions)"
+  url: "https://www.elieta.lv/"
+
+fetcher:
+  rate_limit_ms: 1500
+  timeout_s: 60
+  max_retries: 3
+  page_size: 50
+  total_documents: 420038

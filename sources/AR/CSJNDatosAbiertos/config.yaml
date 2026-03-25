@@ -1,0 +1,99 @@
+# ===================================================================
+# AR/CSJNDatosAbiertos -- Argentina Supreme Court Decisions
+# ===================================================================
+# Argentina Supreme Court (Corte Suprema de Justicia de la Nación)
+# decisions fetched from the sjconsulta portal. JSON metadata API
+# with PDF full text extraction via pdfplumber.
+# No authentication required. Open data.
+# Covers decisions from 1863 to present (~800K+ analysis IDs).
+# ===================================================================
+
+source:
+  id: "AR/CSJNDatosAbiertos"
+  country: "AR"
+  name: "Argentina Supreme Court Open Data"
+  url: "https://sjconsulta.csjn.gov.ar/sjconsulta/"
+  description: |
+    Court decisions (fallos) from Argentina's Supreme Court (CSJN).
+    Metadata via JSON API endpoints, full text extracted from PDFs.
+    Covers summaries since 1863, full digital decisions since ~1994.
+    ~800K+ analysis IDs with variable density.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "id_enumeration"
+  base_url: "https://sjconsulta.csjn.gov.ar/sjconsulta"
+  endpoints:
+    metadata: "/documentos/getAllDocumentos.html"
+    pdf: "/documentos/verDocumentoById.html"
+  pagination:
+    type: "id_scan"
+    param: "idAnalisis"
+
+data_model:
+  type: "case_law"
+  primary_key: "id_analisis"
+  update_strategy: "upsert"
+  dedup_key:
+    - "id_analisis"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "id_analisis"
+      description: "Internal analysis ID from CSJN system"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "titulo"
+      description: "Case reference number (e.g., FALLO CSJ 001157/2023/CS001)"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "caratula"
+      description: "Case title / parties"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to view the decision"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "competencia"
+      description: "Competence type (e.g., APELACION EXTRAORDINARIA)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "materia_secretaria"
+      description: "Subject area (e.g., Penal, Civil)"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - Metadata via JSON: getAllDocumentos.html?idAnalisis={id}
+  - Full text PDFs: verDocumentoById.html?idDocumento={codigo}
+  - ID range: 1 to ~824,000+ (many gaps, ~50% populated)
+  - Referer header required for API access
+  - Recent PDFs have extractable text; older ones may be scanned
+  - No authentication required

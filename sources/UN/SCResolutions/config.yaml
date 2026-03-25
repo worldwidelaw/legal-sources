@@ -1,0 +1,90 @@
+# ===================================================================
+# UN/SCResolutions -- Corpus of UN Security Council Resolutions
+# ===================================================================
+# Academic corpus (Fobbe) hosted on Zenodo. All 2,798 UNSC resolutions
+# (1946-2025) with pre-extracted English TXT and rich metadata (74 fields).
+# CC-BY-4.0 license. No auth required.
+# Zenodo record: 15154519 (concept: 7319780)
+# ===================================================================
+
+source:
+  id: "UN/SCResolutions"
+  country: "UN"
+  name: "Corpus of UN Security Council Resolutions (Zenodo/Fobbe)"
+  url: "https://zenodo.org/records/15154519"
+  description: |
+    Complete corpus of all 2,798 UN Security Council resolutions (1946-2025).
+    Pre-extracted English TXT files and metadata CSV from Zenodo academic dataset.
+    Includes resolution number, date, title, full text, and 70+ coded variables.
+    CC-BY-4.0 license.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "bulk_download"
+  base_url: "https://zenodo.org/api/records/15154519"
+  endpoints:
+    metadata_csv: "/files/CR-UNSC_2025-12-22_ALL_CSV_META.zip/content"
+    text_zip: "/files/CR-UNSC_2025-12-22_EN_TXT_BEST.zip/content"
+
+data_model:
+  type: "legislation"
+  primary_key: "res_no"
+  update_strategy: "upsert"
+  dedup_key:
+    - "res_no"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "res_no"
+      description: "Resolution number (e.g., 2720)"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "symbol"
+      description: "UN document symbol (e.g., S/RES/2720(2023))"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Resolution title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the resolution"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Adoption date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL on UN Digital Library"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "year"
+      description: "Year of adoption"
+      type: "integer"
+      role: "classification"
+      required: false
+
+notes: |
+  - 2,798 resolutions from 1946 to 2025
+  - Pre-extracted English TXT (8.1 MB ZIP) + metadata CSV (1.3 MB ZIP)
+  - 74 metadata variables including coded topics, voting info
+  - CC-BY-4.0 license
+  - Zenodo record ID: 15154519 (concept: 7319780)
+  - Updated periodically by Fobbe

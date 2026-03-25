@@ -1,0 +1,90 @@
+# ===================================================================
+# IN/SCJudgments -- Indian Supreme Court Judgments (AWS Open Data)
+# ===================================================================
+# 35K+ Supreme Court judgment PDFs + Parquet metadata on AWS S3.
+# CC-BY-4.0 license. Updated bi-monthly.
+#
+# Primary: AWS S3 bucket (indian-supreme-court-judgments) in ap-south-1
+# Structure: metadata/parquet/year=YYYY/metadata.parquet
+#            data/tar/year=YYYY/english/english.tar (PDFs)
+# ===================================================================
+
+source:
+  id: "IN/SCJudgments"
+  country: "IN"
+  name: "Indian Supreme Court Judgments (AWS Open Data)"
+  url: "https://registry.opendata.aws/indian-supreme-court-judgments/"
+  description: |
+    Indian Supreme Court judgments dating back to 1950. Approximately 35,000+
+    judgments totaling ~52GB. Sourced from the eCourts website and hosted on
+    AWS Open Data Registry. Full text extracted from PDF judgments. Parquet
+    metadata includes title, parties, judges, citation, dates. Updated bi-monthly.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 5
+  burst: 10
+
+api:
+  type: "s3_public"
+  bucket: "indian-supreme-court-judgments"
+  region: "ap-south-1"
+  base_url: "https://s3.ap-south-1.amazonaws.com/indian-supreme-court-judgments"
+  metadata_format: "parquet"
+  pdf_format: "tar_archive"
+
+data_model:
+  type: "case_law"
+  primary_key: "cnr_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "cnr_number"
+    - "case_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "cnr_number"
+      description: "Case Number Record (unique identifier)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (petitioner vs respondent)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the judgment"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "citation"
+      description: "Official case citation"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "court_name"
+      description: "Supreme Court of India"
+      type: "string"
+      role: "metadata"
+      required: true
+
+notes: |
+  - Uses AWS S3 REST API (no credentials needed, public bucket)
+  - Parquet metadata per year (~1MB each) with structured fields
+  - PDFs bundled in tar archives per year (varies from ~38MB to ~400MB)
+  - Full text extracted from PDFs using pdfplumber
+  - 35K+ judgments from 1950 to present
+  - Updated bi-monthly by dataset maintainers
+  - Judgments primarily in English

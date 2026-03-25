@@ -1,0 +1,31 @@
+id: INTL/WTODocuments
+name: WTO Documents Online
+country: INTL
+url: https://docs.wto.org/
+description: >
+  WTO dispute settlement documents including panel reports, Appellate Body reports,
+  arbitration awards, and requests for consultations. 10,000+ documents with full
+  text extracted from PDFs.
+data_types:
+  - case_law
+  - legislation
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+    - document_symbol
+    - document_number

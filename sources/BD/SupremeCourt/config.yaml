@@ -1,0 +1,93 @@
+# ===================================================================
+# BD/SupremeCourt -- Bangladesh Supreme Court Judgments
+# ===================================================================
+# Appellate Division and High Court Division judgments from the
+# Bangladesh Supreme Court portal. PDF full text extraction via
+# pdfplumber. ~9,300 judgments. Session cookies and referrer required.
+# No authentication, no robots.txt restrictions.
+# ===================================================================
+
+source:
+  id: "BD/SupremeCourt"
+  country: "BD"
+  name: "Bangladesh Supreme Court Judgments"
+  url: "https://www.supremecourt.gov.bd/"
+  description: |
+    Court judgments from Bangladesh Supreme Court (Appellate Division
+    and High Court Division). ~9,300 judgment PDFs. Paginated listing
+    pages with 50 judgments per page. Full text extracted from PDFs.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.supremecourt.gov.bd"
+  endpoints:
+    listing: "/web/?page=judgments.php&menu=00&div_id={div_id}&start={start}"
+    pdf: "/resources/documents/{filename}"
+  pagination:
+    type: "offset"
+    page_size: 50
+    param: "start"
+
+data_model:
+  type: "case_law"
+  primary_key: "pdf_filename"
+  update_strategy: "upsert"
+  dedup_key:
+    - "pdf_filename"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "case_ref"
+      description: "Case reference (e.g., Civil Appeal 112/2025)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Parties (plaintiff vs defendant)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the judgment extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Upload date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to judgment PDF"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "division"
+      description: "Court division (Appellate or High Court)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "description"
+      description: "Short description / summary from listing"
+      type: "string"
+      role: "content"
+      required: false
+
+notes: |
+  - Two divisions: Appellate (div_id=1, ~400) and High Court (div_id=2, ~8,900)
+  - 50 judgments per listing page, offset by start param
+  - Session cookies required for PDF downloads (get from listing page)
+  - Referrer header required for PDF access
+  - No robots.txt (404)
+  - PDFs are generally well-formed with extractable text

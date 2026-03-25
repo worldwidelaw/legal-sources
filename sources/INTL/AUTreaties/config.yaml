@@ -1,0 +1,70 @@
+# ===================================================================
+# INTL/AUTreaties -- African Union Treaties, Conventions & Protocols
+# ===================================================================
+# ~79 AU/OAU treaties from 1963 to present.
+# Full text from PDF treaty documents.
+# EN/FR/AR/PT languages available.
+# ===================================================================
+
+source:
+  id: "INTL/AUTreaties"
+  country: "INTL"
+  name: "African Union Treaties, Conventions & Protocols"
+  url: "https://au.int/en/treaties"
+  description: |
+    Collection of ~79 treaties, conventions, and protocols of the
+    Organisation of African Unity (OAU) and African Union (AU) from
+    1963 to present. Includes foundational documents like the OAU Charter,
+    Constitutive Act, African Charter on Human and Peoples' Rights,
+    and AfCFTA. Full text extracted from PDF documents.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://au.int/en/treaties"
+  pdf_pattern: "https://au.int/sites/default/files/treaties/{id}-treaty-*.pdf"
+
+data_model:
+  type: "legislation"
+  primary_key: "url_slug"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "title"
+      description: "Treaty title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the treaty"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Adoption date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "organization"
+      description: "African Union"
+      type: "string"
+      role: "metadata"
+      required: true
+
+notes: |
+  - Scrapes au.int/en/treaties for treaty listing and detail pages
+  - Downloads English PDF full text for each treaty
+  - Some older treaties (pre-2000) are scanned images without extractable text
+  - Newer treaties have full digital text
+  - Multiple languages available (EN, FR, AR, PT) but only EN is extracted

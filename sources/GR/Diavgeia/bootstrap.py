@@ -183,22 +183,28 @@ class DiavgeiaScraper(BaseScraper):
             logger.warning(f"Failed to extract PDF {ada}: {e}")
             return ""
 
-    def _search_decisions(self, page: int = 0, size: int = 10) -> Optional[Dict[str, Any]]:
+    def _search_decisions(self, page: int = 0, size: int = 10,
+                          from_issue_date: str = None, to_issue_date: str = None) -> Optional[Dict[str, Any]]:
         """
         Search for decisions via the OpenData API.
 
         Args:
             page: Page number (0-indexed)
             size: Number of results per page (max 500)
+            from_issue_date: Start date filter (YYYY-MM-DD). API caps range to 6 months.
+            to_issue_date: End date filter (YYYY-MM-DD).
 
         Returns:
             Dict with decisions list and pagination info
         """
         try:
             self.rate_limiter.wait()
-            resp = self.client.get(
-                f"/opendata/search?page={page}&size={size}"
-            )
+            params = f"page={page}&size={size}"
+            if from_issue_date:
+                params += f"&from_issue_date={from_issue_date}"
+            if to_issue_date:
+                params += f"&to_issue_date={to_issue_date}"
+            resp = self.client.get(f"/opendata/search?{params}")
             resp.raise_for_status()
             return resp.json()
         except Exception as e:
@@ -268,47 +274,70 @@ class DiavgeiaScraper(BaseScraper):
             "document_url": decision.get("documentUrl", f"{BASE_URL}/doc/{ada}"),
         }
 
+    @staticmethod
+    def _generate_date_windows(start_year: int = 2010) -> list:
+        """Generate 6-month date windows from start_year to present."""
+        from datetime import date
+        windows = []
+        today = date.today()
+        year = start_year
+        while True:
+            for half in [(1, 1, 6, 30), (7, 1, 12, 31)]:
+                start = date(year, half[0], half[1])
+                end = date(year, half[2], half[3])
+                if start > today:
+                    return windows
+                if end > today:
+                    end = today
+                windows.append((start.isoformat(), end.isoformat()))
+            year += 1
+        return windows
+
     def fetch_all(self) -> Generator[dict, None, None]:
         """
-        Yield all documents from Diavgeia.
+        Yield all documents from Diavgeia by iterating 6-month windows.
 
-        Note: With 71M+ decisions, this would take months to complete.
-        Use fetch_updates() for incremental updates instead.
+        The API caps date ranges to 6 months, so we iterate from 2010 to present.
+        Note: With 71M+ decisions, this takes a very long time.
         """
-        page = 0
-        page_size = 100
+        page_size = 500
+        windows = self._generate_date_windows(start_year=2010)
 
-        while True:
-            logger.info(f"Fetching page {page}...")
-            result = self._search_decisions(page=page, size=page_size)
-
-            if not result or "decisions" not in result:
-                break
-
-            decisions = result["decisions"]
-            if not decisions:
-                break
-
-            for decision in decisions:
-                processed = self._process_decision(decision)
-                if processed:
-                    yield processed
-
-            page += 1
+        for from_date, to_date in windows:
+            logger.info(f"Window {from_date} to {to_date}...")
+            page = 0
+            while True:
+                result = self._search_decisions(
+                    page=page, size=page_size,
+                    from_issue_date=from_date, to_issue_date=to_date
+                )
+                if not result or "decisions" not in result:
+                    break
+                decisions = result["decisions"]
+                if not decisions:
+                    break
+                for decision in decisions:
+                    processed = self._process_decision(decision)
+                    if processed:
+                        yield processed
+                page += 1
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """
         Yield documents published since the given date.
 
-        Uses the API's sorting by recent to find new decisions.
+        Uses from_issue_date parameter to only fetch recent decisions.
         """
         page = 0
-        page_size = 100
-        cutoff_ts = int(since.timestamp() * 1000)
+        page_size = 500
+        from_date = since.strftime("%Y-%m-%d")
 
         while True:
-            logger.info(f"Fetching updates page {page}...")
-            result = self._search_decisions(page=page, size=page_size)
+            logger.info(f"Fetching updates page {page} (since {from_date})...")
+            result = self._search_decisions(
+                page=page, size=page_size,
+                from_issue_date=from_date
+            )
 
             if not result or "decisions" not in result:
                 break
@@ -317,20 +346,10 @@ class DiavgeiaScraper(BaseScraper):
             if not decisions:
                 break
 
-            found_old = False
             for decision in decisions:
-                publish_ts = decision.get("publishTimestamp", 0)
-                if publish_ts < cutoff_ts:
-                    found_old = True
-                    continue
-
                 processed = self._process_decision(decision)
                 if processed:
                     yield processed
-
-            # If we found decisions older than cutoff, we can stop
-            if found_old:
-                break
 
             page += 1
 
@@ -357,28 +376,36 @@ class DiavgeiaScraper(BaseScraper):
         }
 
     def _fetch_sample(self, sample_size: int = 15) -> list:
-        """Fetch sample records for validation."""
+        """Fetch sample records from diverse years for validation."""
         samples = []
-        page = 0
+        # Sample from different year windows for diversity
+        sample_windows = [
+            ("2012-01-01", "2012-06-30"),
+            ("2015-01-01", "2015-06-30"),
+            ("2018-01-01", "2018-06-30"),
+            ("2021-01-01", "2021-06-30"),
+            ("2024-01-01", "2024-06-30"),
+        ]
+        per_window = max(3, sample_size // len(sample_windows))
 
-        while len(samples) < sample_size:
-            logger.info(f"Fetching sample page {page}...")
-            result = self._search_decisions(page=page, size=20)
-
-            if not result or "decisions" not in result:
+        for from_date, to_date in sample_windows:
+            if len(samples) >= sample_size:
                 break
-
+            logger.info(f"Sampling window {from_date} to {to_date}...")
+            result = self._search_decisions(
+                page=0, size=per_window * 2,
+                from_issue_date=from_date, to_issue_date=to_date
+            )
+            if not result or "decisions" not in result:
+                continue
             for decision in result["decisions"]:
                 if len(samples) >= sample_size:
                     break
-
                 processed = self._process_decision(decision)
                 if processed:
                     normalized = self.normalize(processed)
                     samples.append(normalized)
-                    logger.info(f"Sample {len(samples)}/{sample_size}: {normalized['_id']} ({len(normalized.get('text', ''))} chars)")
-
-            page += 1
+                    logger.info(f"Sample {len(samples)}/{sample_size}: {normalized['_id']} ({len(normalized.get('text', ''))} chars) date={normalized.get('date')}")
 
         return samples
 

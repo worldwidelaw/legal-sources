@@ -1,0 +1,69 @@
+# ===================================================================
+# INTL/ICSIDAwards -- ICSID Arbitration Awards (World Bank)
+# ===================================================================
+# ~1,400 investment arbitration documents across 1,130 cases.
+# JSON API for case listing + HTML scrape for PDF links + PDF text extraction.
+# ===================================================================
+
+source:
+  id: "INTL/ICSIDAwards"
+  country: "INTL"
+  name: "ICSID Arbitration Awards (World Bank)"
+  url: "https://icsid.worldbank.org/cases"
+  description: |
+    Investment arbitration awards, decisions, and orders from the International
+    Centre for Settlement of Investment Disputes (ICSID, World Bank Group).
+    1,130 cases since 1972. JSON API for metadata, case detail pages for document
+    links, PDFs from icsidfiles.worldbank.org with text extraction via PyMuPDF.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "rest_json_plus_scrape"
+  cases_url: "https://icsid.worldbank.org/api/all/cases"
+  case_detail: "https://icsid.worldbank.org/cases/case-database/case-detail?CaseNo={caseno}"
+  pdf_base: "https://icsidfiles.worldbank.org"
+
+data_model:
+  type: "case_law"
+  primary_key: "pdf_url"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "title"
+      description: "Decision/award title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "case_number"
+      description: "ICSID case number (e.g., ARB/97/7)"
+      type: "string"
+      role: "identifier"
+      required: true
+
+notes: |
+  - Case metadata from /api/all/cases JSON endpoint
+  - Document links scraped from individual case detail pages
+  - PDFs at icsidfiles.worldbank.org (no Cloudflare challenge)
+  - Text extracted via PyMuPDF; older docs may be scanned images
+  - ~50% of concluded cases have published documents

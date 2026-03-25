@@ -1,0 +1,79 @@
+# ===================================================================
+# PH/SCELibrary -- Philippines Supreme Court E-Library
+# ===================================================================
+# Official Supreme Court decisions (Philippine Reports) with full text.
+# Organized by month/year from 1996 to present.
+# ===================================================================
+
+source:
+  id: "PH/SCELibrary"
+  country: "PH"
+  name: "Philippines Supreme Court E-Library"
+  url: "https://elibrary.judiciary.gov.ph"
+  description: |
+    Official digital repository of the Supreme Court of the Philippines.
+    Contains full text Supreme Court decisions and signed resolutions
+    organized by month/year from 1996 to present. Approximately 30,000+
+    decisions available. Free public access, no subscription required.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scraping"
+  monthly_index_url: "https://elibrary.judiciary.gov.ph/thebookshelf/docmonth/{month}/{year}/1"
+  decision_url: "https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/1/{doc_id}"
+  content_selector: "div.single_content"
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: gr_number
+      type: string
+      required: false
+    - name: title
+      type: string
+      required: false
+    - name: date
+      type: string
+      required: false
+    - name: text
+      type: string
+      required: true
+  fields:
+    _id:
+      description: "Unique document ID from the E-Library"
+      role: "primary_key"
+    _source:
+      description: "Source identifier (PH/SCELibrary)"
+      role: "source_tag"
+    _type:
+      description: "Document type (case_law)"
+      role: "type_tag"
+    _fetched_at:
+      description: "ISO 8601 fetch timestamp"
+      role: "metadata"
+    gr_number:
+      description: "GR/AM/AC/UDK case number"
+      role: "identifier"
+    title:
+      description: "Full case title (parties)"
+      role: "title"
+    date:
+      description: "Decision date (ISO 8601)"
+      role: "date"
+    text:
+      description: "Full text of the decision"
+      role: "content"
+    url:
+      description: "URL to decision on E-Library"
+      role: "url"

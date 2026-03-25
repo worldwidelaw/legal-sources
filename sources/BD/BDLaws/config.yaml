@@ -1,0 +1,90 @@
+# ===================================================================
+# BD/BDLaws -- Laws of Bangladesh (Bangladesh Code)
+# ===================================================================
+# Complete collection of Bangladesh Acts, Ordinances, and President's
+# Orders from 1799 to present. Full text from HuggingFace dataset
+# (CC-BY 4.0) scraped from the official bdlaws.minlaw.gov.bd portal.
+# 1,484 acts with sections, footnotes, and historical context.
+# ===================================================================
+
+source:
+  id: "BD/BDLaws"
+  country: "BD"
+  name: "Laws of Bangladesh (Bangladesh Code)"
+  url: "http://bdlaws.minlaw.gov.bd/"
+  description: |
+    Complete collection of Bangladesh legislation from 1799 to 2025.
+    1,484 Acts, Ordinances, and President's Orders with full text.
+    Sourced from HuggingFace CC-BY 4.0 dataset (sakhadib/Bangladesh-Legal-Acts-Dataset)
+    which was scraped from the official bdlaws.minlaw.gov.bd portal.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "bulk_download"
+  base_url: "https://huggingface.co/datasets/sakhadib/Bangladesh-Legal-Acts-Dataset"
+  endpoints:
+    consolidated_json: "/resolve/main/Contextualized_Bangladesh_Legal_Acts.json"
+    individual_act: "/resolve/main/acts/act-print-{id}.json"
+
+data_model:
+  type: "legislation"
+  primary_key: "act_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "act_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "act_id"
+      description: "Internal act ID from bdlaws (e.g., act-print-10)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the act (all sections concatenated)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year of enactment (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to original bdlaws page"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "act_no"
+      description: "Official act number (e.g., XXI, 15)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "act_year"
+      description: "Year of the act"
+      type: "string"
+      role: "temporal_key"
+      required: true
+
+notes: |
+  - 1,484 acts spanning 1799-2025
+  - Full text from HuggingFace dataset (CC-BY 4.0)
+  - Original source: bdlaws.minlaw.gov.bd (unreachable outside Bangladesh)
+  - Consolidated JSON is ~62MB
+  - Individual act JSONs also available
+  - Includes historical government and legal system context

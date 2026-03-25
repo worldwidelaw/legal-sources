@@ -1,0 +1,44 @@
+{
+  "_id": "51d87217-df45-46af-9375-1a78fc9a7919",
+  "_source": "UN/UHRI",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-25T07:21:15.568033+00:00",
+  "title": "E/C.12/AUS/CO/6 — Concerns/Observations — Australia",
+  "text": "Business and human rights \n12.The Committee acknowledges the adoption of the Modern Slavery Act 2018. However, it remains concerned that the State Party has not yet adopted a comprehensive national action plan on business and human rights and that business entities are not subject to a mandatory human rights due diligence obligation covering their operations and supply chains, including those abroad. The Committee further notes that recommendations contained in the report on the statutory review of the Modern Slavery Act 2018 (the McMillan review) calling for the introduction of due diligence obligations and strengthened enforcement mechanisms have not yet been fully implemented. The Committee also notes concerns expressed by the Special Rapporteur on contemporary forms of slavery, including its causes and consequences, regarding vulnerabilities associated with employer-tied visa schemes and the situation of undocumented migrant workers. While welcoming the State Party’s indication that work exploitation is prosecuted regardless of migration status, the Committee remains concerned about the effectiveness and coverage of labour inspection and enforcement mechanisms, particularly in remote areas and high-risk sectors. The Committee is also concerned about the limited availability of accessible, effective and independent judicial and non-judicial mechanisms to investigate and provide remedies for alleged violations of Covenant rights by Australian companies operating overseas (art. 2 (1)).",
+  "date": "2026-03-23",
+  "url": "https://uhri.ohchr.org/en/search-human-rights-recommendations",
+  "symbol": "E/C.12/AUS/CO/6",
+  "body": "CESCR",
+  "annotation_type": "Concerns/Observations",
+  "countries": [
+    "Australia"
+  ],
+  "themes": [
+    "Business & Human Rights",
+    "Rule of law & impunity",
+    "Good governance & corruption",
+    "Administration of justice & fair trial",
+    "National Human Rights Action Plans (or specific areas) / implementation plans",
+    "Human trafficking & contemporary forms of slavery",
+    "Access to justice & remedy"
+  ],
+  "sdgs": [
+    "8 - DECENT WORK AND ECONOMIC GROWTH",
+    "12 - RESPONSIBLE CONSUMPTION AND PRODUCTION",
+    "8.8 - Universal labour rights and safe working environments",
+    "8.7 - End modern slavery, trafficking and child labour",
+    "12.6 - Encourage sustainable practices for companies",
+    "16.3 - Promote the rule of law and access to justice for all"
+  ],
+  "affected_persons": [
+    "Migrants",
+    "Persons living in rural areas",
+    "Vulnerable persons/groups",
+    "Judges, lawyers and prosecutors"
+  ],
+  "regions": [
+    "Western Europe & Others"
+  ],
+  "upr_cycle": null,
+  "upr_recommending_country": []
+}

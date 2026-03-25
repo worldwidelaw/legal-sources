@@ -1,0 +1,36 @@
+source:
+  id: "ID/DirektoriPutusan"
+  name: "Direktori Putusan (Supreme Court Decision Directory)"
+  country: ID
+  url: "https://putusan3.mahkamahagung.go.id/"
+  data_types:
+    - case_law
+  auth: none
+  language: ind
+  description: >
+    Indonesian Supreme Court decision directory with 10M+ court decisions
+    across all courts (civil, criminal, admin, religious, military, tax).
+    Full text extracted from PDF attachments via pdfminer.
+
+schema:
+  key_fields:
+    - name: nomor
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: lembaga_peradilan
+      type: string
+      required: false
+    - name: klasifikasi
+      type: string
+      required: false
+    - name: date
+      type: string
+      required: false
+
+fetch:
+  rate_limit: 0.5
+  timeout: 60
+  retry: 3

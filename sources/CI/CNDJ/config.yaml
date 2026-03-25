@@ -1,0 +1,81 @@
+# ===================================================================
+# CI/CNDJ -- Cote d'Ivoire Legal Information (CivLII / Laws.Africa)
+# ===================================================================
+# Ivorian legislation and case law from civlii.laws.africa (Centre
+# National de Documentation Juridique). Akoma Ntoso HTML, no auth.
+# ~798 legislation + ~1,556 judgments. French language.
+# 5-second crawl delay per robots.txt.
+# ===================================================================
+
+source:
+  id: "CI/CNDJ"
+  country: "CI"
+  name: "Cote d'Ivoire Legal Information (CivLII / Laws.Africa)"
+  url: "https://civlii.laws.africa/en/"
+  description: |
+    Ivorian legislation and case law from the Centre National de
+    Documentation Juridique (CNDJ), powered by Laws.Africa.
+    Legislation includes acts, decrees, orders, and agreements.
+    Case law includes Commercial Courts, Courts of First Instance,
+    AfCHPR, and ECOWAS Court of Justice decisions.
+    Full text in Akoma Ntoso HTML format. French language.
+    No authentication required.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.2
+  burst: 1
+
+data_model:
+  type: "mixed"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 7
+  key_fields:
+    - name: "doc_id"
+      description: "Document ID derived from AKN path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Assent/decision date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL on civlii.laws.africa"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "doc_type"
+      description: "legislation or case_law"
+      type: "string"
+      role: "category"
+      required: true
+
+notes: |
+  - ~798 legislation via civlii.laws.africa
+  - Full text in Akoma Ntoso HTML (la-akoma-ntoso element)
+  - 5-second crawl delay required per robots.txt
+  - French language
+  - No API key needed (using web scraping, not API)
+  - Judgments are PDF-only (no HTML full text), excluded until PyPDF2 available

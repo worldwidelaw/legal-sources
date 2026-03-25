@@ -1,0 +1,37 @@
+source:
+  id: "ID/JDIHN"
+  name: "Indonesia JDIHN National Legal Network"
+  country: ID
+  url: "https://jdihn.go.id/"
+  data_types:
+    - legislation
+  auth: none
+  language: ind
+  description: >
+    Jaringan Dokumentasi dan Informasi Hukum Nasional (JDIHN).
+    Central + regional legislation from all JDIH members.
+    639K+ regulations. JSON API with PDF downloads.
+    Full text extracted from PDFs via pdfminer.
+
+schema:
+  key_fields:
+    - name: judul
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: jenis_peraturan
+      type: string
+      required: false
+    - name: instansi
+      type: string
+      required: false
+    - name: date
+      type: string
+      required: false
+
+fetch:
+  rate_limit: 2
+  timeout: 60
+  retry: 3

@@ -1,0 +1,69 @@
+# ===================================================================
+# INTL/InforMEA -- InforMEA Environmental Treaties Portal
+# ===================================================================
+# ~12,400 COP/MOP decisions across 68 MEA treaties.
+# OData API at odata.informea.org with full text content.
+# ===================================================================
+
+source:
+  id: "INTL/InforMEA"
+  country: "INTL"
+  name: "InforMEA Environmental Treaties Portal"
+  url: "https://www.informea.org"
+  description: |
+    Decisions from Conferences/Meetings of Parties across 68
+    Multilateral Environmental Agreements (MEAs). Covers CBD, CITES,
+    UNFCCC, WHC, Basel, Stockholm, CMS, and more. OData REST API
+    with multilingual full text content. ~12,400 decisions.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "odata"
+  base_url: "https://odata.informea.org/informea.svc"
+  decisions_endpoint: "/Decisions"
+  page_size: 500
+
+data_model:
+  type: "legislation"
+  primary_key: "id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "title"
+      description: "Decision title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (HTML cleaned)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "treaty"
+      description: "Treaty code (e.g., cbd, cites, unfccc)"
+      type: "string"
+      role: "content"
+      required: true
+
+notes: |
+  - OData API at odata.informea.org/informea.svc
+  - $expand=content,title,summary,keywords for full data
+  - ~70-77% of decisions have full text content
+  - Available in 6 UN languages (en, fr, es, ar, ru, zh-hans)
+  - 68 treaties, 12,460 decisions total

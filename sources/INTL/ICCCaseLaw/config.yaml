@@ -1,0 +1,69 @@
+# ===================================================================
+# INTL/ICCCaseLaw -- ICC Case Law Database (Legal Tools)
+# ===================================================================
+# 18,760 legal findings from ICC decisions since 2004.
+# REST API (LoopBack). Curated legal findings with reasoning text.
+# ===================================================================
+
+source:
+  id: "INTL/ICCCaseLaw"
+  country: "INTL"
+  name: "ICC Case Law Database (Legal Tools)"
+  url: "https://www.legal-tools.org/cld"
+  description: |
+    The Case Law Database (CLD) is a curated collection of legal findings
+    from ICC decisions, maintained by the Legal Tools project. Contains
+    18,760+ extracted legal findings with reasoning text, keywords,
+    and metadata. REST API with no authentication required.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "rest_json"
+  base_url: "https://www.legal-tools.org/api"
+  listing_url: "https://www.legal-tools.org/api/clddocs"
+  count_url: "https://www.legal-tools.org/api/clddocs/count"
+
+data_model:
+  type: "case_law"
+  primary_key: "id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "title"
+      description: "Decision title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Legal finding text (extracted reasoning)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date created (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "document_number"
+      description: "ICC document number"
+      type: "string"
+      role: "identifier"
+      required: false
+
+notes: |
+  - LoopBack REST API, no auth required
+  - Paginate with filter[limit] and filter[skip]
+  - legalFindingText contains curated legal reasoning
+  - 18,760+ records, avg ~1-5K chars per finding
+  - crawl-delay: 10 in robots.txt (for PDF downloads)

@@ -1,0 +1,87 @@
+# ===================================================================
+# BJ/LEGIS -- Benin LEGIS Legal Database
+# ===================================================================
+# Enacted laws from the Benin Centre de Documentation et d'Information
+# Juridique (CDIJ). Laravel app, HTML listing + PDF full text.
+# ~3,451 laws. Some PDFs are scanned images (no extractable text).
+# No authentication required.
+# ===================================================================
+
+source:
+  id: "BJ/LEGIS"
+  country: "BJ"
+  name: "Benin LEGIS Legal Database"
+  url: "https://legis.cdij.bj"
+  description: |
+    Enacted laws of Benin from the CDIJ (Centre de Documentation et
+    d'Information Juridique). ~3,451 laws as PDFs. Full text extracted
+    via pdfplumber. Some older PDFs are scanned images without
+    extractable text. French language.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scraping"
+  base_url: "https://legis.cdij.bj"
+  endpoints:
+    listing: "/lois-promulguees?page={page}"
+    pdf_open: "/{uuid}/open"
+    pdf_download: "/{uuid}/download"
+  pagination:
+    type: "page_number"
+    page_size: 5
+
+data_model:
+  type: "legislation"
+  primary_key: "uuid"
+  update_strategy: "upsert"
+  dedup_key:
+    - "uuid"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "uuid"
+      description: "Document UUID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Law title (French)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to PDF"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "description"
+      description: "Short description from listing"
+      type: "string"
+      role: "content"
+      required: false
+
+notes: |
+  - Laravel app, 5 items per listing page, 691 pages
+  - PDF via /{uuid}/open (inline) or /{uuid}/download (attachment)
+  - Some PDFs are scanned images (0 extractable text)
+  - pdfplumber required for PDF text extraction

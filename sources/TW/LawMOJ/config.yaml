@@ -1,0 +1,117 @@
+# ===================================================================
+# TW/LawMOJ -- Taiwan Laws & Regulations Database (Ministry of Justice)
+# ===================================================================
+# Official MOJ bulk JSON API + GitHub mirror fallback.
+# Provides consolidated legislation (laws + orders/regulations).
+# 11,000+ laws in Chinese, ~1,200 with English translations.
+# Data licensed under Government Open Data License (Taiwan).
+# API docs: https://law.moj.gov.tw/api/swagger
+# ===================================================================
+
+source:
+  id: "TW/LawMOJ"
+  country: "TW"
+  name: "Taiwan Laws & Regulations Database (MOJ)"
+  url: "https://law.moj.gov.tw"
+  description: |
+    Taiwan's official legal database operated by the Ministry of Justice.
+    Contains all consolidated laws (法律, FalV) and administrative orders/
+    regulations (命令, MingLing). Bulk JSON/XML download via official API,
+    no authentication required. Both Chinese and English translations
+    available (English for ~10% of laws). Government Open Data License.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 5
+  burst: 10
+
+api:
+  type: "bulk_json"
+  primary:
+    base_url: "https://law.moj.gov.tw/api"
+    endpoints:
+      ch_law_json: "/ch/law/json"
+      ch_order_json: "/ch/order/json"
+      en_law_json: "/en/law/json"
+      en_order_json: "/en/order/json"
+  fallback:
+    base_url: "https://raw.githubusercontent.com/kong0107/mojLawSplitJSON/master"
+    endpoints:
+      index: "/index.json"
+      ch_law: "/FalVMingLing/{pcode}.json"
+      en_law: "/Eng_FalVMingLing/{pcode}.json"
+
+data_model:
+  type: "legislation"
+  primary_key: "pcode"
+  update_strategy: "upsert"
+  dedup_key:
+    - "pcode"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "pcode"
+      description: "Law code (e.g., A0000001)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Law title (Chinese)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "title_en"
+      description: "Law title (English, if available)"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "text"
+      description: "Full text of all articles concatenated"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Last amendment date (YYYYMMDD from source)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Official URL on law.moj.gov.tw"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "nature"
+      description: "Nature of law (憲法, 法律, 命令, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "category"
+      description: "Legal category classification"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "preamble"
+      description: "Preamble text if present"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "history"
+      description: "Legislative history / amendment history"
+      type: "string"
+      role: "content"
+      required: false
+
+notes: |
+  - Official MOJ API returns ZIP files containing all laws in JSON/XML
+  - GitHub mirror (kong0107/mojLawSplitJSON) provides individual JSON files
+  - 11,752 laws total (Chinese), ~1,200 with English translations
+  - Data updated monthly by MOJ
+  - Full article text included in structured JSON
+  - Both laws (法律) and orders/regulations (命令) covered
+  - Language: Chinese (Traditional) + English (partial)

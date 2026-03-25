@@ -1,0 +1,92 @@
+# ===================================================================
+# UN/TreatyBodyDB -- UN Treaty Body Database (General Comments)
+# ===================================================================
+# General Comments and General Recommendations from all 9 UN human
+# rights treaty bodies. Authoritative interpretations of international
+# human rights treaties. ~200+ documents with full text.
+# No authentication required. Open data.
+# ===================================================================
+
+source:
+  id: "UN/TreatyBodyDB"
+  country: "UN"
+  name: "UN Treaty Body Database (General Comments)"
+  url: "https://tbinternet.ohchr.org/"
+  description: |
+    General Comments and General Recommendations adopted by the nine
+    UN human rights treaty bodies (CCPR, CESCR, CRC, CEDAW, CERD,
+    CAT, CMW, CRPD, CED). These are authoritative interpretive
+    documents on the provisions of international human rights treaties.
+    Full text fetched from OHCHR document store (HTML versions).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://tbinternet.ohchr.org"
+  endpoints:
+    search: "/_layouts/15/treatybodyexternal/TBSearch.aspx"
+    download: "/_layouts/15/treatybodyexternal/Download.aspx"
+  pagination:
+    type: "page_links"
+
+data_model:
+  type: "doctrine"
+  primary_key: "symbol"
+  update_strategy: "upsert"
+  dedup_key:
+    - "symbol"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "symbol"
+      description: "UN document symbol (e.g., CCPR/C/GC/37)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the general comment"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date submitted/adopted (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to document on OHCHR"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "committee"
+      description: "Treaty body committee (CCPR, CESCR, CRC, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "treaty"
+      description: "Treaty name (ICCPR, ICESCR, CRC, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - 9 treaty bodies: CAT, CED, CEDAW, CRPD, CRC, CERD, CMW, CCPR, CESCR
+  - ~200+ general comments/recommendations total
+  - Full text fetched from docstore.ohchr.org HTML versions
+  - No authentication required
+  - Rate limit: ~1 req/sec

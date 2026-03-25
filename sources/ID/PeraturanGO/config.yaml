@@ -1,0 +1,39 @@
+source:
+  id: "ID/PeraturanGO"
+  name: "Database Peraturan Indonesia (DITJEN PP)"
+  country: ID
+  url: "https://peraturan.go.id/"
+  data_types:
+    - legislation
+  auth: none
+  language: ind
+  description: >
+    Database Peraturan (Direktorat Jenderal Peraturan Perundang-undangan).
+    62K+ regulations: Laws, Govt Regs, Presidential Regs, Ministerial Regs, Regional Regs.
+    HTML scraping of listing pages + PDF download with text extraction via pdfminer.
+
+schema:
+  key_fields:
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: jenis
+      type: string
+      required: false
+    - name: nomor
+      type: string
+      required: false
+    - name: tahun
+      type: string
+      required: false
+    - name: date
+      type: string
+      required: false
+
+fetch:
+  rate_limit: 2
+  timeout: 90
+  retry: 3

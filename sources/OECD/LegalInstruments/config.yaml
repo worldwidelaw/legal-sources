@@ -1,0 +1,66 @@
+source:
+  id: "OECD/LegalInstruments"
+  country: "OECD"
+  name: "OECD Legal Instruments Compendium"
+  url: "https://legalinstruments.oecd.org"
+  description: |
+    Official compendium of OECD legal instruments: binding decisions,
+    recommendations, declarations, and conventions. 500+ instruments
+    covering international economic governance, trade, environment,
+    education, tax, and more. EN/FR full text via REST API.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest"
+  base_url: "https://legalinstruments.oecd.org"
+  format: "json"
+  endpoints:
+    list: "/api/instruments"
+    detail: "/api/instruments/{id}"
+
+data_model:
+  type: "legislation"
+  primary_key: "instrument_key"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "instrument_key"
+      description: "OECD legal instrument key (e.g., OECD/LEGAL/0485)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Instrument title"
+      type: "string"
+      required: true
+    - name: "text"
+      description: "Full text of the legal instrument"
+      type: "string"
+      required: true
+    - name: "date"
+      description: "Adoption date (ISO 8601)"
+      type: "string"
+      required: true
+    - name: "instrument_type"
+      description: "Type: Decision, Recommendation, Declaration, Convention, etc."
+      type: "string"
+      required: true
+    - name: "status_name"
+      description: "Status: In force, Abrogated, etc."
+      type: "string"
+      required: true
+    - name: "url"
+      description: "URL to instrument on OECD site"
+      type: "string"
+      required: true

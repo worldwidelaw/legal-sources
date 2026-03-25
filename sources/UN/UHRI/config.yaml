@@ -1,0 +1,89 @@
+# ===================================================================
+# UN/UHRI -- Universal Human Rights Index
+# ===================================================================
+# 260,000+ observations and recommendations from UN human rights
+# mechanisms: Treaty Bodies, Special Procedures, Universal Periodic
+# Review. Country-specific recommendations with full text.
+# Bulk JSON download from dataex.ohchr.org. No authentication.
+# ===================================================================
+
+source:
+  id: "UN/UHRI"
+  country: "UN"
+  name: "Universal Human Rights Index"
+  url: "https://uhri.ohchr.org/"
+  description: |
+    Observations and recommendations from three UN human rights
+    mechanisms: Treaty Bodies, Special Procedures, and the Universal
+    Periodic Review (UPR). Over 260,000 records with full text,
+    classified by country, theme, SDG, and affected persons.
+    Data sourced from official OHCHR bulk JSON export.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "bulk_json"
+  base_url: "https://dataex.ohchr.org"
+  endpoints:
+    export: "/uhri/export-results/export-full-en.json"
+
+data_model:
+  type: "doctrine"
+  primary_key: "AnnotationId"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "AnnotationId"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "AnnotationId"
+      description: "Unique UUID for each recommendation/observation"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "text"
+      description: "Full text of the recommendation or observation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "Symbol"
+      description: "UN document symbol (e.g., E/C.12/AUS/CO/6)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "Body"
+      description: "UN mechanism body (CESCR, CCPR, UPR, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "Countries"
+      description: "List of countries the recommendation applies to"
+      type: "array"
+      role: "classification"
+      required: true
+    - name: "PublicationDate"
+      description: "Date of publication (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "AnnotationType"
+      description: "Type: Recommendations, Concerns/Observations, etc."
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - Bulk JSON export (~360 MB) from dataex.ohchr.org
+  - Updated daily by OHCHR
+  - 260,000+ records from Treaty Bodies, Special Procedures, UPR
+  - Full text with HTML formatting (cleaned to plain text)
+  - Rich metadata: countries, themes, SDGs, affected persons

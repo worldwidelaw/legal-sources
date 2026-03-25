@@ -1,0 +1,70 @@
+# ===================================================================
+# INTL/ECOLEX -- ECOLEX Environmental Law Gateway (FAO/IUCN/UNEP)
+# ===================================================================
+# 198K+ environmental law records: legislation + court decisions.
+# Joint FAO/IUCN/UNEP initiative. Full text from FAOLEX PDFs.
+# ===================================================================
+
+source:
+  id: "INTL/ECOLEX"
+  country: "INTL"
+  name: "ECOLEX Environmental Law Gateway (FAO/IUCN/UNEP)"
+  url: "https://www.ecolex.org"
+  description: |
+    ECOLEX is the gateway to environmental law, operated jointly by FAO,
+    IUCN and UNEP. Contains 198K+ records of treaties, national legislation,
+    and court decisions related to environmental law. Full text sourced from
+    FAOLEX PDF documents.
+
+data_types:
+  - legislation
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.ecolex.org"
+  search_url: "https://www.ecolex.org/result/"
+  pdf_source: "faolex.fao.org"
+
+data_model:
+  type: "mixed"
+  primary_key: "ecolex_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text from FAOLEX PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "country"
+      description: "Country/territory"
+      type: "string"
+      role: "metadata"
+      required: false
+
+notes: |
+  - HTML scraping of ecolex.org search results and detail pages
+  - Full text from FAOLEX PDFs (faolex.fao.org)
+  - Some older documents are scanned (no extractable text)
+  - Rate limited to 1 request per 2 seconds
+  - 198K+ total records; sampling fetches first pages only

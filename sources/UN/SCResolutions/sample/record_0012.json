@@ -1,0 +1,15 @@
+{
+  "_id": "UN-SCRES-13",
+  "_source": "UN/SCResolutions",
+  "_type": "legislation",
+  "_fetched_at": "2026-03-25T05:07:49.118393+00:00",
+  "res_no": 13,
+  "symbol": "S/RES/13(1946)",
+  "title": "Security Council resolution 13 (1946) [on admission of Siam (Thailand) to membership in the United Nations]",
+  "text": "13 (1946). Resolution of 12 December 1946\n\nThe Security Council,\n\nHaving taken note of the unanimous approval by its members of the application of Siam for membership\nin the United Nations,\n\nRecommends to the General Assembly that it admit Siam to membership in the United Nations.\n\nAdopted unanimously at the 83rd meeting.",
+  "date": "1946-12-12",
+  "year": 1946,
+  "url": "https://digitallibrary.un.org/record/",
+  "body": "Security Council",
+  "doc_type": "resolution"
+}

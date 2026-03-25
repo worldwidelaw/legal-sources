@@ -1,0 +1,32 @@
+source:
+  id: UZ/LexUz
+  name: "Lex.uz - National Database of Legislative Information of Uzbekistan"
+  country: UZ
+  url: https://lex.uz/
+  data_types:
+    - legislation
+  auth: none
+  format: html
+  language: ru
+  description: >
+    Official national legislation database of the Republic of Uzbekistan.
+    Contains 50K+ legislative acts including the Constitution, codes, laws,
+    presidential decrees, and government resolutions. Full text available
+    in Uzbek (Cyrillic and Latin) and Russian.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - doc_number
+    - doc_type
+    - url
+
+fetcher:
+  search_url: "https://lex.uz/ru/search/nat"
+  doc_url: "https://lex.uz/docs/{doc_id}"
+  page_size: 20
+  rate_limit: 2.0
+  timeout: 30

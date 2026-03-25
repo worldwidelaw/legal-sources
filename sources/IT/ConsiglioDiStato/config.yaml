@@ -23,7 +23,7 @@ coverage:
     - Ordinanze (orders)
     - Decreti (decrees)
     - Pareri (opinions)
-  years: 2024-present (OpenGA dataset coverage)
+  years: 2023-present (OpenGA dataset coverage, all available years)
   estimated_records: 100,000+
 
 schema:

@@ -1,0 +1,89 @@
+# ===================================================================
+# BH/LLOCLegislation -- Bahrain LLOC Legislation
+# ===================================================================
+# Legislation from the Bahrain Legislation and Legal Opinion Commission
+# (LLOC). Search via AJAX POST, full text via /Legislation/HTM/{id}.
+# ~23,000+ records. ASP.NET MVC, anti-forgery token required for search.
+# No authentication needed. Intermittently slow server.
+# ===================================================================
+
+source:
+  id: "BH/LLOCLegislation"
+  country: "BH"
+  name: "Bahrain LLOC Legislation"
+  url: "https://www.lloc.gov.bh"
+  description: |
+    Laws, decrees, royal orders, and regulations from the Bahrain
+    Legislation and Legal Opinion Commission (LLOC). Full text available
+    in Arabic via /Legislation/HTM/{id} endpoint. ~23,000+ records.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.lloc.gov.bh"
+  endpoints:
+    search_page: "/Legislation/Search"
+    search_post: "/legislation/search"
+    full_text_htm: "/Legislation/HTM/{id}"
+    pdf: "/PDF/{id}.pdf"
+  pagination:
+    type: "page_number"
+    page_size: 100
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "doc_id"
+      description: "Document ID (e.g., L0924, D1026, K0726)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title (Arabic)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to full text HTML"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "gazette_number"
+      description: "Official Gazette issue number"
+      type: "string"
+      role: "metadata"
+      required: false
+
+notes: |
+  - AJAX search POST requires anti-forgery token from search page
+  - Token is in hidden input with id="token"
+  - POST body uses non-standard JSON format: {PostParam: ..., PageNum: N, PageSize: M}
+  - Full text via /Legislation/HTM/{id} (Arabic, no auth needed)
+  - Server can be slow/intermittent - use generous timeouts and retries
+  - Arabic month names in dates (e.g., "5-مارس-2026")

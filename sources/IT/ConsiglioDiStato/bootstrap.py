@@ -152,6 +152,22 @@ class ConsiglioDiStatoScraper(BaseScraper):
                 return resource["id"]
         return None
 
+    def _get_all_json_resources(self, dataset_name: str) -> list:
+        """Get all JSON resource IDs for a dataset, one per year."""
+        resources = self._get_dataset_resources(dataset_name)
+        json_resources = []
+        for resource in resources:
+            if resource.get("format", "").upper() == "JSON":
+                name = resource.get("name", "")
+                # Extract year from name (e.g. "CDS - Sentenze - 2023")
+                import re as _re
+                year_match = _re.search(r'(\d{4})', name)
+                year = int(year_match.group(1)) if year_match else 0
+                json_resources.append((year, resource["id"]))
+        # Sort by year ascending
+        json_resources.sort()
+        return json_resources
+
     def _query_datastore(self, resource_id: str, limit: int = 100, offset: int = 0) -> dict:
         """Query the CKAN datastore for records."""
         url = f"{CKAN_API}/datastore_search"
@@ -332,55 +348,54 @@ class ConsiglioDiStatoScraper(BaseScraper):
             logger.info(f"Processing dataset: {dataset_name}")
 
             try:
-                # Get the JSON resource ID for 2024 (most recent full year)
-                resource_id = self._get_json_resource_id(dataset_name, year=2024)
-                if not resource_id:
-                    # Try without year filter
-                    resource_id = self._get_json_resource_id(dataset_name)
-
-                if not resource_id:
-                    logger.warning(f"No JSON resource found for {dataset_name}")
+                # Get ALL year resources for this dataset
+                year_resources = self._get_all_json_resources(dataset_name)
+                if not year_resources:
+                    logger.warning(f"No JSON resources found for {dataset_name}")
                     continue
 
                 schema = self._extract_schema_from_dataset(dataset_name)
 
-                # Paginate through all records
-                offset = 0
-                limit = 100
+                for year, resource_id in year_resources:
+                    logger.info(f"Processing {dataset_name} year {year}...")
 
-                while True:
-                    result = self._query_datastore(resource_id, limit=limit, offset=offset)
+                    # Paginate through all records
+                    offset = 0
+                    limit = 100
 
-                    if not result.get("success"):
-                        logger.error(f"Datastore query failed for {dataset_name}")
-                        break
+                    while True:
+                        result = self._query_datastore(resource_id, limit=limit, offset=offset)
 
-                    records = result.get("result", {}).get("records", [])
-                    if not records:
-                        break
+                        if not result.get("success"):
+                            logger.error(f"Datastore query failed for {dataset_name}/{year}")
+                            break
 
-                    for record in records:
-                        try:
-                            # Get full text
-                            nrg = record.get("NUMERO_RICORSO")
-                            num_provv = record.get("NUMERO_PROVVEDIMENTO")
+                        records = result.get("result", {}).get("records", [])
+                        if not records:
+                            break
 
-                            if nrg and num_provv:
-                                full_text = self._fetch_full_text(schema, nrg, num_provv)
+                        for record in records:
+                            try:
+                                # Get full text
+                                nrg = record.get("NUMERO_RICORSO")
+                                num_provv = record.get("NUMERO_PROVVEDIMENTO")
 
-                                if full_text and len(full_text) > 500:
-                                    # Enrich raw record with text and metadata
-                                    record["_text"] = full_text
-                                    record["_dataset_name"] = dataset_name
-                                    yield record
-                                else:
-                                    logger.debug(f"Skipping {nrg}/{num_provv}: no/short full text")
-                        except Exception as e:
-                            logger.warning(f"Error processing record: {e}")
-                            continue
+                                if nrg and num_provv:
+                                    full_text = self._fetch_full_text(schema, nrg, num_provv)
 
-                    offset += limit
-                    logger.info(f"Processed {offset} records from {dataset_name}")
+                                    if full_text and len(full_text) > 500:
+                                        # Enrich raw record with text and metadata
+                                        record["_text"] = full_text
+                                        record["_dataset_name"] = dataset_name
+                                        yield record
+                                    else:
+                                        logger.debug(f"Skipping {nrg}/{num_provv}: no/short full text")
+                            except Exception as e:
+                                logger.warning(f"Error processing record: {e}")
+                                continue
+
+                        offset += limit
+                        logger.info(f"Processed {offset} records from {dataset_name}/{year}")
 
             except Exception as e:
                 logger.error(f"Error processing {dataset_name}: {e}")
@@ -431,17 +446,14 @@ class ConsiglioDiStatoScraper(BaseScraper):
                 logger.error(f"Error fetching updates from {dataset_name}: {e}")
 
     def fetch_sample(self, count: int = 15) -> Generator[dict, None, None]:
-        """Fetch a sample of decisions for validation."""
-        samples_per_court = max(3, count // 5)  # Distribute across courts
+        """Fetch a sample of decisions from diverse years for validation."""
         total = 0
 
-        # Sample from CdS and a few major TAR courts
+        # Sample from CdS across different years, then a few TAR courts
         sample_datasets = [
             "cds-sentenze",
             "tar-lazio-roma-sentenze",
             "tar-lombardia-milano-sentenze",
-            "cga-sicilia-sentenze",
-            "tar-campania-napoli-sentenze",
         ]
 
         for dataset_name in sample_datasets:
@@ -449,46 +461,46 @@ class ConsiglioDiStatoScraper(BaseScraper):
                 break
 
             try:
-                resource_id = self._get_json_resource_id(dataset_name, year=2024)
-                if not resource_id:
-                    resource_id = self._get_json_resource_id(dataset_name)
-
-                if not resource_id:
-                    logger.warning(f"No resource found for {dataset_name}")
+                year_resources = self._get_all_json_resources(dataset_name)
+                if not year_resources:
+                    logger.warning(f"No resources found for {dataset_name}")
                     continue
 
                 schema = self._extract_schema_from_dataset(dataset_name)
+                per_year = max(1, (count - total) // len(year_resources))
 
-                # Get some records
-                result = self._query_datastore(resource_id, limit=samples_per_court * 2, offset=0)
-
-                if not result.get("success"):
-                    continue
-
-                court_samples = 0
-                for record in result.get("result", {}).get("records", []):
-                    if court_samples >= samples_per_court or total >= count:
+                for year, resource_id in year_resources:
+                    if total >= count:
                         break
 
-                    nrg = record.get("NUMERO_RICORSO")
-                    num_provv = record.get("NUMERO_PROVVEDIMENTO")
+                    logger.info(f"Sampling {dataset_name} year {year}...")
+                    result = self._query_datastore(resource_id, limit=per_year * 3, offset=0)
 
-                    if nrg and num_provv:
-                        logger.info(f"Fetching {dataset_name}: {nrg}/{num_provv}")
-                        full_text = self._fetch_full_text(schema, nrg, num_provv)
+                    if not result.get("success"):
+                        continue
 
-                        if full_text and len(full_text) > 500:
-                            # Enrich raw record with text and metadata
-                            record["_text"] = full_text
-                            record["_dataset_name"] = dataset_name
-                            # Return normalized for sample mode
-                            normalized = self.normalize(record)
-                            yield normalized
-                            court_samples += 1
-                            total += 1
-                            logger.info(f"  -> {len(full_text)} chars")
-                        else:
-                            logger.debug(f"Skipping {nrg}/{num_provv}: no/short text")
+                    year_samples = 0
+                    for record in result.get("result", {}).get("records", []):
+                        if year_samples >= per_year or total >= count:
+                            break
+
+                        nrg = record.get("NUMERO_RICORSO")
+                        num_provv = record.get("NUMERO_PROVVEDIMENTO")
+
+                        if nrg and num_provv:
+                            logger.info(f"Fetching {dataset_name}/{year}: {nrg}/{num_provv}")
+                            full_text = self._fetch_full_text(schema, nrg, num_provv)
+
+                            if full_text and len(full_text) > 500:
+                                record["_text"] = full_text
+                                record["_dataset_name"] = dataset_name
+                                normalized = self.normalize(record)
+                                yield normalized
+                                year_samples += 1
+                                total += 1
+                                logger.info(f"  -> {len(full_text)} chars, year={year}")
+                            else:
+                                logger.debug(f"Skipping {nrg}/{num_provv}: no/short text")
 
             except Exception as e:
                 logger.error(f"Error sampling {dataset_name}: {e}")

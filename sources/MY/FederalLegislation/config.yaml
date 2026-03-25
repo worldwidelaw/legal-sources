@@ -1,0 +1,49 @@
+id: MY/FederalLegislation
+name: Laws of Malaysia Online (Attorney General's Chambers)
+country: MY
+url: https://lom.agc.gov.my/
+description: >
+  Official and authentic publication of the laws of Malaysia. 878+ federal
+  principal acts in bilingual English/Malay PDF format, published by the
+  Attorney General's Chambers. Full text extracted from PDF documents via
+  the site's DataTable JSON API endpoint.
+data_types:
+  - legislation
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: act_number
+      type: string
+      required: false
+    - name: language
+      type: string
+      required: false

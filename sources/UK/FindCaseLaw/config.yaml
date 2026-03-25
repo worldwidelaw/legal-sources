@@ -1,0 +1,100 @@
+# ===================================================================
+# UK/FindCaseLaw -- UK Find Case Law (The National Archives)
+# ===================================================================
+# Official database of court and tribunal judgments for England & Wales.
+# Atom feed for listing + Akoma Ntoso XML for full text.
+# No auth required. Open Justice Licence.
+# API docs: https://nationalarchives.github.io/ds-find-caselaw-docs/public
+# ===================================================================
+
+source:
+  id: "UK/FindCaseLaw"
+  country: "UK"
+  name: "UK Find Case Law (National Archives)"
+  url: "https://caselaw.nationalarchives.gov.uk"
+  description: |
+    Official database of court and tribunal judgments for England & Wales,
+    operated by The National Archives. ~365,000 judgments with full text
+    in Akoma Ntoso XML. Covers UKSC, EWCA, EWHC, and tribunals.
+    Atom feed for listing/searching, per-document XML for full text.
+    No authentication required. Open Justice Licence.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 3
+  burst: 5
+
+api:
+  type: "atom_plus_xml"
+  base_url: "https://caselaw.nationalarchives.gov.uk"
+  endpoints:
+    atom_feed: "/atom.xml"
+    document_xml: "/{uri}/data.xml"
+  pagination:
+    per_page: 50
+    max_pages: 7400
+
+data_model:
+  type: "case_law"
+  primary_key: "uri"
+  update_strategy: "upsert"
+  dedup_key:
+    - "uri"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "uri"
+      description: "Document URI (e.g., ewhc/ch/2026/694)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case name"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the judgment"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Hand-down date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL on caselaw.nationalarchives.gov.uk"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "court"
+      description: "Court name"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "citation"
+      description: "Neutral Citation Number"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "content_hash"
+      description: "SHA256 hash of body text"
+      type: "string"
+      role: "identifier"
+      required: false
+
+notes: |
+  - ~365,000 judgments, growing daily
+  - Atom feed at /atom.xml with search, filter, and pagination
+  - Full text Akoma Ntoso XML at /{uri}/data.xml
+  - Rate limit: 1,000 requests per 5-minute window
+  - Open Justice Licence
+  - Language: English
+  - Courts: UKSC, EWCA, EWHC, tribunals

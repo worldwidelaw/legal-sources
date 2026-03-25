@@ -1,0 +1,45 @@
+id: JP/JLTrans
+name: Japanese Law Translation (MOJ)
+country: JP
+url: https://www.japaneselawtranslation.go.jp/
+description: >
+  Ministry of Justice official English translations of Japanese laws.
+  ~5,000 laws with bilingual Japanese/English full text via TXT downloads.
+  Covers all major Japanese legislation since the Meiji era.
+data_types:
+  - legislation
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: law_number
+      type: string
+      required: false

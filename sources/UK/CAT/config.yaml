@@ -23,8 +23,9 @@ auth:
 
 # ── Rate Limiting ─────────────────────────────────────────────────
 rate_limit:
-  requests_per_second: 0.5
-  burst: 2
+  requests_per_second: 2.0
+  burst: 5
+  max_workers: 4
 
 # ── API / Scraping Configuration ──────────────────────────────────
 api:

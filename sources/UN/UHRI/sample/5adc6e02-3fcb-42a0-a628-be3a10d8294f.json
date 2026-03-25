@@ -1,0 +1,44 @@
+{
+  "_id": "5adc6e02-3fcb-42a0-a628-be3a10d8294f",
+  "_source": "UN/UHRI",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-25T07:21:15.568725+00:00",
+  "title": "E/C.12/AUS/CO/6 — Recommendations — Australia",
+  "text": "Business and human rights \n13. The Committee recommends that the State Party:(a) Enact a comprehensive national legal framework that requires business entities to conduct human rights due diligence throughout their operations and supply chain s ; \n(b) Develop a national action plan for business and human rights, in consultation with civil society, and considering the Guidance on National Action Plans on Business and Human Rights issued by the Working Group on the issue of human rights and transnational corporations and other business enterprises; \n(c) Amend the Modern Slavery Act 2018, building on relevant domestic review processes to strengthen its effectiveness, including by introducing mandatory human rights due diligence obligations, establishing effective monitoring and enforcement mechanisms, providing for proportionate and dissuasive penalties for non ‑ compliance, lowering reporting thresholds where appropriate and ensuring access to effective remedies for victims of business-related human rights abuses;\n(d) Strengthen labour inspection and enforcement mechanisms, particularly in extractive industries and other remote and high-risk sectors, and consider reviewing employer-sponsored temporary visa arrangements to reduce workers ’ dependency on a single employer, including by ensuring that migrant workers can safely change employers without jeopardizing their migration status and that they have access to effective complaint mechanisms, in line with recommendations of the Special Rapporteur on contemporary forms of slavery, including its causes and consequences;\n(e) Take into account the Committee ’ s general comment No. 24 (2017) on State obligations under the International Covenant on Economic, Social and Cultural Rights in the context of business activities.",
+  "date": "2026-03-23",
+  "url": "https://uhri.ohchr.org/en/search-human-rights-recommendations",
+  "symbol": "E/C.12/AUS/CO/6",
+  "body": "CESCR",
+  "annotation_type": "Recommendations",
+  "countries": [
+    "Australia"
+  ],
+  "themes": [
+    "Business & Human Rights",
+    "Economic, social & cultural rights - general measures of implementation",
+    "Legal & institutional reform",
+    "Cooperation & consultation with civil society",
+    "National Human Rights Action Plans (or specific areas) / implementation plans",
+    "Human trafficking & contemporary forms of slavery",
+    "Access to justice & remedy",
+    "Constitutional & legislative framework"
+  ],
+  "sdgs": [
+    "8 - DECENT WORK AND ECONOMIC GROWTH",
+    "12 - RESPONSIBLE CONSUMPTION AND PRODUCTION",
+    "8.8 - Universal labour rights and safe working environments",
+    "4.7 - Education for sustainable development and global citizenship",
+    "8.7 - End modern slavery, trafficking and child labour",
+    "12.6 - Encourage sustainable practices for companies"
+  ],
+  "affected_persons": [
+    "Civil society",
+    "Migrants",
+    "Social workers"
+  ],
+  "regions": [
+    "Western Europe & Others"
+  ],
+  "upr_cycle": null,
+  "upr_recommending_country": []
+}

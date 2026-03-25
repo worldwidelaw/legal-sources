@@ -1,4 +1,8 @@
-# Secrets (NEVER commit these)
+# ═══════════════════════════════════════════════════════════════
+# Legal Data Hunter — .gitignore
+# ═══════════════════════════════════════════════════════════════
+
+# ── Secrets (NEVER commit these) ──────────────────────────────
 .env
 *.env
 .env.*
@@ -7,8 +11,11 @@
 secrets/
 *.key
 *.pem
+.auth-token
+.github-token
+.session.lock
 
-# Data files (too large for git)
+# ── Data files (too large for git) ────────────────────────────
 # Sample data IS tracked (small, for validation)
 # Full data dumps are NOT tracked
 sources/*/data/
@@ -17,7 +24,7 @@ sources/*/*/data/
 !sources/*/sample/
 !sources/*/*/sample/
 
-# Python
+# ── Python ────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
@@ -30,7 +37,7 @@ build/
 venv/
 env/
 
-# IDE
+# ── IDE ───────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
@@ -38,10 +45,14 @@ env/
 *~
 .DS_Store
 
-# Cache
+# ── Cache ─────────────────────────────────────────────────────
 .cache/
 *.cache
+common/__pycache__/
 
-# Logs
+# ── Logs ──────────────────────────────────────────────────────
 *.log
 logs/
+
+# ── Checkpoints (VPS-only, restart state) ────────────────────
+.checkpoint.json

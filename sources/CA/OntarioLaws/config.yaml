@@ -1,0 +1,32 @@
+source_id: CA/OntarioLaws
+name: Ontario e-Laws (Provincial Legislation)
+country: CA
+url: https://www.ontario.ca/laws
+data_url: https://www.ontario.ca/laws/api/v2/
+description: |
+  Consolidated Ontario statutes and regulations from the official e-Laws portal.
+  Covers ~857 current statutes and ~2,190 current regulations.
+  Full text available via undocumented REST API backed by Elasticsearch.
+
+data_types:
+  - legislation
+
+license: "© King's Printer for Ontario (reproduction permitted for statutes, regulations, judicial decisions)"
+language: en
+
+update_frequency: weekly
+
+schema:
+  key_fields:
+    - name: code
+      required: true
+      type: string
+  date_field: date
+  text_field: text
+  title_field: title
+  url_field: url
+
+notes: |
+  API is undocumented but functional. Returns raw Elasticsearch responses for search,
+  and full HTML content for individual documents. HTML must be stripped to plain text.
+  No authentication required, just a browser-like User-Agent header.

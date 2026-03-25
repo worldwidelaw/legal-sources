@@ -1,0 +1,46 @@
+id: KE/KenyaLaw
+name: Kenya Law (National Council for Law Reporting)
+country: KE
+url: https://new.kenyalaw.org/
+description: >
+  Kenya Law platform (PeachJam/Laws.Africa). Legislation with inline AKN HTML
+  full text, plus 315K+ judgments via PDF download. Covers Acts, subsidiary
+  legislation, and court decisions from 1930-present.
+data_types:
+  - legislation
+  - case_law
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.2
+  burst: 1
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: document_type
+      type: string
+      required: false

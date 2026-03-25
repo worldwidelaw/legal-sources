@@ -1,0 +1,68 @@
+# ===================================================================
+# INTL/ItalawArbitration -- Italaw Investment Treaty Arbitration
+# ===================================================================
+# ~1,787 ISDS cases with ~11,000+ documents (awards, decisions, etc.).
+# HTML scraping of Drupal site + PDF download + PyMuPDF text extraction.
+# ===================================================================
+
+source:
+  id: "INTL/ItalawArbitration"
+  country: "INTL"
+  name: "Italaw Investment Treaty Arbitration"
+  url: "https://www.italaw.com/"
+  description: |
+    Investment treaty arbitration case law from italaw.com. Covers
+    investor-state dispute settlement (ISDS) awards, decisions, and
+    orders. ~1,787 cases with ~11,000 documents. Full text extracted
+    from PDFs via PyMuPDF.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.1
+  burst: 1
+
+api:
+  type: "html_scrape_pdf"
+  sitemap_url: "https://www.italaw.com/sitemap.xml"
+  case_url_pattern: "https://www.italaw.com/cases/{id}"
+
+data_model:
+  type: "case_law"
+  primary_key: "document_url"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "title"
+      description: "Document title (e.g., Award, Decision on Jurisdiction)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "case_name"
+      description: "Case short name"
+      type: "string"
+      role: "content"
+      required: true
+
+notes: |
+  - Drupal 7 site with Apache Solr search
+  - robots.txt requires 10-second crawl delay
+  - All documents are PDFs, text extracted via PyMuPDF
+  - Sitemap at /sitemap.xml provides complete case listing
+  - ~1,787 cases, ~11,000 document PDFs

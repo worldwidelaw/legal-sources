@@ -1,0 +1,54 @@
+id: ME/Courts
+name: Montenegro Court Decisions (Sudovi.me)
+country: ME
+url: https://sudovi.me
+description: >
+  All Montenegro court decisions (~594K) via REST API. Covers Supreme Court,
+  Appellate Court, Administrative Court, Commercial Court, High Courts, and
+  Basic Courts. Full text as HTML in API response. No auth required.
+data_types:
+  - case_law
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: court
+      type: string
+      required: false
+    - name: case_number
+      type: string
+      required: false
+    - name: decision_type
+      type: string
+      required: false
+    - name: department
+      type: string
+      required: false

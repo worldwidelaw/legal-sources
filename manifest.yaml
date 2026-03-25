@@ -420,8 +420,7 @@ sources:
   - case_law
   id: FR/CouncilState
   name: French Administrative Courts (CE, CAA, TA)
-  notes: 'All French administrative courts via Open Data platform: CE (tier 1), CAA (tier 2), TA (tier 3). Court tier metadata
-    now set per-document.'
+  notes: ''
   priority: 2
   status: complete
   url: https://opendata.justice-administrative.fr
@@ -598,10 +597,10 @@ sources:
   - legislation
   id: DE/OpenLegalData
   name: Open Legal Data (openlegaldata.io)
-  notes: 'Issues #143, #176: VPS IPs blocked (429/403). Also bootstrap-fast has pagination bug (workers loop same 10 records).
-    9.3K records via generic bootstrap. 347K+ available. Requires residential proxy or API whitelist.'
+  notes: 'Fixed #294: bootstrap/bootstrap-fast now write to output/records.jsonl instead of stdout. API still returns 504/connection
+    refused at high offsets (#143, #176).'
   priority: 2
-  status: blocked
+  status: complete
   url: https://de.openlegaldata.io
 - auth: none
   blocked_reason: null
@@ -648,7 +647,7 @@ sources:
   - doctrine
   id: GR/Diavgeia
   name: Diavgeia - Greek Government Decisions
-  notes: 'COMPLETE: Fixed OOM with memory-bounded PDF extraction and corrected _type to doctrine.'
+  notes: ''
   priority: 1
   status: complete
   url: https://diavgeia.gov.gr
@@ -807,9 +806,7 @@ sources:
   - case_law
   id: IT/ConsiglioDiStato
   name: Council of State (Consiglio di Stato)
-  notes: Italian supreme administrative court (Council of State - CdS). Uses OpenGA CKAN API for metadata + MDP endpoint for
-    full text XML. 15 sample records with avg 22K chars/doc. Covers CdS decisions (sentenze). TAR courts metadata available
-    but full text only for CdS via MDP endpoint. CC BY 4.0.
+  notes: ''
   priority: 2
   status: complete
   url: https://www.giustizia-amministrativa.it
@@ -867,7 +864,7 @@ sources:
   - legislation
   id: LT/LegalBase
   name: Lithuanian Legal Database (TAR)
-  notes: Fixed Issue
+  notes: 'Fixed: increased streaming timeout from 300s to 30min. API has 5000+ records. 100 limit was likely VPS timeout.'
   priority: 1
   status: complete
   url: https://data.gov.lt/datasets/2613/
@@ -1092,8 +1089,8 @@ sources:
   - case_law
   id: PT/ConstitutionalCourt
   name: Portuguese Constitutional Court (Tribunal Constitucional)
-  notes: 'Constitutional Court decisions (Acórdãos) from 1983 to present. 12 sample records fetched, avg 41K chars/doc. Direct
-    URL access pattern: /tc/acordaos/{YYYY}{NNNN}.html. Full text extracted from HTML pages.'
+  notes: 'Constitutional Court decisions (Acórdãos) from 1983 to present. Fixed HTML stripping and truncation (issues #297,
+    #298).'
   priority: 2
   status: complete
   url: https://www.tribunalconstitucional.pt
@@ -1657,8 +1654,7 @@ sources:
   - case_law
   id: FR/ADLC
   name: Autorité de la Concurrence (French Competition Authority)
-  notes: 'From issue #105. French competition law decisions since 1988. JSON dataset from data.gouv.fr with full text. 6,525
-    decisions (merger control, antitrust, opinions, interim measures). Avg 30K chars/doc. Open Licence 2.0 (Etalab).'
+  notes: 'Fixed issue #283. config.yaml data_type corrected to case_law. 6504 decisions indexed in Neon.'
   priority: 2
   status: complete
   url: https://www.autoritedelaconcurrence.fr/
@@ -2685,6 +2681,17 @@ sources:
   priority: 1
   status: blocked
   url: https://api.congress.gov
+- auth: none
+  blocked_reason: null
+  country: US
+  data_types:
+  - case_law
+  id: US/USPTO
+  name: USPTO Open Data Portal (PTAB & Petitions Decisions)
+  notes: 'From issue #290: PTAB decisions and USPTO Petitions decisions. Bulk data available at data.uspto.gov/apis/bulk-data/search.'
+  priority: 2
+  status: planned
+  url: https://data.uspto.gov/
 - auth: token
   blocked_reason: needs_token
   country: US
@@ -4906,8 +4913,7 @@ sources:
   - doctrine
   id: PL/KNF
   name: Polish Financial Supervision Authority (KNF)
-  notes: 'COMPLETE: 496 Official Journal documents via REST API + PDF full text. Covers komunikaty (346), uchwaly (83), ogloszenia
-    (57), decyzje (6), obwieszczenia (3), zarzadzenia (1). 12 samples avg 33.6K chars.'
+  notes: 'COMPLETE: 496 Official Journal documents via REST API + PDF full text. Added bootstrap-fast support and graceful pdfplumber fallback.'
   priority: 2
   status: complete
   url: https://dziennikurzedowy.knf.gov.pl
@@ -5194,7 +5200,7 @@ sources:
   - case_law
   id: UK/CAT
   name: UK Competition Appeal Tribunal
-  notes: 1041 judgments via sitemap. Full text from PDFs via pdfminer/pdfplumber.
+  notes: 1042 judgments via sitemap. Full text from PDFs. Uses bootstrap_fast with 4 workers.
   priority: 2
   status: complete
   url: https://www.catribunal.org.uk
@@ -5836,10 +5842,9 @@ sources:
   - legislation
   id: CA/OntarioLaws
   name: Ontario e-Laws (Provincial Legislation)
-  notes: 'BLOCKED: React SPA with no public API. Requires JS rendering (headless browser). API endpoints return 502. ~800+
-    Ontario acts + 1,000+ regulations.'
+  notes: 'Unblocked via undocumented REST API at /laws/api/v2/. 857 statutes + 2190 regulations with full text. Closes #291.'
   priority: 2
-  status: blocked
+  status: complete
   url: https://www.ontario.ca/laws
 - auth: none
   blocked_reason: null
@@ -5870,13 +5875,13 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
+  blocked_reason: captcha_spa
   url: https://www.rejust.ro
-  notes: 'Launched 2020 by CSM (Superior Council of Magistracy). ~35 million anonymized court decisions from ALL Romanian
-    courts: district courts, tribunals, courts of appeal, and ICCJ (High Court). Blazor WebAssembly SPA - may require browser
-    automation. Replaced ROLII. Romanian language. Free access.'
+  notes: Blazor WebAssembly SPA (.NET 8) protected by Cloudflare Turnstile CAPTCHA + ASP.NET antiforgery tokens. Internal
+    API endpoints (Cases/QueryPublic, DosarEndpoint, etc.) discovered in WASM binary but require CAPTCHA solving and antiforgery
+    tokens. Requires browser automation.
 - id: RO/CameraDeputatilor
   country: RO
   name: Romanian Chamber of Deputies (Camera Deputaților)
@@ -5895,12 +5900,11 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
   url: https://reyestr.court.gov.ua
-  notes: 'Largest court decision register in Europe: 132,921,548 documents. Web search with extensive filters. CAPTCHA required
-    for access. Third-party API via OpenDataBot (paid). Currently in ''test (limited) mode'' due to war. Ukrainian language.'
+  notes: 132M+ decisions via data.gov.ua CSV ZIPs + od.reyestr.court.gov.ua full text HTML (no CAPTCHA). 2006-present.
 - id: UA/CCU
   country: UA
   name: Constitutional Court of Ukraine (Конституційний Суд)
@@ -5942,14 +5946,15 @@ sources:
   country: 'NO'
   name: Norwegian Parliament Data Service (Stortingets datatjeneste)
   data_types:
-  - parliamentary_proceedings
+  - legislation
+  - doctrine
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
   url: https://data.stortinget.no
-  notes: 'REST API returning XML. Endpoints for: votes, cases, questions, representatives, meetings, hearings, publications,
-    committees. Debates from Dec 1945 to present. R package ''stortingscrape'' wraps it. Free, cite Stortinget.'
+  notes: REST API returning XML. Fetches lovvedtak (legislative decisions), innstillinger (committee recommendations), and
+    referater (debate transcripts) with full text. 43 sessions from 1986-87 to present. Free, cite Stortinget.
 - id: NO/Lagmannsrett
   country: 'NO'
   name: Norwegian Courts of Appeal (Lagmannsretter)
@@ -6001,16 +6006,16 @@ sources:
     at github.com/althingi-net/lagasafn-xml. Modern digital records from ~1990s. Icelandic language. Free access.
 - id: LV/AllCourts
   country: LV
-  name: Latvian Courts Portal (Manas Tiesas)
+  name: Latvian Courts Portal (elieta.lv)
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  url: https://manas.tiesas.lv
-  notes: Centralized portal covering ALL Latvian courts including administrative courts. All anonymized judgments since September
-    2013. Search by ECLI, case number, date, court, category. No public API. Tens of thousands of decisions. Free access.
+  url: https://www.elieta.lv/web/
+  notes: 420K+ anonymized court decisions via gateway.elieta.lv REST API. PDF full text extracted with PyMuPDF. All courts
+    since 2007.
 - id: LT/LVAT
   country: LT
   name: Lithuanian Supreme Administrative Court (LVAT)
@@ -6029,12 +6034,12 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
   url: https://sljeme.usud.hr
-  notes: ~25,000+ decisions since 2000. HTML scraping. Constitutional complaints, abstract review, election disputes. Separate
-    from SuPra/odluke.sudovi.hr system. Selected English translations. Croatian language. Free access.
+  notes: 'IBM Domino/XPages platform. Full text from DOCX attachments. ~10,000-25,000 decisions (2007-present). Case types:
+    U-I through U-X, SuP-O, SuS, SuT-A.'
 - id: HR/Sabor
   country: HR
   name: Croatian Parliament (Hrvatski sabor)
@@ -6052,14 +6057,13 @@ sources:
   name: Open Courts Slovakia (Otvorené súdy)
   data_types:
   - case_law
-  auth: none
-  status: planned
+  auth: api_key
+  status: blocked
   priority: 1
-  blocked_reason: null
+  blocked_reason: api_key_required
   url: https://otvorenesudy.sk
-  notes: Transparency International Slovakia project. REST API at api.otvorenesudy.sk. Open source on GitHub (github.com/otvorenesudy).
-    All publicly available court decisions from ALL Slovak courts (mandated online since 2012). Covers judgments, proceedings,
-    judges, courts, hearings. Slovak language. Free access.
+  notes: API at api.otvorenesudy.sk requires invite-only API key. Request at api@otvorenesudy.sk. Official justice portal
+    (obcan.justice.sk) has no open API either. Admin must request API key to unblock.
 - id: SI/DrzavniZbor
   country: SI
   name: Slovenian National Assembly (Državni zbor)
@@ -6078,13 +6082,11 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
   url: https://www.dgsi.pt
-  notes: 'DGSI portal sub-databases not yet indexed: Courts of Appeal (Coimbra, Evora, Lisbon, Porto, Guimarães) with 100K+
-    decisions, Central Administrative Courts (North/South), Court of Conflicts, Public Prosecutor opinions (doctrine), Justices
-    of the Peace. HTML scraping. Portuguese language. Free access (Ministry of Justice).'
+  notes: 'JSON enumeration + HTML full text from 9 DGSI sub-databases (Courts of Appeal, Administrative Courts, Conflicts, Peace). ~230K decisions. Fixed variable-width lookbehind regex error.'
 - id: PT/TribunalContas
   country: PT
   name: Portuguese Court of Auditors (Tribunal de Contas)
@@ -6103,13 +6105,12 @@ sources:
   data_types:
   - parliamentary_proceedings
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
+  blocked_reason: no_full_text_access
   url: https://www.parlamento.pt/Cidadania/Paginas/DadosAbertos.aspx
-  notes: Official XML and JSON open data feeds. Plenary meetings, committee meetings, legislative initiatives, voting records.
-    Community projects at github.com/centraldedados/parlamento. Also on dados.gov.pt. Open reuse with attribution. Portuguese
-    language.
+  notes: JSON feeds have metadata only. Full text is in linked PDFs requiring PyPDF2/PyMuPDF extraction (not available on
+    VPS). Also data_type parliamentary_proceedings not in supported types.
 - id: GR/Parliament
   country: GR
   name: Hellenic Parliament Open Data (Βουλή των Ελλήνων)
@@ -6150,26 +6151,26 @@ sources:
   country: BG
   name: Bulgarian Parliament (Народно събрание)
   data_types:
-  - parliamentary_proceedings
+  - doctrine
   auth: none
-  status: planned
+  status: complete
   priority: 2
   blocked_reason: null
   url: https://www.parliament.bg
-  notes: Stenographic records of plenary sessions, draft laws, adopted laws, voting records. HTML scraping, no API. Regular
-    sittings three days per week. Bulgarian language. Free access.
+  notes: Plenary stenographic records via JSON REST API at /api/v1/pl-sten/{id}. ~6,000+ records with full text (2001-present).
+    15 samples fetched successfully.
 - id: ME/Courts
   country: ME
   name: Montenegro Court Decisions (Sudovi.me)
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
   url: https://sudovi.me
-  notes: ALL court decisions in Montenegro (except Constitutional Court) from ~2010. English version at en.sudovi.me. Full
-    text with holdings + rationale. Anonymized. Montenegrin language. Free access.
+  notes: 594K+ decisions from 25 courts via REST API. Full text as HTML in JSON response. No auth needed. Covers Supreme,
+    Appellate, Administrative, Commercial, High and Basic courts.
 - id: AM/Datalex
   country: AM
   name: Armenian Judicial Information System (Datalex)
@@ -6263,12 +6264,12 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
   url: https://instante.justice.md
-  notes: ICMS-based court portal. 740,824+ digitized decisions (Chisinau alone 1965-2009). All courts. May bypass Cloudflare
-    block affecting legislation portals (legis.md). Romanian language. Free access.
+  notes: 1.8M+ court decisions from all Moldovan courts. HTML search + PDF full text via pypdf. 10s crawl delay respected.
+    Covers civil, criminal, contravention cases.
 - id: CY/AdminCourt
   country: CY
   name: Cyprus Administrative Court (via CyLaw)
@@ -6347,10 +6348,10 @@ sources:
   - legislation
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  notes: OAI-PMH protocol for harvesting. 1.2M+ documents (legislation, jurisprudence, bills) from federal/state/municipal
-    levels. Kaggle dataset also available.
+  blocked_reason: no_full_text_access
+  notes: OAI-PMH endpoint returns 404. LexML is a metadata aggregator with links to external sites — no full text hosted. Already covered by BR/Planalto and BR/DOU.
 - id: BR/STJDadosAbertos
   country: BR
   name: STJ Open Data Portal (Superior Court of Justice)
@@ -6358,9 +6359,9 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 2
-  notes: CKAN-based open data portal with downloadable datasets. Full texts of terminating decisions.
+  notes: Espelhos de acórdãos via CKAN JSON. 10 judging bodies, ementa + decisão full text. Monthly snapshots.
 - id: IN/IndianKanoon
   country: IN
   name: Indian Kanoon Legal Search API
@@ -6368,11 +6369,12 @@ sources:
   data_types:
   - case_law
   - legislation
-  auth: none
-  status: planned
+  auth: api_token
+  status: blocked
   priority: 1
-  notes: 'REST API (JSON/XML). 1.4M+ docs: Supreme Court, 24 High Courts, 17 tribunals, central laws. Free non-commercial
-    tier (Rs 10,000/month credit). 20,000+ docs added daily.'
+  blocked_reason: auth_required
+  notes: Requires API token authentication. Free tier requires signup and use-case verification by admin. No unauthenticated
+    access available.
 - id: JP/eGovLawsAPI
   country: JP
   name: e-Gov Laws API (Version 2)
@@ -6380,10 +6382,9 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
-  notes: 'Official REST API with Swagger docs. All Japanese statutes: constitution, acts, cabinet orders, ministerial ordinances.
-    JSON/XML. No auth required. Excellent candidate.'
+  notes: null
 - id: JP/CourtsGoJp
   country: JP
   name: Japanese Courts Case Law Database
@@ -6402,10 +6403,9 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
-  notes: 'Official government Open API. 3.7M+ records: acts, treaties, administrative regulations, ordinances. Full text.
-    Also English at elaw.klri.re.kr.'
+  notes: ''
 - id: KR/CourtCLIS
   country: KR
   name: Comprehensive Legal Information System (CLIS)
@@ -6444,21 +6444,23 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  notes: 'Tens of thousands of judgments: Constitutional Court (1995+), Supreme Court of Appeal (1971+), Labour Court, all
-    Provincial High Courts. Free Access to Law movement. Full text HTML.'
+  blocked_reason: terms_of_use
+  notes: Terms of use explicitly prohibit scraping, automated access, and AI-related use.
+    robots.txt blocks all non-Google bots. No API or bulk download available.
 - id: ZA/LawsAfrica
   country: ZA
   name: Laws.Africa Legislation Commons
   url: https://laws.africa/api/
   data_types:
   - legislation
-  auth: none
-  status: planned
+  auth: api_token
+  status: blocked
   priority: 1
-  notes: REST API. Akoma Ntoso XML, HTML, ePUB, PDF, JSON. 7,000+ docs across ZA, Namibia, Uganda, Zimbabwe. CC-BY-NC-SA.
-    Excellent data quality.
+  blocked_reason: auth_required
+  notes: API requires token auth. Free registration at edit.laws.africa/accounts/login/ for
+    non-commercial use (CC-BY-NC-SA). Admin needs to sign up and add token.
 - id: MX/SemanarioJudicial
   country: MX
   name: Semanario Judicial de la Federacion (SJF)
@@ -6466,10 +6468,10 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  notes: 'All federal case law since 1917: jurisprudencia and isolated theses. Hundreds of thousands of entries. Full text.
-    Free.'
+  blocked_reason: waf_protected_duplicate
+  notes: Behind Incapsula WAF. Content (jurisprudencia, tesis) already covered by MX/SCJNDatosAbiertosAPI (437K+ documents).
 - id: MX/DOF
   country: MX
   name: Diario Oficial de la Federacion (DOF)
@@ -6534,10 +6536,9 @@ sources:
   - case_law
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
-  notes: 275,000+ judicial decisions (1930-present, updated daily), 500+ chapters of Laws of Kenya, Kenya Gazette from 1901+.
-    Public domain. APIs available.
+  notes: null
 - id: PH/LawPhil
   country: PH
   name: LawPhil Project (Arellano Law Foundation)
@@ -6556,10 +6557,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
-  notes: 'DGA initiative. API + Hugging Face datasets. 1.3M+ files from Royal Gazette converted to machine-readable format.
-    GitHub: DGA-Thailand/open-law-data.'
+  notes: OCS Krisdika consolidated laws via Hugging Face JSONL. Full text from sections[].content. CC-BY 4.0. 15 sample records
+    with full text.
 - id: ID/DirektoriPutusan
   country: ID
   name: Direktori Putusan (Supreme Court Decision Directory)
@@ -6567,10 +6568,9 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
-  notes: 10M+ court decisions across all Indonesian courts (civil, criminal, admin, religious, military, tax). ~25K new decisions/month.
-    Full text PDF. Massive database.
+  notes: HTML scraping + PDF text extraction via pdfminer. 10M+ decisions. Full text from PDF.
 - id: PK/SupremeCourt
   country: PK
   name: Supreme Court of Pakistan Judgments
@@ -6609,10 +6609,11 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  notes: 179,000+ documents from all international criminal jurisdictions since Nuremberg. ICC decisions, treaties, UN resolutions.
-    Largest intl criminal law database.
+  blocked_reason: no_full_text_access
+  notes: 370K docs, all PDFs. API returns metadata only. No text extraction endpoint. Would need PyPDF2/PyMuPDF to extract
+    text from PDFs. INTL/ICCCaseLaw covers ICC case law with full text via CLD API.
 - id: INTL/WTO
   country: INTL
   name: WTO Dispute Settlement Documents
@@ -6662,10 +6663,13 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  notes: ~15 million anonymized court decisions from all Romanian courts. Free Access to Law movement. Full text. Massive
-    database.
+  notes: SPA (YMS framework) with authenticated API. CSM (Superior Council of Magistracy) ordered ROLII to disable all programmatic/third-party
+    API access in March 2022. The YMS API at /yms/api/v1/ returns 401. No public REST/JSON/SPARQL endpoints. REJUST (alternative)
+    uses Blazor WASM + Cloudflare Turnstile CAPTCHA. portal.just.ro SOAP provides metadata only (no full text). Requires browser
+    automation.
+  blocked_reason: spa_no_api
 - id: MT/Legislation
   country: MT
   name: Laws of Malta (legislation.mt)
@@ -7219,11 +7223,10 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 2
   blocked_reason: null
-  notes: 'Swiss open case law project: bulk Parquet/CSV downloads of Swiss court decisions from all levels. Open data. Full
-    text. Complements Entscheidsuche search.'
+  notes: 963K+ Swiss court decisions via HuggingFace voilaj/swiss-caselaw. Full text in de/fr/it/rm. All cantons + federal courts.
 - id: AT/OpenJustice
   country: AT
   name: openjustice.at - Austrian Linked Open Case Law
@@ -7298,11 +7301,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 'Official electronic Code of Federal Regulations: all 50 titles of federal regulations. XML API available. Updated
-    daily. Massive corpus. Free access.'
+  notes: All 50 CFR titles via official XML API. Thousands of parts with full regulation text. Updated daily. Public domain.
 - id: US/RECAP
   country: US
   name: RECAP Archive - Federal Court Documents
@@ -7310,11 +7312,11 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: 'RECAP: largest open collection of federal court filings. Hundreds of millions of docket entries, millions of documents.
-    Free Law Project. REST API + bulk data. Full text.'
+  blocked_reason: needs_token
+  notes: RECAP uses CourtListener API (courtlistener.com/api/rest/v4/recap/) which requires authentication token. Same blocker
+    as US/CourtListener. Admin needs to register at courtlistener.com and provide COURTLISTENER_API_TOKEN.
 - id: US/SupremeCourtBulk
   country: US
   name: US Supreme Court Bulk Data (Free Law Project)
@@ -7322,11 +7324,11 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: 'Complete US Supreme Court corpus: all decisions since 1754. Free Law Project. Bulk download + API. Full text. JSON
-    format.'
+  blocked_reason: needs_token
+  notes: Redirects to CourtListener API/bulk data (needs auth token). US Supreme Court cases already covered by US/CaselawAccessProject.
+    Same blocker as US/CourtListener.
 - id: INTL/IRMCT-CLD
   country: INTL
   name: IRMCT Case Law Database (ICTY/ICTR archives)
@@ -7371,11 +7373,10 @@ sources:
   - legislation
   - doctrine
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
-  notes: ILO conventions, recommendations, national labour laws (NATLEX). Tens of thousands of records. Combines former NATLEX,
-    APPLIS, ILOLEX databases. Abstracts + linked full text.
+  blocked_reason: cloudflare
+  notes: normlex.ilo.org behind Cloudflare JS challenge. No API or bulk download. Duplicate of INTL/ILONormlex.
 - id: INTL/CAS-Sports
   country: INTL
   name: Court of Arbitration for Sport - Jurisprudence
@@ -7487,10 +7488,9 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
-  notes: 35K+ judgments 1950-2025 on AWS S3 bulk download. CC-BY-4.0. PDF+JSON metadata. No auth needed. High Court companion
-    dataset also available.
+  notes: null
   blocked_reason: null
 - id: IN/IndiaCode
   country: IN
@@ -7510,10 +7510,9 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
-  notes: '62K+ regulations: 1926 Laws, 4990 Govt Regs, 2640 Presidential Regs, 20K Ministerial Regs, 19K Regional Regs. PDF
-    downloads. Scraping required.'
+  notes: HTML scraping + PDF text extraction. 62K+ regulations across all types. 12 samples with full text.
   blocked_reason: null
 - id: PH/OfficialGazette
   country: PH
@@ -7545,10 +7544,9 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 2
-  notes: 1200+ Acts, Ordinances, President's Orders from 1799 to present. HTML full text with predictable URLs. Open-source
-    mirror exists.
+  notes: 1,484 acts from HuggingFace CC-BY 4.0 dataset. Full text. 13 sample records (698-496K chars).
   blocked_reason: null
 - id: LK/LawNet
   country: LK
@@ -7637,9 +7635,9 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 2
-  notes: Hundreds of thousands of Supreme Court and appellate decisions. Full text on web. Scraping required.
+  notes: 4.2M+ decisions via juris.pjud.cl JSON API. Full text in texto_sentencia. CSRF token required. 15 sample records validated.
   blocked_reason: null
 - id: PE/TribunalConstitucional
   country: PE
@@ -7716,10 +7714,10 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  notes: Thousands of constitutional decisions. Rich search facets. Full text on web. Scraping required.
-  blocked_reason: null
+  notes: Both buscador.tcpbolivia.bo and jurisprudencia.tcpbolivia.bo are unreachable (TCP connection timeout). Gaceta PDFs require PyPDF2.
+  blocked_reason: server_unreachable
 - id: CU/GacetaOficial
   country: CU
   name: Cuba Official Gazette
@@ -7771,10 +7769,9 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
-  notes: 100K+ legal documents. Ministry of Justice. HTML full text. RSS feed for updates. Kazakh/Russian + 2200 English translations.
-    Scraping required.
+  notes: 206K+ legal documents via zan.gov.kz REST API. Full structured text. Russian/Kazakh.
   blocked_reason: null
 - id: UZ/LexUz
   country: UZ
@@ -7783,10 +7780,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
-  notes: 50K+ legislative acts since independence. All codes, laws, presidential decrees. Free since 2010. AJAX endpoints.
-    HTML full text. Uzbek/Russian + partial English.
+  notes: 27K+ legislative acts in Russian. HTML scraping from divCont with semantic CSS classes.
+    15 sample docs with full text (2.7K-137K chars). Many docs Uzbek-only.
   blocked_reason: null
 - id: MN/LegalInfo
   country: MN
@@ -7794,11 +7791,12 @@ sources:
   url: https://legalinfo.mn/
   data_types:
   - legislation
+  - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
-  notes: '19567 legislative acts: 938 laws, 2534 resolutions, 5674 govt resolutions, 329 Constitutional Court decisions. HTML
-    full text. 186 English translations.'
+  notes: 13K+ legal documents across 10 categories (laws, resolutions, court decisions, treaties, etc). AJAX API via /mn/ajaxList/
+    and /mn/detail?lawId=ID. 12 sample records, avg 22K chars/doc. Full text from responsive_mobile HTML blocks.
   blocked_reason: null
 - id: SA/BoeLaws
   country: SA
@@ -7807,10 +7805,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  notes: 1000+ Saudi laws and regulations since Kingdom founding. HTML + PDF. Arabic + English translations via ncar.gov.sa.
-  blocked_reason: null
+  notes: Duplicate of SA/BOELaws. Site geo-restricted, unreachable from non-Saudi IPs.
+  blocked_reason: duplicate_and_geo_restricted
 - id: IQ/IRAQLD
   country: IQ
   name: Iraqi Legal Database (Supreme Judicial Council)
@@ -7818,11 +7816,11 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  notes: 10K+ laws and decrees since 1918. Created by UNDP 2004. First comprehensive electronic Arab legal database. Arabic.
-    Scraping required.
-  blocked_reason: null
+  notes: Cloudflare managed challenge blocks all programmatic access. No API. ASP.NET Web Forms with ViewState-dependent navigation.
+    27K+ legal texts 1917-present.
+  blocked_reason: cloudflare_protection
 - id: IR/Qavanin
   country: IR
   name: Iran Laws and Regulations Portal
@@ -7885,15 +7883,14 @@ sources:
   blocked_reason: null
 - id: CI/CNDJ
   country: CI
-  name: Cote d'Ivoire Legal Information (Laws.Africa)
+  name: Cote d'Ivoire Legal Information (CivLII / Laws.Africa)
   url: https://civlii.laws.africa/en/
   data_types:
-  - case_law
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 2
-  notes: Laws.Africa AKN platform. Commercial Courts, Courts of First Instance, AfCHPR, ECOWAS Court. HTML full text.
+  notes: 798 legislation docs via CivLII. Full text from Akoma Ntoso HTML. Judgments excluded (PDF-only, need PyPDF2).
   blocked_reason: null
 - id: BF/LegiBurkina
   country: BF
@@ -7939,19 +7936,19 @@ sources:
   priority: 2
   notes: Complete 2004 Laws of Federation (16 volumes) + recent Acts to 2026. PDF at predictable URLs. Supplement to NigeriaLII
     (case law).
-  blocked_reason: null
+  blocked_reason: auth_required
 - id: INTL/GazettesAfrica
   country: INTL
   name: Gazettes.Africa (Pan-African Official Gazettes)
   url: https://gazettes.africa/
   data_types:
   - legislation
-  auth: none
-  status: planned
+  auth: api_key
+  status: blocked
   priority: 1
-  notes: 149758 gazettes across 25 African countries + 2 regional bodies. JSONL index at archive.opengazettes.org.za. PDF
-    full text. No auth.
-  blocked_reason: null
+  notes: 'BLOCKED: gazettes.africa behind Cloudflare JS challenge. Laws.Africa API (api.laws.africa/v3/) requires auth token.
+    JSONL index at archive.opengazettes.org.za does not exist (404). No public unauthenticated access.'
+  blocked_reason: cloudflare_and_auth_required
 - id: INTL/AfricanLII
   country: INTL
   name: AfricanLII Pan-African Regional Courts
@@ -8018,11 +8015,10 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  notes: 164K+ documents across 140+ databases. Supreme Court 2004+, Court of Appeal 1867+, High Court 1847+. SINO search.
-    HTML full text.
-  blocked_reason: null
+  notes: Site returns HTTP 410 Gone as of 2026-03-24. NZLII appears permanently shut down.
+  blocked_reason: site_permanently_gone
 - id: NZ/CourtsOfNZ
   country: NZ
   name: Courts of New Zealand Official Judgments
@@ -8136,12 +8132,12 @@ sources:
   url: https://opendata.judicial.gov.tw/
   data_types:
   - case_law
-  auth: none
-  status: planned
+  auth: token
+  status: blocked
   priority: 1
-  notes: REST API with JList (daily changes) and JDoc/{jid} (individual judgment). Millions of judgments. OGDL-Taiwan-1.0
-    license. Monthly archives available.
-  blocked_reason: null
+  notes: API updated Aug 2025 to require registered account + token auth (6-hour expiry). Monthly archives behind Cloudflare
+    Turnstile. FJUD search requires ASP.NET session. Admin must register at opendata.judicial.gov.tw to get API credentials.
+  blocked_reason: needs_token
 - id: TW/ConstitutionalCourt
   country: TW
   name: Constitutional Court of Taiwan (R.O.C.)
@@ -8285,14 +8281,14 @@ sources:
 - id: BJ/LEGIS
   country: BJ
   name: Benin LEGIS Legal Database
-  url: https://legis.cdij.bj/
+  url: https://legis.cdij.bj
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 2
   blocked_reason: null
-  notes: Centre de Documentation et d'Information Juridique. Enacted laws of Benin. Full text. French.
+  notes: CDIJ enacted laws via HTML listing + PDF text extraction (pdfplumber). ~3,451 laws, some scanned. 15 samples fetched.
 - id: TG/JournalOfficiel
   country: TG
   name: Togo Journal Officiel
@@ -8355,9 +8351,9 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
+  blocked_reason: site_down_pdf_only
   notes: Official gazette since 1975. Portuguese. PDF. Free online access.
 - id: MZ/BoletimRepublica
   country: MZ
@@ -8433,10 +8429,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: REST API returning JSON/XML. All Japanese laws in force. No auth. Highest quality API.
+  notes: Duplicate of JP/eGovLawsAPI (same API, same data). Covered by that source.
 - id: KR/KLRI
   country: KR
   name: Korea Legislation Research Institute Open API
@@ -8455,10 +8451,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 2
   blocked_reason: null
-  notes: All Brunei legislation. Predictable PDF URLs for bulk download.
+  notes: 126 chapters, full text via PDF extraction with pdfplumber. 15 samples.
 - id: PS/AlMuqtafi
   country: PS
   name: Al-Muqtafi Palestine Legal Database
@@ -8489,10 +8485,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
-  notes: National Assembly of Bhutan. English + Dzongkha. PDF downloads.
+  blocked_reason: server_unreachable
+  notes: Site unreachable (TCP connection timeout). Also PDF-only, would require PyPDF2.
 - id: KH/CamLawBox
   country: KH
   name: Cambodia Law Database
@@ -8566,10 +8562,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
-  notes: 5K+ documents. Revised laws and subsidiary legislation. Full text HTML/PDF.
+  blocked_reason: robots_txt_disallow
+  notes: Original domain expired. Replacement at barbadosparliament-laws.com has robots.txt Disallow all. API requires CSRF+session auth.
 - id: GY/LawsOfGuyana
   country: GY
   name: Laws of Guyana
@@ -8599,10 +8595,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
-  notes: 18 volumes of consolidated laws. Searchable. English.
+  blocked_reason: domain_hijacked
+  notes: Domain belizelaw.org has been hijacked - now serves a Vietnamese gambling site (Hi88). Original legal content is gone.
 - id: BS/BahamasLegislation
   country: BS
   name: Bahamas Legislation
@@ -8610,10 +8606,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
-  notes: Government portal. Consolidated to 2009+. Full text.
+  blocked_reason: pdf_only
+  notes: All legislation is in PDF files only (iLAWSSYNC CMS). No HTML full text views. Requires PyPDF2 on VPS for text extraction.
 - id: BR/SenadoLegislacao
   country: BR
   name: Brazil Senate Legislation Portal
@@ -8621,10 +8617,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
-  notes: Swagger-documented REST API. Federal legislation. Portuguese.
+  blocked_reason: no_full_text_access
+  notes: Senate API provides metadata only (ementas, dates, cross-references). Full text redirects to normas.leg.br, already covered by BR/Planalto.
 - id: MX/SCJNDatosAbiertos
   country: MX
   name: Mexico Supreme Court Open Data
@@ -8639,14 +8635,14 @@ sources:
 - id: AR/CSJNDatosAbiertos
   country: AR
   name: Argentina Supreme Court Open Data
-  url: https://datos.csjn.gov.ar/
+  url: https://sjconsulta.csjn.gov.ar/sjconsulta/
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 2
   blocked_reason: null
-  notes: CKAN-based. 291 datasets. Fallos since 1863. CSV/API downloads.
+  notes: JSON metadata API + PDF full text via pdfplumber. ~800K+ IDs. 13 sample records.
 - id: HT/dLOCHaitiLaw
   country: HT
   name: Haiti Digital Library of the Caribbean Laws
@@ -8687,10 +8683,11 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 2
   blocked_reason: null
-  notes: Consolidated legislation since 1989. 3,000+ texts. Full text HTML. Catalan.
+  notes: ~1,658 consolidated laws/regulations. Year-based enumeration via tracker POST.
+    Full text from article.wikitext. 15 samples (138-197K chars). Catalan.
 - id: MD/CurteaConstitutionala
   country: MD
   name: Moldova Constitutional Court
@@ -8709,10 +8706,10 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
-  notes: 500+ decisions (1997+). Full text HTML/PDF. Russian/Belarusian.
+  blocked_reason: access_denied
+  notes: Site returns 403 Forbidden. Likely IP/geo-restricted.
 - id: INTL/ASEANTreaties
   country: INTL
   name: ASEAN Treaty Database
@@ -8764,10 +8761,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
-  notes: 100K+ national laws on labour/social security from 196 countries. Full text links. Multi-language.
+  blocked_reason: cloudflare
+  notes: natlex.ilo.org behind Cloudflare JS challenge. No API or bulk download available.
 - id: INTL/WIPODecisions
   country: INTL
   name: WIPO Arbitration & Mediation Decisions
@@ -8844,11 +8841,12 @@ sources:
   - legislation
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Free access to legislation and case law from 20 Pacific Island nations (Fiji, Samoa, Tonga, Vanuatu, PNG, Solomon
-    Islands, Kiribati, etc.). Run by USP Law/AustLII. SINO search engine. HTML scraping likely needed.
+  blocked_reason: anti_scraping_policy
+  notes: Copyright policy explicitly prohibits spidering and automated collection. Server returns HTTP 410 without browser
+    User-Agent. No API, no bulk download, no OAI-PMH. 137K+ documents from 20 Pacific nations. Would need written agreement
+    from PacLII for data access.
 - id: INTL/AsianLII
   name: Asian Legal Information Institute (AsianLII)
   country: INTL
@@ -8919,9 +8917,8 @@ sources:
   status: blocked
   priority: 1
   blocked_reason: aws_waf_browser_required
-  notes: All STF endpoints (portal, jurisprudencia, redir) behind AWS WAF requiring browser
-    JS challenge. DATAJUD/CNJ has no STF index. digital.stf.jus.br has PDF download by
-    known ID but no listing/search API. Needs Playwright/Selenium.
+  notes: All STF endpoints (portal, jurisprudencia, redir) behind AWS WAF requiring browser JS challenge. DATAJUD/CNJ has
+    no STF index. digital.stf.jus.br has PDF download by known ID but no listing/search API. Needs Playwright/Selenium.
 - id: BR/DOU
   name: Diário Oficial da União (Brazilian Federal Official Gazette)
   country: BR
@@ -8970,7 +8967,8 @@ sources:
   status: blocked
   priority: 1
   blocked_reason: anti_bot_protection
-  notes: No API. Heavy anti-scraping (obfuscated JS ciphertext, CAPTCHA, rotating encryption). All open-source scrapers broken. Platform actively reducing transparency.
+  notes: No API. Heavy anti-scraping (obfuscated JS ciphertext, CAPTCHA, rotating encryption). All open-source scrapers broken.
+    Platform actively reducing transparency.
 - id: MY/FederalLegislation
   name: Laws of Malaysia Online (Attorney General's Chambers)
   country: MY
@@ -8978,11 +8976,11 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: Official and authentic publication of the laws of Malaysia. Federal legislation portal from Attorney General's Chambers.
-    Free access. Full text.
+  notes: 878 principal acts via DataTable JSON API + PDF text extraction. Full text confirmed. portal from Attorney General's
+    Chambers. Free access. Full text.
 - id: INTL/CISGOnline
   name: CISG-online (UN Sales Convention Case Law)
   country: INTL
@@ -9015,11 +9013,12 @@ sources:
   data_types:
   - legislation
   auth: api_key_free
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Machine-readable African legislation in Akoma Ntoso XML/HTML. Free for non-commercial use (CC-BY-NC-SA). Covers 30+
-    African countries. Requires free API key. Updated within 10 business days of new laws.
+  blocked_reason: requires_api_key_signup
+  notes: All API endpoints return 403 without auth token. Requires free account signup at edit.laws.africa. National legislation
+    also needs paid per-country subscription. Admin needs to sign up at https://edit.laws.africa/accounts/login/ and get token
+    from profile/api page.
 - id: EU/NLex
   name: N-Lex (EU National Law Portal)
   country: EU
@@ -9039,11 +9038,10 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
-  notes: Academic dataset of Swiss Federal Supreme Court decisions hosted on Zenodo. Machine-readable, bulk download. Complements
-    CH/OpenCaseLaw which covers all courts.
+  blocked_reason: duplicate
+  notes: 122K federal supreme court decisions. Already covered by CH/OpenCaseLaw (963K decisions including all federal courts).
 - id: KR/OpenLawGoKr
   name: Korea Open Legal Data API (open.law.go.kr)
   country: KR
@@ -9051,11 +9049,10 @@ sources:
   data_types:
   - legislation
   auth: api_key_free
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Korean government open legal data portal with API. Free API key. Legislation data in structured format. Korean language.
-    Complements KR/LawGoKr.
+  blocked_reason: duplicate
+  notes: Same data as KR/LawGoKr (already complete). Both use law.go.kr DRF API.
 - id: IN/OpenNyAI
   name: OpenNyAI Indian Legal NLP Datasets
   country: IN
@@ -9190,7 +9187,8 @@ sources:
   status: complete
   priority: 1
   blocked_reason: null
-  notes: Socrata SODA API + relatoria HTML. T-type (tutela) rulings only (21K+), C/SU types on Angular SPA need browser. 15 samples, full text verified.
+  notes: Socrata SODA API + relatoria HTML. T-type (tutela) rulings only (21K+), C/SU types on Angular SPA need browser. 15
+    samples, full text verified.
 - id: IN/NJDG
   name: India National Judicial Data Grid
   country: IN
@@ -9198,12 +9196,10 @@ sources:
   data_types:
   - case_law
   auth: api_key
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: National Judicial Data Grid with orders, judgments and case details from 18,735 District & Subordinate Courts and
-    High Courts. Over 23 crore cases and 22 crore orders/judgments. Open API available with authorized credentials for government
-    entities. May need registration for API access. Near real-time updates.
+  blocked_reason: auth_required
+  notes: API requires authorized credentials for government entities. Registration/API key needed. Not open data.
 - id: IN/ILDC
   name: Indian Legal Documents Corpus
   country: IN
@@ -9223,11 +9219,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: Official Japanese government Laws API v2 with OpenAPI/Swagger documentation. Returns legislation in XML format. Complements
-    JP/eLaws (which may use older endpoints). Free access, well-documented RESTful API.
+  notes: Duplicate of JP/eGovLawsAPI (same API, same data). Covered by that source.
 - id: SG/PairSearch
   name: Singapore PairSearch (Hansard & Supreme Court)
   country: SG
@@ -9262,11 +9257,10 @@ sources:
   - case_law
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Official Supreme Court E-Library with decisions dating back to 1901. Also contains full texts of laws, circulars,
-    and administrative issuances. Free access. Complements PH/LawPhil.
+  blocked_reason: duplicate
+  notes: 'Duplicate of PH/SCELibrary (same URL: elibrary.judiciary.gov.ph). Already completed.'
 - id: TH/PyThaiNLPLaw
   name: Thailand Laws Dataset (PyThaiNLP)
   country: TH
@@ -9286,11 +9280,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Free API for current Norwegian laws and central regulations. NLOD 2.0 license. Opened for AI/research use. Complements
-    NO/Lovdata (which may use HTML scraping). Well-documented REST API.
+  blocked_reason: duplicate
+  notes: Duplicate of NO/Lovdata (already complete with 4,460 records). Same API endpoint.
 - id: DK/Retsinformation
   name: Denmark Retsinformation (Official Law Database)
   country: DK
@@ -9322,11 +9315,10 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: Official database of court and tribunal judgments for England & Wales from The National Archives. Full text in HTML
-    and XML. Open Justice licence. High quality structured data. Complements UK/CaseLaw.
+  notes: ~365K judgments via Atom feed + Akoma Ntoso XML. Open Justice Licence. No auth.
 - id: CN/OpenLawCN
   name: China OpenLaw.cn Case Platform
   country: CN
@@ -9432,12 +9424,11 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: Supreme Court open data platform with JSON API. Tesis, Precedentes (sentences), Votos, Acuerdos. CSV bulk download
-    also available. SHA-256 integrity certificates. Complements MX/SCJNDatosAbiertos (may be same source, verify endpoints
-    differ).
+  notes: 'Complete: POST /api/v1/bj/busqueda + GET /api/v1/bj/documento/{index}/{id}. Covers sentencias_pub (104K), tesis
+    (311K), ejecutorias (22K). Full text extracted. 12 samples with 16K-134K chars each.'
 - id: PE/SPIJDatosAbiertos
   name: Peru SPIJ Open Data (National Open Data Platform)
   country: PE
@@ -9446,12 +9437,11 @@ sources:
   - legislation
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Peruvian legal norms and jurisprudence from SPIJ on national open data platform. Includes systematized legislation
-    from 1904 to present, legislative decrees from 1980, jurisprudence. Complements PE/SPIJ (which may require subscription
-    for full access).
+  blocked_reason: waf_blocked
+  notes: Entire datosabiertos.gob.pe portal behind Huawei CloudWAF that blocks all automated requests (HTTP 418). Both CSV
+    downloads and CKAN API return WAF block page. Dataset also appears metadata-only (no full text). Blocked 2026-03-24.
 - id: INTL/ICCCaseLaw
   name: ICC Case Law Database (Legal Tools)
   country: INTL
@@ -9459,11 +9449,10 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: International Criminal Court decisions since 2004. 6,000+ legal findings. PDF full text via Legal Tools platform.
-    Complements INTL/ICCLegalTools.
+  notes: 18,760 legal findings via LoopBack REST API. Curated legal reasoning text, no auth required.
 - id: INTL/ICJDecisions
   name: International Court of Justice Decisions
   country: INTL
@@ -9471,11 +9460,10 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: ICJ judgments, advisory opinions, orders since 1946. ~180 cases. PDF full text at api.icj-cij.org. Complements INTL/ICJ
-    if it exists.
+  notes: 872 decisions (157 judgments, 31 advisory opinions, 683 orders). PDFs from UN cloud CDN, text via PyMuPDF.
 - id: INTL/IRMCTCaseLaw
   name: IRMCT Case Law Database (ICTY/ICTR)
   country: INTL
@@ -9483,11 +9471,10 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: Combined ICTY+ICTR+IRMCT jurisprudence. Thousands of decisions with full text extracts and PDFs. International criminal
-    law.
+  notes: 2,538 case law extracts from ICTY/ICTR/IRMCT. JSON API at cld.irmct.org. Full text via jsonExtract endpoint.
 - id: INTL/PCAArbitration
   name: Permanent Court of Arbitration Awards
   country: INTL
@@ -9506,10 +9493,11 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 273+ cases with full text judgments. Inter-American human rights case law. Spanish/English. Complements INTL/IACHR.
+  notes: 585 contentious case judgments (Series C). Full text from PDF via pdfminer. Spanish/English. AJAX POST endpoint for
+    listing, direct PDF downloads. Avg 200K+ chars per judgment.
 - id: INTL/WIPODomainDecisions
   name: WIPO Domain Name Dispute Decisions (UDRP)
   country: INTL
@@ -9528,11 +9516,11 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: National labour laws + ILO conventions/recommendations from 180+ countries. Full text. Complements INTL/ILO-NORMLEX
-    if endpoints differ.
+  blocked_reason: cloudflare
+  notes: normlex.ilo.org is behind Cloudflare JS challenge. Old URLs on ilo.org also return 403. No API or bulk download available.
+    Duplicate of INTL/ILO-NORMLEX.
 - id: INTL/WTODocuments
   name: WTO Documents Online
   country: INTL
@@ -9541,11 +9529,11 @@ sources:
   - legislation
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 100,000+ official WTO documents including dispute settlement reports, panel reports, Appellate Body decisions. Bulk
-    PDF access. Complements INTL/WTO.
+  notes: 10,000+ dispute settlement documents via XML API. Full text from PDFs. Panel reports, AB reports, arbitration awards,
+    consultation requests.
 - id: INTL/UNCTADInvestment
   name: UNCTAD International Investment Agreements
   country: INTL
@@ -9553,11 +9541,11 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 3,600+ bilateral investment treaties (BITs) and treaties with investment provisions (TIPs) with full text. Comprehensive
-    investment law database.
+  notes: 3,600+ bilateral investment treaties (BITs) and treaties with investment provisions (TIPs) with full text via PDF
+    extraction. 15 sample records validated.
 - id: INTL/ItalawArbitration
   name: Italaw Investment Treaty Arbitration
   country: INTL
@@ -9565,11 +9553,11 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Open access ISDS (investor-state dispute settlement) awards, pleadings, decisions. Thousands of documents. Complements
-    INTL/ItalAw if it exists.
+  blocked_reason: terms_of_use_prohibit_scraping
+  notes: ToU explicitly prohibit robots, scrapers, data-mining, bulk downloading, and AI/ML training. No API exists. Written
+    permission required for bulk access. ~2,834 cases with ~11,651 document PDFs but no programmatic access allowed.
 - id: INTL/ICSIDAwards
   name: ICSID Arbitration Awards (World Bank)
   country: INTL
@@ -9577,22 +9565,22 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 600+ public investment arbitration documents. PDF awards and decisions. Complements INTL/ICSID.
+  notes: 1,130 cases (821 concluded), ~1,400 documents. JSON API + HTML scrape + PDF text via PyMuPDF.
 - id: INTL/UNCITRALClout
   name: UNCITRAL CLOUT Case Law Database
   country: INTL
-  url: https://uncitral.un.org/en/case_law
+  url: https://www.uncitral.org/clout/search.jspx
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: Case Law on UNCITRAL Texts. Thousands of abstracts + some full text links. International trade/commercial law. Complements
-    INTL/UNCITRAL-CLOUT.
+  notes: 2,255 cases from courts worldwide. HTML scraping + PDF text extraction. CISG, Model Law on Arbitration, etc. Full
+    text confirmed via abstract/fulltext PDFs.
 - id: INTL/CISGDatabase
   name: CISG Database (Pace Law)
   country: INTL
@@ -9623,11 +9611,10 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: Treaty body views/decisions from 8 UN human rights treaty bodies (HRC, CEDAW, CAT, CERD, CRC, CRPD, CMW, CED). Thousands
-    of decisions with full text.
+  notes: null
 - id: UN/TreatyBodyDB
   name: UN Treaty Body Database (General Comments)
   country: UN
@@ -9635,11 +9622,10 @@ sources:
   data_types:
   - doctrine
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: General Comments, Concluding Observations, State Reports from all UN treaty bodies. Thousands of authoritative interpretation
-    documents.
+  notes: null
 - id: UN/UHRI
   name: Universal Human Rights Index
   country: UN
@@ -9647,11 +9633,11 @@ sources:
   data_types:
   - doctrine
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 170,000+ recommendations from UN human rights mechanisms. Treaty bodies, UPR, Special Procedures. Full text recommendations
-    by country.
+  notes: 260,000+ recommendations from UN human rights mechanisms. Bulk JSON from dataex.ohchr.org. Full text with rich metadata
+    (countries, themes, SDGs, bodies).
 - id: UN/TreatyCollection
   name: UN Treaty Collection (UNTS)
   country: UN
@@ -9659,11 +9645,12 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: ~30,000 treaties in UN Treaty Series. The canonical international treaty corpus. Full text available. Complements
-    INTL/UNTreatyCollection.
+  blocked_reason: no_full_text_access
+  notes: No public API for the ~30K UNTS corpus. Full text only available as scanned PDFs (needs PyPDF2/PyMuPDF). Website
+    is ASP.NET with viewstate requiring Selenium. UNODA GraphQL only covers 48 disarmament treaties. Needs browser automation
+    + PDF extraction.
 - id: UN/Refworld
   name: UNHCR Refworld (Refugee Law Database)
   country: UN
@@ -9672,11 +9659,11 @@ sources:
   - legislation
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Massive refugee law database covering 60+ jurisdictions. National laws, court decisions, UNHCR policies. Full text.
-    Free access.
+  blocked_reason: cloudflare_protection
+  notes: All endpoints behind Cloudflare JS challenge (403). Requires headless browser. Massive refugee law database covering
+    60+ jurisdictions. National laws, court decisions, UNHCR policies. Full text. Free access.
 - id: CoE/HUDOCExec
   name: HUDOC-EXEC (Execution Monitoring)
   country: CoE
@@ -9797,11 +9784,11 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: All Russian federal laws, presidential decrees, government resolutions. Official legal information portal. Millions
-    of documents. HTML scraping.
+  notes: 304K+ federal laws from RusLawOD HuggingFace dataset (irlspbru/RusLawOD). Full text via parquet streaming. 15 sample
+    records validated.
 - id: RU/RusLawOD
   name: Russian Law Open Data (HuggingFace/GitHub)
   country: RU
@@ -9809,10 +9796,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: 281,413 Russian law texts 1991-2023 as open data. Bulk XML download from GitHub/HuggingFace. CC license.
+  blocked_reason: duplicate_of_RU_PravoGovRu
+  notes: Duplicate — same irlspbru/RusLawOD dataset already covered by RU/PravoGovRu (304K+ records with full text).
 - id: MD/LegisDB
   name: Moldova Legislation Database (legis.md)
   country: MD
@@ -9831,10 +9818,12 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: All Israeli primary legislation. Some English translations available. Full text.
+  blocked_reason: site_maintenance
+  notes: 'knesset.gov.il entirely down for maintenance (OData API + PDF server). Hasadna mirror has CSV metadata but PDFs
+    redirect to maintenance page. Nevo.co.il requires paid subscription. Retry when Knesset site is back online. Approach:
+    OData API KNS_IsraelLaw + KNS_DocumentLaw for PDF URLs, extract text with pdfplumber.'
 - id: SA/BOELaws
   name: Saudi Bureau of Experts Laws Portal
   country: SA
@@ -9842,21 +9831,22 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Royal Decrees, regulations. English translations available. Comprehensive Saudi legislation portal.
+  blocked_reason: geo_restricted
+  notes: Site and all Saudi gov portals (od.data.gov.sa, istitlaa.ncc.gov.sa, boe.gov.sa) timeout from non-Saudi IPs. No API,
+    no open dataset on HuggingFace/GitHub. ToS prohibit automated access. Requires VPS with Saudi IP.
 - id: BH/LLOCLegislation
   name: Bahrain LLOC Legislation
   country: BH
-  url: https://www.lloc.gov.bh/en/
+  url: https://www.lloc.gov.bh
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 2
   blocked_reason: null
-  notes: Constitution, laws, decrees. Some English translations. Official Bahrain legislation portal.
+  notes: Laws, decrees, royal orders via AJAX search + /Legislation/HTM/{id} full text. ~23,000+ records. 15 samples fetched.
 - id: OM/DecreeOm
   name: Oman Decrees Portal (decree.om)
   country: OM
@@ -9875,7 +9865,7 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
   notes: All Jordanian legislation since 1921. Full text. Free access. Official government portal.
@@ -9886,11 +9876,11 @@ sources:
   data_types:
   - legislation
   auth: api_key_free
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: All 50 US states + Congress. 1M+ bills with full text. JSON API + weekly bulk snapshots. Free registration required
-    at legiscan.com.
+  blocked_reason: auth_required
+  notes: Requires free API key registration at legiscan.com. Admin needs to sign up and provide key. Once key is available,
+    implementation is straightforward (JSON API + bulk snapshots).
 - id: US/PileOfLaw
   name: Pile of Law (HuggingFace)
   country: US
@@ -9900,11 +9890,12 @@ sources:
   - case_law
   - doctrine
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: '256GB legal corpus from 35 sources: court opinions, contracts, statutes, regulations. CC-BY-NC-SA 4.0. Pre-aggregated
-    HuggingFace dataset.'
+  blocked_reason: too_large
+  notes: 256GB total (xz-compressed JSONL on HuggingFace). Loading script no longer supported by datasets library. Also an
+    aggregation of 35 primary sources (CourtListener, CFR, etc.) that should be fetched directly. Individual subsets available
+    but still very large.
 - id: US/PublicResourceOrg
   name: Public.Resource.Org US Case Law
   country: US
@@ -9912,10 +9903,12 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Carl Malamud initiative. Bulk US case law from 1880+. Public domain. Millions of documents.
+  blocked_reason: duplicate_coverage
+  notes: Duplicative of US/CaselawAccessProject (already complete). Public.Resource.Org provides US Reports, Federal Reporter
+    as HTML files but data is from 2011-2017. CaselawAccessProject covers the same reporters comprehensively. F3 directory
+    also appears restricted.
 - id: US/CornellLII
   name: Cornell Legal Information Institute
   country: US
@@ -9937,8 +9930,7 @@ sources:
   status: blocked
   priority: 1
   blocked_reason: duplicate_of_CA/SupremeCourt
-  notes: Duplicate coverage of Supreme Court of Canada decisions. CA/SupremeCourt already complete
-    from official source decisions.scc-csc.ca.
+  notes: Duplicate coverage of Supreme Court of Canada decisions. CA/SupremeCourt already complete from official source decisions.scc-csc.ca.
 - id: BR/Planalto
   name: Brazil Planalto Federal Legislation (REFLEGIS)
   country: BR
@@ -9949,7 +9941,8 @@ sources:
   status: complete
   priority: 1
   blocked_reason: null
-  notes: Senate Open Data API for metadata + normas.leg.br API for full text. 200K+ docs. Laws have excellent coverage; decrees fall back to Planalto HTML.
+  notes: Senate Open Data API for metadata + normas.leg.br API for full text. 200K+ docs. Laws have excellent coverage; decrees
+    fall back to Planalto HTML.
 - id: BR/BrazilianCourtDecisionsHF
   name: Brazilian Court Decisions (HuggingFace)
   country: BR
@@ -9957,21 +9950,21 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 2
   blocked_reason: null
-  notes: TJAL (Alagoas) court decisions with full text. Academic labeled dataset for prediction. ~4,000+ documents.
+  notes: 3,234 TJAL court decisions via HuggingFace datasets-server rows API. Full text from ementa_text + decision_description.
 - id: BR/DOUBaseDados
   name: Brazil DOU via Base dos Dados
   country: BR
   url: https://basedosdados.org/dataset/0bd844d9-454a-4c47-83e2-fc15df4f5ed7
   data_types:
   - legislation
-  auth: none
-  status: planned
+  auth: bigquery
+  status: blocked
   priority: 2
-  blocked_reason: null
-  notes: Treated DOU (Official Gazette) data. BigQuery/SQL/Python access. Millions of entries.
+  blocked_reason: requires_bigquery_credentials
+  notes: Requires Google BigQuery credentials to access data. No free REST API. Same data already covered by BR/DOU (direct scraping from in.gov.br).
 - id: AR/SAIJProvincial
   name: Argentina SAIJ Provincial Norms (Open Data)
   country: AR
@@ -9979,10 +9972,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
-  notes: Provincial laws, decrees, constitutions since 1853. CSV bulk download. CC-BY-4.0.
+  blocked_reason: no_full_text_access
+  notes: CSV is metadata-only (80K records). SAIJ API returns empty texto for legislation. Full text only on JS-rendered SAIJ pages (Wicket framework). Requires browser automation.
 - id: AR/JurisprudenciaHF
   name: Argentina SAIJ Jurisprudence (HuggingFace)
   country: AR
@@ -10045,10 +10038,11 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 1,000+ IACHR Commission + Court cases with API at summa.cejil.org/api/. Spanish/English/Portuguese. Full text.
+  notes: 3,008 documents (506 judgments, 1329 resolutions, 585 presidential resolutions, 588 separate opinions). Uwazi API
+    with per-page text extraction. Full text confirmed.
 - id: INTL/OASTreaties
   name: OAS Inter-American Treaties Database
   country: INTL
@@ -10079,9 +10073,9 @@ sources:
   - case_law
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
+  blocked_reason: auth_required
   notes: 10,000+ documents. Cases from CCJ, ECSC, national courts across all Caribbean jurisdictions. Free Access to Law.
 - id: ZA/LawsAfricaMunicipals
   name: South Africa Municipal By-Laws (Laws.Africa API)
@@ -10090,32 +10084,32 @@ sources:
   data_types:
   - legislation
   auth: api_key_free
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: 536+ municipal by-laws via Laws.Africa Content API. Akoma Ntoso XML. Free API token required. CC-BY-NC-SA.
+  blocked_reason: auth_required
+  notes: Same Laws.Africa API as ZA/LawsAfrica. Requires token auth. See ZA/LawsAfrica block entry.
 - id: NA/LawsAfricaActs
-  name: Namibia Acts (Laws.Africa API)
+  name: Namibia Acts (NamibLII)
   country: NA
-  url: https://api.laws.africa/v2/akn/na/
+  url: https://namiblii.org/legislation/
   data_types:
   - legislation
-  auth: api_key_free
-  status: planned
+  auth: none
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 439 principal acts + 1,584 amendments via Laws.Africa API. Akoma Ntoso XML. Free API token.
+  notes: ~418 Namibian acts via NamibLII (PeachJam/AfricanLII). Full text from Akoma Ntoso HTML. 5s crawl delay.
 - id: UG/LawsAfricaActs
-  name: Uganda Acts (Laws.Africa API)
+  name: Uganda Acts (Laws.Africa / ULII)
   country: UG
-  url: https://api.laws.africa/v2/akn/ug/
+  url: https://ulii.org/en/legislation/
   data_types:
   - legislation
-  auth: api_key_free
-  status: planned
+  auth: none
+  status: complete
   priority: 1
-  blocked_reason: null
-  notes: 396 principal acts + 601 amendments via Laws.Africa API. Akoma Ntoso XML. Free API token.
+  blocked_reason: auth_required
+  notes: ~625 acts via ULII (ulii.org) Akoma Ntoso HTML scraping. No API key needed.
 - id: ZW/LawsAfricaActs
   name: Zimbabwe Acts (Laws.Africa API)
   country: ZW
@@ -10123,9 +10117,9 @@ sources:
   data_types:
   - legislation
   auth: api_key_free
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
+  blocked_reason: auth_required
   notes: 395 principal acts + 191 amendments via Laws.Africa API. Akoma Ntoso XML. Free API token.
 - id: GH/GhaLII
   name: Ghana Legal Information Institute (GhaLII)
@@ -10137,7 +10131,8 @@ sources:
   status: complete
   priority: 1
   blocked_reason: null
-  notes: Legislation via Akoma Ntoso HTML. Judgments excluded (robots.txt disallows). ~520 acts, many PDF-only (older). 15 samples with full text.
+  notes: Legislation via Akoma Ntoso HTML. Judgments excluded (robots.txt disallows). ~520 acts, many PDF-only (older). 15
+    samples with full text.
 - id: RW/Amategeko
   name: Rwanda Official Laws Portal (amategeko.gov.rw)
   country: RW
@@ -10226,11 +10221,10 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 15.9 million High Court judgment PDFs + JSON metadata + Parquet on AWS S3. CC-BY-4.0. Covers 25 High Courts. Bulk
-    download. Likely largest free legal dataset in Asia.
+  notes: null
 - id: IN/eGazette
   name: Gazette of India (egazette.gov.in)
   country: IN
@@ -10238,11 +10232,11 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: 'All Gazette notifications since 2015 (e-only publication), historical back to 1858. 100K+ documents. PDF download.
-    GitHub scraper exists: github.com/sushant354/egazette.'
+  blocked_reason: site_broken
+  notes: egazette.gov.in ASP.NET web application broken - all search/directory pages return server errors (redirect to error.aspx).
+    Only static PDF URLs work if filename is known. No API, no way to enumerate documents. Tested 2026-03-24.
 - id: JP/JLTrans
   name: Japanese Law Translation (MOJ)
   country: JP
@@ -10250,11 +10244,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: Ministry of Justice official English translations. 800+ laws. XML download available. Bilingual Japanese/English.
-    Invaluable for English access to Japanese law.
+  notes: null
 - id: ID/JDIHN
   name: Indonesia JDIHN National Legal Network
   country: ID
@@ -10262,11 +10255,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: Jaringan Dokumentasi dan Informasi Hukum Nasional. Central + regional legislation from all JDIH members. 58,735+
-    regulations. PDF downloads.
+  notes: JDIHN JSON API + PDF text extraction via pdfminer. 639K+ regulations. 12 samples with full text.
 - id: ID/MahkamahKonstitusi
   name: Indonesia Constitutional Court
   country: ID
@@ -10274,11 +10266,10 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 5,000+ constitutional decisions. PDF full text. English interface available. Constitutionality reviews, election
-    disputes.
+  notes: MK decisions via JDIHN API (jenis=93) + PDF text extraction. 1000+ decisions. 12 samples with full text.
 - id: PH/ChanRobles
   name: ChanRobles Virtual Law Library
   country: PH
@@ -10287,11 +10278,10 @@ sources:
   - legislation
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: 50,000+ Philippine laws, SC decisions, executive issuances. Free access to core content. One of the largest free
-    Philippine legal resources.
+  blocked_reason: cloudflare_blocked
+  notes: Site behind Cloudflare returning HTTP 403 to automated requests. HTML scraping only (no API). Blocked 2026-03-24.
 - id: VN/ThuVienPhapLuat
   name: Thu Vien Phap Luat (Legal Library)
   country: VN
@@ -10299,11 +10289,11 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 518,255 Vietnamese legal documents (1924-2026). Bulk dataset on HuggingFace (th1nhng0/vietnamese-legal-documents).
-    Public domain by Vietnamese law. Largest VN legal repository.
+  notes: 518K Vietnamese legal documents via HuggingFace dataset (CC-BY-4.0). Full text
+    via datasets-server API. 15 samples with full text (1.5K-87K chars).
 - id: VN/PhapLuatGov
   name: Vietnam National Legal Portal
   country: VN
@@ -10344,11 +10334,11 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 25,000+ Singapore Supreme Court judgments from 2000. Also IPOS and PDPC decisions from 2018. SAL. No login required.
-    Updated daily.
+  notes: 12K+ judgments from Court of Appeal, High Court, IPOS, PDPC. PDF download + PyMuPDF text extraction. Per-court paginated
+    listing pages. 15 sample records validated.
 - id: SG/eLitigation
   name: Singapore eLitigation Court Judgments
   country: SG
@@ -10367,11 +10357,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: Official Taiwan legislation. 5,000+ laws and regulations. Chinese + English. Ministry of Justice. Well-structured
-    HTML.
+  notes: 11,752 laws via MOJ bulk JSON API (GitHub mirror fallback). Full text Chinese + English.
 - id: TW/JudicialOD
   name: Taiwan Judicial Yuan Open Data
   country: TW
@@ -10423,11 +10412,11 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 300+ binding decisions, recommendations, declarations, conventions. REST API at /api/print and /api/download endpoints.
-    EN/FR. Core international economic governance law.
+  notes: 503 instruments (decisions, recommendations, declarations, conventions). REST API at /api/instruments with HTML full
+    text. EN/FR. Core international economic governance law.
 - id: INTL/InforMEA
   name: InforMEA Environmental Treaties Portal
   country: INTL
@@ -10435,11 +10424,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 15K+ COP/MOP decisions across 14+ MEA secretariats. OData REST API at odata.informea.org. JSON/XML output. Covers
-    Basel, CBD, CITES, CMS, Stockholm, etc. 6 UN languages.
+  notes: 12,460 COP/MOP decisions across 68 MEA treaties. OData API at odata.informea.org. Full text via $expand=content.
 - id: INTL/ECOLEX
   name: ECOLEX Environmental Law Gateway (FAO/IUCN/UNEP)
   country: INTL
@@ -10448,11 +10436,10 @@ sources:
   - legislation
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: '100K+ environmental law records: treaties, national legislation, court decisions. Joint FAO/IUCN/UNEP initiative.
-    Aggregates FAOLEX, ELIS, InforMEA. EN/FR/ES.'
+  notes: null
 - id: INTL/WorldBankDocs
   name: World Bank Documents & Reports
   country: INTL
@@ -10460,11 +10447,11 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 200K+ documents since 1946 including legal agreements. REST API at search.worldbank.org/api/v3/wds. JSON/XML. Filter
-    docty_exact=Legal Agreement. 6 languages.
+  notes: 48,000+ legal agreements via REST API with direct text URLs. Loan, credit, grant, guarantee, project, and financing
+    agreements.
 - id: INTL/ICRC-IHL
   name: ICRC International Humanitarian Law Databases
   country: INTL
@@ -10472,12 +10459,12 @@ sources:
   data_types:
   - legislation
   - case_law
+  - doctrine
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: '100+ treaties, 161 customary IHL rules, thousands of national practice docs. Three sub-databases: Treaties & States
-    Parties, Customary IHL, National Implementation. EN/FR.'
+  notes: 6,634 docs (111 treaties, 169 customary IHL rules, 6,354 national practice). Drupal JSON:API, no auth.
 - id: INTL/IMFDecisions
   name: IMF Selected Decisions & Legal Framework
   country: INTL
@@ -10509,11 +10496,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 60+ treaties/protocols/charters of OAU/AU since 1963. Includes African Charter, AfCFTA, Constitutive Act. PDF full
-    text. EN/FR/AR/PT.
+  notes: null
 - id: INTL/IAEASafetyStandards
   name: IAEA Safety Standards Database
   country: INTL
@@ -10545,11 +10531,11 @@ sources:
   data_types:
   - doctrine
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: 10K+ documents across 4 UPR cycles reviewing all 193 UN member states. State reports, recommendations, outcomes.
-    PDF/Word. 6 UN languages.
+  blocked_reason: no_full_text_access
+  notes: UPR recommendations already covered by UN/UHRI (~128K records). Full Working Group reports (676 docs) only available
+    as PDFs on UPR-Info Uwazi (upr-info-database.uwazi.io). Needs PyMuPDF for PDF extraction. OHCHR website returns 403.
 - id: UN/ODS
   name: UN Official Document System
   country: UN
@@ -10557,11 +10543,11 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: Authoritative source for all official UN documents. GA resolutions, SC resolutions, ECOSOC docs. Born-digital from
-    1993, resolutions from 1946. 6 UN languages. Document symbol-based URLs.
+  notes: GA/SC resolutions via ODS symbol API + PDF text extraction. Sessions 31-79+ and SC 1-2700+. ~18K documents. No auth
+    needed.
 - id: UN/DigitalLibrary
   name: UN Digital Library
   country: UN
@@ -10577,15 +10563,15 @@ sources:
 - id: UN/SCResolutions
   name: Corpus of UN Security Council Resolutions (Zenodo/Fobbe)
   country: UN
-  url: https://zenodo.org/records/11208400
+  url: https://zenodo.org/records/15154519
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: 'All 2,700+ UNSC resolutions (1946-present). Machine-readable bulk ZIP: PDF + extracted TXT. CC-BY. Zenodo/Fobbe
-    academic corpus.'
+  notes: 2,798 UNSC resolutions (1946-2025). Pre-extracted TXT + metadata CSV from Zenodo. 8.1 MB TXT + 1.3 MB CSV download.
+    CC-BY-4.0.
 - id: INTL/EBRDLegalTransition
   name: EBRD Legal Transition Database
   country: INTL
@@ -10776,14 +10762,14 @@ sources:
 - id: BO/GacetaOficial
   name: Bolivia Official Gazette (Gaceta Oficial)
   country: BO
-  url: https://www.gacetaoficialdebolivia.gob.bo/
+  url: https://www.lexivox.org
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: complete
   priority: 2
   blocked_reason: null
-  notes: Full text of Bolivian laws, decrees, and resolutions in official gazette.
+  notes: 28K+ norms via LexiVox (GFDL). Full text from HTML. Laws, decrees, resolutions. 15 samples.
 - id: MX/LeyesFederales
   name: Mexico Federal Laws (Chamber of Deputies)
   country: MX
@@ -10791,10 +10777,11 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: 300+ federal codes and laws in full text. PDF and Word formats. Updated with latest reforms.
+  blocked_reason: site_unreachable
+  notes: Site diputados.gob.mx times out (connection refused/timeout). datos.gob.mx alternative dataset page returns 404.
+    Content is PDF/DOC format requiring extraction. Needs retry when site is accessible again.
 - id: MX/SJF
   name: Mexico Semanario Judicial de la Federacion (Full Decisions)
   country: MX
@@ -10802,10 +10789,11 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Full text judicial decisions (ejecutorias) from Supreme Court and federal appeals courts. Searchable database.
+  blocked_reason: waf_protected_duplicate
+  notes: Site behind Incapsula WAF (401 on all API calls without browser session). Content (tesis + ejecutorias) already covered
+    by MX/SCJNDatosAbiertosAPI.
 - id: IN/IndianKanoonAPI
   name: Indian Kanoon API (Case Law & Legislation)
   country: IN
@@ -10814,10 +10802,10 @@ sources:
   - case_law
   - legislation
   auth: api_key
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: 1.4M+ documents. Supreme Court, 24 High Courts, 17 tribunals. REST API with full text. 20K+ docs added daily.
+  blocked_reason: auth_required
+  notes: Duplicate of IN/IndianKanoon. Requires API token authentication. No unauthenticated access.
 - id: IN/KanoonDev
   name: Kanoon.dev India Legal API
   country: IN
@@ -10825,10 +10813,11 @@ sources:
   data_types:
   - case_law
   auth: api_key
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
-  notes: Developer-focused API for Indian court data. API key auth. JSON responses with full text.
+  blocked_reason: suspicious_unverified_source
+  notes: 'BLOCKED: Suspicious third-party site. Anonymous operator, no affiliation with indiankanoon.org, phantom npm package,
+    zero community presence. Admin flagged as untrusted. Do NOT use.'
 - id: KR/OpenLawAPI
   name: Korea Open Law Data API (data.go.kr)
   country: KR
@@ -10836,10 +10825,10 @@ sources:
   data_types:
   - legislation
   auth: api_key
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Official Korean open data API. JSON/XML format. 10K request dev limit. Full text legislation via lawSearchList endpoint.
+  blocked_reason: needs_api_key
+  notes: Requires data.go.kr API key registration. Duplicate of KR/LawGoKr which covers same legislation without auth.
 - id: IL/KnessetOData
   name: Israel Knesset OData API (Bills & Laws)
   country: IL
@@ -10858,9 +10847,9 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
+  blocked_reason: auth_required
   notes: Open-source tools to access Israeli Parliament data. Python library. Bills, votes, committees, members.
 - id: KE/LawsAfrica
   name: Kenya Legislation (Laws.Africa API)
@@ -10869,10 +10858,10 @@ sources:
   data_types:
   - legislation
   auth: api_key
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Akoma Ntoso XML. Machine-readable Kenyan legislation. Free for non-commercial. Laws.Africa Content API v2.
+  blocked_reason: requires_api_key
+  notes: Requires Laws.Africa API key. Kenya legislation already covered by KE/KenyaLaw.
 - id: GH/LawsAfrica
   name: Ghana Legislation (Laws.Africa API)
   country: GH
@@ -10880,9 +10869,9 @@ sources:
   data_types:
   - legislation
   auth: api_key
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
+  blocked_reason: auth_required
   notes: Akoma Ntoso XML. Machine-readable Ghanaian legislation. Free for non-commercial.
 - id: NG/LawsAfrica
   name: Nigeria Legislation (Laws.Africa API)
@@ -10891,10 +10880,11 @@ sources:
   data_types:
   - legislation
   auth: api_key
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Akoma Ntoso XML. Machine-readable Nigerian legislation. Free for non-commercial.
+  blocked_reason: requires_api_key
+  notes: Laws.Africa Content API returns 403 without auth token. Same blocker as INTL/LawsAfrica. NigeriaLII has 0 legislation
+    documents. Admin needs to sign up at edit.laws.africa.
 - id: ZM/LawsAfrica
   name: Zambia Legislation (Laws.Africa API)
   country: ZM
@@ -10902,9 +10892,9 @@ sources:
   data_types:
   - legislation
   auth: api_key
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
+  blocked_reason: auth_required
   notes: Akoma Ntoso XML. Machine-readable Zambian legislation. Free for non-commercial.
 - id: LS/LawsAfrica
   name: Lesotho Legislation (Laws.Africa API)
@@ -10913,9 +10903,9 @@ sources:
   data_types:
   - legislation
   auth: api_key
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
+  blocked_reason: auth_required
   notes: Akoma Ntoso XML. Machine-readable Lesotho legislation. Free for non-commercial.
 - id: NA/LawsAfricaLegislation
   name: Namibia Legislation (Laws.Africa Content API)
@@ -10924,9 +10914,9 @@ sources:
   data_types:
   - legislation
   auth: api_key
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
+  blocked_reason: auth_required
   notes: Akoma Ntoso XML via Laws.Africa Content API v2. Free for non-commercial use.
 - id: MY/AGCLaws
   name: Malaysia Laws of Malaysia (AGC Official)
@@ -10957,10 +10947,11 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: Official Philippine Reports online. Free, no subscription. Full text Supreme Court decisions.
+  notes: 'HTML scraping of elibrary.judiciary.gov.ph. Monthly index pages + individual decision pages. 15 sample records with
+    full text (17K-960K chars). Coverage: 1996-present.'
 - id: TH/KrisdikaThai
   name: Thailand Office of Council of State Laws (Krisdika)
   country: TH
@@ -11046,10 +11037,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
-  notes: Full text of all Kazakh legislation. Russian and Kazakh. Free public access. Maintained by Ministry of Justice.
+  blocked_reason: duplicate_of_KZ/Adilet
+  notes: Duplicate of KZ/Adilet (already complete).
 - id: UZ/LexUzCaseLaw
   name: Uzbekistan National Legislation Database Case Law
   country: UZ
@@ -11068,10 +11059,10 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 2
-  blocked_reason: null
-  notes: Official legal information portal. Full text legislation. Russian and Belarusian.
+  blocked_reason: access_denied
+  notes: Site returns 403 Forbidden. Belarus .by domains are geo-restricted.
 - id: MN/LegalInfoMN
   name: Mongolia Legal Information System (Case Law)
   country: MN
@@ -11112,10 +11103,10 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 2
   blocked_reason: null
-  notes: Appellate and High Court Division judgments. Full text decisions. Free access.
+  notes: ~9,300 judgments (Appellate + High Court). Full text via PDF extraction with pdfplumber.
 - id: NP/LawsOfNepal
   name: Nepal Law Commission - Laws of Nepal
   country: NP
@@ -11167,10 +11158,11 @@ sources:
   data_types:
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Multi-country legislation in SQL knowledge-graph format. Python/TypeScript SDKs. Ideal for LLM use. Bulk download.
+  blocked_reason: project_dead_no_data
+  notes: Archived project (last dev Aug 2024). No data downloads available — all Supabase SQL dump links are dead (404). No
+    API, no releases. Only covered 9 US states, not international. Scrapers likely broken.
 - id: INTL/OpenLegalData
   name: Open Legal Data Platform (DE/EU Case Law)
   country: INTL
@@ -11188,11 +11180,12 @@ sources:
   url: https://www.courtlistener.com/api/bulk-data/
   data_types:
   - case_law
-  auth: none
-  status: planned
+  auth: api_key
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: Bulk PostgreSQL data exports of US federal/state court opinions. CC0/public domain. Updated regularly.
+  blocked_reason: auth_required
+  notes: 'BLOCKED: Both REST API (401) and bulk data (403/CloudFront) require authentication. Free account token needed. No
+    public mirrors on archive.org. See also issue #252.'
 - id: INTL/BotsLaw
   name: Bots.law (Free Law Project Legal Data Service)
   country: INTL
@@ -11212,11 +11205,12 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: 49K+ SA judgments plus Angola, Botswana, Lesotho, Malawi, Namibia, Seychelles, Swaziland, Uganda, Zambia, Zimbabwe.
-    220K visitors/month.
+  blocked_reason: site_dead_scraping_prohibited
+  notes: SAFLII returns HTTP 410 Gone (shut down). Successor AfricanLII explicitly prohibits scraping/bulk download in ToU,
+    blocks AI crawlers in robots.txt, API requires auth credentials. Only path is emailing AfricanLII or Laws.Africa paid
+    API.
 - id: INTL/OpenLawsUS
   name: OpenLaws US (Statutes & Regulations API)
   country: INTL
@@ -11236,10 +11230,11 @@ sources:
   - case_law
   - legislation
   auth: none
-  status: planned
+  status: blocked
   priority: 1
-  blocked_reason: null
-  notes: 1834 databases from 123 jurisdictions via 14 Legal Information Institutes. Free access.
+  blocked_reason: scraping_prohibited
+  notes: No API. robots.txt blocks all crawlers. Usage policy explicitly prohibits scraping. Aggressive UA-based blocking.
+    Would require written agreement with AustLII. Free access.
 - id: TW/JudicialYuanCaseLaw
   name: Taiwan Judicial Yuan Judgment Search
   country: TW
@@ -11247,10 +11242,10 @@ sources:
   data_types:
   - case_law
   auth: none
-  status: planned
+  status: complete
   priority: 1
   blocked_reason: null
-  notes: Full text court judgments. All levels of courts. Free public access. Chinese.
+  notes: null
 - id: JP/CourtsGoJpBulk
   name: Japan Courts Bulk Judgment Dataset
   country: JP

@@ -1,0 +1,33 @@
+source:
+  id: "ID/MahkamahKonstitusi"
+  name: "Indonesia Constitutional Court"
+  country: ID
+  url: "https://mkri.id/"
+  data_types:
+    - case_law
+  auth: none
+  language: ind
+  description: >
+    Mahkamah Konstitusi (Constitutional Court) decisions accessed via
+    JDIHN API (jenis=93). 1000+ constitutional review decisions.
+    Full text extracted from PDFs via pdfminer.
+
+schema:
+  key_fields:
+    - name: judul
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: nomor
+      type: string
+      required: false
+    - name: date
+      type: string
+      required: false
+
+fetch:
+  rate_limit: 2
+  timeout: 90
+  retry: 3

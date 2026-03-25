@@ -155,6 +155,9 @@ class LegalBaseScraper(BaseScraper):
 
         This avoids the cursor pagination issues (Issue #229) by using the
         streaming JSONL endpoint which returns all documents line-by-line.
+
+        Uses a long read timeout (30min) since the full stream can take a while
+        for large datasets. The connect timeout is 30s.
         """
         url = f"{BASE_URL}{DOCUMENTS_STREAM_ENDPOINT}"
 
@@ -164,7 +167,7 @@ class LegalBaseScraper(BaseScraper):
             with requests.get(
                 url,
                 stream=True,
-                timeout=300,  # Longer timeout for streaming
+                timeout=(30, 1800),  # 30s connect, 30min read timeout for full stream
                 headers={
                     "User-Agent": "Legal-Data-Hunter/1.0",
                     "Accept": "application/x-ndjson",

@@ -1,0 +1,84 @@
+# ===================================================================
+# US/eCFR -- Electronic Code of Federal Regulations
+# ===================================================================
+# All 50 titles of the US Code of Federal Regulations. Updated daily.
+# Official XML API at ecfr.gov. Full text of every regulation.
+# No authentication required. Public domain.
+# ===================================================================
+
+source:
+  id: "US/eCFR"
+  country: "US"
+  name: "eCFR - Electronic Code of Federal Regulations"
+  url: "https://www.ecfr.gov/"
+  description: |
+    The Electronic Code of Federal Regulations (eCFR) is an unofficial,
+    editorial compilation of the Code of Federal Regulations, updated daily.
+    Covers all 50 titles of federal regulations with full text in XML format.
+    Official versioner API provides structured access by title/part.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest_xml"
+  base_url: "https://www.ecfr.gov/api/versioner/v1"
+  endpoints:
+    titles: "/titles"
+    structure: "/structure/{date}/title-{number}.json"
+    full_text: "/full/{date}/title-{number}.xml?part={part}"
+
+data_model:
+  type: "legislation"
+  primary_key: "cfr_citation"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "cfr_citation"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "cfr_citation"
+      description: "CFR citation (e.g., '1 CFR Part 1')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Part title/heading"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the regulation part"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the regulation is current as of (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "title_number"
+      description: "CFR title number (1-50)"
+      type: "integer"
+      role: "classification"
+      required: true
+    - name: "part_number"
+      description: "CFR part number within the title"
+      type: "string"
+      role: "classification"
+      required: true
+
+notes: |
+  - 50 CFR titles, thousands of parts
+  - Updated daily by the Office of the Federal Register
+  - XML API returns structured regulatory text
+  - Full text includes section headings, authority, source citations
+  - Public domain (US government works)

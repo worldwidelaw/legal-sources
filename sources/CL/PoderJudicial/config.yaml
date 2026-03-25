@@ -1,0 +1,80 @@
+# ===================================================================
+# CL/PoderJudicial -- Chilean Judiciary Case Law (juris.pjud.cl)
+# ===================================================================
+# Chilean case law from the Poder Judicial search platform.
+# JSON API (Solr-backed), no auth required. CSRF token needed.
+# 4.2M+ decisions: Supreme Court, Appeals, Labor, Criminal, Family,
+# Civil, and Collections courts. Spanish language.
+# ===================================================================
+
+source:
+  id: "CL/PoderJudicial"
+  country: "CL"
+  name: "Chilean Judiciary Case Law (juris.pjud.cl)"
+  url: "https://juris.pjud.cl/"
+  description: |
+    Chilean case law from the Poder Judicial de Chile search platform.
+    Covers Supreme Court, Courts of Appeals, Labor, Criminal, Family,
+    Civil, and Collections courts. Full text via JSON API backed by
+    Apache Solr. 4.2M+ decisions. Spanish language.
+    No authentication required (CSRF token obtained from page).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document ID from Solr"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (ROL number + court)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "court"
+      description: "Court name"
+      type: "string"
+      role: "category"
+      required: false
+    - name: "url"
+      description: "URL to decision on juris.pjud.cl"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - 4.2M+ decisions via juris.pjud.cl JSON API
+  - Full text in texto_sentencia field (HTML, cleaned to plain text)
+  - CSRF token required (obtained from search page)
+  - 2-second delay between requests
+  - Spanish language
+  - Courts: Supreme (280K), Appeals (1.6M), Labor (234K), Criminal (838K),
+    Family (372K), Collections (26K), Civil (853K)

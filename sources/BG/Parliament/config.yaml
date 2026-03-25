@@ -1,0 +1,84 @@
+# ===================================================================
+# BG/Parliament -- Bulgarian Parliament (Народно събрание)
+# ===================================================================
+# Plenary stenographic records from the Bulgarian Parliament.
+# Full text available via official JSON REST API at /api/v1/.
+# ~11,000+ session records spanning 1879-present. Modern sessions
+# (2001+) have full digitized text. No authentication required.
+# ===================================================================
+
+source:
+  id: "BG/Parliament"
+  country: "BG"
+  name: "Bulgarian Parliament (Народно събрание)"
+  url: "https://www.parliament.bg"
+  description: |
+    Plenary stenographic records from the Bulgarian Parliament (Народно
+    събрание). Full text of parliamentary debates via official JSON API.
+    ~11,000+ session records. Modern sessions (2001+) have full digitized
+    text content.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "rest_json"
+  base_url: "https://www.parliament.bg/api/v1"
+  endpoints:
+    stenographic_record: "/pl-sten/{id}"
+    bills_search: "/fn-bills"
+    bill_detail: "/bill/{id}"
+    acts_search: "/fn-acts/{ns}"
+  pagination:
+    type: "id_range"
+    note: "Stenographic records use sequential IDs (sparse), ~51 to ~11115"
+
+data_model:
+  type: "doctrine"
+  primary_key: "Pl_Sten_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "Pl_Sten_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "session_id"
+      description: "Plenary session record ID"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Session subject/header"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the stenographic record"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Session date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the session page"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - JSON REST API at /api/v1/pl-sten/{id}
+  - Full text in Pl_Sten_body field (HTML, needs tag stripping)
+  - IDs are sparse (not sequential), range ~51 to ~11115+
+  - Historical records (pre-2001) often have empty Pl_Sten_body
+  - RSS feeds also available at /feed/plenary

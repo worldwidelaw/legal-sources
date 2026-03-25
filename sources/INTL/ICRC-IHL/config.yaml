@@ -1,0 +1,73 @@
+# ===================================================================
+# INTL/ICRC-IHL -- ICRC International Humanitarian Law Databases
+# ===================================================================
+# 111 treaties, 169 customary IHL rules, 6,354 national practice docs.
+# Drupal JSON:API, no auth required.
+# ===================================================================
+
+source:
+  id: "INTL/ICRC-IHL"
+  country: "INTL"
+  name: "ICRC International Humanitarian Law Databases"
+  url: "https://ihl-databases.icrc.org"
+  description: |
+    Three sub-databases from the ICRC IHL portal:
+    - Treaties & States Parties (111 IHL treaties with full article text)
+    - Customary IHL (169 rules with analysis and practice summaries)
+    - National Implementation (6,354 documents: legislation, case law, manuals)
+    All accessed via Drupal JSON:API, no authentication required.
+
+data_types:
+  - legislation
+  - case_law
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "jsonapi"
+  base_url: "https://ihl-databases.icrc.org/jsonapi"
+  treaties: "/node/treaty"
+  rules: "/node/rule"
+  national_practice: "/node/national_practice"
+
+data_model:
+  type: "mixed"
+  primary_key: "uuid"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text (treaty articles, rule analysis, or NP summary)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Adoption/decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "sub_database"
+      description: "treaty, rule, or national_practice"
+      type: "string"
+      role: "identifier"
+      required: true
+
+notes: |
+  - Drupal JSON:API endpoints, no auth
+  - Treaties: full article text via include=field_treaty_content
+  - Rules: full body text in body attribute
+  - National Practice: summaries in field_np_summary (HTML)
+  - Pagination: page[limit] and page[offset], use --globoff with curl

@@ -1,0 +1,53 @@
+id: JO/LOBLegislation
+name: Jordan Legislation & Opinion Bureau
+country: JO
+url: https://www.lob.gov.jo/
+description: >
+  All Jordanian legislation since 1921 via encrypted ASMX API. 6,500+ laws,
+  bylaws, constitutions, agreements, and instructions with full article text.
+data_types:
+  - legislation
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: legislation_type
+      type: string
+      required: true
+    - name: legislation_number
+      type: string
+      required: false
+    - name: legislation_year
+      type: string
+      required: false
+    - name: status
+      type: string
+      required: false

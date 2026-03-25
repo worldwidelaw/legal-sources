@@ -1,0 +1,69 @@
+# ===================================================================
+# INTL/IACtHR -- Inter-American Court of Human Rights Judgments
+# ===================================================================
+# 585+ contentious case judgments (Series C). Full text from PDF/DOCX.
+# Spanish and English. Complements INTL/IACHR (Commission).
+# ===================================================================
+
+source:
+  id: "INTL/IACtHR"
+  country: "INTL"
+  name: "Inter-American Court of Human Rights Judgments"
+  url: "https://corteidh.or.cr"
+  description: |
+    The Inter-American Court of Human Rights (Corte IDH) is an autonomous
+    judicial institution of the Organization of American States (OAS).
+    585+ contentious case judgments available as PDF/DOCX with full text.
+    Cases span 1987-2025, covering all OAS member states.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "ajax_post"
+  base_url: "https://corteidh.or.cr"
+  listing_url: "https://corteidh.or.cr/get_jurisprudencia_search_tipo.cfm"
+  document_base: "https://corteidh.or.cr/docs/casos/articulos/"
+
+data_model:
+  type: "case_law"
+  primary_key: "series_c_number"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "title"
+      description: "Full case citation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of judgment extracted from PDF/DOCX"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Judgment date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "series_c_number"
+      description: "Series C case number"
+      type: "integer"
+      role: "identifier"
+      required: true
+
+notes: |
+  - AJAX POST endpoint returns HTML fragment with all case listings
+  - Full text from PDF (preferred) or DOCX downloads
+  - English translations available for ~456 cases, Spanish-only for ~122
+  - Prefers English; falls back to Spanish
+  - Rate limited to 1 request per 2 seconds for document downloads

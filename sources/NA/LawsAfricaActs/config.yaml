@@ -1,0 +1,78 @@
+# ===================================================================
+# NA/LawsAfricaActs -- Namibian Legislation via NamibLII
+# ===================================================================
+# Acts of Parliament from NamibLII (PeachJam/AfricanLII platform).
+# Full text via Akoma Ntoso HTML. ~418 acts from 1840-2025.
+# Judgments and gazette excluded (robots.txt disallows them).
+# ===================================================================
+
+source:
+  id: "NA/LawsAfricaActs"
+  country: "NA"
+  name: "Namibia Acts (NamibLII)"
+  url: "https://namiblii.org/"
+  description: |
+    Namibian legislation (Acts of Parliament, Ordinances, Government Notices,
+    Proclamations) from 1840 onwards via NamibLII. ~418 documents.
+    Full text embedded as Akoma Ntoso HTML.
+    Judgments and Official Gazette excluded (blocked by robots.txt).
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.2
+  burst: 1
+  notes: "robots.txt requires 5-second crawl delay."
+
+api:
+  type: "scraping"
+  base_url: "https://namiblii.org"
+  endpoints:
+    listing: "/legislation/?page={page}"
+    document: "/akn/na/act/{subtype}/{year}/{number}/eng@{date}"
+  response_format: "html"
+
+data_model:
+  type: "legislation"
+  primary_key: "akn_uri"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "document_id"
+      description: "AKN URI path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text from Akoma Ntoso HTML"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication/enactment date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Full URL to document"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - PeachJam/AfricanLII platform (same as GhaLII, KenyaLaw, etc.)
+  - Full text via la-akoma-ntoso HTML element
+  - 5-second crawl delay per robots.txt
+  - Judgments excluded (robots.txt disallows /akn/na/judgment/)
+  - Official Gazette excluded (robots.txt disallows /akn/na/officialGazette/)

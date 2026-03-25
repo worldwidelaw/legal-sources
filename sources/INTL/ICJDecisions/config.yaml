@@ -1,0 +1,68 @@
+# ===================================================================
+# INTL/ICJDecisions -- International Court of Justice Decisions
+# ===================================================================
+# ~870 decisions (judgments, advisory opinions, orders) since 1946.
+# HTML scraping of decisions list + PDF download from UN cloud CDN.
+# ===================================================================
+
+source:
+  id: "INTL/ICJDecisions"
+  country: "INTL"
+  name: "International Court of Justice Decisions"
+  url: "https://icj-cij.org/decisions"
+  description: |
+    Judgments, advisory opinions, and orders of the International Court
+    of Justice (ICJ) since 1946. PDFs downloaded from the UN cloud CDN
+    (icj-web.leman.un-icc.cloud) and text extracted via PyMuPDF.
+    Approximately 870 decisions covering ~180 cases.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape_pdf"
+  listing_url: "https://icj-cij.org/decisions?type={type}&from=1946"
+  pdf_base: "https://icj-web.leman.un-icc.cloud"
+
+data_model:
+  type: "case_law"
+  primary_key: "pdf_filename"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "title"
+      description: "Decision title (e.g., 'Judgment of 9 April 1949')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "case_name"
+      description: "Case name"
+      type: "string"
+      role: "content"
+      required: true
+
+notes: |
+  - Decisions list page parsed for metadata and PDF URLs
+  - PDF domain replaced: icj-cij.org -> icj-web.leman.un-icc.cloud
+  - Text extracted from PDFs using PyMuPDF (fitz)
+  - Types: judgments (type=2), advisory opinions (type=4), orders (type=3)
+  - ~157 judgments, ~31 advisory opinions, ~683 orders

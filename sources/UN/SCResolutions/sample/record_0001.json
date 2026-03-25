@@ -1,0 +1,15 @@
+{
+  "_id": "UN-SCRES-2",
+  "_source": "UN/SCResolutions",
+  "_type": "legislation",
+  "_fetched_at": "2026-03-25T05:07:43.951026+00:00",
+  "res_no": 2,
+  "symbol": "S/RES/2(1946)",
+  "title": "Security Council resolution 2 (1946) [on negotiations between Iran and USSR]",
+  "text": "2 (1946). Resolution of 30 January 1946\n\nThe Security Council,\n\nHaving heard the statements by the representatives of the Soviet Union and Iran in the course of its meetings of 28 and 30 January 1946,\n\nHaving taken cognizance of the documents presented by the Soviet and Iranian delegations and those referred to in the course of the oral debates,\n\nConsidering that both parties have affirmed their readiness to seek a solution of the matter at issue by negotiation, and that such negotiations will be resumed in the near future,\n\nRequests the parties to inform the Council of any results achieved in such negotiations. The Council in the meanwhile retains the right at any time to request information on the progress of the negotiations.\n\nAdopted unanimously at the 5th meeting.",
+  "date": "1946-01-30",
+  "year": 1946,
+  "url": "https://digitallibrary.un.org/record/",
+  "body": "Security Council",
+  "doc_type": "resolution"
+}

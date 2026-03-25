@@ -1,0 +1,38 @@
+source:
+  id: INTL/SUMMA
+  name: SUMMA Inter-American Case Law (CEJIL)
+  country: INTL
+  url: https://summa.cejil.org/en
+  data_types:
+    - case_law
+  auth: none
+  license: Public domain (Inter-American Court/Commission decisions)
+
+api:
+  base_url: https://summa.cejil.org
+  platform: Uwazi
+  endpoints:
+    search: /api/search
+    entities: /api/entities
+    page_text: /api/documents/page
+    files: /api/files
+  rate_limit_delay: 1.5
+
+templates:
+  sentencia: "58b2f3a35d59f31e1345b4ac"
+  resolucion: "58b2f3a35d59f31e1345b471"
+  resolucion_presidencia: "58b2f3a35d59f31e1345b482"
+  voto_separado: "58b2f3a35d59f31e1345b49f"
+  causa: "58b2f3a35d59f31e1345b48a"
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - case_number
+    - country
+    - court
+    - document_type

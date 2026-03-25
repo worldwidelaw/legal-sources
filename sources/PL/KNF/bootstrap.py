@@ -26,8 +26,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
 
-import pdfplumber
 import requests
+
+try:
+    import pdfplumber
+except ImportError:
+    pdfplumber = None
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -76,6 +80,10 @@ class KNFFetcher:
                 return None
         except requests.RequestException as e:
             logger.warning(f"Failed to download PDF year={year}, pos={position}: {e}")
+            return None
+
+        if pdfplumber is None:
+            logger.error("pdfplumber not installed — cannot extract PDF text. Install: pip install pdfplumber")
             return None
 
         try:
@@ -234,7 +242,7 @@ class KNFFetcher:
 
 def main():
     parser = argparse.ArgumentParser(description='PL/KNF - KNF Official Journal Fetcher')
-    parser.add_argument('command', choices=['bootstrap', 'fetch', 'updates'],
+    parser.add_argument('command', choices=['bootstrap', 'bootstrap-fast', 'fetch', 'updates'],
                         help='Command to run')
     parser.add_argument('--sample', action='store_true',
                         help='Fetch sample data only (for bootstrap)')
@@ -242,6 +250,10 @@ def main():
                         help='Fetch updates since date (ISO format)')
     parser.add_argument('--limit', type=int, default=15,
                         help='Max documents for sample')
+    parser.add_argument('--workers', type=int, default=3,
+                        help='Number of parallel workers (bootstrap-fast)')
+    parser.add_argument('--batch-size', type=int, default=100,
+                        help='Batch size (bootstrap-fast)')
     args = parser.parse_args()
 
     fetcher = KNFFetcher()
@@ -260,6 +272,26 @@ def main():
                 if count % 50 == 0:
                     logger.info(f"Fetched {count} documents")
             print(f"Total: {count} documents fetched")
+
+    elif args.command == 'bootstrap-fast':
+        # Full fetch — same as bootstrap without --sample (no parallelism needed for 496 docs)
+        SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
+        count = 0
+        written = 0
+        errors = 0
+        for doc in fetcher.fetch_all():
+            count += 1
+            try:
+                fname = f"{doc['_id']}.json"
+                with open(SAMPLE_DIR / fname, 'w', encoding='utf-8') as f:
+                    json.dump(doc, f, ensure_ascii=False, indent=2)
+                written += 1
+            except Exception as e:
+                logger.error(f"Write error for {doc.get('_id')}: {e}")
+                errors += 1
+            if count % 50 == 0:
+                logger.info(f"Progress: {count} fetched, {written} written")
+        print(json.dumps({"records": count, "written": written, "errors": errors}))
 
     elif args.command == 'updates':
         if not args.since:

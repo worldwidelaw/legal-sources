@@ -1,0 +1,18 @@
+{
+  "_id": "IRMCT-1",
+  "_source": "INTL/IRMCTCaseLaw",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-24T05:04:26.101928+00:00",
+  "title": "Appeal Judgement",
+  "text": "529. […] The Appeals Chamber recalls that the crimes of genocide and conspiracy to commit genocide both require genocidal intent as a part of the mens rea element[…] [1] […].\n[1]  In order for the mens rea for conspiracy to commit genocide to be satisfied “the individuals involved in the agreement must have the intent to destroy in whole or in part a national, ethnical, racial or religious group as such (mens rea)”. Nahimana et al. Appeal Judgement, para. 894. Likewise, for genocide an accused must act “with intent to destroy, in whole or in part, a national, ethnical, racial or religious group as such”. Munyakazi Appeal Judgement, para. 141.",
+  "date": "2015-01-30",
+  "url": "https://cld.irmct.org/assets/filings/Judgement-Popovic-reduced.pdf",
+  "case_name": "POPOVIĆ et al.",
+  "tribunal": "IRMCT",
+  "notions": [
+    "Mens rea | Conspiracy to commit genocide"
+  ],
+  "statutes": {},
+  "extract_id": 1,
+  "pdf_url": "https://cld.irmct.org/assets/filings/Judgement-Popovic-reduced.pdf"
+}

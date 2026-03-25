@@ -1,0 +1,87 @@
+# ===================================================================
+# UN/TreatyBodyJuris -- UN OHCHR Treaty Body Jurisprudence
+# ===================================================================
+# Individual complaint decisions (Views, Inadmissibility, etc.) from
+# 9 UN human rights treaty bodies: CCPR, CAT, CEDAW, CERD, CRC, CRPD,
+# CMW, CED, CESCR. ~4,100 decisions with full text via docstore.ohchr.org.
+# Open data, no auth required.
+# ===================================================================
+
+source:
+  id: "UN/TreatyBodyJuris"
+  country: "UN"
+  name: "UN OHCHR Treaty Body Jurisprudence"
+  url: "https://juris.ohchr.org/"
+  description: |
+    Individual complaint decisions from 9 UN human rights treaty bodies.
+    Views, inadmissibility decisions, and other jurisprudence.
+    Full text fetched from docstore.ohchr.org HTML files.
+    ~4,100 decisions covering all treaty bodies.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scraping"
+  base_url: "https://juris.ohchr.org"
+  endpoints:
+    case_detail: "/casedetails/{id}/en"
+    docstore: "https://docstore.ohchr.org/SelfServices/FilesHandler.ashx"
+
+data_model:
+  type: "case_law"
+  primary_key: "symbol"
+  update_strategy: "upsert"
+  dedup_key:
+    - "symbol"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "symbol"
+      description: "UN document symbol (e.g., CCPR/C/131/D/2688/2015)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (e.g., Toregozhina v. Kazakhstan)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of decision (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "body"
+      description: "Treaty body abbreviation (e.g., CCPR, CAT)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "country"
+      description: "State party"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "decision_type"
+      description: "Type of decision (Decision on merits, Inadmissibility, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "url"
+      description: "URL on juris.ohchr.org"
+      type: "string"
+      role: "reference"
+      required: false

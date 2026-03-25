@@ -1,0 +1,60 @@
+# PT/DGSI — Portuguese Courts of Appeal & Other DGSI Databases
+#
+# Source: DGSI (Direção-Geral dos Serviços de Informática do Ministério da Justiça)
+# URL: https://www.dgsi.pt
+# Data type: case_law
+# Auth: none
+# License: Public (open government data)
+#
+# Covers all DGSI sub-databases NOT already handled by PT/STA or PT/SupremeCourt:
+#   - Courts of Appeal: Porto (jtrp), Lisbon (jtrl), Coimbra (jtrc),
+#     Guimarães (jtrg), Évora (jtre)
+#   - Central Administrative Courts: South (jtca), North (jtcn)
+#   - Court of Conflicts (jcon)
+#   - Justices of the Peace (cajp)
+#
+# Total: ~230,000 decisions across 9 databases
+#
+# Access:
+#   - JSON enumeration: /{db}.nsf/Por+Ano?ReadViewEntries&Start=N&Count=N&OutputFormat=JSON
+#   - Full document: /{db}.nsf/0/{unid}?OpenDocument&ExpandSection=1
+#   - Lotus Notes/Domino backend, ISO-8859-1 encoding
+
+source:
+  id: PT/DGSI
+  name: Portuguese Courts of Appeal (DGSI - all sub-databases)
+  country: PT
+  data_types:
+    - case_law
+  url: https://www.dgsi.pt
+  language: pt
+  auth: none
+  license: public
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: case_number
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - summary
+    - case_number
+    - rapporteur
+    - section
+    - descriptors
+    - voting
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.5
+  page_size: 500
+  estimated_total: 230000
+  sample_count: 15

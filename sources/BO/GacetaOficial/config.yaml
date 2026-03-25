@@ -1,0 +1,86 @@
+# ===================================================================
+# BO/GacetaOficial -- Bolivia Official Gazette (via LexiVox)
+# ===================================================================
+# Bolivian legislation from LexiVox open legal database.
+# 28,000+ norms including laws, decrees, resolutions, codes.
+# Full text in HTML, GFDL licensed. No authentication required.
+# ===================================================================
+
+source:
+  id: "BO/GacetaOficial"
+  country: "BO"
+  name: "Bolivia Official Gazette (Gaceta Oficial)"
+  url: "https://www.lexivox.org"
+  description: |
+    Bolivian legislation via LexiVox open legal database.
+    Covers laws (Leyes), supreme decrees (Decretos Supremos),
+    presidential decrees, resolutions, codes, and the constitution.
+    Full text extracted from HTML pages. GFDL licensed. Spanish.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.lexivox.org"
+  endpoints:
+    search: "/packages/lexml/buscar_normas.php"
+    norms: "/norms/"
+  pagination:
+    type: "offset"
+    page_size: 15
+    param: "sacb524current"
+
+data_model:
+  type: "legislation"
+  primary_key: "norm_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "norm_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "norm_id"
+      description: "Norm identifier (e.g., BO-L-N1690)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Full title of the norm"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the norm"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication/promulgation date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to norm page on LexiVox"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "norm_type"
+      description: "Type of norm (Ley, Decreto Supremo, etc.)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+notes: |
+  - Uses LexiVox (lexivox.org) as data source, GFDL licensed
+  - Official Gaceta site (gacetaoficialdebolivia.gob.bo) is unreachable
+  - Full text from HTML, no PDF extraction needed
+  - Search paginated with sacb524current offset parameter (increments of 15)

@@ -137,15 +137,15 @@ class ConstitutionalCourtScraper(BaseScraper):
 
         The main content is in <div class="textoacordao ...">
         """
-        # Find the textoacordao div
+        # Find the textoacordao div — use GREEDY match to capture all content
         match = re.search(
-            r'<div class="textoacordao[^"]*"[^>]*>(.*?)</article>',
+            r'<div class="textoacordao[^"]*"[^>]*>(.*)</article>',
             html_content,
             re.DOTALL | re.IGNORECASE
         )
 
         if not match:
-            # Fallback pattern
+            # Fallback: greedy match to end-of-content markers
             match = re.search(
                 r'<div class="textoacordao[^"]*"[^>]*>(.*?)(?:</div>\s*</div>\s*<!--\s*fim)',
                 html_content,
@@ -153,12 +153,27 @@ class ConstitutionalCourtScraper(BaseScraper):
             )
 
         if not match:
+            # Last fallback: grab everything after textoacordao until footer/nav
+            match = re.search(
+                r'<div class="textoacordao[^"]*"[^>]*>(.*?)(?:<footer|<nav|</body)',
+                html_content,
+                re.DOTALL | re.IGNORECASE
+            )
+
+        if not match:
             return ""
 
-        article_html = match.group(1)
+        text = match.group(1)
 
-        # Clean up HTML to extract plain text
-        text = article_html
+        # Strip HTML to plain text
+        text = self._strip_html(text)
+
+        return text.strip()
+
+    def _strip_html(self, text: str) -> str:
+        """Remove all HTML tags and clean up text content."""
+        # Remove HTML comments
+        text = re.sub(r'<!--.*?-->', '', text, flags=re.DOTALL)
 
         # Remove style tags and their content
         text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL | re.IGNORECASE)
@@ -166,15 +181,11 @@ class ConstitutionalCourtScraper(BaseScraper):
         # Remove script tags
         text = re.sub(r'<script[^>]*>.*?</script>', '', text, flags=re.DOTALL | re.IGNORECASE)
 
-        # Remove internal links but keep text
-        text = re.sub(r'<a[^>]*>([^<]*)</a>', r'\1', text)
-
-        # Convert <br> and </p> to newlines
+        # Convert <br> and block-level closing tags to newlines
         text = re.sub(r'<br\s*/?>', '\n', text, flags=re.IGNORECASE)
-        text = re.sub(r'</p>', '\n', text, flags=re.IGNORECASE)
-        text = re.sub(r'</div>', '\n', text, flags=re.IGNORECASE)
+        text = re.sub(r'</(?:p|div|li|tr|h[1-6]|blockquote|article|section)>', '\n', text, flags=re.IGNORECASE)
 
-        # Remove all remaining HTML tags
+        # Remove ALL remaining HTML tags (handles nested tags in anchors etc.)
         text = re.sub(r'<[^>]+>', '', text)
 
         # Decode HTML entities
@@ -189,7 +200,7 @@ class ConstitutionalCourtScraper(BaseScraper):
         lines = [line.strip() for line in text.split('\n')]
         text = '\n'.join(lines)
 
-        return text.strip()
+        return text
 
     def _extract_metadata(self, html_content: str, year: int, number: int) -> Dict[str, Any]:
         """

@@ -1,0 +1,77 @@
+# ===================================================================
+# CL/TribunalConstitucional -- Chilean Constitutional Court
+# ===================================================================
+# Constitutional case law from the Tribunal Constitucional de Chile.
+# REST JSON API at buscador-backend.tcchile.cl (launched Oct 2025).
+# ~12,265 decisions. Full OCR text via /extended/sentencias endpoint.
+# No authentication required. Spanish language.
+# ===================================================================
+
+source:
+  id: "CL/TribunalConstitucional"
+  country: "CL"
+  name: "Chilean Constitutional Court (Tribunal Constitucional)"
+  url: "https://buscador.tcchile.cl/"
+  description: |
+    Constitutional case law from the Tribunal Constitucional de Chile.
+    Covers inaplicabilidad, inconstitucionalidad, requerimientos, and
+    other constitutional matters. ~12,265 decisions from 1970s to present.
+    Full OCR text available via JSON REST API. No auth required.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (ROL and caratula)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full OCR text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (sentencia)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "court"
+      description: "Court name"
+      type: "string"
+      role: "category"
+      required: false
+    - name: "url"
+      description: "URL to decision"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - ~12,265 decisions via buscador-backend.tcchile.cl REST API
+  - Full OCR text in /extended/sentencias endpoint
+  - Ficha metadata via /buscadorexterno/ficha endpoint
+  - No authentication required
+  - Spanish language

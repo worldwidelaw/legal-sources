@@ -369,7 +369,10 @@ if __name__ == "__main__":
     cmd = sys.argv[1]
     if cmd == "bootstrap":
         sample = "--sample" in sys.argv
-        result = scraper.bootstrap(sample_mode=sample, sample_size=12)
+        if sample:
+            result = scraper.bootstrap(sample_mode=True, sample_size=12)
+        else:
+            result = scraper.bootstrap_fast(max_workers=4, batch_size=50)
         print(json.dumps(result, indent=2, default=str))
     else:
         print(f"Unknown command: {cmd}")

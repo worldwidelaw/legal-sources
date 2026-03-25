@@ -1,0 +1,98 @@
+# ===================================================================
+# UN/ODS -- UN Official Document System
+# ===================================================================
+# Authoritative source for all official UN documents: GA resolutions,
+# SC resolutions, ECOSOC documents. Born-digital from 1993, resolutions
+# from 1946. 6 UN languages. Symbol-based URL resolution via ODS API.
+# Full text extracted from PDFs via pdfplumber.
+# No authentication required. Open data.
+# ===================================================================
+
+source:
+  id: "UN/ODS"
+  country: "UN"
+  name: "UN Official Document System"
+  url: "https://documents.un.org"
+  description: |
+    Official repository for all UN documents. Covers GA resolutions
+    (sessions 1-79, ~300/session), SC resolutions (1-2700+),
+    and ECOSOC documents. Symbol-based enumeration via ODS API
+    with PDF full text extraction. No authentication required.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "symbol_enumeration"
+  base_url: "https://documents.un.org"
+  endpoints:
+    symbol_resolve: "/api/symbol/access"
+  pagination:
+    type: "enumeration"
+
+data_model:
+  type: "legislation"
+  primary_key: "symbol"
+  update_strategy: "upsert"
+  dedup_key:
+    - "symbol"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "symbol"
+      description: "UN document symbol (e.g., A/RES/78/1)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to document on ODS"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "body"
+      description: "Issuing body (General Assembly, Security Council, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "doc_type"
+      description: "Document type (resolution, decision, report)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "session"
+      description: "Session number (for GA documents)"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - GA resolutions: A/RES/{session}/{number}, sessions 1-79+
+  - SC resolutions: S/RES/{number}({year}), numbers 1-2700+
+  - ODS symbol API resolves symbols to PDF URLs (302 redirect)
+  - Full text extracted from PDFs using pdfplumber
+  - 6 UN languages available; fetching English by default
+  - No authentication required
+  - Rate limit: ~1 req/sec to be respectful

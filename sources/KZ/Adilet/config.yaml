@@ -1,0 +1,30 @@
+source_id: "KZ/Adilet"
+name: "Adilet Legal Information System (Kazakhstan)"
+country: "KZ"
+language: "ru,kk"
+data_types:
+  - legislation
+
+endpoints:
+  search: "https://zan.gov.kz/api/documents/search"
+  document: "https://zan.gov.kz/api/documents/{id}/{lang}"
+  portal: "https://adilet.zan.kz/"
+
+schema:
+  key_fields:
+    - "id"
+    - "code"
+  date_format: "ISO8601"
+  text_field: "text"
+
+license:
+  name: "Open Data (Ministry of Justice of Kazakhstan)"
+  url: "https://zan.gov.kz/"
+
+fetcher:
+  rate_limit_ms: 1500
+  ssl_verify: false  # Kazakhstan national PKI cert not globally trusted
+  timeout_s: 60
+  max_retries: 3
+  page_size: 10
+  total_documents: 206641

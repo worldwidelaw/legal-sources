@@ -584,28 +584,35 @@ def main():
                 print("\n✗ Validation failed", file=sys.stderr)
                 return 1
         else:
-            # Full bootstrap - output JSONL to stdout for pipeline integration
-            print("Full bootstrap - outputting JSONL to stdout", file=sys.stderr)
+            # Full bootstrap - write JSONL to output directory
+            JSONL_DIR.mkdir(parents=True, exist_ok=True)
+            jsonl_path = JSONL_DIR / "records.jsonl"
+            print(f"Full bootstrap - writing JSONL to {jsonl_path}", file=sys.stderr)
             count = 0
-            for record in fetch_all():
-                # Output each record as JSONL to stdout
-                print(json.dumps(record, ensure_ascii=False))
-                count += 1
-                if count % 1000 == 0:
-                    print(f"Fetched {count} records...", file=sys.stderr)
-            print(f"Total: {count} records", file=sys.stderr)
+            with open(jsonl_path, "a", encoding="utf-8") as f:
+                for record in fetch_all():
+                    f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    count += 1
+                    if count % 1000 == 0:
+                        f.flush()
+                        print(f"Fetched {count} records...", file=sys.stderr)
+            print(f"Total: {count} records written to {jsonl_path}", file=sys.stderr)
 
     elif args.command == "bootstrap-fast":
-        # Fast bootstrap - output JSONL to stdout for pipeline integration
+        # Fast bootstrap - write JSONL to output directory
+        JSONL_DIR.mkdir(parents=True, exist_ok=True)
+        jsonl_path = JSONL_DIR / "records.jsonl"
         print(f"Fast bootstrap (workers={args.workers}, batch_size={args.batch_size})...", file=sys.stderr)
+        print(f"Writing JSONL to {jsonl_path}", file=sys.stderr)
         count = 0
-        for record in fetch_all():
-            # Output each record as JSONL to stdout
-            print(json.dumps(record, ensure_ascii=False))
-            count += 1
-            if count % 1000 == 0:
-                print(f"Fetched {count} records...", file=sys.stderr)
-        print(f"Total: {count} records", file=sys.stderr)
+        with open(jsonl_path, "a", encoding="utf-8") as f:
+            for record in fetch_all():
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                count += 1
+                if count % 1000 == 0:
+                    f.flush()
+                    print(f"Fetched {count} records...", file=sys.stderr)
+        print(f"Total: {count} records written to {jsonl_path}", file=sys.stderr)
 
     elif args.command == "update":
         if not args.since:

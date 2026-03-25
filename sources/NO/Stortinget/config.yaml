@@ -1,0 +1,75 @@
+source:
+  id: "NO/Stortinget"
+  country: "NO"
+  name: "Norwegian Parliament Data Service (Stortingets datatjeneste)"
+  url: "https://data.stortinget.no"
+  description: |
+    Official open data service from the Norwegian Parliament (Stortinget).
+    Provides legislative decisions (lovvedtak), committee recommendations
+    (innstillinger), and parliamentary debate transcripts (referater) via
+    a REST API returning XML. Data available from 1986-87 to present.
+    Free to use with citation to Stortinget.
+
+data_types:
+  - legislation
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest"
+  base_url: "https://data.stortinget.no/eksport"
+  format: "xml"
+  endpoints:
+    sessions: "/sesjoner"
+    publications: "/publikasjoner"
+    publication: "/publikasjon"
+  publication_types:
+    legislation:
+      - lovvedtak
+    doctrine:
+      - referat
+      - innstilling
+
+data_model:
+  type: "mixed"
+  primary_key: "publication_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "publication_id"
+      description: "Stortinget publication ID (e.g., vedtak-202425-001)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Publication title"
+      type: "string"
+      required: true
+    - name: "text"
+      description: "Full text content of the publication"
+      type: "string"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "string"
+      required: true
+    - name: "session_id"
+      description: "Parliamentary session (e.g., 2024-2025)"
+      type: "string"
+      required: true
+    - name: "publication_type"
+      description: "Type: lovvedtak, referat, or innstilling"
+      type: "string"
+      required: true
+    - name: "url"
+      description: "URL to original source"
+      type: "string"
+      required: true

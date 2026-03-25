@@ -1,0 +1,112 @@
+# ===================================================================
+# UA/EDRSR -- Unified State Register of Court Decisions (ЄДРСР)
+# ===================================================================
+# Ukraine's official court decision register. 132M+ documents.
+# Bulk metadata CSVs from data.gov.ua + full text HTML from
+# od.reyestr.court.gov.ua. No auth required. Creative Commons BY.
+# ===================================================================
+
+source:
+  id: "UA/EDRSR"
+  country: "UA"
+  name: "Unified State Register of Court Decisions (ЄДРСР)"
+  url: "https://reyestr.court.gov.ua"
+  description: |
+    Ukraine's official register of court decisions, operated by the State
+    Judicial Administration. Largest court decision register in Europe with
+    132M+ documents (2006-present). Metadata available as yearly CSV ZIPs
+    from data.gov.ua. Full text HTML available from od.reyestr.court.gov.ua
+    (open data subdomain, no CAPTCHA). Ukrainian language.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 3
+  burst: 5
+
+api:
+  type: "bulk_csv_plus_html"
+  metadata:
+    base_url: "https://data.gov.ua"
+    format: "ZIP containing tab-delimited CSV"
+    years: "2006-2024, 2026"
+  full_text:
+    base_url: "http://od.reyestr.court.gov.ua"
+    pattern: "/files/{hash}.html"
+    encoding: "windows-1251"
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_id"
+  update_strategy: "append_only"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document ID from the register"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case number (cause_num)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the court decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Adjudication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to full text HTML on od.reyestr.court.gov.ua"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "court_code"
+      description: "Court identifier code"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "judge"
+      description: "Judge name(s)"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "justice_kind"
+      description: "Type of justice (criminal, civil, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "judgment_code"
+      description: "Type of judgment/decision"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "date_published"
+      description: "Publication date in the register"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+notes: |
+  - 132M+ documents, largest court decision register in Europe
+  - Yearly CSV ZIPs on data.gov.ua (11MB-411MB per year)
+  - Full text at od.reyestr.court.gov.ua (HTTP only, windows-1251 encoding)
+  - CSV is tab-delimited, UTF-8 encoded
+  - HTML contains rich META tags with structured metadata
+  - Currently in "test (limited) mode" due to war (main site only)
+  - Open data subdomain works without CAPTCHA
+  - License: Creative Commons Attribution
+  - Language: Ukrainian

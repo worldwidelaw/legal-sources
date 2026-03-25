@@ -1,0 +1,68 @@
+# ===================================================================
+# INTL/IRMCTCaseLaw -- IRMCT Case Law Database (ICTY/ICTR/IRMCT)
+# ===================================================================
+# ~2,500 case law extracts from ICTY, ICTR, and IRMCT.
+# JSON API at cld.irmct.org with extract text and PDF links.
+# ===================================================================
+
+source:
+  id: "INTL/IRMCTCaseLaw"
+  country: "INTL"
+  name: "IRMCT Case Law Database (ICTY/ICTR)"
+  url: "https://cld.irmct.org/"
+  description: |
+    Case law extracts from the International Residual Mechanism for
+    Criminal Tribunals (IRMCT), covering the ICTY (Yugoslavia),
+    ICTR (Rwanda), and IRMCT jurisdictions. Approximately 2,500
+    extracts with full text from JSON API endpoints.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "json_api"
+  index_url: "https://cld.irmct.org/assets/homedata.json"
+  extract_url: "https://cld.irmct.org/home/jsonExtract/{id}"
+
+data_model:
+  type: "case_law"
+  primary_key: "extract_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "title"
+      description: "Filing title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the case law extract"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "case_name"
+      description: "Case name (e.g., Prosecutor v. Tadić)"
+      type: "string"
+      role: "content"
+      required: true
+
+notes: |
+  - Index at assets/homedata.json returns all 2,538 extracts
+  - Extract text fetched via home/jsonExtract/{id} endpoint (HTML)
+  - Covers ICTY (1993-2017), ICTR (1994-2015), IRMCT (2012-present)
+  - 147 unique cases, ~541 unique PDFs
+  - International criminal law: genocide, war crimes, crimes against humanity

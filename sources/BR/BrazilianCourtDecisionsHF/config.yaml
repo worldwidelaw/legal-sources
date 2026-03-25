@@ -1,0 +1,34 @@
+source:
+  id: BR/BrazilianCourtDecisionsHF
+  name: Brazilian Court Decisions (HuggingFace)
+  country: BR
+  url: https://huggingface.co/datasets/joelniklaus/brazilian_court_decisions
+  data_types:
+    - case_law
+  auth: none
+  language: pt
+  description: >
+    TJAL (Tribunal de Justiça de Alagoas) court decisions with full text ementas
+    and decision descriptions. Academic labeled dataset (~3,234 documents).
+    From joelniklaus/brazilian_court_decisions on HuggingFace.
+
+schema:
+  key_fields:
+    - _id
+    - process_number
+    - orgao_julgador
+    - publish_date
+    - judge_relator
+    - title
+    - text
+    - judgment_label
+    - unanimity_label
+
+fetch:
+  method: huggingface_rows_api
+  dataset: joelniklaus/brazilian_court_decisions
+  config: default
+  split: train
+  batch_size: 100
+  total_rows: 3234
+  rate_limit_seconds: 1

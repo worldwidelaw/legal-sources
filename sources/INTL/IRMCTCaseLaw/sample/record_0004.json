@@ -1,0 +1,18 @@
+{
+  "_id": "IRMCT-5",
+  "_source": "INTL/IRMCTCaseLaw",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-24T05:04:29.202195+00:00",
+  "title": "Appeal Judgement",
+  "text": "1103. […] The Appeals Chamber considers that the component pieces of circumstantial evidence on the issue of identification are to be considered in relation to all other pieces of circumstantial evidence bearing on the issue, and not in isolation.[1] Whereas the assessment of an evidentiary factor in a vacuum might fail to establish an essential matter, the weight of all relevant evidence taken together can conclusively prove the same matter beyond reasonable doubt.[2] […]\nSee also para. 1150.\n[1]           See Limaj et al. Appeal Judgement, para. 153.\n[2]           See Limaj et al. Appeal Judgement, para. 153.",
+  "date": "2015-01-30",
+  "url": "https://cld.irmct.org/assets/filings/Judgement-Popovic-reduced.pdf",
+  "case_name": "POPOVIĆ et al.",
+  "tribunal": "IRMCT",
+  "notions": [
+    "Evidence | Assessment of evidence in its entirety"
+  ],
+  "statutes": {},
+  "extract_id": 5,
+  "pdf_url": "https://cld.irmct.org/assets/filings/Judgement-Popovic-reduced.pdf"
+}

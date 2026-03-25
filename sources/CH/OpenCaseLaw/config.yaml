@@ -1,0 +1,35 @@
+source:
+  id: CH/OpenCaseLaw
+  name: Swiss OpenCaseLaw (Entscheidsuche Bulk)
+  country: CH
+  url: https://opencaselaw.ch/
+  data_types:
+    - case_law
+  auth: none
+  language: de,fr,it,rm
+  description: >
+    Swiss court decisions from all cantons and federal courts. 963K+ decisions
+    with full text, metadata, and citation references. From voilaj/swiss-caselaw
+    on HuggingFace. Covers federal, cantonal, and regulatory decisions.
+
+schema:
+  key_fields:
+    - _id
+    - decision_id
+    - court
+    - canton
+    - docket_number
+    - title
+    - text
+    - date
+    - language
+    - legal_area
+
+fetch:
+  method: huggingface_rows_api
+  dataset: voilaj/swiss-caselaw
+  config: default
+  split: train
+  batch_size: 100
+  total_rows: 963074
+  rate_limit_seconds: 1

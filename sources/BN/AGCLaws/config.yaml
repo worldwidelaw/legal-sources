@@ -1,0 +1,86 @@
+# ===================================================================
+# BN/AGCLaws -- Brunei Attorney General's Chambers Laws
+# ===================================================================
+# Laws of Brunei Darussalam from the Attorney General's Chambers.
+# SharePoint-hosted document library with PDF files for each chapter.
+# ~220 chapters covering all major legislation.
+# No authentication required.
+# ===================================================================
+
+source:
+  id: "BN/AGCLaws"
+  country: "BN"
+  name: "Brunei Attorney General's Chambers Laws"
+  url: "https://www.agc.gov.bn/AGC%20Site%20Pages/Laws%20of%20Brunei.aspx"
+  description: |
+    Laws of Brunei Darussalam from the Attorney General's Chambers.
+    Covers ~220 chapters of consolidated legislation as PDFs.
+    Full text extracted via pdfplumber. English language.
+    Organized by chapter number with B.L.R.O. revision identifiers.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.agc.gov.bn"
+  endpoints:
+    index: "/AGC%20Site%20Pages/Laws%20of%20Brunei.aspx"
+  pagination:
+    type: "none"
+
+data_model:
+  type: "legislation"
+  primary_key: "chapter"
+  update_strategy: "upsert"
+  dedup_key:
+    - "chapter"
+    - "pdf_path"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "chapter"
+      description: "Chapter number"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Law title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "B.L.R.O. revision date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to PDF"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "blro"
+      description: "Brunei Law Revision Order reference"
+      type: "string"
+      role: "metadata"
+      required: false
+
+notes: |
+  - SharePoint 2013 document library
+  - Index page lists ~220 chapters in a table
+  - PDFs are downloadable without authentication
+  - pdfplumber required for PDF text extraction
+  - Some chapters have subsidiary legislation PDFs

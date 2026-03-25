@@ -1,0 +1,48 @@
+id: MN/LegalInfo
+name: Mongolia Unified Legal Information System
+country: MN
+url: https://legalinfo.mn
+description: >
+  Mongolia's official legal information portal. 19K+ legal documents including
+  laws, parliament resolutions, government resolutions, presidential decrees,
+  Supreme Court decisions, and more. Full text via HTML detail pages.
+data_types:
+  - legislation
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: category
+      type: string
+      required: false
+    - name: act_number
+      type: string
+      required: false

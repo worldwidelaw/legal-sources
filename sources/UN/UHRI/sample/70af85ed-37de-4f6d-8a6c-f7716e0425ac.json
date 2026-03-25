@@ -1,0 +1,35 @@
+{
+  "_id": "70af85ed-37de-4f6d-8a6c-f7716e0425ac",
+  "_source": "UN/UHRI",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-25T07:21:15.566571+00:00",
+  "title": "E/C.12/AUS/CO/6 — Concerns/Observations — Australia",
+  "text": "Climate change \n10.The Committee welcomes the adoption of the Climate Change Act 2022, which legislates a target of reducing greenhouse gas emissions down to 43 per cent below 2005 levels by 2030, and the development of the National Climate Risk Assessment and the National Adaptation Plan. However, the Committee remains concerned that the current pace of emissions reduction may be insufficient to meet the 2030 target. The Committee is particularly concerned about the disproportionate impact of climate change on Aboriginal and Torres Strait Islander peoples, in particular those who are resident on the Torres Strait Islands, as highlighted in the Views adopted by the Human Rights Committee in Billy et al. v. Australiaregarding inadequate adaptation measures. The Committee is further concerned about the continued reliance on and support for fossil fuel extraction and production, which may undermine mitigation efforts and exacerbate environmental and health risks (arts. 2 (1), 11 and 12).",
+  "date": "2026-03-23",
+  "url": "https://uhri.ohchr.org/en/search-human-rights-recommendations",
+  "symbol": "E/C.12/AUS/CO/6",
+  "body": "CESCR",
+  "annotation_type": "Concerns/Observations",
+  "countries": [
+    "Australia"
+  ],
+  "themes": [
+    "National Human Rights Action Plans (or specific areas) / implementation plans",
+    "Human rights & the environment",
+    "Right to health",
+    "Constitutional & legislative framework",
+    "Human rights & climate change"
+  ],
+  "sdgs": [
+    "13.1 - Strengthen resilience and adaptive capacity to climate related disasters",
+    "13 - CLIMATE ACTION"
+  ],
+  "affected_persons": [
+    "Indigenous peoples"
+  ],
+  "regions": [
+    "Western Europe & Others"
+  ],
+  "upr_cycle": null,
+  "upr_recommending_country": []
+}
