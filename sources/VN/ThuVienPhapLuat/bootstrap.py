@@ -12,8 +12,10 @@ Two configs: 'metadata' (id, title, url, legal_type, etc.) and
 import json
 import logging
 import os
+import sqlite3
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.parse
 import urllib.request
@@ -118,20 +120,53 @@ class ThuVienPhapLuatFetcher:
         return joined
 
     def fetch_all(self) -> Iterator[Dict[str, Any]]:
-        """Fetch all documents using datasets library streaming."""
+        """Fetch all documents using datasets library streaming.
+
+        Uses SQLite temp file for metadata cache to avoid OOM on low-memory VPS.
+        """
         try:
             from datasets import load_dataset
         except ImportError:
             logger.error("datasets library required for full fetch. pip install datasets")
             return
 
-        logger.info("Loading metadata...")
-        meta_ds = load_dataset(DATASET, 'metadata', split='data', streaming=True)
-        meta_cache = {}
-        for row in meta_ds:
-            meta_cache[row['id']] = row
+        # Use SQLite on disk instead of in-memory dict to avoid OOM
+        db_path = os.path.join(tempfile.gettempdir(), 'vn_tvpl_meta.db')
+        db = sqlite3.connect(db_path)
+        db.execute('PRAGMA journal_mode=WAL')
+        db.execute('''CREATE TABLE IF NOT EXISTS meta (
+            id INTEGER PRIMARY KEY,
+            title TEXT, document_number TEXT, url TEXT,
+            legal_type TEXT, legal_sectors TEXT,
+            issuing_authority TEXT, issuance_date TEXT, signers TEXT
+        )''')
+        db.execute('DELETE FROM meta')
+        db.commit()
 
-        logger.info(f"Cached {len(meta_cache)} metadata records")
+        logger.info("Streaming metadata into SQLite cache...")
+        meta_ds = load_dataset(DATASET, 'metadata', split='data', streaming=True)
+        batch = []
+        meta_count = 0
+        for row in meta_ds:
+            batch.append((
+                row['id'], row.get('title', ''), row.get('document_number', ''),
+                row.get('url', ''), row.get('legal_type', ''),
+                row.get('legal_sectors', ''), row.get('issuing_authority', ''),
+                row.get('issuance_date', ''), row.get('signers', ''),
+            ))
+            if len(batch) >= 5000:
+                db.executemany('INSERT OR REPLACE INTO meta VALUES (?,?,?,?,?,?,?,?,?)', batch)
+                db.commit()
+                meta_count += len(batch)
+                batch = []
+                if meta_count % 100000 == 0:
+                    logger.info(f"Cached {meta_count} metadata records...")
+        if batch:
+            db.executemany('INSERT OR REPLACE INTO meta VALUES (?,?,?,?,?,?,?,?,?)', batch)
+            db.commit()
+            meta_count += len(batch)
+
+        logger.info(f"Cached {meta_count} metadata records in SQLite")
         logger.info("Streaming content...")
 
         content_ds = load_dataset(DATASET, 'content', split='data', streaming=True)
@@ -142,23 +177,34 @@ class ThuVienPhapLuatFetcher:
             if not text or len(text) < 50:
                 continue
 
-            meta = meta_cache.get(doc_id, {})
+            cur = db.execute('SELECT title, document_number, url, legal_type, legal_sectors, issuing_authority, issuance_date, signers FROM meta WHERE id=?', (doc_id,))
+            meta_row = cur.fetchone()
+            if meta_row:
+                title, doc_num, url, ltype, lsectors, authority, idate, signers = meta_row
+            else:
+                title = doc_num = url = ltype = lsectors = authority = idate = signers = ''
+
             yield {
                 'id': doc_id,
-                'title': meta.get('title', ''),
+                'title': title,
                 'text': text,
-                'document_number': meta.get('document_number', ''),
-                'url': meta.get('url', ''),
-                'legal_type': meta.get('legal_type', ''),
-                'legal_sectors': meta.get('legal_sectors', ''),
-                'issuing_authority': meta.get('issuing_authority', ''),
-                'issuance_date': meta.get('issuance_date', ''),
-                'signers': meta.get('signers', ''),
+                'document_number': doc_num,
+                'url': url,
+                'legal_type': ltype,
+                'legal_sectors': lsectors,
+                'issuing_authority': authority,
+                'issuance_date': idate,
+                'signers': signers,
             }
             count += 1
             if count % 10000 == 0:
                 logger.info(f"Processed {count} documents...")
 
+        db.close()
+        try:
+            os.unlink(db_path)
+        except OSError:
+            pass
         logger.info(f"Fetched {count} documents total")
 
     def fetch_updates(self, since: datetime) -> Iterator[Dict[str, Any]]:

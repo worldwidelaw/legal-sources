@@ -1,0 +1,15 @@
+{
+  "_id": "e0bdb49b-74c8-4036-9577-fc1ef5187fa3",
+  "_source": "INTL/HFforLegalCaseLaw",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-26T21:32:37.000096+00:00",
+  "title": "Onaka v. Onaka",
+  "text": "IN THE SUPREME COURT OF THE STATE OF HAWAT'T\n\n \n\n=--000:\n\nPlaintiff-Appellee,\n\n \n\nCLARENCE S$, ONAKA,\n\nALLYSON L, ONAKA, Defendant-Appellant.\n\nNo. 24463\n\n \n\nMOTION FOR RECONSIDERATION\n(EC-D NO. 96-0411)\n\nSEPTEMBER 20, 2006\n\nNAKAYAMA, ACOBR, AND DUFFY, JJ.\n\nMOON, C.J., LEVINSON,\n\nOPINION OF THE COURT BY NAKAYAMA, J.\n\nDefendant-Appellant Allyson L. Onaka’s motion for\n2006, is\n\nreconsideration of the opinion filed on August 29,\n\nhereby denied.\n\nTerry L. Day for\n\ndefendant-appel lant\n\nAllyson L. Onaka\n\nfon the motion te Wrisn\n\f",
+  "date": "2006-09-20",
+  "url": "https://huggingface.co/datasets/HFforLegal/case-law",
+  "citation": "",
+  "docket_number": "",
+  "state": "hawaii",
+  "issuer": "Hawaii Supreme Court",
+  "hash": "db328ea91fb1701c8c3fb63f9ea0ed6ce95e310c525bb793c9159c549d9a69a4"
+}

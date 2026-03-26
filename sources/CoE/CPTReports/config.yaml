@@ -1,0 +1,48 @@
+# CoE/CPTReports - Council of Europe CPT Visit Reports
+# Data source: HUDOC-CPT (hudoc.cpt.coe.int)
+# Coverage: All published CPT visit reports, general reports, public statements
+# ~485 visit reports + standards documents
+
+id: CoE/CPTReports
+country: CoE
+name: CPT Visit Reports (Prevention of Torture)
+data_types:
+  - doctrine
+url: https://hudoc.cpt.coe.int
+license: Council of Europe - Open Access
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+  secondary_fields:
+    - name: document_type
+      type: string
+    - name: state
+      type: string
+    - name: visit_type
+      type: string
+    - name: reference
+      type: string
+    - name: keywords
+      type: string
+
+auth:
+  type: none

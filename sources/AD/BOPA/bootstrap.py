@@ -31,9 +31,9 @@ Usage:
   python bootstrap.py test               # Quick connectivity test
 """
 
+import os
 import sys
 import json
-import os
 import logging
 import re
 import html
@@ -59,7 +59,7 @@ logger = logging.getLogger("legal-data-hunter.AD.BOPA")
 API_BASE_URL = "https://bopaazurefunctions.azurewebsites.net"
 BLOB_STORAGE_URL = "https://bopadocuments.blob.core.windows.net/bopa-documents"
 
-# API function codes (from bopa.ad JavaScript)
+# API function codes (from bopa.ad JavaScript) — loaded from environment
 API_CODES = {
     "GetDocumentsByBOPA": os.environ.get("BOPA_CODE_DOCUMENTS", ""),
     "GetFilters": os.environ.get("BOPA_CODE_FILTERS", ""),

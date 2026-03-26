@@ -1,0 +1,23 @@
+{
+  "_id": "cisg-online-7828",
+  "_source": "INTL/CISGOnline",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-26T19:42:37.041020+00:00",
+  "title": "Protective masks case XI",
+  "text": "",
+  "date": "2026-03-12",
+  "url": "https://cisg-online.org/search-for-cases?caseId=15745",
+  "cisg_online_number": "7828",
+  "jurisdiction": "Germany",
+  "court": "Oberlandesgericht Köln (Court of Appeal Cologne)",
+  "chamber": "8. Zivilsenat (8th panel for civil matters)",
+  "case_number": "8 U 17/25",
+  "ecli": "",
+  "claimant": "",
+  "respondent": "",
+  "seller_country": "Czech Republic",
+  "buyer_country": "Germany",
+  "goods": "4,000,000 FFP2 protective face masks",
+  "cisg_articles": [],
+  "clout_number": ""
+}

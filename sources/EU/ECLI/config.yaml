@@ -1,0 +1,27 @@
+source:
+  id: EU/ECLI
+  name: ECLI Search Engine - European Case Law
+  country: EU
+  url: https://e-justice.europa.eu/topics/legislation-and-case-law/european-case-law-identifier-ecli-search-engine_en
+  description: >
+    EU-wide case law from the Court of Justice of the European Union (CJEU)
+    and General Court, accessed via CELLAR SPARQL + REST API using ECLI identifiers.
+    Complements EU/EUR-Lex which focuses on legislation.
+  data_types:
+    - case_law
+  auth: none
+  api_type: sparql
+  endpoints:
+    sparql: https://publications.europa.eu/webapi/rdf/sparql
+    cellar_celex: http://publications.europa.eu/resource/celex/
+  schedule: weekly
+
+schema:
+  key_fields:
+    - ecli
+    - celex_id
+    - date
+    - title
+    - text
+    - court
+    - url

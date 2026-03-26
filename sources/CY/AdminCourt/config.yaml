@@ -1,0 +1,58 @@
+# CY/AdminCourt - Cyprus Administrative Court Case Law
+# Data source: CyLaw (cylaw.org) - Administrative Court Decisions
+# Coverage: 2016-present (5,863+ decisions)
+
+id: CY/AdminCourt
+country: CY
+name: Cyprus Administrative Court
+data_types:
+  - caselaw
+url: http://www.cylaw.org/administrative/
+license: Open Access - Cyprus Bar Association
+
+# Rate limiting
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# Schema definition
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+  secondary_fields:
+    - name: case_number
+      type: string
+      required: false
+    - name: court
+      type: string
+      required: false
+    - name: plaintiff
+      type: string
+      required: false
+    - name: defendant
+      type: string
+      required: false
+    - name: jurisdiction
+      type: string
+      required: false
+    - name: part
+      type: string
+      required: false
+
+# Auth
+auth:
+  type: none

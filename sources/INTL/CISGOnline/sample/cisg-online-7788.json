@@ -1,0 +1,25 @@
+{
+  "_id": "cisg-online-7788",
+  "_source": "INTL/CISGOnline",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-26T19:43:01.372871+00:00",
+  "title": "Reviti Trading B.V. v. Importaciones Ma & Ru, S.L. et al.",
+  "text": "",
+  "date": "2026-02-04",
+  "url": "https://cisg-online.org/search-for-cases?caseId=15705",
+  "cisg_online_number": "7788",
+  "jurisdiction": "Netherlands",
+  "court": "Rechtbank Den Haag (District Court The Hague)",
+  "chamber": "",
+  "case_number": "C/09/629158 / HA ZA 22-405",
+  "ecli": "",
+  "claimant": "",
+  "respondent": "",
+  "seller_country": "",
+  "buyer_country": "",
+  "goods": "",
+  "cisg_articles": [
+    "6"
+  ],
+  "clout_number": ""
+}

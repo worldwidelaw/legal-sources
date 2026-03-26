@@ -65,7 +65,7 @@ class OpenCaseLawScraper(BaseScraper):
         super().__init__(source_dir)
 
     def _fetch_batch(self, offset: int, length: int) -> dict:
-        """Fetch a batch of rows from HuggingFace datasets API."""
+        """Fetch a batch of rows from HuggingFace datasets API with retry."""
         import requests
 
         params = {
@@ -75,12 +75,48 @@ class OpenCaseLawScraper(BaseScraper):
             "offset": offset,
             "length": length,
         }
-        resp = requests.get(HF_ROWS_API, params=params, timeout=30)
-        resp.raise_for_status()
-        return resp.json()
+        max_retries = 4
+        for attempt in range(max_retries):
+            try:
+                resp = requests.get(HF_ROWS_API, params=params, timeout=120)
+                resp.raise_for_status()
+                return resp.json()
+            except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+                wait = 2 ** attempt * 5  # 5, 10, 20, 40 seconds
+                logger.warning(f"Timeout/connection error at offset {offset}, retry {attempt+1}/{max_retries} in {wait}s: {e}")
+                if attempt == max_retries - 1:
+                    raise
+                time.sleep(wait)
+            except requests.exceptions.HTTPError as e:
+                if resp.status_code == 429:
+                    wait = 2 ** attempt * 10
+                    logger.warning(f"Rate limited at offset {offset}, waiting {wait}s")
+                    time.sleep(wait)
+                    continue
+                raise
 
     def fetch_all(self) -> Generator[dict, None, None]:
-        """Yield all documents from the HuggingFace dataset."""
+        """Yield all documents from the HuggingFace dataset.
+
+        Uses datasets library streaming for full fetch (963K+ rows).
+        Falls back to rows API if datasets library not available.
+        """
+        try:
+            from datasets import load_dataset
+            logger.info("Using datasets library for streaming fetch...")
+            ds = load_dataset(DATASET, CONFIG, split=SPLIT, streaming=True)
+            count = 0
+            for row in ds:
+                yield row
+                count += 1
+                if count % 50000 == 0:
+                    logger.info(f"Streamed {count} rows...")
+            logger.info(f"Fetched {count} rows total via streaming")
+            return
+        except ImportError:
+            logger.info("datasets library not available, using rows API...")
+
+        # Fallback: rows API with retry
         offset = 0
         total = None
 
@@ -103,7 +139,7 @@ class OpenCaseLawScraper(BaseScraper):
             if offset >= total:
                 break
 
-            time.sleep(1)
+            time.sleep(1.5)
 
         logger.info(f"Fetched {offset} rows total")
 

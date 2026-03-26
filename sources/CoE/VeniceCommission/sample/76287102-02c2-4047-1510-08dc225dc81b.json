@@ -1,0 +1,33 @@
+{
+  "_id": "76287102-02c2-4047-1510-08dc225dc81b",
+  "_source": "CoE/VeniceCommission",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-26T03:46:26.172343+00:00",
+  "title": "Law on urgent taxation and financial measures",
+  "text": "HEADNOTE:\nPursuant to Article 8 of the Declaration of the Rights of Man and the Citizen, the principle according to which laws are not retroactive is a constitutional principle only in criminal cases; Parliament is entitled to adopt retroactive taxation provisions as long as it does not remove the legal safeguards afforded to the constitutional requirements. No constitutionally binding rule guarantees a principle of \"legitimate expectation\".\n\nSUMMARY:\nIn order to reduce the State deficit, the government passed a bill in which the second Section widened the basis for applying corporations tax by making long-term capital gains on all assets subject to the standard rate of corporations tax (33%). Until then, these capital gains had been subject to a lower rate (19%). The complaints raised by the plaintiffs mainly challenged the retroactive nature of the measure: the standard rate is due to replace the lower rate for assets disposed of in 1997, including those disposed of before the measure was announced in August 1997, and even for those disposed of prior to 1997, if the time limit for payment of the tax has been legally extended. In support of their case, the plaintiffs argued that the principles of \"certainty of the law\" and \"legitimate expectation\" had been breached. The Council dismissed the complaint in its entirety. It confirmed that the planned measures did not have the effect of removing the legal safeguards afforded to constitutional requirements (\"ratchet effect\") and that, in taxation matters, retrospectivity was not in itself unconstitutional. Furthermore, the Constitutional Council confirmed the decision taken in a recent case (96-385 DC) in which it was held that the principle of \"certainty of the law\", which is related to that of \"legitimate expectation\", had no constitutional value. However, it should be mentioned that the Constitutional Council has accepted that this principle is applicable in very specific cases: these concern personal security and freedom of communication (enjoyment of legally established rights, subject to the measures required to attain constitutionally acceptable goals, cf. 84-181 DC).",
+  "date": "1997-11-07",
+  "url": "https://codices.coe.int/codices/detail/76287102-02c2-4047-1510-08dc225dc81b",
+  "reference_code": "FRA-1997-3-004",
+  "country": "fra",
+  "country_name": "France",
+  "court_name": "Constitutional Council",
+  "chamber": "",
+  "decision_number": "97-391 DC",
+  "language": "eng",
+  "official_publication": "Journal officiel de la République française - Lois et Décrets (Official Gazette), 11.11.1997, 16390",
+  "keywords": [
+    "State deficit (reduction)",
+    "Déficit de l''État (réduction)",
+    "Tax",
+    "Corporation",
+    "Impôt",
+    "Société",
+    "Long-term capital gains",
+    "Plus value à long terme",
+    "Expectation",
+    "Legitimate",
+    "Attente",
+    "Légitime"
+  ],
+  "is_published": true
+}

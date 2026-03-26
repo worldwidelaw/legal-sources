@@ -1,0 +1,92 @@
+# ===================================================================
+# CR/SCIJ -- Costa Rica Sistema Costarricense de Información Jurídica
+# ===================================================================
+# Costa Rica's official legal information system operated by the
+# Procuraduría General de la República (Attorney General).
+# Contains all legislation from 1821 to present: Constitution,
+# laws, decrees, treaties, regulations, municipal agreements, etc.
+#
+# URL: https://pgrweb.go.cr/scij/
+# Access: Direct GET requests to individual norm pages by numeric ID.
+# No auth, no session required.
+# ===================================================================
+
+source:
+  id: "CR/SCIJ"
+  country: "CR"
+  name: "SCIJ - Sistema Costarricense de Información Jurídica"
+  url: "https://pgrweb.go.cr/scij/"
+  description: |
+    Costa Rica Juridical Information System from the Attorney General.
+    Full text of all legislation organized by type: Constitution,
+    international treaties, laws, executive decrees, regulations,
+    municipal agreements, resolutions, directives, circulars.
+    ~70,000-90,000 norms from 1821 to present.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "id_enumerate"
+  base_url: "https://pgrweb.go.cr/scij"
+  metadata_url: "https://pgrweb.go.cr/scij/Busqueda/Normativa/Normas/nrm_norma.aspx?param1=NRM&nValor1=1&nValor2={id}&nValor3=0&strTipM=FN"
+  fulltext_url: "https://pgrweb.go.cr/scij/Busqueda/Normativa/Normas/nrm_texto_completo.aspx?param1=NRTC&nValor1=1&nValor2={id}&nValor3=0&strTipM=TC"
+  id_range: [1, 107000]
+  invalid_response: "302 redirect to PagError.aspx"
+
+data_model:
+  type: "legislation"
+  primary_key: "norm_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "norm_id"
+
+schema:
+  key_fields:
+    - name: "norm_id"
+      description: "SCIJ internal numeric ID"
+      type: "integer"
+      role: "primary_key"
+    - name: "norm_type"
+      description: "Type of norm (Ley, Decreto Ejecutivo, Tratados, etc.)"
+      type: "string"
+      role: "category"
+    - name: "norm_number"
+      description: "Official number of the norm"
+      type: "string"
+      role: "identifier"
+    - name: "title"
+      description: "Official title of the norm"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Date of vigencia (effectiveness)"
+      type: "date"
+      role: "temporal_key"
+    - name: "issuing_body"
+      description: "Ente emisor (issuing body)"
+      type: "string"
+      role: "metadata"
+    - name: "url"
+      description: "URL to full text on SCIJ"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - No API or sitemap: enumerate IDs 1-107000
+  - Invalid IDs return 302 redirect (skip them)
+  - Full text is Word-exported HTML inside dvTextoCompleto div
+  - Metadata page has structured fields (type, number, title, date, issuing body)
+  - Language: Spanish
+  - ~70,000-90,000 valid norms estimated

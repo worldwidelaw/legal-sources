@@ -54,14 +54,32 @@ class BaFinFetcher:
             'Accept-Language': 'de-DE,de;q=0.9,en;q=0.8',
         })
 
+    def _request_with_backoff(self, url: str, **kwargs) -> requests.Response:
+        """Make HTTP request with exponential backoff on 429/5xx errors"""
+        max_retries = 5
+        for attempt in range(max_retries):
+            response = self.session.get(url, **kwargs)
+            if response.status_code == 429 or response.status_code >= 500:
+                wait = min(2 ** attempt * 5, 120)  # 5, 10, 20, 40, 80 seconds
+                retry_after = response.headers.get('Retry-After')
+                if retry_after and retry_after.isdigit():
+                    wait = max(wait, int(retry_after))
+                logger.warning(f"HTTP {response.status_code} on {url}, waiting {wait}s (attempt {attempt+1}/{max_retries})")
+                time.sleep(wait)
+                continue
+            response.raise_for_status()
+            return response
+        # Final attempt - let it raise
+        response.raise_for_status()
+        return response
+
     def _get_search_results(self, page_no: int = 0) -> List[Dict[str, Any]]:
         """Fetch circular entries from search page"""
         params = SEARCH_PARAMS.copy()
         params["pageNo"] = page_no
 
         logger.info(f"Fetching search results page {page_no}")
-        response = self.session.get(SEARCH_URL, params=params, timeout=60)
-        response.raise_for_status()
+        response = self._request_with_backoff(SEARCH_URL, params=params, timeout=60)
 
         soup = BeautifulSoup(response.content, 'html.parser')
         entries = []
@@ -139,8 +157,7 @@ class BaFinFetcher:
         """Fetch and parse full document content from HTML page"""
         try:
             logger.info(f"Fetching document: {url}")
-            response = self.session.get(url, timeout=60)
-            response.raise_for_status()
+            response = self._request_with_backoff(url, timeout=60)
 
             soup = BeautifulSoup(response.content, 'html.parser')
 
@@ -291,11 +308,11 @@ class BaFinFetcher:
                 else:
                     logger.warning(f"Skipping {entry['url']} - insufficient content")
 
-                # Rate limiting
-                time.sleep(1.5)
+                # Rate limiting - generous delay to avoid 429s
+                time.sleep(3)
 
             page_no += 1
-            time.sleep(1)
+            time.sleep(2)
 
         logger.info(f"Fetched {total_count} documents with full text")
 

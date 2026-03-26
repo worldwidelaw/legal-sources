@@ -1,0 +1,25 @@
+{
+  "_id": "cisg-online-7833",
+  "_source": "INTL/CISGOnline",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-26T19:43:07.953569+00:00",
+  "title": "Beijing Hai Run Technology Co. Ltd v. Procornea Nederland B.V.",
+  "text": "",
+  "date": "2026-01-28",
+  "url": "https://cisg-online.org/search-for-cases?caseId=15750",
+  "cisg_online_number": "7833",
+  "jurisdiction": "Netherlands",
+  "court": "Rechtbank Gelderland (District Court Gelderland)",
+  "chamber": "",
+  "case_number": "C/05/438640 / HA ZA 24-368",
+  "ecli": "",
+  "claimant": "",
+  "respondent": "",
+  "seller_country": "",
+  "buyer_country": "",
+  "goods": "",
+  "cisg_articles": [
+    "6"
+  ],
+  "clout_number": ""
+}

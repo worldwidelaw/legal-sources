@@ -1,0 +1,24 @@
+source:
+  id: INTL/FAOLEX
+  name: "FAO Legislation Database (FAOLEX)"
+  country: INTL
+  url: https://www.fao.org/faolex/en/
+  data_types:
+    - legislation
+  auth: none
+  license: "CC BY-NC-SA 3.0 IGO"
+  description: >
+    218,607 legislation records across 200+ countries covering agriculture,
+    food, land, water, and environment law. Bulk CSV with direct links to
+    pre-extracted plain text files (.txt) on faolex.fao.org.
+  method: "Bulk CSV download from open data portal + per-record .txt fetch"
+
+schema:
+  key_fields:
+    - record_id
+    - country_territory
+    - date_of_original_text
+    - language
+    - keywords
+    - abstract
+    - repealed

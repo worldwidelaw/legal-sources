@@ -1,0 +1,25 @@
+source:
+  id: EU/EDAL
+  name: European Database of Asylum Law
+  country: EU
+  url: https://www.asylumlawdatabase.eu/en
+  description: >
+    Asylum case law from 22 EU member states. Structured summaries including
+    facts, decision/reasoning, outcome, and observations. ~900 cases, frozen at 2021.
+    HTML scraping of Drupal 7 site with 10-second crawl delay.
+  data_types:
+    - case_law
+  auth: none
+  api_type: html_scraping
+  schedule: monthly
+
+schema:
+  key_fields:
+    - title
+    - date
+    - court
+    - country
+    - text
+    - headnote
+    - outcome
+    - url

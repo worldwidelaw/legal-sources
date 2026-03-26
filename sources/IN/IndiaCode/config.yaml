@@ -1,0 +1,34 @@
+source:
+  id: IN/IndiaCode
+  name: India Code - Digital Repository of Acts
+  country: IN
+  url: https://www.indiacode.nic.in/
+  data_types:
+    - legislation
+  auth: none
+  schedule: monthly
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "act_number"
+      type: "string"
+      required: false
+    - name: "year"
+      type: "string"
+      required: false
+    - name: "text"
+      type: "string"
+      required: true
+
+fetch:
+  base_url: https://www.indiacode.nic.in
+  browse_url: https://www.indiacode.nic.in/handle/123456789/1362/browse?type=shorttitle&order=ASC&rpp=100&offset={offset}
+  section_api: https://www.indiacode.nic.in/SectionPageContent?actid={actid}&sectionID={section_id}
+  rate_limit_seconds: 2
+  max_sections_per_act: 1000

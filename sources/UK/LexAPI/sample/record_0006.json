@@ -1,0 +1,21 @@
+{
+  "_id": "UK_LEX_uksi_2023_100",
+  "_source": "UK/LexAPI",
+  "_type": "legislation",
+  "_fetched_at": "2026-03-25T21:43:38.994668+00:00",
+  "title": "The Youth Justice and Criminal Evidence Act 1999 (Commencement No. 30) Order 2023",
+  "text": "Section 1) **Citation, interpretation and extent**\n\n1) This Order may be cited as the Youth Justice and Criminal Evidence Act 1999 (Commencement No. 30) Order 2023. \n2) In this Order, “the Act” means the Youth Justice and Criminal Evidence Act 1999. \n3) This Order extends to England and Wales. \n\nSection 2) **Provision coming into force on 1st February 2023**\n\n1) In so far as it is not already in force, section 28 of the Act  (video recorded cross-examination or re-examination) comes into force on 1st February 2023, in relation to relevant proceedings. \n2) Proceedings are relevant for the purposes of paragraph (1) if— \n\ta) the proceedings take place before the Crown Court sitting at a place in England and Wales determined in accordance with section 78(3) of the Senior Courts Act 1981  , and \n\tb) the witness is eligible for assistance by virtue of— \n\t\ti) section 16 of the Act  (witnesses eligible for assistance on grounds of age or incapacity), or \n\t\tii) section 17(4) of the Act  (complainants in respect of a sexual offence or a modern slavery offence who are witnesses in proceedings relating to that offence, or that offence and any other offences).",
+  "date": "2023-01-01",
+  "url": "https://www.legislation.gov.uk/uksi/2023/100",
+  "legislation_id": "uksi/2023/100",
+  "legislation_type": "uksi",
+  "year": 2023,
+  "number": 100,
+  "category": "secondary",
+  "status": "final",
+  "extent": [
+    ""
+  ],
+  "description": "Section 28 of the Youth Justice and Criminal Evidence Act 1999 (c. 23) (“the Act”) provides that where a video recorded interview of a witness has been admitted as their evidence-in-chief under section 27 of the Act, the court may also direct that any cross-examination and re-examination of the witness be video recorded and that recording admitted as evidence.",
+  "number_of_provisions": 2
+}

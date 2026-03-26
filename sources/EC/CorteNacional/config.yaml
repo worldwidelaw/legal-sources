@@ -1,0 +1,107 @@
+# ===================================================================
+# EC/CorteNacional -- Ecuador National Court of Justice Case Law
+# ===================================================================
+# JSON REST API behind Angular SPA, no real authentication required.
+# Provides cassation and revision sentences from all specialized
+# chambers (salas) of the Corte Nacional de Justicia.
+# Full text available via PDF download from document service.
+# ===================================================================
+
+source:
+  id: "EC/CorteNacional"
+  country: "EC"
+  name: "Corte Nacional de Justicia (National Court of Justice)"
+  url: "https://busquedasentencias.cortenacional.gob.ec"
+  description: |
+    Ecuador's National Court of Justice case law database. Covers cassation
+    and revision sentences from all specialized chambers: Civil & Commercial,
+    Criminal, Labor, Administrative, Tax, and Family. API is Elasticsearch-
+    backed, accessed via REST endpoints. Full text extracted from PDF documents
+    via the Función Judicial document service.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://api.funcionjudicial.gob.ec/BUSCADOR-SENTENCIAS-SERVICES/api/buscador-sentencias"
+  document_service: "https://api.funcionjudicial.gob.ec/CJ-DOCUMENTO-SERVICE/api/document/query/hba"
+  endpoints:
+    salas: "/query/sala/lista"
+    search_by_filters: "/query/sentencia/busqueda/busquedaPorFiltros"
+    search_by_type: "/query/sentencia/busqueda/buscarPorTipoBusqueda"
+    judges: "/query/juez/buscarJuezNombreCoincidenciaEstado"
+  pagination:
+    page_param: "pageNumber"
+    page_size_param: "pageSize"
+    max_page_size: 50
+
+data_model:
+  type: "case_law"
+  primary_key: "id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "id"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "id"
+      description: "Internal sentence ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Resolution number and type"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the court decision (extracted from PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the decision (fechaProvidencia)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the PDF document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "sala"
+      description: "Specialized chamber name"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "juez_ponente"
+      description: "Reporting judge"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "materia"
+      description: "Legal subject area"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "numero_proceso"
+      description: "Case process number"
+      type: "string"
+      role: "identifier"
+      required: false
+
+notes: |
+  - API requires X-reCAPTCHA-Token header but does not validate the token
+  - 14,000+ sentences available as of March 2026
+  - Full text from PDF extraction (pdfminer.six)
+  - 8 specialized chambers (salas)
+  - Language: Spanish

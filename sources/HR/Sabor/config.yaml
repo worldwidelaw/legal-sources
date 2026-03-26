@@ -1,0 +1,102 @@
+# ===================================================================
+# HR/Sabor -- Croatian Parliament (Hrvatski sabor) Debate Transcripts
+# ===================================================================
+# Full text parliamentary debate transcripts (fonogrami) from edoc.sabor.hr.
+# No authentication required. Speaker-attributed full text in HTML.
+#
+# Primary endpoint: edoc.sabor.hr/Views/FonogramView.aspx?tdrid={id}
+# Grid listing: edoc.sabor.hr/Fonogrami.aspx (DevExpress ASP.NET grid)
+# ===================================================================
+
+source:
+  id: "HR/Sabor"
+  country: "HR"
+  name: "Croatian Parliament (Hrvatski sabor)"
+  url: "https://edoc.sabor.hr"
+  description: |
+    Parliamentary debate transcripts (fonogrami) from the Croatian Parliament.
+    Each record is one agenda item debate with full speaker-attributed text.
+    Covers multiple parliamentary terms (sazivi). Content in Croatian.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://edoc.sabor.hr"
+  endpoints:
+    grid_listing: "/Fonogrami.aspx"
+    fonogram_view: "/Views/FonogramView.aspx?tdrid={tdrid}"
+    pdf_report: "/NewReports/GetReport.aspx?reportType=4&tdrId={tdrid}"
+  pagination:
+    by_grid: true
+    grid_type: "devexpress_aspnet"
+
+data_model:
+  type: "doctrine"
+  primary_key: "tdrid"
+  update_strategy: "upsert"
+  versioning: "none"
+  dedup_key:
+    - "tdrid"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "tdrid"
+      description: "Unique debate transcript ID from edoc.sabor.hr"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Agenda item title in Croatian"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full speaker-attributed debate transcript text"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the debate session (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the fonogram on edoc.sabor.hr"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "saziv"
+      description: "Parliamentary term (Roman numeral, e.g. XI)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "sjednica"
+      description: "Session number within the parliamentary term"
+      type: "string"
+      role: "classification"
+      required: true
+  secondary_fields:
+    - name: "agenda_item"
+      description: "Agenda item number"
+    - name: "speakers"
+      description: "List of speakers with party affiliation"
+    - name: "language"
+      description: "Language code (hrv for Croatian)"
+
+notes: |
+  - Full text debate transcripts at /Views/FonogramView.aspx?tdrid={id}
+  - Speaker entries: <div class="contentHeader speaker"><h2>Surname, Name (PARTY)</h2>
+  - Speech text: <dd class="textColor">full speech with <br> line breaks</dd>
+  - Grid listing at /Fonogrami.aspx uses DevExpress ASP.NET with ViewState pagination
+  - ~740 debate items across multiple parliamentary terms
+  - Language: Croatian (HRV)

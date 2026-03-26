@@ -1,0 +1,103 @@
+# ===================================================================
+# CU/GacetaOficialDigital -- Cuba Official Gazette Digital Archive
+# ===================================================================
+# Cuba's official gazette (Gaceta Oficial de la República de Cuba),
+# operated by the Ministry of Justice. Contains all legislation:
+# laws, decree-laws, resolutions, agreements, proclamations, etc.
+#
+# URL: https://www.gacetaoficial.gob.cu/
+# Access: HTML scraping of norms listing + PDF gazette downloads.
+# Norms listing at /es/normas-juridicas?page=N (1492+ pages).
+# Each norm links to a gazette edition with a downloadable PDF.
+# No auth required.
+# ===================================================================
+
+source:
+  id: "CU/GacetaOficialDigital"
+  country: "CU"
+  name: "Gaceta Oficial de la República de Cuba"
+  url: "https://www.gacetaoficial.gob.cu/"
+  description: |
+    Cuba's official gazette from the Ministry of Justice.
+    Full text of all legislation published since 1990: laws, decree-laws,
+    decrees, resolutions, agreements, proclamations, and more.
+    Norms listed with metadata; full text in gazette PDFs.
+    ~30,000 norms across ~1500 gazette editions.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.1
+  burst: 1
+
+api:
+  type: "paginated_scrape"
+  base_url: "https://www.gacetaoficial.gob.cu"
+  norms_url: "https://www.gacetaoficial.gob.cu/es/normas-juridicas?page={page}"
+  norm_detail_base: "https://www.gacetaoficial.gob.cu"
+  gazette_detail_base: "https://www.gacetaoficial.gob.cu"
+  pdf_base: "https://www.gacetaoficial.gob.cu"
+  total_pages: 1492
+
+data_model:
+  type: "legislation"
+  primary_key: "goc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "goc_id"
+
+schema:
+  key_fields:
+    - name: "goc_id"
+      description: "GOC identifier (e.g. GOC-2026-230-O26)"
+      type: "string"
+      role: "primary_key"
+    - name: "norm_type"
+      description: "Type of norm (Resolución, Ley, Decreto, etc.)"
+      type: "string"
+      role: "category"
+    - name: "norm_number"
+      description: "Official number of the norm"
+      type: "string"
+      role: "identifier"
+    - name: "title"
+      description: "Full title of the norm"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text extracted from gazette PDF"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+    - name: "issuing_body"
+      description: "Issuing government body"
+      type: "string"
+      role: "metadata"
+    - name: "summary"
+      description: "Summary/abstract of the norm"
+      type: "string"
+      role: "metadata"
+    - name: "gazette_ref"
+      description: "Gazette edition reference"
+      type: "string"
+      role: "metadata"
+    - name: "url"
+      description: "URL to norm page on gacetaoficial.gob.cu"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Drupal-based site, requires browser User-Agent header
+  - Norms listing returns ~20 norms per page via HTML
+  - Norm detail pages have metadata but NO full text
+  - Full text is in gazette PDF files (linked from gazette pages)
+  - PDF URL pattern: /sites/default/files/goc-{year}-{type}{number}.pdf
+  - 10-second crawl delay per robots.txt
+  - Language: Spanish

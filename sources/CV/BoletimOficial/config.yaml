@@ -1,0 +1,72 @@
+# ===================================================================
+# CV/BoletimOficial -- Boletim Oficial de Cabo Verde
+# ===================================================================
+# JSON REST API (Ankira/Metatheke platform), no authentication needed.
+# Provides official gazette entries with full HTML text since 1975.
+# Two series: I Serie (legislation) and II Serie (administrative acts).
+# ===================================================================
+
+source:
+  id: "CV/BoletimOficial"
+  country: "CV"
+  name: "Boletim Oficial de Cabo Verde"
+  url: "https://boe.incv.cv"
+  description: |
+    Cabo Verde's official gazette operated by the Imprensa Nacional de
+    Cabo Verde (INCV). Publishes all legislation, regulations, and
+    administrative acts. Full text available via JSON API since 1975.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://boe.incv.cv/api/v1"
+  endpoints:
+    days_with_publications: "/Home/DaysWithPublications"
+    bulletin_filter: "/Home/BulletinFilter"
+    home_filters: "/Home/HomeFilters"
+    series: "/Filter/BulletinSeries"
+    act_types: "/Filter/ActTypes"
+
+schema:
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document identifier from bulletin index entry"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document (extracted from HTML content)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the document on boe.incv.cv"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - JSON API, no auth needed
+  - Full text in HTML via BulletinFilter endpoint
+  - Two series: I Serie (legislation), II Serie (administrative)
+  - Coverage: 1975 to present
+  - Language: Portuguese

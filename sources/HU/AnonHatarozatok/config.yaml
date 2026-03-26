@@ -1,0 +1,45 @@
+source:
+  id: HU/AnonHatarozatok
+  name: Hungarian Anonymized Court Decisions (Anonimizált Határozatok Tára)
+  country: HU
+  data_type: case_law
+  url: https://eakta.birosag.hu/anonimizalt-hatarozatok
+  license: Public Domain
+  language: hu
+
+endpoints:
+  base_url: https://eakta.birosag.hu
+  search: /AnonimizaltHatarozat/Search?Area=
+  download_rtf: /AnonimizaltHatarozat/DownloadHatarozatMobile?Area=
+  session_page: /anonimizalt-hatarozatok
+
+schema:
+  key_fields:
+    - egyedi_azonosito
+    - azonosito
+  normalized_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+    - case_number
+    - court
+    - collegium
+    - legal_area
+    - legal_provisions
+    - abstract
+
+fetch:
+  method: json_api
+  rate_limit: 1.5
+  page_size: 100
+  max_results_per_query: 10000
+  notes: |
+    Uses undocumented ENCO Grid JSON API. Pagination via ResultStartIndex/ResultCount.
+    API caps at 10,000 results per query — must partition by court/legal area/date.
+    Full text via RTF download, converted with striprtf.
+    Session cookie required (get from /anonimizalt-hatarozatok first visit).

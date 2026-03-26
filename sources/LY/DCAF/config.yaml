@@ -1,0 +1,33 @@
+source:
+  id: LY/DCAF
+  name: Libya DCAF Security Sector Legal Database
+  country: LY
+  url: https://security-legislation.ly/
+  description: >
+    Libyan security sector legislation from DCAF Geneva Centre.
+    2155 laws via WordPress REST API. ~786 with English full text,
+    remainder Arabic-only.
+  data_types:
+    - legislation
+  language: en
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - title
+    - text
+    - date
+    - url
+
+api:
+  base_url: https://security-legislation.ly
+  wp_rest: /wp-json/wp/v2/latest-laws
+  per_page: 100
