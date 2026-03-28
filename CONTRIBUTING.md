@@ -4,6 +4,18 @@ Thank you for helping make the world's open legal data more accessible. This gui
 
 All sources in this repository must be **open data** -- publicly available legal information from official government portals. We always prefer API and bulk download access over web extraction.
 
+## Who Is This Guide For?
+
+Jump to the section that fits you:
+
+| I am... | Go to... |
+|---|---|
+| **Developer** | [Build a new script](#2-build-a-new-collection-script) · [Fix existing script](#3-fix-or-improve-an-existing-script) · [Add retrieve script](#4-add-a-retrieve-script) |
+| **Government official / jurisdiction lead** | [Submit a data source](#1-submit-a-data-source-no-coding-required) (no coding required) |
+| **Lawyer / legal researcher** | [Validate data quality](#5-validate-data-quality-for-lawyers-and-legal-researchers) · [Submit a data source](#1-submit-a-data-source-no-coding-required) |
+
+New to open source? Look for [`label:good-first-issue`](https://github.com/worldwidelaw/legal-sources/issues?q=label%3Agood-first-issue) issues.
+
 ## Ways to Contribute
 
 ### 1. Submit a Data Source (No Coding Required)
@@ -15,7 +27,7 @@ Know about a legal data portal that isn't covered? [Open a "New Source" issue](h
 - Whether it has an API, bulk download, or only a website
 - Whether access is open or requires registration
 
-This is especially valuable from government officials who know their own data portals best.
+**Government officials and jurisdiction leads:** you don't need to write any code. Your knowledge of your country's official portals, APIs, and bulk download endpoints is the most valuable contribution you can make. Even a rough description (e.g. "Italy publishes gazette data at X, requires Y registration") is enough to get a developer started. Just open an issue.
 
 ### 2. Build a New Collection Script
 
@@ -112,6 +124,17 @@ cp templates/retrieve_template.py sources/{CC}/{SourceName}/retrieve.py
 Run `python runner.py retrieve-next` to find sources that need retrieve scripts.
 
 Test with: `python runner.py retrieve-test {CC}/{SourceName}`
+
+### 5. Validate Data Quality (For Lawyers and Legal Researchers)
+
+You don't need to write code to make a meaningful contribution. Legal professionals can help by:
+
+- **Reviewing sampled documents**: Check that `sources/{CC}/{SourceName}/sample/` files have correct titles, dates, and text — and flag errors in an issue.
+- **Improving legal reference resolution**: If you know how citations work in your jurisdiction (e.g. "§ 242 BGB" in Germany, or "C. civ., art. 1240" in France), open an issue or comment on the relevant source to help us improve `retrieve.py`.
+- **Identifying coverage gaps**: Know of important case law databases, official gazettes, or consolidated legislation sources that aren't listed? [Open a "New Source" issue](https://github.com/worldwidelaw/legal-sources/issues/new?template=new-source.yml).
+- **Flagging data quality issues**: Missing decisions, truncated texts, wrong classification (legislation vs. case law)? [Open a data quality issue](https://github.com/worldwidelaw/legal-sources/issues/new?template=data-quality.yml).
+
+No GitHub account? Email [zacharie@goodlegal.fr](mailto:zacharie@goodlegal.fr) and we'll file the issue for you.
 
 ## PR Checklist
 
