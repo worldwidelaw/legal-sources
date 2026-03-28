@@ -1,6 +1,6 @@
 # World Wide Law
 
-**Open-source collection scripts for open legal data from 50+ countries.**
+**Open-source collection scripts for open legal data from 110+ countries.**
 
 Every country publishes its laws, court decisions, and regulations online -- but in different formats, behind different APIs, with different access rules. World Wide Law is building the open infrastructure to collect, normalize, and make all of it searchable.
 
@@ -9,11 +9,11 @@ All sources in this repository are **open data** -- publicly available legal inf
 ## Live Dashboard & API
 
 - **Dashboard**: [legaldatahunter.com](https://legaldatahunter.com) -- track coverage, explore sources, submit feedback
-- **Search API**: Available at [legaldatahunter.com](https://legaldatahunter.com) -- search across 14M+ indexed legal documents
+- **Search API**: Available at [legaldatahunter.com](https://legaldatahunter.com) -- search across 16M+ indexed legal documents
 
 ## What's Here
 
-This repository contains **243 collection scripts** across 50+ countries that download and normalize open legal data from government portals worldwide. Each script follows a standard interface so that any developer can run, test, or improve it. Some sources are marked as blocked (CAPTCHA, IP restrictions, etc.) -- their scripts are included so developers can review and potentially contribute fixes.
+This repository contains **960+ collection scripts** across 110+ countries that download and normalize open legal data from government portals worldwide. Each script follows a standard interface so that any developer can run, test, or improve it. Some sources are marked as blocked (CAPTCHA, IP restrictions, etc.) -- their scripts are included so developers can review and potentially contribute fixes.
 
 ```
 sources/
@@ -21,7 +21,7 @@ sources/
   DE/GesetzeImInternet/   # German federal laws (bulk XML)
   IT/NormattivaLegislation/ # Italian legislation (API)
   ES/BOE/                 # Spanish official gazette (API)
-  ... (50+ countries)
+  ... (110+ countries)
 ```
 
 ## Quick Start
@@ -80,7 +80,7 @@ Every script normalizes documents to a common schema:
 
 ```
 legal-sources/
-  manifest.yaml          # Master inventory: all 227 sources + status
+  manifest.yaml          # Master inventory: all sources + status
   runner.py              # CLI: run, test, and manage collection scripts
   common/                # Shared libraries
     base_scraper.py        Base class all scripts inherit from
@@ -104,13 +104,25 @@ legal-sources/
 | EFTA / EEA | CH, NO, IS, LI | 10+ |
 | Council of Europe | UK, TR, UA, GE, AM, AZ, MD | 20+ |
 | Western Balkans | RS, BA, ME, AL, MK, XK | 15+ |
-| Other | US, CA, AR, TW, EG | 10+ |
+| Latin America | AR, BR, CL, CO, MX, PE | 25+ |
+| Asia-Pacific | AU, JP, KR, NZ, SG, TW, IN | 30+ |
+| Middle East & Africa | EG, MA, ZA, NG, KE, TN | 20+ |
+| Other | US, CA, and more | 15+ |
 
 Track live progress on the [dashboard](https://legaldatahunter.com).
 
 ## Contributing
 
 We welcome contributions from developers, legal researchers, and **especially governments** who want their open legal data included.
+
+### Who can contribute?
+
+| You are... | How you can help |
+|---|---|
+| **Developer** | Build or fix collection scripts, add retrieve scripts, improve tooling |
+| **Government official / jurisdiction lead** | Tell us about your country's legal data portals — no coding needed |
+| **Lawyer / legal researcher** | Validate data quality, improve legal reference resolution, flag coverage gaps |
+| **Anyone** | Report data quality issues, broken sources, or coverage gaps |
 
 **Submit a data source** (no coding required):
 - [Open a "New Source" issue](https://github.com/worldwidelaw/legal-sources/issues/new?template=new-source.yml) and tell us about your country's legal data portal
@@ -121,6 +133,8 @@ We welcome contributions from developers, legal researchers, and **especially go
 **Report a problem**:
 - [Data quality issue](https://github.com/worldwidelaw/legal-sources/issues/new?template=data-quality.yml) -- missing or incorrect data
 - [Bug report](https://github.com/worldwidelaw/legal-sources/issues/new?template=bug-report.yml) -- broken script
+
+**Good first issues**: Browse [`label:good-first-issue`](https://github.com/worldwidelaw/legal-sources/issues?q=label%3Agood-first-issue) for approachable starting points.
 
 ## License
 
