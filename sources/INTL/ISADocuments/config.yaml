@@ -1,0 +1,29 @@
+source:
+  id: INTL/ISADocuments
+  name: International Seabed Authority Documents & National Legislation
+  country: INTL
+  url: https://isa.org.jm
+  data_types:
+    - legislation
+  auth: none
+  language: en
+  description: |
+    ISA official documents (Council decisions, Assembly resolutions, LTC reports)
+    and National Legislation Database (deep seabed mining laws from member states).
+    ~400 session documents via WordPress REST API + ~50 national laws via PDF.
+    Full text extracted from PDF attachments using pypdf.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - doc_symbol
+    - doc_type
+
+fetch:
+  method: wp_rest_api_and_pdf
+  api_url: https://isa.org.jm/wp-json/wp/v2/documents
+  national_legislation_url: https://isa.org.jm/national-legislation-database/
+  rate_limit_seconds: 2

@@ -1,0 +1,34 @@
+source:
+  id: MD/CurteaConstitutionala
+  name: Moldova Constitutional Court (Curtea Constituțională)
+  country: MD
+  data_types:
+    - case_law
+  language: ro
+  url: https://www.constcourt.md
+  license: Open Data
+  notes: >
+    5,721 documents (1995-present): judgments (hotărîri), decisions (decizii),
+    referrals (sesizări), opinions (avize), addresses (adrese).
+    DataTables JSON API for listing, HTML pages for full text.
+    Romanian language. No authentication required.
+
+schema:
+  key_fields:
+    - _id
+    - doc_number
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+
+api:
+  type: datatables_json
+  base_url: https://www.constcourt.md/ccdoc_search_request_test.php
+  format: json+html
+  rate_limit: 2

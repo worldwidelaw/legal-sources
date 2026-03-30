@@ -1,0 +1,63 @@
+# ===================================================================
+# MG/CNLEGIS -- Madagascar National Legislation Center
+# ===================================================================
+# JSON API with full text. ~39,863 documents since 1897.
+# ===================================================================
+
+source:
+  id: "MG/CNLEGIS"
+  country: "MG"
+  name: "Centre National LEGIS - Madagascar"
+  url: "https://cnlegis.gov.mg/"
+  description: |
+    Madagascar national legislation database. ~39,863 documents including
+    laws, decrees, orders, ordinances, and decisions. Full text in French
+    via JSON API (html_fichier_fr field). References since 1897, full texts
+    since 1998. Run by Direction CNLEGIS under the Prime Minister's office.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "2-second delay between requests."
+
+api:
+  type: "json"
+  base_url: "https://cnlegis.gov.mg"
+  endpoints:
+    list_all: "POST /page_data_result_direct_mots (var_pg_limit=OFFSET,LIMIT)"
+  response_format: "json"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "id"
+      description: "Numeric document ID from CNLEGIS"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document subject/description"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document (cleaned from HTML)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the document"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "type_txt"
+      description: "Document type (Loi, Décret, Arrêté, etc.)"
+      type: "string"
+      role: "category"
+      required: true

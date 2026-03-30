@@ -1,0 +1,32 @@
+source:
+  id: NP/LawsOfNepal
+  name: Nepal Law Commission - Laws of Nepal
+  country: NP
+  url: https://lawcommission.gov.np/
+  description: >
+    Official collection of Nepal's prevailing legislation (acts, ordinances,
+    regulations) published by the Nepal Law Commission. Full text extracted
+    from PDFs hosted on the government CDN.
+  data_types:
+    - legislation
+  language: ne
+  auth: none
+  license: Government of Nepal (public domain / open data)
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - _type
+    - _source
+    - _fetched_at
+    - content_id
+    - category
+    - pdf_url

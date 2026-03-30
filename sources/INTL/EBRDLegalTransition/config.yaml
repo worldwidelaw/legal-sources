@@ -1,0 +1,35 @@
+source:
+  id: "INTL/EBRDLegalTransition"
+  name: "EBRD Law in Transition Journal"
+  description: "Legal reform assessments and comparative law reports from EBRD's Law in Transition journal (2011-present)"
+  url: "https://www.ebrd.com/home/what-we-do/policy-and-business-advice/legal-reform/law-in-transition-journal.html"
+  country: "INTL"
+  language: "EN"
+  data_types:
+    - doctrine
+  auth:
+    type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id

@@ -1,0 +1,19 @@
+id: QA/AlMeezan
+name: Qatar Al Meezan Legislation
+country: QA
+url: https://www.almeezan.qa/
+data_types:
+  - legislation
+language: ar
+strategy: id_enumeration
+description: >
+  Qatari legislation from the official Al Meezan legal portal, operated by
+  the Ministry of Justice. Covers laws, decrees, amiri decisions, ministerial
+  orders, and cabinet resolutions from 1954 to present. Arabic full text with
+  some English translations. IDs enumerated from 2284 to ~6500.
+schema:
+  key_fields:
+    - law_type
+    - number
+    - date
+    - status

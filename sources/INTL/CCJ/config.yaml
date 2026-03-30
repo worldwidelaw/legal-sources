@@ -1,0 +1,72 @@
+# ===================================================================
+# INTL/CCJ -- Caribbean Court of Justice
+# ===================================================================
+# ~500+ judgments (Appellate 2005+, Original 2008+). WordPress REST
+# API for PDF discovery, PyMuPDF for text extraction.
+# ===================================================================
+
+source:
+  id: "INTL/CCJ"
+  country: "INTL"
+  name: "Caribbean Court of Justice Judgments"
+  url: "https://ccj.org/judgments-proceedings/"
+  description: |
+    Judgments from the Caribbean Court of Justice, the final appellate
+    court for CARICOM member states and original jurisdiction court for
+    the interpretation of the Revised Treaty of Chaguaramas. Covers
+    appellate jurisdiction (2005+) and original jurisdiction (2008+).
+    Full text extracted from PDFs via WordPress media API.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "ninja_tables_ajax_pdf"
+  ajax_url: "https://ccj.org/wp-admin/admin-ajax.php"
+  aj_table_id: "8856"
+  oj_table_id: "18497"
+  note: "Judgment listings via Ninja Tables AJAX, PDFs downloaded and text extracted"
+
+data_model:
+  type: "case_law"
+  primary_key: "citation"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "title"
+      description: "CCJ citation (e.g., '[2025] CCJ 5 (AJ)')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF judgment"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Upload/publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "citation"
+      description: "Formal CCJ citation"
+      type: "string"
+      role: "identifier"
+      required: true
+
+notes: |
+  - Ninja Tables AJAX endpoints provide structured judgment metadata (parties, dates, citations)
+  - AJ table ID 8856 (235 records), OJ table ID 18497 (41 records)
+  - AJ = Appellate Jurisdiction, OJ = Original Jurisdiction
+  - Country codes: BB=Barbados, GY=Guyana, BZ=Belize, TT=Trinidad & Tobago, etc.
+  - Text extracted via PyMuPDF from PDF downloads
+  - Some older AJ PDFs return 404 (domain migration from caribbeancourtofjustice.org)

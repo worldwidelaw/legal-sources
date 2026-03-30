@@ -3,7 +3,7 @@
 Chilean Constitutional Court (Tribunal Constitucional)
 
 Fetches constitutional decisions from the TC Chile backend API.
-Full text available as OCR content via the sentenciaByID endpoint.
+Full text available as OCR content via the paginated sentencias endpoint.
 
 Data source: https://buscador.tcchile.cl
 License: Public Domain
@@ -11,7 +11,6 @@ License: Public Domain
 
 import argparse
 import json
-import os
 import re
 import sys
 import time
@@ -19,18 +18,19 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterator, List, Optional
+from typing import Iterator, Optional
 
 SOURCE_ID = "CL/TribunalConstitucional"
 BASE_URL = "https://buscador-backend.tcchile.cl/api"
-RATE_LIMIT = 1.0
+RATE_LIMIT = 2.0
+PAGE_SIZE = 10
 
 # Common Spanish word to retrieve all decisions (API requires non-empty search)
 ENUMERATE_TERM = "que"
 
 
-def api_get(endpoint: str, params: dict = None, timeout: int = 30) -> Optional[dict]:
-    """Make a GET request to the TC Chile API."""
+def api_get(endpoint: str, params: dict = None, timeout: int = 60) -> Optional[dict]:
+    """Make a GET request to the TC Chile API with retry on 429."""
     url = f"{BASE_URL}{endpoint}"
     if params:
         url += "?" + urllib.parse.urlencode(params)
@@ -38,39 +38,36 @@ def api_get(endpoint: str, params: dict = None, timeout: int = 30) -> Optional[d
         'Accept': 'application/json',
         'User-Agent': 'Legal Data Hunter/1.0 (Legal Research)',
     })
-    try:
-        resp = urllib.request.urlopen(req, timeout=timeout)
-        return json.loads(resp.read().decode('utf-8'))
-    except urllib.error.HTTPError as e:
-        print(f"  API error {e.code} for {endpoint}")
-        return None
-    except Exception as e:
-        print(f"  Request error: {e}")
-        return None
+    for attempt in range(4):
+        try:
+            resp = urllib.request.urlopen(req, timeout=timeout)
+            return json.loads(resp.read().decode('utf-8'))
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and attempt < 3:
+                backoff = (attempt + 1) * 5
+                print(f"  429 rate limited, backing off {backoff}s (attempt {attempt+1}/4)")
+                time.sleep(backoff)
+                continue
+            print(f"  API error {e.code} for {endpoint}")
+            return None
+        except Exception as e:
+            if attempt < 3:
+                print(f"  Request error (attempt {attempt+1}/4): {e}")
+                time.sleep(2)
+                continue
+            print(f"  Request error: {e}")
+            return None
+    return None
 
 
-def get_all_ids() -> List[int]:
-    """Get all sentencia IDs by searching for a common word."""
-    filter_json = json.dumps({'search': ENUMERATE_TERM, 'page': 1, 'per_page': 1})
-    result = api_get('/extended/sentencias', {'filter': filter_json})
-    if not result:
-        return []
-    all_ids = result.get('data', {}).get('all', [])
-    total = result.get('meta', {}).get('total', 0)
-    print(f"  Total sentencias: {total}, IDs retrieved: {len(all_ids)}")
-    return all_ids
-
-
-def fetch_by_id(sentencia_id: int) -> Optional[dict]:
-    """Fetch a single sentencia by its internal ID."""
-    filter_json = json.dumps({'id': sentencia_id, 'search': ENUMERATE_TERM})
-    result = api_get('/extended/sentenciaByID', {'filter': filter_json}, timeout=60)
-    if not result:
-        return None
-    results = result.get('data', {}).get('results', [])
-    if not results:
-        return None
-    return results[0]
+def fetch_page(page: int, per_page: int = PAGE_SIZE) -> Optional[dict]:
+    """Fetch a page of sentencias with full content."""
+    filter_json = json.dumps({
+        'search': ENUMERATE_TERM,
+        'page': page,
+        'per_page': per_page
+    })
+    return api_get('/extended/sentencias', {'filter': filter_json})
 
 
 def clean_ocr_text(text: str) -> str:
@@ -85,26 +82,51 @@ def clean_ocr_text(text: str) -> str:
     return text.strip()
 
 
+def extract_date_from_content(text: str) -> Optional[str]:
+    """Try to extract a date from the OCR content."""
+    # Look for patterns like "Santiago, veintiuno de marzo de dos mil veinticinco"
+    # or "Santiago, 21 de marzo de 2025"
+    m = re.search(
+        r'(\d{1,2})\s+de\s+'
+        r'(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)'
+        r'\s+de\s+(\d{4})',
+        text[:3000], re.IGNORECASE
+    )
+    if m:
+        day = int(m.group(1))
+        months = {
+            'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4,
+            'mayo': 5, 'junio': 6, 'julio': 7, 'agosto': 8,
+            'septiembre': 9, 'octubre': 10, 'noviembre': 11, 'diciembre': 12
+        }
+        month = months.get(m.group(2).lower())
+        year = int(m.group(3))
+        if month and 1900 < year < 2100 and 1 <= day <= 31:
+            return f"{year}-{month:02d}-{day:02d}"
+    return None
+
+
 def normalize(raw: dict) -> dict:
     """Transform raw sentencia data into standard schema."""
-    rol = str(raw.get('rol', '') or raw.get('title', ''))
-    sentence_id = raw.get('sentence_id') or raw.get('id', '')
+    rol = str(raw.get('rol', '') or raw.get('id', ''))
+    sentence_id = raw.get('sentence_id', '')
     doc_id = f"CL_TC_{rol}"
 
     content = raw.get('content', '')
     text = clean_ocr_text(content)
 
-    # Extract date from 'created' field
-    created = raw.get('created') or raw.get('created_date', '')
-    date_str = created[:10] if created else None
+    # Try to extract date from content
+    date_str = extract_date_from_content(content)
 
     # Build title
-    competencia = raw.get('competencia', '') or raw.get('competenciaShortName', '')
+    competencia = raw.get('competencia', '') or ''
+    short_name = raw.get('competenciaShortName', '') or ''
+    comp_display = competencia or (short_name if short_name != 'None' else '')
     title = f"Rol {rol}"
-    if competencia:
-        title += f" — {competencia}"
+    if comp_display:
+        title += f" — {comp_display}"
 
-    url = f"https://buscador.tcchile.cl/sentencia/{rol}"
+    url = f"https://buscador.tcchile.cl/sentencia/{urllib.parse.quote(rol)}"
 
     return {
         "_id": doc_id,
@@ -116,39 +138,61 @@ def normalize(raw: dict) -> dict:
         "date": date_str,
         "url": url,
         "rol": rol,
-        "competencia": competencia,
-        "page_count": raw.get('page_count'),
+        "sentence_id": sentence_id,
+        "competencia": comp_display,
     }
 
 
-def fetch_all() -> Iterator[dict]:
-    """Fetch all available sentencias with full text."""
-    print("Getting all sentencia IDs...")
-    all_ids = get_all_ids()
-    if not all_ids:
-        print("ERROR: No IDs retrieved")
-        return
+def fetch_all(max_docs: int = None) -> Iterator[dict]:
+    """Fetch all available sentencias with full text via pagination."""
+    print("Fetching sentencias via paginated API...")
 
-    total = len(all_ids)
+    # Get total count first
+    result = fetch_page(1, per_page=1)
+    if not result:
+        print("ERROR: Cannot reach API")
+        return
+    meta = result.get('meta', {})
+    total = meta.get('total', 0)
+    last_page = meta.get('last_page', 1)
+    print(f"  Total sentencias: {total}, pages: {last_page}")
+
     fetched = 0
     skipped = 0
+    seen_ids = set()
 
-    for i, sid in enumerate(all_ids):
-        if i % 50 == 0:
-            print(f"  Progress: {i}/{total} (fetched={fetched}, skipped={skipped})")
+    for page in range(1, last_page + 1):
+        if max_docs and fetched >= max_docs:
+            break
 
-        raw = fetch_by_id(sid)
-        if not raw:
-            skipped += 1
+        result = fetch_page(page, per_page=PAGE_SIZE)
+        if not result:
+            print(f"  Page {page} failed, skipping")
             time.sleep(RATE_LIMIT)
             continue
 
-        record = normalize(raw)
-        if len(record.get('text', '')) >= 100:
-            yield record
-            fetched += 1
-        else:
-            skipped += 1
+        results = result.get('data', {}).get('results', [])
+        if not results:
+            break
+
+        for raw in results:
+            if max_docs and fetched >= max_docs:
+                break
+
+            sid = raw.get('sentence_id', '')
+            if sid in seen_ids:
+                continue
+            seen_ids.add(sid)
+
+            record = normalize(raw)
+            if len(record.get('text', '')) >= 100:
+                yield record
+                fetched += 1
+            else:
+                skipped += 1
+
+        if page % 10 == 0:
+            print(f"  Page {page}/{last_page} (fetched={fetched}, skipped={skipped})")
 
         time.sleep(RATE_LIMIT)
 
@@ -156,64 +200,22 @@ def fetch_all() -> Iterator[dict]:
 
 
 def fetch_updates(since: datetime) -> Iterator[dict]:
-    """Fetch sentencias modified since a given date."""
-    all_ids = get_all_ids()
+    """Fetch all sentencias and filter by extracted date."""
     since_str = since.isoformat()[:10]
-
-    for sid in all_ids:
-        raw = fetch_by_id(sid)
-        if not raw:
-            time.sleep(RATE_LIMIT)
-            continue
-
-        modified = raw.get('modified', '') or ''
-        created = raw.get('created', '') or ''
-        if modified[:10] >= since_str or created[:10] >= since_str:
-            record = normalize(raw)
-            if len(record.get('text', '')) >= 100:
-                yield record
-
-        time.sleep(RATE_LIMIT)
+    for record in fetch_all():
+        if record.get('date') and record['date'] >= since_str:
+            yield record
 
 
 def bootstrap_sample(sample_dir: Path, count: int = 15):
     """Fetch sample records for validation."""
     sample_dir.mkdir(parents=True, exist_ok=True)
 
-    print("Getting all sentencia IDs...")
-    all_ids = get_all_ids()
-    if not all_ids:
-        print("ERROR: No IDs retrieved")
-        return
-
-    # Sample evenly from the list (IDs are sorted by recency)
-    total = len(all_ids)
-    step = max(1, total // count)
-    sample_ids = [all_ids[i * step] for i in range(min(count, total))]
-
     records_saved = 0
     total_text_chars = 0
 
-    for sid in sample_ids:
-        if records_saved >= count:
-            break
-
-        print(f"\n  Fetching sentencia ID {sid}...")
-        raw = fetch_by_id(sid)
-        if not raw:
-            print(f"    Not found, skipping")
-            time.sleep(RATE_LIMIT)
-            continue
-
-        record = normalize(raw)
-        text_len = len(record.get('text', ''))
-
-        if text_len < 100:
-            print(f"    Text too short ({text_len} chars), skipping")
-            time.sleep(RATE_LIMIT)
-            continue
-
-        total_text_chars += text_len
+    for record in fetch_all(max_docs=count):
+        total_text_chars += len(record.get('text', ''))
 
         filename = f"record_{records_saved:04d}.json"
         filepath = sample_dir / filename
@@ -222,12 +224,9 @@ def bootstrap_sample(sample_dir: Path, count: int = 15):
 
         print(f"    Saved: {filename}")
         print(f"    Rol: {record.get('rol', '')}")
-        print(f"    Competencia: {record.get('competencia', '')[:60]}")
-        print(f"    Date: {record.get('date', '')}")
-        print(f"    Text: {text_len:,} chars")
+        print(f"    Date: {record.get('date', 'N/A')}")
+        print(f"    Text: {len(record.get('text', '')):,} chars")
         records_saved += 1
-
-        time.sleep(RATE_LIMIT)
 
     # Print summary
     print("\n" + "=" * 60)
@@ -241,9 +240,9 @@ def bootstrap_sample(sample_dir: Path, count: int = 15):
     print(f"Sample directory: {sample_dir}")
 
     if records_saved >= 10:
-        print("\n✓ SUCCESS: 10+ sample records with full text")
+        print("\nSUCCESS: 10+ sample records with full text")
     else:
-        print(f"\n✗ WARNING: Only {records_saved} records saved (need 10+)")
+        print(f"\nWARNING: Only {records_saved} records saved (need 10+)")
 
 
 def main():
@@ -268,11 +267,11 @@ def main():
             bootstrap_sample(sample_dir, args.count)
         else:
             print("Running full bootstrap...")
+            sample_dir.mkdir(parents=True, exist_ok=True)
             records_saved = 0
             for record in fetch_all():
                 safe_id = re.sub(r'[^a-zA-Z0-9_-]', '_', record['_id'])[:100]
                 filepath = sample_dir / f"{safe_id}.json"
-                filepath.parent.mkdir(parents=True, exist_ok=True)
                 with open(filepath, 'w', encoding='utf-8') as f:
                     json.dump(record, f, ensure_ascii=False, indent=2)
                 records_saved += 1

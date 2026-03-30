@@ -1,0 +1,79 @@
+# ===================================================================
+# INTL/WIPOLex-Judgments -- WIPO Lex IP Judicial Decisions
+# ===================================================================
+# 2,300+ leading IP judicial decisions from 46 jurisdictions worldwide.
+# Full text extracted from detail pages. HTML scraping of official WIPO site.
+# ===================================================================
+
+source:
+  id: "INTL/WIPOLex-Judgments"
+  country: "INTL"
+  name: "WIPO Lex - IP Judgments Collection"
+  url: "https://www.wipo.int/wipolex/en/main/judgments"
+  description: |
+    WIPO Lex Judgments provides free access to leading intellectual property
+    judicial decisions from courts worldwide (46 jurisdictions). Covers patents,
+    copyrights, trademarks, designs, trade secrets, and related IP subject
+    matters. Full text and machine translations available.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scrape"
+  results_url: "https://www.wipo.int/wipolex/en/judgments/results?countryOrg={country}"
+  detail_url: "https://www.wipo.int/wipolex/en/judgments/details/{id}"
+  text_url: "https://www.wipo.int/wipolex/en/text/{id}"
+
+data_model:
+  type: "case_law"
+  primary_key: "judgment_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "judgment_id"
+      description: "WIPO Lex judgment detail ID (numeric)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "text"
+      description: "Full text of the judicial decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "title"
+      description: "Title of the judgment"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "jurisdiction"
+      description: "Country or organization code"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "subject_matter"
+      description: "IP subject categories"
+      type: "string"
+      role: "content"
+      required: false
+
+notes: |
+  - Results page per country loads all judgments for that jurisdiction
+  - Detail pages contain metadata and links to text pages
+  - Text pages embed full text in HTML (inline content)
+  - Some texts are PDF-only (signed CloudFront URLs) - skipped
+  - 46 jurisdictions, ~2,300 judgments total

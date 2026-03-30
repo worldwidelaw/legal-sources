@@ -1,0 +1,30 @@
+id: PY/CSJJurisprudencia
+name: Paraguay Supreme Court Jurisprudence
+country: PY
+url: https://www.csj.gov.py/jurisprudencia/
+data_types:
+  - case_law
+auth: none
+license: Open Government Data (Paraguay)
+schedule: monthly
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+    - resolution_type
+    - resolution_number
+    - year
+    - chamber
+    - subject_matter
+
+notes: >
+  Paraguay Supreme Court and appellate court decisions since 1995.
+  ASP.NET MVC app with DataTables server-side pagination.
+  Full text extracted from PDF documents via PyPDF2.
+  ~70,000 decisions available. Requires session-based search flow.

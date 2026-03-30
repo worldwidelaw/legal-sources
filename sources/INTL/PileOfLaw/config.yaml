@@ -1,0 +1,70 @@
+# ===================================================================
+# INTL/PileOfLaw -- Pile of Law NLP Corpus (Selected Subsets)
+# ===================================================================
+# Selected subsets from the 256GB Pile of Law dataset on HuggingFace.
+# Only downloading small, non-overlapping subsets (~30MB total).
+# ===================================================================
+
+source:
+  id: "INTL/PileOfLaw"
+  country: "INTL"
+  name: "Pile of Law (256GB Legal NLP Corpus)"
+  url: "https://pile-of-law.github.io/"
+  description: |
+    Selected subsets from the Pile of Law open legal NLP corpus.
+    Full dataset is 256GB; we download only ~30MB of selected subsets:
+    constitutions (139 docs), olc_memos (US OLC opinions),
+    un_debates (UN General Assembly transcripts).
+    CC-BY-NC-SA-4.0 license.
+
+data_types:
+  - legislation
+  - case_law
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "bulk_jsonl"
+  base_url: "https://huggingface.co/datasets/pile-of-law/pile-of-law"
+  format: "jsonl.xz"
+
+data_model:
+  type: "mixed"
+  primary_key: "url"
+  update_strategy: "full_replace"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "title"
+      description: "Document title (extracted from text)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date (when available)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "subset"
+      description: "Pile of Law subset name"
+      type: "string"
+      role: "metadata"
+      required: true
+
+notes: |
+  - Only 3 of 45 subsets downloaded to avoid 256GB full corpus
+  - Subsets: constitutions, olc_memos, un_debates
+  - JSONL.XZ compressed format from HuggingFace
+  - CC-BY-NC-SA-4.0 license (non-commercial)

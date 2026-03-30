@@ -1,0 +1,29 @@
+source:
+  id: MA/AdalaJustice
+  name: Morocco Adala Justice Portal
+  country: MA
+  url: https://adala.justice.gov.ma/
+  description: >
+    7,532 Moroccan legal texts from the Ministry of Justice Adala portal.
+    Covers legislation (dahirs, decrees, laws), circulars, royal speeches,
+    international conventions. PDFs with text extraction. Arabic and French.
+  data_types:
+    - legislation
+  auth: none
+  license: open
+
+schema:
+  key_fields:
+    - _id
+    - text
+    - date
+    - law_type
+    - theme
+
+fetch:
+  method: api
+  base_url: https://adala.justice.gov.ma/api/files/search
+  format: json+pdf
+  rate_limit:
+    requests_per_second: 2
+    burst: 5

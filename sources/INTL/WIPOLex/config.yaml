@@ -1,0 +1,79 @@
+# ===================================================================
+# INTL/WIPOLex -- WIPO Lex Global IP Law Database
+# ===================================================================
+# 50,000+ IP laws and regulations from 200+ jurisdictions worldwide.
+# Full text embedded in detail pages. HTML scraping of official WIPO site.
+# ===================================================================
+
+source:
+  id: "INTL/WIPOLex"
+  country: "INTL"
+  name: "WIPO Lex - Global IP Law Database"
+  url: "https://www.wipo.int/wipolex/en/"
+  description: |
+    WIPO Lex provides free access to intellectual property laws and
+    regulations from 200+ jurisdictions worldwide. Covers patents,
+    copyrights, trademarks, designs, trade secrets, and related IP
+    subject matters. Full text of legislation is embedded in detail pages.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scrape"
+  members_url: "https://www.wipo.int/wipolex/en/legislation/members"
+  results_url: "https://www.wipo.int/wipolex/en/legislation/results?countryOrgs={country}&last=true"
+  detail_url: "https://www.wipo.int/wipolex/en/legislation/details/{id}"
+
+data_model:
+  type: "legislation"
+  primary_key: "wipolex_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "wipolex_id"
+      description: "WIPO Lex document ID (numeric)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "title"
+      description: "Title of the law or regulation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Enactment or amendment date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "jurisdiction"
+      description: "Country or organization code"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "subject_matter"
+      description: "IP subject categories (patents, copyright, etc.)"
+      type: "string"
+      role: "content"
+      required: false
+
+notes: |
+  - Members page lists ~200 jurisdictions with country codes
+  - Results page per country loads all legislation without pagination
+  - Detail pages embed full text in HTML (no AJAX loading)
+  - PDFs available but signed with AWS CloudFront (temporary URLs)
+  - Some documents have multiple language versions

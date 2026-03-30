@@ -1,0 +1,76 @@
+# ===================================================================
+# CD/Leganet -- DRC (Congo) Legislation Portal
+# ===================================================================
+# Static HTML site with full-text legislation documents.
+# No API; crawl category index pages for document links.
+# ===================================================================
+
+source:
+  id: "CD/Leganet"
+  country: "CD"
+  name: "DRC (Congo) Legislation Portal"
+  url: "https://www.leganet.cd/"
+  description: |
+    DRC legislation from 1886 to present. Static HTML site maintained by
+    Partenariat pour le développement social (PPDS). Full text in HTML pages.
+    ~2,200 HTML documents across 8 legal categories. French language.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "Static site with ModSecurity WAF. 2-second delay between requests."
+
+api:
+  type: "scraping"
+  base_url: "https://www.leganet.cd"
+  endpoints:
+    categories: "/Legislation/Tables/{category}.htm"
+    document: "/Legislation/{path}"
+  response_format: "html"
+
+data_model:
+  type: "legislation"
+  primary_key: "document_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "document_id"
+      description: "Unique document ID derived from URL path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title from page title tag"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date from document title"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Document URL"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - 8 legal categories: civil, economic, judicial, penal, public, social, fiscal, provinces
+  - Documents are static HTML pages in windows-1252 encoding
+  - ModSecurity WAF requires browser-like User-Agent
+  - URLs contain spaces and accented characters (need careful encoding)
+  - Coverage: 1886 to 2023

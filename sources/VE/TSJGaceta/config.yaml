@@ -1,0 +1,36 @@
+source:
+  id: "VE/TSJGaceta"
+  name: "Venezuela Legislation (via Justia)"
+  country: "VE"
+  url: "https://venezuela.justia.com/federales/"
+  data_types:
+    - legislation
+  auth: none
+  license: "Public Venezuelan legislation / Justia"
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+    - category
+
+fetch:
+  base_url: "https://venezuela.justia.com"
+  categories:
+    - leyes
+    - decretos
+    - reglamentos
+    - resoluciones
+    - codigos
+  delay_seconds: 2
+
+notes: |
+  TSJ (tsj.gob.ve) has legislation only as PDFs. Justia Venezuela mirrors
+  ~553 Venezuelan legal documents with full text in HTML (noframes tags).
+  Categories: laws (314), decrees (155), regulations (60), resolutions (13),
+  codes (11). Text in Spanish.

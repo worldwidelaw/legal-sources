@@ -1,0 +1,63 @@
+# ===================================================================
+# NA/NamibLII -- Namibia Legal Information Institute
+# ===================================================================
+# Akoma Ntoso / Laws.Africa PeachJam platform scraping.
+# Consolidated legislation with full text (~2,316 docs).
+# ===================================================================
+
+source:
+  id: "NA/NamibLII"
+  country: "NA"
+  name: "Namibia Legal Information Institute"
+  url: "https://namiblii.org/"
+  description: |
+    Namibia consolidated legislation via NamibLII (Laws.Africa/AfricanLII).
+    ~2,316 legislative documents with Akoma Ntoso full text. English language.
+    Judgments disallowed by robots.txt.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.2
+  burst: 1
+  notes: "5-second crawl delay per robots.txt."
+
+api:
+  type: "scraping"
+  base_url: "https://namiblii.org"
+  endpoints:
+    legislation: "/legislation/all?page={page}"
+  response_format: "html"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "document_id"
+      description: "Document ID from AKN path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of enactment or consolidation"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Document URL on NamibLII"
+      type: "string"
+      role: "reference"
+      required: true

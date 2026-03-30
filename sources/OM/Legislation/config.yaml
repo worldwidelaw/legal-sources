@@ -1,0 +1,28 @@
+source_id: OM/Legislation
+name: Oman Legal Database (qanoon.om)
+country: OM
+url: https://qanoon.om/
+language: ar
+data_types:
+  - legislation
+auth: none
+method: api
+api:
+  type: wordpress_rest
+  base_url: https://qanoon.om/wp-json/wp/v2
+  endpoints:
+    posts: /posts
+    categories: /categories
+  pagination:
+    type: page
+    per_page: 100
+  rate_limit: 1.5
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - legislation_type
+    - legislation_year

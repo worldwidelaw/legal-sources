@@ -1,0 +1,18 @@
+id: QA/AlMeezanCaseLaw
+name: Qatar Al Meezan Case Law Database
+country: QA
+url: https://www.almeezan.qa/
+data_types:
+  - case_law
+language: ar
+strategy: id_enumeration
+description: >
+  Court of Cassation decisions from Qatar's official Al Meezan legal portal.
+  Operated by the Ministry of Justice. Arabic full text with some English translations.
+  IDs enumerated from 1 to ~1931.
+schema:
+  key_fields:
+    - ruling_number
+    - year
+    - court
+    - circuit

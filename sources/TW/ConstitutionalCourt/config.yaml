@@ -1,0 +1,86 @@
+# ===================================================================
+# TW/ConstitutionalCourt -- Constitutional Court of Taiwan (R.O.C.)
+# ===================================================================
+# Scrapes constitutional interpretations (1949-2021) and judgments
+# (2022+) from the official Constitutional Court website.
+# English translations available for most documents.
+# ===================================================================
+
+source:
+  id: "TW/ConstitutionalCourt"
+  country: "TW"
+  name: "Constitutional Court of Taiwan (R.O.C.)"
+  url: "https://cons.judicial.gov.tw/en/"
+  description: |
+    Taiwan's Constitutional Court (formerly Grand Justices of the Judicial Yuan).
+    Contains 813 constitutional interpretations (1949-2021) and 42+ constitutional
+    judgments (2022 onwards, after the 2022 Constitutional Court Procedure Act).
+    English translations available for most documents. Full text including
+    issue, holding, and reasoning sections.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://cons.judicial.gov.tw"
+  endpoints:
+    interpretations_list: "/en/docdata.aspx?fid=2173&page={page}&tab=1"
+    interpretation_detail: "/en/docdata.aspx?fid=100&id={id}"
+    judgments_list: "/en/docdata.aspx?fid=5534&page={page}"
+    judgment_detail: "/en/docdata.aspx?fid=5534&id={id}"
+
+data_model:
+  type: "case_law"
+  primary_key: "decision_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "decision_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "decision_id"
+      description: "Decision identifier (e.g., 'Interpretation-371' or '111-Hsien-Pan-1')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case name or interpretation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text including issue, holding, and reasoning"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of announcement"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL on cons.judicial.gov.tw"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "decision_type"
+      description: "Type: 'interpretation' (pre-2022) or 'judgment' (2022+)"
+      type: "string"
+      role: "classification"
+      required: true
+
+notes: |
+  - 813 constitutional interpretations (1949-2021) + 42+ judgments (2022+)
+  - English translations available; some recent interpretations marked "Under Translation"
+  - Interpretations have: Issue, Holding, Reasoning sections
+  - Judgments have: Judgment No., Case Name, Holding, Reasoning sections
+  - Language: English (with some gaps for untranslated items)

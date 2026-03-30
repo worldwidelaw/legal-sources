@@ -1,0 +1,45 @@
+id: NO/Lagmannsrett
+name: Norwegian Courts of Appeal (Lagmannsretter)
+country: "NO"
+url: https://lovdata.no/register/avgjørelser
+description: >
+  Norwegian Courts of Appeal decisions from Lovdata. Covers 6 lagmannsretter
+  (Borgarting, Gulating, Hålogaland, Agder, Eidsivating, Frostating) from 2008+.
+  Full text HTML. NLOD 2.0 license.
+data_types:
+  - case_law
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: court
+      type: string
+      required: false

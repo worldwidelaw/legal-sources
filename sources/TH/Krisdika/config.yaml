@@ -1,0 +1,17 @@
+source:
+  id: TH/Krisdika
+  name: Office of the Council of State (Krisdika) Thai Laws
+  country: TH
+  url: https://huggingface.co/datasets/pythainlp/thailaw
+  data_types:
+    - legislation
+  auth: none
+  license: CC0 1.0
+  rate_limit: 0
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - sysid

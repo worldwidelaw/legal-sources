@@ -1,0 +1,62 @@
+# ===================================================================
+# MU/MauritiusLII -- Mauritius Legal Information Institute
+# ===================================================================
+# Akoma Ntoso / Laws.Africa PeachJam platform scraping.
+# Consolidated legislation with full text (~470 acts).
+# ===================================================================
+
+source:
+  id: "MU/MauritiusLII"
+  country: "MU"
+  name: "Mauritius Legal Information Institute"
+  url: "https://mauritiuslii.org/"
+  description: |
+    Mauritius consolidated legislation via MauritiusLII (Laws.Africa/AfricanLII).
+    ~470 legislative acts with Akoma Ntoso full text. English language.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.2
+  burst: 1
+  notes: "5-second crawl delay per robots.txt."
+
+api:
+  type: "scraping"
+  base_url: "https://mauritiuslii.org"
+  endpoints:
+    legislation: "/legislation/all?page={page}"
+  response_format: "html"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "document_id"
+      description: "Document ID from AKN path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of enactment or consolidation"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Document URL on MauritiusLII"
+      type: "string"
+      role: "reference"
+      required: true

@@ -1,0 +1,68 @@
+# ===================================================================
+# INTL/PCIJ -- Permanent Court of International Justice (CD-PCIJ)
+# ===================================================================
+# All published decisions (1922-1940) in machine-readable format.
+# Judgments, advisory opinions, orders from Zenodo open access.
+# ===================================================================
+
+source:
+  id: "INTL/PCIJ"
+  country: "INTL"
+  name: "Permanent Court of International Justice (CD-PCIJ via Zenodo)"
+  url: "https://zenodo.org/records/3840480"
+  description: |
+    Corpus of Decisions of the Permanent Court of International Justice (PCIJ).
+    259 documents from 1922-1940: judgments, advisory opinions, orders,
+    applications, annexes. OCR'd full text from Zenodo bulk CSV download.
+    CC0 license.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "bulk_csv"
+  base_url: "https://zenodo.org/api/records/3840480"
+  download_url: "https://zenodo.org/api/records/3840480/files/CD-PCIJ_1-0-0_EN_CSV_TESSERACT_FULL.zip/content"
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_id"
+  update_strategy: "full_replace"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "title"
+      description: "Case title (full name or short name)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the court decision (OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "court"
+      description: "Court (PCIJ)"
+      type: "string"
+      role: "metadata"
+      required: true
+
+notes: |
+  - Bulk CSV from Zenodo (~2MB compressed, 259 documents)
+  - OCR text via Tesseract (may have minor quality issues)
+  - Document types: JUD (judgment), ADV (advisory opinion), ORD (order),
+    APP (application), DEC (declaration), ANX (annex)
+  - CC0 licensed open access dataset

@@ -1,0 +1,65 @@
+# ===================================================================
+# LR/LiberLII -- Liberia Legal Information Institute
+# ===================================================================
+# HTML scraping of LiberLII court and legislation databases.
+# Full text in HTML. AustLII-powered platform.
+# ===================================================================
+
+source:
+  id: "LR/LiberLII"
+  country: "LR"
+  name: "Liberia Legal Information Institute"
+  url: "http://www.liberlii.org/"
+  description: |
+    Liberian legal data via LiberLII. ~4,100 documents: Supreme Court
+    decisions (1861-2017), Codes of Laws, Legislative Acts, Constitutions,
+    Executive Orders, and Court Rules. Full text in HTML.
+
+data_types:
+  - case_law
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "2-second delay between requests. Browser User-Agent required. HTTP only (no HTTPS)."
+
+api:
+  type: "scraping"
+  base_url: "http://www.liberlii.org"
+  endpoints:
+    cases: "/lr/cases/LRSC/{year}/"
+    legislation: "/lr/legis/{db}/toc-{letter}.html"
+  response_format: "html"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "document_id"
+      description: "Unique document ID from URL path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision/enactment date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Document URL on LiberLII"
+      type: "string"
+      role: "reference"
+      required: true

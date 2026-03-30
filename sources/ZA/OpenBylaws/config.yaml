@@ -1,0 +1,82 @@
+# ===================================================================
+# ZA/OpenBylaws -- South Africa Open By-laws (Laws.Africa)
+# ===================================================================
+# Municipal by-laws from openbylaws.org.za, part of the LawLibrary.org.za
+# platform. Full text served as server-rendered Akoma Ntoso HTML.
+# ~367 by-laws across 11 South African municipalities.
+# ===================================================================
+
+source:
+  id: "ZA/OpenBylaws"
+  country: "ZA"
+  name: "South Africa Open By-laws"
+  url: "https://openbylaws.org.za"
+  description: |
+    South African municipal by-laws from openbylaws.org.za, operated by
+    Laws.Africa / AfricanLII. Full text rendered as structured Akoma Ntoso
+    HTML. Covers 11 municipalities including Cape Town, Johannesburg,
+    Durban (eThekwini), and others. ~367 by-laws total.
+    License: CC BY-NC 4.0.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 5
+
+api:
+  type: "html_scrape"
+  listing_url: "https://openbylaws.org.za/legislation/"
+  municipality_pattern: "/legislation/za-{code}/"
+  bylaw_pattern: "/akn/za-{code}/act/by-law/{year}/{slug}/eng@{date}"
+
+data_model:
+  type: "legislation"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Document ID from AKN path (e.g., za-cpt_by-law_2002_community-fire-safety)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Official title of the by-law"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from Akoma Ntoso HTML"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Version date of the by-law"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to the by-law page"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "municipality"
+      description: "Municipality code (e.g., za-cpt, za-jhb)"
+      type: "string"
+      role: "classification"
+      required: true
+
+notes: |
+  - ~367 by-laws across 11 municipalities
+  - Full text as structured Akoma Ntoso HTML (server-rendered, no JS needed)
+  - CC BY-NC 4.0 license (Laws.Africa / AfricanLII)
+  - Part of the Montreal Declaration on Free Access to Law

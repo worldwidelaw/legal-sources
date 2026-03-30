@@ -1,0 +1,32 @@
+source:
+  id: "PT/TribunalContas"
+  name: "Portuguese Court of Auditors (Tribunal de Contas)"
+  country: "PT"
+  url: "https://tcjure.tcontas.pt"
+  description: >
+    Decisions, rulings, and acts from the Portuguese Court of Auditors (Tribunal de Contas).
+    Covers audit reports, jurisprudence (acórdãos, sentenças), and normative acts.
+    Full text via PDF download from tcontas.pt.
+  data_types:
+    - case_law
+  language: "pt"
+  auth:
+    type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+
+data_model:
+  dedup_key:
+    - _id

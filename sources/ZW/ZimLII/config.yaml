@@ -1,0 +1,73 @@
+# ===================================================================
+# ZW/ZimLII -- Zimbabwe Legal Information Institute
+# ===================================================================
+# Zimbabwean legislation from zimlii.org.
+# Akoma Ntoso HTML, no auth required. ~409 acts/ordinances.
+# 5-second crawl delay per robots.txt.
+# Note: Judgments blocked by robots.txt; legislation only.
+# ===================================================================
+
+source:
+  id: "ZW/ZimLII"
+  country: "ZW"
+  name: "Zimbabwe Legal Information Institute (ZimLII)"
+  url: "https://zimlii.org/legislation/"
+  description: |
+    Zimbabwean legislation from the Zimbabwe Legal Information Institute (ZimLII),
+    powered by Laws.Africa / AfricanLII PeachJam platform. Contains acts,
+    ordinances, and statutory instruments from 1860-present. Full text in
+    Akoma Ntoso HTML format. No authentication required.
+    Judgments are blocked by robots.txt.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.2
+  burst: 1
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 6
+  key_fields:
+    - name: "doc_id"
+      description: "Document ID derived from AKN path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act/ordinance title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication/commencement date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL on zimlii.org"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - ~409 acts/ordinances via zimlii.org paginated listing
+  - Full text in Akoma Ntoso HTML (la-akoma-ntoso element)
+  - 5-second crawl delay required per robots.txt
+  - English language
+  - Judgments disallowed by robots.txt; legislation only

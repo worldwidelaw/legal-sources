@@ -1,0 +1,33 @@
+source:
+  id: PA/Legispan
+  name: Legispan - Panama National Assembly Legislation
+  country: PA
+  url: https://legispan.asamblea.gob.pa
+  description: >
+    Official Panama legislation from the National Assembly's Legispan platform.
+    Covers laws, executive decrees, resolutions, and other norms from 1903 to present.
+    57,000+ documents with full text via public REST API.
+  data_types:
+    - legislation
+  language: es
+  auth: none
+  license: Government of Panama (open access)
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - _type
+    - _source
+    - _fetched_at
+    - norm_type
+    - norm_number
+    - authority
+    - year

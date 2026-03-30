@@ -1,0 +1,16 @@
+{
+  "_id": "SHERLOC-CL-CANx159",
+  "_source": "UN/UNODC-SHERLOC",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-30T00:48:34.223478+00:00",
+  "title": "R. v. Hilbach, 2023 SCC 3",
+  "text": "In June 2017, Mr. Hilbach and his 13-year-old accomplice robbed a convenience store in Edmonton with an unloaded sawed-off rifle ( Hilbach , para 20). Mr. Hilbach pointed the weapon at two store employees and demanded cash, while his accomplice punched one employee and kicked the other ( Hilbach , para 20). They escaped with lottery tickets worth $290 before their apprehension. At the time of the offence, Mr. Hilbach was a 19 year old Indigenous man, multi-time offender, on probation, and subject to a firearms prohibition. \n\nHe pleaded guilty to and was convicted of robbery using a prohibited firearm.",
+  "date": "2023-01-27",
+  "url": "https://www.unodc.org/cld/case-law-doc/illicitfirearmscrimetype/can/2023/r._v._hilbach_2023_scc_3.html?lng=en&tmpl=sherloc",
+  "country": "Canada",
+  "country_code": "CAN",
+  "unodc_number": "CANx159",
+  "crime_types": [
+    "Trafficking in firearms"
+  ]
+}

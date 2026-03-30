@@ -46,8 +46,15 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.HK.eLegislation")
 
 BASE_URL = "https://www.elegislation.gov.hk"
-BULK_ZIP_URL = f"{BASE_URL}/opendata/eng_ord_xml.zip"
-ZIP_CACHE = Path("/tmp/hk_leg_sample.zip")
+
+# data.gov.hk mirrors — no JavaScript challenge, direct ZIP download
+BULK_ZIP_URLS = [
+    "https://resource.data.one.gov.hk/doj/data/hkel_c_leg_cap_1_cap_300_en.zip",
+    "https://resource.data.one.gov.hk/doj/data/hkel_c_leg_cap_301_cap_600_en.zip",
+    "https://resource.data.one.gov.hk/doj/data/hkel_c_leg_cap_601_cap_end_en.zip",
+    "https://resource.data.one.gov.hk/doj/data/hkel_c_instruments_en.zip",
+]
+ZIP_CACHE_DIR = Path("/tmp/hk_leg_zips")
 
 # XML namespaces
 NS = {
@@ -79,22 +86,26 @@ class HongKongELegislationScraper(BaseScraper):
             timeout=120,
         )
 
-    def _download_zip(self) -> zipfile.ZipFile:
+    def _download_zip(self, url: str) -> zipfile.ZipFile:
         """Download or use cached ZIP file."""
-        if ZIP_CACHE.exists() and ZIP_CACHE.stat().st_size > 1_000_000:
-            logger.info(f"Using cached ZIP: {ZIP_CACHE} ({ZIP_CACHE.stat().st_size:,} bytes)")
-            return zipfile.ZipFile(ZIP_CACHE)
+        ZIP_CACHE_DIR.mkdir(exist_ok=True)
+        fname = url.rsplit("/", 1)[-1]
+        cache_path = ZIP_CACHE_DIR / fname
 
-        logger.info(f"Downloading bulk ZIP from {BULK_ZIP_URL}...")
-        resp = self.client.session.get(BULK_ZIP_URL, timeout=300, stream=True)
+        if cache_path.exists() and cache_path.stat().st_size > 1_000_000:
+            logger.info(f"Using cached ZIP: {cache_path} ({cache_path.stat().st_size:,} bytes)")
+            return zipfile.ZipFile(cache_path)
+
+        logger.info(f"Downloading {fname}...")
+        resp = self.client.session.get(url, timeout=600, stream=True)
         resp.raise_for_status()
 
-        with open(ZIP_CACHE, "wb") as f:
-            for chunk in resp.iter_content(chunk_size=8192):
+        with open(cache_path, "wb") as f:
+            for chunk in resp.iter_content(chunk_size=65536):
                 f.write(chunk)
 
-        logger.info(f"Downloaded {ZIP_CACHE.stat().st_size:,} bytes to {ZIP_CACHE}")
-        return zipfile.ZipFile(ZIP_CACHE)
+        logger.info(f"Downloaded {cache_path.stat().st_size:,} bytes to {cache_path}")
+        return zipfile.ZipFile(cache_path)
 
     def _extract_text(self, element: ET.Element) -> str:
         """Recursively extract text from an XML element."""
@@ -200,13 +211,13 @@ class HongKongELegislationScraper(BaseScraper):
             "jurisdiction": "HK",
         }
 
-    def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
-        """Fetch all ordinances from the bulk ZIP."""
-        zf = self._download_zip()
+    def _iter_zip(self, url: str, max_records: int = None) -> Generator[Dict[str, Any], None, None]:
+        """Yield normalized records from a single ZIP."""
+        zf = self._download_zip(url)
         xml_files = sorted(
             [n for n in zf.namelist() if n.endswith(".xml")]
         )
-        logger.info(f"Found {len(xml_files)} XML files in ZIP")
+        logger.info(f"Found {len(xml_files)} XML files in {url.rsplit('/', 1)[-1]}")
 
         count = 0
         errors = 0
@@ -228,6 +239,9 @@ class HongKongELegislationScraper(BaseScraper):
             count += 1
             yield normalized
 
+            if max_records and count >= max_records:
+                break
+
             if count % 100 == 0:
                 logger.info(
                     f"Progress: {count} parsed, {errors} errors, "
@@ -235,16 +249,22 @@ class HongKongELegislationScraper(BaseScraper):
                 )
 
         zf.close()
-        logger.info(f"Completed: {count} ordinances, {errors} errors")
+        logger.info(f"ZIP done: {count} ordinances, {errors} errors")
+
+    def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
+        """Fetch all ordinances from all bulk ZIPs."""
+        for url in BULK_ZIP_URLS:
+            yield from self._iter_zip(url)
 
     def fetch_updates(self, since: str = None) -> Generator[Dict[str, Any], None, None]:
         """Re-download ZIP for updates (no incremental API)."""
         yield from self.fetch_all()
 
     def test(self) -> bool:
-        """Quick connectivity test."""
+        """Quick connectivity test using the smallest ZIP."""
         try:
-            zf = self._download_zip()
+            # Use the smallest ZIP (caps 601+) for testing
+            zf = self._download_zip(BULK_ZIP_URLS[2])
             xml_files = [n for n in zf.namelist() if n.endswith(".xml")]
             if not xml_files:
                 logger.error("No XML files in ZIP")
@@ -294,7 +314,13 @@ def main():
         max_records = 15 if args.sample else None
         count = 0
 
-        for record in scraper.fetch_all():
+        if args.sample:
+            # Use smallest ZIP for sample mode
+            gen = scraper._iter_zip(BULK_ZIP_URLS[2], max_records=max_records)
+        else:
+            gen = scraper.fetch_all()
+
+        for record in gen:
             out_path = sample_dir / f"{count:04d}.json"
             with open(out_path, "w", encoding="utf-8") as f:
                 json.dump(record, f, ensure_ascii=False, indent=2)

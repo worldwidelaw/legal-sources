@@ -1,0 +1,59 @@
+source:
+  id: DO/CongresoRD
+  name: Dominican Republic Legislation (Consultoría Jurídica)
+  country: DO
+  url: https://www.consultoria.gov.do/consulta/
+  data_types:
+    - legislation
+  description: |
+    Dominican Republic laws, decrees, resolutions, and regulations from the
+    Consultoría Jurídica del Poder Ejecutivo. ~46,000 documents spanning 1855
+    to present. Full text via PDF extraction. Spanish language. Free access.
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: rest
+  base_url: https://www.consultoria.gov.do
+  format: html_json_pdf
+  endpoints:
+    search: /Consulta/Home/Search?Length=7
+    document_info: /Consulta/Home/DocumentInfo?documentId={id}
+    document_pdf: /Consulta/Home/FileManagement?documentId={id}&managementType=1
+
+schema:
+  key_fields:
+    - name: document_number
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+    - name: document_type
+      type: string
+      required: true
+
+fetch:
+  strategy: search_and_download
+  document_types:
+    - code: 1
+      name: Leyes
+    - code: 3
+      name: Decretos
+    - code: 4
+      name: Reglamentos
+    - code: 5
+      name: Varios
+    - code: 7
+      name: Resoluciones

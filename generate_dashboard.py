@@ -25,6 +25,7 @@ PROJECT_ROOT = Path(__file__).parent
 DOCS_DIR = PROJECT_ROOT / "docs"
 PIPELINE_INDEX = Path.home() / "legal-data-pipeline" / "INDEX.yaml"
 PIPELINE_REPO_URL = "https://github.com/ZachLaik/legal-data-pipeline"
+JURISDICTIONS_FILE = PROJECT_ROOT / "jurisdictions.yaml"
 
 # ─── Neon connection (optional) ───
 # Set NEON_DATABASE_URL env var or create .env in project root.
@@ -86,6 +87,66 @@ COUNTRY_FLAGS = {
     "AD": "\U0001F1E6\U0001F1E9", "MC": "\U0001F1F2\U0001F1E8",
     "SM": "\U0001F1F8\U0001F1F2",
 }
+
+
+
+# ─── Jurisdiction tree (loaded from jurisdictions.yaml) ───
+
+def _load_subdivision_tree():
+    """Load jurisdictions.yaml and build subdivision tree + enrich COUNTRY_NAMES/FLAGS."""
+    subdivision_tree = {}
+    if not JURISDICTIONS_FILE.exists():
+        return subdivision_tree
+    with open(JURISDICTIONS_FILE) as f:
+        data = yaml.safe_load(f) or {}
+    for code, info in data.get("jurisdictions", {}).items():
+        code = str(code)
+        if not isinstance(info, dict):
+            continue
+        if code not in COUNTRY_NAMES:
+            COUNTRY_NAMES[code] = info.get("name", code)
+        if code not in COUNTRY_FLAGS and len(code) == 2 and code.isalpha():
+            COUNTRY_FLAGS[code] = "".join(chr(0x1F1E6 + ord(c) - ord("A")) for c in code.upper())
+        subs = info.get("subdivisions", {})
+        if subs:
+            subdivision_tree[code] = {}
+            for sub_code, sub_info in subs.items():
+                sub_code = str(sub_code)
+                if isinstance(sub_info, dict):
+                    subdivision_tree[code][sub_code] = {
+                        "name": sub_info.get("name", sub_code),
+                        "legally_distinct": sub_info.get("legally_distinct", False),
+                    }
+    return subdivision_tree
+
+
+SUBDIVISION_TREE = _load_subdivision_tree()
+
+
+def _resolve_source_subdivisions(source):
+    """Resolve a source's jurisdictions field to subdivision codes."""
+    jurisdictions = source.get("jurisdictions")
+    country = source.get("country", "")
+    if not jurisdictions:
+        return set(), True
+    own_subs = set()
+    is_country_wide = False
+    country_subs = SUBDIVISION_TREE.get(country, {})
+    for j in jurisdictions:
+        code = j.get("code", "")
+        if code == country:
+            is_country_wide = True
+        elif code.endswith("-*"):
+            parent = code[:-2]
+            if parent == country:
+                is_country_wide = True
+            else:
+                own_subs.update(SUBDIVISION_TREE.get(parent, {}).keys())
+        elif code in country_subs:
+            own_subs.add(code)
+        elif "-" in code:
+            own_subs.add(code)
+    return own_subs, is_country_wide
 
 
 def load_manifest():
@@ -432,6 +493,7 @@ def generate():
     # Summary
     by_status = {}
     by_country = {}
+    subdivision_sources = {}
     for s in sources:
         status = s.get("status", "unknown")
         country = s.get("country", "??")
@@ -452,6 +514,51 @@ def generate():
             by_country[country]["has_consolidated_codes"] = True
             by_country[country]["preferred_legislation_source"] = s.get("id")
 
+        # Resolve subdivision mappings
+        if country in SUBDIVISION_TREE:
+            own_subs, is_country_wide = _resolve_source_subdivisions(s)
+            if country not in subdivision_sources:
+                subdivision_sources[country] = {
+                    sub_code: {"own": [], "inherited": []}
+                    for sub_code in SUBDIVISION_TREE[country]
+                }
+            for sub_code in SUBDIVISION_TREE[country]:
+                if sub_code not in subdivision_sources[country]:
+                    subdivision_sources[country][sub_code] = {"own": [], "inherited": []}
+                if sub_code in own_subs:
+                    subdivision_sources[country][sub_code]["own"].append(s)
+                elif is_country_wide:
+                    subdivision_sources[country][sub_code]["inherited"].append(s)
+
+    # Build subdivisions summary into by_country
+    for country_code, subs_data in subdivision_sources.items():
+        if country_code not in by_country:
+            continue
+        subdivisions = {}
+        for sub_code, sub_info in SUBDIVISION_TREE.get(country_code, {}).items():
+            src_data = subs_data.get(sub_code, {"own": [], "inherited": []})
+            own = src_data["own"]
+            inherited = src_data["inherited"]
+            own_complete = sum(1 for x in own if x.get("status") == "complete")
+            inherited_complete = sum(1 for x in inherited if x.get("status") == "complete")
+            total_src = len(own) + len(inherited)
+            total_cmp = own_complete + inherited_complete
+            if own or inherited:
+                subdivisions[sub_code] = {
+                    "name": sub_info.get("name", sub_code),
+                    "own_sources": len(own),
+                    "inherited_sources": len(inherited),
+                    "own_complete": own_complete,
+                    "inherited_complete": inherited_complete,
+                    "status": (
+                        "complete" if total_cmp == total_src and total_src > 0
+                        else "partial" if total_cmp > 0
+                        else "planned"
+                    ),
+                }
+        if subdivisions:
+            by_country[country_code]["subdivisions"] = subdivisions
+
     total = len(sources)
     complete = by_status.get("complete", 0)
 
@@ -469,6 +576,7 @@ def generate():
             "url": s.get("url", ""),
             "notes": (s.get("notes") or "")[:200],
             "auth": s.get("auth", "none"),
+            "jurisdictions": s.get("jurisdictions"),
         }
         # Add details for non-planned sources
         if s.get("status") != "planned":

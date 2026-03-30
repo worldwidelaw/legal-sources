@@ -1,9 +1,9 @@
 # ===================================================================
 # DK/Retsinformation -- Denmark Official Law Database
 # ===================================================================
-# Harvest API for daily document sync + ELI XML for full text.
-# API: https://api.retsinformation.dk/v1/Documents
-# Rate limit: 1 request per 10 seconds, available 03:00-23:45.
+# Sitemap discovery (192K+ docs) + ELI XML for full text.
+# Updates: harvest API (api.retsinformation.dk/v1/Documents, 1 req/10s, 03:00-23:45)
+# Bootstrap: sitemap pages → ELI /xml endpoint (2s gap).
 # ===================================================================
 
 source:

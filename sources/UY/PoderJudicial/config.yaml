@@ -1,0 +1,26 @@
+source:
+  id: UY/PoderJudicial
+  name: "Base de Jurisprudencia Nacional - Poder Judicial de Uruguay"
+  country: UY
+  url: https://bjn.poderjudicial.gub.uy/
+  data_types:
+    - case_law
+  auth: none
+  description: >
+    Uruguay's national case law database. Supreme Court and appellate court
+    decisions with full text. Session-based JSF/Seam web application scraped
+    via AJAX requests. ~31,000+ decisions.
+
+schema:
+  key_fields:
+    - _id
+    - decision_number
+    - court
+    - title
+    - text
+    - date
+    - url
+
+fetch:
+  rate_limit_delay: 3
+  sample_size: 15

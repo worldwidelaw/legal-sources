@@ -1,0 +1,71 @@
+# ===================================================================
+# INTL/ICTY -- ICTY Judgments (International Criminal Tribunal for former Yugoslavia)
+# ===================================================================
+# Full-text judgments from the ICTY (1993-2017), archived by UN IRMCT.
+# HTML judgments from legacy icty.org site + UCR API metadata.
+# ===================================================================
+
+source:
+  id: "INTL/ICTY"
+  country: "INTL"
+  name: "ICTY - International Criminal Tribunal for former Yugoslavia"
+  url: "https://www.icty.org/en/cases"
+  description: |
+    Full-text trial and appeal judgments from the International Criminal
+    Tribunal for the former Yugoslavia (ICTY, 1993-2017). Uses HTML
+    judgments from the archived icty.org website and document metadata
+    from the UCR (Unified Court Records) API at ucr.irmct.org.
+    Covers war crimes, crimes against humanity, and genocide cases
+    from the conflicts in the former Yugoslavia.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "html_scraper"
+  cases_url: "https://www.icty.org/en/cases"
+  judgment_base: "https://www.icty.org/x/cases/{slug}/{type}/en/"
+  ucr_api: "https://ucr.irmct.org/api/Summary/ByCaseDocsByLang"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug_type"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "title"
+      description: "Judgment title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the judgment"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Judgment date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "case_name"
+      description: "Case name (e.g., Prosecutor v. Tadić)"
+      type: "string"
+      role: "content"
+      required: true
+
+notes: |
+  - HTML judgments available for ~15 early cases (trial + some appeals)
+  - Newer cases have PDF-only judgments (need pdftotext for text extraction)
+  - UCR API provides document metadata for all 86+ cases
+  - 161 persons indicted, cases from 1993-2017
+  - Archived by UN IRMCT since ICTY closure in December 2017

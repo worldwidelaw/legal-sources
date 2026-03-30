@@ -1,0 +1,33 @@
+source:
+  id: PE/TribunalConstitucional
+  name: Peruvian Constitutional Court (Tribunal Constitucional)
+  country: PE
+  url: https://tc.gob.pe/jurisprudencia/
+  description: >
+    Decisions of Peru's Constitutional Court (Tribunal Constitucional).
+    Covers sentencias, autos, and resoluciones from multiple years.
+    Full text extracted from HTML versions of decisions hosted on tc.gob.pe.
+  data_types:
+    - case_law
+  language: es
+  auth: none
+  license: Government of Peru (open access)
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - _type
+    - _source
+    - _fetched_at
+    - case_number
+    - case_type
+    - ponente
+    - resolution_type

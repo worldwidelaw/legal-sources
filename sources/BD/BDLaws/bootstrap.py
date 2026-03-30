@@ -1,325 +1,266 @@
 #!/usr/bin/env python3
 """
-BD/BDLaws -- Laws of Bangladesh (Bangladesh Code)
+Laws of Bangladesh Data Fetcher
 
-Fetches Bangladesh legislation (Acts, Ordinances, President's Orders) from
-a CC-BY 4.0 HuggingFace dataset scraped from bdlaws.minlaw.gov.bd.
+Fetches 1,571 Bangladesh Acts from bdlaws.minlaw.gov.bd (Ministry of Law).
+Each act page lists sections; each section page has the actual text.
+Full text is assembled by fetching all sections per act.
 
-Strategy:
-  - Download individual act JSON files from HuggingFace
-  - Each JSON contains full text sections, footnotes, metadata
-  - Concatenate sections into full text body
-  - 1,484 acts from 1799 to 2025
-
-Data: sakhadib/Bangladesh-Legal-Acts-Dataset (HuggingFace, CC-BY 4.0)
-Original source: http://bdlaws.minlaw.gov.bd/ (unreachable outside Bangladesh)
-Rate limit: 2 req/sec (respectful to HuggingFace).
-
-Usage:
-  python bootstrap.py bootstrap            # Full pull (all 1,484 acts)
-  python bootstrap.py bootstrap --sample   # Fetch 15 sample records
-  python bootstrap.py test-api             # Connectivity test
+Site uses UTF-16 encoding.
 """
 
-import sys
+import html as html_mod
 import json
 import logging
 import re
+import sys
 import time
-from pathlib import Path
+import urllib.request
 from datetime import datetime, timezone
-from typing import Generator, Optional
+from pathlib import Path
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
-# Add project root to path
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(PROJECT_ROOT))
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
-from common.base_scraper import BaseScraper
-from common.http_client import HttpClient
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-)
-logger = logging.getLogger("legal-data-hunter.BD.BDLaws")
-
-HF_BASE = "https://huggingface.co/datasets/sakhadib/Bangladesh-Legal-Acts-Dataset/resolve/main"
-ACT_URL = f"{HF_BASE}/acts/act-print-{{id}}.json"
-BDLAWS_BASE = "http://bdlaws.minlaw.gov.bd"
-
-# Known act ID range (1 to ~1549, with gaps)
-MAX_ACT_ID = 1550
-
-# Sample IDs known to have substantial content
-SAMPLE_IDS = [
-    367,  # Constitution of Bangladesh
-    10,   # Societies Registration Act, 1860
-    75,   # Penal Code, 1860
-    100,  # Contract Act, 1872
-    161,  # Transfer of Property Act, 1882
-    26,   # Criminal Procedure Code, 1898
-    50,   # Civil Procedure Code, 1908
-    395,  # Companies Act, 1994
-    415,  # Labour Act, 2006
-    500,  # Income Tax Act
-    1,    # Districts Act, 1836
-    20,   # Oaths Act, 1873
-    30,   # Dramatic Performances Act, 1876
-    200,  # Presidency-Towns Insolvency Act
-    300,  # Bengal Vagrancy Act
-]
+BASE_URL = "http://bdlaws.minlaw.gov.bd"
+DELAY = 1.0
+HEADERS = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) LegalDataHunter/1.0"}
 
 
-class BDLawsScraper(BaseScraper):
-    """
-    Scraper for BD/BDLaws -- Laws of Bangladesh.
-    Country: BD
-    URL: http://bdlaws.minlaw.gov.bd/
-
-    Data types: legislation
-    Auth: none (CC-BY 4.0 dataset)
-    """
-
-    def __init__(self):
-        source_dir = Path(__file__).parent
-        super().__init__(source_dir)
-
-        self.client = HttpClient(
-            headers={
-                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
-                "Accept": "application/json",
-            },
-            timeout=30,
-        )
-
-    # -- Fetch individual act ------------------------------------------------
-
-    def _fetch_act(self, act_id: int) -> Optional[dict]:
-        """Fetch a single act JSON from HuggingFace."""
-        url = ACT_URL.format(id=act_id)
-        try:
-            resp = self.client.get(url, timeout=30)
-            if resp is None or resp.status_code == 404:
-                return None
-            if resp.status_code != 200:
-                logger.debug(f"Act {act_id}: HTTP {resp.status_code}")
-                return None
-            data = resp.json()
-            if not data.get("sections"):
-                return None
-            data["_act_id"] = act_id
-            return data
-        except Exception as e:
-            logger.debug(f"Failed to fetch act {act_id}: {e}")
-            return None
-
-    # -- Text extraction -----------------------------------------------------
-
-    @staticmethod
-    def _extract_full_text(act: dict) -> str:
-        """Combine all sections into full text."""
-        sections = act.get("sections", [])
-        parts = []
-        for section in sections:
-            content = section.get("section_content", "")
-            if content:
-                # Clean up any remaining HTML or special markers
-                content = re.sub(r"<[^>]+>", "", content)
-                content = re.sub(r"\s+", " ", content).strip()
-                parts.append(content)
-
-        # Add footnotes if available
-        footnotes = act.get("footnotes", [])
-        if footnotes:
-            parts.append("\n--- Footnotes ---")
-            for fn in footnotes:
-                fn_text = fn.get("footnote_text", "")
-                if fn_text:
-                    fn_text = re.sub(r"<[^>]+>", "", fn_text)
-                    fn_text = re.sub(r"\s+", " ", fn_text).strip()
-                    parts.append(fn_text)
-
-        return "\n\n".join(parts)
-
-    # -- Date parsing --------------------------------------------------------
-
-    @staticmethod
-    def _parse_year(act: dict) -> Optional[str]:
-        """Extract year from act metadata."""
-        year = act.get("act_year")
-        if year:
-            year_str = str(year).strip()
-            # Handle Bengali numerals or other formats
-            if re.match(r"^\d{4}$", year_str):
-                return f"{year_str}-01-01"
+def http_get(url: str, timeout: int = 30) -> Optional[str]:
+    """Fetch URL and decode from UTF-16."""
+    req = urllib.request.Request(url, headers=HEADERS)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            raw = resp.read()
+        # Try UTF-16 first (site default), fall back to UTF-8
+        for enc in ("utf-16", "utf-8", "latin-1"):
+            try:
+                return raw.decode(enc)
+            except (UnicodeDecodeError, UnicodeError):
+                continue
+        return raw.decode("utf-8", errors="replace")
+    except Exception as e:
+        logger.warning(f"HTTP GET failed for {url[:100]}: {e}")
         return None
 
-    # -- Core scraper methods ------------------------------------------------
 
-    def fetch_all(self) -> Generator[dict, None, None]:
-        """Yield all acts by scanning ID range."""
-        found = 0
-        for act_id in range(1, MAX_ACT_ID + 1):
-            self.rate_limiter.wait()
-            act = self._fetch_act(act_id)
-            if not act:
-                continue
+def strip_html(text: str) -> str:
+    """Remove HTML tags and clean whitespace."""
+    text = re.sub(r"<style[^>]*>.*?</style>", "", text, flags=re.DOTALL)
+    text = re.sub(r"<script[^>]*>.*?</script>", "", text, flags=re.DOTALL)
+    text = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)
+    text = re.sub(r"</(?:p|div|tr|li|h[1-6])>", "\n", text, flags=re.IGNORECASE)
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = html_mod.unescape(text)
+    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r"\n\s*\n", "\n\n", text)
+    return text.strip()
 
-            text = self._extract_full_text(act)
-            if not text or len(text) < 50:
-                logger.debug(f"Act {act_id}: text too short ({len(text)} chars)")
-                continue
 
-            act["_full_text"] = text
-            found += 1
-            if found % 100 == 0:
-                logger.info(f"Progress: {found} acts found (scanned up to ID {act_id})")
-            yield act
+def extract_content(html_text: str) -> str:
+    """Extract main content from a page, skipping navigation."""
+    # Find the Print View marker or section content
+    markers = ["Print View", "print-view", "Section Index"]
+    start = 0
+    for marker in markers:
+        idx = html_text.find(marker)
+        if idx != -1:
+            start = idx
+            break
 
-        logger.info(f"Scan complete: {found} acts from {MAX_ACT_ID} IDs")
+    # Find end markers
+    end_markers = ["Contact Us", "footer", "Copyright", "বাংলা"]
+    end = len(html_text)
+    for marker in end_markers:
+        idx = html_text.find(marker, start + 100)
+        if idx != -1 and idx < end:
+            end = idx
 
-    def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
-        """Fetch acts - dataset is static, so return all recent IDs."""
-        logger.info("Dataset is static; fetching all acts")
-        yield from self.fetch_all()
+    chunk = html_text[start:end]
+    return strip_html(chunk)
 
-    def fetch_sample(self, count: int = 15) -> Generator[dict, None, None]:
-        """Fetch sample acts for validation."""
-        found = 0
-        for act_id in SAMPLE_IDS:
-            if found >= count:
-                break
 
-            self.rate_limiter.wait()
-            act = self._fetch_act(act_id)
-            if not act:
-                logger.debug(f"Sample act {act_id}: not found")
-                continue
+class BdLawsFetcher:
+    """Fetcher for Bangladesh legislation."""
 
-            text = self._extract_full_text(act)
-            if not text or len(text) < 50:
-                logger.debug(f"Sample act {act_id}: text too short")
-                continue
+    def __init__(self):
+        self.delay = DELAY
 
-            act["_full_text"] = text
-            found += 1
-            title = act.get("act_title", "N/A")[:60]
-            logger.info(f"Sample {found}/{count}: Act {act_id} - {title} ({len(text)} chars)")
-            yield act
+    def get_act_list(self) -> List[Dict[str, str]]:
+        """Get list of all acts from the chronological index."""
+        url = f"{BASE_URL}/laws-of-bangladesh-chronological-index.html"
+        data = http_get(url)
+        if not data:
+            return []
 
-        logger.info(f"Sample complete: {found} records")
+        acts = []
+        seen = set()
+        for m in re.finditer(r'href="/(act-(\d+)\.html)"', data):
+            act_path = m.group(1)
+            act_id = m.group(2)
+            if act_id not in seen:
+                seen.add(act_id)
+                acts.append({"act_id": act_id, "path": act_path})
 
-    def normalize(self, raw: dict) -> dict:
-        """Normalize a raw act record to standard schema."""
-        act_id = raw.get("_act_id", 0)
-        title = raw.get("act_title", "Unknown Act")
-        # Clean title (remove leading numbers/markers)
-        title = re.sub(r"^[\d\s]*\[?\*+\]?\s*", "", title).strip()
-        # Remove leading "1" artifact from some titles (e.g., "1The Districts Act")
-        title = re.sub(r"^(\d+)(The |THE )", r"\2", title)
-        if not title:
-            title = f"Bangladesh Act {act_id}"
+        logger.info(f"Found {len(acts)} unique acts in index")
+        return acts
 
-        text = raw.get("_full_text", "")
-        date = self._parse_year(raw)
-        source_url = raw.get("source_url", f"{BDLAWS_BASE}/act-print-{act_id}.html")
+    def get_act_info(self, act_id: str) -> Tuple[str, str, List[str]]:
+        """Get act title, date hint, and section URLs."""
+        url = f"{BASE_URL}/act-{act_id}.html"
+        data = http_get(url)
+        if not data:
+            return "", "", []
+
+        # Title
+        title_m = re.search(r"<title>(.*?)</title>", data, re.DOTALL)
+        title = strip_html(title_m.group(1)).strip() if title_m else f"Act {act_id}"
+
+        # Date from title (e.g., "The Districts Act, 1836")
+        date = ""
+        date_m = re.search(r",?\s*(1[789]\d{2}|20[012]\d)", title)
+        if date_m:
+            date = f"{date_m.group(1)}-01-01"
+
+        # Section URLs
+        sections = []
+        for m in re.finditer(r'href="/(act-\d+/section-\d+\.html)"', data):
+            sections.append(m.group(1))
+
+        return title, date, sections
+
+    def fetch_section(self, section_path: str) -> str:
+        """Fetch text of a single section."""
+        url = f"{BASE_URL}/{section_path}"
+        data = http_get(url)
+        if not data:
+            return ""
+        return extract_content(data)
+
+    def fetch_act(self, act_id: str) -> Optional[Dict[str, Any]]:
+        """Fetch complete act with all sections."""
+        title, date, section_paths = self.get_act_info(act_id)
+        if not section_paths:
+            logger.warning(f"No sections found for act-{act_id}")
+            return None
+
+        time.sleep(self.delay)
+
+        # Fetch all sections
+        text_parts = []
+        for i, sp in enumerate(section_paths):
+            section_text = self.fetch_section(sp)
+            if section_text:
+                text_parts.append(section_text)
+            if i < len(section_paths) - 1:
+                time.sleep(self.delay)
+
+        if not text_parts:
+            return None
+
+        full_text = "\n\n".join(text_parts)
+        if len(full_text) < 50:
+            return None
 
         return {
-            "_id": f"BD-BDLaws-{act_id}",
-            "_source": "BD/BDLaws",
+            "_id": f"BD-BDLAWS-{act_id}",
+            "_source": "BD/BdLaws",
             "_type": "legislation",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             "title": title,
-            "text": text,
-            "date": date,
-            "url": source_url,
+            "text": full_text,
+            "date": date or None,
+            "url": f"{BASE_URL}/act-{act_id}.html",
             "act_id": act_id,
-            "act_no": raw.get("act_no"),
-            "act_year": raw.get("act_year"),
-            "language": raw.get("language", "english"),
-            "token_count": raw.get("token_count"),
+            "section_count": len(section_paths),
         }
 
-    def test_api(self) -> bool:
-        """Test HuggingFace dataset connectivity."""
-        logger.info("Testing HuggingFace dataset access...")
+    def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
+        return raw
 
-        act = self._fetch_act(10)
-        if not act:
-            logger.error("Failed to fetch sample act")
-            return False
+    def fetch_all(self) -> Iterator[Dict[str, Any]]:
+        acts = self.get_act_list()
+        for i, act in enumerate(acts):
+            if i % 50 == 0:
+                logger.info(f"Progress: {i}/{len(acts)}")
+            doc = self.fetch_act(act["act_id"])
+            if doc:
+                yield doc
 
-        title = act.get("act_title", "N/A")
-        sections = act.get("sections", [])
-        text = self._extract_full_text(act)
-
-        logger.info(f"Act found: {title[:60]}")
-        logger.info(f"Sections: {len(sections)}, Text: {len(text)} chars")
-
-        if len(text) < 50:
-            logger.error("Text extraction returned too little content")
-            return False
-
-        logger.info("All tests passed")
-        return True
+    def fetch_updates(self, since: str) -> Iterator[Dict[str, Any]]:
+        # No date filtering available, yield all
+        yield from self.fetch_all()
 
 
-# -- CLI entry point ---------------------------------------------------------
+def bootstrap_sample(sample_dir: Path, count: int = 15):
+    """Fetch sample acts (preferring small ones for speed)."""
+    sample_dir.mkdir(parents=True, exist_ok=True)
+    fetcher = BdLawsFetcher()
+
+    acts = fetcher.get_act_list()
+    logger.info(f"Total acts: {len(acts)}")
+
+    # First, probe a few acts to find small ones (few sections)
+    candidates = []
+    for act in acts[:80]:
+        url = f"{BASE_URL}/act-{act['act_id']}.html"
+        data = http_get(url)
+        if not data:
+            continue
+        sections = re.findall(r'href="/(act-\d+/section-\d+\.html)"', data)
+        title_m = re.search(r"<title>(.*?)</title>", data, re.DOTALL)
+        title = strip_html(title_m.group(1)).strip() if title_m else ""
+        candidates.append({
+            "act_id": act["act_id"],
+            "section_count": len(sections),
+            "title": title[:80],
+        })
+        time.sleep(0.5)
+
+    # Sort by section count, pick smallest
+    candidates.sort(key=lambda x: x["section_count"])
+    logger.info(f"Probed {len(candidates)} acts, section counts: {[c['section_count'] for c in candidates[:20]]}")
+
+    saved = 0
+    for cand in candidates:
+        if saved >= count:
+            break
+        if cand["section_count"] == 0:
+            continue
+
+        act_id = cand["act_id"]
+        logger.info(f"Fetching act-{act_id} ({cand['section_count']} sections): {cand['title']}")
+
+        doc = fetcher.fetch_act(act_id)
+        if not doc:
+            continue
+
+        text_len = len(doc.get("text", ""))
+        logger.info(f"  Text: {text_len} chars, Sections: {doc.get('section_count')}")
+
+        out_file = sample_dir / f"{doc['_id']}.json"
+        with open(out_file, "w", encoding="utf-8") as f:
+            json.dump(doc, f, ensure_ascii=False, indent=2)
+
+        saved += 1
+        logger.info(f"  Saved ({saved}/{count})")
+
+    logger.info(f"Bootstrap complete: {saved} documents saved to {sample_dir}")
+    return saved
+
 
 if __name__ == "__main__":
-    scraper = BDLawsScraper()
+    source_dir = Path(__file__).parent
+    sample_dir = source_dir / "sample"
 
-    if len(sys.argv) < 2:
-        print("Usage: python bootstrap.py [bootstrap|update|test-api] [--sample] [--count N]")
-        sys.exit(1)
-
-    command = sys.argv[1]
-
-    if command == "test-api":
-        ok = scraper.test_api()
-        sys.exit(0 if ok else 1)
-
-    elif command == "bootstrap":
-        sample_mode = "--sample" in sys.argv
-        count = 15
-        for i, arg in enumerate(sys.argv):
-            if arg == "--count" and i + 1 < len(sys.argv):
-                count = int(sys.argv[i + 1])
-
-        if sample_mode:
-            gen = scraper.fetch_sample(count=count)
-        else:
-            gen = scraper.fetch_all()
-
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        saved = 0
-        for record in gen:
-            normalized = scraper.normalize(record)
-            out_path = sample_dir / f"{normalized['_id']}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(normalized, f, ensure_ascii=False, indent=2)
-            saved += 1
-            logger.info(f"Saved: {out_path.name}")
-
-        logger.info(f"Bootstrap complete: {saved} records saved to {sample_dir}")
-
-    elif command == "update":
-        logger.info("Dataset is static; running full bootstrap instead")
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        saved = 0
-        for record in scraper.fetch_all():
-            normalized = scraper.normalize(record)
-            out_path = sample_dir / f"{normalized['_id']}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(normalized, f, ensure_ascii=False, indent=2)
-            saved += 1
-
-        logger.info(f"Update complete: {saved} records saved")
-
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap":
+        sample_flag = "--sample" in sys.argv
+        count = 15 if sample_flag else 50
+        saved = bootstrap_sample(sample_dir, count)
+        if saved < 10:
+            logger.error(f"Only {saved} documents saved, expected at least 10")
+            sys.exit(1)
     else:
-        print(f"Unknown command: {command}")
-        sys.exit(1)
+        print("Usage: python3 bootstrap.py bootstrap [--sample]")

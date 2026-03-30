@@ -1,0 +1,13 @@
+{
+  "_id": "MLP-bg-Bulgaria-cb7331eee508",
+  "_source": "INTL/MultiLegalPile",
+  "_type": "legislation",
+  "_fetched_at": "2026-03-27T02:49:36.069115+00:00",
+  "title": "Bulgaria document #3",
+  "text": "Административният съд – Пловдив, на основание чл. 188 във връзка с чл. 181, ал. 1 от АПК съобщава, че е образувано адм. д. № 915 по описа за 2019 г. на Административния съд – Пловдив, ХХVІІІ състав, по протест на Окръжната прокуратура – Пловдив, против чл. 20, ал. 2 и чл. 30, ал. 1, т. 1 и 4 от Наредбата за управление на общинските горски територии, собственост на Община „Родопи“.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/joelniklaus/Multi_Legal_Pile",
+  "jurisdiction": "Bulgaria",
+  "language": "bg",
+  "source_file": "bulgaria_marcell.jsonl.xz"
+}

@@ -1,0 +1,48 @@
+id: JP/CourtsGoJp
+name: Japanese Courts Case Law Database
+country: JP
+url: https://www.courts.go.jp/hanrei/search1/index.html
+description: >
+  Official Japanese court case law database covering Supreme Court, High Courts,
+  and lower courts since 1947. 29,000+ Supreme Court decisions alone, with full
+  text extracted from PDFs. Japanese language.
+data_types:
+  - case_law
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: case_number
+      type: string
+      required: false
+    - name: court
+      type: string
+      required: false

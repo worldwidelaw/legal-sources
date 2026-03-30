@@ -1,0 +1,31 @@
+source:
+  id: OM/DecreeOm
+  name: Oman Decrees Portal (decree.om)
+  country: OM
+  url: https://decree.om/
+  description: >
+    Comprehensive database of English translated Omani laws. Includes Royal Decrees,
+    Ministerial Decisions, Consolidated Laws, and Treaties. Full text via WordPress
+    REST API.
+  data_types:
+    - legislation
+  language: en
+  auth: none
+  license: Decree Tech LLC (information purposes, translations of official legislation)
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - _type
+    - _source
+    - _fetched_at
+    - category
+    - wp_id

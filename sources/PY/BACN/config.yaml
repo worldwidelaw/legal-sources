@@ -1,0 +1,24 @@
+source:
+  id: PY/BACN
+  name: Paraguay Congressional Law Library (BACN)
+  country: PY
+  url: https://www.bacn.gov.py/
+  data_types:
+    - legislation
+  auth: none
+  license: Open Government Data (Paraguay)
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+
+fetcher:
+  strategy: search_api_then_scrape
+  search_endpoint: https://www.bacn.gov.py/buscar.php?j=si&s=ley
+  law_url_pattern: https://www.bacn.gov.py/leyes-paraguayas/{id}/{slug}
+  rate_limit_seconds: 1.5
+  timeout_seconds: 30

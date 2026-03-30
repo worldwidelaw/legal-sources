@@ -1,0 +1,52 @@
+id: INTL/WTOAnalyticalIndex
+name: WTO Analytical Index (Jurisprudence Guide)
+country: INTL
+url: https://www.wto.org/english/res_e/publications_e/ai17_e/ai17_e.htm
+description: >
+  Comprehensive guide containing extracts of key WTO jurisprudence from panel
+  reports, Appellate Body reports, and arbitral decisions. 573 PDF documents
+  organized by WTO agreement and article, covering GATT 1994, GATS, TRIPS,
+  DSU, and 20+ other agreements.
+data_types:
+  - doctrine
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: agreement
+      type: string
+      required: true
+    - name: article
+      type: string
+      required: false
+    - name: content_type
+      type: string
+      required: false

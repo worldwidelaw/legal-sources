@@ -1,0 +1,67 @@
+# ===================================================================
+# INTL/CAS-Sports -- Court of Arbitration for Sport
+# ===================================================================
+# ~2,581 arbitration awards (1986-2024). Unauthenticated REST API
+# at jurisprudence.tas-cas.org with PDF downloads.
+# ===================================================================
+
+source:
+  id: "INTL/CAS-Sports"
+  country: "INTL"
+  name: "Court of Arbitration for Sport - Jurisprudence"
+  url: "https://jurisprudence.tas-cas.org"
+  description: |
+    Arbitration awards from the Court of Arbitration for Sport (CAS/TAS),
+    seated in Lausanne. Covers appeals, ordinary, ad hoc, and anti-doping
+    proceedings across 79 sports. Full text extracted from PDFs.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "rest_json_pdf"
+  search_url: "https://jurisprudence.tas-cas.org/CaseLawDocument/SearchCaseLawDocument"
+  detail_url: "https://jurisprudence.tas-cas.org/CaseLawDocument/{guid}"
+  pdf_url: "https://jurisprudence.tas-cas.org/pdf/{fileName}"
+
+data_model:
+  type: "case_law"
+  primary_key: "case_number"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "title"
+      description: "Case number and title (e.g., 'CAS 2023/A/10168')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF award"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "case_number"
+      description: "CAS case number"
+      type: "string"
+      role: "identifier"
+      required: true
+
+notes: |
+  - REST API at jurisprudence.tas-cas.org (unauthenticated)
+  - Paginated search: pageSize=100, 26 pages
+  - PDFs downloaded from /pdf/{fileName}
+  - Text extracted via PyMuPDF

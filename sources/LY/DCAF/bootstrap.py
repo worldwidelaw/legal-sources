@@ -1,305 +1,240 @@
 #!/usr/bin/env python3
 """
-LY/DCAF -- Libya DCAF Security Sector Legal Database
+LY/DCAF - Libya DCAF Security Sector Legal Database
 
-Fetches Libyan security sector legislation from DCAF Geneva Centre
-via WordPress REST API.
+Fetches 2,175 Libyan legal texts from the DCAF (Geneva Centre for Security
+Sector Governance) database via WordPress REST API.
 
-Strategy:
-  - Paginate through /wp-json/wp/v2/latest-laws (2155 laws, 100/page)
-  - Filter for posts with actual content (skip Arabic-only placeholders)
-  - Extract full text from HTML content field
-  - Resolve taxonomy terms for metadata
+Content types: Constitutional Law, Decrees, Laws, Resolutions, Judicial
+Decisions, Bylaws, Declarations, International Agreements.
 
-API:
-  - Base: https://security-legislation.ly
-  - List: GET /wp-json/wp/v2/latest-laws?per_page=100&page=N
-  - Detail: GET /wp-json/wp/v2/latest-laws/{id}
-  - Taxonomies: database-index-categories, text-type-categories,
-    status-categories, institution-categories
-  - No auth required
+Full text in Arabic; partial English translations available.
+License: Open access.
 
 Usage:
-  python bootstrap.py bootstrap          # Full initial pull
-  python bootstrap.py bootstrap --sample # Fetch ~12 sample records
-  python bootstrap.py test               # Quick connectivity test
+  python bootstrap.py bootstrap --sample   # Fetch 15 sample records
+  python bootstrap.py bootstrap             # Full extraction
+  python bootstrap.py test                  # Test connectivity
 """
 
-import sys
+import argparse
+import html
 import json
-import logging
+import os
 import re
-from pathlib import Path
+import sys
+import time
 from datetime import datetime, timezone
-from typing import Generator, Dict, Any, List, Optional
-from html import unescape
+from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(PROJECT_ROOT))
+import requests
 
-from common.base_scraper import BaseScraper
-from common.http_client import HttpClient
+SOURCE_ID = "LY/DCAF"
+SCRIPT_DIR = Path(__file__).parent
+SAMPLE_DIR = SCRIPT_DIR / "sample"
+DATA_DIR = SCRIPT_DIR / "data"
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-)
-logger = logging.getLogger("legal-data-hunter.LY.DCAF")
+# WordPress REST API endpoints
+AR_BASE = "https://security-legislation.ly/ar/wp-json/wp/v2/latest-laws"
+EN_BASE = "https://security-legislation.ly/wp-json/wp/v2/latest-laws"
 
-BASE_URL = "https://security-legislation.ly"
-WP_API = "/wp-json/wp/v2"
-LAWS_ENDPOINT = f"{WP_API}/latest-laws"
-ARABIC_PLACEHOLDER = "ONLY AVAILABLE IN ARABIC"
-PER_PAGE = 100
+# Taxonomy endpoints
+TAXONOMY_ENDPOINTS = {
+    "text_type": "https://security-legislation.ly/wp-json/wp/v2/text-type-categories?per_page=100",
+    "status": "https://security-legislation.ly/wp-json/wp/v2/status-categories?per_page=100",
+    "index": "https://security-legislation.ly/wp-json/wp/v2/database-index-categories?per_page=100",
+    "institution": "https://security-legislation.ly/wp-json/wp/v2/institution-categories?per_page=100",
+}
+
+SESSION = requests.Session()
+SESSION.headers.update({"User-Agent": "LegalDataHunter/1.0 (research)"})
 
 
-def clean_html(html_text: str) -> str:
-    """Remove HTML tags and decode entities, preserving paragraph breaks."""
-    if not html_text:
+def strip_html(text: str) -> str:
+    """Remove HTML tags and decode entities."""
+    if not text:
         return ""
-    text = re.sub(r'<br\s*/?>', '\n', html_text, flags=re.IGNORECASE)
-    text = re.sub(r'</p>', '\n\n', text, flags=re.IGNORECASE)
-    text = re.sub(r'</div>', '\n', text, flags=re.IGNORECASE)
-    text = re.sub(r'<li[^>]*>', '- ', text, flags=re.IGNORECASE)
-    text = re.sub(r'</li>', '\n', text, flags=re.IGNORECASE)
-    text = re.sub(r'<[^>]+>', '', text)
-    text = unescape(text)
-    text = re.sub(r'&nbsp;', ' ', text)
-    text = re.sub(r' +', ' ', text)
-    text = re.sub(r'\n{3,}', '\n\n', text)
+    text = re.sub(r"<br\s*/?>", "\n", text)
+    text = re.sub(r"<p[^>]*>", "\n", text)
+    text = re.sub(r"</p>", "\n", text)
+    text = re.sub(r"<[^>]+>", "", text)
+    text = html.unescape(text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
 
-class DCAFScraper(BaseScraper):
-
-    def __init__(self):
-        source_dir = Path(__file__).parent
-        super().__init__(str(source_dir))
-        self.http = HttpClient(
-            base_url=BASE_URL,
-            headers={"Accept": "application/json"},
-        )
-        self._taxonomy_cache: Dict[str, Dict[int, str]] = {}
-
-    def _resolve_taxonomy(self, taxonomy: str, term_ids: List[int]) -> List[str]:
-        """Resolve taxonomy term IDs to names."""
-        if not term_ids:
-            return []
-        if taxonomy not in self._taxonomy_cache:
-            self._taxonomy_cache[taxonomy] = {}
-        cache = self._taxonomy_cache[taxonomy]
-        missing = [tid for tid in term_ids if tid not in cache]
-        if missing:
-            try:
-                params = {"include": ",".join(str(t) for t in missing), "per_page": 100}
-                resp = self.http.get(f"{WP_API}/{taxonomy}", params=params)
-                if resp.status_code == 200:
-                    for term in resp.json():
-                        cache[term["id"]] = unescape(term.get("name", ""))
-            except Exception as e:
-                logger.warning(f"Failed to resolve taxonomy {taxonomy}: {e}")
-        return [cache[tid] for tid in term_ids if tid in cache]
-
-    def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
-        """Fetch all laws with English content via WP REST API."""
-        page = 1
-        total_fetched = 0
-        skipped_arabic = 0
-
-        while True:
-            logger.info(f"Fetching page {page} (fetched={total_fetched}, skipped={skipped_arabic})")
-            try:
-                resp = self.http.get(
-                    LAWS_ENDPOINT,
-                    params={"per_page": PER_PAGE, "page": page, "orderby": "date", "order": "asc"},
-                )
-                if resp.status_code == 400:
-                    logger.info("Reached end of results (400 response)")
-                    break
-                resp.raise_for_status()
-                posts = resp.json()
-            except Exception as e:
-                logger.error(f"Error fetching page {page}: {e}")
-                break
-
-            if not posts:
-                break
-
-            for post in posts:
-                content_html = ""
-                if isinstance(post.get("content"), dict):
-                    content_html = post["content"].get("rendered", "")
-                text = clean_html(content_html)
-
-                if ARABIC_PLACEHOLDER in text or len(text) < 50:
-                    skipped_arabic += 1
-                    continue
-
-                total_fetched += 1
-                yield post
-
-            total_pages = int(resp.headers.get("X-WP-TotalPages", 0))
-            if page >= total_pages:
-                break
-            page += 1
-
-        logger.info(f"Done: {total_fetched} laws with content, {skipped_arabic} Arabic-only skipped")
-
-    def fetch_updates(self, since: str = None) -> Generator[Dict[str, Any], None, None]:
-        """Fetch laws modified since a given date."""
-        if not since:
-            yield from self.fetch_all()
-            return
-
-        page = 1
-        while True:
-            try:
-                resp = self.http.get(
-                    LAWS_ENDPOINT,
-                    params={
-                        "per_page": PER_PAGE,
-                        "page": page,
-                        "modified_after": since,
-                        "orderby": "modified",
-                        "order": "asc",
-                    },
-                )
-                if resp.status_code == 400:
-                    break
-                resp.raise_for_status()
-                posts = resp.json()
-            except Exception:
-                break
-
-            if not posts:
-                break
-
-            for post in posts:
-                content_html = ""
-                if isinstance(post.get("content"), dict):
-                    content_html = post["content"].get("rendered", "")
-                text = clean_html(content_html)
-                if ARABIC_PLACEHOLDER not in text and len(text) >= 50:
-                    yield post
-
-            total_pages = int(resp.headers.get("X-WP-TotalPages", 0))
-            if page >= total_pages:
-                break
-            page += 1
-
-    def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
-        """Transform WP post into standard schema."""
-        title = ""
-        if isinstance(raw.get("title"), dict):
-            title = unescape(raw["title"].get("rendered", ""))
-        elif isinstance(raw.get("title"), str):
-            title = unescape(raw["title"])
-
-        content_html = ""
-        if isinstance(raw.get("content"), dict):
-            content_html = raw["content"].get("rendered", "")
-        text = clean_html(content_html)
-
-        post_date = raw.get("date", "")
-        if post_date:
-            try:
-                dt = datetime.fromisoformat(post_date.replace("Z", "+00:00"))
-                post_date = dt.strftime("%Y-%m-%d")
-            except (ValueError, TypeError):
-                pass
-
-        text_types = self._resolve_taxonomy(
-            "text-type-categories",
-            raw.get("text-type-categories", [])
-        )
-        status_cats = self._resolve_taxonomy(
-            "status-categories",
-            raw.get("status-categories", [])
-        )
-        institution_cats = self._resolve_taxonomy(
-            "institution-categories",
-            raw.get("institution-categories", [])
-        )
-        db_index_cats = self._resolve_taxonomy(
-            "database-index-categories",
-            raw.get("database-index-categories", [])
-        )
-
-        url = raw.get("link", f"{BASE_URL}/latest-laws/{raw.get('slug', '')}/")
-
-        return {
-            "_id": f"LY-DCAF-{raw['id']}",
-            "_source": "LY/DCAF",
-            "_type": "legislation",
-            "_fetched_at": datetime.now(timezone.utc).isoformat(),
-            "title": title,
-            "text": text,
-            "date": post_date,
-            "url": url,
-            "language": "en",
-            "country": "LY",
-            "text_type": text_types[0] if text_types else None,
-            "status": status_cats[0] if status_cats else None,
-            "institution": institution_cats[0] if institution_cats else None,
-            "index_category": db_index_cats[0] if db_index_cats else None,
-            "wp_id": raw["id"],
-            "slug": raw.get("slug", ""),
-        }
-
-    def test(self) -> bool:
-        """Quick connectivity test."""
+def fetch_taxonomies() -> dict:
+    """Fetch taxonomy term mappings (id -> name)."""
+    mappings = {}
+    for tax_name, url in TAXONOMY_ENDPOINTS.items():
         try:
-            resp = self.http.get(LAWS_ENDPOINT, params={"per_page": 1})
-            resp.raise_for_status()
-            data = resp.json()
-            total = resp.headers.get("X-WP-Total", "?")
-            logger.info(f"API OK: {total} total laws, got {len(data)} in test")
-            return True
+            resp = SESSION.get(url, timeout=30)
+            if resp.status_code == 200:
+                terms = resp.json()
+                mappings[tax_name] = {t["id"]: strip_html(t["name"]) for t in terms}
         except Exception as e:
-            logger.error(f"Test failed: {e}")
-            return False
+            print(f"  Warning: Could not fetch {tax_name} taxonomy: {e}")
+    return mappings
+
+
+def resolve_taxonomy(item: dict, tax_field: str, mappings: dict, tax_name: str) -> str:
+    """Resolve taxonomy term IDs to names."""
+    term_ids = item.get(tax_field, [])
+    if not term_ids or tax_name not in mappings:
+        return ""
+    names = [mappings[tax_name].get(tid, "") for tid in term_ids]
+    return "; ".join(n for n in names if n)
+
+
+def normalize(item: dict, taxonomies: dict) -> dict:
+    """Normalize a WP REST API item to standard schema."""
+    wp_id = item.get("id", 0)
+    title = strip_html(item.get("title", {}).get("rendered", ""))
+    content_html = item.get("content", {}).get("rendered", "")
+    full_text = strip_html(content_html)
+
+    # Check for English-only placeholder
+    if "ONLY AVAILABLE IN ARABIC" in full_text:
+        full_text = ""
+
+    date_str = item.get("date", "")[:10] if item.get("date") else None
+    link = item.get("link", "")
+
+    text_type = resolve_taxonomy(item, "text-type-categories", taxonomies, "text_type")
+    status = resolve_taxonomy(item, "status-categories", taxonomies, "status")
+    institution = resolve_taxonomy(item, "institution-categories", taxonomies, "institution")
+    index_cat = resolve_taxonomy(item, "database-index-categories", taxonomies, "index")
+
+    return {
+        "_id": f"LY-DCAF-{wp_id}",
+        "_source": SOURCE_ID,
+        "_type": "legislation",
+        "_fetched_at": datetime.now(timezone.utc).isoformat(),
+        "title": title,
+        "text": full_text,
+        "date": date_str,
+        "url": link,
+        "language": "ar",
+        "text_type": text_type,
+        "status": status,
+        "institution": institution,
+        "index_category": index_cat,
+    }
+
+
+def iter_laws(limit: int = 0):
+    """Iterate over all laws from the Arabic API endpoint."""
+    print("Fetching taxonomy mappings...")
+    taxonomies = fetch_taxonomies()
+    for k, v in taxonomies.items():
+        print(f"  {k}: {len(v)} terms")
+
+    page = 1
+    count = 0
+    total = None
+
+    while True:
+        url = f"{AR_BASE}?per_page=100&page={page}"
+        try:
+            resp = SESSION.get(url, timeout=60)
+            if resp.status_code == 400:
+                break  # past last page
+            resp.raise_for_status()
+        except Exception as e:
+            print(f"  Error fetching page {page}: {e}")
+            break
+
+        if total is None:
+            total = int(resp.headers.get("X-WP-Total", 0))
+            total_pages = int(resp.headers.get("X-WP-TotalPages", 0))
+            print(f"  Total: {total} laws across {total_pages} pages")
+
+        items = resp.json()
+        if not items:
+            break
+
+        for item in items:
+            record = normalize(item, taxonomies)
+            if not record["text"] or len(record["text"]) < 50:
+                continue
+            yield record
+            count += 1
+
+            if limit and count >= limit:
+                print(f"  Reached sample limit of {limit}")
+                return
+
+        page += 1
+        time.sleep(0.5)
+
+    print(f"  Processed {count} laws with full text")
+
+
+def test_connectivity():
+    """Test connectivity to the DCAF API."""
+    print("Testing DCAF API connectivity...")
+
+    # Test Arabic endpoint
+    resp = SESSION.get(f"{AR_BASE}?per_page=1", timeout=30)
+    total = resp.headers.get("X-WP-Total", "?")
+    print(f"  Arabic endpoint: HTTP {resp.status_code}, {total} total items")
+
+    # Test English endpoint
+    resp2 = SESSION.get(f"{EN_BASE}?per_page=1", timeout=30)
+    total2 = resp2.headers.get("X-WP-Total", "?")
+    print(f"  English endpoint: HTTP {resp2.status_code}, {total2} total items")
+
+    # Check if content has full text
+    if resp.status_code == 200:
+        items = resp.json()
+        if items:
+            content = items[0].get("content", {}).get("rendered", "")
+            text = strip_html(content)
+            print(f"  Sample content length: {len(text)} chars")
+            print(f"  Sample title: {strip_html(items[0].get('title', {}).get('rendered', ''))[:80]}")
+
+    print("Connectivity test complete")
+
+
+def bootstrap(sample: bool = False):
+    """Run the bootstrap process."""
+    SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    limit = 15 if sample else 0
+    all_records = []
+    saved = 0
+
+    for record in iter_laws(limit=limit):
+        out_path = SAMPLE_DIR / f"record_{saved:04d}.json"
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(record, f, ensure_ascii=False, indent=2)
+        all_records.append(record)
+        saved += 1
+
+    all_path = SAMPLE_DIR / "all_samples.json"
+    with open(all_path, "w", encoding="utf-8") as f:
+        json.dump(all_records, f, ensure_ascii=False, indent=2)
+
+    print(f"\nBootstrap complete: {saved} records saved to {SAMPLE_DIR}")
+
+    text_count = sum(1 for r in all_records if r.get("text") and len(r["text"]) > 100)
+    print(f"  Records with substantial text: {text_count}/{saved}")
+
+    if saved > 0 and text_count < saved * 0.5:
+        print("WARNING: Less than 50% of records have substantial text")
 
 
 def main():
-    import argparse
-
-    parser = argparse.ArgumentParser(description="LY/DCAF Legal Database Fetcher")
-    parser.add_argument("command", choices=["bootstrap", "test", "update"])
-    parser.add_argument("--sample", action="store_true", help="Fetch only ~12 sample records")
+    parser = argparse.ArgumentParser(description="LY/DCAF Libya Legal Data Fetcher")
+    parser.add_argument("command", choices=["bootstrap", "test"], help="Command to run")
+    parser.add_argument("--sample", action="store_true", help="Fetch sample only")
     args = parser.parse_args()
 
-    scraper = DCAFScraper()
-
     if args.command == "test":
-        ok = scraper.test()
-        sys.exit(0 if ok else 1)
-
-    if args.command in ("bootstrap", "update"):
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        count = 0
-        max_records = 12 if args.sample else 999999
-
-        gen = scraper.fetch_all() if args.command == "bootstrap" else scraper.fetch_updates()
-
-        for raw in gen:
-            if count >= max_records:
-                break
-            record = scraper.normalize(raw)
-            if not record.get("text"):
-                continue
-
-            fname = f"{record['_id']}.json"
-            with open(sample_dir / fname, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-            logger.info(
-                f"[{count}] {record['title'][:60]}... "
-                f"({len(record['text'])} chars)"
-            )
-
-        logger.info(f"Saved {count} records to {sample_dir}/")
+        test_connectivity()
+    elif args.command == "bootstrap":
+        bootstrap(sample=args.sample)
 
 
 if __name__ == "__main__":

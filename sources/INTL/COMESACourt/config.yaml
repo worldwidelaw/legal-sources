@@ -1,0 +1,39 @@
+source_id: INTL/COMESACourt
+name: COMESA Court of Justice
+country: INTL
+url: https://comesacourt.org/court-decisions/
+description: >
+  Judgments, rulings, and orders from the COMESA Court of Justice (Common Market
+  for Eastern and Southern Africa). ~39 decisions from 2000-2025. PDFs scraped
+  from court website and text extracted via PyMuPDF.
+data_types:
+  - case_law
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+    - name: case_number
+      type: string
+      required: false
+    - name: url
+      type: string
+      required: true

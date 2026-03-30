@@ -31,11 +31,25 @@ from typing import Generator, Optional, Dict, Any, List
 import requests
 from bs4 import BeautifulSoup
 
+import subprocess
+import tempfile
+
+# Try multiple PDF libraries with fallbacks
+PDF_BACKEND = None
 try:
-    import PyPDF2
-    HAS_PYPDF2 = True
+    import pypdf
+    PDF_BACKEND = "pypdf"
 except ImportError:
-    HAS_PYPDF2 = False
+    try:
+        import PyPDF2
+        PDF_BACKEND = "PyPDF2"
+    except ImportError:
+        # Check for system pdftotext (poppler-utils)
+        try:
+            subprocess.run(["pdftotext", "-v"], capture_output=True, timeout=5)
+            PDF_BACKEND = "pdftotext"
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            PDF_BACKEND = None
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -85,23 +99,46 @@ class EDPBScraper(BaseScraper):
         return None
 
     def _extract_text_from_pdf(self, pdf_content: bytes) -> str:
-        """Extract text from PDF bytes using PyPDF2."""
-        if not HAS_PYPDF2:
-            logger.error("PyPDF2 not available")
+        """Extract text from PDF bytes using available backend."""
+        if PDF_BACKEND is None:
+            logger.error("No PDF backend available (need pypdf, PyPDF2, or pdftotext)")
             return ""
         try:
-            reader = PyPDF2.PdfReader(io.BytesIO(pdf_content))
-            parts = []
-            for page in reader.pages:
-                text = page.extract_text()
-                if text:
-                    parts.append(text)
-            text = "\n\n".join(parts)
+            if PDF_BACKEND == "pypdf":
+                reader = pypdf.PdfReader(io.BytesIO(pdf_content))
+                parts = []
+                for page in reader.pages:
+                    text = page.extract_text()
+                    if text:
+                        parts.append(text)
+                text = "\n\n".join(parts)
+            elif PDF_BACKEND == "PyPDF2":
+                reader = PyPDF2.PdfReader(io.BytesIO(pdf_content))
+                parts = []
+                for page in reader.pages:
+                    text = page.extract_text()
+                    if text:
+                        parts.append(text)
+                text = "\n\n".join(parts)
+            elif PDF_BACKEND == "pdftotext":
+                with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+                    tmp.write(pdf_content)
+                    tmp_path = tmp.name
+                try:
+                    result = subprocess.run(
+                        ["pdftotext", "-layout", tmp_path, "-"],
+                        capture_output=True, text=True, timeout=60,
+                    )
+                    text = result.stdout
+                finally:
+                    Path(tmp_path).unlink(missing_ok=True)
+            else:
+                return ""
             text = re.sub(r"\n{3,}", "\n\n", text)
             text = re.sub(r" {2,}", " ", text)
             return text.strip()
         except Exception as e:
-            logger.warning(f"PDF extraction failed: {e}")
+            logger.warning(f"PDF extraction failed ({PDF_BACKEND}): {e}")
             return ""
 
     def _parse_date(self, date_str: str) -> str:

@@ -1,0 +1,72 @@
+# ===================================================================
+# INTL/ItalAw -- italaw: Investment Treaty Arbitration
+# ===================================================================
+# ~1,787 cases with ~11,000 arbitration documents (awards, decisions,
+# orders, expert opinions, memorials). University of Victoria project.
+# Sitemap for case discovery, HTML scrape for metadata + PDF links,
+# PDF text extraction via PyMuPDF.
+# ===================================================================
+
+source:
+  id: "INTL/ItalAw"
+  country: "INTL"
+  name: "italaw - Investment Treaty Arbitration"
+  url: "https://www.italaw.com/"
+  description: |
+    The largest free collection of investment treaty arbitration materials.
+    Awards, decisions, orders, and other documents from investor-state
+    arbitrations under various treaties and rules (ICSID, UNCITRAL, SCC, etc.).
+    Hosted by the University of Victoria.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.1
+  burst: 1
+  notes: "robots.txt requires Crawl-delay: 10"
+
+api:
+  type: "sitemap_plus_scrape"
+  sitemap: "https://italaw.com/sitemap.xml?page=1"
+  case_pattern: "/cases/{id}"
+  pdf_base: "https://www.italaw.com/sites/default/files/case-documents/"
+
+data_model:
+  type: "case_law"
+  primary_key: "pdf_url"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "title"
+      description: "Document title (e.g., Award, Decision on Jurisdiction)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "case_title"
+      description: "Full case citation (e.g., Philip Morris v. Uruguay)"
+      type: "string"
+      role: "identifier"
+      required: true
+
+notes: |
+  - Case URLs from sitemap.xml?page=1 (~1,787 /cases/ pages)
+  - Each case page lists documents with dates and PDF links
+  - PDFs at /sites/default/files/case-documents/
+  - Text extracted via PyMuPDF; some older docs may be scanned
+  - 10-second crawl delay per robots.txt

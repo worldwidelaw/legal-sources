@@ -1,0 +1,84 @@
+# ===================================================================
+# INTL/WIPO-UDRP -- WIPO Domain Name Dispute Decisions (UDRP)
+# ===================================================================
+# ~75,000+ panel decisions on domain name disputes since 1999.
+# HTML scraping of structured decision pages + PDF extraction for 2022+.
+# ===================================================================
+
+source:
+  id: "INTL/WIPO-UDRP"
+  country: "INTL"
+  name: "WIPO Domain Name Dispute Decisions (UDRP)"
+  url: "https://www.wipo.int/amc/en/domains/search/"
+  description: |
+    Panel decisions under the Uniform Domain-Name Dispute-Resolution
+    Policy (UDRP) administered by the WIPO Arbitration and Mediation
+    Center. Covers 75,000+ decisions since 1999 involving domain name
+    disputes between trademark holders and domain registrants.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  index_url: "https://www.wipo.int/amc/en/domains/decisionsx/index.html"
+  list_url: "https://www.wipo.int/amc/en/domains/decisionsx/list.jsp?prefix=D&year={year}&seq_min={seq_min}&seq_max={seq_max}"
+  text_url: "https://www.wipo.int/amc/en/domains/search/text.jsp?case=D{year}-{seq}"
+
+data_model:
+  type: "case_law"
+  primary_key: "case_number"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "case_number"
+      description: "UDRP case number (e.g., D2020-0001)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "text"
+      description: "Full text of the panel decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "domain_names"
+      description: "Disputed domain name(s)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "complainant"
+      description: "Complainant name"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "respondent"
+      description: "Respondent name"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "decision_result"
+      description: "Outcome (Transfer, Denied, etc.)"
+      type: "string"
+      role: "content"
+      required: true
+
+notes: |
+  - Index page lists year/range blocks; list.jsp returns tabular metadata
+  - text.jsp redirects to HTML (1999-2021) or PDF (2022+)
+  - HTML decisions have rich meta tags (domains, complainants, date, keywords)
+  - PDF decisions extracted via PyMuPDF (fitz)
+  - ~87% of case numbers have published decisions (rest are terminated/pending)

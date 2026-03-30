@@ -1,0 +1,70 @@
+# ===================================================================
+# INTL/LegalToolsDB -- ICC Legal Tools Database (CLD)
+# ===================================================================
+# ~18,800 case law findings from ICC proceedings with full text.
+# LoopBack/Elasticsearch API at legal-tools.org. No auth required.
+# ===================================================================
+
+source:
+  id: "INTL/LegalToolsDB"
+  country: "INTL"
+  name: "ICC Legal Tools Database"
+  url: "https://www.legal-tools.org/"
+  description: |
+    Case law findings from the International Criminal Court (ICC)
+    Case Law Database (CLD). Contains ~18,800 legal findings with
+    full text extracted from ICC decisions covering all ICC situations
+    and cases. Part of the Legal Tools Database project.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+  notes: "robots.txt crawl-delay: 10"
+
+api:
+  type: "json_api"
+  base_url: "https://legal-tools.org/api"
+  search_url: "https://legal-tools.org/api/clddocs/search"
+  pagination: "from/limit (Elasticsearch-style)"
+
+data_model:
+  type: "case_law"
+  primary_key: "ID"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "title"
+      description: "Decision title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legal finding"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "case_name"
+      description: "Case name"
+      type: "string"
+      role: "content"
+      required: true
+
+notes: |
+  - CLD search API at /api/clddocs/search (Elasticsearch backend)
+  - Full text in legalFindingText (plain) and legalFinding (HTML)
+  - 18,879 legal findings from ICC proceedings
+  - Covers all ICC situations: DRC, Uganda, CAR, Darfur, Kenya, etc.
+  - LTD corpus (370k docs) has PDF-only text — not reliable via API

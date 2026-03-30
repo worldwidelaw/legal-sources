@@ -1,0 +1,28 @@
+source:
+  id: VE/TSJDecisiones
+  name: "Tribunal Supremo de Justicia - Decisiones (Venezuela)"
+  country: VE
+  url: https://www.tsj.gob.ve/decisiones
+  data_types:
+    - case_law
+  auth: none
+  description: >
+    Full text court decisions from all chambers (salas) of Venezuela's Supreme
+    Court (TSJ). Uses the Liferay/JSON web service API on tsj.gob.ve to enumerate
+    decisions by sala, year, and date, then fetches full text HTML from
+    historico.tsj.gob.ve. Covers 2000-present across 7+ chambers.
+
+schema:
+  key_fields:
+    - _id
+    - decision_number
+    - case_number
+    - sala
+    - title
+    - text
+    - date
+    - url
+
+fetch:
+  rate_limit_delay: 2
+  sample_size: 15

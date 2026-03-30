@@ -90,8 +90,8 @@ class STJDadosAbertosScraper(BaseScraper):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
 
-    def _get_latest_json_url(self, dataset_id: str) -> Optional[str]:
-        """Get URL of the latest JSON resource from a CKAN dataset."""
+    def _get_all_json_urls(self, dataset_id: str) -> List[str]:
+        """Get URLs of ALL JSON resources from a CKAN dataset (all monthly snapshots)."""
         import requests
 
         url = f"{CKAN_API}/package_show"
@@ -100,17 +100,17 @@ class STJDadosAbertosScraper(BaseScraper):
         data = resp.json()
 
         if not data.get("success"):
-            return None
+            return []
 
         resources = data["result"]["resources"]
         json_resources = [r for r in resources if r.get("format") == "JSON"]
 
         if not json_resources:
-            return None
+            return []
 
-        # Sort by name (date-based: YYYYMMDD.json) and take latest
-        json_resources.sort(key=lambda r: r.get("name", ""), reverse=True)
-        return json_resources[0]["url"]
+        # Sort by name (date-based: YYYYMMDD.json) chronologically
+        json_resources.sort(key=lambda r: r.get("name", ""))
+        return [r["url"] for r in json_resources]
 
     def _fetch_json_resource(self, url: str) -> List[Dict]:
         """Download and parse a JSON resource."""
@@ -121,24 +121,36 @@ class STJDadosAbertosScraper(BaseScraper):
         return resp.json()
 
     def fetch_all(self) -> Generator[dict, None, None]:
-        """Yield all records from the latest snapshot of each espelhos dataset."""
+        """Yield all records from ALL monthly snapshots of each espelhos dataset."""
+        seen_ids = set()
         for dataset_id in ESPELHOS_DATASETS:
             logger.info(f"Processing dataset: {dataset_id}")
             try:
-                url = self._get_latest_json_url(dataset_id)
-                if not url:
-                    logger.warning(f"No JSON resource found for {dataset_id}")
+                urls = self._get_all_json_urls(dataset_id)
+                if not urls:
+                    logger.warning(f"No JSON resources found for {dataset_id}")
                     continue
 
-                logger.info(f"Downloading: {url}")
-                records = self._fetch_json_resource(url)
-                logger.info(f"Got {len(records)} records from {dataset_id}")
+                logger.info(f"Found {len(urls)} monthly snapshots for {dataset_id}")
+                for url in urls:
+                    try:
+                        records = self._fetch_json_resource(url)
+                        logger.info(f"Got {len(records)} records from {url.split('/')[-1]}")
 
-                for record in records:
-                    record["_dataset"] = dataset_id
-                    yield record
+                        for record in records:
+                            # Deduplicate by STJ record id
+                            rec_id = str(record.get("id", "")).strip()
+                            if rec_id and rec_id in seen_ids:
+                                continue
+                            if rec_id:
+                                seen_ids.add(rec_id)
+                            record["_dataset"] = dataset_id
+                            yield record
 
-                time.sleep(2)
+                        time.sleep(2)
+                    except Exception as e:
+                        logger.error(f"Error downloading {url}: {e}")
+                        continue
 
             except Exception as e:
                 logger.error(f"Error processing {dataset_id}: {e}")
@@ -230,9 +242,9 @@ if __name__ == "__main__":
                 espelhos = [p for p in data["result"] if "espelhos" in p]
                 print(f"OK: Found {len(espelhos)} espelhos datasets")
                 # Test one JSON download
-                url = scraper._get_latest_json_url(ESPELHOS_DATASETS[0])
-                if url:
-                    print(f"Latest JSON URL: {url}")
+                urls = scraper._get_all_json_urls(ESPELHOS_DATASETS[0])
+                if urls:
+                    print(f"Found {len(urls)} snapshots, latest: {urls[-1]}")
             else:
                 print("FAIL: CKAN API returned error")
                 sys.exit(1)

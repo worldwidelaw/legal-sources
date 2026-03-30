@@ -1,0 +1,32 @@
+source:
+  id: "VA/ActaApostolicae"
+  name: "Vatican Apostolic Documents"
+  country: "VA"
+  url: "https://www.vatican.va/"
+  data_types:
+    - legislation
+  auth: none
+  license: "Holy See / Vatican"
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+    - pope
+    - document_type
+
+fetch:
+  base_url: "https://www.vatican.va"
+  method: "AEM/Sling JSON API (append .N.json to URL paths)"
+  delay_seconds: 2
+
+notes: |
+  Uses the Adobe Experience Manager / Apache Sling JSON API exposed by vatican.va.
+  Covers legislative documents from 7 pontificates (Pius XII through Leo XIV):
+  encyclicals, motu proprio, apostolic constitutions, apostolic exhortations,
+  apostolic letters, and papal bulls. ~1,900 documents with full text.

@@ -1,0 +1,67 @@
+# ===================================================================
+# INTL/ADBTribunal -- ADB Administrative Tribunal Decisions
+# ===================================================================
+# ~136 decisions since 1992. Full text extracted from PDFs via PyMuPDF.
+# ===================================================================
+
+source:
+  id: "INTL/ADBTribunal"
+  country: "INTL"
+  name: "ADB Administrative Tribunal Decisions"
+  url: "https://www.adb.org/who-we-are/organization/administrative-tribunal"
+  description: |
+    Decisions of the Asian Development Bank Administrative Tribunal,
+    which adjudicates employment disputes between ADB staff and the bank.
+    ~136 decisions from 1992 to present. PDFs downloaded from adb.org
+    and text extracted via PyMuPDF.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.2
+  burst: 1
+
+api:
+  type: "html_scrape_pdf"
+  listing_url: "https://www.adb.org/who-we-are/organization/administrative-tribunal"
+  pdf_base: "https://www.adb.org/sites/default/files/microcontent"
+
+data_model:
+  type: "case_law"
+  primary_key: "decision_number"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "title"
+      description: "Case title (e.g., 'Mr R v. Asian Development Bank')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "decision_number"
+      description: "Decision number (e.g., 136)"
+      type: "integer"
+      role: "identifier"
+      required: true
+
+notes: |
+  - Listing page parsed for metadata (decision number, title, date, PDF link)
+  - PDFs at adb.org/sites/default/files/microcontent/adbtNNNN.pdf
+  - Text extracted from PDFs using PyMuPDF (fitz)
+  - Cloudflare protection: 5-second delays between PDF downloads
+  - ~136 decisions covering 1992-2025

@@ -1,0 +1,69 @@
+# ===================================================================
+# NP/SupremeCourt -- Supreme Court of Nepal (via NKP)
+# ===================================================================
+# Nepal Kanoon Patrika (Nepal Law Journal) - official publication of
+# Supreme Court decisions. ~10,400+ landmark decisions with full text
+# in HTML. Nepali language. Free public access, no auth required.
+# ===================================================================
+
+source:
+  id: "NP/SupremeCourt"
+  country: "NP"
+  name: "Supreme Court of Nepal (NKP)"
+  url: "https://nkp.gov.np/"
+  description: |
+    Nepal Kanoon Patrika (NKP) - official law journal publishing
+    Supreme Court of Nepal landmark decisions. ~10,400+ decisions
+    with full text in Nepali. Spans from 1950s to present.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "2-second delay between requests."
+
+api:
+  type: "scraping"
+  base_url: "https://nkp.gov.np"
+  endpoints:
+    decision: "/full_detail/{id}"
+  response_format: "html"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "decision_number"
+      description: "NKP decision number (e.g., 11375)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title with case type"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (Nepali calendar)"
+      type: "string"
+      role: "temporal_key"
+      required: false
+    - name: "case_number"
+      description: "Case registration number"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "url"
+      description: "NKP page URL"
+      type: "string"
+      role: "reference"
+      required: true

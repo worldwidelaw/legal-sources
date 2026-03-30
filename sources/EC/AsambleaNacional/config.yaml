@@ -1,0 +1,46 @@
+source:
+  id: EC/AsambleaNacional
+  name: Ecuador Legislation (oficial.ec)
+  country: EC
+  url: https://www.oficial.ec/
+  data_types:
+    - legislation
+  description: |
+    Ecuadorian legislation from oficial.ec including laws, decrees, agreements,
+    resolutions, and ordinances. ~6,900 documents from 2014 to present. Full HTML
+    text. Spanish language. Free access.
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.1
+  burst: 1
+
+api:
+  type: html_scraping
+  base_url: https://www.oficial.ec
+  format: html
+  endpoints:
+    sitemap_page1: /sitemap.xml?page=1
+    sitemap_page2: /sitemap.xml?page=2
+    document: /{slug}
+
+schema:
+  key_fields:
+    - name: slug
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+
+fetch:
+  strategy: sitemap_scrape
+  crawl_delay: 10

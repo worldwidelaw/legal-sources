@@ -1,0 +1,26 @@
+source_id: PY/LeyesParaguayas
+name: Paraguay - Leyes Paraguayas (BACN)
+country: PY
+url: https://www.bacn.gov.py/
+language: es
+data_types:
+  - legislation
+auth: none
+method: scrape
+api:
+  type: ajax_pagination
+  pagination_url: https://www.bacn.gov.py/paginacion/leyes-paraguayas.php
+  detail_url: https://www.bacn.gov.py/leyes-paraguayas/{id}/x
+  pagination:
+    type: page
+    per_page: 10
+    total_pages: 706
+  rate_limit: 1.5
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - legislation_number

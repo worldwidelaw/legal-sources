@@ -1,0 +1,69 @@
+# ===================================================================
+# INTL/AfCHPR -- African Court on Human and Peoples' Rights
+# ===================================================================
+# ~479 decisions (judgments, rulings, orders, advisory opinions).
+# Metadata scraped from AfricanLII listing; PDFs downloaded and
+# full text extracted via PyMuPDF.
+# ===================================================================
+
+source:
+  id: "INTL/AfCHPR"
+  country: "INTL"
+  name: "African Court on Human and Peoples' Rights"
+  url: "https://africanlii.org/en/judgments/AfCHPR/"
+  description: |
+    Judgments, rulings, orders, and advisory opinions of the African
+    Court on Human and Peoples' Rights (AfCHPR). Metadata and PDF links
+    sourced from AfricanLII (Laws.Africa). Full text extracted from
+    PDFs using PyMuPDF. Approximately 479 decisions.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape_pdf"
+  listing_url: "https://africanlii.org/en/judgments/AfCHPR/?page={page}"
+  pdf_suffix: "/source.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "akn_uri"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "title"
+      description: "Full citation title (e.g., 'Falana v The African Union ...')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "case_number"
+      description: "Application number (e.g., 'Application No. 006/2012')"
+      type: "string"
+      role: "identifier"
+      required: true
+
+notes: |
+  - Listing pages scraped from AfricanLII (africanlii.org/en/judgments/AfCHPR/)
+  - PDFs downloaded from {akn_url}/source.pdf
+  - Text extracted from PDFs using PyMuPDF (fitz)
+  - Official CPMT at african-court.org/cpmt has broken API (500 errors)
+  - AfricanLII provides structured AKN URIs and clean metadata

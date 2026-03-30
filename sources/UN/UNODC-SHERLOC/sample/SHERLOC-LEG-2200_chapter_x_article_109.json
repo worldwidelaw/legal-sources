@@ -1,0 +1,19 @@
+{
+  "_id": "SHERLOC-LEG-2200_chapter_x_article_109",
+  "_source": "UN/UNODC-SHERLOC",
+  "_type": "legislation",
+  "_fetched_at": "2026-03-30T00:50:53.143266+00:00",
+  "title": "Banking Law of Afghanistan — Chapter X: Prompt Corrective Action and Enforcement Measures — Article 109",
+  "text": "Article 109: Suspension of persons charged with criminal offenses \n\n(1) If any person referred to in paragraph 1 of Article 108 of this Law is officially charged with any criminal offense, or with any offense entailing money laundering or terrorist activities, Da Afghanistan Bank may issue a written order suspending such person from his position in the bank, and prohibiting his participation in any manner of the conduct of the affairs of the bank, pending the final determination of the competent court.\n\nThis provision shall not apply to an offense based on the person’s religious or political views or activities.\n\n(2) If such person is convicted of any such criminal offense, and the conviction is not subject to further appellate review, Da Afghanistan Bank shall issue a written order removing such person from his position in the bank, and, may include in such an order any or all of the items set forth in paragraph 3 of Article 108 of this Law.",
+  "date": null,
+  "url": "https://www.unodc.org/cld/legislation/afg/banking_law_of_afghanistan/chapter_x/article_109/article_109.html?lng=en&tmpl=sherloc",
+  "country": "Afghanistan",
+  "country_code": "AFG",
+  "article": "Article 109",
+  "chapter": "Chapter X: Prompt Corrective Action and Enforcement Measures",
+  "law_title": "Banking Law of Afghanistan",
+  "crime_types": [
+    "Money laundering",
+    "Terrorism"
+  ]
+}

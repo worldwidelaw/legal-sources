@@ -1,0 +1,19 @@
+{
+  "_id": "SHERLOC-LEG-2200_chapter_ii_article_14",
+  "_source": "UN/UNODC-SHERLOC",
+  "_type": "legislation",
+  "_fetched_at": "2026-03-30T00:49:14.101923+00:00",
+  "title": "Amendments to the Anti-Money Laundering and Proceeds of Crime Law — Chapter II: Transparency in Financial Transactions — Article 14",
+  "text": "Article 14 − Special monitoring of transactions and measures for high-risk countries \n\n1) Reporting entities shall apply enhanced due diligence to all complex, unusual or large transactions, and all unusual patterns of transactions, which have no apparent economic or visible lawful purpose.\n\n2) Reporting entities shall examine the background and purpose of transactions referred to in paragraph 1, as far as possible,and develop the findings in writing, and make it available to competent authorities and auditors.\n\n3) Reporting entities shall apply enhanced due diligence measures to business relationships and transactions with financial institutions, designated non financial businesses and professions and persons 18 from countries which do not or insufficiently apply anti-money laundering and combating the financing of terrorism measures as set out in international requirements or relevant guidelines from supervisory authorities.\n\n4) Reporting entities shall be required to apply counter measures, as required by supervisory or competent authorities, to all business relationships and transactions from countries determined to be not or insufficiently applying the FATF recommendations and other international anti-money laundering and combating the financing of terrorism standards. Such counter measures applied shall be effective and proportionate to the risks.\n\n5) In relation to paragraphs (1) ,(2)and (3), a reporting entity shall report the transactions to the Financial Intelligence Unit as a suspicious transaction under this law.\n\n6) The reports generated pursuant to paragraphs 1, 2, and 4 above shall be maintained as specified in Article 16.",
+  "date": null,
+  "url": "https://www.unodc.org/cld/legislation/afg/amendments_to_the_anti-money_laundering_and_proceeds_of_crime_law/chapter_ii/article_14/article_14.html?lng=en&tmpl=sherloc",
+  "country": "Afghanistan",
+  "country_code": "AFG",
+  "article": "Article 14",
+  "chapter": "Chapter II: Transparency in Financial Transactions",
+  "law_title": "Amendments to the Anti-Money Laundering and Proceeds of Crime Law",
+  "crime_types": [
+    "Money laundering",
+    "Terrorism"
+  ]
+}

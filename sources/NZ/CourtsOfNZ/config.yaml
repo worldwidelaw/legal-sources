@@ -1,0 +1,32 @@
+source:
+  id: NZ/CourtsOfNZ
+  name: Courts of New Zealand Official Judgments
+  country: NZ
+  url: https://www.courtsofnz.govt.nz/judgments
+  description: >
+    Official judgments of public interest from the Supreme Court, Court of Appeal,
+    and High Court of New Zealand. Published by the Courts of New Zealand government
+    portal. Full text extracted from official PDFs.
+  data_types:
+    - case_law
+  language: en
+  auth: none
+  license: New Zealand Government (Crown Copyright, open access)
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - _type
+    - _source
+    - _fetched_at
+    - court
+    - citation
+    - pdf_url

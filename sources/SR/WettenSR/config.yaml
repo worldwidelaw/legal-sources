@@ -1,0 +1,72 @@
+# ===================================================================
+# SR/WettenSR -- Suriname Legislation (wetten.sr)
+# ===================================================================
+# WordPress REST API for Suriname legislation. 5,000+ articles across
+# 41 laws. Full text HTML via WP REST API. No auth required.
+# API: https://wetten.sr/wp-json/wp/v2/
+# ===================================================================
+
+source:
+  id: "SR/WettenSR"
+  country: "SR"
+  name: "Suriname Wetten.sr Legislation"
+  url: "https://wetten.sr/"
+  description: |
+    Suriname legislation portal providing full text of laws in Dutch.
+    Built on WordPress with custom post type 'artikel' for individual
+    law provisions. Taxonomies: wet2 (law), boek (book), hoofdstuk
+    (chapter), titel (title), afdeling (division), paragraaf (paragraph).
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "WordPress REST API, be polite"
+
+api:
+  type: "rest"
+  base_url: "https://wetten.sr/wp-json/wp/v2"
+  endpoints:
+    articles: "/artikel?per_page=100&page={page}"
+    laws: "/wet2?per_page=100"
+    article_by_law: "/artikel?wet2={law_id}&per_page=100&page={page}"
+  response_format: "json"
+
+data_model:
+  type: "legislation"
+  primary_key: "wp_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "wp_id"
+      description: "WordPress article ID"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Article title (e.g., Artikel 51)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the law article"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "law_name"
+      description: "Name of the parent law"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "date"
+      description: "Publication/modification date"
+      type: "date"
+      role: "metadata"
+      required: false

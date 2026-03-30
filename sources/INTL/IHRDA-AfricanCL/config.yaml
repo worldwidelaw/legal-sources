@@ -1,0 +1,69 @@
+# ===================================================================
+# INTL/IHRDA-AfricanCL -- African Human Rights Case Law (IHRDA)
+# ===================================================================
+# 1,000+ decisions from African human rights courts/commissions.
+# Uwazi platform with JSON API and full-text extraction.
+# ===================================================================
+
+source:
+  id: "INTL/IHRDA-AfricanCL"
+  country: "INTL"
+  name: "African Human Rights Case Law Analyser (IHRDA)"
+  url: "https://caselaw.ihrda.org/"
+  description: |
+    Case law decisions from African supra-national human rights bodies:
+    ACHPR (African Commission), AfCHPR (African Court), ECOWAS Court,
+    EACJ, ACERWC, and SADC Tribunal. Full-text decisions with rich
+    metadata via Uwazi JSON API. Multilingual (EN/FR/PT).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "json_api"
+  base_url: "https://caselaw.ihrda.org/api"
+  search_url: "https://caselaw.ihrda.org/api/search"
+  text_url: "https://caselaw.ihrda.org/api/documents/page"
+
+data_model:
+  type: "case_law"
+  primary_key: "sharedId"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "title"
+      description: "Decision title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "tribunal"
+      description: "Issuing body (ACHPR, AfCHPR, ECOWAS, etc.)"
+      type: "string"
+      role: "content"
+      required: true
+
+notes: |
+  - Uwazi platform with public JSON API
+  - Full text extracted from PDFs via /api/documents/page endpoint
+  - ~1,000+ decisions across 6 African human rights bodies
+  - Rich metadata: country, outcome, rights provisions, keywords
+  - Multi-language: EN, FR, PT, AR

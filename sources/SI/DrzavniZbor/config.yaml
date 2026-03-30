@@ -1,0 +1,47 @@
+source:
+  id: SI/DrzavniZbor
+  name: Slovenian National Assembly (Državni zbor)
+  country: SI
+  type: doctrine
+  url: https://www.dz-rs.si
+  description: |
+    Verbatim transcripts of plenary sessions of the Slovenian National Assembly
+    (Državni zbor) from 1992 to present. Data from Parliament open data XML
+    files (session metadata) combined with full transcript text from the
+    Parliament website.
+
+    Covers all 9 parliamentary mandates with ~2,340 session transcripts.
+
+  license: Open Data (Slovenian Parliament)
+  license_url: https://www.dz-rs.si/wps/portal/Home/ostalo/OpenData
+
+api:
+  metadata_base: https://fotogalerija.dz-rs.si/datoteke/opendata/
+  transcript_base: https://www.dz-rs.si/wps/portal/Home/seje/evidenca
+  rate_limit: 2  # seconds between requests
+
+schema:
+  key_fields:
+    - session_number
+    - mandate
+    - date
+
+  fields:
+    session_number:
+      type: string
+      description: Session number (e.g., "132")
+    mandate:
+      type: integer
+      description: Parliamentary mandate number (1-9)
+    session_type:
+      type: string
+      description: Session type (Redna=regular, Izredna=extraordinary)
+    date:
+      type: date
+      description: Session date (ISO 8601)
+    title:
+      type: string
+      description: Session title
+    text:
+      type: string
+      description: Full verbatim transcript text (MANDATORY)

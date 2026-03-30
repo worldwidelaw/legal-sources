@@ -1,0 +1,17 @@
+{
+  "_id": "SHERLOC-CL-SWEx004",
+  "_source": "UN/UNODC-SHERLOC",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-30T00:48:31.843031+00:00",
+  "title": "Case B 903-23",
+  "text": "During the search of the defendant's house on 4 November 2022, a bag was found that contained an automatic rifle of the mark Kalashnikov with a calibre of 7.62 x 39 mm with associated magazines and ammunition, and that the bag with this content was found in a wardrobe in the defendant's bedroom.\n\n2.48 grams of tetrahydrocannabinol, as well as packaging, a laminating machine, OCB paper and various packaging were also found there.\n\nThe district court convicted the defendant for aggravated firearms offence and drugs offence.",
+  "date": "2023-04-14",
+  "url": "https://www.unodc.org/cld/case-law-doc/illicitfirearmscrimetype/swe/2023/case_b_903-23.html?lng=en&tmpl=sherloc",
+  "country": "Sweden",
+  "country_code": "SWE",
+  "unodc_number": "SWEx004",
+  "crime_types": [
+    "Trafficking in firearms",
+    "Drug offences"
+  ]
+}

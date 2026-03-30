@@ -1,0 +1,18 @@
+{
+  "_id": "VA-leo-xiv-20250929-coniuncta-cura",
+  "_source": "VA/ActaApostolicae",
+  "_type": "legislation",
+  "_fetched_at": "2026-03-30T00:59:07.418824+00:00",
+  "title": "Apostolic Letter in the form of a «Motu Proprio» \"Coniuncta cura\" of His Holiness Pope Leo XIV (29 September 2025)",
+  "text": "APOSTOLIC LETTER \n\nIN THE FORM OF A MOTU PROPRIO\n\nLEO XIV \n\nConiuncta cura \n\nON THE FINANCIAL INVESTMENT ACTIVITIES \n\nOF THE HOLY SEE",
+  "date": "2025-09-29",
+  "url": "https://www.vatican.va/content/leo-xiv/en/apost_letters/documents/20250929-coniuncta-cura.html",
+  "pope": "Pope Leo XIV",
+  "pope_slug": "leo-xiv",
+  "document_type": "Apostolic Letter",
+  "section": "apost_letters",
+  "tags": [
+    "documentipontifici:motu_proprio",
+    "documentipontifici:apost_letters"
+  ]
+}

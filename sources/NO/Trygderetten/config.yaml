@@ -1,0 +1,65 @@
+# ===================================================================
+# NO/Trygderetten -- Norwegian National Insurance Court
+# ===================================================================
+# Social security/pension tribunal decisions via Lovdata.
+# ~66,631 decisions from 1971-present. Norwegian language.
+# NLOD 2.0 license (free since November 2020).
+# ===================================================================
+
+source:
+  id: "NO/Trygderetten"
+  country: "NO"
+  name: "Norwegian National Insurance Court (Trygderetten)"
+  url: "https://lovdata.no/register/trygderetten"
+  description: |
+    Norwegian National Insurance Court (Trygderetten) decisions via Lovdata.
+    ~66,631 anonymized rulings on social security/pension cases from 1971-present.
+    Free public access. NLOD 2.0 license.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "1.5-second delay between requests. 5-second crawl delay per robots.txt."
+
+api:
+  type: "scraping"
+  base_url: "https://lovdata.no"
+  endpoints:
+    registry: "/register/trygderetten?year={year}&offset={offset}"
+    document: "/dokument/TRR/avgjorelse/trr-{year}-{number}"
+  response_format: "html"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "case_id"
+      description: "Case ID (e.g. TRR-2025-7066)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title with keywords"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of decision"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Document URL on Lovdata"
+      type: "string"
+      role: "reference"
+      required: true

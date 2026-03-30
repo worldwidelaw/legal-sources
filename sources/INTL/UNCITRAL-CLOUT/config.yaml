@@ -1,0 +1,75 @@
+# ===================================================================
+# INTL/UNCITRAL-CLOUT -- UNCITRAL Case Law on Texts (CLOUT)
+# ===================================================================
+# ~2,255 case abstracts on UNCITRAL texts (CISG, Model Laws, etc.)
+# HTML scraping of case metadata + PDF extraction from UN ODS.
+# ===================================================================
+
+source:
+  id: "INTL/UNCITRAL-CLOUT"
+  country: "INTL"
+  name: "UNCITRAL Case Law on Texts (CLOUT)"
+  url: "https://www.uncitral.org/clout/"
+  description: |
+    Case abstracts relating to UNCITRAL legal texts, including the CISG,
+    Model Laws on Cross-Border Insolvency, International Commercial
+    Arbitration, and others. ~2,255 cases from 92 countries.
+    Metadata scraped from CLOUT web pages; abstract text extracted
+    from PDF compilations on the UN ODS document system.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape_pdf"
+  search_url: "https://www.uncitral.org/clout/search.jspx?inline=true&start={offset}&lng=en"
+  detail_base: "https://www.uncitral.org"
+  pdf_base: "http://daccess-ods.un.org/access.nsf/Get?Open&JN="
+
+data_model:
+  type: "case_law"
+  primary_key: "clout_case_number"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "title"
+      description: "Case title (e.g., 'CLOUT case 1935')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Abstract text extracted from UN ODS PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "country"
+      description: "Country of court"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "court_name"
+      description: "Name of court"
+      type: "string"
+      role: "metadata"
+      required: true
+
+notes: |
+  - Search pagination gives case URLs (10 per page)
+  - Case detail pages provide metadata + PDF link to abstract compilation
+  - PDFs on UN ODS contain multiple case abstracts per CLOUT issue
+  - Text split by case number pattern from PDF content
+  - ~226 pagination + ~2255 detail + ~200 PDF requests

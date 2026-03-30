@@ -1,0 +1,87 @@
+# ===================================================================
+# UN/DigitalLibrary -- UN General Assembly Resolutions
+# ===================================================================
+# Fetches GA resolutions with full text from the UN Digital Library
+# (Invenio-based) and UN Official Document System (documents.un.org).
+# ~21,000+ resolutions. No auth required.
+# ===================================================================
+
+source:
+  id: "UN/DigitalLibrary"
+  country: "UN"
+  name: "UN Digital Library - General Assembly Resolutions"
+  url: "https://digitallibrary.un.org"
+  description: |
+    UN General Assembly resolutions with full text. Metadata from Invenio
+    JSON search API, full text from ODS DOCX endpoint. DOCX extraction
+    works for documents from ~2015 onward (session 70+). Older documents
+    use OLE2 .doc format and are skipped.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://digitallibrary.un.org"
+  endpoints:
+    search: "/search?p=191:A/RES/&of=recjson&rg={count}&jrec={offset}"
+    record: "/record/{recid}?of=recjson"
+  full_text:
+    base_url: "https://documents.un.org"
+    endpoint: "/api/symbol/access?s={symbol}&l=en&t=doc"
+    format: "docx"
+
+data_model:
+  type: "legislation"
+  primary_key: "symbol"
+  update_strategy: "upsert"
+  dedup_key:
+    - "symbol"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "symbol"
+      description: "UN document symbol (e.g., A/RES/78/1)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Resolution title or description"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the resolution"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Adoption date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL on UN Digital Library"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "body"
+      description: "Issuing body (General Assembly)"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - ~21,000+ GA resolutions searchable via Invenio JSON API
+  - Full text via DOCX from documents.un.org (session 70+ / 2015+)
+  - Older documents (pre-2015) are OLE2 .doc format, not parseable with stdlib
+  - SC resolutions already covered by UN/SCResolutions source
+  - 6 official languages available; we fetch English only

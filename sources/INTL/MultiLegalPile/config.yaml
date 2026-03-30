@@ -1,0 +1,69 @@
+# ===================================================================
+# INTL/MultiLegalPile -- Multi Legal Pile (Multilingual Legal Corpus)
+# ===================================================================
+# Multilingual legal corpus from 17 jurisdictions in 24 languages.
+# Individual JSONL.xz files on HuggingFace, streamed per-file.
+# ===================================================================
+
+source:
+  id: "INTL/MultiLegalPile"
+  country: "INTL"
+  name: "MultiLegalPile (Multilingual Legal Corpus)"
+  url: "https://huggingface.co/datasets/joelniklaus/Multi_Legal_Pile"
+  description: |
+    Multilingual legal corpus covering legislation and case law from
+    17 jurisdictions in 14 languages. Individual JSONL.xz files
+    per language/type/jurisdiction. Full text included.
+    Files under 100 MB are downloaded; larger files skipped.
+
+data_types:
+  - legislation
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "file_download"
+  base_url: "https://huggingface.co/datasets/joelniklaus/Multi_Legal_Pile/resolve/main/data"
+  format: "jsonl.xz"
+
+data_model:
+  type: "mixed"
+  primary_key: "file_jurisdiction_index"
+  update_strategy: "full_replace"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "title"
+      description: "Derived from first line or jurisdiction+index"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legal document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "jurisdiction"
+      description: "Source jurisdiction (e.g., Switzerland, Germany)"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "language"
+      description: "Language code (en, de, fr, etc.)"
+      type: "string"
+      role: "metadata"
+      required: true
+
+notes: |
+  - 33 JSONL.xz files across 14 languages
+  - Total compressed: 14.4 GB; only files <100 MB fetched (~500 MB)
+  - Large files (Swiss/German/Brazilian case law) skipped
+  - Record format: {type, language, jurisdiction, text}
+  - Source: HuggingFace joelniklaus/Multi_Legal_Pile

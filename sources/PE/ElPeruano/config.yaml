@@ -1,0 +1,32 @@
+source:
+  id: PE/ElPeruano
+  name: El Peruano Digital - Peru Official Gazette (via SPIJ)
+  country: PE
+  url: https://spij.minjus.gob.pe
+  description: >
+    Peru legislation from the SPIJ (Sistema Peruano de Información Jurídica)
+    public API. Covers laws, decrees, resolutions, and other norms from 1946
+    to present. Full text as HTML from the Ministry of Justice database.
+  data_types:
+    - legislation
+  language: es
+  auth: none
+  license: Government of Peru (open access, public credentials in JS bundle)
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - _type
+    - _source
+    - _fetched_at
+    - norm_type
+    - norm_code
+    - sector

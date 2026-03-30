@@ -1,0 +1,68 @@
+# ===================================================================
+# INTL/SICE -- OAS Foreign Trade Information System
+# ===================================================================
+# Full text of trade agreements from 33 OAS member states.
+# ~150 bilateral/multilateral trade agreements, BITs, WTO texts.
+# ===================================================================
+
+source:
+  id: "INTL/SICE"
+  country: "INTL"
+  name: "SICE OAS Foreign Trade Information System"
+  url: "http://www.sice.oas.org/"
+  description: |
+    OAS Foreign Trade Information System (SICE). Over 18,000 trade-related
+    documents including bilateral and multilateral trade agreements, WTO texts,
+    BITs, and national trade legislation for all 33 OAS member states.
+    Full text of agreements available as HTML pages.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scraping"
+  base_url: "http://www.sice.oas.org"
+  agreements_index: "http://www.sice.oas.org/agreements_e.asp"
+
+data_model:
+  type: "legislation"
+  primary_key: "agreement_path"
+  update_strategy: "full_replace"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "title"
+      description: "Agreement title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the trade agreement"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Agreement date if available"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "parties"
+      description: "Countries party to the agreement"
+      type: "string"
+      role: "metadata"
+      required: false
+
+notes: |
+  - HTML scraping of sice.oas.org (no API available)
+  - ~138 agreement index pages with ASP full-text links
+  - Some agreements split across multiple chapter pages
+  - PDF-only agreements skipped (no PyPDF2 available)
+  - Rate limited to 1 req/sec to be respectful

@@ -5,8 +5,8 @@ CoE/CODICES -- Venice Commission CODICES Database Fetcher
 Fetches constitutional court decisions from the CODICES REST API.
 
 Strategy:
-  - Iterate country codes via /api/precis/tree?countryCode=XXX
-  - Fetch each precis for metadata and summary text
+  - Use POST /api/search to paginate through all ~12,000+ precis
+  - Fetch each precis detail for metadata and summary text
   - Fetch full text HTML via fulltext translations + static files
   - Normalize into standard schema
 
@@ -39,17 +39,31 @@ logger = logging.getLogger("legal-data-hunter.CoE.CODICES")
 
 API_BASE = "https://codices.coe.int/api"
 
-# Major countries with constitutional court decisions in CODICES
-COUNTRY_CODES = [
-    "GER", "FRA", "AUT", "ITA", "ESP", "POR", "BEL", "NED",
-    "POL", "CZE", "SVK", "HUN", "ROM", "BUL", "CRO", "SLO",
-    "SRB", "MNE", "BIH", "MKD", "ALB", "KOS", "TUR", "GEO",
-    "ARM", "AZE", "UKR", "MOL", "RUS", "LIT", "LAT", "EST",
-    "FIN", "SWE", "NOR", "DEN", "ISL", "IRL", "GBR", "SUI",
-    "LIE", "LUX", "AND", "MON", "SMR", "MLT", "CYP", "GRE",
-    "USA", "CAN", "BRA", "ARG", "MEX", "COL", "PER", "CHI",
-    "RSA", "KEN", "NGA", "ISR", "JPN", "KOR", "IND", "AUS",
-]
+# Default search body for POST /api/search — all array fields must be present
+SEARCH_DEFAULTS = {
+    "Text": "",
+    "Type": "PRECIS",
+    "Country": "",
+    "Continent": "",
+    "Page": 0,
+    "Size": 500,
+    "TreePathList": [],
+    "CountryFilterList": [],
+    "ThesaurusFilterList": [],
+    "LanguageCode": "",
+    "WithProximity": False,
+    "ProximitySize": 0,
+    "ReferenceCode": "",
+    "DecisionNumber": "",
+    "Title": "",
+    "StartDate": "",
+    "EndDate": "",
+    "Group": "",
+    "ThesaurusIndexNumber": "",
+    "ThesaurusText": "",
+    "AlphaIndexText": "",
+    "WithThesaurusChildren": False,
+}
 
 
 class CODICESScraper(BaseScraper):
@@ -99,6 +113,62 @@ class CODICESScraper(BaseScraper):
             return json.loads(text, strict=False)
         except json.JSONDecodeError:
             return None
+
+    def _post_json(self, url: str, body: dict) -> Optional[Any]:
+        """POST JSON and parse response."""
+        payload = json.dumps(body).encode("utf-8")
+        for attempt in range(3):
+            try:
+                if self.client:
+                    resp = self.client.post(url, json_data=body)
+                    if resp.status_code == 200:
+                        return resp.json()
+                    logger.warning(f"POST HTTP {resp.status_code} for {url[:100]}")
+                else:
+                    import urllib.request
+                    req = urllib.request.Request(url, data=payload, headers={
+                        "User-Agent": "Mozilla/5.0",
+                        "Accept": "application/json",
+                        "Content-Type": "application/json",
+                    })
+                    with urllib.request.urlopen(req, timeout=60) as resp:
+                        return json.loads(resp.read().decode("utf-8", errors="replace"))
+            except Exception as e:
+                logger.warning(f"POST attempt {attempt+1} failed for {url[:100]}: {e}")
+                time.sleep(2 * (attempt + 1))
+        return None
+
+    def _search_all_ids(self, page_size: int = 500) -> List[str]:
+        """Use POST /api/search to get all precis IDs via pagination by continent."""
+        all_ids = []
+        seen = set()
+        # Search by continent to avoid the 10,000-result API cap
+        continents = ["EUR", "AMR", "AFR", "ASI"]
+        for continent in continents:
+            page = 0
+            while True:
+                body = dict(SEARCH_DEFAULTS)
+                body["Page"] = page
+                body["Size"] = page_size
+                body["Continent"] = continent
+                time.sleep(1)
+                result = self._post_json(f"{API_BASE}/search", body)
+                if not result:
+                    logger.error(f"Search {continent} page {page} failed")
+                    break
+                items = result.get("searchResult", [])
+                if not items:
+                    break
+                for item in items:
+                    item_id = item.get("id")
+                    if item_id and item_id not in seen:
+                        seen.add(item_id)
+                        all_ids.append(item_id)
+                logger.info(f"Search {continent} page {page}: {len(items)} items (total: {len(all_ids)})")
+                if not result.get("hasMoreChildren", False):
+                    break
+                page += 1
+        return all_ids
 
     def _get_country_tree(self, country_code: str) -> Optional[dict]:
         """Get precis tree for a country."""
@@ -240,64 +310,70 @@ class CODICESScraper(BaseScraper):
         }
 
     def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
-        """Fetch decisions by iterating country trees."""
+        """Fetch all decisions via POST /api/search pagination + detail fetch."""
+        logger.info("Fetching all precis IDs via search API...")
+        all_ids = self._search_all_ids()
+        logger.info(f"Found {len(all_ids)} precis IDs to fetch")
+
         count = 0
-
-        for code in COUNTRY_CODES:
+        skipped = 0
+        for i, guid in enumerate(all_ids):
             time.sleep(1)
-            tree = self._get_country_tree(code)
-            if not tree:
+            precis = self._fetch_precis(guid)
+            if not precis:
+                skipped += 1
                 continue
 
-            ids = self._collect_tree_ids(tree)
-            if not ids:
+            full_text = self._get_full_text_from_precis(precis)
+            summary = self._extract_summary(precis)
+
+            if not full_text and not summary:
+                logger.warning(f"No text for {precis.get('referenceCode', '?')}")
+                skipped += 1
                 continue
 
-            logger.info(f"Country {code}: {len(ids)} decisions")
+            precis["_text"] = full_text or ""
+            precis["_summary"] = summary
+            # Extract country from referenceCode (e.g., "GER-2024-1-001" -> "GER")
+            ref = precis.get("referenceCode", "")
+            precis["_country"] = ref.split("-")[0] if ref else ""
 
-            for guid in ids:
-                time.sleep(1)
-                precis = self._fetch_precis(guid)
-                if not precis:
-                    continue
+            count += 1
+            if count % 100 == 0:
+                logger.info(f"Progress: {count} fetched, {skipped} skipped, {i+1}/{len(all_ids)} processed")
+            yield self.normalize(precis)
 
-                full_text = self._get_full_text_from_precis(precis)
-                summary = self._extract_summary(precis)
-
-                if not full_text and not summary:
-                    logger.warning(f"No text for {precis.get('referenceCode', '?')}")
-                    continue
-
-                precis["_text"] = full_text or ""
-                precis["_summary"] = summary
-                precis["_country"] = code
-
-                count += 1
-                yield self.normalize(precis)
-
-        logger.info(f"Completed: {count} decisions fetched")
+        logger.info(f"Completed: {count} decisions fetched, {skipped} skipped")
 
     def fetch_updates(self, since: str = None) -> Generator[Dict[str, Any], None, None]:
         """Fetch recent decisions."""
         yield from self.fetch_all()
 
     def test(self) -> bool:
-        """Quick connectivity test."""
-        tree = self._get_country_tree("GER")
-        if not tree:
-            logger.error("Could not fetch Germany tree")
+        """Quick connectivity test using search API."""
+        # Test search endpoint
+        body = dict(SEARCH_DEFAULTS)
+        body["Page"] = 0
+        body["Size"] = 5
+        result = self._post_json(f"{API_BASE}/search", body)
+        if not result:
+            logger.error("Search endpoint failed")
             return False
 
-        ids = self._collect_tree_ids(tree)
-        logger.info(f"Germany tree OK: {len(ids)} decisions")
+        items = result.get("searchResult", [])
+        tree = result.get("tree", {})
+        total = tree.get("precisTree", {}).get("resultCount", 0)
+        logger.info(f"Search OK: {len(items)} items returned, {total} total precis")
 
-        if not ids:
-            logger.error("No decision IDs found")
+        if not items:
+            logger.error("No search results")
             return False
 
-        precis = self._fetch_precis(ids[0])
+        # Fetch first precis detail
+        guid = items[0].get("id")
+        precis = self._fetch_precis(guid)
         if not precis:
-            logger.error("Could not fetch precis")
+            logger.error("Could not fetch precis detail")
             return False
 
         ref = precis.get("referenceCode", "?")

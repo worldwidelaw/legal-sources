@@ -1032,6 +1032,7 @@ footer a { color: var(--blue); }
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/topojson-client@3/dist/topojson-client.min.js"></script>
 <script>
 // ═══ Constants ═══
 const DATA_URL = 'status.json';
@@ -1105,6 +1106,7 @@ const S = {
   markerLayers: {},
   selected: null, drawerOpen: false, filter: 'all', search: '',
   sortCol: 'status', sortAsc: true, tableOpen: true, logOpen: false,
+  subdivisionLayer: null, subdivisionCache: {}, subdivisionLabels: [], selectedSub: null,
 };
 
 // ═══ Helpers ═══
@@ -1525,9 +1527,50 @@ function updateRing(pct) {
 }
 
 // ═══ Drawer ═══
+
+// ═══ Source card renderer (shared by country and subdivision drawers) ═══
+function renderSourceCard(s, inherited) {
+  const types = (s.data_types || []).map(t => {
+    const cls = t === 'legislation' ? 'legislation' : t === 'case_law' ? 'case_law' : 'other_type';
+    const label = t === 'case_law' ? 'Case Law' : t.charAt(0).toUpperCase() + t.slice(1);
+    return '<span class="pill ' + cls + '">' + label + '</span>';
+  }).join('');
+  const samples = s.sample_count != null ? s.sample_count : '-';
+  const avgText = s.avg_text_length ? (s.avg_text_length > 1000 ? Math.round(s.avg_text_length/1000)+'K' : s.avg_text_length) : '-';
+  const blockerInfo = s.status === 'blocked' ? (() => {
+    const b = S.data.blockers.find(x => x.source_id === s.id);
+    return b ? '<div style="color:var(--red);font-size:12px;margin-bottom:8px">' + (b.reason || b.description) + '</div>' : '';
+  })() : '';
+  const inheritedBadge = inherited ? '<span class="pill" style="background:#f5f0e8;color:#8b7355;font-size:10px">National</span>' : '';
+  return '<div class="source-card">' +
+    '<div class="source-card-top">' +
+      '<a href="' + (s.url || '#') + '" target="_blank" class="source-card-name">' + s.id + '</a>' +
+      '<span class="badge ' + s.status + '">' + s.status.replace('_',' ') + '</span>' +
+    '</div>' +
+    '<div class="source-card-desc">' + s.name + '</div>' +
+    blockerInfo +
+    '<div class="source-card-meta">' + types + inheritedBadge +
+      ((s.preferred_for || []).includes('legislation') ? '<span class="pill" style="background:#e8f5e9;color:#2e7d32;font-weight:600">Preferred</span>' : '') +
+    '</div>' +
+    '<div class="source-card-stats">' +
+      (s.total_records ? '<strong>' + s.total_records.toLocaleString() + ' records</strong>' : (samples !== '-' ? 'Samples: ' + samples : '')) +
+      (avgText !== '-' ? ' &middot; Avg: ' + avgText + ' chars' : '') +
+      (s.last_run ? ' &middot; Last run: ' + new Date(s.last_run).toLocaleDateString() : '') +
+    '</div>' +
+    (s.indexing ? '<div class="source-card-stats" style="margin-top:4px"><span class="indexing-pill"><span class="idx-dot"></span>' +
+      (s.indexing.status === 'ok'
+        ? s.indexing.neon_rows.toLocaleString() + ' ' + (s.indexing.data_type === 'case_law' ? 'cases' : s.indexing.data_type === 'doctrine' ? 'docs' : 'laws') + ' indexed'
+        : 'Indexing: pending') +
+      (s.indexing.last_ingested ? ' &middot; Last: ' + new Date(s.indexing.last_ingested).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : '') +
+      (s.indexing.date_range ? ' &middot; ' + s.indexing.date_range.min_year + '\u2013' + s.indexing.date_range.max_year : '') +
+    '</span></div>' : '') +
+  '</div>';
+}
+
 function openDrawer(code) {
   const c = S.data.by_country[code];
   if (!c) return;
+  removeSubdivisions();
   if (S.selected && S.layers[S.selected]) S.geoLayer.resetStyle(S.layers[S.selected]);
   if (S.selected && S.markerLayers[S.selected]) {
     S.markerLayers[S.selected].setStyle({ weight: 1.5, color: '#c9c3b8', fillOpacity: 0.85 });
@@ -1543,6 +1586,9 @@ function openDrawer(code) {
     if (meta) S.map.flyTo([meta.lat, meta.lng], 5, { duration: 0.5 });
   }
   updateInfo(code, c);
+
+  // Load subdivisions if available
+  if (c.subdivisions) loadSubdivisions(code);
 
   document.getElementById('drawerFlag').textContent = c.flag || '';
   document.getElementById('drawerName').textContent = c.name;
@@ -1568,8 +1614,33 @@ function openDrawer(code) {
   `;
 
   const sources = S.data.sources.filter(s => s.country === code);
+
+  // Group sources by subdivision if applicable
+  let federalSources = sources;
+  const subSourceMap = {};
+  if (c.subdivisions) {
+    const subCodes = new Set(Object.keys(c.subdivisions));
+    federalSources = [];
+    for (const s of sources) {
+      let assigned = false;
+      if (s.jurisdictions) {
+        for (const j of s.jurisdictions) {
+          if (subCodes.has(j.code)) {
+            if (!subSourceMap[j.code]) subSourceMap[j.code] = [];
+            subSourceMap[j.code].push(s);
+            assigned = true;
+          }
+        }
+      }
+      if (!assigned) federalSources.push(s);
+    }
+  }
+
   let html = '';
-  for (const s of sources) {
+  if (c.subdivisions && Object.keys(subSourceMap).length > 0) {
+    html += '<div style="margin:12px 0 6px;font-weight:600;font-size:13px;color:var(--text-dim);border-bottom:1px solid var(--border-lit);padding-bottom:4px">Federal / National (' + federalSources.length + ')</div>';
+  }
+  for (const s of federalSources) {
     const types = (s.data_types || []).map(t => {
       const cls = t === 'legislation' ? 'legislation' : t === 'case_law' ? 'case_law' : 'other_type';
       const label = t === 'case_law' ? 'Case Law' : t.charAt(0).toUpperCase() + t.slice(1);
@@ -1613,6 +1684,23 @@ function openDrawer(code) {
       </div>
     </div>`;
   }
+  // Add subdivision source sections
+  if (c.subdivisions) {
+    for (const [subCode, subData] of Object.entries(c.subdivisions)) {
+      const subSrcs = subSourceMap[subCode] || [];
+      if (subSrcs.length === 0) continue;
+      html += '<div id="sub-' + subCode + '" style="margin:16px 0 6px;font-weight:600;font-size:13px;color:var(--text-dim);border-bottom:1px solid var(--border-lit);padding-bottom:4px">' + subData.name + ' <span style="font-weight:400;font-size:11px;margin-left:6px">(' + subSrcs.length + ' own + ' + subData.inherited_sources + ' inherited)</span></div>';
+      for (const s of subSrcs) {
+        const types = (s.data_types || []).map(t => {
+          const cls = t === 'legislation' ? 'legislation' : t === 'case_law' ? 'case_law' : 'other_type';
+          const label = t === 'case_law' ? 'Case Law' : t.charAt(0).toUpperCase() + t.slice(1);
+          return '<span class="pill ' + cls + '">' + label + '</span>';
+        }).join('');
+        html += '<div class="source-card"><div class="source-card-top"><a href="' + (s.url || '#') + '" target="_blank" class="source-card-name">' + s.id + '</a><span class="badge ' + s.status + '">' + s.status.replace('_',' ') + '</span></div><div class="source-card-desc">' + s.name + '</div><div class="source-card-meta">' + types + '</div></div>';
+      }
+    }
+  }
+
   // Add "Suggest a source" card at the end of every country drawer
   html += `
     <div class="source-card" style="border-style:dashed;border-color:var(--border-lit);text-align:center;padding:20px">
@@ -1633,11 +1721,184 @@ function openDrawer(code) {
   if (S.data) renderTable(S.data);
 }
 
+// ═══ Subdivision rendering ═══
+function removeSubdivisions() {
+  if (S.subdivisionLayer) { S.map.removeLayer(S.subdivisionLayer); S.subdivisionLayer = null; }
+  S.subdivisionLabels.forEach(l => S.map.removeLayer(l));
+  S.subdivisionLabels = [];
+}
+
+async function loadSubdivisions(code) {
+  const c = S.data.by_country[code];
+  if (!c || !c.subdivisions) return;
+  removeSubdivisions();
+  let topo = S.subdivisionCache[code];
+  if (!topo) {
+    try {
+      const res = await fetch('geo/subdivisions/' + code + '.topojson');
+      if (!res.ok) return;
+      topo = await res.json();
+      S.subdivisionCache[code] = topo;
+    } catch(e) { return; }
+  }
+  const objKey = Object.keys(topo.objects)[0];
+  const geojson = topojson.feature(topo, topo.objects[objKey]);
+  const subs = c.subdivisions;
+  const subCodes = Object.keys(subs);
+  if (S.layers[code]) {
+    S.layers[code].setStyle({ fillOpacity: 0, weight: 2, color: '#999' });
+  }
+  S.subdivisionLayer = L.geoJSON(geojson, {
+    style: (feature) => {
+      const subCode = matchSubdivision(feature, code, subCodes);
+      const subData = subCode ? subs[subCode] : null;
+      const hasData = subData && (subData.own_sources > 0 || subData.inherited_sources > 0);
+      return {
+        fillColor: hasData ? getColor(subData.status) : '#f0ede8',
+        weight: 0.8, opacity: 1, color: '#b0a89e',
+        fillOpacity: hasData ? 0.7 : 0.15,
+      };
+    },
+    onEachFeature: (feature, layer) => {
+      const subCode = matchSubdivision(feature, code, subCodes);
+      const subData = subCode ? subs[subCode] : null;
+      const name = subData ? subData.name : (feature.properties.name || feature.properties.NAME || '');
+      layer.on({
+        mouseover: (e) => {
+          e.target.setStyle({ weight: 2, color: '#2b6cb0', fillOpacity: 0.85 });
+          e.target.bringToFront();
+          if (subData) {
+            infoControl._div.innerHTML = '<h4>' + name + '</h4><div>' + subData.own_sources + ' own + ' + subData.inherited_sources + ' inherited sources</div><div class="info-dim">' + (subData.own_complete + subData.inherited_complete) + ' complete</div>';
+          }
+        },
+        mouseout: (e) => {
+          S.subdivisionLayer.resetStyle(e.target);
+          updateInfo(code, c);
+        },
+        click: () => {
+          if (subCode) openSubdivisionDrawer(code, subCode);
+        }
+      });
+      if (subData && subData.own_sources > 0) {
+        const center = layer.getBounds().getCenter();
+        const label = L.marker(center, {
+          icon: L.divIcon({
+            className: 'subdivision-label',
+            html: '<div style="font-size:8px;color:#333;text-shadow:0 0 3px #fff;white-space:nowrap">' + name + '</div>',
+            iconSize: [60, 14], iconAnchor: [30, 7],
+          }),
+          interactive: false,
+        });
+        label.addTo(S.map);
+        S.subdivisionLabels.push(label);
+      }
+    },
+  }).addTo(S.map);
+}
+
+function matchSubdivision(feature, countryCode, subCodes) {
+  const props = feature.properties || {};
+  const iso2 = props.iso_3166_2 || '';
+  if (iso2 && subCodes.includes(iso2)) return iso2;
+  const name = (props.name || props.NAME || '').toLowerCase();
+  const gn_name = (props.gn_name || '').toLowerCase();
+  for (const sc of subCodes) {
+    const subName = (S.data.by_country[countryCode].subdivisions[sc]?.name || '').toLowerCase();
+    if (subName && (name === subName || gn_name === subName || name.includes(subName) || subName.includes(name))) {
+      return sc;
+    }
+  }
+  const hasc = props.code_hasc || '';
+  if (hasc) {
+    const normalized = hasc.replace('.', '-');
+    if (subCodes.includes(normalized)) return normalized;
+  }
+  return null;
+}
+
+
+function openSubdivisionDrawer(countryCode, subCode) {
+  const c = S.data.by_country[countryCode];
+  if (!c || !c.subdivisions || !c.subdivisions[subCode]) return;
+  const subData = c.subdivisions[subCode];
+  S.selectedSub = subCode;
+
+  // Header
+  document.getElementById('drawerFlag').textContent = c.flag || '';
+  document.getElementById('drawerName').innerHTML = subData.name +
+    ' <a href="javascript:void(0)" onclick="openDrawer(\'' + countryCode + '\')" style="font-size:12px;color:var(--blue);margin-left:8px;text-decoration:none">\u2190 Back to ' + c.name + '</a>';
+
+  // Stats
+  const totalSrc = subData.own_sources + subData.inherited_sources;
+  const totalComplete = subData.own_complete + subData.inherited_complete;
+  const pct = totalSrc > 0 ? Math.round(totalComplete / totalSrc * 100) : 0;
+  document.getElementById('drawerStats').innerHTML =
+    '<span class="drawer-stat-item"><strong>' + subData.own_sources + '</strong> own sources</span>' +
+    '<span class="drawer-stat-item"><strong>' + subData.inherited_sources + '</strong> inherited from ' + c.name + '</span>' +
+    '<span class="drawer-stat-item"><strong>' + totalComplete + '</strong> of <strong>' + totalSrc + '</strong> complete</span>';
+
+  // Ring
+  const r = 20, circ = 2 * Math.PI * r, off = circ - (pct / 100) * circ;
+  document.getElementById('drawerRing').innerHTML =
+    '<svg width="48" height="48" viewBox="0 0 48 48">' +
+      '<circle cx="24" cy="24" r="' + r + '" fill="none" stroke="#e0dbd3" stroke-width="4"/>' +
+      '<circle cx="24" cy="24" r="' + r + '" fill="none" stroke="' + getColor(subData.status) + '"' +
+        ' stroke-width="4" stroke-linecap="round"' +
+        ' stroke-dasharray="' + circ + '" stroke-dashoffset="' + off + '"' +
+        ' transform="rotate(-90 24 24)" style="transition:stroke-dashoffset 0.8s ease-out"/>' +
+      '<text x="24" y="28" text-anchor="middle" fill="#1a1a1a" font-size="11" font-weight="700">' + pct + '%</text>' +
+    '</svg>';
+
+  // Find own sources (those with jurisdictions matching this subCode)
+  const allSources = S.data.sources.filter(s => s.country === countryCode);
+  const ownSources = [];
+  const inheritedSources = [];
+  for (const s of allSources) {
+    if (s.jurisdictions) {
+      const isOwn = s.jurisdictions.some(j => j.code === subCode);
+      const isWildcard = s.jurisdictions.some(j => j.code === countryCode + '-*' || j.code === countryCode);
+      if (isOwn) { ownSources.push(s); continue; }
+      if (isWildcard) { inheritedSources.push(s); continue; }
+    }
+    // Sources without jurisdictions field = country-level = inherited
+    inheritedSources.push(s);
+  }
+
+  let html = '';
+  if (ownSources.length > 0) {
+    html += '<div style="margin:12px 0 6px;font-weight:600;font-size:13px;color:var(--text-dim);border-bottom:1px solid var(--border-lit);padding-bottom:4px">' +
+      subData.name + ' Sources (' + ownSources.length + ')</div>';
+    for (const s of ownSources) html += renderSourceCard(s, false);
+  }
+
+  if (inheritedSources.length > 0) {
+    html += '<div style="margin:16px 0 6px;font-weight:600;font-size:13px;color:var(--text-dim);border-bottom:1px solid var(--border-lit);padding-bottom:4px">' +
+      'National Sources (' + inheritedSources.length + ')</div>';
+    for (const s of inheritedSources) html += renderSourceCard(s, true);
+  }
+
+  if (ownSources.length === 0 && inheritedSources.length === 0) {
+    html += '<div style="padding:20px;text-align:center;color:var(--text-dim)">No sources available for ' + subData.name + ' yet.</div>';
+  }
+
+  document.getElementById('drawerSources').innerHTML = html;
+
+  const drawer = document.getElementById('drawer');
+  drawer.classList.add('open');
+  drawer.style.maxHeight = drawer.querySelector('.drawer-inner').scrollHeight + 60 + 'px';
+  document.getElementById('drawerSpacer').style.height = '0px';
+  S.drawerOpen = true;
+
+  // Scroll drawer to top
+  drawer.querySelector('.drawer-inner').scrollTop = 0;
+}
+
 function closeDrawer() {
   const drawer = document.getElementById('drawer');
   drawer.style.maxHeight = '0';
   drawer.classList.remove('open');
   document.getElementById('drawerSpacer').style.height = '24px';
+  removeSubdivisions();
   if (S.selected && S.layers[S.selected]) S.geoLayer.resetStyle(S.layers[S.selected]);
   if (S.selected && S.markerLayers[S.selected]) {
     const c = S.data.by_country[S.selected];
@@ -1662,6 +1923,7 @@ function openSuggestedDrawer(dataCode, geoCode, nameOverride, flagOverride) {
     flag: flagOverride || (markerMeta && markerMeta.flag) || isoToFlag(geoCode),
   };
 
+  removeSubdivisions();
   if (S.selected && S.layers[S.selected]) S.geoLayer.resetStyle(S.layers[S.selected]);
   if (S.selected && S.markerLayers[S.selected]) {
     S.markerLayers[S.selected].setStyle({ weight: 1.5, color: '#c4a035', fillOpacity: 0.35 });

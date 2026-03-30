@@ -48,29 +48,48 @@ logger = logging.getLogger("legal-data-hunter.EC.cortenacional")
 API_BASE = "https://api.funcionjudicial.gob.ec/BUSCADOR-SENTENCIAS-SERVICES/api/buscador-sentencias"
 DOC_BASE = "https://api.funcionjudicial.gob.ec/CJ-DOCUMENTO-SERVICE/api/document/query/hba"
 
-# Try to import pdfminer for PDF text extraction
+# Try multiple PDF backends (pypdf is in requirements.txt)
+PDF_BACKEND = None
 try:
-    from pdfminer.high_level import extract_text as pdfminer_extract
-    PDF_AVAILABLE = True
+    import pypdf
+    PDF_BACKEND = "pypdf"
 except ImportError:
-    PDF_AVAILABLE = False
-    logger.warning("pdfminer.six not available - PDF text extraction will fail")
+    try:
+        import PyPDF2
+        PDF_BACKEND = "PyPDF2"
+    except ImportError:
+        try:
+            from pdfminer.high_level import extract_text as pdfminer_extract
+            PDF_BACKEND = "pdfminer"
+        except ImportError:
+            PDF_BACKEND = None
+            logger.warning("No PDF backend available (need pypdf, PyPDF2, or pdfminer.six)")
 
 
 def extract_pdf_text(pdf_bytes: bytes) -> Optional[str]:
-    """Extract text from PDF bytes using pdfminer.six."""
-    if not PDF_AVAILABLE:
+    """Extract text from PDF bytes using available backend."""
+    if not PDF_BACKEND:
         return None
     try:
-        text = pdfminer_extract(io.BytesIO(pdf_bytes))
+        if PDF_BACKEND == "pypdf":
+            reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
+            parts = [page.extract_text() for page in reader.pages if page.extract_text()]
+            text = "\n\n".join(parts)
+        elif PDF_BACKEND == "PyPDF2":
+            reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
+            parts = [page.extract_text() for page in reader.pages if page.extract_text()]
+            text = "\n\n".join(parts)
+        elif PDF_BACKEND == "pdfminer":
+            text = pdfminer_extract(io.BytesIO(pdf_bytes))
+        else:
+            return None
         if text:
-            # Clean up common PDF extraction artifacts
             text = re.sub(r'\x00', '', text)
             text = re.sub(r'[\r\n]{3,}', '\n\n', text)
             text = text.strip()
         return text if text and len(text) > 100 else None
     except Exception as e:
-        logger.warning(f"PDF extraction failed: {e}")
+        logger.warning(f"PDF extraction failed ({PDF_BACKEND}): {e}")
         return None
 
 
@@ -398,7 +417,7 @@ def main():
     if command == "test-api":
         scraper.test_api()
 
-    elif command == "bootstrap":
+    elif command in ("bootstrap", "bootstrap-fast"):
         if sample:
             logger.info("Fetching sample records...")
             samples = scraper.fetch_sample()

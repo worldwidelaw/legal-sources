@@ -1,0 +1,19 @@
+{
+  "_id": "SHERLOC-LEG-2200_chapter_ii_article_11",
+  "_source": "UN/UNODC-SHERLOC",
+  "_type": "legislation",
+  "_fetched_at": "2026-03-30T00:48:38.988652+00:00",
+  "title": "Amendments to the Anti-Money Laundering and Proceeds of Crime Law — Chapter II: Transparency in Financial Transactions — Article 11",
+  "text": "Article 11 – Risk Assessment \n\n1) Reporting entities shall assess their money laundering and terrorism financing risks, including of new products or technologies. The risk assessment and any underlying information shall be documented in writing, be kept up-to-date and readily available for the supervisory authority to review at their request.\n\n2) Reporting entities shall conduct enhanced due diligence measures where the risk of money laundering or terrorism financing is identified as being higher or where there is a suspicion of money laundering or terrorism financing.\n\n3) Reporting entities may conduct simplified due diligence measures where the risk of money laundering or terrorism financing is identified as being lower.",
+  "date": null,
+  "url": "https://www.unodc.org/cld/legislation/afg/amendments_to_the_anti-money_laundering_and_proceeds_of_crime_law/chapter_ii/article_11/article_11.html?lng=en&tmpl=sherloc",
+  "country": "Afghanistan",
+  "country_code": "AFG",
+  "article": "Article 11",
+  "chapter": "Chapter II: Transparency in Financial Transactions",
+  "law_title": "Amendments to the Anti-Money Laundering and Proceeds of Crime Law",
+  "crime_types": [
+    "Money laundering",
+    "Terrorism"
+  ]
+}

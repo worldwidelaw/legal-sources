@@ -1,0 +1,36 @@
+last_bootstrap: null
+last_error: name 'abstract_text' is not defined
+last_run: '2026-03-27T05:26:10.393325+00:00'
+run_history:
+- errors: 0
+  finished_at: '2026-03-27T05:14:40.674555+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-03-27T05:08:15.264350+00:00'
+- error_message: name 'abstract_text' is not defined
+  errors: 0
+  finished_at: '2026-03-27T05:22:19.968075+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-03-27T05:16:51.382718+00:00'
+- errors: 0
+  finished_at: '2026-03-27T05:26:10.393325+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-03-27T05:25:29.584605+00:00'
+total_records: 0

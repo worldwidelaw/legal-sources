@@ -1,0 +1,26 @@
+source:
+  id: INTL/WIPODecisions
+  name: WIPO Arbitration & Mediation Decisions
+  country: INTL
+  url: https://www.wipo.int/amc/en/domains/decisionsx/
+  data_types:
+    - case_law
+  description: >
+    UDRP domain name dispute panel decisions from WIPO Arbitration and Mediation
+    Center. Covers 100K+ decisions from 1999-present. HTML full text available
+    for 1999-2021 decisions. 2022+ decisions are PDF-only.
+  method: JSP list pages + HTML decision pages
+  license: Free access
+  language: en
+  auth: none
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - case_number
+    - domain_names
+    - complainant

@@ -1,0 +1,18 @@
+{
+  "_id": "INTL/WIPOLex-Judgments/3253",
+  "_source": "INTL/WIPOLex-Judgments",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-27T07:49:38.002053+00:00",
+  "judgment_id": "3253",
+  "title": "Case No. C30638718, SKA-23/2024. Decision of the Supreme Court of the Republic of Latvia (Senate) of 4 June 2024.\nECLI:LV:AT:2024:0604.C30638718.13.S,\n\nLatvia",
+  "text": "Lieta Nr. /Case No. C30638718 (SKC‑23/2024).\n\n\r\n\r\nThe Supreme Court of the Republic of Latvia (The Senate),\r\ncivil case, involving SIA „Alma Career Latvia” (before name change „CV-Online\r\nLatvia”) and SIA „Melons” regarding the prevention of a database creator’s\r\nrights infringement in connection with the cassation appeal of SIA “Alma Career\r\nLatvia” against the judgment of the Riga Regional Court of 25 February 2022.\n\n\r\n\r\nWebsite www.cv.lv contains a\r\ndatabase, which includes job advertisements published by employers. The site\r\ncontains microdata-type meta tags, which allow Internet search engines to\r\nbetter determine the content of each page in order to index it correctly.",
+  "date": "2024-06-04",
+  "url": "https://www.wipo.int/wipolex/en/judgments/details/3253",
+  "jurisdiction": "LV",
+  "issuing_authority": "Supreme Court of the Republic of Latvia",
+  "authority_level": "Final Instance",
+  "procedure_type": "Judicial (Civil)",
+  "subject_matter": "Copyright and Related Rights (Neighboring Rights)",
+  "plaintiff": "SIA \"CV-Online Latvia\" (SIA \"Alma Career Latvia”).",
+  "defendant": "SIA \"Melons”"
+}

@@ -1,0 +1,28 @@
+source:
+  id: PH/LawPhil
+  name: LawPhil Project (Arellano Law Foundation)
+  country: PH
+  url: https://lawphil.net/
+  description: >
+    Philippine legislation (Republic Acts, Executive Orders, Presidential Decrees)
+    and Supreme Court decisions from the LawPhil Project, a partnership between
+    the Arellano Law Foundation and the Philippine Supreme Court.
+  license: CC BY-NC 4.0 PH (government works are public domain)
+  language: en
+  data_types:
+    - legislation
+    - case_law
+  auth: none
+
+data_model:
+  update_strategy: upsert
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url

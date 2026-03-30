@@ -1,0 +1,34 @@
+source:
+  id: INTL/ILO-ILOAT
+  name: ILO Administrative Tribunal (TRIBLEX)
+  country: INTL
+  url: https://www.ilo.org/dyn/triblex/triblexmain.home
+  data_types:
+    - case_law
+  auth: none
+  language: en
+  description: |
+    ILO Administrative Tribunal judgments from the TRIBLEX database.
+    5,200+ judgments (1946-present) on employment disputes at 60+
+    international organizations (WHO, UNESCO, CERN, EPO, etc.).
+    Full text extracted from PDFs, metadata from detail pages.
+    Judgments numbered sequentially from 1 to ~5203.
+
+schema:
+  key_fields:
+    - _id
+    - judgment_no
+    - organization
+    - title
+    - text
+    - date
+    - judges
+    - keywords
+
+fetch:
+  method: sequential_pdf
+  base_url: https://www.ilo.org/dyn/triblex/triblexmain
+  detail_url_pattern: "{base_url}.detail?p_lang=en&p_judgment_no={no}"
+  pdf_url_pattern: "{base_url}.fullText?p_lang=en&p_judgment_no={no}"
+  rate_limit_seconds: 2
+  max_judgment_no: 5203

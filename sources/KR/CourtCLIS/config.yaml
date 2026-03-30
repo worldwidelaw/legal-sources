@@ -1,0 +1,55 @@
+id: KR/CourtCLIS
+name: Comprehensive Legal Information System (CLIS) - Korean Court Decisions
+country: KR
+url: https://www.law.go.kr/
+description: >
+  Korean court decisions (precedents) via the law.go.kr DRF API.
+  ~171K decisions from Supreme Court, lower courts, and specialized courts.
+  Full text including holdings, summaries, and complete opinions.
+  Same API as KR/LawGoKr but targeting precedents (target=prec).
+data_types:
+  - case_law
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: case_number
+      type: string
+      required: false
+    - name: court
+      type: string
+      required: false
+    - name: case_type
+      type: string
+      required: false
+    - name: judgment_type
+      type: string
+      required: false

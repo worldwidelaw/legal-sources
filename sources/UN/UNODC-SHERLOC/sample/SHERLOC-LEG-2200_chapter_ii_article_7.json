@@ -1,0 +1,19 @@
+{
+  "_id": "SHERLOC-LEG-2200_chapter_ii_article_7",
+  "_source": "UN/UNODC-SHERLOC",
+  "_type": "legislation",
+  "_fetched_at": "2026-03-30T00:49:54.922564+00:00",
+  "title": "Amendments to the Anti-Money Laundering and Proceeds of Crime Law — Chapter II: Transparency in Financial Transactions — Article 7",
+  "text": "Article 7 − Currency reporting at the border \n\n1) Any person who leaves or enters the Islamic Republic of Afghanistan in possession of currency, bearer negotiable instruments which are of a value exceeding a threshold to be prescribed in relevant Regulations or arranges for the transportation of such items into or out of the Islamic Republic of Afghanistan through a person cargo, postal service or through any other means shall declare the fact to the relevant authority under related regulations. The ministry of Finance shall submit such declarations to the Financial Intelligence Unit within a time to be prescribed in relevant regulations.\n\n2) The Customs Department or other authority designated pursuant to Article 7(1) may request information from any person in possession of, transporting or who arranges such transportation about the origin of such currency, bearer negotiable instrument and the intended use thereof.\n\n3) The Customs Department or other authority designated pursuant to Article 7(1) shall seize, restrain some or all of the amount of currency, bearer negotiable instruments or gold where:\n\na) there is suspicion of money laundering or terrorist financing\n\nb) there is suspicion that such currency is the proceeds of crime\n\nc) where there is a false declaration, the lack of provision or providing false information upon request.\n\n4) Where the currency, negotiable bearer instruments has not been claimed by any person within two years of it being seized or detained, the Customs Department or other authority designated pursuant to Article 7(1) may make an application to the Court that such currency, bearer negotiable instrument be forfeited to the Islamic Republic of Afghanistan.\n\n5) This Article shall also apply to any person who leaves or enters the Islamic Republic of Afghanistan in possession of gold or other precious metals or precious stones or arranges for the transportation of such items into or out of the Islamic Republic of Afghanistan through a person, cargo, postal service or through any other means in an amount above the relevant threshold as set in out in regulation.",
+  "date": null,
+  "url": "https://www.unodc.org/cld/legislation/afg/amendments_to_the_anti-money_laundering_and_proceeds_of_crime_law/chapter_ii/article_7/article_7.html?lng=en&tmpl=sherloc",
+  "country": "Afghanistan",
+  "country_code": "AFG",
+  "article": "Article 7",
+  "chapter": "Chapter II: Transparency in Financial Transactions",
+  "law_title": "Amendments to the Anti-Money Laundering and Proceeds of Crime Law",
+  "crime_types": [
+    "Money laundering",
+    "Terrorism"
+  ]
+}

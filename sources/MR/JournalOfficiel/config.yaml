@@ -1,0 +1,61 @@
+# MR/JournalOfficiel - Mauritania Official Journal
+# Journal Officiel de la République Islamique de Mauritanie
+
+name: "Mauritania Official Journal (Journal Officiel)"
+country: MR
+source_type: legislation
+
+# Main URLs
+base_url: "https://www.msgg.gov.mr"
+official_url: "https://www.msgg.gov.mr/fr/droit-mauritanien/recherche.html"
+
+# Search page returns 29,293 individual legal text entries
+# Each entry links to a JO issue PDF at:
+#   https://msgg.gov.mr/JO/{year}/mauritanie-jo-{year}-{issue}.pdf
+# Full text extracted from PDFs using PyPDF2
+
+data_types:
+  - legislation
+
+languages:
+  - fr  # French
+  - ar  # Arabic
+
+coverage:
+  start_year: 1959
+  end_year: 2026
+  total_texts: 29293
+  total_jo_issues: 1633
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "jo_issue"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "doc_type"
+      type: "string"
+      required: false
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url

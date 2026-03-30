@@ -1,0 +1,75 @@
+# ===================================================================
+# NP/LawCommission -- Nepal Law Commission
+# ===================================================================
+# Official repository of Nepali legislation (Constitution, Acts,
+# Ordinances, Regulations, Formation Orders).
+# ~500+ documents. Nepali language with some English translations.
+# PDF full text extracted via pdfplumber.
+# ===================================================================
+
+source:
+  id: "NP/LawCommission"
+  country: "NP"
+  name: "Nepal Law Commission"
+  url: "https://lawcommission.gov.np/"
+  description: |
+    Nepal Law Commission official legal document repository.
+    Acts, ordinances, regulations, formation orders, and the Constitution.
+    ~500+ documents with full text extracted from PDF.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.1
+  burst: 1
+  notes: "10-second crawl delay per robots.txt"
+
+api:
+  type: "scraping"
+  base_url: "https://lawcommission.gov.np"
+  endpoints:
+    acts: "/category/1757/?page={page}"
+    ordinances: "/category/1809/?page={page}"
+    regulations: "/category/1811/?page={page}"
+    constitution: "/category/1807/"
+    formation_orders: "/category/development-committee-formation-order/"
+  pdf_cdn: "https://giwmscdntwo.gov.np"
+  response_format: "html"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document ID from URL (e.g., 13544)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title in Nepali"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Document page URL"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "category"
+      description: "Document category (act, ordinance, regulation, etc.)"
+      type: "string"
+      role: "metadata"
+      required: false

@@ -23,6 +23,8 @@ import logging
 import re
 import sys
 import time
+import xml.etree.ElementTree as ET
+import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Generator, Optional
@@ -31,12 +33,6 @@ try:
     import requests
 except ImportError:
     print("ERROR: requests not installed. Run: pip3 install requests")
-    sys.exit(1)
-
-try:
-    from docx import Document
-except ImportError:
-    print("ERROR: python-docx not installed. Run: pip3 install python-docx")
     sys.exit(1)
 
 SOURCE_ID = "CN/NPC"
@@ -72,14 +68,40 @@ SXX_MAP = {
 
 
 def extract_text_from_docx(docx_bytes: bytes) -> str:
-    """Extract text from DOCX file bytes."""
+    """Extract text from DOCX using stdlib zipfile+xml (no python-docx needed)."""
     try:
-        doc = Document(io.BytesIO(docx_bytes))
-        paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
-        return '\n'.join(paragraphs)
+        with zipfile.ZipFile(io.BytesIO(docx_bytes)) as zf:
+            xml_content = zf.read("word/document.xml")
+        ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+        root = ET.fromstring(xml_content)
+        paragraphs = []
+        for p in root.iter(f"{{{ns['w']}}}p"):
+            texts = [t.text for t in p.iter(f"{{{ns['w']}}}t") if t.text]
+            line = "".join(texts).strip()
+            if line:
+                paragraphs.append(line)
+        return "\n".join(paragraphs)
     except Exception as e:
         logger.warning(f"Failed to extract text from DOCX: {e}")
         return ""
+
+
+def _request_with_retry(method, url, retries=3, backoff=5, **kwargs):
+    """Make an HTTP request with retries on timeout/connection errors."""
+    kwargs.setdefault("timeout", 30)
+    kwargs.setdefault("headers", HEADERS)
+    for attempt in range(retries):
+        try:
+            resp = requests.request(method, url, **kwargs)
+            resp.raise_for_status()
+            return resp
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            if attempt < retries - 1:
+                wait = backoff * (attempt + 1)
+                logger.warning(f"Retry {attempt+1}/{retries} for {url[:60]}... waiting {wait}s")
+                time.sleep(wait)
+            else:
+                raise
 
 
 def search_norms(page: int = 1, page_size: int = 20) -> tuple:
@@ -98,9 +120,11 @@ def search_norms(page: int = 1, page_size: int = 20) -> tuple:
         "pageSize": page_size,
         "orderByParam": {"order": "gbrq", "sort": "DESC"},
     }
-    headers = {**HEADERS, "Content-Type": "application/json"}
-    response = requests.post(SEARCH_URL, json=payload, headers=headers, timeout=30)
-    response.raise_for_status()
+    response = _request_with_retry(
+        "POST", SEARCH_URL,
+        json=payload,
+        headers={**HEADERS, "Content-Type": "application/json"},
+    )
     data = response.json()
 
     if data.get("code") == 200:
@@ -113,13 +137,7 @@ def search_norms(page: int = 1, page_size: int = 20) -> tuple:
 def get_details(bbbs: str) -> Optional[dict]:
     """Get norm details by bbbs ID."""
     try:
-        response = requests.get(
-            DETAILS_URL,
-            params={"bbbs": bbbs},
-            headers=HEADERS,
-            timeout=30,
-        )
-        response.raise_for_status()
+        response = _request_with_retry("GET", DETAILS_URL, params={"bbbs": bbbs})
         data = response.json()
         if data.get("code") == 200:
             return data.get("data")
@@ -131,13 +149,9 @@ def get_details(bbbs: str) -> Optional[dict]:
 def get_download_url(bbbs: str) -> Optional[str]:
     """Get signed download URL for DOCX."""
     try:
-        response = requests.get(
-            DOWNLOAD_URL,
-            params={"bbbs": bbbs, "format": "docx"},
-            headers=HEADERS,
-            timeout=30,
+        response = _request_with_retry(
+            "GET", DOWNLOAD_URL, params={"bbbs": bbbs, "format": "docx"}
         )
-        response.raise_for_status()
         data = response.json()
         if data.get("code") == 200 and data.get("data"):
             return data["data"].get("url")
@@ -153,8 +167,7 @@ def download_and_extract(bbbs: str) -> str:
         return ""
 
     try:
-        response = requests.get(url, timeout=60)
-        response.raise_for_status()
+        response = _request_with_retry("GET", url, timeout=60)
         if len(response.content) < 100:
             logger.warning(f"Download too small for {bbbs}: {len(response.content)} bytes")
             return ""

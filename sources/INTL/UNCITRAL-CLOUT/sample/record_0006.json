@@ -1,0 +1,20 @@
+{
+  "_id": "CLOUT-1960",
+  "_source": "INTL/UNCITRAL-CLOUT",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-27T05:25:55.122488+00:00",
+  "title": "CLOUT case 1960",
+  "text": "Case 1960: CISG 8; 9; [53; 54] \nSwitzerland: Tribunale d’app ello Ticino (Court of Appeal of the Canton Ticino) \nNo. 12.2018.110 \n3 February 2020 \nOriginal in Italian \nPublished in: CISG -online database ( www.cisg -online.org ) No. 5493. \nAbstract prepared by Ulrich G. Schroeter, National Correspondent \nThe present appe llate decision touches upon the borderland between the CISG and \ntax law, namely the question of which of the parties to a cross -border CISG contract \nhas to pay VAT, if the parties have not addressed this point in their sales contract. \nThe sales transaction underlying the decision was a CISG sale of steel coils by an \nItalian steel producer to a Swiss trading company. The parties had fixed the price in \ntheir contract but had not specifically mentioned therein whether Value Added Tax \n(VAT) would be added to th e price. The Swiss buyer had initially sold the steel coils \non to a Turkish (sub -)buyer, but subsequently asked the seller to instead deliver the \ncoils to a sub -buyer in Spain. The Italian seller’s invoice to the Swiss buyer stipulated \nthe agreed price, to gether with the clause “VAT exempt”. \nWhen the Italian tax authorities later charged VAT to the Italian seller because the \ndelivery had been made to the Spanish sub -buyer, the Italian seller (after failed \nnegotiations) sued the Swiss buyer for payment of t he VAT amount, arguing that the \nVAT should be borne by the buyer. The Court of Appeal first affirmed the Court of \nFirst Instance’s holding that principles of tax law determined whether the buyer had \nto bear the VAT costs in relation to the seller and also agreed with the Court of First \nInstance’s conclusion that in the present case, the answer was in the negative. \nAs an alternative line of argument, the Court of Appeal applied the CISG’s rules on \ncontract interpretation ( arts. 8 and 9 CISG), and concluded that also under these rules \nthe result was that the seller could not expect that the buyer would bear the VAT. \nGiven that the VAT is a tax imposed by the law of the seller’s country, the seller could \nbe expected to know the tax regulations of its own count ry and to calculate the \ncontract price taking into account this tax as one of his costs. The Court of Appeal \naccordingly affirmed the dismissal of the case.",
+  "date": "2020-02-03",
+  "url": "https://www.uncitral.org/clout/clout/data/che/clout_case_1960_030220.html",
+  "country": "Switzerland",
+  "court_name": "Tribunale d’appello Ticino (Court of Appeal of the Canton Ticino)",
+  "court_reference": "No. 12.2018.110",
+  "parties": "-",
+  "legislative_text": "CISG (1980)",
+  "clout_issue": 213,
+  "articles": "8 9 53 54",
+  "keywords": "-",
+  "comments": "Original in Italian Published in: CISG-online database (www.cisg-online.org) No. 5493. Abstract prepared by Ulrich G. Schroeter, National Correspondent",
+  "pdf_url": "http://daccess-ods.un.org/access.nsf/Get?OpenAgent&DS=a/cn.9/ser.c/abstracts/213&Lang=E"
+}

@@ -1,0 +1,41 @@
+source:
+  id: "INTL/ECCC"
+  name: "Extraordinary Chambers in the Courts of Cambodia"
+  description: "Khmer Rouge tribunal judgments, decisions, and orders from the ECCC archive"
+  url: "https://archive.eccc.gov.kh"
+  country: "INTL"
+  language: "EN"
+  data_types:
+    - case_law
+  auth:
+    type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  key_fields:
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true
+    - name: "doc_no"
+      type: "string"
+      required: false
+    - name: "record_type"
+      type: "string"
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id

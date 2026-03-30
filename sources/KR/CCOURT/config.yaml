@@ -1,0 +1,22 @@
+source:
+  id: KR/CCOURT
+  name: Constitutional Court of Korea
+  country: KR
+  url: https://english.ccourt.go.kr/
+  data_types:
+    - case_law
+  auth: none
+  description: >
+    English translations of Korean Constitutional Court decisions (694+).
+    Scraped from the English-language case search interface with PDF full text.
+
+schema:
+  key_fields:
+    - case_number
+    - case_name
+    - decision_date
+
+fetcher:
+  rate_limit: 2.0
+  timeout: 120
+  max_retries: 3

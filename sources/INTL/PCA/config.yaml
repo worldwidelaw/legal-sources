@@ -1,0 +1,70 @@
+# ===================================================================
+# INTL/PCA -- Permanent Court of Arbitration Case Repository
+# ===================================================================
+# ~290 cases: inter-state, investor-state, and contract-based
+# arbitrations. HTML scraping of case pages + PDF text extraction.
+# ===================================================================
+
+source:
+  id: "INTL/PCA"
+  country: "INTL"
+  name: "Permanent Court of Arbitration - Case Repository"
+  url: "https://pca-cpa.org/en/cases/"
+  description: |
+    International arbitration awards, decisions, and procedural orders
+    from the Permanent Court of Arbitration (PCA). Cases scraped from
+    pca-cpa.org with PDFs downloaded from pcacases.com. Text extracted
+    via PyMuPDF. ~290 cases covering inter-state, investor-state, and
+    contract-based arbitrations.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scrape_pdf"
+  listing_url: "https://pca-cpa.org/en/cases/"
+  case_url: "https://pca-cpa.org/en/cases/{id}/"
+  pdf_base: "https://pcacases.com/web/sendAttach/"
+
+data_model:
+  type: "case_law"
+  primary_key: "case_number"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "title"
+      description: "Case title with parties"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from award/decision PDFs"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date commenced or final award date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "case_number"
+      description: "PCA case reference number (e.g., 2019-28)"
+      type: "string"
+      role: "identifier"
+      required: true
+
+notes: |
+  - Case listing scraped from pca-cpa.org/en/cases/ (single page, ~290 cases)
+  - Individual case pages scraped for metadata and document links
+  - PDFs downloaded from pcacases.com/web/sendAttach/{id}
+  - Text extracted from PDFs using PyMuPDF (fitz)
+  - Prioritizes Awards/Decisions PDFs over procedural orders

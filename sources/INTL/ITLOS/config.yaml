@@ -1,0 +1,41 @@
+source:
+  id: "INTL/ITLOS"
+  name: "International Tribunal for the Law of the Sea"
+  description: "Judgments, advisory opinions, and orders from ITLOS since 1997"
+  url: "https://www.itlos.org"
+  country: "INTL"
+  language: "EN"
+  data_types:
+    - case_law
+  auth:
+    type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+schema:
+  key_fields:
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true
+    - name: "case_number"
+      type: "string"
+      required: false
+    - name: "document_type"
+      type: "string"
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id

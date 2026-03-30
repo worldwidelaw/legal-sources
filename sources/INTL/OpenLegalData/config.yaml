@@ -1,0 +1,68 @@
+# ===================================================================
+# INTL/OpenLegalData -- Open Legal Data Platform (DE/EU Case Law)
+# ===================================================================
+# German and EU court decisions via REST/Elasticsearch API.
+# Open source platform at de.openlegaldata.io.
+# ===================================================================
+
+source:
+  id: "INTL/OpenLegalData"
+  country: "INTL"
+  name: "Open Legal Data Platform (DE/EU Case Law)"
+  url: "https://de.openlegaldata.io/"
+  description: |
+    German and EU court decisions from the Open Legal Data Platform (OLDP).
+    REST API with Elasticsearch search. Full text available via search
+    endpoint. Covers German federal/state courts and EU courts.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "rest_json"
+  base_url: "https://de.openlegaldata.io/api"
+  search_url: "https://de.openlegaldata.io/api/cases/search/"
+  pagination: "limit/offset"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "title"
+      description: "Case title (derived from slug/court/date)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the court decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "court"
+      description: "Court abbreviation (e.g., EuGH, BGH, BVerfG)"
+      type: "string"
+      role: "metadata"
+      required: true
+
+notes: |
+  - Cases list endpoint (/api/cases/) times out - use search endpoint instead
+  - Search requires text parameter: /api/cases/search/?text=X
+  - Full text in 'text' field of search results
+  - 10,000+ results per search query
+  - Pagination via limit/offset parameters

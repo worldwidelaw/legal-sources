@@ -1,0 +1,63 @@
+# ===================================================================
+# INTL/UNTreatyCollection -- UN Multilateral Treaty Collection (MTDSG)
+# ===================================================================
+# 419 multilateral treaties deposited with the UN Secretary-General.
+# XML metadata endpoints with participants, declarations, reservations,
+# and objections text. 29 chapters organized by subject matter.
+# ===================================================================
+
+source:
+  id: "INTL/UNTreatyCollection"
+  country: "INTL"
+  name: "UN Multilateral Treaty Collection (MTDSG)"
+  url: "https://treaties.un.org/"
+  description: |
+    Multilateral treaties deposited with the UN Secretary-General,
+    organized in 29 chapters. XML endpoints provide structured metadata
+    including parties, dates, declarations, reservations, and objections.
+    419 treaties covering human rights, environment, trade, disarmament, etc.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "xml"
+  chapter_listing: "https://treaties.un.org/Pages/Treaties.aspx?id={chapter_id}&subid=A&clang=_en"
+  xml_endpoint: "https://treaties.un.org/doc/Publication/MTDSG/Volume%20I/Chapter%20{roman}/{treaty_id}.en.xml"
+
+data_model:
+  type: "legislation"
+  primary_key: "treaty_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "title"
+      description: "Treaty title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Declarations, reservations, objections, and notes"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Conclusion date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+notes: |
+  - 419 multilateral treaties across 29 chapters
+  - XML from Volume I includes full declarations, reservations, objections
+  - 29 chapter pages scraped for treaty IDs, then individual XML fetched
+  - Substantial legal text in declarations/reservations/objections sections

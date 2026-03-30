@@ -1,0 +1,45 @@
+id: MX/DOF
+name: Diario Oficial de la Federación (DOF)
+country: MX
+url: https://sidof.segob.gob.mx
+description: >
+  Mexico's Official Federal Gazette (DOF). Contains all federal laws, decrees,
+  regulations, agreements, and official notices. Full text via SIDOF Open Data API.
+  Published daily by the Secretaría de Gobernación.
+data_types:
+  - legislation
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - codNota
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: codNota
+      type: string
+      required: true

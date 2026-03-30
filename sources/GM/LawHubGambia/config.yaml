@@ -1,0 +1,84 @@
+# ===================================================================
+# GM/LawHubGambia -- Law Hub Gambia
+# ===================================================================
+# Gambian case law, constitution, and legislation from lawhubgambia.com.
+# Squarespace-hosted site with HTML full text for case law and
+# constitution, PDF downloads for legislation.
+# ~50 documents total. No authentication required.
+# ===================================================================
+
+source:
+  id: "GM/LawHubGambia"
+  country: "GM"
+  name: "Law Hub Gambia"
+  url: "https://www.lawhubgambia.com"
+  description: |
+    Free access to Gambian case law, the 1997 Constitution,
+    and enacted legislation. Case law includes Supreme Court and
+    Court of Appeal decisions (1960-2020). Legislation available
+    as PDFs (criminal law, electoral, human rights). Full text
+    extracted from HTML pages and PDF documents.
+
+data_types:
+  - case_law
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.lawhubgambia.com"
+
+data_model:
+  type: "mixed"
+  primary_key: "slug"
+  update_strategy: "upsert"
+  dedup_key:
+    - "slug"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "slug"
+      description: "URL slug identifying the document"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date (if available)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to original document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "doc_type"
+      description: "Document type: case_law, legislation, constitution"
+      type: "string"
+      role: "metadata"
+      required: true
+
+notes: |
+  - Squarespace-hosted site, ~50 documents
+  - Case law: HTML full text on individual pages
+  - Constitution: HTML full text on /1997-constitution
+  - Legislation: PDF downloads at /s/*.pdf
+  - Gambia Law Reports: bulk PDFs (large, may be scanned)
+  - pdfplumber used for PDF text extraction

@@ -1,0 +1,15 @@
+last_bootstrap: null
+last_error: null
+last_run: '2026-03-29T13:00:10.720305+00:00'
+run_history:
+- errors: 0
+  finished_at: '2026-03-29T13:00:10.720305+00:00'
+  records_fetched: 10
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 10
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-03-29T12:59:24.922087+00:00'
+total_records: 0

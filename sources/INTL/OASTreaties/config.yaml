@@ -1,0 +1,72 @@
+# ===================================================================
+# INTL/OASTreaties -- OAS Inter-American Treaties Database
+# ===================================================================
+# ~76 multilateral inter-American treaties with full text in English.
+# HTML scraping from oas.org/juridico and oas.org/dil endpoints.
+# ===================================================================
+
+source:
+  id: "INTL/OASTreaties"
+  country: "INTL"
+  name: "OAS Inter-American Treaties Database"
+  url: "https://www.oas.org/en/sla/dil/inter_american_treaties.asp"
+  description: |
+    Multilateral inter-American treaties from the Organization of
+    American States (OAS) Department of International Law. ~76
+    treaties covering human rights, private international law,
+    institutional agreements. Full text in English from HTML pages.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.3
+  burst: 1
+  notes: "robots.txt Crawl-delay: 3"
+
+api:
+  type: "html_scraping"
+  index_url: "https://www.oas.org/dil/treaties_year_text.htm"
+  base_urls:
+    - "https://www.oas.org/juridico/english/treaties/"
+    - "https://www.oas.org/dil/"
+    - "https://www.oas.org/en/sla/dil/"
+
+data_model:
+  type: "legislation"
+  primary_key: "treaty_code"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "title"
+      description: "Treaty title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the treaty"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Adoption date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "treaty_code"
+      description: "OAS treaty code (e.g., A-52, B-32)"
+      type: "string"
+      role: "identifier"
+      required: true
+
+notes: |
+  - Index at /dil/treaties_year_text.htm lists all treaties
+  - Mixed URL patterns: /juridico/, /dil/, /en/sla/dil/
+  - Session cookie required (visit main page first)
+  - Some /juridico/ pages have JS redirects to /dil/ versions
+  - robots.txt crawl-delay: 3 seconds

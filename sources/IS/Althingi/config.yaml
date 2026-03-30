@@ -1,0 +1,48 @@
+id: IS/Althingi
+name: Althingi Lagasafn (Icelandic Law Collection)
+country: IS
+url: https://www.althingi.is/lagasafn/
+description: >
+  Official consolidated Icelandic law collection from Althingi (Parliament).
+  900+ laws covering the entire statutory framework, from the 1940 criminal
+  code to modern legislation. Full text in Icelandic (HTML).
+data_types:
+  - legislation
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: law_number
+      type: string
+      required: false
+    - name: law_year
+      type: string
+      required: false

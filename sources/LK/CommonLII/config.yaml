@@ -1,0 +1,64 @@
+# ===================================================================
+# LK/CommonLII -- Sri Lanka Legal Information (CommonLII)
+# ===================================================================
+# HTML scraping of CommonLII Sri Lanka court databases.
+# Full text in HTML pages for case law from Supreme Court,
+# Court of Appeal, High Court, and historical Ceylon reports.
+# ===================================================================
+
+source:
+  id: "LK/CommonLII"
+  country: "LK"
+  name: "Sri Lanka (CommonLII)"
+  url: "https://www.commonlii.org/lk/"
+  description: |
+    Sri Lankan case law via CommonLII. ~12,600 decisions across 6 court
+    databases: Supreme Court, Court of Appeal, High Court, and historical
+    Ceylon reports. Full text in HTML. Data sourced from LawNet (lawnet.gov.lk).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "2-second delay between requests. Browser User-Agent required (410 without it)."
+
+api:
+  type: "scraping"
+  base_url: "https://www.commonlii.org"
+  endpoints:
+    cases: "/lk/cases/{court}/{year}/"
+  response_format: "html"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "document_id"
+      description: "Unique document ID from URL path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the court decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Document URL on CommonLII"
+      type: "string"
+      role: "reference"
+      required: true

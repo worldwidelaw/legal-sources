@@ -1,0 +1,36 @@
+source:
+  id: "UN/UNODC-SHERLOC"
+  name: "UNODC SHERLOC - Sharing Electronic Resources and Laws on Crime"
+  country: "UN"
+  url: "https://sherloc.unodc.org/"
+  data_types:
+    - case_law
+    - legislation
+  auth: none
+  license: "United Nations / UNODC"
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+    - country
+    - crime_types
+
+fetch:
+  base_url: "https://www.unodc.org"
+  case_law_endpoint: "/cld/v3/sherloc/cldb/data.json"
+  legislation_endpoint: "/cld/v3/sherloc/legdb/data.json"
+  case_law_page_size: 10
+  legislation_page_size: 100
+  delay_seconds: 2
+
+notes: |
+  SHERLOC covers 6 databases on organized crime, terrorism, trafficking,
+  smuggling, cybercrime, and firearms. Case law (3,373 records) includes
+  fact summaries in the search API. Legislation (13,926 records) requires
+  fetching individual HTML pages for the "Original Text" section.

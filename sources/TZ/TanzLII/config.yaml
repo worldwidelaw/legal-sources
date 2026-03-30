@@ -1,0 +1,27 @@
+source:
+  id: TZ/TanzLII
+  name: Tanzania Legal Information Institute (TanzLII)
+  country: TZ
+  url: https://tanzlii.org/
+  description: >
+    Tanzanian legislation (principal acts, subsidiary legislation, government notices)
+    from TanzLII, part of the Laws.Africa / AfricanLII network.
+    6,054 legislative documents from 1920-present.
+  license: Laws.Africa open access
+  language: en
+  data_types:
+    - legislation
+  auth: none
+
+data_model:
+  update_strategy: upsert
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url

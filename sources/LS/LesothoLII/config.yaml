@@ -1,0 +1,65 @@
+# ===================================================================
+# LS/LesothoLII -- Lesotho Legal Information Institute
+# ===================================================================
+# Akoma Ntoso / Laws.Africa platform scraping.
+# Legislation and court judgments with full text.
+# ===================================================================
+
+source:
+  id: "LS/LesothoLII"
+  country: "LS"
+  name: "Lesotho Legal Information Institute"
+  url: "https://lesotholii.org/"
+  description: |
+    Lesotho legislation and case law via LesothoLII (Laws.Africa/AfricanLII).
+    ~114 legislative acts + ~5,018 judgments from Court of Appeal, High Court,
+    Labour Court, and Labour Appeal Court. Akoma Ntoso full text.
+
+data_types:
+  - case_law
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.2
+  burst: 1
+  notes: "5-second crawl delay per robots.txt."
+
+api:
+  type: "scraping"
+  base_url: "https://lesotholii.org"
+  endpoints:
+    legislation: "/legislation/all?page={page}"
+    judgments: "/judgments/all/?page={page}"
+  response_format: "html"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "document_id"
+      description: "Document ID from AKN path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of enactment or judgment"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Document URL on LesothoLII"
+      type: "string"
+      role: "reference"
+      required: true
