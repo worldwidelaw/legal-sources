@@ -1,0 +1,44 @@
+source:
+  id: EE/EMTA-TaxRulings
+  country: EE
+  name: Estonian Tax and Customs Board Binding Rulings (Siduvad Eelotsused)
+  url: https://www.emta.ee/eraklient/maksud-ja-tasumine/tasumine-volad/siduvad-eelotsused
+
+data:
+  types:
+    - doctrine
+  language: est
+  coverage: Binding advance tax rulings from the Estonian Tax and Customs Board (EMTA/MTA) covering income tax (dividends, options, fringe benefits, capital gains, non-residents) and VAT (EU trade, real estate, financial services, exports)
+  volume: 109+ topic/year pages with multiple rulings each (~200-350 total rulings, 2013-2025)
+
+access:
+  auth: none
+  license: Open Government Data
+  rate_limit: 1 request/second
+
+endpoints:
+  index: /eraklient/maksud-ja-tasumine/tasumine-volad/siduvad-eelotsused
+  subpage: /eraklient/maksud-ja-tasumine/tasumine-volad/siduvad-eelotsused/{topic}-{year}
+
+schema:
+  key_fields:
+    - name: text
+      type: string
+      required: true
+    - name: topic
+      type: string
+      required: true
+    - name: year
+      type: string
+      required: false
+  metadata:
+    - tax_category
+    - slug
+
+notes: |
+  Binding advance tax rulings (siduvad eelotsused) from Estonia's Tax and Customs Board.
+  Published quarterly as anonymized summaries. Organized by topic and year on Drupal CMS.
+  Each subpage contains 1-5+ rulings as HTML text sections.
+  Topics: dividends, fringe benefits, options, capital gains, equity, non-residents,
+  permanent establishment, securities, VAT (intra-EU, real estate, financial services,
+  reverse charge, export/import, exemptions).

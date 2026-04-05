@@ -1,0 +1,72 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — Algeria Supreme Court Decisions Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "DZ/SupremeCourt-Decisions"
+  country: "DZ"
+  name: "Algeria Supreme Court Decisions (المحكمة العليا)"
+  url: "https://coursupreme.dz"
+  description: |
+    Algeria Supreme Court (Cour Suprême / المحكمة العليا).
+    Data source: WordPress REST API at coursupreme.dz
+    Coverage: ~1,261 decisions (2000-2023) with full text in Arabic
+
+data_types:
+  - caselaw
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "json"
+  base_url: "https://coursupreme.dz"
+  endpoints:
+    decisions: "/wp-json/wp/v2/decision?per_page=100&page={page}"
+
+data_model:
+  type: "caselaw"
+  primary_key: "wp_id"
+  update_strategy: "upsert"
+  versioning: "none"
+  dedup_key:
+    - "wp_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "wp_id"
+      description: "WordPress post ID"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date in ISO 8601"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Direct URL to the decision"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - Language: Arabic
+  - WordPress REST API, 13 pages at 100/page
+  - Full text in content.rendered field (HTML, needs stripping)
+  - Chambers: civil, criminal, commercial, family, real estate, etc.

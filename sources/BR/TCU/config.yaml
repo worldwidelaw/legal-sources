@@ -1,0 +1,34 @@
+source_id: BR/TCU
+name: Brazil Federal Audit Court (TCU) Decisions
+country: BR
+url: https://sites.tcu.gov.br/dados-abertos/jurisprudencia/
+data_types:
+  - case_law
+  - doctrine
+
+description: >
+  Acórdãos (decisions) from the Tribunal de Contas da União (TCU), Brazil's
+  supreme audit institution. Includes full text of decisions, reports, and
+  votes from all panels (Plenário, 1ª Câmara, 2ª Câmara). Data sourced
+  from TCU's open data CSV bulk downloads (1992–present) and JSON REST API.
+
+api:
+  json_endpoint: https://dados-abertos.apps.tcu.gov.br/api/acordao/recupera-acordaos
+  csv_index: https://sites.tcu.gov.br/dados-abertos/jurisprudencia/arquivos/jurisprudencia-arquivos.csv
+  csv_pattern: https://sites.tcu.gov.br/dados-abertos/jurisprudencia/arquivos/acordao-completo/acordao-completo-{year}.csv
+  delimiter: "|"
+  auth: none
+  rate_limit: 2s between requests
+
+schema:
+  key_fields:
+    - key
+    - titulo
+    - colegiado
+    - dataSessao
+    - relator
+    - sumario
+    - acordao
+    - decisao
+    - relatorio
+    - voto

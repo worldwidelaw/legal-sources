@@ -492,9 +492,9 @@ def test_connectivity():
 
 def bootstrap(sample: bool = False):
     """Run the bootstrap process."""
-    SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-
     session = requests.Session()
+    script_dir = Path(__file__).parent
+    data_dir = script_dir / "data"
 
     # Get case listing
     case_list = get_all_case_ids(session, limit=20 if sample else 0)
@@ -503,45 +503,46 @@ def bootstrap(sample: bool = False):
         print("ERROR: No cases found")
         sys.exit(1)
 
-    # Fetch cases
-    saved = 0
-    for record in fetch_cases(session, case_list, sample=sample):
-        # Save to sample directory
-        doc_id = record["_id"]
-        safe_name = re.sub(r'[^\w\-]', '_', doc_id)
-        out_path = SAMPLE_DIR / f"{safe_name}.json"
-
-        with open(out_path, "w", encoding="utf-8") as f:
-            json.dump(record, f, ensure_ascii=False, indent=2)
-
-        saved += 1
-        print(f"  Saved: {out_path.name}")
-
-    print(f"\nBootstrap complete: {saved} records saved to {SAMPLE_DIR}")
-
-    # Validate
-    text_count = 0
-    for p in SAMPLE_DIR.glob("*.json"):
-        with open(p) as f:
-            rec = json.load(f)
-        if rec.get("text") and len(rec["text"]) > 100:
-            text_count += 1
-
-    print(f"Records with substantial text: {text_count}/{saved}")
-    if text_count < saved * 0.5:
-        print("WARNING: Less than 50% of records have substantial text")
+    if sample:
+        SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
+        saved = 0
+        for record in fetch_cases(session, case_list, sample=True):
+            doc_id = record["_id"]
+            safe_name = re.sub(r'[^\w\-]', '_', doc_id)
+            out_path = SAMPLE_DIR / f"{safe_name}.json"
+            with open(out_path, "w", encoding="utf-8") as f:
+                json.dump(record, f, ensure_ascii=False, indent=2)
+            saved += 1
+            print(f"  Saved: {out_path.name}")
+        print(f"\nBootstrap complete: {saved} records saved to {SAMPLE_DIR}")
+    else:
+        data_dir.mkdir(parents=True, exist_ok=True)
+        jsonl_path = data_dir / "records.jsonl"
+        saved = 0
+        with open(jsonl_path, "a", encoding="utf-8") as f:
+            for record in fetch_cases(session, case_list, sample=False):
+                line = json.dumps(record, ensure_ascii=False, default=str)
+                f.write(line + "\n")
+                saved += 1
+                if saved % 100 == 0:
+                    print(f"  Saved {saved} records...")
+                    f.flush()
+        print(f"\nBootstrap complete: {saved} records saved to {jsonl_path}")
 
 
 def main():
     parser = argparse.ArgumentParser(description="CISG-online Case Law Fetcher")
-    parser.add_argument("command", choices=["bootstrap", "test"], help="Command to run")
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "test"], help="Command to run")
     parser.add_argument("--sample", action="store_true", help="Fetch sample only (15 records)")
+    parser.add_argument("--full", action="store_true", help="Full bootstrap (all records)")
     args = parser.parse_args()
 
     if args.command == "test":
         test_connectivity()
     elif args.command == "bootstrap":
-        bootstrap(sample=args.sample)
+        bootstrap(sample=args.sample and not args.full)
+    elif args.command == "bootstrap-fast":
+        bootstrap(sample=False)
 
 
 if __name__ == "__main__":

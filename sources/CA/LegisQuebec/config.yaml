@@ -1,0 +1,32 @@
+source_id: CA/LegisQuebec
+name: LegisQuebec (Quebec Provincial Legislation)
+country: CA
+url: https://www.legisquebec.gouv.qc.ca/
+data_url: https://www.legisquebec.gouv.qc.ca/en/chapitres
+description: |
+  Consolidated Quebec statutes (CQLR) and regulations from the official
+  LegisQuebec portal operated by Publications du Québec. Full text of all
+  codified acts and regulations in English.
+
+data_types:
+  - legislation
+
+license: "© Publications du Québec (Crown copyright)"
+language: en
+
+update_frequency: weekly
+
+schema:
+  key_fields:
+    - name: chapter_code
+      required: true
+      type: string
+  date_field: date
+  text_field: text
+  title_field: title
+  url_field: url
+
+notes: |
+  No API available. HTML scraping of official portal. Index pages list all
+  statutes and regulations with chapter codes. Full text fetched from
+  individual document pages. Server-side rendered HTML, no JavaScript needed.

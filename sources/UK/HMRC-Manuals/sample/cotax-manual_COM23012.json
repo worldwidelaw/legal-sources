@@ -1,0 +1,12 @@
+{
+  "_id": "cotax-manual/COM23012",
+  "_source": "UK/HMRC-Manuals",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-30T12:20:30.108770+00:00",
+  "title": "Assessing: CTSA assessments: functions",
+  "text": "The table below tells you the function or functions to use in particular situations.\n\nSituation\nFunction\nTo amend the company’s name and address and set or unset the RLS signal. Changes to a company’s name or address are normally made automatically through a data feed from Companies House.\nACNA (Amend Company Name / Address)\nTo capture a CT return.\nCRTN (Capture Return)\nTo view details of an assessment.\nDASS (Display Assessment Details)\nTo check details of the company’s Accounting periods (APs).\nDAPD (Display AP Details)\nTo see a work list of cases where a return has not been delivered 18 months after the end of the AP.\nDRNR (Determination Required No Return List)\nTo amend the AP record and set up dormant and exempt periods.\nMAPD (Maintain AP Dates)\nTo stop COTAX repaying and / or reallocating money automatically, to or from any AP of a company.\nMRSC (Maintain Repay / Realloc Signals (Company))\nTo prepare a revenue determination, record a self assessment, correct a return, record a taxpayer amendment, process a claim, prepare a closure notice with revenue amendment, prepare a revenue amendment, prepare or amend a discovery assessment, process a claim against a discovery orprepare a jeopardy amendment.\nRAMA (Record / Amend Assessment)\nTo record an informal discharge.\nRINF(Record Informal Discharge)\nTo reissue assessing output when the original is returned RLS or was not received by the company.\nRRAS (Request Reissue of Assessment)\nTo see a work list of cases requiring manual intervention to record self assessments.\nRSAW (Record SA List)\nTo see any work lists on which a particular company appears.\nTAXW (Taxpayer Worklist)\nTo unlog a return.\nURTN (Unlog Return)\nTo see details of charges, payments and repayments, and a summary of the accounting position, for an AP.\nVPPD (View Payment and Posting Details)",
+  "date": "2025-12-23",
+  "url": "https://www.gov.uk/hmrc-internal-manuals/cotax-manual/com23012",
+  "manual_slug": "cotax-manual",
+  "section_id": "COM23012"
+}

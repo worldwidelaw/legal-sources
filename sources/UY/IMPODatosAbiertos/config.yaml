@@ -1,0 +1,27 @@
+source:
+  id: UY/IMPODatosAbiertos
+  name: "Uruguay IMPO Datos Abiertos - Decrees, Resolutions & Constitution"
+  country: UY
+  url: https://www.impo.com.uy/datos-abiertos/
+  data_types:
+    - legislation
+  auth: none
+  description: >
+    Uruguayan decrees, resolutions, decree-laws, and constitution from IMPO
+    (Centro de Información Oficial) open data JSON API. Append ?json=true to
+    any document URL. Laws are covered by UY/IMPO via Parlamento; this source
+    covers complementary document types. Open data license.
+
+schema:
+  key_fields:
+    - _id
+    - document_type
+    - document_number
+    - title
+    - text
+    - date
+    - url
+
+fetch:
+  rate_limit_delay: 2
+  sample_size: 15

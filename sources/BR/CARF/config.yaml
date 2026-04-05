@@ -1,0 +1,50 @@
+source:
+  id: BR/CARF
+  country: BR
+  name: Brazilian Tax Appeals Council (CARF - Conselho Administrativo de Recursos Fiscais)
+  url: https://carf.fazenda.gov.br/
+
+data:
+  types:
+    - doctrine
+  language: por
+  coverage: Tax tribunal decisions (acórdãos) from CARF, covering all federal tax disputes including IRPJ, IRPF, PIS/COFINS, CSLL, IPI, customs duties, and social contributions. Three sections with multiple chambers.
+  volume: 571,000+ acórdãos
+
+access:
+  auth: none
+  license: Open Government Data (Brazil public law)
+  rate_limit: 1 request/second
+
+endpoints:
+  solr_search: https://acordaos.economia.gov.br/solr/acordaos2/select
+  browse: https://acordaos.economia.gov.br/solr/acordaos2/browse/
+
+schema:
+  key_fields:
+    - name: id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: ementa_s
+      type: string
+      required: true
+  metadata:
+    - numero_processo_s
+    - numero_decisao_s
+    - dt_sessao_tdt
+    - nome_relator_s
+    - secao_s
+    - camara_s
+    - turma_s
+    - decisao_txt
+
+notes: |
+  CARF is the top administrative tax appeals body in Brazil (Ministry of Finance).
+  Decisions are indexed in Apache Solr at acordaos.economia.gov.br.
+  Full text is in conteudo_txt field (Tika-extracted from PDFs), prefixed with
+  metadata that must be stripped (content starts after "Conteúdo =>").
+  The ementa_s field contains the decision summary.
+  Pagination via Solr start/rows parameters (max 100 rows per request).

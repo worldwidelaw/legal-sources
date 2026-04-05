@@ -1,0 +1,49 @@
+source:
+  id: ZA/SARS-Interpretations
+  country: ZA
+  name: South Africa Revenue Service Tax Interpretations
+  description: |
+    SARS tax doctrine: Interpretation Notes (~160), Binding General Rulings (~80),
+    Binding Class Rulings (~100), Binding Private Rulings (~420), VAT Rulings, and
+    VAT Class Rulings. PDF documents with full text extraction via pdfplumber.
+
+  data_types:
+    - doctrine
+
+  url: https://www.sars.gov.za/legal-counsel/interpretation-rulings/
+  auth: none
+
+  languages:
+    - en
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: doc_number
+      type: string
+      required: false
+    - name: doc_category
+      type: string
+      required: true
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - url
+
+rate_limits:
+  requests_per_second: 0.5
+  delay_between_requests: 2.0
+
+license:
+  type: Open Government Data
+  attribution: South African Revenue Service (SARS)
+  url: https://www.sars.gov.za/

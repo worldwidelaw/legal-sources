@@ -1,0 +1,25 @@
+{
+  "_id": "BR-CVM-PAS-19957000588202163",
+  "_source": "BR/CVM",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-03T12:10:36.377215+00:00",
+  "title": "PAS 19957000588202163",
+  "text": "Objeto: Apurar responsabilidades de administradores da BAUMER S.A. por infração aos art. 153, 192, 193, 196, § 1º, e 197 da Lei nº 6.404/76 e ao art. 9, § único, inciso II da Instrução CVM nº 481/2009",
+  "date": "2021-01-21",
+  "url": "https://sistemas.cvm.gov.br/?PAS",
+  "language": "pt",
+  "process_number": "19957000588202163",
+  "phase": "Finalizado",
+  "subphase": "Processo arquivado por cumprimento do Termo de Compromisso",
+  "accused": [
+    "JOAO CARLOS CORSINI GAMBOA",
+    "JORGE ANTONIO BARBOSA",
+    "LUPERCIO TISEO",
+    "MARIA CRISTINA BAUMER AZEVEDO",
+    "MARIA EDUARDA PESSOA DE QUEIROZ BAUMER",
+    "MONICA SALVARI BAUMER",
+    "PAULO HENRIQUE FRACCARO",
+    "RUY SALVARI BAUMER"
+  ],
+  "instruction_unit": "GEA-4"
+}

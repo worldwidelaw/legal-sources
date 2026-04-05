@@ -1,0 +1,80 @@
+# ===================================================================
+# AU/WA-Legislation -- Western Australia Legislation
+# ===================================================================
+# WA Acts and subsidiary legislation from legislation.wa.gov.au.
+#
+# Primary: HTML index pages + DOCX downloads via RedirectURL agent
+# Discovery: Alphabetical index pages (actsif_a..z, subsif_a..z)
+# Format: DOCX full text via IBM/HCL Domino file store
+# License: State of Western Australia (Open Data)
+# ===================================================================
+
+source:
+  id: "AU/WA-Legislation"
+  country: "AU"
+  name: "Western Australia Legislation (legislation.wa.gov.au)"
+  url: "https://www.legislation.wa.gov.au/"
+  description: |
+    Western Australian in-force Acts and subsidiary legislation.
+    Full text extracted from DOCX documents downloaded via the
+    legislation.wa.gov.au portal. Discovery via alphabetical
+    index pages, download via RedirectURL agent endpoint.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index_docx_download"
+  base_url: "https://www.legislation.wa.gov.au/legislation/statutes.nsf"
+  index_pattern: "/{type}if_{letter}.html"
+  download_pattern: "/RedirectURL?OpenAgent&query=mrdoc_{id}.docx"
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "doc_id"
+      description: "Document ID (e.g., act-1972-024)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act or subsidiary legislation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year of the act"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to original document"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - IBM/HCL Lotus Domino backend, no REST API
+  - Index pages at statutes.nsf/actsif_{letter}.html and subsif_{letter}.html
+  - DOCX download via RedirectURL?OpenAgent&query=mrdoc_{id}.docx
+  - Full text extracted via python-docx; PDF fallback via PyPDF2
+  - Atom feeds per act at law_a{id}.atom for change tracking

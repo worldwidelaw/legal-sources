@@ -1,0 +1,39 @@
+source:
+  id: "INTL/WIPO-LexDB"
+  name: "WIPO Lex Database (IP Laws Worldwide)"
+  country: INTL
+  url: "https://www.wipo.int/wipolex/en/"
+  data_types:
+    - legislation
+  auth: none
+  language: mul
+  description: >
+    WIPO Lex: comprehensive database of intellectual property legislation
+    and treaties from 200+ countries. Full text extracted from inline HTML
+    on detail pages, with signed PDF fallback.
+
+schema:
+  key_fields:
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: country_code
+      type: string
+      required: true
+    - name: type_of_text
+      type: string
+      required: false
+    - name: subject_matter
+      type: string
+      required: false
+    - name: date
+      type: string
+      required: false
+
+fetch:
+  rate_limit: 1.0
+  timeout: 60
+  retry: 3

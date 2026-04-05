@@ -1,0 +1,83 @@
+# ===================================================================
+# AR/CNACAF -- Cámara Nacional de Apelaciones en lo Contencioso
+#              Administrativo Federal
+# ===================================================================
+# Uses the SAIJ public JSON API with tribunal filter + PDF text extraction.
+# ~8,600+ administrative law decisions.
+# ===================================================================
+
+source:
+  id: "AR/CNACAF"
+  country: "AR"
+  name: "Cámara Nacional de Apelaciones en lo Contencioso Administrativo Federal"
+  url: "https://www.saij.gob.ar"
+  description: |
+    Argentine Federal Administrative Appeals Court decisions via the SAIJ
+    public JSON API. Key administrative law jurisprudence covering disputes
+    between citizens/companies and the federal government.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest"
+  base_url: "https://www.saij.gob.ar"
+  endpoints:
+    search: "/busqueda"
+    document: "/view-document"
+  pagination:
+    offset_param: "o"
+    page_size_param: "p"
+    max_page_size: 100
+
+data_model:
+  type: "caselaw"
+  primary_key: "uuid"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "uuid"
+      description: "SAIJ unique document identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (caratula)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision or summary"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "tribunal"
+      description: "Court name"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "url"
+      description: "Direct URL to the document"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - Uses SAIJ API with tribunal filter for CNACAF
+  - Filters: Tribunal/CAMARA NAC. APELAC. EN LO CONTENCIOSO ADMINISTRATIVO FEDERAL
+  - ~8,600+ decisions with full text via PDF extraction (pdfplumber)
+  - Language: Spanish

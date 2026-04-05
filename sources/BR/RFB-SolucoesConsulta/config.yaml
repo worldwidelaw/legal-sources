@@ -1,0 +1,47 @@
+source:
+  id: BR/RFB-SolucoesConsulta
+  country: BR
+  name: Brazilian Federal Revenue Tax Rulings (Soluções de Consulta)
+  url: http://normas.receita.fazenda.gov.br/sijut2consulta/
+
+data:
+  types:
+    - doctrine
+  language: por
+  coverage: Tax rulings (Soluções de Consulta) from Brazil's Federal Revenue Service (Receita Federal). Covers IRPJ, IRPF, PIS/COFINS, CSLL, VAT-equivalent taxes, customs classification, and more.
+  volume: 15,000+ Soluções de Consulta
+
+access:
+  auth: none
+  license: Open Government Data (Brazil public law)
+  rate_limit: 1 request/second
+
+endpoints:
+  listing: /sijut2consulta/consulta.action?tiposAtosSelecionados=72&p={page}
+  detail: /sijut2consulta/link.action?antigo=1&idAto={id}
+
+schema:
+  key_fields:
+    - name: id_ato
+      type: integer
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+  metadata:
+    - publication_date
+    - dou_section
+    - dou_page
+    - issuing_organ
+    - subject
+
+notes: |
+  SIJUT2 (Sistema de Informações Jurídico-Tributárias) is the public access
+  system for Brazilian tax norms and rulings. Full text is available inline
+  as HTML in the detail pages. The &antigo=1 parameter is critical to avoid
+  redirects to the auth-required normasinternet2 system.
+  Document type code 72 = Solução de Consulta.
+  IDs are sequential integers up to ~150,000+.

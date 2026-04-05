@@ -192,7 +192,9 @@ class SupremeCourtScraper(BaseScraper):
         total = 0
         consecutive_misses = 0
 
+        last_processed_id = start_id - 1
         for nkp_id in range(start_id, MAX_ID + 1):
+            last_processed_id = nkp_id
             if str(nkp_id) in fetched_ids:
                 continue
 
@@ -218,7 +220,7 @@ class SupremeCourtScraper(BaseScraper):
                 logger.info(f"50 consecutive misses at ID {nkp_id}, stopping")
                 break
 
-        checkpoint['last_id'] = nkp_id
+        checkpoint['last_id'] = last_processed_id
         checkpoint['fetched_ids'] = list(fetched_ids)[-1000:]
         self._save_checkpoint(checkpoint)
         logger.info(f"\nTotal decisions fetched: {total}")

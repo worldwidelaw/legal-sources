@@ -1,0 +1,84 @@
+# ===================================================================
+# US/CA-Legislation -- California Codes (Statutes)
+# ===================================================================
+# All 29 California Codes (Civil, Penal, Government, etc.) with full
+# text of every section. Official data from the California Legislature's
+# PUBINFO bulk download at downloads.leginfo.legislature.ca.gov.
+# No authentication required. Public domain.
+# ===================================================================
+
+source:
+  id: "US/CA-Legislation"
+  country: "US"
+  name: "California Legislative Information (Codes)"
+  url: "https://leginfo.legislature.ca.gov/"
+  description: |
+    California's 29 statutory codes with full text of every section,
+    sourced from the official LegInfo website. Covers the complete
+    California Codes including Civil, Penal, Government, Health & Safety,
+    Education, Vehicle, and more. Public domain.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scraping"
+  base_url: "https://leginfo.legislature.ca.gov"
+  endpoints:
+    toc: "/faces/codedisplayexpand.xhtml?tocCode={code}"
+    section_list: "/faces/codes_displayText.xhtml?lawCode={code}&division={div}&title={title}&part={part}&chapter={ch}&article={art}"
+    section_text: "/faces/codes_displaySection.xhtml?lawCode={code}&sectionNum={num}"
+
+data_model:
+  type: "legislation"
+  primary_key: "section_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "section_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "section_id"
+      description: "Unique section identifier (e.g., 'CIV-1624')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Section heading with code name and number"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the code section"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "law_code"
+      description: "California code abbreviation (e.g., CIV, PEN, GOV)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "section_num"
+      description: "Section number within the code"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date fetched (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+notes: |
+  - 29 California Codes with tens of thousands of sections
+  - Full text scraped from official LegInfo website
+  - Public domain (California government works)
+  - Rate-limited to respect the 10-second crawl delay in robots.txt

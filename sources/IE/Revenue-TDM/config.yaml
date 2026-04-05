@@ -1,0 +1,46 @@
+source:
+  id: IE/Revenue-TDM
+  country: IE
+  name: Irish Revenue Tax and Duty Manuals
+  description: |
+    Tax and Duty Manuals (TDMs) from Irish Revenue covering income tax, CGT,
+    corporation tax, VAT, customs, excise, stamp duty, pensions, and more.
+    ~1,350 current documents published as PDFs. Full text extracted via pdfplumber.
+
+  data_types:
+    - doctrine
+
+  url: https://www.revenue.ie/en/tax-professionals/tdm/index.aspx
+  auth: none
+
+  languages:
+    - en
+
+schema:
+  key_fields:
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: category
+      type: string
+      required: false
+    - name: page_title
+      type: string
+      required: false
+
+data_model:
+  update_strategy: full_replace
+  dedup_key:
+    - _id
+
+rate_limits:
+  requests_per_second: 0.5
+  delay_between_requests: 2.0
+
+license:
+  type: Open Government Data
+  attribution: Revenue Commissioners / Irish Revenue
+  url: https://www.revenue.ie

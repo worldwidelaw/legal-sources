@@ -1,0 +1,21 @@
+source_id: BR/TRF2
+name: "TRF-2 Federal Regional Court (2nd Region - RJ/ES)"
+description: >
+  Court decisions from the Tribunal Regional Federal da 2ª Região via the
+  juris.trf2.jus.br Solr-backed jurisprudence portal. TRF-2 covers Rio de
+  Janeiro and Espírito Santo. Full text fetched from documento.php endpoint.
+  Over 1M decisions available.
+base_url: "https://juris.trf2.jus.br/"
+data_types:
+  - case_law
+country: BR
+language: pt
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+schema:
+  key_fields:
+    - _id
+    - process_number

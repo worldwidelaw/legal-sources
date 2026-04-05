@@ -1,0 +1,79 @@
+# ===================================================================
+# AU/SA-Legislation -- South Australia Legislation
+# ===================================================================
+# SA Acts and Regulations from data.sa.gov.au CKAN portal.
+#
+# Primary: XML update packages via CKAN API (fortnightly ZIPs)
+# Format: SAOPC Exchange DTD XML with structured markup
+# License: Creative Commons Attribution 4.0
+# ===================================================================
+
+source:
+  id: "AU/SA-Legislation"
+  country: "AU"
+  name: "South Australia Legislation (data.sa.gov.au)"
+  url: "https://data.sa.gov.au/data/dataset/database-update-package-xml"
+  description: |
+    South Australia in-force Acts and Regulations. Full text in structured
+    XML (SAOPC Exchange DTD) from the Office of Parliamentary Counsel,
+    published fortnightly on data.sa.gov.au. Covers Acts and Regulations
+    updated in each release cycle.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "ckan_zip"
+  base_url: "https://data.sa.gov.au"
+  ckan_package_id: "database-update-package-xml"
+  ckan_api: "/data/api/3/action/package_show"
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "doc_id"
+      description: "Document ID (e.g., 1974.15)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act or regulation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Enactment or first valid date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to CKAN dataset"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - XML full text via data.sa.gov.au CKAN fortnightly update packages
+  - Each package is a ZIP containing inner ZIPs: A.zip (Acts) and R.zip (Regulations)
+  - SAOPC Exchange DTD XML with exdoc root element
+  - CC BY 4.0 license
+  - 222+ fortnightly packages from 2017 to present

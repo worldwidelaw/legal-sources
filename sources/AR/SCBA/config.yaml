@@ -1,0 +1,85 @@
+# ===================================================================
+# AR/SCBA -- Suprema Corte de Buenos Aires - JUBA
+# ===================================================================
+# ASP.NET web application with PostBack-based search.
+# Download endpoint returns full-text decisions as HTML .doc files.
+# Buenos Aires Province Supreme Court and appellate courts.
+# ===================================================================
+
+source:
+  id: "AR/SCBA"
+  country: "AR"
+  name: "SCBA - JUBA (Jurisprudencia Buenos Aires)"
+  url: "https://juba.scba.gov.ar"
+  description: |
+    Jurisprudence database of the Buenos Aires Province Supreme Court (SCBA).
+    Contains summaries and full-text decisions from SCBA and Buenos Aires
+    province appellate courts (Cámaras de Apelación). Covers civil, commercial,
+    labor, criminal, and administrative law. Decisions from 1984 onwards.
+
+data_types:
+  - caselaw
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "web_scraping"
+  base_url: "https://juba.scba.gov.ar"
+  endpoints:
+    search: "/Buscar.aspx"
+    full_text: "/VerTextoCompleto.aspx"
+  params:
+    materias:
+      - "Civil y Comercial"
+      - "Laboral"
+      - "Penal"
+      - "Contencioso administrativa"
+      - "Inconstitucionalidad"
+      - "Conflicto de Poderes"
+      - "Enjuiciamiento de Magistrados"
+      - "Todos"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "JUBA fallo ID"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Case title (carátula)"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+    - name: "tribunal"
+      description: "Issuing court"
+      type: "string"
+      role: "classification"
+    - name: "materia"
+      description: "Legal area"
+      type: "string"
+      role: "classification"
+    - name: "url"
+      description: "URL to full text page"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - ASP.NET PostBack-based search; requires ViewState/EventValidation tokens
+  - Full text retrieved via download link (lnkDescargar) returning HTML as .doc
+  - Search supports materia filtering (Civil, Laboral, Penal, etc.)
+  - Pagination via AJAX UpdatePanel
+  - Decisions from SCBA (1984+) and Cámaras de Apelación (1990+)
+  - Language: Spanish

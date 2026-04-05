@@ -1,0 +1,12 @@
+{
+  "_id": "corporate-finance-manual/CFM98670",
+  "_source": "UK/HMRC-Manuals",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-30T12:20:19.834115+00:00",
+  "title": "Interest restriction: administration: UK group company: disallowed tax-interest amounts carried forward",
+  "text": "TIOPA10/S378\n\nOnce a tax interest expense had been disallowed, either under TIOPA10/S375, where a compliant interest restriction return has been submitted by a group, or by S376 (where a compliant interest restriction return has not been submitted, but the company has been required to leave tax-interest out of account in its company tax return), it becomes a tax attribute of the company. S378 permits the disallowance to be carried forward to later accounting periods (in which it may possibly be reactivated) subject to certain limitations.\n\nIf a tax-interest amount that was left out of account is one that would have been deducted in computing the profits of a trade, it is no longer available for carry-forward if the company ceases to carry on the trade, or if the scale of activities of the trade becomes small or negligible. This is analogous to the restriction on carry-forward of trading losses in similar circumstances after a change in the ownership of a company carrying on a trade - CTA10/673(3), see CTM06390. The disallowed tax-interest amounts are an attribute of a company and would normally be carried forward, notwithstanding a change in ownership of the company.\n\nThe same applies if the company’s trade becomes one that is not carried on with a view to profit or in exercise of a statutory function (see CTA10/S44(4)).\n\nIf a tax-interest amount that was left out of account is one that would have been deducted in computing the profits of an investment business, it is no longer available for carry-forward if the company ceases to carry on the investment business, or if the scale of activities in the investment business becomes small or negligible. The analogy here is with CTA10/S677(4). See CTM08720.\n\nA tax-interest amount ceases to be carried forward further once it is reactivated in a later period, as described in CFM98680.",
+  "date": "2018-09-05",
+  "url": "https://www.gov.uk/hmrc-internal-manuals/corporate-finance-manual/cfm98670",
+  "manual_slug": "corporate-finance-manual",
+  "section_id": "CFM98670"
+}

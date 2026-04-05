@@ -1,0 +1,35 @@
+source:
+  id: UA/REYESTR-CourtDecisions
+  name: "Ukraine Court Decisions Registry (REYESTR)"
+  country: UA
+  url: https://reyestr.court.gov.ua/
+  data_types:
+    - case_law
+  auth: none
+  format: rtf
+  language: uk
+  description: >
+    Unified State Register of Court Decisions (ЄДРСР) - Ukraine's official
+    open data repository of court decisions from all Ukrainian courts.
+    Annual ZIP archives from data.gov.ua contain CSV index with links to
+    RTF full-text documents on od.reyestr.court.gov.ua. 100M+ decisions.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - court_code
+    - cause_num
+    - judge
+    - url
+
+fetcher:
+  data_gov_base: "https://data.gov.ua"
+  rtf_base: "http://od.reyestr.court.gov.ua"
+  rate_limit: 2.0
+  zip_datasets:
+    2026: "https://data.gov.ua/dataset/16ab7f06-7414-405f-8354-0a492475272d/resource/b1a4ac1c-b17a-4988-8e6d-dedae8b2dd63/download/"
+    2025: "https://data.gov.ua/dataset/1a6b5c08-0879-4387-8878-ac0027494274/resource/d3427d17-3fe4-4675-9a09-5274cd3476dc/download/"
+    2024: "https://data.gov.ua/dataset/1a6b5c08-0879-4387-8878-ac0027494274/resource/d3427d17-3fe4-4675-9a09-5274cd3476dc/download/"

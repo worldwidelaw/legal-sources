@@ -1,0 +1,12 @@
+{
+  "_id": "corporate-intangibles-research-and-development-manual/CIRD10200",
+  "_source": "UK/HMRC-Manuals",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-30T12:20:23.260487+00:00",
+  "title": "Intangible assets: introduction: international aspects",
+  "text": "Transfer pricing\n\nAs a result of bringing intangible assets into an income regime, the transfer pricing rules in TIOPA10/PART4 (INTM410000 onwards) may apply to acquisitions and disposals of assets otherwise of a capital character. There is further guidance at \nCIRD47060\n on the interaction between the arm’s length rule in the transfer pricing code and the market value provision in CTA09/PART8.\n\nControlled Foreign Companies\n\nFor the same reason the acquisition and disposal of intangible assets within the corporate intangible assets regime now need to be taken into account in Controlled Foreign Companies (CFC) computations. See INTM190000 for more inrormation on the CFC rules.\n\nResidence and foreign permanent establishments in the UK\n\nWhere a company ceases to be resident in the UK, or where a non-resident ceases to use an intangible asset for its UK trade carried on through a permanent establishment in the UK, its intangible assets are deemed to be disposed of at market value. See \nCIRD47030\n.\n\nWhere a company becomes resident, or where a non-resident company starts to use an intangible asset it already holds for its trade carried on through a permanent establishment in the UK, the asset is deemed to be acquired for its book value in the accounts. See \nCIRD47020\n.",
+  "date": "2019-05-22",
+  "url": "https://www.gov.uk/hmrc-internal-manuals/corporate-intangibles-research-and-development-manual/cird10200",
+  "manual_slug": "corporate-intangibles-research-and-development-manual",
+  "section_id": "CIRD10200"
+}

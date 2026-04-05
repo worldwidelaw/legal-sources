@@ -1,0 +1,19 @@
+{
+  "_id": "EC-CC-8599",
+  "_source": "EC/CorteConstitucional",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-01T18:25:08.919614+00:00",
+  "title": "Sentencia 526-20-EP/24",
+  "text": "La Corte Constitucional acepta una acción extraordinaria de protección tras verificar que la Sala Especializada de lo Contencioso Tributario de la Corte Nacional de Justicia vulneró el derecho al debido proceso en la garantía del cumplimiento de las normas y los derechos de las partes, al interpretar de una forma aislada la disposición relativa a la oportunidad para presentar una demanda contencioso tributaria (vigente hasta antes de las reformas de 26 de junio de 2019) en el sentido de que el primer día del término para impugnar un acto vence el mismo día de su notificación.",
+  "date": "2024-04-18",
+  "url": "https://esacc.corteconstitucional.gob.ec/storage/api/v1/10_DWL_FL/eyJjYXJwZXRhIjogInRyYW1pdGUiLCAidXVpZCI6ICI4YjM5YWY3OC0xMDIwLTQ2MmYtYWJkMi0wZmI5ZjA4YmIzYzAucGRmIn0=",
+  "numero": "526-20-EP/24",
+  "numero_causa": "526-20-EP",
+  "tipo_accion": "ACCIÓN EXTRAORDINARIA DE PROTECCIÓN",
+  "materia": "Tributario",
+  "juez": "CARMEN FAVIOLA CORRAL PONCE",
+  "decision": "ACEPTAR",
+  "metadata_sentencia": "precedente reconstruido;",
+  "es_novedad": false,
+  "es_relevante": false
+}

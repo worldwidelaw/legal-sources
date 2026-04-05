@@ -1,0 +1,53 @@
+source:
+  id: DK/Skattestyrelsen-Vejledning
+  country: DK
+  name: Danish Tax Legal Guidance (Den Juridiske Vejledning)
+  description: |
+    Comprehensive Danish tax legal guidance published by Skattestyrelsen (Danish Tax Agency).
+    Updated biannually. Covers all areas of Danish tax law including personal tax, corporate
+    tax, VAT, excise duties, customs, debt collection, and property valuation.
+    ~9,200 sections across 24 chapters. Full text HTML.
+
+  data_types:
+    - doctrine
+
+  url: https://info.skat.dk/data.aspx?oid=124
+  auth: none
+
+  languages:
+    - da
+
+schema:
+  key_fields:
+    - name: oid
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: section_id
+      type: string
+      required: false
+    - name: date
+      type: date
+      required: false
+    - name: chapter
+      type: string
+      required: false
+
+data_model:
+  update_strategy: replace
+  dedup_key:
+    - oid
+
+rate_limits:
+  requests_per_second: 0.5
+  delay_between_requests: 2.0
+
+license:
+  type: Open Government Data
+  attribution: Skattestyrelsen (Danish Tax Agency)
+  url: https://info.skat.dk

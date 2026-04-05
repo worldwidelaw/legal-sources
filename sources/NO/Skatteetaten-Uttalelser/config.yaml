@@ -1,0 +1,52 @@
+source:
+  id: NO/Skatteetaten-Uttalelser
+  country: "NO"
+  name: Norwegian Tax Directorate Statements & Advance Rulings
+  description: |
+    Norwegian Tax Directorate (Skattedirektoratet) tax doctrine including binding
+    advance rulings (BFU), principle statements, case commentaries, and directives.
+    ~2,060 documents from 2001-present. Norwegian language. Full text HTML.
+
+  data_types:
+    - doctrine
+
+  url: https://www.skatteetaten.no/rettskilder/type/uttalelser/
+  auth: none
+
+  languages:
+    - "no"
+
+schema:
+  key_fields:
+    - name: productId
+      type: integer
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: true
+    - name: serial_number
+      type: string
+      required: false
+    - name: category
+      type: string
+      required: true
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - productId
+
+rate_limits:
+  requests_per_second: 1.0
+  delay_between_requests: 1.0
+
+license:
+  type: Open Government Data
+  attribution: Skatteetaten (Norwegian Tax Administration)
+  url: https://www.skatteetaten.no/

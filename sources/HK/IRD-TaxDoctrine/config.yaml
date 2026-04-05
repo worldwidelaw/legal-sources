@@ -1,0 +1,99 @@
+# ===================================================================
+# HK/IRD-TaxDoctrine -- Hong Kong Inland Revenue Department Tax Guidance
+# ===================================================================
+# Tax doctrine from the Hong Kong IRD, including:
+#   - Departmental Interpretation and Practice Notes (DIPNs)
+#   - Stamp Office Interpretation and Practice Notes (SOIPNs)
+#   - Advance Ruling Cases
+#
+# Primary: ird.gov.hk (official IRD website)
+# DIPNs/SOIPNs: PDFs with text layers
+# Advance Rulings: Clean HTML pages
+# ===================================================================
+
+source:
+  id: "HK/IRD-TaxDoctrine"
+  country: "HK"
+  name: "Hong Kong IRD Tax Guidance (DIPNs, SOIPNs & Advance Rulings)"
+  url: "https://www.ird.gov.hk/eng/ppr/dip.htm"
+  description: |
+    Hong Kong Inland Revenue Department tax doctrine. Departmental
+    Interpretation and Practice Notes (DIPNs 01-63 + 13A), Stamp Office
+    Interpretation and Practice Notes (SOIPNs 01-08), and published
+    Advance Ruling Cases (1-78). Covers profits tax, salaries tax,
+    stamp duty, property tax, and other HK tax topics.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.ird.gov.hk"
+  document_types:
+    - type: "DIPN"
+      format: "pdf"
+      url_pattern: "/eng/pdf/dipn{num}.pdf"
+      count: 64
+    - type: "SOIPN"
+      format: "pdf"
+      url_pattern: "/eng/pdf/soipn{num}.pdf"
+      count: 8
+    - type: "AdvanceRuling"
+      format: "html"
+      url_pattern: "/eng/ppr/advance{num}.htm"
+      count: 78
+
+data_model:
+  type: "doctrine"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "doc_id"
+      description: "Document identifier (e.g., DIPN-01, SOIPN-03, AR-42)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication or revision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to original document on ird.gov.hk"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "doc_type"
+      description: "DIPN, SOIPN, or AdvanceRuling"
+      type: "string"
+      role: "category"
+      required: true
+
+notes: |
+  - ~150 documents total (64 DIPNs + 8 SOIPNs + 78 Advance Rulings)
+  - DIPNs and SOIPNs are PDF with text extraction via pdfplumber
+  - Advance Rulings are clean HTML pages
+  - No API available; direct URL enumeration
+  - No authentication required

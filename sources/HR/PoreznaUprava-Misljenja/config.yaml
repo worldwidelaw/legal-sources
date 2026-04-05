@@ -1,0 +1,46 @@
+source:
+  id: HR/PoreznaUprava-Misljenja
+  country: HR
+  name: Croatian Tax Authority Opinions (Mišljenja Središnjeg ureda)
+  url: https://porezna-uprava.gov.hr/hr/misljenja-su/3951
+
+data:
+  types:
+    - doctrine
+  language: hrv
+  coverage: Official tax opinions from the Croatian Tax Administration Central Office covering VAT, income tax, corporate tax, property tax, excise, local taxes, fiscalization, double taxation, and more
+  volume: 2,681+ published opinions
+
+access:
+  auth: none
+  license: Open Government Data
+  rate_limit: 1 request/second
+
+endpoints:
+  listing: /hr/misljenja-su/3951?Page={page}
+  detail: /Misljenja/Detaljno/{id}
+
+schema:
+  key_fields:
+    - name: klasa
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: category
+      type: string
+      required: true
+  metadata:
+    - urbroj
+    - year
+    - city
+    - category_id
+
+notes: |
+  Tax opinions from Croatia's Central Office of the Tax Administration (Porezna uprava).
+  Full text is available inline as HTML in detail pages. Categories include:
+  1=PDV (VAT), 4=Income tax, 5=Corporate tax, 6=Property transfer tax,
+  8=Local taxes, 11=General Tax Code, 12=Contributions, 15=Fiscalization,
+  16=Double taxation, etc.
+  IDs are sequential integers; listing pages show 10 per page with 269 pages.

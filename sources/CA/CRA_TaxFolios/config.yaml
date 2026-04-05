@@ -1,0 +1,38 @@
+source:
+  id: "CA/CRA_TaxFolios"
+  country: "CA"
+  name: "Canada Revenue Agency Income Tax Folios"
+  url: "https://www.canada.ca/en/revenue-agency/services/tax/technical-information/income-tax/income-tax-folios-index.html"
+  description: |
+    Official CRA technical tax guidance organized into 7 series covering
+    individuals, employers, property/investments, businesses, international,
+    trusts, and charities. Full text HTML chapters with detailed interpretations
+    of the Income Tax Act. ~150+ chapters, each 5,000-20,000+ words.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  key_fields:
+    - name: "folio_id"
+      description: "Folio chapter identifier (e.g., S1-F1-C1)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Chapter title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the folio chapter"
+      type: "string"
+      role: "content"
+      required: true

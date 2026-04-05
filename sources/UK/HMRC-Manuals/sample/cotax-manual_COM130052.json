@@ -1,0 +1,12 @@
+{
+  "_id": "cotax-manual/COM130052",
+  "_source": "UK/HMRC-Manuals",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-30T12:20:31.834799+00:00",
+  "title": "Notices and returns: companies subject to a Company Voluntary Arrangement ",
+  "text": "Where a company is insolvent and struggling\nto pay off debts with creditors, it has the option to enter into a Company Voluntary\nArrangement (CVA).\n \nA CVA is a formal\ninsolvency procedure that allows a financially distressed company to reach a\nlegally binding agreement with its creditors to repay all or part of its debts\nover a fixed period of time.\n\nCVAs are administered by\ninsolvency practitioners who will draft a proposal detailing how the company\nwill pay off its creditors. Creditors vote on the proposal at a Meeting of\nCreditors (MoC) and at least 75% (by value of debt) of creditors voting must\napprove it for it to proceed.\n\nHMRC is entitled to claim all known debt outstanding at the date\nof the MoC. Where HMRC votes in favour\nof a CVA, we include standard modifications to the company’s proposal as a\ncondition of our support. One such\ncondition is that only HMRC debts relating to accounting periods ending on or\nimmediately before the date of the MoC will be included in the CVA. Corporation\ntax liabilities arising from accounting periods ending after the MoC date will\nnot be included. These must be paid in full at the usual due date(s) even if\nthey relate to transactions that occurred prior to the MoC.\n\nCompanies have the option to shorten their accounting period\nso that it ends on the day before the MoC. Doing so would ensure that all corporation tax relating to pre-CVA transactions\nis included in the CVA.",
+  "date": "2025-10-29",
+  "url": "https://www.gov.uk/hmrc-internal-manuals/cotax-manual/com130052",
+  "manual_slug": "cotax-manual",
+  "section_id": "COM130052"
+}

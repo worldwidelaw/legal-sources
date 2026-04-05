@@ -1,0 +1,91 @@
+# ===================================================================
+# AU/ACCC -- Australian Competition and Consumer Commission
+# ===================================================================
+# ACCC public register entries (authorisations, undertakings,
+# infringement notices, merger reviews, notifications) and media
+# releases covering competition/consumer enforcement actions.
+#
+# Primary: Drupal JSON:API at accc.gov.au/jsonapi (public registers)
+# Secondary: HTML scraping of media releases at accc.gov.au/news-centre
+# ===================================================================
+
+source:
+  id: "AU/ACCC"
+  country: "AU"
+  name: "Australian Competition and Consumer Commission (ACCC)"
+  url: "https://www.accc.gov.au/"
+  description: |
+    ACCC public register entries and enforcement media releases.
+    Covers authorisations, undertakings, infringement notices,
+    informal merger reviews, and notifications via Drupal JSON:API.
+    Media releases via HTML scraping. Full text inline.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "drupal_jsonapi"
+  base_url: "https://www.accc.gov.au/jsonapi"
+  node_types:
+    - "acccgov_authorisation"
+    - "acccgov_notification"
+    - "acccgov_undertaking"
+    - "acccgov_infringement_notice"
+    - "acccgov_informal_merger_review"
+  body_field: "field_accc_body"
+  media_releases_url: "https://www.accc.gov.au/news-centre"
+
+data_model:
+  type: "doctrine"
+  primary_key: "uuid"
+  update_strategy: "upsert"
+  dedup_key:
+    - "uuid"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "uuid"
+      description: "Drupal node UUID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to original document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "doc_type"
+      description: "Document type (authorisation, undertaking, etc.)"
+      type: "string"
+      role: "classifier"
+      required: true
+
+notes: |
+  - Public register entries via Drupal JSON:API (50 per type, pagination broken)
+  - Media releases via HTML scraping with full inline text
+  - JSON:API pagination fails after first page (400 errors)
+  - Node types accc_news/accc_page/accc_publication return 500 errors
+  - Site runs Drupal 10

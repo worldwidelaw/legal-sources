@@ -1,0 +1,60 @@
+# TN/JORT-Legislation - Tunisian Legislation (DCAF Security Sector Database)
+# WordPress REST API at legislation-securite.tn (DCAF / Geneva Centre for Security Sector Governance)
+# 3,900+ legal texts covering Tunisian security sector legislation
+
+name: "Tunisia JORT Legislation (DCAF)"
+country: TN
+source_type: legislation
+
+# Main URLs
+base_url: "https://legislation-securite.tn"
+official_url: "https://legislation-securite.tn"
+
+# WordPress REST API endpoint: /wp-json/wp/v2/latest-laws
+# Supports pagination: ?per_page=100&page=N
+# Total: ~3,954 texts (80% with French full text)
+
+data_types:
+  - legislation
+
+languages:
+  - fr
+  - ar
+
+coverage:
+  start_year: 1956
+  end_year: 2026
+  total_texts: ~3954
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "wp_id"
+      type: "int"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url

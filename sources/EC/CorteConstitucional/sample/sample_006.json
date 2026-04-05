@@ -1,0 +1,19 @@
+{
+  "_id": "EC-CC-7967",
+  "_source": "EC/CorteConstitucional",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-01T18:25:08.919538+00:00",
+  "title": "Sentencia 1473-18-EP/23",
+  "text": "Acción extraordinaria de protección presentada en contra la sentencia de apelación que negó un Habeas Corpus. En el proceso de origen se negó la acción en ambas instancias. La Corte desestimó la acción y señaló que: (i) la decisión impugnada contestó los argumentos relevantes del actor en la acción respecto a una supuesta realización de una audiencia de flagrancia luego de las 24 horas; (ii) la sentencia es congruente frente a las partes porque la Sala sí respondió las alegaciones de los accionantes y, como resultado, no observó que la privación de libertad sea ilegal, arbitraria o ilegítima. En consecuencia, la Corte determinó que no se vulneró el debido proceso en la garantía de la motivación. En el voto salvado del juez Jhoel Escudero Soliz se explicó que la Sala sí vulneró el derecho al debido proceso en la garantía de la motivación porque no efectuó un análisis sobre las circunstancias de la privación de la libertad del accionante. Además, a criterio del juez, el caso cumplió con los elementos necesarios para que proceda el análisis de mérito con lo cual la Corte hubiera emitido un pronunciamiento necesario para la protección de las personas migrantes ecuatorianas sometidas a procesos de deportación.",
+  "date": "2023-08-02",
+  "url": "https://esacc.corteconstitucional.gob.ec/storage/api/v1/10_DWL_FL/eyJjYXJwZXRhIjogInRyYW1pdGUiLCAidXVpZCI6ICJiNmI0ZjdhNC1jNWEyLTQwNTctYWYzMi1kNzEwOWUyMGFiZmQucGRmIn0=",
+  "numero": "1473-18-EP/23",
+  "numero_causa": "1473-18-EP",
+  "tipo_accion": "ACCIÓN EXTRAORDINARIA DE PROTECCIÓN",
+  "materia": "Constitucional",
+  "juez": "RICHARD OMAR ORTIZ ORTIZ",
+  "decision": "DESESTIMAR",
+  "metadata_sentencia": "",
+  "es_novedad": false,
+  "es_relevante": false
+}

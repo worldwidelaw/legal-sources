@@ -1,0 +1,15 @@
+{
+  "_id": "BOI-CF-CPF-30",
+  "_source": "FR/BOFiP",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-30T12:20:34.003837+00:00",
+  "title": "CF - Obligations des contribuables tendant à la prévention de la fraude",
+  "text": "1Afin de renforcer les moyens de lutte de l’administration contre la fraude fiscale, le législateur a prévu un certain nombre de mesures destinées à accroître l’efficacité du contrôle des revenus. Ces mesures ont trait à :la déclaration des transferts de capitaux (chapitre 1, BOI-CF-CPF-30-10) ;la déclaration d’ouverture, de modification et de clôture des comptes et des locations de coffres-forts au fichier des comptes bancaires et assimilés (FICOBA) (chapitre 1.5, BOI-CF-CPF-30-15) ;la déclaration des comptes ouverts, détenus, utilisés ou clos hors de France (chapitre 2, BOI-CF-CPF-30-20) ;l’interdiction de paiement en espèces ou au moyen de monnaie électronique de certaines créances (chapitre 3, BOI-CF-CPF-30-30) ;la déclaration de dispositifs transfrontières (chapitre 4, BOI-CF-CPF-30-40).10Par ailleurs, les personnes assujetties à la taxe sur la valeur ajoutée qui effectuent des livraisons de biens et des prestations de services à destination de clients particuliers et qui enregistrent les règlements correspondant au moyen d’un logiciel ou d’un système de caisse sont tenues d’utiliser un logiciel ou un système satisfaisant à des conditions d’inaltérabilité, de sécurisation, de conservation et d’archivage des données en vue du contrôle de l’administration fiscale. Le respect de ces conditions doit être justifié par un certificat délivré par un organisme accrédité ou par une attestation individuelle de l’éditeur (BOI-TVA-DECLA-30-10-30).L’administration fiscale s’assure de la détention par les assujettis contrôlés de l’attestation individuelle ou du certificat précités (BOI-CF-COM-20-60).",
+  "date": "2026-03-25",
+  "url": "https://bofip.impots.gouv.fr/bofip/6080-PGP.html/identifiant=BOI-CF-CPF-30-20260325",
+  "identifiant_juridique": "BOI-CF-CPF-30",
+  "serie": "CF",
+  "division": "CPF",
+  "type": "Contenu",
+  "language": "fr"
+}

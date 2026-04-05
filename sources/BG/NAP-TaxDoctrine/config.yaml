@@ -1,0 +1,45 @@
+source:
+  id: BG/NAP-TaxDoctrine
+  country: BG
+  name: Bulgarian National Revenue Agency Tax Opinions (Становища на НАП)
+  url: https://nraapp02.nra.bg/cms5/apps/wqreg
+
+data:
+  types:
+    - doctrine
+  language: bul
+  coverage: Official tax opinions from Bulgaria's National Revenue Agency (NAP/НАП) covering VAT, personal income tax, corporate income tax, social security, health insurance, tax procedure, local taxes, and double taxation treaties
+  volume: 13,182+ published opinions
+
+access:
+  auth: none
+  license: Open Government Data
+  rate_limit: 1 request/second
+
+endpoints:
+  index: https://kik-info.com/stanovishta-na-nap/?page={page}
+  cache: https://nraapp02.nra.bg/cms5/apps/wqreg/cache/{hash}?page={page}
+  download: https://nraapp02.nra.bg/cms5/apps/wqreg/get/{hash}
+
+schema:
+  key_fields:
+    - name: text
+      type: string
+      required: true
+    - name: reference_number
+      type: string
+      required: true
+    - name: law_references
+      type: string
+      required: false
+  metadata:
+    - issuing_office
+    - law_category
+
+notes: |
+  Tax opinions (становища) from Bulgaria's National Revenue Agency.
+  Discovery via kik-info.com index (schema.org markup with MD5 hashes).
+  Full text via NRA cache endpoint (HTML, no CAPTCHA required).
+  Laws covered: ЗДДС (VAT), ЗДДФЛ (PIT), ЗКПО (CIT), КСО (Social Security),
+  ЗЗО (Health Insurance), ДОПК (Tax Procedure), ЗМДТ (Local Taxes),
+  СИДДО (Double Tax Treaties).

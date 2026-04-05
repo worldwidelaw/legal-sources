@@ -1,0 +1,52 @@
+id: MX/OrdenJuridicoEstatal
+name: Mexico Orden Jurídico Nacional - State & Federal Consolidated Legislation
+country: MX
+url: https://www.ordenjuridico.gob.mx
+description: >
+  Consolidated texts of Mexican federal laws (437 leyes federales) and state
+  legislation (~35K ordenamientos across 31 states + CDMX) from the Orden
+  Jurídico Nacional, maintained by SEGOB/SCJN. Federal laws available as HTML;
+  state laws as DOC/PDF via the compilacion subdomain.
+data_types:
+  - legislation
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: jurisdiction
+      type: string
+      required: false
+    - name: doc_type
+      type: string
+      required: false
+    - name: status
+      type: string
+      required: false

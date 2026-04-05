@@ -1,8 +1,8 @@
 # ===================================================================
 # INTL/WIPO-UDRP -- WIPO Domain Name Dispute Decisions (UDRP)
 # ===================================================================
-# ~75,000+ panel decisions on domain name disputes since 1999.
-# HTML scraping of structured decision pages + PDF extraction for 2022+.
+# 60,000+ panel decisions on domain name disputes since 1999.
+# HTML full text for 2000-2021; PDF for 2022+ (skipped in bootstrap).
 # ===================================================================
 
 source:
@@ -13,7 +13,7 @@ source:
   description: |
     Panel decisions under the Uniform Domain-Name Dispute-Resolution
     Policy (UDRP) administered by the WIPO Arbitration and Mediation
-    Center. Covers 75,000+ decisions since 1999 involving domain name
+    Center. Covers 60,000+ decisions since 2000 involving domain name
     disputes between trademark holders and domain registrants.
 
 data_types:
@@ -23,14 +23,14 @@ auth:
   type: "none"
 
 rate_limit:
-  requests_per_second: 1
-  burst: 2
+  requests_per_second: 0.5
+  burst: 1
+  delay_seconds: 2
 
 api:
   type: "html_scrape"
-  index_url: "https://www.wipo.int/amc/en/domains/decisionsx/index.html"
-  list_url: "https://www.wipo.int/amc/en/domains/decisionsx/list.jsp?prefix=D&year={year}&seq_min={seq_min}&seq_max={seq_max}"
-  text_url: "https://www.wipo.int/amc/en/domains/search/text.jsp?case=D{year}-{seq}"
+  case_url: "https://www.wipo.int/amc/en/domains/search/case.jsp?case_prefix={prefix}&case_year={year}&case_seq={seq}"
+  text_url: "https://www.wipo.int/amc/en/domains/search/text.jsp?case={case_number}"
 
 data_model:
   type: "case_law"
@@ -40,8 +40,8 @@ data_model:
 schema:
   total_fields: 12
   key_fields:
-    - name: "case_number"
-      description: "UDRP case number (e.g., D2020-0001)"
+    - name: "_id"
+      description: "Case number (e.g., D2020-0001)"
       type: "string"
       role: "identifier"
       required: true
@@ -77,8 +77,10 @@ schema:
       required: true
 
 notes: |
-  - Index page lists year/range blocks; list.jsp returns tabular metadata
-  - text.jsp redirects to HTML (1999-2021) or PDF (2022+)
-  - HTML decisions have rich meta tags (domains, complainants, date, keywords)
-  - PDF decisions extracted via PyMuPDF (fitz)
+  - case.jsp provides structured metadata (parties, domain, date, result)
+  - text.jsp redirects to HTML (2000-2021) or PDF (2022+)
+  - HTML decisions parsed with BeautifulSoup for clean text extraction
+  - PDF decisions skipped (would require PyMuPDF/fitz)
+  - Sequential case numbering: D{YEAR}-{SEQ} with 4-digit zero-padded seq
   - ~87% of case numbers have published decisions (rest are terminated/pending)
+  - Rate limited to 1 request per 2 seconds

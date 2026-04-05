@@ -10,14 +10,15 @@ API: Uwazi REST API (search, entities, per-page text extraction)
 License: Public domain (inter-American human rights decisions)
 
 Templates:
-  - Sentencia de la CorteIDH (Court judgments): 506 docs
-  - Resolución de la CorteIDH (Court resolutions): 1,329 docs
-  - Resolución de Presidencia (Presidential resolutions): 585 docs
-  - Voto Separado (Separate opinions): 588 docs
+  - Sentencia de la CorteIDH (Court judgments): ~506 docs
+  - Resolución de la CorteIDH (Court resolutions): ~1,329 docs
+  - Resolución de Presidencia (Presidential resolutions): ~585 docs
+  - Voto Separado (Separate opinions): ~588 docs
 
 Usage:
   python bootstrap.py bootstrap --sample   # Fetch sample records
   python bootstrap.py bootstrap             # Full bootstrap
+  python bootstrap.py bootstrap-fast        # Full bootstrap (VPS-compatible)
   python bootstrap.py test                  # Test API connectivity
 """
 
@@ -25,20 +26,27 @@ import argparse
 import json
 import sys
 import time
+import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Generator, Optional
 
-import requests
+# Add project root to path
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.base_scraper import BaseScraper
+from common.http_client import HttpClient
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("INTL/SUMMA")
 
 BASE_URL = "https://summa.cejil.org"
-SAMPLE_DIR = Path(__file__).parent / "sample"
 SOURCE_ID = "INTL/SUMMA"
-
-HEADERS = {
-    "User-Agent": "LegalDataHunter/1.0 (Open Data Research; github.com/ZachLaik/LegalDataHunter)",
-    "Accept": "application/json",
-}
 
 # Uwazi template IDs for case law document types
 TEMPLATES = {
@@ -48,289 +56,220 @@ TEMPLATES = {
     "voto_separado": "58b2f3a35d59f31e1345b49f",
 }
 
-# For sample mode, fetch from these templates
-SAMPLE_TEMPLATES = ["sentencia", "resolucion"]
-SAMPLE_PER_TEMPLATE = 6
-
 PAGE_SIZE = 50
-RATE_LIMIT_DELAY = 1.5
+RATE_LIMIT_DELAY = 1.0
 
 
-def api_get(endpoint: str, params: dict = None) -> Optional[dict]:
-    """Make a GET request to the Uwazi API."""
-    url = f"{BASE_URL}{endpoint}"
-    try:
-        resp = requests.get(url, headers=HEADERS, params=params, timeout=120)
-        resp.raise_for_status()
-        return resp.json()
-    except requests.RequestException as e:
-        print(f"  Error fetching {url}: {e}")
-        return None
-    except ValueError as e:
-        print(f"  Error parsing JSON from {url}: {e}")
-        return None
+class SUMMAScraper(BaseScraper):
+    """Scraper for SUMMA Inter-American Case Law database."""
 
+    def __init__(self, source_dir: str = None):
+        if source_dir is None:
+            source_dir = str(Path(__file__).parent)
+        super().__init__(source_dir)
+        self.http = HttpClient(
+            base_url=BASE_URL,
+            headers={
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research; github.com/ZachLaik/LegalDataHunter)",
+                "Accept": "application/json",
+            },
+            timeout=120,
+            max_retries=3,
+            backoff_factor=2.0,
+        )
 
-def fetch_page_text(doc_id: str, page: int) -> Optional[str]:
-    """Fetch the extracted text of a single page from a document."""
-    url = f"{BASE_URL}/api/documents/page"
-    params = {"_id": doc_id, "page": page}
-    try:
-        resp = requests.get(url, headers=HEADERS, params=params, timeout=60)
-        resp.raise_for_status()
-        data = resp.json()
-        return data.get("data", "")
-    except (requests.RequestException, ValueError) as e:
-        print(f"    Error fetching page {page} of {doc_id}: {e}")
-        return None
+    def _api_get(self, endpoint: str, params: dict = None) -> Optional[dict]:
+        """Make a GET request to the Uwazi API."""
+        try:
+            return self.http.get_json(endpoint, params=params)
+        except Exception as e:
+            logger.error(f"API error for {endpoint}: {e}")
+            return None
 
-
-def fetch_full_text(entity: dict) -> str:
-    """Extract full text from an entity by fetching all pages of its first document."""
-    documents = entity.get("documents", [])
-    if not documents:
-        return ""
-
-    doc = documents[0]
-    doc_id = doc.get("_id", "")
-    total_pages = doc.get("totalPages", 0)
-
-    if not doc_id or not total_pages:
-        return ""
-
-    text_parts = []
-    for page_num in range(1, total_pages + 1):
-        page_text = fetch_page_text(doc_id, page_num)
-        if page_text:
-            text_parts.append(page_text.strip())
-        time.sleep(0.3)  # Be gentle with per-page requests
-
-    return "\n\n".join(text_parts)
-
-
-def get_metadata_value(metadata: dict, key: str) -> Optional[str]:
-    """Extract a simple string value from Uwazi metadata."""
-    val = metadata.get(key)
-    if not val or not isinstance(val, list) or len(val) == 0:
-        return None
-    first = val[0]
-    if isinstance(first, dict):
-        return first.get("label") or first.get("value")
-    return str(first)
-
-
-def get_metadata_date(metadata: dict, key: str) -> Optional[str]:
-    """Extract a date from Uwazi metadata (stored as epoch seconds)."""
-    val = metadata.get(key)
-    if not val or not isinstance(val, list) or len(val) == 0:
-        return None
-    first = val[0]
-    if isinstance(first, dict):
-        epoch = first.get("value")
-    else:
-        epoch = first
-    if epoch and isinstance(epoch, (int, float)):
-        return datetime.fromtimestamp(epoch, tz=timezone.utc).strftime("%Y-%m-%d")
-    return None
-
-
-def normalize(entity: dict, full_text: str, doc_type: str) -> dict:
-    """Normalize a SUMMA entity into standard schema."""
-    metadata = entity.get("metadata", {})
-    shared_id = entity.get("sharedId", "")
-
-    case_number = get_metadata_value(metadata, "n_mero")
-    country = get_metadata_value(metadata, "pa_s")
-    court = get_metadata_value(metadata, "mecanismo")
-    date = get_metadata_date(metadata, "fecha")
-    judgment_type = get_metadata_value(metadata, "tipo")
-
-    title = entity.get("title", "")
-    url = f"{BASE_URL}/en/entity/{shared_id}"
-
-    return {
-        "_id": f"SUMMA-{shared_id}",
-        "_source": SOURCE_ID,
-        "_type": "case_law",
-        "_fetched_at": datetime.now(timezone.utc).isoformat(),
-        "title": title,
-        "text": full_text,
-        "date": date,
-        "url": url,
-        "case_number": case_number,
-        "country": country,
-        "court": court,
-        "document_type": doc_type,
-        "judgment_type": judgment_type,
-        "language": entity.get("language", "es"),
-    }
-
-
-def fetch_entities(template_name: str, template_id: str, limit: int = 0) -> Generator[dict, None, None]:
-    """Fetch all entities of a given template type with full text."""
-    offset = 0
-    fetched = 0
-    page_size = min(PAGE_SIZE, limit) if limit > 0 else PAGE_SIZE
-
-    while True:
-        print(f"  Fetching {template_name} offset={offset}...")
-        params = {
-            "types": json.dumps([template_id]),
-            "limit": page_size,
-            "from": offset,
-        }
-        data = api_get("/api/search", params)
-        if not data:
-            break
-
-        rows = data.get("rows", [])
-        total = data.get("totalRows", 0)
-        if not rows:
-            break
-
-        for entity in rows:
-            title = entity.get("title", "unknown")
-            print(f"    [{fetched+1}] {title[:60]}...")
-            full_text = fetch_full_text(entity)
-            if not full_text:
-                print(f"      WARNING: No full text for {title}")
-            record = normalize(entity, full_text, template_name)
-            yield record
-            fetched += 1
-            if limit > 0 and fetched >= limit:
-                return
-            time.sleep(RATE_LIMIT_DELAY)
-
-        offset += len(rows)
-        if offset >= total:
-            break
-
-    print(f"  Done: {fetched} {template_name} records fetched.")
-
-
-def bootstrap_sample():
-    """Fetch sample records for validation."""
-    SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-    total = 0
-
-    for template_name in SAMPLE_TEMPLATES:
-        template_id = TEMPLATES[template_name]
-        for record in fetch_entities(template_name, template_id, limit=SAMPLE_PER_TEMPLATE):
-            fname = SAMPLE_DIR / f"{record['_id']}.json"
-            with open(fname, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            total += 1
-            text_len = len(record.get("text", ""))
-            print(f"      Saved {fname.name} ({text_len} chars text)")
-
-    print(f"\nSample complete: {total} records saved to {SAMPLE_DIR}")
-    validate_sample()
-
-
-def bootstrap_full():
-    """Fetch all records from all templates."""
-    SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-    total = 0
-
-    for template_name, template_id in TEMPLATES.items():
-        print(f"\n=== Fetching {template_name} ===")
-        for record in fetch_entities(template_name, template_id):
-            fname = SAMPLE_DIR / f"{record['_id']}.json"
-            with open(fname, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            total += 1
-
-    print(f"\nFull bootstrap complete: {total} records saved.")
-
-
-def validate_sample():
-    """Validate sample records meet quality requirements."""
-    files = list(SAMPLE_DIR.glob("*.json"))
-    if not files:
-        print("FAIL: No sample files found")
-        return False
-
-    print(f"\nValidating {len(files)} sample records...")
-    issues = []
-    for f in files:
-        with open(f, "r", encoding="utf-8") as fh:
-            rec = json.load(fh)
-        name = f.name
-        if not rec.get("text"):
-            issues.append(f"{name}: missing or empty 'text' field")
-        elif len(rec["text"]) < 100:
-            issues.append(f"{name}: text too short ({len(rec['text'])} chars)")
-        if not rec.get("title"):
-            issues.append(f"{name}: missing title")
-        if not rec.get("date"):
-            issues.append(f"{name}: missing date")
-        if not rec.get("_id"):
-            issues.append(f"{name}: missing _id")
-
-    if issues:
-        print("ISSUES FOUND:")
-        for i in issues:
-            print(f"  - {i}")
-        return False
-    else:
-        print("ALL CHECKS PASSED")
-        # Print summary
-        for f in files[:3]:
-            with open(f, "r", encoding="utf-8") as fh:
-                rec = json.load(fh)
-            print(f"  {rec['_id']}: {rec['title'][:50]}... ({len(rec.get('text',''))} chars)")
-        return True
-
-
-def test_connectivity():
-    """Test API connectivity and report available data."""
-    print("Testing SUMMA (Uwazi) API connectivity...\n")
-
-    # Test search endpoint
-    data = api_get("/api/search", {"limit": 0})
-    if data:
-        print(f"  Search API: OK (total entities: {data.get('totalRows', '?')})")
-    else:
-        print("  Search API: FAILED")
-        return False
-
-    # Test each template
-    for name, tid in TEMPLATES.items():
-        params = {"types": json.dumps([tid]), "limit": 0}
-        data = api_get("/api/search", params)
+    def _fetch_page_text(self, doc_id: str, page: int) -> Optional[str]:
+        """Fetch extracted text of a single page from a document."""
+        data = self._api_get("/api/documents/page", {"_id": doc_id, "page": page})
         if data:
-            print(f"  Template '{name}': {data.get('totalRows', '?')} entities")
+            return data.get("data", "")
+        return None
 
-    # Test page text extraction
-    params = {"types": json.dumps([TEMPLATES["sentencia"]]), "limit": 1}
-    data = api_get("/api/search", params)
-    if data and data.get("rows"):
-        entity = data["rows"][0]
-        docs = entity.get("documents", [])
-        if docs:
-            doc_id = docs[0].get("_id", "")
-            page_text = fetch_page_text(doc_id, 1)
-            if page_text:
-                print(f"\n  Full text extraction: OK ({len(page_text)} chars from page 1)")
-            else:
-                print("\n  Full text extraction: FAILED")
+    def _fetch_full_text(self, entity: dict) -> str:
+        """Extract full text from an entity using concurrent page fetching."""
+        documents = entity.get("documents", [])
+        if not documents:
+            return ""
+
+        doc = documents[0]
+        doc_id = doc.get("_id", "")
+        total_pages = doc.get("totalPages", 0)
+
+        if not doc_id or not total_pages:
+            return ""
+
+        # Fetch all pages concurrently (up to 5 at a time)
+        text_parts = [None] * total_pages
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            futures = {}
+            for page_num in range(1, total_pages + 1):
+                future = executor.submit(self._fetch_page_text, doc_id, page_num)
+                futures[future] = page_num - 1  # 0-indexed position
+
+            for future in as_completed(futures):
+                idx = futures[future]
+                try:
+                    page_text = future.result()
+                    if page_text:
+                        text_parts[idx] = page_text.strip()
+                except Exception as e:
+                    logger.debug(f"Page fetch error: {e}")
+
+        return "\n\n".join(p for p in text_parts if p)
+
+    def _get_metadata_value(self, metadata: dict, key: str) -> Optional[str]:
+        """Extract a simple string value from Uwazi metadata."""
+        val = metadata.get(key)
+        if not val or not isinstance(val, list) or len(val) == 0:
+            return None
+        first = val[0]
+        if isinstance(first, dict):
+            return first.get("label") or first.get("value")
+        return str(first)
+
+    def _get_metadata_date(self, metadata: dict, key: str) -> Optional[str]:
+        """Extract a date from Uwazi metadata (stored as epoch seconds)."""
+        val = metadata.get(key)
+        if not val or not isinstance(val, list) or len(val) == 0:
+            return None
+        first = val[0]
+        if isinstance(first, dict):
+            epoch = first.get("value")
         else:
-            print("\n  No documents array found on entity")
-    print("\nConnectivity test complete.")
-    return True
+            epoch = first
+        if epoch and isinstance(epoch, (int, float)):
+            return datetime.fromtimestamp(epoch, tz=timezone.utc).strftime("%Y-%m-%d")
+        return None
+
+    def fetch_all(self) -> Generator[dict, None, None]:
+        """Yield all case law entities from all templates."""
+        for template_name, template_id in TEMPLATES.items():
+            logger.info(f"Fetching template: {template_name}")
+            offset = 0
+
+            while True:
+                params = {
+                    "types": json.dumps([template_id]),
+                    "limit": PAGE_SIZE,
+                    "from": offset,
+                }
+                data = self._api_get("/api/search", params)
+                if not data:
+                    break
+
+                rows = data.get("rows", [])
+                total = data.get("totalRows", 0)
+                if not rows:
+                    break
+
+                logger.info(f"  {template_name} offset={offset}, got {len(rows)}/{total}")
+
+                for entity in rows:
+                    entity["_template_name"] = template_name
+                    yield entity
+                    time.sleep(RATE_LIMIT_DELAY)
+
+                offset += len(rows)
+                if offset >= total:
+                    break
+
+            logger.info(f"  Done with {template_name}")
+
+    def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
+        """Yield entities modified since the given date."""
+        yield from self.fetch_all()
+
+    def normalize(self, raw: dict) -> dict:
+        """Transform a SUMMA entity into standard schema, including full text fetch."""
+        metadata = raw.get("metadata", {})
+        shared_id = raw.get("sharedId", "")
+        template_name = raw.get("_template_name", "unknown")
+
+        title = raw.get("title", "")
+        logger.info(f"  Normalizing: {title[:60]}...")
+
+        full_text = self._fetch_full_text(raw)
+        if not full_text:
+            logger.warning(f"  No full text for: {title}")
+
+        case_number = self._get_metadata_value(metadata, "n_mero")
+        country = self._get_metadata_value(metadata, "pa_s")
+        court = self._get_metadata_value(metadata, "mecanismo")
+        date = self._get_metadata_date(metadata, "fecha")
+        judgment_type = self._get_metadata_value(metadata, "tipo")
+
+        url = f"{BASE_URL}/en/entity/{shared_id}"
+
+        return {
+            "_id": f"SUMMA-{shared_id}",
+            "_source": SOURCE_ID,
+            "_type": "case_law",
+            "_fetched_at": datetime.now(timezone.utc).isoformat(),
+            "title": title,
+            "text": full_text,
+            "date": date,
+            "url": url,
+            "case_number": case_number,
+            "country": country,
+            "court": court,
+            "document_type": template_name,
+            "judgment_type": judgment_type,
+            "language": raw.get("language", "es"),
+        }
+
+
+def main():
+    parser = argparse.ArgumentParser(description="INTL/SUMMA data fetcher")
+    parser.add_argument(
+        "command",
+        choices=["bootstrap", "bootstrap-fast", "test"],
+        help="Command to run",
+    )
+    parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Full bootstrap (all records)")
+    parser.add_argument("--workers", type=int, default=5, help="Parallel workers (bootstrap-fast)")
+    parser.add_argument("--batch-size", type=int, default=100, help="Batch size (bootstrap-fast)")
+    args = parser.parse_args()
+
+    scraper = SUMMAScraper()
+
+    if args.command == "test":
+        logger.info("Testing SUMMA (Uwazi) API connectivity...")
+        data = scraper._api_get("/api/search", {"limit": 0})
+        if data:
+            logger.info(f"Search API: OK (total entities: {data.get('totalRows', '?')})")
+            for name, tid in TEMPLATES.items():
+                params = {"types": json.dumps([tid]), "limit": 0}
+                tdata = scraper._api_get("/api/search", params)
+                if tdata:
+                    logger.info(f"  Template '{name}': {tdata.get('totalRows', '?')} entities")
+        else:
+            logger.error("Search API: FAILED")
+            sys.exit(1)
+
+    elif args.command == "bootstrap":
+        sample_mode = args.sample and not args.full
+        stats = scraper.bootstrap(sample_mode=sample_mode, sample_size=12)
+        logger.info(f"Bootstrap complete: {stats}")
+
+    elif args.command == "bootstrap-fast":
+        stats = scraper.bootstrap_fast(
+            max_workers=args.workers,
+            batch_size=args.batch_size,
+        )
+        logger.info(f"Bootstrap-fast complete: {stats}")
+
+    else:
+        parser.print_help()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="INTL/SUMMA data fetcher")
-    parser.add_argument("command", choices=["bootstrap", "test"], help="Command to run")
-    parser.add_argument("--sample", action="store_true", help="Fetch sample only")
-    args = parser.parse_args()
-
-    if args.command == "test":
-        success = test_connectivity()
-        sys.exit(0 if success else 1)
-    elif args.command == "bootstrap":
-        if args.sample:
-            bootstrap_sample()
-        else:
-            bootstrap_full()
+    main()

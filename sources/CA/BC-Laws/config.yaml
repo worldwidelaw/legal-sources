@@ -1,0 +1,66 @@
+# ===================================================================
+# CA/BC-Laws -- British Columbia Laws (CiviX API)
+# ===================================================================
+# Official XML API, no authentication required.
+# All BC statutes and regulations with full text.
+# Queen's Printer License - open access.
+# ===================================================================
+
+source:
+  id: "CA/BC-Laws"
+  country: "CA"
+  name: "British Columbia Laws (bclaws.gov.bc.ca)"
+  url: "https://www.bclaws.gov.bc.ca"
+  description: |
+    Official BC legislation published by the King's Printer. CiviX XML API
+    provides structured access to all BC statutes and regulations with full text.
+    Includes current consolidated legislation and historical versions.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest"
+  base_url: "https://www.bclaws.gov.bc.ca/civix"
+  endpoints:
+    content: "/content/complete/statreg/"
+    document: "/document/id/complete/statreg/"
+    search: "/search/complete/statreg/"
+  format: "xml"
+
+schema:
+  key_fields:
+    - name: "_id"
+      description: "BC Laws document ID"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Act or regulation title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Last consolidated date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      description: "Direct URL to legislation"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - CiviX XML API: /civix/content/ for browsing, /civix/document/ for text
+  - Directory structure: statreg -> letter dirs -> act dirs -> document XML
+  - Full text returned as HTML/XML with semantic markup
+  - Queen's Printer Licence (open access)
+  - Language: English

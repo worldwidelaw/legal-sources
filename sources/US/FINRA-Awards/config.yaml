@@ -1,0 +1,52 @@
+source:
+  id: US/FINRA-Awards
+  country: US
+  name: FINRA Arbitration Awards
+  description: |
+    Financial Industry Regulatory Authority (FINRA) arbitration awards database.
+    ~66,000+ securities arbitration awards since 1988. PDF documents with full text
+    extraction. Covers disputes between investors and brokers/dealers.
+
+  data_types:
+    - case_law
+
+  url: https://www.finra.org/arbitration-mediation/arbitration-awards
+  auth: none
+
+  languages:
+    - en
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: case_id
+      type: string
+      required: true
+    - name: forum
+      type: string
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - case_id
+
+rate_limits:
+  requests_per_second: 0.5
+  delay_between_requests: 2.0
+
+license:
+  type: Public Domain
+  attribution: FINRA (Financial Industry Regulatory Authority)
+  url: https://www.finra.org/

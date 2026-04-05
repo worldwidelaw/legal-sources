@@ -1,0 +1,81 @@
+# ===================================================================
+# AU/VIC-Legislation -- Victoria Legislation
+# ===================================================================
+# Victorian Acts and statutory rules from legislation.vic.gov.au.
+#
+# Primary: JSON:API (Drupal) at content.legislation.vic.gov.au/api/v1
+# Full text: DOCX/DOC/PDF downloads linked from API responses
+# License: State of Victoria (Creative Commons Attribution 4.0)
+# ===================================================================
+
+source:
+  id: "AU/VIC-Legislation"
+  country: "AU"
+  name: "Victoria Legislation (legislation.vic.gov.au)"
+  url: "https://www.legislation.vic.gov.au/"
+  description: |
+    Victorian in-force Acts and statutory rules. Full text extracted
+    from DOCX/PDF documents linked via JSON:API (Drupal headless CMS).
+    Covers ~1,300 Acts and ~2,200 statutory rules currently in force.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "json_api"
+  base_url: "https://content.legislation.vic.gov.au/api/v1"
+  endpoints:
+    acts: "/node/act_in_force?site=6"
+    statutory_rules: "/node/sr_in_force?site=6"
+  include_chain: "field_in_force_version,field_in_force_version.field_in_force_version,field_in_force_version.field_in_force_version.field_media_file"
+  page_size: 50
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "doc_id"
+      description: "Document ID (e.g., act-1971-8204)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act or statutory rule title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication or effective date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to original document"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - JSON:API at content.legislation.vic.gov.au/api/v1 (no auth, CORS enabled)
+  - Full text in DOCX (recent) or DOC+PDF (older) documents
+  - DOCX extracted via python-docx; old .doc falls back to PDF via PyPDF2
+  - robots.txt Crawl-delay: 2 — respect 2s delay between requests
+  - ~1,328 Acts + ~2,192 statutory rules in force

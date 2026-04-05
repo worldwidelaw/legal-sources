@@ -1,0 +1,15 @@
+{
+  "_id": "PE-1.04",
+  "_source": "US/TX-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-03T08:05:41Z",
+  "title": "Penal Code § 1.04",
+  "text": "Sec. 1.04. TERRITORIAL JURISDICTION. (a) This state has jurisdiction over an offense that a person commits by his own conduct or the conduct of another for which he is criminally responsible if:\n(1) either the conduct or a result that is an element of the offense occurs inside this state;\n(2) the conduct outside this state constitutes an attempt to commit an offense inside this state;\n(3) the conduct outside this state constitutes a conspiracy to commit an offense inside this state, and an act in furtherance of the conspiracy occurs inside this state; or\n(4) the conduct inside this state constitutes an attempt, solicitation, or conspiracy to commit, or establishes criminal responsibility for the commission of, an offense in another jurisdiction that is also an offense under the laws of this state.\n(b) If the offense is criminal homicide, a \"result\" is either the physical impact causing death or the death itself. If the body of a criminal homicide victim is found in this state, it is presumed that the death occurred in this state. If death alone is the basis for jurisdiction, it is a defense to the exercise of jurisdiction by this state that the conduct that constitutes the offense is not made criminal in the jurisdiction where the conduct occurred.\n(c) An offense based on an omission to perform a duty imposed on an actor by a statute of this state is committed inside this state regardless of the location of the actor at the time of the offense.\n(d) This state includes the land and water and the air space above the land and water over which this state has power to define offenses.\n\r\nActs 1973, 63rd Leg., p. 883, ch. 399, Sec. 1, eff. Jan. 1, 1974. Amended by Acts 1993, 73rd Leg., ch. 900, Sec. 1.01, eff. Sept. 1, 1994.",
+  "date": "2026-04-03",
+  "url": "https://statutes.capitol.texas.gov/Docs/PE/htm/PE.1.htm#1.04",
+  "code": "PE",
+  "code_name": "Penal Code",
+  "chapter": "1",
+  "chapter_title": "PENAL CODE CHAPTER 1. GENERAL PROVISIONS",
+  "section_num": "1.04"
+}

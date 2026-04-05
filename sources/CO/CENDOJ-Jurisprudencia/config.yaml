@@ -1,0 +1,69 @@
+# ===================================================================
+# CO/CENDOJ-Jurisprudencia -- Colombia Supreme Court (GraphQL API)
+# ===================================================================
+# 600K+ Supreme Court decisions across Civil, Penal, and Laboral
+# chambers. GraphQL API at consultaprovidenciasbk.cortesuprema.gov.co.
+# Full text via getContentSearch query. No authentication required.
+# ===================================================================
+
+source:
+  id: "CO/CENDOJ-Jurisprudencia"
+  country: "CO"
+  name: "Colombia CENDOJ Unified Jurisprudence System (Corte Suprema)"
+  url: "https://consultaprovidencias.cortesuprema.gov.co/"
+  description: |
+    Colombian Supreme Court decisions from the CENDOJ unified portal.
+    Covers Civil, Penal, and Laboral chambers. 600K+ decisions including
+    autos and sentencias. Full text via GraphQL API. Spanish.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  notes: "Be conservative with GraphQL API. 1 req/sec for search, content fetch."
+
+api:
+  type: "graphql"
+  base_url: "https://consultaprovidenciasbk.cortesuprema.gov.co/api"
+  endpoints:
+    search: "getSearchResult(searchQuery: {...})"
+    content: "getContentSearch(previewDocument: {...})"
+
+schema:
+  key_fields:
+    - name: "doc_id"
+      description: "Document identifier (e.g. AC055-2024)"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Document title/filename"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Decision date"
+      type: "date"
+      role: "temporal_key"
+    - name: "chamber"
+      description: "Court chamber: Civil, Penal, or Laboral"
+      type: "string"
+      role: "classification"
+    - name: "magistrate"
+      description: "Reporting magistrate"
+      type: "string"
+      role: "metadata"
+
+notes: |
+  - GraphQL API at consultaprovidenciasbk.cortesuprema.gov.co/api
+  - Three chambers: Civil (108K), Penal (214K), Laboral (300K)
+  - Search via getSearchResult, full text via getContentSearch
+  - Documents in DOCX/PDF format on server; text extracted via API
+  - Language: Spanish

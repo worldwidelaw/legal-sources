@@ -1,0 +1,12 @@
+{
+  "_id": "international-manual/INTM267641",
+  "_source": "UK/HMRC-Manuals",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-30T12:18:36.930477+00:00",
+  "title": "UK subsidiaries of foreign banks and foreign banks trading in the UK through permanent establishments: Transfer pricing legislation: Overview",
+  "text": "The UK transfer pricing legislation is at TIOPA10/Part 4 (previously ICTA88/SCH28AA).. Detailed guidance on transfer pricing and the application of TIOPA10/Part 4 can be found at INTM431000 onwards.\n\nBefore changes made in FA04, the legislation in what was then ICTA88/SCH28AA applied to all UK companies (whether UK or foreign owned) and their transactions with affiliates not within the charge to corporation tax with respect to the relevant transaction, or where they were entitled to double taxation relief on foreign profits (usually where they were with a foreign branch of an affiliate).\n\nThe scope of TIOPA10/Part 4 (ICTA88/SCH28AA as it then was) was extended by FA04 and from 1 April 2004 the legislation applies to all transactions between affiliates, irrespective of whether or not the affiliate is within the charge to corporation tax. That is, the legislation covers transactions that are wholly within the UK and so will, for example, catch transactions between two connected UK companies to the extent that there is a ‘provision’ which is not made on arm’s length terms (see INTM432030).\n\nTIOPA10/Part 4 can also apply to transactions between a UK permanent establishment (PE) and a foreign affiliate of the non-resident company - see INTM432080. It cannot apply to transactions between a UK permanent establishment and the non-resident company (‘head office’) of which it is a part because they are effectively the same person.\n\nFrom 1 April 2004, small or medium-sized enterprises (SME’s) are exempt from transfer pricing requirements, subject to certain exceptions (see INTM432112). It seems unlikely that many banking groups will fall within the definition of an SME and so the exemption may not be relevant in the majority of banking cases.",
+  "date": "2016-03-11",
+  "url": "https://www.gov.uk/hmrc-internal-manuals/international-manual/intm267641",
+  "manual_slug": "international-manual",
+  "section_id": "INTM267641"
+}

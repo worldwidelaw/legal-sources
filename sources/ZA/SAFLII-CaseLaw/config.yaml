@@ -1,0 +1,50 @@
+source:
+  id: ZA/SAFLII-CaseLaw
+  name: "South Africa SAFLII Case Law (All Courts)"
+  country: ZA
+  url: https://www.saflii.org/za/cases/
+  data_types:
+    - case_law
+  auth: none
+  format: html
+  language: en
+  description: >
+    Case law from all South African courts via SAFLII (Southern African Legal
+    Information Institute). Covers Constitutional Court (ZACC), Supreme Court of
+    Appeal (ZASCA), High Courts, Labour Courts, Tax Court, Competition Tribunal,
+    and more. Full text HTML with structured metadata.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - court
+    - citation
+    - url
+
+fetcher:
+  base_url: "https://www.saflii.org"
+  rate_limit: 2.0
+  courts:
+    - code: ZACC
+      name: "Constitutional Court"
+    - code: ZASCA
+      name: "Supreme Court of Appeal"
+    - code: ZAGPJHC
+      name: "High Court - Gauteng (Johannesburg)"
+    - code: ZAWCHC
+      name: "High Court - Western Cape"
+    - code: ZAKZDHC
+      name: "High Court - KwaZulu-Natal"
+    - code: ZAECGHC
+      name: "High Court - Eastern Cape"
+    - code: ZALAC
+      name: "Labour Appeal Court"
+    - code: ZALCJHB
+      name: "Labour Court - Johannesburg"
+    - code: ZACC
+      name: "Competition Appeal Court"
+    - code: ZATC
+      name: "Tax Court"

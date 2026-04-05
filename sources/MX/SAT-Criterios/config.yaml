@@ -1,0 +1,49 @@
+id: MX/SAT-Criterios
+name: SAT Tax Criteria (Criterios Normativos y No Vinculativos)
+country: MX
+url: https://sidof.segob.gob.mx
+description: >
+  Mexican SAT (Servicio de Administración Tributaria) official tax criteria
+  published as Annexes 3 and 7 of the annual Resolución Miscelánea Fiscal (RMF).
+  Anexo 7 contains binding normative criteria (N) for tax law interpretation.
+  Anexo 3 contains non-binding criteria identifying improper tax practices (NV).
+  Covers CFF, ISR, IVA, IEPS, LFD, LISH, LIF, LIGIE. Full text via SIDOF.
+data_types:
+  - doctrine
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: criterion_id
+      type: string
+      required: true
+    - name: criterion_type
+      type: string
+      required: true
+    - name: law_code
+      type: string
+      required: true

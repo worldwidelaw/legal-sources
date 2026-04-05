@@ -1,0 +1,93 @@
+# ===================================================================
+# BO/TSJ -- Bolivia Tribunal Supremo de Justicia - Jurisprudence
+# ===================================================================
+# Bolivia's Supreme Court case law database. JSON API with full text
+# in contenido field. Covers Autos Supremos, Sentencias, and
+# Resoluciones from all chambers (Sala Civil, Penal, Social, Plena).
+# No authentication required. Open data.
+# ===================================================================
+
+source:
+  id: "BO/TSJ"
+  country: "BO"
+  name: "Bolivia Tribunal Supremo de Justicia"
+  url: "https://jurisprudencia.tsj.bo/"
+  description: |
+    Court decisions from Bolivia's Supreme Court (Tribunal Supremo de Justicia).
+    Includes Autos Supremos, Sentencias, and Resoluciones from all chambers.
+    Full text available via JSON API endpoints. Laravel-based backend with
+    paginated search and individual record retrieval.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "paginated_search"
+  base_url: "https://jurisprudencia.tsj.bo"
+  endpoints:
+    search: "/resoluciones_simple"
+    detail: "/resoluciones/{id}"
+  pagination:
+    type: "page_number"
+    param: "page"
+
+data_model:
+  type: "case_law"
+  primary_key: "id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "id"
+      description: "Internal resolution ID"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "nro_resolucion"
+      description: "Resolution number (e.g., AS 123/2024)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision from contenido field"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "sala"
+      description: "Chamber (Sala Civil, Sala Penal, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "tipo_resolucion"
+      description: "Resolution type (Auto Supremo, Sentencia, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "url"
+      description: "URL to view the resolution"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - Search: /resoluciones_simple?term={query}&page={pageNo}
+  - Detail: /resoluciones/{id} returns JSON with contenido (full text)
+  - Jurisprudence: /jurisprudencia_simple for annotated decisions
+  - Laravel pagination: total, last_page, data array
+  - IDs appear sequential; can enumerate via /resoluciones/{id}
+  - No authentication required

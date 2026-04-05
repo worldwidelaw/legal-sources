@@ -1,0 +1,83 @@
+# ===================================================================
+# GE/SupremeCourt-Decisions -- Georgia Supreme Court Case Law
+# ===================================================================
+# jQuery AJAX endpoints on supremecourt.ge, no authentication.
+# Cases listed via /ka/getCases?palata={id}&page={n}
+# Full text via /fullcase/{id}/{palata} with X-Requested-With header.
+# ~86,226 decisions as of April 2026.
+# ===================================================================
+
+source:
+  id: "GE/SupremeCourt-Decisions"
+  country: "GE"
+  name: "საქართველოს უზენაესი სასამართლო (Supreme Court of Georgia)"
+  url: "https://www.supremecourt.ge"
+  description: |
+    Georgia's Supreme Court case law database. Covers civil, criminal,
+    and administrative cassation decisions. Full text in Georgian via
+    AJAX endpoints. ~86,226 decisions with full text (admin + civil + criminal).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "ajax"
+  base_url: "https://www.supremecourt.ge"
+  endpoints:
+    list_cases: "/ka/getCases?palata={palata}&page={page}"
+    full_case: "/fullcase/{id}/{palata}"
+    categories: "/caseGetCategory"
+  pagination:
+    type: "page_number"
+    page_size: 30
+    total_pages: 1093
+
+data_model:
+  type: "case_law"
+  primary_key: "id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "id"
+      description: "Internal case ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case number"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (HTML stripped)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to full case page"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - ~86,226 decisions as of April 2026 (26,841 admin + 32,790 civil + 26,595 criminal)
+  - Palata 0 = administrative, 1 = civil, 2 = criminal
+  - Full text in Georgian
+  - HTML content needs tag stripping
+  - No authentication required

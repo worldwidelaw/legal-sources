@@ -27,12 +27,30 @@ templates:
 
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - url
-    - case_number
-    - country
-    - court
-    - document_type
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: case_number
+      type: string
+      required: false
+    - name: country
+      type: string
+      required: false
+    - name: court
+      type: string
+      required: false
+    - name: document_type
+      type: string
+      required: false

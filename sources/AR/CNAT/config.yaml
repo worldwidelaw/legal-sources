@@ -1,0 +1,82 @@
+# ===================================================================
+# AR/CNAT -- Cámara Nacional de Apelaciones del Trabajo
+# ===================================================================
+# Uses the SAIJ public JSON API with tribunal filter + PDF text extraction.
+# ~17,300+ labor law decisions.
+# ===================================================================
+
+source:
+  id: "AR/CNAT"
+  country: "AR"
+  name: "Cámara Nacional de Apelaciones del Trabajo"
+  url: "https://www.saij.gob.ar"
+  description: |
+    Argentine National Labor Appeals Court decisions via the SAIJ
+    public JSON API. Key labor law jurisprudence covering employment
+    disputes, workplace accidents, union matters, and labor rights.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest"
+  base_url: "https://www.saij.gob.ar"
+  endpoints:
+    search: "/busqueda"
+    document: "/view-document"
+  pagination:
+    offset_param: "o"
+    page_size_param: "p"
+    max_page_size: 100
+
+data_model:
+  type: "caselaw"
+  primary_key: "uuid"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "uuid"
+      description: "SAIJ unique document identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (caratula)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision or summary"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "tribunal"
+      description: "Court name"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "url"
+      description: "Direct URL to the document"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - Uses SAIJ API with tribunal filter for CNAT
+  - Filters: Tribunal/CAMARA NACIONAL DE APELACIONES DEL TRABAJO
+  - ~17,300+ decisions with full text via PDF extraction (pdfplumber)
+  - Language: Spanish

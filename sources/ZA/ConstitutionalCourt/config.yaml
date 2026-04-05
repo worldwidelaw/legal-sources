@@ -1,0 +1,30 @@
+source:
+  id: ZA/ConstitutionalCourt
+  name: "South Africa Constitutional Court Judgments"
+  country: ZA
+  url: https://collections.concourt.org.za/
+  data_types:
+    - case_law
+  auth: none
+  format: json
+  language: en
+  description: >
+    Full-text judgments from the Constitutional Court of South Africa via
+    the official DSpace repository REST API. Covers cases from 1994 to present.
+    Pre-extracted text from PDF bitstreams (no PDF parsing needed).
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - case_number
+    - citation
+    - judges
+    - url
+
+fetcher:
+  base_url: "https://collections.concourt.org.za"
+  rate_limit: 1.5
+  api_type: dspace_rest

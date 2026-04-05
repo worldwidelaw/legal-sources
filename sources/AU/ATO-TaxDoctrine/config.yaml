@@ -1,0 +1,119 @@
+# ===================================================================
+# AU/ATO-TaxDoctrine -- Australian Tax Office Rulings & Determinations
+# ===================================================================
+# Tax doctrine (rulings, determinations, class rulings, product rulings,
+# GST rulings, etc.) from the Australian Taxation Office, accessed via
+# AustLII (Australian Legal Information Institute).
+#
+# Primary: AustLII HTML documents (www.austlii.edu.au)
+# Updates: AustLII RSS feeds per database
+# Note: Direct access to law.ato.gov.au is blocked by Akamai WAF.
+#       AustLII mirrors all ATO rulings and provides open access.
+# ===================================================================
+
+source:
+  id: "AU/ATO-TaxDoctrine"
+  country: "AU"
+  name: "Australian Tax Office Rulings & Determinations"
+  url: "https://www.austlii.edu.au/cgi-bin/viewdb/au/other/rulings/ato/"
+  description: |
+    Australian Taxation Office tax doctrine from AustLII. Covers taxation
+    rulings (TR), taxation determinations (TD), class rulings (CR), product
+    rulings (PR), GST rulings (GSTR), GST determinations (GSTD),
+    miscellaneous tax rulings (MTR), superannuation guarantee rulings (SGR),
+    SMSF rulings (SMSFR), and old series rulings (ITR). 1951 to present.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.austlii.edu.au"
+  databases:
+    - code: ATOTR
+      name: "Taxation Rulings"
+      start_year: 1992
+    - code: ATOTD
+      name: "Taxation Determinations"
+      start_year: 1991
+    - code: ATOCR
+      name: "Class Rulings"
+      start_year: 2001
+    - code: ATOPR
+      name: "Product Rulings"
+      start_year: 1999
+    - code: ATOGSTR
+      name: "GST Rulings"
+      start_year: 1999
+    - code: ATOGSTD
+      name: "GST Determinations"
+      start_year: 2000
+    - code: ATOMTR
+      name: "Miscellaneous Tax Rulings"
+      start_year: 1993
+    - code: ATOSGR
+      name: "Superannuation Guarantee Rulings"
+      start_year: 1993
+    - code: ATOSMSFR
+      name: "SMSF Rulings"
+      start_year: 2008
+    - code: ATOITR
+      name: "Old Series Tax Rulings"
+      start_year: 1951
+
+data_model:
+  type: "doctrine"
+  primary_key: "ruling_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "ruling_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "ruling_id"
+      description: "ATO ruling identifier (e.g., TR 2024/1)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Ruling title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the ruling"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication or last update date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to AustLII document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "database"
+      description: "ATO ruling database code (e.g., ATOTR, ATOTD)"
+      type: "string"
+      role: "category"
+      required: true
+
+notes: |
+  - Full text sourced from AustLII (www.austlii.edu.au)
+  - 10+ ATO ruling databases covering all ruling types
+  - Documents from 1951 (old series) to present
+  - HTML content stripped of tags, entities decoded
+  - Sequential document numbering per year per database
+  - RSS feeds available for incremental updates
+  - Direct ATO access (law.ato.gov.au) blocked by Akamai WAF

@@ -3,10 +3,10 @@
 BOFiP - Bulletin Officiel des Finances Publiques Data Fetcher
 
 Fetches French tax doctrine from the official open data API.
-Covers all active BOFiP-Impôts publications: administrative comments on tax law,
+Covers all active BOFiP-Impots publications: administrative comments on tax law,
 rescrit decisions, ministerial responses, and jurisprudence comments.
 
-Data source: https://data.economie.gouv.fr/explore/dataset/bofip-vigueur/api/
+Data source: https://data.economie.gouv.fr/explore/dataset/bofip-vigueur/
 License: Licence Ouverte v2.0 (Etalab)
 """
 
@@ -14,144 +14,124 @@ import json
 import re
 import sys
 import time
+import urllib.request
+import urllib.parse
 from datetime import datetime, timezone
+from html import unescape
 from pathlib import Path
-from typing import Any, Generator, Optional
+from typing import Generator, Optional
 
-import requests
-from bs4 import BeautifulSoup
+try:
+    from bs4 import BeautifulSoup
+    HAS_BS4 = True
+except ImportError:
+    HAS_BS4 = False
 
 # Constants
-API_BASE = "https://data.economie.gouv.fr/api/explore/v2.1"
+API_URL = "https://data.economie.gouv.fr/api/records/1.0/search/"
 DATASET_ID = "bofip-vigueur"
-RECORDS_ENDPOINT = f"{API_BASE}/catalog/datasets/{DATASET_ID}/records"
-RATE_LIMIT_DELAY = 0.5  # seconds between requests (API is generous)
-PAGE_SIZE = 100  # max records per API call
+RATE_LIMIT_DELAY = 1.5  # seconds between requests
+PAGE_SIZE = 100  # max rows per API call
 
 
 def clean_html(html_text: str) -> str:
     """Remove HTML tags and clean up text."""
     if not html_text:
         return ""
-    soup = BeautifulSoup(html_text, 'html.parser')
-    text = soup.get_text(separator='\n')
-    # Clean up whitespace
-    text = re.sub(r'\n\s*\n', '\n\n', text)
+    if HAS_BS4:
+        soup = BeautifulSoup(html_text, "html.parser")
+        for tag in soup(["script", "style"]):
+            tag.decompose()
+        text = soup.get_text(separator="\n")
+    else:
+        # Fallback: regex-based HTML stripping
+        text = re.sub(r"<[^>]+>", " ", html_text)
+        text = unescape(text)
+    # Collapse excessive whitespace
+    text = re.sub(r"\n[ \t]*\n[ \t]*\n+", "\n\n", text)
+    text = re.sub(r"[ \t]+", " ", text)
     return text.strip()
 
 
-def fetch_all(max_docs: Optional[int] = None) -> Generator[dict, None, None]:
+def api_get(params: dict) -> dict:
+    """Make a GET request to the API and return parsed JSON."""
+    params["dataset"] = DATASET_ID
+    url = API_URL + "?" + urllib.parse.urlencode(params)
+    req = urllib.request.Request(url)
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def fetch_records(max_docs: Optional[int] = None,
+                  sort: str = "debut_de_validite") -> Generator[dict, None, None]:
     """
-    Fetch all BOFiP publications from the open data API.
+    Fetch BOFiP publications from the paginated API.
 
     Args:
         max_docs: Maximum number of documents to fetch (None for all)
+        sort: Field to sort by
     """
-    offset = 0
+    start = 0
     doc_count = 0
 
     while True:
         params = {
-            "limit": PAGE_SIZE,
-            "offset": offset,
-            "order_by": "debut_de_validite DESC"
+            "rows": PAGE_SIZE,
+            "start": start,
+            "sort": sort,
         }
 
         try:
-            response = requests.get(RECORDS_ENDPOINT, params=params, timeout=60)
-            response.raise_for_status()
-            data = response.json()
+            data = api_get(params)
         except Exception as e:
-            print(f"Error fetching records at offset {offset}: {e}", file=sys.stderr)
+            print(f"Error fetching records at start={start}: {e}", file=sys.stderr)
             break
 
-        results = data.get("results", [])
-        total_count = data.get("total_count", 0)
+        records = data.get("records", [])
+        nhits = data.get("nhits", 0)
 
-        if not results:
+        if not records:
             break
 
-        for record in results:
-            yield record
+        for record in records:
+            fields = record.get("fields", {})
+            yield fields
             doc_count += 1
 
             if max_docs and doc_count >= max_docs:
                 return
 
-        offset += PAGE_SIZE
+        start += PAGE_SIZE
 
-        if offset >= total_count:
+        if start >= nhits:
             break
 
-        # Progress report
-        print(f"Fetched {doc_count}/{total_count} records...", file=sys.stderr)
+        print(f"Fetched {doc_count}/{nhits} records...", file=sys.stderr)
         time.sleep(RATE_LIMIT_DELAY)
 
-
-def fetch_updates(since: datetime) -> Generator[dict, None, None]:
-    """
-    Fetch publications updated since a given date.
-
-    Uses the debut_de_validite field for filtering.
-    """
-    since_str = since.strftime("%Y-%m-%d")
-    offset = 0
-
-    while True:
-        params = {
-            "limit": PAGE_SIZE,
-            "offset": offset,
-            "where": f"debut_de_validite >= '{since_str}'",
-            "order_by": "debut_de_validite DESC"
-        }
-
-        try:
-            response = requests.get(RECORDS_ENDPOINT, params=params, timeout=60)
-            response.raise_for_status()
-            data = response.json()
-        except Exception as e:
-            print(f"Error fetching updates at offset {offset}: {e}", file=sys.stderr)
-            break
-
-        results = data.get("results", [])
-        total_count = data.get("total_count", 0)
-
-        if not results:
-            break
-
-        for record in results:
-            yield record
-
-        offset += PAGE_SIZE
-
-        if offset >= total_count:
-            break
-
-        time.sleep(RATE_LIMIT_DELAY)
+    print(f"Done: {doc_count} records fetched.", file=sys.stderr)
 
 
-def normalize(raw: dict) -> dict:
-    """Transform raw API record into normalized schema."""
+def normalize(fields: dict) -> dict:
+    """Transform raw API fields into the normalized schema."""
     now = datetime.now(timezone.utc).isoformat()
 
-    # Extract fields from the API response
-    identifiant = raw.get("identifiant_juridique", "")
-    titre = raw.get("titre", "")
-    date_validite = raw.get("debut_de_validite")
-    serie = raw.get("serie", "")
-    division = raw.get("division", "")
-    doc_type = raw.get("type", "")
-    permalien = raw.get("permalien", "")
+    identifiant = fields.get("identifiant_juridique", "")
+    titre = fields.get("titre", "")
+    date_validite = fields.get("debut_de_validite", "")
+    serie = fields.get("serie", "")
+    division = fields.get("division", "")
+    doc_type = fields.get("type", "")
+    permalien = fields.get("permalien", "")
 
-    # Get content - prefer HTML, fall back to plain text
-    contenu_html = raw.get("contenu_html", "")
-    contenu = raw.get("contenu", "")
+    # Get content: prefer plain-text "contenu", fall back to cleaning HTML
+    contenu = fields.get("contenu", "")
+    contenu_html = fields.get("contenu_html", "")
 
-    # Clean the content
-    if contenu_html:
-        text = clean_html(contenu_html)
-    elif contenu:
+    if contenu and contenu.strip():
         text = contenu.strip()
+    elif contenu_html:
+        text = clean_html(contenu_html)
     else:
         text = ""
 
@@ -161,20 +141,23 @@ def normalize(raw: dict) -> dict:
     # Build URL
     url = permalien if permalien else f"https://bofip.impots.gouv.fr/bofip/{identifiant}"
 
+    # Normalize date to ISO format (already YYYY-MM-DD from API)
+    date_str = date_validite[:10] if date_validite else ""
+
     return {
         "_id": doc_id,
-        "_source": "FR/Bofip",
+        "_source": "FR/BOFiP",
         "_type": "doctrine",
         "_fetched_at": now,
         "title": titre,
         "text": text,
-        "date": date_validite,
+        "date": date_str,
         "url": url,
         "identifiant_juridique": identifiant,
         "serie": serie,
         "division": division,
         "type": doc_type,
-        "language": "fr"
+        "language": "fr",
     }
 
 
@@ -183,23 +166,23 @@ def bootstrap_sample(sample_dir: Path, count: int = 15) -> None:
     sample_dir.mkdir(parents=True, exist_ok=True)
 
     samples = []
-    for raw in fetch_all(max_docs=count):
-        record = normalize(raw)
+    for fields in fetch_records(max_docs=count + 5):
+        record = normalize(fields)
 
-        # Skip records without text
-        if not record["text"]:
-            print(f"Skipping {record['_id']}: no text content", file=sys.stderr)
+        # Skip records with no meaningful text
+        if not record["text"] or len(record["text"]) < 50:
+            print(f"Skipping {record['_id']}: insufficient text", file=sys.stderr)
             continue
 
         samples.append(record)
 
         # Save individual sample
-        safe_id = record["_id"].replace("/", "_").replace(":", "_")
+        safe_id = re.sub(r"[^\w\-]", "_", record["_id"])
         filename = f"{safe_id}.json"
         with open(sample_dir / filename, "w", encoding="utf-8") as f:
             json.dump(record, f, ensure_ascii=False, indent=2)
 
-        print(f"Saved: {filename} ({len(record['text'])} chars)", file=sys.stderr)
+        print(f"Saved: {filename} ({len(record['text']):,} chars)", file=sys.stderr)
 
         if len(samples) >= count:
             break
@@ -209,7 +192,6 @@ def bootstrap_sample(sample_dir: Path, count: int = 15) -> None:
         with open(sample_dir / "all_samples.json", "w", encoding="utf-8") as f:
             json.dump(samples, f, ensure_ascii=False, indent=2)
 
-        # Calculate statistics
         text_lengths = [len(s["text"]) for s in samples]
         avg_length = sum(text_lengths) / len(text_lengths)
 
@@ -219,15 +201,14 @@ def bootstrap_sample(sample_dir: Path, count: int = 15) -> None:
         print(f"Min text length: {min(text_lengths):,} chars", file=sys.stderr)
         print(f"Max text length: {max(text_lengths):,} chars", file=sys.stderr)
 
-        # Count by serie
         by_serie = {}
         for s in samples:
             serie = s.get("serie") or "Unknown"
             by_serie[serie] = by_serie.get(serie, 0) + 1
 
         print(f"\nBy serie:", file=sys.stderr)
-        for serie, count in sorted(by_serie.items(), key=lambda x: -x[1]):
-            print(f"  {serie}: {count}", file=sys.stderr)
+        for serie, cnt in sorted(by_serie.items(), key=lambda x: -x[1]):
+            print(f"  {serie}: {cnt}", file=sys.stderr)
 
 
 def main():
@@ -235,13 +216,13 @@ def main():
 
     parser = argparse.ArgumentParser(description="BOFiP tax doctrine fetcher")
     parser.add_argument("command", choices=["bootstrap", "fetch", "updates"],
-                       help="Command to run")
+                        help="Command to run")
     parser.add_argument("--sample", action="store_true",
-                       help="Generate sample data only")
+                        help="Generate sample data only")
     parser.add_argument("--count", type=int, default=15,
-                       help="Number of samples to generate")
+                        help="Number of samples to generate")
     parser.add_argument("--since", type=str,
-                       help="Fetch updates since date (YYYY-MM-DD)")
+                        help="Fetch updates since date (YYYY-MM-DD)")
 
     args = parser.parse_args()
 
@@ -252,15 +233,19 @@ def main():
         if args.sample:
             bootstrap_sample(sample_dir, args.count)
         else:
-            # Full bootstrap
-            for raw in fetch_all():
-                record = normalize(raw)
-                if record["text"]:
+            # Full bootstrap: emit JSONL to stdout
+            count = 0
+            for fields in fetch_records():
+                record = normalize(fields)
+                if record["text"] and len(record["text"]) >= 50:
                     print(json.dumps(record, ensure_ascii=False))
+                    count += 1
+            print(f"Full bootstrap: {count} records emitted.", file=sys.stderr)
 
     elif args.command == "fetch":
-        for raw in fetch_all(max_docs=args.count if args.sample else None):
-            record = normalize(raw)
+        limit = args.count if args.sample else None
+        for fields in fetch_records(max_docs=limit):
+            record = normalize(fields)
             if record["text"]:
                 print(json.dumps(record, ensure_ascii=False))
 
@@ -268,11 +253,36 @@ def main():
         if not args.since:
             print("Error: --since is required for updates command", file=sys.stderr)
             sys.exit(1)
-        since = datetime.fromisoformat(args.since)
-        for raw in fetch_updates(since):
-            record = normalize(raw)
-            if record["text"]:
-                print(json.dumps(record, ensure_ascii=False))
+        since_str = args.since
+        # Use API filter for date range
+        start = 0
+        count = 0
+        while True:
+            params = {
+                "rows": PAGE_SIZE,
+                "start": start,
+                "sort": "debut_de_validite",
+                "q": f"debut_de_validite >= {since_str}",
+            }
+            try:
+                data = api_get(params)
+            except Exception as e:
+                print(f"Error: {e}", file=sys.stderr)
+                break
+            records = data.get("records", [])
+            if not records:
+                break
+            for rec in records:
+                fields = rec.get("fields", {})
+                record = normalize(fields)
+                if record["text"]:
+                    print(json.dumps(record, ensure_ascii=False))
+                    count += 1
+            start += PAGE_SIZE
+            if start >= data.get("nhits", 0):
+                break
+            time.sleep(RATE_LIMIT_DELAY)
+        print(f"Updates: {count} records since {since_str}.", file=sys.stderr)
 
 
 if __name__ == "__main__":

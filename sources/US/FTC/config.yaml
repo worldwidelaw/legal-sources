@@ -1,0 +1,53 @@
+source:
+  id: US/FTC
+  country: US
+  name: US Federal Trade Commission Decisions and Orders
+  description: |
+    FTC enforcement actions, consent orders, complaints, and opinions.
+    ~6,000+ cases from the FTC Legal Library. PDF documents with full text
+    extraction. Covers antitrust, consumer protection, and competition law.
+
+  data_types:
+    - case_law
+    - doctrine
+
+  url: https://www.ftc.gov/legal-library/browse/cases-proceedings
+  auth: none
+
+  languages:
+    - en
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: matter_number
+      type: string
+      required: false
+    - name: enforcement_type
+      type: string
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+rate_limits:
+  requests_per_second: 0.5
+  delay_between_requests: 2.0
+
+license:
+  type: Public Domain
+  attribution: Federal Trade Commission (FTC)
+  url: https://www.ftc.gov/

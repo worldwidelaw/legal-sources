@@ -1,0 +1,103 @@
+# ===================================================================
+# EC/CorteConstitucional -- Ecuador Constitutional Court Decisions
+# ===================================================================
+# REST API behind Angular SPA (SACC - Sistema Automatizado).
+# Parameters are base64-encoded JSON wrapped in a "dato" field.
+# Full text available in "motivo" field (decision summary) and via
+# PDF documents from the HDFS storage service.
+# ===================================================================
+
+source:
+  id: "EC/CorteConstitucional"
+  country: "EC"
+  name: "Corte Constitucional del Ecuador (Constitutional Court)"
+  url: "https://buscador.corteconstitucional.gob.ec"
+  description: |
+    Ecuador's Constitutional Court decision database. Covers constitutional
+    actions (extraordinaria de protección, acción de incumplimiento, etc.)
+    across all legal subjects. ~8,800+ decisions with full text summaries
+    in the motivo field and PDF documents via HDFS storage.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "rest"
+  base_url: "https://buscador.corteconstitucional.gob.ec/buscador-externo/rest/api"
+  storage_url: "https://esacc.corteconstitucional.gob.ec/storage/api/v1/10_DWL_FL/"
+  endpoints:
+    search: "/sentencia/100_BUSCR_SNTNCIA"
+    ficha: "/sentencia/100_OBT_FCHA_SNTNCA"
+    stats: "/sentencia/100_OBT_RSM_ESTDTCO"
+    catalog: "/catalogoSentencia/100_OBT_RSMN_CTLG"
+    document: "/expedienteDocumento/100_EXPEDNTE_DCMTO"
+  encoding: "base64(urlencode(json))"
+  pagination:
+    page_param: "paginacion.page"
+    page_size_param: "paginacion.pageSize"
+    max_page_size: 50
+
+data_model:
+  type: "case_law"
+  primary_key: "id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "id"
+      description: "Internal decision ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision number (e.g., 2913-19-EP/22)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (motivo field + PDF if available)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the decision"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the PDF document in HDFS storage"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "materia"
+      description: "Legal subject area"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "juez"
+      description: "Judge name"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "tipo_accion"
+      description: "Type of constitutional action"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - API parameters are base64-encoded: JSON.stringify({dato: btoa(encodeURIComponent(JSON.stringify(params)))})
+  - ~8,800+ decisions available as of April 2026
+  - Full text in "motivo" field (decision summary/reasoning)
+  - PDF documents available via HDFS storage service
+  - Language: Spanish

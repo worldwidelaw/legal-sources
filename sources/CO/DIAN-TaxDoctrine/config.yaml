@@ -1,0 +1,45 @@
+source:
+  id: CO/DIAN-TaxDoctrine
+  country: CO
+  name: Colombian Tax Authority Doctrine (DIAN Normograma - Conceptos y Oficios)
+  url: https://normograma.dian.gov.co/dian/compilacion/t_2_doctrina_tributaria.html
+
+data:
+  types:
+    - doctrine
+  language: spa
+  coverage: Tax doctrine concepts and official letters (conceptos y oficios tributarios) from Colombia's DIAN (Dirección de Impuestos y Aduanas Nacionales). Covers income tax, VAT, withholding tax, transfer pricing, customs duties, and exchange controls. Documents from 1987 to present.
+  volume: 5,000+ tax doctrine documents
+
+access:
+  auth: none
+  license: Open Government Data (Colombia public law - Ley 1712 de 2014)
+  rate_limit: 1 request per 1.5 seconds
+
+endpoints:
+  base_url: https://normograma.dian.gov.co/dian/compilacion/docs/
+  document_pattern: oficio_dian_{number}_{year}.htm
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+  metadata:
+    - concept_number
+    - date
+    - subject
+    - legal_references
+
+notes: |
+  DIAN Normograma is the official legal compilation of Colombia's tax authority.
+  Tax doctrine documents (conceptos and oficios) are published as individual HTML pages.
+  URL pattern: oficio_dian_{NNNN}_{YYYY}.htm where numbers < 1000 are zero-padded to 4 digits.
+  Documents are not sequentially numbered - discovery requires scanning ranges.
+  Full text is available in HTML body with legal references as hyperlinks.

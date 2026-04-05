@@ -1,0 +1,83 @@
+# ===================================================================
+# US/TX-AdminCode -- Texas Administrative Code (eLaws mirror)
+# ===================================================================
+# Full text of all Texas Administrative Code rules scraped from
+# txrules.elaws.us. 16 titles, ~thousands of individual rule sections.
+# No authentication required. Public domain government data.
+# ===================================================================
+
+source:
+  id: "US/TX-AdminCode"
+  country: "US"
+  name: "Texas Administrative Code (eLaws)"
+  url: "https://txrules.elaws.us/rule"
+  description: |
+    Texas Administrative Code with full text of every rule section,
+    fetched from the eLaws mirror (txrules.elaws.us). Covers all 16
+    active titles of the TAC. Public domain government data.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scraping"
+  base_url: "https://txrules.elaws.us"
+  endpoints:
+    title_list: "/rule"
+    title_page: "/rule/title{N}"
+    chapter_page: "/rule/title{N}_chapter{M}"
+    section_page: "/rule/title{N}_chapter{M}_sec.{X.Y}"
+
+data_model:
+  type: "legislation"
+  primary_key: "section_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "section_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "section_id"
+      description: "Unique section identifier (e.g., 'TAC-1-3-3.1')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Section heading with number and name"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the administrative rule"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "tac_title"
+      description: "TAC title number and name"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "chapter"
+      description: "Chapter number and name"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date fetched (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+notes: |
+  - 16 active titles, thousands of chapters and sections
+  - HTML scraping from txrules.elaws.us (eLaws mirror)
+  - Public domain (Texas government administrative rules)
+  - Official SOS site migrated to Appian SPA, not scrapeable

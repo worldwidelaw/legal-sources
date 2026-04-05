@@ -1,0 +1,75 @@
+# ===================================================================
+# AU/TAS-Legislation -- Tasmania Legislation
+# ===================================================================
+# Tasmanian Acts and Statutory Rules from legislation.tas.gov.au.
+#
+# Primary: JSON API for index, HTML for full text
+# License: Creative Commons Attribution 4.0
+# ===================================================================
+
+source:
+  id: "AU/TAS-Legislation"
+  country: "AU"
+  name: "Tasmania Legislation (legislation.tas.gov.au)"
+  url: "https://www.legislation.tas.gov.au/"
+  description: |
+    Tasmanian in-force Acts and Statutory Rules. Index via internal JSON
+    projectdata API, full text from HTML pages. CC BY 4.0 license.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "json_index_html_fulltext"
+  base_url: "https://www.legislation.tas.gov.au"
+  index_endpoint: "/projectdata"
+  html_pattern: "/view/whole/html/inforce/current/{id}"
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "doc_id"
+      description: "Document ID (e.g., act-2020-036)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act or statutory rule title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Assent or publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to original document"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - JSON projectdata API for catalogue, HTML for full text
+  - ID format: act-YYYY-NNN for Acts, sr-YYYY-NNN for Statutory Rules
+  - CC BY 4.0 license
+  - robots.txt only blocks /admin/

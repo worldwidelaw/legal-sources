@@ -1,0 +1,64 @@
+source:
+  id: BE/FISCONETplus-Doctrine
+  country: BE
+  name: Belgian Tax Doctrine (FISCONETplus)
+  description: |
+    Belgian tax doctrine from FISCONETplus (FPS Finance), including circular letters,
+    advance rulings (prior agreements), administrative comments, communications, and
+    decisions. ~28,000 documents covering all Belgian tax topics (income tax, VAT,
+    registration duties, customs, etc.) in French, Dutch, German, and English.
+
+  data_types:
+    - doctrine
+
+  url: https://eservices.minfin.fgov.be/myminfin-web/pages/fisconet
+  auth: none
+
+  api_base: https://www.minfin.fgov.be/myminfin-rest/fisconetPlus/public
+
+  languages:
+    - fr
+    - nl
+    - de
+    - en
+
+schema:
+  key_fields:
+    - name: guid
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: true
+    - name: document_type
+      type: string
+      required: true
+    - name: language
+      type: string
+      required: false
+    - name: keywords
+      type: array
+      required: false
+    - name: summary
+      type: string
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - guid
+
+rate_limits:
+  requests_per_second: 1.0
+  delay_between_requests: 1.0
+
+license:
+  type: Open Government Data
+  attribution: FPS Finance / SPF Finances - FISCONETplus
+  url: https://eservices.minfin.fgov.be/myminfin-web/pages/fisconet

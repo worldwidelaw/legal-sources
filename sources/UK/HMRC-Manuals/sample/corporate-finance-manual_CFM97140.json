@@ -1,0 +1,12 @@
+{
+  "_id": "corporate-finance-manual/CFM97140",
+  "_source": "UK/HMRC-Manuals",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-30T12:20:18.117053+00:00",
+  "title": "Interest restriction: public infrastructure: public benefit test",
+  "text": "TIOPA10/S436(2)(b)&(3)\n\nTo be a qualifying infrastructure company the company must, among other things, meet the public infrastructure income test. This test depends on there being qualifying infrastructure activities, which includes the provision of a public infrastructure asset.\n\nTo be a public infrastructure asset the asset must meet the public benefit test. This test is met by a tangible asset which is infrastructure of the UK where it is, or is to be:\n\nprocured by a relevant public body; or\n\nused in the course of a regulated activity.\n\nProcured by a relevant public body\n\nInfrastructure of the UK is procured by a relevant public body where the relevant public body contracts with a company to provide that infrastructure in exchange for consideration.\n\nExample 1\n\nA NHS Trust invites bids for a contract to design, build, finance, maintain and operate a new hospital over a period of 40 years. The successful bidder will enter the contract in exchange for consideration payable over that 40 year term. For the purposes of the public benefit test, the hospital (health facility) has been procured by a relevant public body (a health service body within the meaning given by CTA09/S986).\n\nUsed in the course of a regulated activity\n\nAn asset is used in the course of a regulated activity if its use is:\n\nregulated by an infrastructure authority; or\n\ncould be regulated by an infrastructure authority if the authority exercises any of its powers.\n\nInfrastructure authorities for the purposes of Chapter 8 are identified in S437(2).\n\nExample 2\n\nThe owner and operator of the majority of the rail network has the price it can charge its customers set by the Department for Transport. It is therefore regulated by an infrastructure authority.",
+  "date": "2018-08-30",
+  "url": "https://www.gov.uk/hmrc-internal-manuals/corporate-finance-manual/cfm97140",
+  "manual_slug": "corporate-finance-manual",
+  "section_id": "CFM97140"
+}

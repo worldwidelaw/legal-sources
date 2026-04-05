@@ -1,0 +1,91 @@
+# ===================================================================
+# BO/TribunalAgroambiental -- Bolivia Tribunal Agroambiental
+# ===================================================================
+# Bolivia's Environmental/Agrarian Court case law. ~6,910 resolutions
+# (2011-2024). HTML-based Yii2 application with paginated listing
+# and full text detail pages. No authentication required. Open data.
+# SSL: self-signed certificate (requires verify=False).
+# ===================================================================
+
+source:
+  id: "BO/TribunalAgroambiental"
+  country: "BO"
+  name: "Bolivia Tribunal Agroambiental"
+  url: "https://arbol.tribunalagroambiental.bo/"
+  description: |
+    Court decisions from Bolivia's Tribunal Agroambiental (Environmental and
+    Agrarian Court). Includes Sentencias Agroambientales Nacionales (SAN),
+    Autos Agroambientales Plurinacionales (AAP), Autos Interlocutorios
+    Definitivos (AID), and Sentencias Agroambientales Plurinacionales (SAP).
+    Full text available via HTML detail pages. Yii2 framework backend.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://arbol.tribunalagroambiental.bo"
+  endpoints:
+    listing: "/index.php?r=viewresolucion%2Flistaresoluciones"
+    detail: "/index.php?r=ficha%2Fverresolucionta&id={id}"
+  pagination:
+    type: "page_number"
+    param: "page"
+    per_page: 50
+
+data_model:
+  type: "case_law"
+  primary_key: "id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "id"
+      description: "Internal resolution ID (from data-key attribute)"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "resolucion"
+      description: "Resolution code (e.g., SAN-0001/2024)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "tipo"
+      description: "Resolution type (Sentencia, Auto, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "url"
+      description: "URL to view the resolution"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - Listing: /index.php?r=viewresolucion%2Flistaresoluciones&page={N}&per-page=50
+  - Detail (full text): /index.php?r=ficha%2Fverresolucionta&id={ID}
+  - Ficha (analysis): /index.php?r=viewresolucion%2Fverresolucion&id={ID}
+  - IDs from data-key attribute on <tr> elements in listing table
+  - SSL: self-signed certificate, requires verify=False
+  - ~6,910 resolutions, 139 pages at 50 per page
+  - Years: 2011-2024

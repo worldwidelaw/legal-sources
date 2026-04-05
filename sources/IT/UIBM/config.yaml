@@ -27,9 +27,21 @@ data_model:
 
 schema:
   key_fields:
-    - wpn           # Case/opposition number
-    - wpn_linked    # Linked trademark application number
-    - type          # Decision type (Opposizione, Nullità, Decadenza)
-    - result        # Outcome (Accolta, Rigettata, etc.)
-    - date          # Decision date
-    - text          # Full decision text (extracted from PDF)
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: wpn
+      type: string
+      required: true

@@ -1,0 +1,77 @@
+# ===================================================================
+# PE/SUNAT-Informes -- Peru SUNAT Tax Authority Guidance
+# ===================================================================
+# Static HTML index pages at sunat.gob.pe/legislacion/oficios/{YEAR}/
+# listing informes, oficios, and cartas with PDF/HTM full text.
+# Covers 1996-present. ~40-100 documents per year.
+# ===================================================================
+
+source:
+  id: "PE/SUNAT-Informes"
+  country: "PE"
+  name: "SUNAT Informes, Oficios y Cartas (Tax Doctrine)"
+  url: "https://www.sunat.gob.pe/legislacion/oficios/"
+  description: |
+    Peru's tax authority (SUNAT) publishes binding tax interpretations
+    as informes, oficios, and cartas. Full text available as PDF (2002+)
+    or HTML (1996-2001). Index pages list all documents per year with
+    summaries and dates.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.sunat.gob.pe/legislacion/oficios"
+  endpoints:
+    year_index: "/{year}/indcor.htm"
+
+data_model:
+  type: "doctrine"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "doc_id"
+      description: "Document identifier (e.g., i000088-2024-7T0000)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title (e.g., Informe N° 000088-2024-SUNAT/7T0000)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the tax ruling"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to original document"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - ~40-100 documents per year, 1996-present
+  - Three document types: informes, oficios, cartas
+  - PDF format from ~2002 onward, HTML (.htm) for older years
+  - Index pages contain summaries; PDFs contain full analysis
+  - No authentication required

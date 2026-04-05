@@ -1,0 +1,50 @@
+source:
+  id: FI/Vero-Guidance
+  country: FI
+  name: Finnish Tax Authority Detailed Guidance
+  description: |
+    Tax guidance, advance rulings, decisions, and statements from Verohallinto
+    (Finnish Tax Administration). ~1,780 documents covering all Finnish tax topics.
+    Enumerated via sitemap, full text extracted from HTML pages.
+
+  data_types:
+    - doctrine
+
+  url: https://www.vero.fi/en/detailed-guidance/
+  auth: none
+
+  languages:
+    - fi
+    - en
+
+schema:
+  key_fields:
+    - name: url_slug
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: category
+      type: string
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - url_slug
+
+rate_limits:
+  requests_per_second: 0.4
+  delay_between_requests: 2.5
+
+license:
+  type: Open Government Data
+  attribution: Verohallinto / Finnish Tax Administration
+  url: https://www.vero.fi

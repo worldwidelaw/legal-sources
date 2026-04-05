@@ -1,0 +1,89 @@
+# ===================================================================
+# SG/IRAS-TaxDoctrine -- Singapore IRAS e-Tax Guides
+# ===================================================================
+# Tax doctrine from the Inland Revenue Authority of Singapore (IRAS).
+# 196 e-Tax Guides covering GST, Corporate Income Tax, Individual
+# Income Tax, Property Tax, International Tax, Stamp Duty, etc.
+#
+# Primary: IRAS JSON search API (undocumented, powers the website)
+# Format: PDFs with text layers (extractable via pdfplumber)
+# ===================================================================
+
+source:
+  id: "SG/IRAS-TaxDoctrine"
+  country: "SG"
+  name: "Singapore IRAS e-Tax Guides"
+  url: "https://www.iras.gov.sg/quick-links/e-tax-guides"
+  description: |
+    Singapore Inland Revenue Authority e-Tax Guides. 196 comprehensive
+    tax guidance documents covering GST, corporate/individual income tax,
+    property tax, international tax, stamp duty, trusts, charities, and
+    withholding tax. Full text extracted from official PDF publications.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "json_api"
+  base_url: "https://www.iras.gov.sg"
+  search_endpoint: "/quick-links/e-tax-guides/Search/"
+  method: "POST"
+  pagination:
+    type: "page_number"
+    per_page: 10
+    total_pages: 20
+
+data_model:
+  type: "doctrine"
+  primary_key: "guide_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "guide_id"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "guide_id"
+      description: "Unique guide identifier (SHA256 of download URL)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Guide title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication or last update date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Download URL for the PDF"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "tax_type"
+      description: "Tax category (GST, Corporate Income Tax, etc.)"
+      type: "string"
+      role: "category"
+      required: false
+
+notes: |
+  - 196 e-Tax Guides as of 2026-04
+  - JSON search API at /quick-links/e-tax-guides/Search/ (POST)
+  - PDFs are text-layer (pdfplumber extraction works)
+  - No authentication required
+  - Covers all major Singapore tax categories

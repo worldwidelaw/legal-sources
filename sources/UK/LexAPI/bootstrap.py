@@ -297,14 +297,34 @@ def bootstrap_sample(sample_dir: Path, count: int = 15):
         print(f"\n✗ WARNING: Only {records_saved} records saved (need 10+)")
 
 
+def full_bootstrap(data_dir: Path):
+    """Run full bootstrap writing JSONL to data/records.jsonl."""
+    data_dir.mkdir(parents=True, exist_ok=True)
+    jsonl_path = data_dir / "records.jsonl"
+    records_saved = 0
+
+    print("Running full bootstrap...")
+    with open(jsonl_path, 'a', encoding='utf-8') as f:
+        for record in fetch_all():
+            line = json.dumps(record, ensure_ascii=False, default=str)
+            f.write(line + "\n")
+            records_saved += 1
+            if records_saved % 100 == 0:
+                print(f"  Saved {records_saved} records...")
+                f.flush()
+    print(f"\nFull bootstrap complete: {records_saved} records saved to {jsonl_path}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="UK Lex API Legislation Fetcher"
     )
-    parser.add_argument("command", choices=["bootstrap", "fetch", "updates"],
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "fetch", "updates"],
                         help="Command to run")
     parser.add_argument("--sample", action="store_true",
                         help="Fetch sample records for validation")
+    parser.add_argument("--full", action="store_true",
+                        help="Full bootstrap (all records)")
     parser.add_argument("--count", type=int, default=15,
                         help="Number of sample records to fetch")
     parser.add_argument("--since", type=str,
@@ -313,23 +333,16 @@ def main():
     args = parser.parse_args()
     script_dir = Path(__file__).parent
     sample_dir = script_dir / "sample"
+    data_dir = script_dir / "data"
 
     if args.command == "bootstrap":
-        if args.sample:
+        if args.sample and not args.full:
             bootstrap_sample(sample_dir, args.count)
         else:
-            print("Running full bootstrap...")
-            records_saved = 0
-            for record in fetch_all():
-                safe_id = re.sub(r'[^a-zA-Z0-9_-]', '_', record['_id'])[:100]
-                filepath = sample_dir / f"{safe_id}.json"
-                filepath.parent.mkdir(parents=True, exist_ok=True)
-                with open(filepath, 'w', encoding='utf-8') as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-                records_saved += 1
-                if records_saved % 100 == 0:
-                    print(f"  Saved {records_saved} records...")
-            print(f"\nFull bootstrap complete: {records_saved} records saved")
+            full_bootstrap(data_dir)
+
+    elif args.command == "bootstrap-fast":
+        full_bootstrap(data_dir)
 
     elif args.command == "fetch":
         for record in fetch_all():

@@ -1,0 +1,117 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — Bulgarian Supreme Administrative Court Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "BG/VAS-AdminCourt"
+  country: "BG"
+  name: "Bulgarian Supreme Administrative Court (Върховен административен съд)"
+  url: "https://ecase.justice.bg"
+  description: |
+    Supreme Administrative Court of Bulgaria (VAS).
+    The highest court for administrative law matters.
+    Data source: EPEP (Unified Portal for Electronic Justice) JSON API.
+    Coverage: 2010 onwards (~63,500 cases with full text decisions)
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - caselaw
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "json"
+  base_url: "https://ecase.justice.bg"
+  endpoints:
+    search_cases: "/Case/LoadData"
+    load_acts: "/Case/ActsLoadData"
+    act_preview: "/case/preview?type=7&gid={act_gid}"
+    file_download: "/api/file/download/{file_uuid}"
+  notes: |
+    - CourtId 113 = VAS (Supreme Administrative Court)
+    - Search uses double-JSON-encoded POST body
+    - Pagination via page/size params (max size ~50)
+    - Full text obtained via act preview → file download
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "caselaw"
+  primary_key: "case_gid"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "case_gid"
+    - "act_gid"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "case_gid"
+      description: "Unique case identifier from EPEP"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "act_gid"
+      description: "Unique act/decision identifier from EPEP"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Case description (case kind + number + year)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the decision in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to view the case on EPEP"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "case_number"
+      description: "Case registration number"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "case_year"
+      description: "Case registration year"
+      type: "integer"
+      role: "temporal_key"
+      required: false
+    - name: "act_type"
+      description: "Type of act (решение, определение, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "judges"
+      description: "List of judges/preparators"
+      type: "string"
+      role: "metadata"
+      required: false
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: Bulgarian (UTF-8)
+  - Coverage: 2010 onwards (~63,500 cases)
+  - Substantial coverage from 2021+ (~8,900-12,600 cases/year)
+  - Full text available as downloadable HTML via file endpoint
+  - VAS CourtId = 113 in EPEP system
+  - Parties: sideLeft (plaintiff), sideRight (defendant)

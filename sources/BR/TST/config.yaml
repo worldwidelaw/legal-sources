@@ -1,0 +1,32 @@
+source:
+  id: BR/TST
+  name: TST - Tribunal Superior do Trabalho (Labor Supreme Court)
+  country: BR
+  url: https://jurisprudencia.tst.jus.br/
+  data_types:
+    - case_law
+  auth: none
+  language: pt
+  description: >
+    Brazilian Superior Labor Court (TST) jurisprudence via the official
+    search backend API. Returns full-text court decisions (inteiro teor)
+    including ementa (headnote), dispositivo (holding), and full decision
+    body. Over 8 million records covering all TST judging bodies.
+
+schema:
+  key_fields:
+    - _id
+    - process_number
+    - title
+    - text
+    - date
+    - judge_relator
+    - orgao_judicante
+    - decision_type
+    - dispositivo
+
+fetch:
+  method: rest_api
+  base_url: https://jurisprudencia-backend2.tst.jus.br
+  search_endpoint: /rest/pesquisa-textual/{start}/{size}
+  rate_limit_seconds: 1.5

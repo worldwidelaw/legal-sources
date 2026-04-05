@@ -1,0 +1,47 @@
+source_id: PE/OSCE
+name: "Peru OSCE - Public Procurement Tribunal Resolutions"
+country: PE
+url: "https://www.gob.pe/institucion/oece/colecciones/716-resoluciones-del-tribunal-de-contrataciones-del-estado"
+description: >
+  Resolutions from Peru's Tribunal de Contrataciones del Estado (formerly
+  under OSCE, now OECE). Published on gob.pe as individual PDFs. Covers
+  sanctions proceedings for public procurement law violations, including
+  contract resolution, fraudulent documentation, and registration infractions.
+
+data_types:
+  - case_law
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      description: "Resolution number (e.g., 6608-2025-TCP-S4)"
+    - name: title
+      type: string
+    - name: date
+      type: string
+      description: "ISO 8601 date"
+    - name: text
+      type: string
+      description: "Full text extracted from PDF"
+    - name: url
+      type: string
+      description: "gob.pe resolution page URL"
+    - name: pdf_url
+      type: string
+      description: "Direct CDN link to PDF"
+    - name: sala
+      type: string
+      description: "Tribunal chamber (S1, S2, S3, S4, etc.)"

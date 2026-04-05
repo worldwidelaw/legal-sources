@@ -132,70 +132,74 @@ def test_connectivity():
     return True
 
 
+def _get_xlsx_path():
+    """Find or download the KorLeg Excel file."""
+    cached_path = DATA_DIR / "KorLeg.xlsx"
+    tmp_path = "/tmp/KorLeg.xlsx"
+
+    if cached_path.exists():
+        print(f"Using cached dataset: {cached_path}")
+        return str(cached_path)
+    elif os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 200_000_000:
+        print(f"Using tmp dataset: {tmp_path}")
+        return tmp_path
+    else:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        download_dataset(str(cached_path))
+        return str(cached_path)
+
+
 def bootstrap(sample: bool = False):
     """Run the bootstrap process."""
     if not HAS_OPENPYXL:
         print("ERROR: openpyxl is required. Install with: pip install openpyxl")
         sys.exit(1)
 
-    SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    xlsx_path = _get_xlsx_path()
 
-    # Check for cached download
-    cached_path = DATA_DIR / "KorLeg.xlsx"
-    tmp_path = "/tmp/KorLeg.xlsx"
+    if sample:
+        SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
+        saved = 0
+        all_samples = []
+        for record in iter_records(xlsx_path, limit=15):
+            out_path = SAMPLE_DIR / f"record_{saved:04d}.json"
+            with open(out_path, "w", encoding="utf-8") as f:
+                json.dump(record, f, ensure_ascii=False, indent=2)
+            all_samples.append(record)
+            saved += 1
 
-    if cached_path.exists():
-        xlsx_path = str(cached_path)
-        print(f"Using cached dataset: {xlsx_path}")
-    elif os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 200_000_000:
-        xlsx_path = tmp_path
-        print(f"Using tmp dataset: {xlsx_path}")
+        all_path = SAMPLE_DIR / "all_samples.json"
+        with open(all_path, "w", encoding="utf-8") as f:
+            json.dump(all_samples, f, ensure_ascii=False, indent=2)
+
+        print(f"\nSample complete: {saved} records saved to {SAMPLE_DIR}")
     else:
-        xlsx_path = str(cached_path)
-        download_dataset(xlsx_path)
-
-    limit = 15 if sample else 0
-    saved = 0
-    all_samples = []
-
-    for record in iter_records(xlsx_path, limit=limit):
-        # Save individual sample files
-        out_path = SAMPLE_DIR / f"record_{saved:04d}.json"
-        with open(out_path, "w", encoding="utf-8") as f:
-            json.dump(record, f, ensure_ascii=False, indent=2)
-
-        all_samples.append(record)
-        saved += 1
-
-    # Save all_samples.json
-    all_path = SAMPLE_DIR / "all_samples.json"
-    with open(all_path, "w", encoding="utf-8") as f:
-        json.dump(all_samples, f, ensure_ascii=False, indent=2)
-
-    print(f"\nBootstrap complete: {saved} records saved to {SAMPLE_DIR}")
-
-    # Validate
-    text_count = 0
-    for rec in all_samples:
-        if rec.get("text") and len(rec["text"]) > 100:
-            text_count += 1
-
-    print(f"Records with substantial text: {text_count}/{saved}")
-    if saved > 0 and text_count < saved * 0.5:
-        print("WARNING: Less than 50% of records have substantial text")
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        jsonl_path = DATA_DIR / "records.jsonl"
+        saved = 0
+        with open(jsonl_path, "a", encoding="utf-8") as f:
+            for record in iter_records(xlsx_path, limit=0):
+                line = json.dumps(record, ensure_ascii=False, default=str)
+                f.write(line + "\n")
+                saved += 1
+                if saved % 10000 == 0:
+                    print(f"  Saved {saved} records...")
+                    f.flush()
+        print(f"\nBootstrap complete: {saved} records saved to {jsonl_path}")
 
 
 def main():
     parser = argparse.ArgumentParser(description="KorLeg Korean Judgments Fetcher")
-    parser.add_argument("command", choices=["bootstrap", "test"], help="Command to run")
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "test"], help="Command to run")
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Full bootstrap")
     args = parser.parse_args()
 
     if args.command == "test":
         test_connectivity()
-    elif args.command == "bootstrap":
-        bootstrap(sample=args.sample)
+    elif args.command in ("bootstrap", "bootstrap-fast"):
+        sample = args.sample and not args.full and args.command != "bootstrap-fast"
+        bootstrap(sample=sample)
 
 
 if __name__ == "__main__":

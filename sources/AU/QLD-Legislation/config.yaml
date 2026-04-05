@@ -1,0 +1,82 @@
+# ===================================================================
+# AU/QLD-Legislation -- Queensland Legislation
+# ===================================================================
+# Queensland Acts and subordinate legislation from the OQPC portal.
+#
+# Primary: XML full text via /view/whole/xml/inforce/current/{id}
+# Discovery: Atom feeds + systematic ID enumeration
+# Format: QuILLS DTD XML with semantic markup
+# License: Creative Commons Attribution 4.0
+# ===================================================================
+
+source:
+  id: "AU/QLD-Legislation"
+  country: "AU"
+  name: "Queensland Legislation (legislation.qld.gov.au)"
+  url: "https://www.legislation.qld.gov.au/"
+  description: |
+    Queensland in-force Acts and subordinate legislation. Full text
+    in structured XML (QuILLS DTD) from the Office of the Queensland
+    Parliamentary Counsel. Covers all current Acts and regulations.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "xml_download"
+  base_url: "https://www.legislation.qld.gov.au"
+  xml_pattern: "/view/whole/xml/inforce/current/{id}"
+  atom_feeds:
+    - "/feed?id=whatsnew"
+    - "/feed?id=newinforce"
+    - "/feed?id=newlegislation"
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "doc_id"
+      description: "Document ID (e.g., act-1899-009)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act or regulation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Assent or publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to original document"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - XML full text via /view/whole/xml/inforce/current/{id} (no auth)
+  - ID format: act-YYYY-NNN for Acts, sl-YYYY-NNNN for subordinate legislation
+  - QuILLS DTD XML with semantic markup (act, part, clause, heading, txt)
+  - CC BY 4.0 license
+  - robots.txt allows /view/whole/xml/

@@ -1,0 +1,29 @@
+name: Hungarian Competition Authority Resolutions (GVH)
+source_id: HU/GVH
+country: HU
+data_types:
+  - case_law
+
+url: https://www.gvh.hu/dontesek/versenyhivatali_dontesek
+license: Public (Government of Hungary)
+update_frequency: weekly
+
+schema:
+  key_fields:
+    - _id
+    - case_number
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+
+notes: |
+  Resolutions of the Hungarian Competition Authority (Gazdasági Versenyhivatal).
+  4,181+ decisions from 1997 to present. Solr-backed search API with session/CSRF.
+  Full text available as inline HTML on each decision page.
+  Recent decisions also have PDF attachments.

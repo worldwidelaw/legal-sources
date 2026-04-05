@@ -1,0 +1,65 @@
+# BD/SupremeCourt-Judgments - Bangladesh Supreme Court Judgments
+# https://www.supremecourt.gov.bd
+#
+# Official judgment database for the Supreme Court of Bangladesh,
+# covering both the Appellate Division (~354 judgments) and
+# the High Court Division (~8,700+ judgments).
+#
+# Data access strategy:
+#   1. Paginated HTML listing at judgments.php with start= parameter
+#   2. PDF download for each judgment from /resources/documents/
+#   3. Text extraction from PDF using PyMuPDF (fitz)
+#
+# Coverage: Various years (cases from 2005-2025+)
+# Languages: English (primary), Bengali
+# License: Public court records
+
+source_id: BD/SupremeCourt-Judgments
+name: Bangladesh Supreme Court Judgments
+country: BD
+url: https://www.supremecourt.gov.bd
+data_types:
+  - case_law
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  max_workers: 1
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - case_id
+
+schema:
+  key_fields:
+    - name: case_id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: division
+      type: string
+      required: true
+    - name: case_type
+      type: string
+      required: false
+    - name: case_number
+      type: string
+      required: false
+    - name: parties
+      type: string
+      required: false
+    - name: summary
+      type: string
+      required: false

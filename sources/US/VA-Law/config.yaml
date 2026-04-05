@@ -1,0 +1,88 @@
+# ===================================================================
+# US/VA-Law -- Virginia Law Portal (Code of Virginia + Admin Code + Constitution)
+# ===================================================================
+# Full text of Code of Virginia (~30K sections), Administrative Code,
+# and Constitution via official REST JSON API from law.lis.virginia.gov.
+# No authentication required. Public domain.
+# ===================================================================
+
+source:
+  id: "US/VA-Law"
+  country: "US"
+  name: "Virginia Law Portal"
+  url: "https://law.lis.virginia.gov/"
+  description: |
+    Virginia legislation via official REST JSON API: Code of Virginia
+    (66 titles, ~30K sections), Virginia Administrative Code (24 titles),
+    and Constitution of Virginia (12 articles). Full text with HTML body
+    cleaned to plain text. Public domain, no auth required.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 1
+
+api:
+  type: "rest_json"
+  base_url: "https://law.lis.virginia.gov/api"
+  endpoints:
+    cov_titles: "/CoVTitlesGetListOfJson/"
+    cov_chapters: "/CoVChaptersGetListOfJson/{titleNumber}/"
+    cov_sections: "/CoVSectionsGetListOfJson/{titleNumber}/{chapterNumber}/"
+    cov_section_detail: "/CoVSectionsGetSectionDetailsJson/{sectionNumber}/"
+    admin_titles: "/AdministrativeCodeGetTitleListOfJson/"
+    admin_agencies: "/AdministrativeCodeGetAgencyListOfJson/{titleNumber}/"
+    admin_chapters: "/AdministrativeCodeChapterListOfJson/{titleNumber}/{agencyNumber}/"
+    admin_sections: "/AdministrativeCodeGetSectionListOfJson/{titleNumber}/{agencyNumber}/{chapterNumber}/"
+    admin_section_detail: "/AdministrativeCodeGetSectionDetailsJson/{titleNumber}/{agencyNumber}/{chapterNumber}/{sectionNumber}/{sectionNumberPoint}/{sectionNumberColon}/"
+    constitution_articles: "/ConstitutionArticlesGetListOfJson/"
+    constitution_sections: "/ConstitutionSectionsGetListOfXml/{articleNumber}/"
+    constitution_section_detail: "/ConstitutionSectionDetailsJson/{articleNumber}/{sectionNumber}/"
+
+data_model:
+  type: "legislation"
+  primary_key: "section_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "section_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "section_id"
+      description: "Unique section identifier (e.g., 'CoV-1-200', 'VAC-1-7-10-10', 'CONST-I-1')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Section heading"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the section"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "collection"
+      description: "Which body of law: CoV, VAC, or Constitution"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date fetched (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+notes: |
+  - Code of Virginia: ~66 titles, ~30K sections via REST JSON API
+  - Administrative Code: 24 titles with agencies/chapters/sections
+  - Constitution: 12 articles with sections
+  - All full text via Body field (HTML cleaned to plain text)
+  - Public domain, no auth needed

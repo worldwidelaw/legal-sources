@@ -1,0 +1,45 @@
+# IT/AgenziaEntrate -- Italian Revenue Agency (Agenzia delle Entrate)
+# Tax doctrine: interpelli (tax rulings), circolari (circulars)
+
+source_id: IT/AgenziaEntrate
+name: Italian Revenue Agency Tax Doctrine (Agenzia delle Entrate)
+country: IT
+url: https://www.agenziaentrate.gov.it
+
+data_types:
+  - doctrine
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: doc_type
+      type: string
+      required: true
+    - name: doc_number
+      type: string
+      required: true
+    - name: year
+      type: integer
+      required: true

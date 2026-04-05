@@ -1,0 +1,74 @@
+# ===================================================================
+# INTL/OHADA-CCJA -- OHADA Common Court of Justice and Arbitration
+# ===================================================================
+# ~4,126 decisions (1,147 from CCJA, rest from national courts in
+# 17 OHADA member states). HTML scraping of decision summaries and
+# metadata from ohada.com jurisprudence database. French language.
+# ===================================================================
+
+source:
+  id: "INTL/OHADA-CCJA"
+  country: "INTL"
+  name: "OHADA Common Court of Justice and Arbitration"
+  url: "https://www.ohada.com/documentation/jurisprudence.html"
+  description: |
+    Decisions from the OHADA (Organisation pour l'Harmonisation en
+    Afrique du Droit des Affaires) jurisprudence database. Includes
+    decisions from the Cour Commune de Justice et d'Arbitrage (CCJA)
+    and national courts of 17 African member states applying OHADA
+    uniform acts. Summaries, keywords, and metadata scraped from
+    individual decision pages. French language.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scrape"
+  listing_url: "https://www.ohada.com/documentation/jurisprudence.html"
+  detail_url: "https://www.ohada.com/documentation/jurisprudence/ohadata/{id}.html"
+
+data_model:
+  type: "case_law"
+  primary_key: "ohadata_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "title"
+      description: "Decision title (parties, case number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Decision summary/abstract with keywords and legal principles"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "court"
+      description: "Court/jurisdiction name"
+      type: "string"
+      role: "content"
+      required: true
+
+notes: |
+  - 413 listing pages, 10 decisions per page
+  - Individual decision pages contain summary/abstract, keywords, metadata
+  - Full-text PDFs require login (not publicly accessible)
+  - Text field contains: decision heading + keywords + summary abstract
+  - Some decisions (especially older ones) have minimal summaries
+  - Covers 17 OHADA member states: Benin, Burkina Faso, Cameroon,
+    Central African Republic, Chad, Comoros, Congo, DRC, Ivory Coast,
+    Gabon, Guinea, Guinea-Bissau, Mali, Niger, Senegal, Togo, Equatorial Guinea

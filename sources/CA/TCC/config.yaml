@@ -1,0 +1,108 @@
+# ===================================================================
+# CA/TCC -- Tax Court of Canada Decisions
+# ===================================================================
+# Full text decisions from the Tax Court of Canada (1996-present).
+# Uses official decisions portal (Lexum/Norma platform) with HTML
+# parsing for full judgment text. RSS feed for incremental updates.
+# Source: https://decision.tcc-cci.gc.ca
+# ===================================================================
+
+source:
+  id: "CA/TCC"
+  country: "CA"
+  name: "Tax Court of Canada Decisions"
+  url: "https://decision.tcc-cci.gc.ca"
+  description: |
+    Tax Court of Canada — hears disputes relating to federal tax and
+    revenue matters. ~11,000+ decisions from 1996 to present. Bilingual
+    (English/French). Full text available in HTML format.
+
+data_types:
+  - caselaw
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scraping"
+  base_url: "https://decision.tcc-cci.gc.ca"
+  endpoints:
+    rss_feed: "/tcc-cci/decisions/en/rss.do"
+    year_nav: "/tcc-cci/decisions/en/{year}/nav_date.do"
+    case: "/tcc-cci/decisions/en/item/{id}/index.do"
+  pagination:
+    type: "year_based"
+    start_year: 1996
+
+data_model:
+  type: "caselaw"
+  primary_key: "item_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "item_id"
+
+schema:
+  key_fields:
+    - name: "_id"
+      description: "Unique record ID (tcc_{item_id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "item_id"
+      description: "TCC document item ID"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "neutral_citation"
+      description: "Neutral citation (e.g., 2025 TCC 33)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Case title/name"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the judgment"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (YYYY-MM-DD)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the decision on tcc-cci.gc.ca"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "case_number"
+      description: "TCC case/docket/file number"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "judges"
+      description: "Judge(s) hearing the case"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "subjects"
+      description: "Legal subject areas"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - Uses HTML scraping from official TCC decisions portal (Lexum/Norma platform)
+  - ~11,000+ decisions available (1996-present)
+  - Full text extracted from HTML judgment pages
+  - RSS feed used for incremental updates
+  - Bilingual: English and French versions available
+  - Public domain / Crown copyright

@@ -1,0 +1,83 @@
+# ===================================================================
+# US/TX-Legislation -- Texas Statutes (All Codes)
+# ===================================================================
+# All 31 Texas Codes + Constitution with full text of every section.
+# Official data from Texas Capitol Statute Server (tcss.legis.texas.gov).
+# HTML ZIP bulk downloads per code. No authentication required.
+# ===================================================================
+
+source:
+  id: "US/TX-Legislation"
+  country: "US"
+  name: "Texas Statutes"
+  url: "https://statutes.capitol.texas.gov/"
+  description: |
+    Texas statutory codes with full text of every section, downloaded
+    as HTML ZIPs from the official Texas Capitol Statute Server.
+    Covers all 31 codes including the Constitution, Penal, Government,
+    Family, Education, and more. Public domain.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "bulk_download"
+  base_url: "https://tcss.legis.texas.gov"
+  endpoints:
+    code_list: "https://statutes.capitol.texas.gov/assets/StatuteCodeDownloads.json"
+    html_zip: "/resources/Zips/{CODE}.htm.zip"
+    chapter_html: "/resources/{CODE}/htm/{CODE}.{CHAPTER}.htm"
+
+data_model:
+  type: "legislation"
+  primary_key: "section_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "section_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "section_id"
+      description: "Unique section identifier (e.g., 'PE-1.01')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Section heading with code name and number"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the statute section"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "code"
+      description: "Texas code abbreviation (e.g., PE, GV, FA)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "chapter"
+      description: "Chapter number"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date fetched (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+notes: |
+  - 31 Texas Codes + Constitution with thousands of sections
+  - HTML ZIP bulk downloads from tcss.legis.texas.gov
+  - Public domain (Texas government works)
+  - Sections parsed from HTML with anchor-based splitting

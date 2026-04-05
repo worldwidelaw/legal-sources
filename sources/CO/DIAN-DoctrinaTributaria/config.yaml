@@ -1,0 +1,70 @@
+# ===================================================================
+# CO/DIAN-DoctrinaTributaria -- Colombian Tax Doctrine (DIAN)
+# ===================================================================
+# Tax doctrine (oficios, conceptos) from Colombia's National Tax and
+# Customs Authority (DIAN). Full text HTML from normograma.dian.gov.co.
+# Covers income tax, VAT, customs, international taxation, transfer
+# pricing, withholding, and more. From 1987 to present.
+# ===================================================================
+
+source:
+  id: "CO/DIAN-DoctrinaTributaria"
+  country: "CO"
+  name: "Colombian Tax Doctrine (DIAN Normograma)"
+  url: "https://normograma.dian.gov.co/dian/compilacion/tributario.html"
+  description: |
+    Colombian tax doctrine from the DIAN (Dirección de Impuestos y
+    Aduanas Nacionales). Oficios and conceptos tributarios providing
+    official interpretations of Colombian tax law. Full text HTML
+    documents from the DIAN Normograma (Compilación Jurídica).
+    Covers income tax, VAT, customs, international tax, transfer
+    pricing, withholding tax, and other fiscal matters. Spanish.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  notes: "Government website. Be respectful with rate limiting."
+
+api:
+  type: "html_scraping"
+  base_url: "https://normograma.dian.gov.co/dian/compilacion/"
+  endpoints:
+    index: "nndtntda2ntd1a3ded2_oficios_dian_direccion_impuestos_aduanas_nacionales.html"
+    document: "docs/{filename}.htm"
+
+schema:
+  key_fields:
+    - name: "doc_number"
+      description: "Document number (e.g. oficio_dian_905372_2022)"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the tax doctrine document"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Document date"
+      type: "date"
+      role: "temporal_key"
+    - name: "doc_type"
+      description: "Document type: oficio or concepto"
+      type: "string"
+      role: "classification"
+
+notes: |
+  - HTML scraping of normograma.dian.gov.co
+  - Index pages list documents by year/section
+  - Individual documents at docs/oficio_dian_{number}_{year}.htm
+  - Also conceptos at docs/concepto_tributario_dian_{number}_{year}.htm
+  - Full text in HTML, needs tag stripping
+  - Language: Spanish

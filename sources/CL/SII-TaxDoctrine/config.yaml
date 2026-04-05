@@ -1,0 +1,90 @@
+# ===================================================================
+# CL/SII-TaxDoctrine -- Chilean Internal Revenue Service Tax Doctrine
+# ===================================================================
+# Tax circulars (Circulares) from the Servicio de Impuestos Internos (SII).
+# Circulares contain official SII interpretations, instructions, and
+# administrative guidance on Chilean tax law.
+#
+# Primary: PDF circulars (2013-present) from normativa_legislacion/
+# Secondary: HTML circulars (2000-2012) from documentos/
+# ===================================================================
+
+source:
+  id: "CL/SII-TaxDoctrine"
+  country: "CL"
+  name: "Chilean Internal Revenue Service Tax Circulars (SII Circulares)"
+  url: "https://www.sii.cl/normativa_legislacion/index_normativa_legislacion.html"
+  description: |
+    Tax doctrine from Chile's Servicio de Impuestos Internos (SII).
+    Covers Circulares — official administrative instructions and
+    interpretations of Chilean tax law issued by the SII Director.
+    Topics include income tax, VAT, customs duties, transfer pricing,
+    tax incentives, and compliance obligations. ~50-70 per year.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.sii.cl"
+  index_patterns:
+    new: "/normativa_legislacion/circulares/{year}/indcir{year}.htm"
+    old: "/documentos/circulares/{year}/indcir{year}.htm"
+  document_patterns:
+    pdf: "/normativa_legislacion/circulares/{year}/circu{number}.pdf"
+    htm_old: "/documentos/circulares/{year}/circu{number}.htm"
+
+data_model:
+  type: "doctrine"
+  primary_key: "circular_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "circular_id"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "circular_id"
+      description: "Circular identifier (e.g., CIR-2024-50)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Circular title/subject (MATERIA field)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the circular"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to original document on sii.cl"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "number"
+      description: "Circular number within its year"
+      type: "integer"
+      role: "identifier"
+      required: true
+
+notes: |
+  - ~50-70 circulares per year, covering 2000-present
+  - 2013+ available as PDF from normativa_legislacion/
+  - 2000-2012 available as HTML from documentos/
+  - Full text extracted from PDF via PyMuPDF or from HTML
+  - Language: Spanish

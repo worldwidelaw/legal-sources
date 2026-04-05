@@ -1,0 +1,77 @@
+# ===================================================================
+# BR/ANATEL -- ANATEL Brazilian Telecom Regulatory Agency
+# ===================================================================
+# Telecom resolutions from ANATEL. ~765 resolutions (1997-2025).
+# CSV index from open data portal + full text from Joomla HTML pages.
+# No authentication required. Open data.
+# ===================================================================
+
+source:
+  id: "BR/ANATEL"
+  country: "BR"
+  name: "ANATEL - Brazilian Telecom Regulatory Agency"
+  url: "https://informacoes.anatel.gov.br/legislacao/resolucoes"
+  description: |
+    Telecom resolutions from Brazil's National Telecommunications Agency (ANATEL).
+    Covers all resolutions from 1997 to present (~765 documents).
+    Index from CSV open data download, full text from Joomla HTML pages.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://informacoes.anatel.gov.br"
+  endpoints:
+    csv_index: "https://www.anatel.gov.br/dadosabertos/paineis_de_dados/regulamentacao/resolucoes.zip"
+    year_listing: "/legislacao/resolucoes/{year}"
+    detail: "/legislacao/resolucoes/{year}/{id}-{alias}"
+
+data_model:
+  type: "legislation"
+  primary_key: "id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "id"
+      description: "Joomla article ID"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Resolution title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the resolution"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "status"
+      description: "Status (Vigente/Revogada)"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - CSV index at resolucoes.zip has metadata for all 765 resolutions
+  - Full text only on HTML pages (CSV fulltext column is empty)
+  - Joomla CMS, Cloudflare CDN, no API
+  - Year listing pages enumerate all resolutions per year

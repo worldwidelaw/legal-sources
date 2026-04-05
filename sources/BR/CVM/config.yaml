@@ -1,0 +1,27 @@
+source:
+  id: BR/CVM
+  name: CVM - Brazilian Securities Commission Open Data
+  country: BR
+  url: https://dados.cvm.gov.br/
+  data_types:
+    - case_law
+  language: pt
+
+endpoints:
+  sanctions_data: https://dados.cvm.gov.br/dados/PROCESSO/SANCIONADOR/DADOS/processo_sancionador.zip
+  sanctions_accused: processo_sancionador_acusado.csv  # inside the ZIP
+  declaratory_acts: https://dados.cvm.gov.br/dados/ATO_DECLR/INTERMED/DADOS/ato_declr.csv
+  doc_base_url: https://sistemas.cvm.gov.br/dados/AtosDeclaratorios/
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+
+rate_limit:
+  delay_seconds: 1.5

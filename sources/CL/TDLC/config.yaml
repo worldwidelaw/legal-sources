@@ -1,0 +1,39 @@
+source:
+  id: CL/TDLC
+  name: Chile TDLC - Competition Tribunal (Tribunal de Libre Competencia)
+  country: 'CL'
+  url: https://www.tdlc.cl/sentencia/
+  type: case_law
+
+api:
+  type: rest_json
+  base_url: https://www.tdlc.cl
+  auth: none
+  endpoints:
+    list: GET /wp-json/wp/v2/tdlc-sentencias?per_page=100&_embed&page={page}
+    detail: GET /wp-json/wp/v2/tdlc-sentencias/{id}
+    pdf: extracted from HTML page
+  rate_limit:
+    requests_per_minute: 20
+    delay_seconds: 3
+
+data:
+  format: json+pdf
+  language: spa
+  encoding: utf-8
+  license: Public domain (official tribunal decisions)
+  coverage:
+    estimated_records: 209
+  notes: |
+    Competition tribunal decisions (sentencias) from 2004-2026.
+    Metadata via WordPress REST API, full text extracted from PDF downloads.
+
+schema:
+  key_fields:
+    - _id
+    - url
+  required_fields:
+    - title
+    - text
+    - date
+    - url

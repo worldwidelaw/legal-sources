@@ -1,0 +1,82 @@
+# ===================================================================
+# US/WA-Legislation -- Washington State Legislative Web Services
+# ===================================================================
+# Full text of Washington state legislation via SOAP/REST web services
+# and lawfilesext.leg.wa.gov file server. Covers:
+#   - Revised Code of Washington (RCW) — codified statutes
+#   - Session laws / enrolled bills with full text
+# No authentication required. Public domain.
+# ===================================================================
+
+source:
+  id: "US/WA-Legislation"
+  country: "US"
+  name: "Washington State Legislative Web Services"
+  url: "https://wslwebservices.leg.wa.gov/"
+  description: |
+    Washington state legislation via official SOAP/REST web services and
+    lawfilesext.leg.wa.gov file server. RCW (Revised Code of Washington)
+    codified statutes plus enrolled bills. Full text as HTML cleaned to
+    plain text. Public domain, no auth required.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 1
+
+api:
+  type: "soap_rest_hybrid"
+  base_url: "https://wslwebservices.leg.wa.gov"
+  file_server: "https://lawfilesext.leg.wa.gov"
+  endpoints:
+    legislation_service: "/LegislationService.asmx"
+    document_service: "/LegislativeDocumentService.asmx"
+    rcw_base: "/law/RCW/"
+
+data_model:
+  type: "legislation"
+  primary_key: "section_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "section_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "section_id"
+      description: "Unique identifier (e.g., 'RCW-1.04.010', 'BILL-2025-HB1001')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Section or bill title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the section or bill"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "collection"
+      description: "Which body of law: RCW or Bill"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date fetched (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+notes: |
+  - RCW: ~91 titles with thousands of sections via HTML file server
+  - Bills: Current and historical (back to 1991) via SOAP web services + HTML
+  - Directory listings enabled on lawfilesext.leg.wa.gov
+  - All full text as HTML cleaned to plain text
+  - Public domain, no auth needed

@@ -1,0 +1,30 @@
+name: HMRC Tax Guidance Manuals
+source_id: UK/HMRC-Manuals
+country: UK
+data_types:
+  - doctrine
+
+url: https://www.gov.uk/hmrc-internal-manuals
+license: Open Government Licence v3.0
+update_frequency: daily
+
+schema:
+  key_fields:
+    - _id
+    - manual_slug
+    - section_id
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+
+notes: |
+  247 HMRC manuals with 84,654+ sections covering all areas of UK tax law.
+  Data fetched via GOV.UK Content API (JSON, no authentication required).
+  Includes Capital Gains Manual, Business Income Manual, VAT manuals, etc.
+  Each section is a separate record with full text extracted from HTML body.

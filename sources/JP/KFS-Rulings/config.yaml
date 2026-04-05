@@ -1,0 +1,84 @@
+# ===================================================================
+# JP/KFS-Rulings -- Japan National Tax Tribunal Published Rulings
+# ===================================================================
+# Published rulings (裁決事例) from the National Tax Tribunal
+# (国税不服審判所, Kokuzei Fufuku Shinpanjo / KFS).
+#
+# Primary: HTML pages at kfs.go.jp/service/JP/
+# Structure: Collections 43-140+, each containing 5-15 cases
+# Note: Shift_JIS encoding, Japanese language
+# ===================================================================
+
+source:
+  id: "JP/KFS-Rulings"
+  country: "JP"
+  name: "Japan National Tax Tribunal Published Rulings"
+  url: "https://www.kfs.go.jp/service/JP/index.html"
+  description: |
+    Published rulings (公表裁決事例) from the Japan National Tax Tribunal
+    (国税不服審判所). Full text rulings on tax disputes covering income tax,
+    corporate tax, consumption tax, inheritance/gift tax, and others.
+    Collections from No. 43 (FY1992) to present.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.kfs.go.jp"
+  encoding: "shift_jis"
+
+data_model:
+  type: "case_law"
+  primary_key: "ruling_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "ruling_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "ruling_id"
+      description: "Unique ruling ID (e.g., KFS-140-01)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Ruling title (date and subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the ruling"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Ruling date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to ruling on kfs.go.jp"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "collection_number"
+      description: "Collection number (43-140+)"
+      type: "integer"
+      role: "category"
+      required: true
+
+notes: |
+  - Full text rulings from Japan National Tax Tribunal
+  - ~700-1000 published rulings across collections 43-140+
+  - Shift_JIS encoded HTML pages
+  - Japanese language content
+  - Covers all tax types: income, corporate, consumption, inheritance, etc.

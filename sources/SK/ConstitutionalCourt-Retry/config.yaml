@@ -1,0 +1,105 @@
+# ===================================================================
+# SK/ConstitutionalCourt-Retry -- Slovak Constitutional Court
+# ===================================================================
+# Constitutional Court decisions via ustavnysud.sk REST API.
+# 52K+ decisions with full text via PDF download + pdfplumber extraction.
+# OAuth2 client credentials (public, embedded in frontend JS).
+# ===================================================================
+
+source:
+  id: "SK/ConstitutionalCourt-Retry"
+  country: "SK"
+  name: "Slovak Constitutional Court (Ústavný súd SR)"
+  url: "https://www.ustavnysud.sk"
+  description: |
+    Slovakia's Constitutional Court (Ústavný súd Slovenskej republiky).
+    Guardian of constitutionality. Reviews laws, handles constitutional
+    complaints, resolves jurisdictional disputes. 52,000+ decisions available
+    via REST API with OAuth2 authentication (public credentials).
+
+data_types:
+  - case_law
+
+auth:
+  type: "oauth2_client_credentials"
+  notes: "Public credentials embedded in frontend JavaScript"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "rest"
+  base_url: "https://www.ustavnysud.sk"
+  endpoints:
+    token: "/o/oauth2/token"
+    search: "/o/v1/dms/search"
+    download: "/docDownload/{documentId}"
+  auth:
+    client_id: "id-fab237c0-55ad-9fdf-9b9f-976eef3cbd9"
+    client_secret: "secret-579e7b79-b5b2-b22d-c1b3-204386e0447e"
+
+data_model:
+  type: "caselaw"
+  primary_key: "documentId"
+  update_strategy: "upsert"
+  versioning: "temporal"
+  dedup_key:
+    - "mkECLI"
+
+schema:
+  key_fields:
+    - name: "documentId"
+      description: "UUID of the decision document"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "mkECLI"
+      description: "ECLI identifier (ECLI:SK:USSR:YYYY:...)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "mkRSAPNumberOfFile"
+      description: "Case number (e.g., III. ÚS 518/2024)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Case title (case number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (extracted from PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to download the decision PDF"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "mkFormOfDecision"
+      description: "Form of decision (Nález = Finding, Uznesenie = Resolution)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "mkJudgeReporter"
+      description: "Judge reporter name"
+      type: "string"
+      role: "metadata"
+      required: false
+
+notes: |
+  - Uses ustavnysud.sk REST API with OAuth2 client credentials
+  - 52,000+ decisions available (1993 onwards)
+  - Full text extracted from PDF via pdfplumber
+  - ECLI format: ECLI:SK:USSR:YYYY:N.US.NNN.YYYY.N
+  - Decision forms: Nález (finding), Uznesenie (resolution)
+  - Data is public (Constitutional Court decisions)
+  - Language: Slovak

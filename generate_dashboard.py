@@ -601,7 +601,15 @@ def generate():
 
     # Sort: complete first, then maintenance, then blocked, then planned; within each by priority
     status_order = {"complete": 0, "needs_maintenance": 1, "blocked": 2, "in_progress": 3, "planned": 4}
-    sources_out.sort(key=lambda x: (status_order.get(x["status"], 9), x["priority"], x["id"]))
+    priority_map = {"high": 1, "medium": 2, "low": 3}
+    def _pri(v):
+        if isinstance(v, int):
+            return v
+        try:
+            return int(v)
+        except (ValueError, TypeError):
+            return priority_map.get(str(v).lower(), 99)
+    sources_out.sort(key=lambda x: (status_order.get(x["status"], 9), _pri(x.get("priority", 99)), x["id"]))
 
     # Blockers
     blockers = parse_blocked_md()

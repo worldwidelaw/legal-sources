@@ -1,0 +1,58 @@
+source_id: PE/INDECOPI
+name: "Peru INDECOPI - Competition & IP Tribunal Resolutions"
+country: PE
+url: "https://repositorio.indecopi.gob.pe/"
+description: >
+  Resolutions from Peru's INDECOPI (Instituto Nacional de Defensa de la
+  Competencia y de la Protección de la Propiedad Intelectual) via the
+  DSpace 7 institutional repository. Covers competition defense, IP
+  (trademarks, patents, copyright), consumer protection, bureaucratic
+  barriers elimination, dumping/subsidies, and bankruptcy proceedings.
+
+data_types:
+  - case_law
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: _fetched_at
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: resolution_number
+      type: string
+      required: false
+    - name: area
+      type: string
+      required: false

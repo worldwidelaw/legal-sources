@@ -294,13 +294,18 @@ def main():
     parser = argparse.ArgumentParser(description="IT/UIBM data fetcher")
     parser.add_argument(
         "command",
-        choices=["bootstrap", "update", "test-api"],
+        choices=["bootstrap", "bootstrap-fast", "update", "test-api"],
         help="Command to run",
     )
     parser.add_argument(
         "--sample",
         action="store_true",
         help="Fetch only sample records (for validation)",
+    )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Full bootstrap (all records)",
     )
     parser.add_argument(
         "--count",
@@ -316,38 +321,16 @@ def main():
         success = scraper.test_api()
         sys.exit(0 if success else 1)
 
-    elif args.command == "bootstrap":
-        if args.sample:
-            sample_dir = Path(__file__).parent / "sample"
-            sample_dir.mkdir(exist_ok=True)
-
-            count = 0
-            total_chars = 0
-
-            for record in scraper.fetch_sample(count=args.count):
-                filename = f"{record['_id']}.json"
-                filepath = sample_dir / filename
-
-                with open(filepath, "w", encoding="utf-8") as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-
-                count += 1
-                text_len = len(record.get("text", ""))
-                total_chars += text_len
-                logger.info(f"Saved: {filename} ({text_len} chars)")
-
-            avg_chars = total_chars // count if count > 0 else 0
-            logger.info(f"Sample complete: {count} records, avg {avg_chars} chars/doc")
-
+    elif args.command in ("bootstrap", "bootstrap-fast"):
+        if args.sample and not args.full and args.command != "bootstrap-fast":
+            stats = scraper.bootstrap(sample_mode=True, sample_size=args.count)
+            logger.info(f"Sample bootstrap complete: {stats}")
         else:
-            count = 0
-            for raw in scraper.fetch_all():
-                record = scraper.normalize(raw)
-                count += 1
-                if count % 100 == 0:
-                    logger.info(f"Processed {count} records")
-
-            logger.info(f"Bootstrap complete: {count} total records")
+            if args.command == "bootstrap-fast":
+                stats = scraper.bootstrap_fast()
+            else:
+                stats = scraper.bootstrap(sample_mode=False)
+            logger.info(f"Bootstrap complete: {stats}")
 
     elif args.command == "update":
         since = datetime.now(timezone.utc) - timedelta(days=30)

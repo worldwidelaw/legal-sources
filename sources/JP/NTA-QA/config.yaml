@@ -1,0 +1,49 @@
+source:
+  id: JP/NTA-QA
+  country: JP
+  name: Japan NTA Tax Q&A Cases (質疑応答事例)
+  description: |
+    Japan National Tax Agency (国税庁) Q&A Cases (質疑応答事例).
+    ~1,850 individual tax doctrine documents across 9 categories:
+    income tax, withholding tax, capital gains, inheritance tax,
+    property valuation, corporate tax, consumption tax, stamp tax,
+    and statutory reporting. Each case has a query (照会要旨),
+    response (回答要旨), and related laws (関係法令通達). Japanese language.
+
+  data_types:
+    - doctrine
+
+  url: https://www.nta.go.jp/law/shitsugi/01.htm
+  auth: none
+
+  languages:
+    - ja
+
+schema:
+  key_fields:
+    - name: path
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: category
+      type: string
+      required: true
+
+data_model:
+  update_strategy: full_refresh
+  dedup_key:
+    - path
+
+rate_limits:
+  requests_per_second: 0.5
+  delay_between_requests: 2.0
+
+license:
+  type: Public Domain (Government of Japan)
+  attribution: National Tax Agency (国税庁)
+  url: https://www.nta.go.jp/

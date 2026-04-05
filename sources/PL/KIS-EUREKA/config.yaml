@@ -1,0 +1,53 @@
+# PL/KIS-EUREKA - Polish Tax Interpretations (EUREKA System)
+# Individual and general tax interpretations from the Ministry of Finance
+# https://eureka.mf.gov.pl/
+#
+# Coverage: ~541,000 documents (508,999 individual interpretations + others)
+# Source: EUREKA REST API (Spring Boot + Elasticsearch backend)
+# License: Public domain (official government interpretations)
+
+source_id: PL/KIS-EUREKA
+name: Polish Tax Interpretations (EUREKA System)
+country: PL
+url: https://eureka.mf.gov.pl/
+
+data_types:
+  - doctrine
+
+auth:
+  type: none
+
+api:
+  base_url: https://eureka.mf.gov.pl/api/public/v1
+  search_endpoint: /wyszukiwarka/informacje
+  document_endpoint: /informacje/{id}
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "signature"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "category"
+      type: "string"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true
