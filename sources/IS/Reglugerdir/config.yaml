@@ -7,8 +7,17 @@ data_types:
 license: Public Domain
 url: https://island.is/reglugerdir
 fetch_method: graphql_api
-auth: none
-rate_limit: 1.0s
+api:
+  base_url: https://island.is/api/graphql
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 1.0
+  burst: 3
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
 
 schema:
   key_fields:

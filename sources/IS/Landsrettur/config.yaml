@@ -7,8 +7,17 @@ data_types:
 license: Public Domain
 url: https://www.landsrettur.is/
 fetch_method: html_scrape
-auth: none
-rate_limit: 1.5s
+api:
+  base_url: https://www.landsrettur.is
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.67
+  burst: 2
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
 
 schema:
   key_fields:

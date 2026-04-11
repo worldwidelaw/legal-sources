@@ -1,50 +1,50 @@
 #!/usr/bin/env python3
 """
-IS/Felagsdomur - Icelandic Labour Court (Félagsdómur) Case Law Fetcher
+IS/Felagsdomur — Icelandic Labour Court (Félagsdómur) Case Law
 
 Fetches court decisions from the Icelandic Labour Court website.
 
-Data source: https://www.felagsdomur.is/
-License: Public Domain (official court decisions)
+Strategy:
+  - AJAX pagination with pageitemid to discover case UUIDs
+  - Fetch each decision page and extract text from sr-only div
+  - ~200 decisions from 2010-present
+
+Usage:
+  python bootstrap.py bootstrap          # Full initial pull
+  python bootstrap.py bootstrap --sample # Fetch 10 sample records
+  python bootstrap.py update             # Incremental update
 """
 
-import argparse
-import json
-import os
 import re
 import sys
+import json
 import time
-from datetime import datetime
+import logging
 from pathlib import Path
+from datetime import datetime, timezone
 from typing import Generator, Optional
 
 import requests
 from bs4 import BeautifulSoup
 
-BASE_URL = "https://www.felagsdomur.is"
-DOMAR_URL = f"{BASE_URL}/domar-og-urskurdir/"
-DOMUR_URL = f"{BASE_URL}/domar-og-urskurdir/domur-urskurdur/"
-PAGINATION_URL = f"{BASE_URL}/default.aspx"
-SAMPLE_DIR = Path(__file__).parent / "sample"
-SOURCE_ID = "IS/Felagsdomur"
+# Add project root to path
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
 
-# Pagination settings - AJAX load-more endpoint
-# The site uses pageitemid parameter for AJAX pagination
+from common.base_scraper import BaseScraper
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("legal-data-hunter.IS.Felagsdomur")
+
+# Site-specific constants
+DOMAR_PATH = "/domar-og-urskurdir/"
+DOMUR_PATH = "/domar-og-urskurdir/domur-urskurdur/"
+PAGINATION_PATH = "/default.aspx"
 PAGEITEM_ID = "felagsdomur-domar-listing"
-PAGE_SIZE = 20  # Items per AJAX request
-
-# Request settings
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; LegalSourcesBot/1.0; worldwidelaw/legal-sources)"
-}
-REQUEST_DELAY = 1.5  # Seconds between requests
-
-
-def extract_case_ids_from_listing(html: str) -> list[str]:
-    """Extract case UUID IDs from the domar listing page."""
-    # Pattern: /domar-og-urskurdir/domur-urskurdur/?id=UUID
-    pattern = r'id=([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})'
-    return list(set(re.findall(pattern, html)))
+PAGE_SIZE = 20
 
 
 def parse_date(date_str: str) -> Optional[str]:
@@ -67,7 +67,6 @@ def parse_date(date_str: str) -> Optional[str]:
     except Exception:
         pass
 
-    # Try d.m.yyyy format
     try:
         match = re.search(r'(\d{1,2})\.(\d{1,2})\.(\d{4})', date_str)
         if match:
@@ -83,7 +82,6 @@ def parse_date(date_str: str) -> Optional[str]:
 
 def extract_text_from_html(soup: BeautifulSoup) -> str:
     """Extract clean text from the decision body."""
-    # The verdict text is in a sr-only div or verdict body
     body = soup.find('div', class_='sr-only')
     if not body:
         body = soup.find('div', class_='verdict__body')
@@ -93,7 +91,6 @@ def extract_text_from_html(soup: BeautifulSoup) -> str:
     if not body:
         return ""
 
-    # Remove script and style elements
     for element in body(['script', 'style']):
         element.decompose()
 
@@ -104,388 +101,292 @@ def extract_text_from_html(soup: BeautifulSoup) -> str:
     return text.strip()
 
 
-def parse_decision(html: str, case_id: str) -> Optional[dict]:
-    """Parse a Labour Court decision HTML page and extract metadata and text."""
-    try:
-        soup = BeautifulSoup(html, 'html.parser')
+class FelagsdomurScraper(BaseScraper):
+    """
+    Scraper for IS/Felagsdomur — Icelandic Labour Court decisions.
+    """
 
-        # Extract case number from heading - format "Mál nr. F-N/YYYY"
-        case_number = None
-        heading = soup.find('h1') or soup.find('h2')
-        if heading:
-            heading_text = heading.get_text(strip=True)
-            match = re.search(r'(F-\d+/\d{4})', heading_text)
-            if match:
-                case_number = match.group(1)
+    def __init__(self):
+        source_dir = Path(__file__).parent
+        super().__init__(source_dir)
+        self.base_url = self.config.get("api", {}).get("base_url", "https://www.felagsdomur.is")
+        self.session = requests.Session()
+        self.session.headers.update({
+            "User-Agent": "Mozilla/5.0 (compatible; LegalSourcesBot/1.0; worldwidelaw/legal-sources)",
+        })
 
-        # Also try subtitle
-        if not case_number:
-            subtitle = soup.find('h2', class_='verdict-head__subtitle')
-            if subtitle:
-                case_text = subtitle.get_text(strip=True)
-                match = re.search(r'(F-\d+/\d{4})', case_text)
+    def _extract_case_ids_from_listing(self, html: str) -> list[str]:
+        """Extract case UUID IDs from the domar listing page."""
+        pattern = r'id=([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})'
+        return list(set(re.findall(pattern, html)))
+
+    def _get_all_case_ids(self, max_ids: int = None) -> list[str]:
+        """Get all available case IDs using AJAX pagination."""
+        all_ids = set()
+        offset = 0
+        consecutive_empty = 0
+
+        domar_url = f"{self.base_url}{DOMAR_PATH}"
+        pagination_url = f"{self.base_url}{PAGINATION_PATH}"
+
+        logger.info(f"Fetching case listings from {domar_url}...")
+
+        # First, get IDs from the main listing page
+        try:
+            resp = self.session.get(domar_url, timeout=30)
+            resp.raise_for_status()
+            ids = self._extract_case_ids_from_listing(resp.text)
+            all_ids.update(ids)
+            logger.info(f"Found {len(ids)} cases on main listing")
+        except requests.RequestException as e:
+            logger.error(f"Error fetching main listing: {e}")
+
+        # Paginate through all decisions using AJAX endpoint
+        logger.info(f"Paginating through archive (batch size: {PAGE_SIZE})...")
+
+        while True:
+            if max_ids and len(all_ids) >= max_ids:
+                logger.info(f"Reached max_ids limit ({max_ids})")
+                break
+
+            try:
+                params = {
+                    'pageitemid': PAGEITEM_ID,
+                    'offset': offset,
+                    'count': PAGE_SIZE,
+                }
+                resp = self.session.get(pagination_url, params=params, timeout=30)
+                resp.raise_for_status()
+
+                ids = self._extract_case_ids_from_listing(resp.text)
+                new_ids = [id for id in ids if id not in all_ids]
+
+                if not new_ids:
+                    consecutive_empty += 1
+                    if consecutive_empty >= 3:
+                        logger.info(f"No new IDs for 3 consecutive pages, stopping at offset {offset}")
+                        break
+                else:
+                    consecutive_empty = 0
+                    all_ids.update(new_ids)
+
+                if offset % 100 == 0:
+                    logger.info(f"  Offset {offset}: {len(all_ids)} unique IDs collected")
+
+                offset += PAGE_SIZE
+                time.sleep(0.5)
+
+                # Safety limit - ~200 decisions expected
+                if offset > 500:
+                    logger.info(f"Safety limit reached at offset {offset}")
+                    break
+
+            except requests.RequestException as e:
+                logger.error(f"Error at offset {offset}: {e}")
+                consecutive_empty += 1
+                if consecutive_empty >= 3:
+                    break
+                offset += PAGE_SIZE
+                time.sleep(1)
+
+        result = list(all_ids)
+        logger.info(f"Total unique case IDs discovered: {len(result)}")
+        return result
+
+    def _parse_decision(self, html: str, case_id: str) -> Optional[dict]:
+        """Parse a Labour Court decision HTML page and extract metadata and text."""
+        try:
+            soup = BeautifulSoup(html, 'html.parser')
+
+            # Extract case number from heading - format "Mál nr. F-N/YYYY"
+            case_number = None
+            heading = soup.find('h1') or soup.find('h2')
+            if heading:
+                heading_text = heading.get_text(strip=True)
+                match = re.search(r'(F-\d+/\d{4})', heading_text)
                 if match:
                     case_number = match.group(1)
 
-        # Extract date
-        date = None
-        time_elem = soup.find('time', class_='verdict-head__time')
-        if time_elem:
-            date_str = time_elem.get_text(strip=True)
-            date = parse_date(date_str)
-            if not date and time_elem.get('datetime'):
-                dt_str = time_elem.get('datetime')
-                date = parse_date(dt_str)
+            if not case_number:
+                subtitle = soup.find('h2', class_='verdict-head__subtitle')
+                if subtitle:
+                    case_text = subtitle.get_text(strip=True)
+                    match = re.search(r'(F-\d+/\d{4})', case_text)
+                    if match:
+                        case_number = match.group(1)
 
-        # If no time element, try to find date in meta tags or text
-        if not date:
-            meta_date = soup.find('meta', {'name': 'date'})
-            if meta_date and meta_date.get('content'):
-                date = parse_date(meta_date['content'])
+            # Extract date
+            date = None
+            time_elem = soup.find('time', class_='verdict-head__time')
+            if time_elem:
+                date_str = time_elem.get_text(strip=True)
+                date = parse_date(date_str)
+                if not date and time_elem.get('datetime'):
+                    date = parse_date(time_elem.get('datetime'))
 
-        # Extract parties - plaintiff and defendant
-        plaintiff = None
-        defendant = None
+            if not date:
+                meta_date = soup.find('meta', {'name': 'date'})
+                if meta_date and meta_date.get('content'):
+                    date = parse_date(meta_date['content'])
 
-        # Look for party information in the verdict header
-        parties_div = soup.find('div', class_='verdict-head__parties')
-        if parties_div:
-            parties_text = parties_div.get_text(strip=True)
-            parts = re.split(r'\s+gegn\s+', parties_text, maxsplit=1)
-            if len(parts) == 2:
-                plaintiff = parts[0].strip()
-                defendant = parts[1].strip()
+            # Extract parties
+            plaintiff = None
+            defendant = None
+            parties_div = soup.find('div', class_='verdict-head__parties')
+            if parties_div:
+                parties_text = parties_div.get_text(strip=True)
+                parts = re.split(r'\s+gegn\s+', parties_text, maxsplit=1)
+                if len(parts) == 2:
+                    plaintiff = parts[0].strip()
+                    defendant = parts[1].strip()
 
-        # Extract keywords
-        keywords = []
-        keyword_section = soup.find('div', class_='verdict__keywords')
-        if keyword_section:
-            keywords_text = keyword_section.get_text(strip=True)
-            if keywords_text:
-                keywords = [k.strip() for k in keywords_text.split(',') if k.strip()]
+            # Extract keywords
+            keywords = []
+            keyword_section = soup.find('div', class_='verdict__keywords')
+            if keyword_section:
+                keywords_text = keyword_section.get_text(strip=True)
+                if keywords_text:
+                    keywords = [k.strip() for k in keywords_text.split(',') if k.strip()]
+            if not keywords and keyword_section:
+                keywords = [li.get_text(strip=True) for li in keyword_section.find_all('li')]
 
-        # Also try keyword list items
-        if not keywords and keyword_section:
-            keywords = [li.get_text(strip=True) for li in keyword_section.find_all('li')]
+            # Extract abstract/summary
+            abstract = None
+            abstract_section = soup.find('div', class_='verdict__reifun')
+            if abstract_section:
+                abstract = abstract_section.get_text(strip=True)
 
-        # Extract abstract/summary
-        abstract = None
-        abstract_section = soup.find('div', class_='verdict__reifun')
-        if abstract_section:
-            abstract = abstract_section.get_text(strip=True)
+            if not abstract:
+                for h3 in soup.find_all(['h3', 'h4']):
+                    if 'útdráttur' in h3.get_text(strip=True).lower():
+                        next_div = h3.find_next_sibling('div')
+                        if next_div:
+                            abstract = next_div.get_text(strip=True)
+                        break
 
-        # Also look for útdráttur section
-        if not abstract:
-            for h3 in soup.find_all(['h3', 'h4']):
-                if 'útdráttur' in h3.get_text(strip=True).lower():
-                    next_div = h3.find_next_sibling('div')
-                    if next_div:
-                        abstract = next_div.get_text(strip=True)
-                    break
+            # Extract full text from sr-only div
+            text = extract_text_from_html(soup)
 
-        # Extract full text from sr-only div
-        text = extract_text_from_html(soup)
+            if not text or len(text) < 100:
+                return None
 
-        if not text or len(text) < 100:
+            return {
+                "case_id": case_id,
+                "case_number": case_number,
+                "date": date,
+                "text": text,
+                "plaintiff": plaintiff,
+                "defendant": defendant,
+                "keywords": keywords,
+                "abstract": abstract,
+            }
+
+        except Exception as e:
+            logger.error(f"Error parsing decision {case_id}: {e}")
             return None
 
-        # Build title
-        title_parts = [f"Félagsdómur - Mál nr. {case_number}"] if case_number else [f"Félagsdómur {case_id[:8]}"]
+    def _fetch_decision(self, case_id: str) -> Optional[dict]:
+        """Fetch and parse a single Labour Court decision."""
+        url = f"{self.base_url}{DOMUR_PATH}?id={case_id}"
+        try:
+            resp = self.session.get(url, timeout=30)
+            resp.raise_for_status()
+            return self._parse_decision(resp.text, case_id)
+        except requests.RequestException as e:
+            logger.error(f"Error fetching {case_id}: {e}")
+            return None
 
-        title = title_parts[0]
+    def fetch_all(self) -> Generator[dict, None, None]:
+        """Yield all Labour Court decisions."""
+        case_ids = self._get_all_case_ids()
 
-        # Build document ID
+        logger.info(f"Processing {len(case_ids)} cases...")
+
+        for i, case_id in enumerate(case_ids):
+            logger.info(f"[{i+1}/{len(case_ids)}] Fetching {case_id}...")
+
+            raw = self._fetch_decision(case_id)
+            if raw:
+                yield raw
+
+            time.sleep(1.5)
+
+    def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
+        """Yield decisions modified since `since`."""
+        for raw in self.fetch_all():
+            if raw.get('date'):
+                try:
+                    doc_date = datetime.fromisoformat(raw['date'])
+                    if doc_date >= since:
+                        yield raw
+                except (ValueError, TypeError):
+                    yield raw
+
+    def normalize(self, raw: dict) -> dict:
+        """Transform raw decision data into standardized schema."""
+        case_id = raw["case_id"]
+        case_number = raw.get("case_number")
         doc_id = case_number if case_number else f"F-{case_id[:8]}"
-
-        url = f"{DOMUR_URL}?id={case_id}"
+        title = f"Félagsdómur - Mál nr. {case_number}" if case_number else f"Félagsdómur {case_id[:8]}"
 
         record = {
-            '_id': doc_id,
-            '_source': SOURCE_ID,
-            '_type': 'case_law',
-            '_fetched_at': datetime.utcnow().isoformat() + 'Z',
-            'title': title,
-            'text': text,
-            'date': date,
-            'url': url,
-            'language': 'isl',
-            'court': 'Félagsdómur',
-            'case_number': case_number,
+            "_id": doc_id,
+            "_source": "IS/Felagsdomur",
+            "_type": "case_law",
+            "_fetched_at": datetime.now(timezone.utc).isoformat(),
+            "title": title,
+            "text": raw["text"],
+            "date": raw.get("date"),
+            "url": f"{self.base_url}{DOMUR_PATH}?id={case_id}",
+            "language": "isl",
+            "court": "Félagsdómur",
+            "case_number": case_number,
         }
 
-        if plaintiff:
-            record['plaintiff'] = plaintiff
-        if defendant:
-            record['defendant'] = defendant
-        if keywords:
-            record['keywords'] = keywords if isinstance(keywords, list) else keywords
-        if abstract:
-            record['abstract'] = abstract
+        if raw.get("plaintiff"):
+            record["plaintiff"] = raw["plaintiff"]
+        if raw.get("defendant"):
+            record["defendant"] = raw["defendant"]
+        if raw.get("keywords"):
+            record["keywords"] = raw["keywords"]
+        if raw.get("abstract"):
+            record["abstract"] = raw["abstract"]
 
         return record
 
-    except Exception as e:
-        print(f"  Error parsing decision {case_id}: {e}")
-        return None
 
-
-def fetch_decision(case_id: str) -> Optional[dict]:
-    """Fetch and parse a single Labour Court decision."""
-    url = f"{DOMUR_URL}?id={case_id}"
-
-    try:
-        resp = requests.get(url, headers=HEADERS, timeout=30)
-        resp.raise_for_status()
-        return parse_decision(resp.text, case_id)
-    except requests.RequestException as e:
-        print(f"  Error fetching {case_id}: {e}")
-        return None
-
-
-def get_all_case_ids(max_ids: int = None) -> list[str]:
-    """
-    Get all available case IDs using AJAX pagination.
-
-    The Félagsdómur website uses AJAX load-more pagination via
-    /default.aspx?pageitemid=<id>&offset=<offset>&count=<count>
-
-    Args:
-        max_ids: Maximum number of IDs to return (for sampling/testing)
-
-    Returns:
-        List of unique case UUIDs
-    """
-    all_ids = set()
-    offset = 0
-    consecutive_empty = 0
-
-    print(f"Fetching case listings from {DOMAR_URL}...")
-
-    # First, get IDs from the main listing page
-    try:
-        resp = requests.get(DOMAR_URL, headers=HEADERS, timeout=30)
-        resp.raise_for_status()
-        ids = extract_case_ids_from_listing(resp.text)
-        all_ids.update(ids)
-        print(f"  Found {len(ids)} cases on main listing")
-    except requests.RequestException as e:
-        print(f"  Error fetching main listing: {e}")
-
-    # Paginate through all decisions using AJAX endpoint
-    print(f"  Paginating through archive (batch size: {PAGE_SIZE})...")
-
-    while True:
-        if max_ids and len(all_ids) >= max_ids:
-            print(f"  Reached max_ids limit ({max_ids})")
-            break
-
-        try:
-            params = {
-                'pageitemid': PAGEITEM_ID,
-                'offset': offset,
-                'count': PAGE_SIZE
-            }
-            resp = requests.get(PAGINATION_URL, params=params, headers=HEADERS, timeout=30)
-            resp.raise_for_status()
-
-            ids = extract_case_ids_from_listing(resp.text)
-            new_ids = [id for id in ids if id not in all_ids]
-
-            if not new_ids:
-                consecutive_empty += 1
-                if consecutive_empty >= 3:
-                    print(f"  No new IDs found for 3 consecutive pages, stopping at offset {offset}")
-                    break
-            else:
-                consecutive_empty = 0
-                all_ids.update(new_ids)
-
-            if offset % 100 == 0:
-                print(f"    Offset {offset}: {len(all_ids)} unique IDs collected")
-
-            offset += PAGE_SIZE
-            time.sleep(0.5)
-
-            # Safety limit - ~200 decisions expected
-            if offset > 500:
-                print(f"  Safety limit reached at offset {offset}")
-                break
-
-        except requests.RequestException as e:
-            print(f"  Error at offset {offset}: {e}")
-            consecutive_empty += 1
-            if consecutive_empty >= 3:
-                break
-            offset += PAGE_SIZE
-            time.sleep(1)
-
-    result = list(all_ids)
-    print(f"  Total unique case IDs discovered: {len(result)}")
-    return result
-
-
-def fetch_all(max_records: int = None) -> Generator[dict, None, None]:
-    """
-    Fetch all Labour Court decisions with checkpoint/resume support.
-
-    Args:
-        max_records: Maximum number of records to yield (for sampling)
-
-    Yields:
-        Normalized document records
-    """
-    checkpoint_file = Path(__file__).parent / ".checkpoint"
-    completed_ids = set()
-
-    # Load checkpoint if exists
-    if checkpoint_file.exists():
-        try:
-            with open(checkpoint_file, 'r') as f:
-                completed_ids = set(line.strip() for line in f if line.strip())
-            print(f"Loaded checkpoint: {len(completed_ids)} already processed")
-        except Exception as e:
-            print(f"Warning: Could not load checkpoint: {e}")
-
-    # Get all case IDs
-    if max_records:
-        case_ids = get_all_case_ids(max_ids=max_records + 20)
-    else:
-        case_ids = get_all_case_ids()
-
-    # Filter out already completed
-    pending_ids = [id for id in case_ids if id not in completed_ids]
-    if max_records:
-        pending_ids = pending_ids[:max_records + 5]
-
-    print(f"Processing {len(pending_ids)} pending cases (of {len(case_ids)} total)...")
-
-    count = 0
-    for i, case_id in enumerate(pending_ids):
-        if max_records and count >= max_records:
-            break
-
-        print(f"  [{i+1}/{len(pending_ids)}] Fetching {case_id}...")
-
-        record = fetch_decision(case_id)
-
-        if record and len(record.get('text', '')) >= 100:
-            yield record
-            count += 1
-
-            # Update checkpoint for full fetches
-            if not max_records:
-                try:
-                    with open(checkpoint_file, 'a') as f:
-                        f.write(f"{case_id}\n")
-                except Exception:
-                    pass
-
-        time.sleep(REQUEST_DELAY)
-
-    print(f"Total records yielded: {count}")
-
-
-def fetch_updates(since: datetime) -> Generator[dict, None, None]:
-    """Fetch documents updated since a given date."""
-    for record in fetch_all():
-        if record.get('date'):
-            try:
-                doc_date = datetime.fromisoformat(record['date'])
-                if doc_date >= since:
-                    yield record
-            except (ValueError, TypeError):
-                yield record
-
-
-def normalize(raw: dict) -> dict:
-    """Validate and normalize the record."""
-    required = ['_id', '_source', '_type', '_fetched_at', 'title', 'text', 'date', 'url']
-    for field in required:
-        if field not in raw:
-            raise ValueError(f"Missing required field: {field}")
-
-    if not raw.get('text') or len(raw['text']) < 50:
-        raise ValueError("Document has insufficient text content")
-
-    return raw
-
-
-def bootstrap_sample(sample_count: int = 12):
-    """Fetch sample records and save to sample directory."""
-    SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-
-    print(f"Fetching {sample_count} sample records from {SOURCE_ID}...")
-    print("=" * 60)
-
-    records = []
-    for i, record in enumerate(fetch_all(max_records=sample_count)):
-        try:
-            normalized = normalize(record)
-            records.append(normalized)
-
-            filename = SAMPLE_DIR / f"record_{i+1:03d}.json"
-            with open(filename, 'w', encoding='utf-8') as f:
-                json.dump(normalized, f, ensure_ascii=False, indent=2)
-
-            text_len = len(normalized.get('text', ''))
-            print(f"  [{i+1:02d}] {normalized['_id']}: {normalized['title'][:50]} ({text_len:,} chars)")
-
-        except ValueError as e:
-            print(f"  Skipping record: {e}")
-
-    print("=" * 60)
-    print(f"Saved {len(records)} sample records to {SAMPLE_DIR}")
-
-    if records:
-        avg_text_len = sum(len(r.get('text', '')) for r in records) / len(records)
-        print(f"Average text length: {avg_text_len:,.0f} chars/doc")
-
-    if len(records) < 10:
-        print("WARNING: Fewer than 10 records fetched!")
-        return False
-
-    empty_text = sum(1 for r in records if not r.get('text'))
-    if empty_text > 0:
-        print(f"WARNING: {empty_text} records have empty text!")
-        return False
-
-    print("VALIDATION PASSED: All records have full text content.")
-    return True
-
+# ── CLI entry point ──────────────────────────────────────────────────
 
 def main():
-    parser = argparse.ArgumentParser(description="IS/Felagsdomur case law fetcher")
-    parser.add_argument('command', choices=['bootstrap', 'update', 'fetch', 'info'],
-                       help="Command to run")
-    parser.add_argument('--sample', action='store_true',
-                       help="Fetch sample records only")
-    parser.add_argument('--count', type=int, default=12,
-                       help="Number of sample records to fetch")
-    parser.add_argument('--since', type=str, default=None,
-                       help="Fetch updates since date (YYYY-MM-DD)")
+    scraper = FelagsdomurScraper()
 
-    args = parser.parse_args()
+    if len(sys.argv) < 2:
+        print("Usage: python bootstrap.py [bootstrap|update] [--sample] [--sample-size N]")
+        sys.exit(1)
 
-    if args.command == 'info':
-        print(f"IS/Felagsdomur - Icelandic Labour Court Case Law")
-        print(f"Source URL: {BASE_URL}")
-        print(f"Decisions URL: {DOMAR_URL}")
-        print(f"Expected records: ~200 decisions (2010-present)")
+    command = sys.argv[1]
+    sample_mode = "--sample" in sys.argv
+    sample_size = 10
+    if "--sample-size" in sys.argv:
+        idx = sys.argv.index("--sample-size")
+        sample_size = int(sys.argv[idx + 1])
 
-    elif args.command == 'bootstrap':
-        success = bootstrap_sample(args.count)
-        sys.exit(0 if success else 1)
+    if command == "bootstrap":
+        if sample_mode:
+            stats = scraper.run_sample(n=sample_size)
+            print(f"\nSample complete: {stats.get('sample_records_saved', 0)} records saved")
+        else:
+            stats = scraper.bootstrap()
+            print(f"\nBootstrap complete: {stats['records_new']} new")
+    elif command == "update":
+        stats = scraper.update()
+        print(f"\nUpdate complete: {stats['records_new']} new")
+    else:
+        print(f"Unknown command: {command}")
+        sys.exit(1)
 
-    elif args.command == 'update':
-        since = datetime.fromisoformat(args.since) if args.since else datetime(2024, 1, 1)
-        print(f"Fetching updates since {since.isoformat()}...")
-        for record in fetch_updates(since):
-            print(json.dumps(record, ensure_ascii=False))
-
-    elif args.command == 'fetch':
-        for record in fetch_all():
-            print(json.dumps(record, ensure_ascii=False))
+    print(json.dumps(stats, indent=2))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
