@@ -22,16 +22,12 @@ import io
 import requests
 from bs4 import BeautifulSoup
 
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
-    try:
-        import PyPDF2
-        HAS_PYPDF2 = True
-    except ImportError:
-        HAS_PYPDF2 = False
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -72,39 +68,13 @@ class ACERFetcher:
         return None
 
     def _extract_text_from_pdf(self, pdf_content: bytes) -> str:
-        if HAS_PDFPLUMBER:
-            try:
-                with pdfplumber.open(io.BytesIO(pdf_content)) as pdf:
-                    parts = []
-                    for page in pdf.pages:
-                        t = page.extract_text()
-                        if t:
-                            parts.append(t)
-                    text = '\n\n'.join(parts)
-                    text = re.sub(r'\n{3,}', '\n\n', text)
-                    text = re.sub(r' {2,}', ' ', text)
-                    return text.strip()
-            except Exception as e:
-                logger.warning(f"pdfplumber failed: {e}")
-
-        if not HAS_PDFPLUMBER and HAS_PYPDF2:
-            try:
-                reader = PyPDF2.PdfReader(io.BytesIO(pdf_content))
-                parts = []
-                for page in reader.pages:
-                    t = page.extract_text()
-                    if t:
-                        parts.append(t)
-                text = '\n\n'.join(parts)
-                text = re.sub(r'\n{3,}', '\n\n', text)
-                text = re.sub(r' {2,}', ' ', text)
-                return text.strip()
-            except Exception as e:
-                logger.warning(f"PyPDF2 failed: {e}")
-
-        if not HAS_PDFPLUMBER and not HAS_PYPDF2:
-            logger.error("No PDF library available. Install pdfplumber or PyPDF2.")
-        return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="EU/ACER",
+            source_id="",
+            pdf_bytes=pdf_content,
+            table="doctrine",
+        ) or ""
 
     def _fetch_pdf_text(self, pdf_url: str) -> str:
         response = self._get(pdf_url, timeout=120)

@@ -1,0 +1,80 @@
+# ===================================================================
+# US/TX-Comptroller -- Texas Comptroller STAR Tax Doctrine
+# ===================================================================
+# Tax policy guidance from the Texas Comptroller of Public Accounts
+# STAR (State Tax Automated Research) system. Includes hearing
+# decisions, private letter rulings, general information letters,
+# taxability responses, policy memos, AG opinions, and more.
+# Open REST API, no authentication required. ~24,700+ documents.
+# ===================================================================
+
+source:
+  id: "US/TX-Comptroller"
+  country: "US"
+  name: "Texas Comptroller STAR Tax Doctrine"
+  url: "https://star.comptroller.texas.gov/"
+  description: |
+    Tax doctrine from the Texas Comptroller of Public Accounts via the
+    STAR (State Tax Automated Research) system. Covers hearing decisions,
+    private letter rulings, general information letters, taxability
+    responses, policy memos, court case summaries, AG opinions, rules,
+    and publications. Open JSON API, no auth required. ~24,700+ documents
+    spanning 1960-present.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 1
+
+api:
+  type: "rest_json"
+  base_url: "https://api.comptroller.texas.gov/star/v1"
+  endpoints:
+    search: "/search"
+    view: "/view/{acc_no}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "acc_no"
+  update_strategy: "incremental"
+  dedup_key:
+    - "acc_no"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "acc_no"
+      description: "STAR accession number (unique document ID)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document (HTML stripped)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "doc_type"
+      description: "Document type (Letter, Hearing, Rule, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "tax_type"
+      description: "Tax type (Sales/Use, Franchise, etc.)"
+      type: "string"
+      role: "classification"
+      required: false

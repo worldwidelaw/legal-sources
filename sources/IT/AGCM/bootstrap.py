@@ -42,14 +42,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
-# Optional PDF extraction
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
-    logging.warning("pdfplumber not installed. PDF text extraction will be limited.")
+from common.pdf_extract import extract_pdf_markdown
 
+
+# Optional PDF extraction
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -133,26 +129,13 @@ class AGCMScraper(BaseScraper):
             return False
 
     def _extract_text_from_pdf(self, pdf_bytes: bytes) -> Optional[str]:
-        """Extract text from PDF bytes using pdfplumber."""
-        if not HAS_PDFPLUMBER:
-            logger.warning("pdfplumber not available")
-            return None
-
-        try:
-            pdf_io = io.BytesIO(pdf_bytes)
-            text_parts = []
-
-            with pdfplumber.open(pdf_io) as pdf:
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-
-            return "\n\n".join(text_parts)
-
-        except Exception as e:
-            logger.warning(f"PDF extraction failed: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="IT/AGCM",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="doctrine",
+        ) or ""
 
     def _parse_decisions_from_bulletin(
         self, full_text: str, year: int, week: int

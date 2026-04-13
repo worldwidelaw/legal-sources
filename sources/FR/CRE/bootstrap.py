@@ -24,9 +24,15 @@ from pathlib import Path
 from typing import Any, Generator, Optional
 from urllib.parse import urljoin
 
-import pdfplumber
 import requests
 from bs4 import BeautifulSoup
+
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 # Constants
 BASE_URL = "https://www.cre.fr"
@@ -74,22 +80,13 @@ def get_pagination_urls(html: str, base_url: str) -> list[str]:
 
 
 def extract_pdf_text(pdf_url: str, session: requests.Session) -> str:
-    """Download PDF and extract text content."""
-    try:
-        response = session.get(pdf_url, timeout=60)
-        response.raise_for_status()
-
-        with pdfplumber.open(io.BytesIO(response.content)) as pdf:
-            text_parts = []
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-            return '\n\n'.join(text_parts)
-    except Exception as e:
-        print(f"Error extracting PDF {pdf_url}: {e}", file=sys.stderr)
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="FR/CRE",
+        source_id="",
+        pdf_url=pdf_url,
+        table="case_law",
+    ) or ""
 
 def parse_detail_page(html: str, url: str, doc_type: str, session: requests.Session) -> Optional[dict]:
     """Parse a document detail page and extract metadata + full text."""

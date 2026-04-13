@@ -1,0 +1,14 @@
+source_id: US/NH-Legislation
+name: New Hampshire Revised Statutes Annotated
+country: US
+jurisdiction: US-NH
+url: https://www.gencourt.state.nh.us/rsa/html/nhtoc.htm
+data_types:
+  - legislation
+language: en
+schedule: quarterly
+schema:
+  key_fields:
+    - _id
+    - section_number
+    - chapter

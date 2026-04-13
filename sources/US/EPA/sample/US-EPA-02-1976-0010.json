@@ -1,0 +1,21 @@
+{
+  "_id": "US-EPA-02-1976-0010",
+  "_source": "US/EPA",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T12:32:20.639003+00:00",
+  "title": "EPA v. BETTS AVE MUN INCIN",
+  "text": "EPA Enforcement Case 02-1976-0010: BETTS AVE MUN INCIN\nType: Civil Judicial Action\nStatus: Closed\nOutcome: Final Order No Penalty\nLead Agency: EPA\n\nCase Summary:\nFACILITY NAMES:                                                              (1)   GANSEVOORT MUN INCINERATOR                                   GANSEVOORT ST & NO RIVER                                     NEW YORK, N.Y. 10014                   OWNERSHIPS:  M (ALL)                                         EPID#        NYD980214605                                    SIC CODES:   4953 (ALL)                                      *                                                                            (2)  HAMILTON AVE                                                 HAMILTON AVE/116 ST BKLYN, N.Y. 11231   EPID#        NYD980215404                                    *                                                                            (3)  BETTS AVE MUN INCINERATOR                                    58-73 53RD RD                                                QUEENS, N.Y. 11400                      EPID#        NYD980202683\n\nLaws and Sections Violated:\n  CAA: 110: Implementation Plan for National Primary and Secondary Ambient Air Quality Standards (State Implementation Plan for National Primary and Secondary Ambient Air Quality Standards)\n\nDefendants:\n  NEW YORK, CITY OF\n\nFacilities:\n  BETTS AVENUE MUNICIPAL INCINERATOR, 58-73 53RD AVENUE, MASPETH, NY\n  GANSEVOORT MUN INCIN, GANSEVOORT & NO RIVER, NEW YORK CITY, NY\n  S SHORE MUNIC INCIN, FORBELL & WORTMAN ST, BROOKLYN, NY\n  HAMILTON AVE INCIN, HAMILTON AVE & 116 ST, BROOKLYN, NY\n\nCase Milestones:\n  07/29/1976: Referred To Headquarters\n  08/12/1976: Referred To Dept Of Justice\n  09/29/1976: Referred TO U.S. Attorney\n  05/11/1977: Complaint Filed With Court\n  07/11/1977: Final Order Entered\n  07/11/1977: Concluded\n  07/11/1977: Final Order Lodged\n  04/21/1988: Enforcement Action Closed\n\nPollutants:\n  PM PARTICULATES\n\nEnforcement Conclusion #1: Consent Decree or Court Order Resolving a Civil Judicial Action\n  Name: NYC DEPT OF SANITATION\n  Settlement Entered: 07/11/1977\n\nViolations:\nViolation Of A SIP  Not Otherwise Specified",
+  "date": "1988-04-21",
+  "url": "https://echo.epa.gov/enforcement-case-report?id=02-1976-0010",
+  "case_number": "02-1976-0010",
+  "case_name": "BETTS AVE MUN INCIN",
+  "case_type": "JDC",
+  "case_status": "Closed",
+  "enforcement_type": "Civil Judicial Action",
+  "enforcement_outcome": "Final Order No Penalty",
+  "primary_law": "CAA",
+  "federal_penalty": "$0",
+  "state_penalty": "$0",
+  "lead_agency": "EPA",
+  "court": "US Environmental Protection Agency"
+}

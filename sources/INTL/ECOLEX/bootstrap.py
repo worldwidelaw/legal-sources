@@ -35,7 +35,6 @@ from typing import Generator, Optional
 from urllib.parse import urljoin
 
 import requests
-import pdfplumber
 from bs4 import BeautifulSoup
 
 # Add project root to path
@@ -43,6 +42,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -159,36 +161,13 @@ class EcolexScraper(BaseScraper):
         }
 
     def _extract_pdf_text(self, pdf_url: str) -> str:
-        """Download PDF and extract text."""
-        try:
-            r = self.session.get(pdf_url, timeout=60, allow_redirects=True)
-            r.raise_for_status()
-
-            if len(r.content) < 100 or not r.content[:5] in (b'%PDF-', b'\x25PDF'):
-                return ""
-
-            with pdfplumber.open(io.BytesIO(r.content)) as pdf:
-                pages_text = []
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        pages_text.append(text)
-                if pages_text:
-                    return "\n\n".join(pages_text)
-
-            # Fallback: PyPDF2
-            import PyPDF2
-            reader = PyPDF2.PdfReader(io.BytesIO(r.content))
-            pages_text = []
-            for page in reader.pages:
-                text = page.extract_text()
-                if text and text.strip():
-                    pages_text.append(text)
-            return "\n\n".join(pages_text)
-
-        except Exception as e:
-            logger.warning(f"PDF extraction failed for {pdf_url}: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="INTL/ECOLEX",
+            source_id="",
+            pdf_url=pdf_url,
+            table="case_law",
+        ) or ""
 
     def _parse_date_to_iso(self, date_str: str) -> Optional[str]:
         """Convert ECOLEX date to ISO 8601."""

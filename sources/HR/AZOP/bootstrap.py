@@ -51,13 +51,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
-# PDF extraction
-try:
-    import pypdf
-    HAS_PYPDF = True
-except ImportError:
-    HAS_PYPDF = False
+from common.pdf_extract import extract_pdf_markdown
 
+
+# PDF extraction
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -139,36 +136,13 @@ class CroatianDPAScraper(BaseScraper):
         return pdfs
 
     def _extract_pdf_text(self, pdf_url: str) -> Optional[str]:
-        """Download a PDF and extract text."""
-        if not HAS_PYPDF:
-            logger.warning("pypdf not installed, skipping PDF extraction")
-            return None
-
-        try:
-            self.rate_limiter.wait()
-            resp = self.client.session.get(pdf_url, timeout=60, headers={
-                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
-            })
-            resp.raise_for_status()
-
-            if len(resp.content) > 20 * 1024 * 1024:
-                logger.warning(f"PDF too large ({len(resp.content)} bytes): {pdf_url}")
-                return None
-
-            pdf_file = io.BytesIO(resp.content)
-            reader = pypdf.PdfReader(pdf_file)
-            pages_text = []
-            for page in reader.pages:
-                text = page.extract_text()
-                if text:
-                    pages_text.append(text)
-
-            full_text = "\n\n".join(pages_text).strip()
-            return full_text if len(full_text) > 50 else None
-
-        except Exception as e:
-            logger.warning(f"Failed to extract PDF text from {pdf_url}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="HR/AZOP",
+            source_id="",
+            pdf_url=pdf_url,
+            table="doctrine",
+        ) or ""
 
     # ── Opinion HTML Posts ───────────────────────────────────────
 

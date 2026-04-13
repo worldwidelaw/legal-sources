@@ -34,6 +34,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -64,20 +67,13 @@ CATEGORY_MAP = {
 
 
 def extract_pdf_text(pdf_bytes: bytes) -> Optional[str]:
-    """Extract text from PDF bytes using pdfplumber."""
-    try:
-        import pdfplumber
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            pages = []
-            for page in pdf.pages:
-                text = page.extract_text()
-                if text:
-                    pages.append(text)
-            return "\n\n".join(pages) if pages else None
-    except Exception as e:
-        logger.warning("PDF extraction failed: %s", e)
-        return None
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="IE/Revenue-TDM",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="doctrine",
+    ) or ""
 
 def url_to_category(url: str) -> str:
     """Derive category from the URL path."""

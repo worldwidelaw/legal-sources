@@ -37,17 +37,14 @@ except ImportError:
     print("ERROR: requests not installed. Run: pip3 install requests")
     sys.exit(1)
 
-try:
-    import pdfplumber
-except ImportError:
-    print("ERROR: pdfplumber not installed. Run: pip3 install pdfplumber")
-    sys.exit(1)
-
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -156,32 +153,13 @@ class BJLEGISScraper(BaseScraper):
         return items
 
     def _extract_text_from_pdf(self, uuid: str) -> Optional[str]:
-        """Download PDF and extract text."""
-        url = f"{BASE_URL}/{uuid}/open"
-        resp = self._get_with_retry(url, timeout=90)
-        if not resp:
-            return None
-
-        if resp.content[:4] != b'%PDF':
-            logger.debug(f"Not a PDF for {uuid}")
-            return None
-
-        try:
-            pdf = pdfplumber.open(io.BytesIO(resp.content))
-            text_parts = []
-            for page in pdf.pages:
-                t = page.extract_text()
-                if t:
-                    text_parts.append(t)
-            pdf.close()
-
-            text = "\n\n".join(text_parts)
-            text = re.sub(r'\n{3,}', '\n\n', text)
-            text = re.sub(r' {2,}', ' ', text)
-            return text.strip() if len(text) > 100 else None
-        except Exception as e:
-            logger.debug(f"PDF extraction failed for {uuid}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="BJ/LEGIS",
+            source_id="",
+            pdf_url=uuid,
+            table="legislation",
+        ) or ""
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all laws with extractable full text."""

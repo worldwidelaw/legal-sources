@@ -23,7 +23,6 @@ from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Optional
 
-import pypdf
 from bs4 import BeautifulSoup
 
 # Add project root to path
@@ -32,6 +31,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -55,19 +57,13 @@ def html_to_text(html: str) -> str:
 
 
 def extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using pypdf."""
-    try:
-        reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
-        parts = []
-        for page in reader.pages:
-            text = page.extract_text()
-            if text:
-                parts.append(text)
-        return "\n\n".join(parts).strip()
-    except Exception as e:
-        logger.warning(f"PDF extraction failed: {e}")
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="UK/FTT-Tax",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="case_law",
+    ) or ""
 
 class UKFTTTaxScraper(BaseScraper):
     """

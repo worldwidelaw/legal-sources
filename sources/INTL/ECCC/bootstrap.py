@@ -39,14 +39,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
-try:
-    import pdfplumber
-    PDF_SUPPORT = True
-except ImportError:
-    PDF_SUPPORT = False
-    print("WARNING: pdfplumber not available. Install with: pip install pdfplumber")
-
 import requests
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -98,37 +94,13 @@ class ECCCScraper(BaseScraper):
         return resp.json()
 
     def _download_pdf_text(self, doc_id: int) -> Optional[str]:
-        """Download a PDF and extract text."""
-        if not PDF_SUPPORT:
-            logger.error("pdfplumber not available")
-            return None
-        url = DOWNLOAD_URL.format(id=doc_id, matter_id=MATTER_ID)
-        try:
-            resp = self.session.get(url, timeout=120, stream=True, headers={"Content-Type": ""})
-            resp.raise_for_status()
-            # Read with size limit
-            chunks = []
-            total = 0
-            for chunk in resp.iter_content(chunk_size=65536):
-                chunks.append(chunk)
-                total += len(chunk)
-                if total > MAX_PDF_BYTES:
-                    logger.warning(f"PDF for doc {doc_id} exceeds {MAX_PDF_BYTES // (1024*1024)}MB, skipping")
-                    return None
-            content = b"".join(chunks)
-            if len(content) < 100:
-                return None
-            text_parts = []
-            with pdfplumber.open(io.BytesIO(content)) as pdf:
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-            text = "\n\n".join(text_parts).strip()
-            return text if len(text) >= 50 else None
-        except Exception as e:
-            logger.warning(f"Failed to extract PDF for doc {doc_id}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="INTL/ECCC",
+            source_id="",
+            pdf_bytes=doc_id,
+            table="case_law",
+        ) or ""
 
     def _iterate_documents(self, record_types: list = None) -> Generator[dict, None, None]:
         """Iterate through all matching documents via pagination."""

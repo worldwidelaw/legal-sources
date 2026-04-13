@@ -1,0 +1,42 @@
+id: MX/NuevoLeon-Legislation
+name: Nuevo León State Legislation
+country: MX
+url: https://sistec.nl.gob.mx/Transparencia_2015_LYPOE/Acciones/Legislacion.aspx
+description: >
+  Consolidated laws, codes, and constitution of the State of Nuevo León from the
+  Secretaría General de Gobierno transparency portal. ~220 laws/codes as PDF
+  documents with full text extraction via PyPDF2. Full text in Spanish.
+data_types:
+  - legislation
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true

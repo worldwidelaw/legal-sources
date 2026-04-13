@@ -1,0 +1,50 @@
+source:
+  id: JP/FTC
+  country: JP
+  name: Japan Fair Trade Commission (JFTC) Decisions
+  description: |
+    JFTC enforcement cases (cease & desist orders, surcharge orders, merger reviews)
+    and competition policy guidelines. English translations via cms03.jftc.go.jp.
+    ~350+ press releases (2002-2026) with full text HTML + ~40 guideline PDFs.
+
+  url: https://www.jftc.go.jp/en/policy_enforcement/
+  data_types:
+    - case_law
+    - doctrine
+
+  auth:
+    type: none
+
+  license:
+    name: Japan Government Public Data
+    url: https://www.jftc.go.jp/en/
+
+schedule:
+  frequency: monthly
+  reason: JFTC publishes cases periodically
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+  secondary_fields:
+    - name: doc_type
+      type: string
+      required: false
+    - name: date
+      type: string
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+notes: |
+  Main domain www.jftc.go.jp blocked by Akamai WAF.
+  Use cms03.jftc.go.jp CMS subdomain instead.
+  Yearly press release indexes + guideline PDF downloads.

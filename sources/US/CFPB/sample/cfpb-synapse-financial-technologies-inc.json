@@ -1,0 +1,26 @@
+{
+  "_id": "cfpb-synapse-financial-technologies-inc",
+  "_source": "US/CFPB",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T08:42:47.096326+00:00",
+  "title": "Synapse Financial Technologies, Inc.",
+  "text": "Synapse Financial Technologies, Inc.\nOn August 21, 2025, the Bureau commenced an adversary proceeding and filed a complaint and proposed stipulated final judgment and order against Synapse Financial Technologies, Inc., which the court entered on September 12, 2025. Synapse is a Delaware corporation with its principal place of business in Woodland Hills, California that provided proprietary technology and software that acted as a bridge between nonbank fintech platforms that offered banking services to consumers and traditional partnering banks. On April 22, 2024, Synapse filed for chapter 11 bankruptcy protection. The Bureau alleged that Synapse violated the Consumer Financial Protection Act of 2010 by failing to maintain adequate records of the location of consumers’ funds and failing to ensure those records matched the records maintained by its partnering banks, causing consumers to lose access to their funds. The partnering banks determined that the total funds they were holding for consumers was less than the total amount of consumer funds reflected in records Synapse provided to them, reflecting a shortfall of between $60 and $90 million. Consumers did not have any access to their funds for weeks or months as the partnering banks reconciled their records with Synapse’s records and then distributed funds to consumers, and many consumers have not received the full amount of their account balance. The stipulated final judgment provides for appropriate injunctive relief, including a prohibition on the sale of customer information, and a $1 civil money penalty, which enables the Bureau to access the civil penalty fund for purposes of redressing harmed consumers.\nRelated documents\nAdversary Proceeding Complaint\nStipulated Final Judgment and Order\nPage last modified\nSept. 15, 2025\n@\n01:13 PM EDT\nView older versions of this page at our public archive.",
+  "date": "2025-08-21",
+  "url": "https://www.consumerfinance.gov/enforcement/actions/synapse-financial-technologies-inc/",
+  "court": "",
+  "docket_number": "",
+  "status": "",
+  "forum": "",
+  "products": [],
+  "categories": [
+    "Civil Action",
+    "Enforcement",
+    "Mortgages",
+    "Reverse mortgages"
+  ],
+  "description": "On August 21, 2025, the Bureau commenced an adversary proceeding and filed a complaint and proposed stipulated final judgment and order against Synapse Financial Technologies, Inc.",
+  "pdf_urls": [
+    "https://files.consumerfinance.gov/f/documents/cfpb_synapse-financial-technologies_complaint_2025-08.pdf",
+    "https://files.consumerfinance.gov/f/documents/cfpb_synapse-fin-tech_stipulated-final-judgment-order_2025-09.pdf"
+  ]
+}

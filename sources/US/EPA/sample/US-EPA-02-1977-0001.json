@@ -1,0 +1,21 @@
+{
+  "_id": "US-EPA-02-1977-0001",
+  "_source": "US/EPA",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T12:32:22.814875+00:00",
+  "title": "EPA v. ELK PIECE DYE WORKS",
+  "text": "EPA Enforcement Case 02-1977-0001: ELK PIECE DYE WORKS\nType: Civil Judicial Action\nStatus: Closed\nOutcome: Litigated With Penalty\nLead Agency: EPA\n\nPenalties and Costs:\nFederal Penalty: $30,000\n\nLaws and Sections Violated:\n  CWA: 309: Violation of Existing AO, 301: NPDES Discharge without a Permit (Administrative Compliance Order, Other Unpermitted Discharges)\n\nDefendants:\n  ELK PIECE DYE WORKS\n\nFacilities:\n  ELK PIECE DYE WORKS, INDUSTRIAL TERMINAL, GARNERVILLE, NY\n\nCase Milestones:\n  05/03/1977: Referred To Dept Of Justice\n  05/03/1977: Complaint Filed With Court\n  07/27/1977: Enforcement Action Closed\n  07/27/1977: Concluded\n  07/27/1977: Final Order Entered\n  07/27/1977: Final Order Lodged\n\nPollutants:\n  NONE\n\nEnforcement Conclusion #1: Consent Decree or Court Order Resolving a Civil Judicial Action\n  Name: ELK PIECE DYE WORKS\n  Settlement Entered: 07/27/1977\n  Federal Penalty: $30,000",
+  "date": "1977-07-27",
+  "url": "https://echo.epa.gov/enforcement-case-report?id=02-1977-0001",
+  "case_number": "02-1977-0001",
+  "case_name": "ELK PIECE DYE WORKS",
+  "case_type": "JDC",
+  "case_status": "Closed",
+  "enforcement_type": "Civil Judicial Action",
+  "enforcement_outcome": "Litigated With Penalty",
+  "primary_law": "CWA",
+  "federal_penalty": "$30,000",
+  "state_penalty": "$0",
+  "lead_agency": "EPA",
+  "court": "US Environmental Protection Agency"
+}

@@ -43,13 +43,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
-# PDF extraction
-try:
-    import pypdf
-    HAS_PYPDF = True
-except ImportError:
-    HAS_PYPDF = False
+from common.pdf_extract import extract_pdf_markdown
 
+
+# PDF extraction
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -126,47 +123,13 @@ class GreekProcurementScraper(BaseScraper):
         return None
 
     def _extract_pdf_text(self, ref_number: str) -> Optional[str]:
-        """Download and extract text from a procurement PDF attachment."""
-        if not HAS_PYPDF:
-            logger.warning("pypdf not installed, cannot extract PDF text")
-            return None
-
-        try:
-            self.rate_limiter.wait()
-            resp = self.client.get(f"{ATTACHMENT_ENDPOINT}/{ref_number}")
-            resp.raise_for_status()
-
-            content_type = resp.headers.get("Content-Type", "")
-            if "pdf" not in content_type and len(resp.content) < 100:
-                logger.debug(f"No PDF for {ref_number}: {content_type}")
-                return None
-
-            # Memory-bounded PDF extraction
-            pdf_data = resp.content
-            if len(pdf_data) > 50 * 1024 * 1024:  # Skip >50MB PDFs
-                logger.warning(f"PDF too large for {ref_number}: {len(pdf_data)} bytes")
-                return None
-
-            reader = pypdf.PdfReader(io.BytesIO(pdf_data))
-            text_parts = []
-            max_pages = min(len(reader.pages), 100)  # Cap at 100 pages
-
-            for i in range(max_pages):
-                try:
-                    page_text = reader.pages[i].extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-                except Exception:
-                    continue
-
-            full_text = "\n\n".join(text_parts).strip()
-            if full_text:
-                return full_text
-            return None
-
-        except Exception as e:
-            logger.debug(f"PDF extraction failed for {ref_number}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="GR/KHMDHS",
+            source_id="",
+            pdf_bytes=ref_number,
+            table="doctrine",
+        ) or ""
 
     def _build_text_from_record(self, rec: Dict) -> str:
         """Build text content from record metadata as fallback."""

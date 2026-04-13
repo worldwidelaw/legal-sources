@@ -40,6 +40,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -158,37 +161,13 @@ def extract_text_from_doc(doc_bytes: bytes) -> Optional[str]:
 
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> Optional[str]:
-    """Extract text from PDF file."""
-    try:
-        import pdfplumber
-        import io
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            texts = []
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    texts.append(page_text)
-            text = '\n'.join(texts).strip()
-            if len(text) > 50:
-                return text
-    except Exception as e:
-        logger.debug("pdfplumber failed: %s", e)
-    try:
-        import PyPDF2
-        import io
-        reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-        texts = []
-        for page in reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                texts.append(page_text)
-        text = '\n'.join(texts).strip()
-        if len(text) > 50:
-            return text
-    except Exception as e:
-        logger.debug("PyPDF2 failed: %s", e)
-    return None
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="MX/OrdenJuridicoEstatal",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="legislation",
+    ) or ""
 
 class OrdenJuridicoScraper(BaseScraper):
     """Scraper for MX/OrdenJuridicoEstatal - consolidated federal + state legislation."""

@@ -38,6 +38,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -158,44 +161,13 @@ class PCAScraper(BaseScraper):
         return documents
 
     def _download_and_extract_pdf(self, pdf_url: str) -> Optional[str]:
-        """Download a PDF and extract text using PyMuPDF."""
-        try:
-            r = self.session.get(pdf_url, timeout=120)
-            r.raise_for_status()
-
-            content_type = r.headers.get("content-type", "")
-            if "pdf" not in content_type and len(r.content) < 200:
-                logger.warning(f"Not a PDF ({content_type}): {pdf_url}")
-                return None
-
-            if len(r.content) < 100:
-                logger.warning(f"PDF too small ({len(r.content)} bytes): {pdf_url}")
-                return None
-
-            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=True) as tmp:
-                tmp.write(r.content)
-                tmp.flush()
-
-                doc = fitz.open(tmp.name)
-                text_parts = []
-                for page in doc:
-                    text_parts.append(page.get_text())
-                doc.close()
-
-            text = "\n".join(text_parts).strip()
-
-            if len(text) < 50:
-                logger.warning(f"Extracted text too short ({len(text)} chars): {pdf_url}")
-                return None
-
-            return text
-
-        except requests.RequestException as e:
-            logger.error(f"Failed to download PDF {pdf_url}: {e}")
-            return None
-        except Exception as e:
-            logger.error(f"Failed to extract text from {pdf_url}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="INTL/PCA",
+            source_id="",
+            pdf_url=pdf_url,
+            table="case_law",
+        ) or ""
 
     def _clean_html(self, html: str) -> str:
         """Strip HTML tags and clean whitespace."""

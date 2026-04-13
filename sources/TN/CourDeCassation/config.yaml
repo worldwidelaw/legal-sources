@@ -1,0 +1,57 @@
+# TN/CourDeCassation - Tunisia Court of Cassation Jurisprudence
+# Source: Juricaf (AHJUCAF) - curated selection of Tunisian Cour de Cassation decisions
+# ODBL licensed, full text available in French
+# Note: Official Tunisian judiciary sites (e-justice.tn, cassation.tn, judiciarytunisia.tn)
+# are all unreachable (expired certs, DNS failures, timeouts). Juricaf is the only
+# accessible source with full text.
+
+name: "Tunisia Court of Cassation (Juricaf)"
+country: TN
+source_type: case_law
+
+base_url: "https://juricaf.org"
+official_url: "https://juricaf.org/recherche/+/facet_pays:Tunisie"
+
+data_types:
+  - case_law
+
+languages:
+  - fr
+
+coverage:
+  start_year: 2005
+  end_year: 2019
+  total_decisions: ~28
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "case_number"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url

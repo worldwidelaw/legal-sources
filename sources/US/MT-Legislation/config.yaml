@@ -1,0 +1,78 @@
+# ===================================================================
+# US/MT-Legislation -- Montana Code Annotated (MCA)
+# ===================================================================
+# Full text of all Montana statutes from the official Montana
+# Legislature website (mca.legmt.gov). No authentication required.
+# Public domain (government works).
+# ===================================================================
+
+source:
+  id: "US/MT-Legislation"
+  country: "US"
+  name: "Montana Code Annotated (MCA)"
+  url: "https://mca.legmt.gov/bills/mca/index.html"
+  description: |
+    Montana Code Annotated with full text of every section, scraped
+    from the official Montana Legislature website. Covers all titles
+    of the MCA including the Montana Constitution. Public domain.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scraping"
+  base_url: "https://mca.legmt.gov/bills/mca"
+  endpoints:
+    toc: "/index.html"
+    title_chapters: "/title_{code}/chapters_index.html"
+    chapter_parts: "/title_{title}/chapter_{chapter}/parts_index.html"
+    part_sections: "/title_{title}/chapter_{chapter}/part_{part}/sections_index.html"
+    section: "/title_{title}/chapter_{chapter}/part_{part}/section_{sec}/{file}.html"
+
+data_model:
+  type: "legislation"
+  primary_key: "section_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "section_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "section_id"
+      description: "MCA section citation (e.g., '1-1-101')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Section heading with citation and catchline"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the code section"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "mca_title"
+      description: "MCA title name (e.g., CRIMES)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "chapter"
+      description: "Chapter name"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "date"
+      description: "Date fetched (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true

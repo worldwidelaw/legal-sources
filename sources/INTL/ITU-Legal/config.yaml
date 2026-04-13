@@ -1,0 +1,25 @@
+source:
+  id: INTL/ITU-Legal
+  name: International Telecommunication Union Legal Framework
+  country: INTL
+  url: https://www.itu.int/en/council/Documents/basic-texts-2023/
+  data_types:
+    - legislation
+  auth: none
+  description: >
+    ITU treaty instruments: Constitution, Convention, 127 Plenipotentiary
+    Conference Resolutions, 5 Decisions, Radio Regulations (3 volumes, 2024),
+    International Telecommunication Regulations (1988), and Council Decisions.
+    ~140 documents total, all freely available as PDFs with full text extraction.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - document_type
+
+fetch:
+  rate_limit: 2.0
+  max_retries: 3
+  timeout: 120

@@ -1,0 +1,106 @@
+# ===================================================================
+# KH/Courts -- Extraordinary Chambers in the Courts of Cambodia (ECCC)
+# ===================================================================
+# REST API at archive.eccc.gov.kh, no authentication required.
+# Provides decisions, orders, and judgments from the Khmer Rouge tribunal.
+# Documents are PDF files; text extracted via pdfminer.
+# ===================================================================
+
+source:
+  id: "KH/Courts"
+  country: "KH"
+  name: "Extraordinary Chambers in the Courts of Cambodia (ECCC)"
+  url: "https://archive.eccc.gov.kh"
+  description: |
+    The ECCC (Khmer Rouge Tribunal) archive portal. Contains 7,700+ decisions,
+    orders, and judgments from the international criminal tribunal established
+    to try senior Khmer Rouge leaders. Documents available in Khmer, English,
+    and French. REST API returns JSON metadata; full text extracted from PDF
+    downloads via pdfminer.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://archive.eccc.gov.kh/api"
+  endpoints:
+    search: "/search"
+    facets: "/search/facets"
+    download: "/documents/{id}/download?matterId={matterId}"
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 16
+  key_fields:
+    - name: "doc_id"
+      description: "ECCC archive document ID"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title (English)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Download URL for the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "doc_no"
+      description: "ECCC document number (e.g., E188, D12/VI)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "record_type"
+      description: "Decision, Order, or Judgment"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "case_file"
+      description: "Case file reference (CF001, CF002, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "language"
+      description: "Document language (EN, KH, FR)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "filing_party"
+      description: "Filing party abbreviation"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - REST API, no auth, JSON responses
+  - 4,983 decisions + 2,714 orders + 28 judgments = ~7,725 documents
+  - Documents are PDFs; text extracted with pdfminer
+  - Trilingual: Khmer, English, French
+  - Pagination: perPage up to 100
+  - PDFs can be large (5-18MB), so full bootstrap takes significant time

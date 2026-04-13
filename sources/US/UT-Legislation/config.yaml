@@ -1,0 +1,68 @@
+# ===================================================================
+# US/UT-Legislation -- Utah Code
+# ===================================================================
+# Full text of Utah statutes from the Utah State Legislature website.
+# XML downloads per title. ~95 titles. No authentication required.
+# ===================================================================
+
+source:
+  id: "US/UT-Legislation"
+  country: "US"
+  name: "Utah Code"
+  url: "https://le.utah.gov/xcode/code.html"
+  description: |
+    Utah Code with full text of all statutes across ~95 titles.
+    Downloaded as structured XML from the Utah State Legislature
+    website (le.utah.gov). Current version of the code.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "xml_download"
+  base_url: "https://le.utah.gov/xcode"
+  index_url: "https://le.utah.gov/xcode/C_1800010118000101.html"
+  xml_pattern: "Title{title_id}/C{title_id}_{version}.xml"
+
+data_model:
+  type: "legislation"
+  primary_key: "section_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "section_number"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "section_number"
+      description: "Utah Code section number (e.g., 7-1-101)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Section heading"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the statute section"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "title_number"
+      description: "Title identifier (e.g., 7, 15A, 63G)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "chapter"
+      description: "Chapter catchline"
+      type: "string"
+      role: "classification"
+      required: false

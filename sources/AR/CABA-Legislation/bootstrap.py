@@ -30,7 +30,13 @@ from datetime import datetime, timezone
 from typing import Generator, Optional, Dict, Any
 
 import requests
-import pdfplumber
+
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -87,30 +93,13 @@ class CABAFetcher:
         return None
 
     def _download_pdf_text(self, url: str) -> Optional[str]:
-        """Download a PDF and extract text via pdfplumber."""
-        for attempt in range(3):
-            try:
-                resp = self.session.get(url, timeout=60)
-                if resp.status_code != 200:
-                    logger.warning("PDF download HTTP %d: %s", resp.status_code, url)
-                    return None
-                if len(resp.content) < 100:
-                    return None
-                pdf = pdfplumber.open(io.BytesIO(resp.content))
-                pages_text = []
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        pages_text.append(text)
-                pdf.close()
-                full_text = "\n\n".join(pages_text).strip()
-                if len(full_text) > 50:
-                    return full_text
-                return None
-            except Exception as e:
-                logger.warning("PDF extraction error (attempt %d): %s", attempt + 1, e)
-                time.sleep(3)
-        return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="AR/CABA-Legislation",
+            source_id="",
+            pdf_url=url,
+            table="legislation",
+        ) or ""
 
     def search_norms(self, norm_type: int, per_page: int = PAGE_SIZE,
                      offset: int = 0, year: Optional[int] = None) -> Dict[str, Any]:

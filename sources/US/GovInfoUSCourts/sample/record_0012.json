@@ -1,0 +1,22 @@
+{
+  "_id": "USCOURTS-miwd-1_26-cr-00030-0",
+  "_source": "US/GovInfoUSCourts",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-13T07:50:15.958760+00:00",
+  "title": "26-030 - USA v. Payne",
+  "text": "Case 1:26-cr-00030-HYJ ECF No. 15, PageID.<pageID> Filed 04/10/26 Page 1 of 1\nUNITED STATES DISTRICT COURT\nWESTERN DISTRICT OF MICHIGAN\nSOUTHERN DIVISION\nUNITED STATES OF AMERICA,\nPlaintiff, Case No. 1:26-cr-30\nv. Hon. Hala Y. Jarbou\nKAWAN PAYNE,\nDefendant.\n____________________________________/\nORDER OF DETENTION\nDefendant appeared on April 10, 2026, for a detention hearing. For the reasons stated on\nthe record, the Court finds that the government proved by clear and convincing evidence that no condition\nor combination of conditions will assure the safety of the community.\nAccordingly, pending trial in this matter, the defendant is committed to the custody of the\nAttorney General or his designated representative for confinement in a corrections facility separate, to the\nextent practicable, from persons serving sentences or being held in custody pending appeal. The defendant\nshall be afforded a reasonable opportunity for private consultation with his defense counsel. On order of\na court of the United States or on request of an attorney for the government, the person in charge of the\ncorrections facility shall deliver the defendant to the United States Marshal for the purpose of an\nappearance in connection with a court proceeding.\nIT IS SO ORDERED.\nDated: April 10, 2026 /s/ Ray Kent\nRAY KENT\nUnited States Magistrate Judge",
+  "date": "2026-04-10",
+  "url": "https://www.govinfo.gov/app/details/USCOURTS-miwd-1_26-cr-00030/USCOURTS-miwd-1_26-cr-00030-0",
+  "package_id": "USCOURTS-miwd-1_26-cr-00030",
+  "granule_id": "USCOURTS-miwd-1_26-cr-00030-0",
+  "court_name": "United States District Court Western District of Michigan",
+  "court_type": "district",
+  "court_code": "miwd",
+  "circuit": "6th",
+  "state": "",
+  "case_number": "",
+  "parties": "Kawan Payne, defendant USA, plaintiff",
+  "docket_text": " ORDER OF DETENTION pending trial as to defendant Kawan Payne; signed by Magistrate Judge Ray Kent (klb)",
+  "nature_of_suit": "",
+  "publisher": "Administrative Office of the United States Courts"
+}

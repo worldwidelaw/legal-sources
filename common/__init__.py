@@ -7,9 +7,17 @@ from .base_scraper import BaseScraper
 from .storage import StorageManager
 from .rate_limiter import RateLimiter
 from .validators import SchemaValidator
+from .pdf_extract import extract_pdf_markdown, preload_existing_ids
 
 # BrowserScraper is imported lazily to avoid requiring playwright
 # for sources that don't need it. Import explicitly:
 #   from common.browser_scraper import BrowserScraper
 
-__all__ = ["BaseScraper", "StorageManager", "RateLimiter", "SchemaValidator"]
+__all__ = [
+    "BaseScraper",
+    "StorageManager",
+    "RateLimiter",
+    "SchemaValidator",
+    "extract_pdf_markdown",
+    "preload_existing_ids",
+]

@@ -38,6 +38,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -67,20 +70,13 @@ def strip_html(html_text: str) -> str:
 
 
 def extract_pdf_text(content: bytes) -> str:
-    """Extract text from PDF bytes using PyPDF2."""
-    try:
-        import PyPDF2
-        reader = PyPDF2.PdfReader(io.BytesIO(content))
-        pages = []
-        for page in reader.pages:
-            t = page.extract_text()
-            if t:
-                pages.append(t)
-        return "\n\n".join(pages).strip()
-    except Exception as e:
-        logger.warning(f"PyPDF2 extraction failed: {e}")
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="PE/SUNAT-Informes",
+        source_id="",
+        pdf_bytes=content,
+        table="doctrine",
+    ) or ""
 
 def parse_index_page(html: str, year: int) -> list:
     """Parse index page for any year. Works with all HTML variants."""

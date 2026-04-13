@@ -40,6 +40,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -56,32 +59,13 @@ ENDPOINTS = [
 
 
 def extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using PyPDF2."""
-    try:
-        import PyPDF2
-        reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-        pages = []
-        for page in reader.pages:
-            text = page.extract_text()
-            if text:
-                pages.append(text.strip())
-        return "\n\n".join(pages)
-    except Exception as e:
-        logger.debug(f"PyPDF2 failed: {e}")
-    try:
-        import fitz
-        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-        pages = []
-        for page in doc:
-            text = page.get_text()
-            if text:
-                pages.append(text.strip())
-        doc.close()
-        return "\n\n".join(pages)
-    except Exception as e:
-        logger.debug(f"PyMuPDF failed: {e}")
-    return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="MY/AGCLaws",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="legislation",
+    ) or ""
 
 def clean_html(text: str) -> str:
     """Strip HTML tags and decode entities."""

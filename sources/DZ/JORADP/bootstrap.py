@@ -47,11 +47,8 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
-try:
-    import PyPDF2
-    HAS_PYPDF2 = True
-except ImportError:
-    HAS_PYPDF2 = False
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -166,27 +163,13 @@ class JORADPScraper(BaseScraper):
             return None
 
     def _extract_text_from_pdf(self, pdf_content: bytes) -> Tuple[str, int]:
-        """
-        Extract text from PDF content.
-
-        Returns:
-            Tuple of (full_text, page_count)
-        """
-        try:
-            pdf_file = io.BytesIO(pdf_content)
-            reader = PyPDF2.PdfReader(pdf_file)
-
-            pages = []
-            for page in reader.pages:
-                text = page.extract_text()
-                if text:
-                    pages.append(text)
-
-            full_text = "\n\n".join(pages)
-            return full_text, len(reader.pages)
-        except Exception as e:
-            logger.error(f"Failed to extract text from PDF: {e}")
-            return "", 0
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="DZ/JORADP",
+            source_id="",
+            pdf_bytes=pdf_content,
+            table="legislation",
+        ) or ""
 
     def _parse_issue_date(self, text: str, year: int) -> str:
         """

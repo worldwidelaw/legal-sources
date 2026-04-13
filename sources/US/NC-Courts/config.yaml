@@ -1,0 +1,76 @@
+# ===================================================================
+# US/NC-Courts -- North Carolina Appellate Court Opinions
+# ===================================================================
+# Supreme Court and Court of Appeals opinions with full text,
+# sourced via CourtListener's free search API and PDF storage.
+# No authentication required. Public domain (government works).
+# ===================================================================
+
+source:
+  id: "US/NC-Courts"
+  country: "US"
+  name: "North Carolina Appellate Courts Opinions"
+  url: "https://appellate.nccourts.org/opinions/"
+  description: |
+    North Carolina Supreme Court and Court of Appeals opinions with
+    full text extracted from PDFs. Discovery via CourtListener search
+    API (free, no auth), PDFs from CourtListener storage. Covers
+    90K+ Supreme Court and 44K+ Court of Appeals opinions.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "rest_json"
+  base_url: "https://www.courtlistener.com/api/rest/v4"
+  endpoints:
+    search: "/search/?type=o&court=nc,ncctapp&order_by=dateFiled+desc"
+  pdf_storage: "https://storage.courtlistener.com"
+
+data_model:
+  type: "case_law"
+  primary_key: "cluster_id"
+  update_strategy: "incremental"
+  dedup_key:
+    - "cluster_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "cluster_id"
+      description: "CourtListener cluster ID"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case name"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the court opinion"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "court"
+      description: "Court name (Supreme Court or Court of Appeals)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date filed (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "docket_number"
+      description: "Court docket number"
+      type: "string"
+      role: "classification"
+      required: false

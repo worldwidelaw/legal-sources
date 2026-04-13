@@ -23,6 +23,13 @@ from xml.etree import ElementTree as ET
 import requests
 from bs4 import BeautifulSoup
 
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -217,43 +224,13 @@ class KKVFetcher:
         }
 
     def _extract_pdf_text(self, pdf_url: str) -> str:
-        """Download and extract text from PDF."""
-        try:
-            resp = self._get(pdf_url, timeout=30)
-            if not resp:
-                return ''
-
-            # Try PyPDF2
-            try:
-                from PyPDF2 import PdfReader
-                reader = PdfReader(BytesIO(resp.content))
-                pages = []
-                for page in reader.pages:
-                    t = page.extract_text()
-                    if t:
-                        pages.append(t)
-                return '\n\n'.join(pages)
-            except ImportError:
-                pass
-
-            # Try pdfplumber
-            try:
-                import pdfplumber
-                with pdfplumber.open(BytesIO(resp.content)) as pdf:
-                    pages = []
-                    for page in pdf.pages:
-                        t = page.extract_text()
-                        if t:
-                            pages.append(t)
-                    return '\n\n'.join(pages)
-            except ImportError:
-                pass
-
-            logger.warning("No PDF extraction library available (PyPDF2 or pdfplumber)")
-            return ''
-        except Exception as e:
-            logger.warning(f"PDF extraction failed for {pdf_url}: {e}")
-            return ''
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="FI/FCCA",
+            source_id="",
+            pdf_url=pdf_url,
+            table="doctrine",
+        ) or ""
 
     def fetch_all(self, max_docs: int = None) -> Iterator[Dict[str, Any]]:
         """Fetch all KKV decisions."""

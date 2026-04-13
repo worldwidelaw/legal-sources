@@ -1,0 +1,22 @@
+source:
+  id: "US/IA-Legislation"
+  name: "Iowa Code"
+  country: US
+  jurisdiction: US-IA
+  url: "https://www.legis.iowa.gov/law/iowaCode"
+  data_types:
+    - legislation
+  language: en
+  auth: none
+  schedule: monthly
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - section_id
+    - chapter
+    - jurisdiction

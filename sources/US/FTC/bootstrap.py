@@ -32,16 +32,12 @@ from urllib.parse import urljoin
 
 import requests
 
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
-    try:
-        from PyPDF2 import PdfReader
-        HAS_PYPDF2 = True
-    except ImportError:
-        HAS_PYPDF2 = False
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 try:
     from bs4 import BeautifulSoup
@@ -77,35 +73,13 @@ def get_session() -> requests.Session:
 
 
 def extract_text_from_pdf(content: bytes) -> str:
-    """Extract text from PDF bytes using pdfplumber or PyPDF2."""
-    if HAS_PDFPLUMBER:
-        try:
-            with pdfplumber.open(io.BytesIO(content)) as pdf:
-                pages = []
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        pages.append(text)
-                return "\n\n".join(pages)
-        except Exception as e:
-            logger.warning("pdfplumber failed: %s", e)
-            return ""
-    elif HAS_PYPDF2:
-        try:
-            reader = PdfReader(io.BytesIO(content))
-            pages = []
-            for page in reader.pages:
-                text = page.extract_text()
-                if text:
-                    pages.append(text)
-            return "\n\n".join(pages)
-        except Exception as e:
-            logger.warning("PyPDF2 failed: %s", e)
-            return ""
-    else:
-        logger.error("No PDF library available (install pdfplumber or PyPDF2)")
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="US/FTC",
+        source_id="",
+        pdf_bytes=content,
+        table="case_law",
+    ) or ""
 
 def parse_listing_page(html: str) -> List[str]:
     """Extract case page URLs from a listing page."""

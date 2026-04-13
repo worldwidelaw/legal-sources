@@ -1,0 +1,55 @@
+source:
+  id: AT/RTR
+  name: Austrian Regulatory Authority (RTR)
+  country: AT
+  url: https://www.rtr.at
+  description: >
+    Regulatory decisions and publications from RTR (Rundfunk und Telekom
+    Regulierungs-GmbH) — Austria's regulator for telecommunications, media,
+    broadcasting, and postal services.  Includes TKK (Telekom-Control-Kommission)
+    and PCK (Post-Control-Kommission) decisions, plus RTR publications such as
+    monitors, studies, and guidelines.
+
+data_model:
+  types:
+    - doctrine
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: category
+      type: string
+      required: true
+    - name: authority
+      type: string
+      required: false
+    - name: case_number
+      type: string
+      required: false
+    - name: file_url
+      type: string
+      required: false
+
+schedule:
+  full_refresh: monthly
+  update_check: weekly

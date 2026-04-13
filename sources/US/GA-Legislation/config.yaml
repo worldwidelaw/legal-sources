@@ -1,0 +1,22 @@
+source:
+  id: "US/GA-Legislation"
+  name: "Official Code of Georgia Annotated (O.C.G.A.)"
+  country: US
+  jurisdiction: US-GA
+  url: "https://archive.org/details/gov.ga.ocga.2018"
+  data_types:
+    - legislation
+  language: en
+  auth: none
+  schedule: monthly
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - section_id
+    - title_number
+    - jurisdiction

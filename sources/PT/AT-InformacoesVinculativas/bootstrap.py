@@ -30,13 +30,15 @@ from datetime import datetime, timezone
 from typing import Generator, Optional, Dict, Any, List
 from urllib.parse import quote
 
-import pdfplumber
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,

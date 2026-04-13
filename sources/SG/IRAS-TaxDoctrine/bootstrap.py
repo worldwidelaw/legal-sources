@@ -37,6 +37,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -77,32 +80,13 @@ def _fetch_pdf(url: str, timeout: int = 60) -> Optional[bytes]:
 
 
 def _extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using pdfplumber or PyPDF2."""
-    try:
-        import pdfplumber
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            pages = []
-            for page in pdf.pages:
-                t = page.extract_text()
-                if t:
-                    pages.append(t)
-            return "\n\n".join(pages)
-    except ImportError:
-        pass
-
-    try:
-        import PyPDF2
-        reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-        pages = []
-        for page in reader.pages:
-            t = page.extract_text()
-            if t:
-                pages.append(t)
-        return "\n\n".join(pages)
-    except ImportError:
-        logger.error("No PDF library available (pdfplumber or PyPDF2)")
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="SG/IRAS-TaxDoctrine",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="doctrine",
+    ) or ""
 
 def _parse_date(date_str: str) -> Optional[str]:
     """Parse IRAS date format (e.g., '18 Mar 2026') to ISO 8601."""

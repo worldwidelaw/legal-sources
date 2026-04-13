@@ -33,16 +33,12 @@ from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
 
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
-    try:
-        import PyPDF2
-        HAS_PYPDF2 = True
-    except ImportError:
-        HAS_PYPDF2 = False
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -95,40 +91,13 @@ class EASAFetcher:
         return None
 
     def _extract_text_from_pdf(self, pdf_content: bytes) -> str:
-        """Extract text from PDF content"""
-        if HAS_PDFPLUMBER:
-            try:
-                with pdfplumber.open(io.BytesIO(pdf_content)) as pdf:
-                    text_parts = []
-                    for page in pdf.pages:
-                        page_text = page.extract_text()
-                        if page_text:
-                            text_parts.append(page_text)
-                    text = '\n\n'.join(text_parts)
-                    # Clean up text
-                    text = re.sub(r'\n{3,}', '\n\n', text)
-                    text = re.sub(r' {2,}', ' ', text)
-                    return text.strip()
-            except Exception as e:
-                logger.warning(f"pdfplumber extraction failed: {e}")
-
-        if HAS_PYPDF2:
-            try:
-                reader = PyPDF2.PdfReader(io.BytesIO(pdf_content))
-                text_parts = []
-                for page in reader.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-                text = '\n\n'.join(text_parts)
-                text = re.sub(r'\n{3,}', '\n\n', text)
-                text = re.sub(r' {2,}', ' ', text)
-                return text.strip()
-            except Exception as e:
-                logger.warning(f"PyPDF2 extraction failed: {e}")
-
-        logger.error("No PDF extraction library available. Install pdfplumber or PyPDF2.")
-        return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="EU/EASA",
+            source_id="",
+            pdf_bytes=pdf_content,
+            table="doctrine",
+        ) or ""
 
     def _fetch_pdf_text(self, pdf_url: str) -> str:
         """Download PDF and extract text"""

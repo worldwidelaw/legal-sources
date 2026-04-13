@@ -24,10 +24,12 @@ from typing import Any, Dict, Iterator, List, Optional
 
 import requests
 
-try:
-    import pdfplumber
-except ImportError:
-    pdfplumber = None
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -98,26 +100,13 @@ class TDLCFetcher:
             return None
 
     def _extract_pdf_text(self, pdf_url: str) -> Optional[str]:
-        """Download a PDF and extract text."""
-        if pdfplumber is None:
-            logger.error("pdfplumber not installed — pip install pdfplumber")
-            return None
-        try:
-            resp = self.session.get(pdf_url, timeout=120)
-            resp.raise_for_status()
-            if len(resp.content) < 100:
-                return None
-            with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-                pages_text = []
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        pages_text.append(text)
-                full_text = "\n\n".join(pages_text)
-                return full_text if len(full_text) > 100 else None
-        except Exception as e:
-            logger.warning(f"PDF extraction failed for {pdf_url}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="CL/TDLC",
+            source_id="",
+            pdf_url=pdf_url,
+            table="case_law",
+        ) or ""
 
     def _resolve_taxonomy(self, item: Dict[str, Any], field: str) -> str:
         """Resolve embedded taxonomy term names."""

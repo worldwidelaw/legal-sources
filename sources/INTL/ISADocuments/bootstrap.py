@@ -27,7 +27,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Generator, Optional
 
-import pypdf
 import requests
 from bs4 import BeautifulSoup
 
@@ -35,6 +34,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -60,23 +62,13 @@ class ISADocumentsScraper(BaseScraper):
         })
 
     def _extract_pdf_text(self, url: str) -> Optional[str]:
-        """Download a PDF and extract text using pypdf."""
-        try:
-            resp = self.session.get(url, timeout=60)
-            resp.raise_for_status()
-            reader = pypdf.PdfReader(io.BytesIO(resp.content))
-            text = ""
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text += page_text + "\n"
-            text = text.strip()
-            if len(text) < 50:
-                return None
-            return text
-        except Exception as e:
-            logger.warning(f"PDF extraction failed for {url}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="INTL/ISADocuments",
+            source_id="",
+            pdf_url=url,
+            table="legislation",
+        ) or ""
 
     def _get_pdf_urls_from_doc_page(self, page_url: str) -> list[str]:
         """Scrape a document page for PDF attachment URLs, preferring English."""

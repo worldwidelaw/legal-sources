@@ -40,6 +40,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -99,26 +102,13 @@ class MahkamahKonstitusiScraper(BaseScraper):
         return self._api_get("/api/search", params={"jenis": MK_JENIS_ID, "page": page})
 
     def _download_pdf_text(self, id_dokumen: int, id_anggota: int) -> str:
-        """Download PDF via JDIHN proxy and extract text."""
-        try:
-            self.rate_limiter.wait()
-            resp = self.client.session.get(
-                f"{JDIHN_BASE}/pencarian/download",
-                params={"id_dokumen": id_dokumen, "id_anggota": id_anggota},
-                timeout=90,
-            )
-            if resp.status_code != 200 or len(resp.content) < 500:
-                return ""
-
-            if not resp.content[:5] == b"%PDF-":
-                return ""
-
-            from pdfminer.high_level import extract_text
-            text = extract_text(BytesIO(resp.content))
-            return text.strip()
-        except Exception as e:
-            logger.debug(f"PDF extraction failed for dokumen={id_dokumen}: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="ID/MahkamahKonstitusi",
+            source_id="",
+            pdf_bytes=id_dokumen,
+            table="case_law",
+        ) or ""
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all MK decisions."""

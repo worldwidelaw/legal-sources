@@ -47,6 +47,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -211,7 +214,6 @@ class IndonesianCourtScraper(BaseScraper):
             return ""
 
         try:
-            from pdfminer.high_level import extract_text
             text = extract_text(BytesIO(resp.content))
         except Exception as e:
             logger.warning(f"PDF extraction failed: {e}")

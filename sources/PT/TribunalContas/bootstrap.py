@@ -35,13 +35,15 @@ from datetime import datetime, timezone
 from typing import Generator, Optional, Dict, Any
 
 import requests
-import pdfplumber
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -80,18 +82,13 @@ def clean_html(text: str) -> str:
 
 
 def extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using pdfplumber."""
-    text_parts = []
-    try:
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-    except Exception as e:
-        logger.warning(f"PDF extraction failed: {e}")
-    return '\n\n'.join(text_parts).strip()
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="PT/TribunalContas",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="case_law",
+    ) or ""
 
 class TribunalContasScraper(BaseScraper):
     """

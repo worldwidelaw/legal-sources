@@ -43,12 +43,8 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
-try:
-    import pdfplumber
-    PDF_SUPPORT = True
-except ImportError:
-    PDF_SUPPORT = False
-    print("WARNING: pdfplumber not available. Install with: pip install pdfplumber")
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -90,76 +86,13 @@ class EETTScraper(BaseScraper):
         )
 
     def _download_and_extract_pdf(self, ada: str, max_pdf_size_mb: int = 10) -> str:
-        """Download PDF and extract text using pdfplumber with memory management."""
-        if not PDF_SUPPORT:
-            logger.error("pdfplumber not available for PDF extraction")
-            return ""
-
-        import gc
-        import requests
-
-        try:
-            self.rate_limiter.wait()
-            url = f"{BASE_URL}/doc/{ada}"
-
-            resp = requests.get(url, timeout=60, stream=True, headers={
-                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
-            })
-
-            if resp.status_code != 200:
-                logger.warning(f"Failed to download PDF for {ada}: HTTP {resp.status_code}")
-                return ""
-
-            content_length = resp.headers.get('content-length')
-            if content_length:
-                size_mb = int(content_length) / (1024 * 1024)
-                if size_mb > max_pdf_size_mb:
-                    logger.warning(f"PDF too large for {ada}: {size_mb:.1f}MB > {max_pdf_size_mb}MB limit")
-                    return ""
-
-            content = resp.content
-
-            content_type = resp.headers.get('content-type', '')
-            if 'pdf' not in content_type.lower() and not content.startswith(b'%PDF'):
-                logger.warning(f"Response is not a PDF for {ada}")
-                return ""
-
-            pdf_bytes = io.BytesIO(content)
-            text_parts = []
-            total_chars = 0
-            max_chars = 500_000
-
-            try:
-                with pdfplumber.open(pdf_bytes) as pdf:
-                    for page in pdf.pages:
-                        if total_chars >= max_chars:
-                            break
-                        try:
-                            text = page.extract_text()
-                            if text:
-                                text_parts.append(text)
-                                total_chars += len(text)
-                        except Exception as page_err:
-                            logger.debug(f"Page extraction error in {ada}: {page_err}")
-                        finally:
-                            page.flush_cache()
-            finally:
-                pdf_bytes.close()
-                del pdf_bytes
-                del content
-
-            full_text = "\n".join(text_parts)
-            del text_parts
-            full_text = re.sub(r'\n{3,}', '\n\n', full_text).strip()
-
-            if total_chars > 100_000:
-                gc.collect()
-
-            return full_text
-
-        except Exception as e:
-            logger.warning(f"Failed to extract PDF {ada}: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="GR/EETT",
+            source_id="",
+            pdf_bytes=ada,
+            table="doctrine",
+        ) or ""
 
     def _search_decisions(
         self,

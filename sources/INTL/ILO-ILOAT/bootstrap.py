@@ -27,16 +27,13 @@ from typing import Generator, Optional
 
 import requests
 
-try:
-    import pypdf
-    PDF_AVAILABLE = True
-except ImportError:
-    PDF_AVAILABLE = False
-
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -62,24 +59,13 @@ def _parse_triblex_date(date_str: str) -> Optional[str]:
 
 
 def _extract_text_from_pdf(content: bytes) -> str:
-    """Extract text from PDF bytes using pypdf."""
-    if not PDF_AVAILABLE:
-        return ""
-    try:
-        reader = pypdf.PdfReader(io.BytesIO(content))
-        parts = []
-        for page in reader.pages:
-            text = page.extract_text()
-            if text:
-                parts.append(text)
-        full = "\n\n".join(parts)
-        full = re.sub(r'[ \t]+', ' ', full)
-        full = re.sub(r'\n\s*\n\s*\n+', '\n\n', full)
-        return full.strip()
-    except Exception as e:
-        logger.warning(f"PDF extraction error: {e}")
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="INTL/ILO-ILOAT",
+        source_id="",
+        pdf_bytes=content,
+        table="case_law",
+    ) or ""
 
 class ILOILOATScraper(BaseScraper):
     """Scraper for INTL/ILO-ILOAT -- ILO Administrative Tribunal."""

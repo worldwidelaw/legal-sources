@@ -1,0 +1,21 @@
+{
+  "_id": "US-EPA-01-2019-6000",
+  "_source": "US/EPA",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T12:32:05.523723+00:00",
+  "title": "EPA v. SUNSET LODGE",
+  "text": "EPA Enforcement Case 01-2019-6000: SUNSET LODGE\nType: SDWA 1414G2 AO For Compliance (PWS)\nStatus: Final Order Issued\nOutcome: Final Order No Penalty\nRelief Sought: Injunctive Relief\nLead Agency: EPA\n\nCase Summary:\n4/15/10  AO for the failure to comply with the RTCR rules and develop a written sample siting plan, demonstration and certify the completion of a State-approved start up procedure, failure to conduct monthly total coliform sampling and failure to submit a Level 1 assessment report after incurring two or more positive total coliform results.\n\nPenalties and Costs:\nCompliance Action Cost: $1,000\n\nLaws and Sections Violated:\n  SDWA: 1414G: PWS - Violation of 1414(g) AO (PWS Violation of Administrative Compliance Order)\n\nRegulatory Citations:\n  40 CFR Part 141 Section 854(i)(1)\n  40 CFR Part 141 Section 853(a)(1)\n  40 CFR Part 141 Section 189(b)(3)\n  40 CFR Part 141 Section 854(i)(2)\n  40 CFR Part 141 Section 861(a)(5)\n\nDefendants:\n  Sunset Lodge\n\nFacilities:\n  SUNSET LODGE-TREATMENT PLANT 1, None, MASSAPEQUA, NY\n\nCase Milestones:\n  04/15/2019: Final Order Issued\n  04/15/2019: Complaint Filed/Proposed Order\n  05/21/2019: Enforcement Action Data Entered\n\nEnforcement Conclusion #1: Administrative Compliance Orders\n  Name: SUNSET LODGE\n  Settlement Entered: 04/15/2019",
+  "date": "2019-04-15",
+  "url": "https://echo.epa.gov/enforcement-case-report?id=01-2019-6000",
+  "case_number": "01-2019-6000",
+  "case_name": "SUNSET LODGE",
+  "case_type": "AFR",
+  "case_status": "Final Order Issued",
+  "enforcement_type": "SDWA 1414G2 AO For Compliance (PWS)",
+  "enforcement_outcome": "Final Order No Penalty",
+  "primary_law": "SDWA",
+  "federal_penalty": "$0",
+  "state_penalty": "$0",
+  "lead_agency": "EPA",
+  "court": "US Environmental Protection Agency"
+}

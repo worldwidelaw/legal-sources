@@ -1,0 +1,49 @@
+source:
+  id: JO/ConstitutionalCourt
+  country: JO
+  name: Jordan Constitutional Court Decisions
+  description: |
+    Jordanian Constitutional Court rulings and interpretative decisions from cco.gov.jo.
+    ~73 total decisions (55 rulings + 18 interpretative decisions) since 2012.
+    English translations available. Full text extracted from PDF.
+
+  url: https://cco.gov.jo/EN/List/Rullings_of_the_Court
+  data_types:
+    - case_law
+
+  auth:
+    type: none
+
+  license:
+    name: Jordan Government Public Data
+    url: https://cco.gov.jo/
+
+schedule:
+  frequency: monthly
+  reason: Constitutional court issues few decisions per year
+
+schema:
+  key_fields:
+    - name: decision_number
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+  secondary_fields:
+    - name: decision_type
+      type: string
+      required: false
+    - name: year
+      type: string
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - decision_number
+
+notes: |
+  DotNetNuke CMS at cco.gov.jo. PDFs at /ebv4.0/root_storage/en/eb_list_page/*.pdf.
+  Two categories: Rulings (5 pages) and Interpretative Decisions (2 pages).
+  Full text extracted using pdfplumber.

@@ -1,0 +1,37 @@
+source:
+  id: CO/Procuraduria
+  name: "Colombia Procuraduria - Disciplinary Decisions (Relatoria)"
+  country: CO
+  data_types:
+    - case_law
+  url: https://www.datos.gov.co/Organismos-de-Control/Datos-abiertos-de-la-Relator-a-de-la-Procuradur-a-/rhun-uf37
+  auth: none
+  license: "Open Data Colombia (datos.gov.co)"
+
+endpoints:
+  socrata_api: "https://www.datos.gov.co/resource/rhun-uf37.json"
+
+schema:
+  key_fields:
+    - _id
+    - tipo_documento
+    - fecha_documento
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+
+rate_limit:
+  requests_per_second: 1
+  delay_between_requests: 1.5
+
+notes: |
+  Procuraduria General de la Nacion disciplinary decisions via Socrata open data.
+  165K+ records total, ~31K disciplinary decisions (fallos).
+  Full text extracted from PDF/DOCX documents linked in url_documento field.
+  Uses centralized pdf_extract for PDFs, python-docx for DOCX files.

@@ -1,0 +1,69 @@
+# ===================================================================
+# INTL/NYC1958 -- New York Convention 1958 Case Law Database
+# ===================================================================
+# ~3,957 international arbitration case law decisions from 60+ jurisdictions.
+# PMB-based search + HTML scrape for metadata + PDF text extraction.
+# ===================================================================
+
+source:
+  id: "INTL/NYC1958"
+  country: "INTL"
+  name: "New York Convention 1958 Case Law Database"
+  url: "https://newyorkconvention1958.org/"
+  description: |
+    Case law database for the Convention on the Recognition and Enforcement
+    of Foreign Arbitral Awards (New York Convention, 1958). Contains ~3,957
+    judicial decisions from 60+ jurisdictions. Developed by UNCITRAL,
+    Gaillard Banifatemi Shelbaya Disputes, Shearman & Sterling, and
+    Columbia Law School. PDFs of original decisions available for most cases.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape_plus_pdf"
+  search_url: "https://newyorkconvention1958.org/index.php?lvl=more_results&mode=keyword&user_query=*&opac_view=2&nb_per_page=200"
+  detail_url: "https://newyorkconvention1958.org/index.php?lvl=notice_display&id={id}&opac_view=2"
+  pdf_url: "https://newyorkconvention1958.org/doc_num.php?explnum_id={explnum_id}"
+
+data_model:
+  type: "case_law"
+  primary_key: "case_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "title"
+      description: "Case parties / title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "jurisdiction"
+      description: "Country/jurisdiction of the court"
+      type: "string"
+      role: "metadata"
+      required: false
+
+notes: |
+  - PMB library system with case law in opac_view=2
+  - Search results paginated at 200 per page (~20 pages)
+  - PDFs served via doc_num.php?explnum_id=XXXX
+  - Most cases have PDF attachments in original language

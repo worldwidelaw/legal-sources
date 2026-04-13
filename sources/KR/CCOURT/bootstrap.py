@@ -33,6 +33,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -157,36 +160,13 @@ class CCourtScraper(BaseScraper):
         return None
 
     def _extract_pdf_text(self, pdf_path: str) -> Optional[str]:
-        """Download PDF and extract text using PyPDF2."""
-        url = PDF_BASE + pdf_path
-        self.rate_limiter.wait()
-        try:
-            resp = self.client.session.get(url, timeout=120)
-            resp.raise_for_status()
-            if len(resp.content) < 100:
-                logger.warning(f"  PDF too small ({len(resp.content)} bytes): {pdf_path}")
-                return None
-        except Exception as e:
-            logger.warning(f"  Failed to download PDF {pdf_path}: {e}")
-            return None
-
-        try:
-            import PyPDF2
-
-            reader = PyPDF2.PdfReader(io.BytesIO(resp.content))
-            text_parts = []
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-            text = "\n".join(text_parts)
-            # Clean up
-            text = re.sub(r"\n{3,}", "\n\n", text)
-            text = re.sub(r"[ \t]+", " ", text)
-            return text.strip() if text.strip() else None
-        except Exception as e:
-            logger.warning(f"  Failed to extract PDF text: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="KR/CCOURT",
+            source_id="",
+            pdf_url=pdf_path,
+            table="case_law",
+        ) or ""
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all decisions with full text from PDFs."""

@@ -21,6 +21,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator, Optional, Dict, List, Set
 
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
+
 SOURCE_ID = "IE/Revenue"
 BASE_URL = "https://www.revenue.ie"
 TDM_ROOT = "/en/tax-professionals/tdm/index.aspx"
@@ -58,31 +65,13 @@ def curl_download(url: str, output_path: str, timeout: int = 60) -> bool:
 
 
 def extract_pdf_text(pdf_path: str) -> str:
-    """Extract text from PDF using pypdf."""
-    try:
-        from pypdf import PdfReader
-        reader = PdfReader(pdf_path)
-        text = ""
-        for page in reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text + "\n"
-        return text.strip()
-    except ImportError:
-        pass
-    try:
-        import PyPDF2
-        reader = PyPDF2.PdfReader(pdf_path)
-        text = ""
-        for page in reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text + "\n"
-        return text.strip()
-    except ImportError:
-        print("ERROR: Neither pypdf nor PyPDF2 available")
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="IE/Revenue",
+        source_id="",
+        pdf_bytes=pdf_path,
+        table="doctrine",
+    ) or ""
 
 def crawl_index_page(path: str) -> tuple:
     """Crawl an index page and return (sub_pages, pdf_links)."""

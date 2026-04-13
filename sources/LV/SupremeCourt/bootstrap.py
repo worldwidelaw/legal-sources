@@ -32,7 +32,6 @@ import sys
 import json
 import logging
 import re
-import io
 import html
 import urllib.parse
 from pathlib import Path
@@ -41,20 +40,12 @@ from typing import Generator, Optional, Dict, Any, List, Tuple
 
 import requests
 
-# PDF text extraction
-try:
-    from pypdf import PdfReader
-except ImportError:
-    try:
-        from PyPDF2 import PdfReader
-    except ImportError:
-        PdfReader = None
-
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+from common.pdf_extract import extract_pdf_markdown, preload_existing_ids
 
 logging.basicConfig(
     level=logging.INFO,
@@ -284,35 +275,6 @@ class SupremeCourtScraper(BaseScraper):
             logger.warning(f"Failed to download PDF {pdf_id}: {e}")
             return None
 
-    def _extract_pdf_text(self, pdf_content: bytes) -> str:
-        """Extract text from PDF content using PyPDF2."""
-        if PdfReader is None:
-            logger.warning("PyPDF2/pypdf not available, cannot extract PDF text")
-            return ""
-
-        try:
-            reader = PdfReader(io.BytesIO(pdf_content))
-            text_parts = []
-
-            for page in reader.pages:
-                text = page.extract_text()
-                if text:
-                    text_parts.append(text)
-
-            full_text = "\n\n".join(text_parts)
-
-            # Clean up text
-            # Remove excessive whitespace
-            full_text = re.sub(r'\n{3,}', '\n\n', full_text)
-            full_text = re.sub(r' {2,}', ' ', full_text)
-            full_text = full_text.strip()
-
-            return full_text
-
-        except Exception as e:
-            logger.warning(f"PDF text extraction failed: {e}")
-            return ""
-
     def _fetch_decision(self, pdf_id: str, ecli: Optional[str] = None) -> Optional[Dict]:
         """
         Fetch a complete decision with metadata and full text.
@@ -324,14 +286,18 @@ class SupremeCourtScraper(BaseScraper):
         if ecli:
             metadata = self._fetch_ecli_metadata(ecli)
 
-        # Download PDF
+        # Download PDF and extract text via centralized extractor
         pdf_content = self._download_pdf(pdf_id)
         if not pdf_content:
             logger.warning(f"Could not download PDF for {pdf_id}")
             return None
 
-        # Extract text
-        full_text = self._extract_pdf_text(pdf_content)
+        full_text = extract_pdf_markdown(
+            source="LV/SupremeCourt",
+            source_id=ecli or f"pdf-{pdf_id}",
+            pdf_bytes=pdf_content,
+            table="case_law",
+        )
         if not full_text:
             logger.warning(f"Could not extract text from PDF {pdf_id}")
             return None
@@ -597,7 +563,10 @@ class SupremeCourtScraper(BaseScraper):
                 if pdf_content:
                     print(f"   Downloaded PDF {pdf_id}: {len(pdf_content)} bytes")
 
-                    text = self._extract_pdf_text(pdf_content)
+                    text = extract_pdf_markdown(
+                        source="LV/SupremeCourt", source_id=f"test-{pdf_id}",
+                        pdf_bytes=pdf_content, table="case_law", force=True,
+                    ) or ""
                     print(f"   Extracted text: {len(text)} characters")
                     if text:
                         print(f"   Preview: {text[:200]}...")

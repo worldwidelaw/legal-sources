@@ -1,0 +1,53 @@
+source:
+  id: AT/E-Control
+  name: Austrian Energy Regulator (E-Control)
+  country: AT
+  url: https://www.e-control.at
+  description: >
+    Regulatory doctrine documents from E-Control Austria: market rules,
+    technical operating rules (TOR), general conditions for network operators
+    and balance groups, ordinance explanations, and certificate handbooks.
+
+data_model:
+  types:
+    - doctrine
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: category
+      type: string
+      required: true
+    - name: subcategory
+      type: string
+      required: false
+    - name: file_url
+      type: string
+      required: false
+    - name: filename
+      type: string
+      required: false
+
+schedule:
+  full_refresh: monthly
+  update_check: weekly

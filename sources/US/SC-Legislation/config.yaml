@@ -1,0 +1,23 @@
+source_id: US/SC-Legislation
+name: South Carolina Code of Laws
+country: US
+jurisdiction: US-SC
+url: https://www.scstatehouse.gov/code/statmast.php
+data_types:
+  - legislation
+language: en
+license: public_domain
+auth:
+  type: none
+schedule: monthly
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - section_number
+    - chapter
+
+fetch:
+  delay: 1.5

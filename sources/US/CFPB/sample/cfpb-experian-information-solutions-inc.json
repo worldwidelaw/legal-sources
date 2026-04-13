@@ -1,0 +1,29 @@
+{
+  "_id": "cfpb-experian-information-solutions-inc",
+  "_source": "US/CFPB",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T08:43:02.684433+00:00",
+  "title": "Experian Information Solutions, Inc.",
+  "text": "Experian Information Solutions, Inc.\nOn January 7, 2025, the Bureau filed a lawsuit against Experian Information Solutions, Inc., one of the largest consumer reporting agencies in the country. Experian collects and organizes data on most adult Americans to generate consumer credit reports, which it sells to creditors and other businesses who are evaluating whether to offer consumers products, services, or opportunities such as credit lines, loans, jobs, and housing. To promote the accuracy and fairness of information in consumer credit reports, the federal Fair Credit Reporting Act (FCRA) gives consumers the right to dispute incomplete or inaccurate information in their credit file and requires consumer reporting agencies like Experian to forward such disputes to the company that originally provided the information (called the “furnisher”) for investigation. FCRA also requires consumer reporting agencies to reinvestigate such disputes and remove or correct any inaccurate, incomplete, or unverifiable information.\nThe second amended complaint, filed on August 22, 2025, alleges that Experian violated FCRA by failing to properly conduct reinvestigations of disputed information in consumer credit files; failing to delete inaccurate, incomplete, or unverified information in consumer credit files; failing to provide adequate written notice to consumers of the results of its reinvestigations; failing to prevent the improper reinsertion of previously deleted information from consumer credit files; and failing to follow reasonable procedures to assure maximum possible accuracy of the credit information Experian reports on consumers. In addition, the second amended complaint alleges that Experian committed unfair acts or practices in violation of the Consumer Financial Protection Act of 2010 by (1) relying excessively and unreasonably on furnishers to resolve disputes, routinely doing nothing more than sending the dispute to a furnisher and implementing the furnisher’s response, despite having evidence of that furnisher’s unreliability; and (2) improperly reinserting tradelines into consumer credit reports due to its practice of failing to adequately match newly reported tradelines to tradelines that were previously deleted as a result of a dispute if the subsequent furnishing was from a new furnisher. The Bureau seeks, among other things, to bring Experian into compliance with the law, consumer redress, and the imposition of civil money penalties.\nOn May 5, 2025, the court granted in part and denied in part defendant’s motion to dismiss the Bureau’s original complaint, finding some of the claims time-barred but allowing the Bureau to amend the complaint to allege the existence of a tolling agreement. The Bureau filed an amended complaint on June 6, 2025, and defendant filed a motion to dismiss certain claims as time-barred because the relevant tolling agreement was with Experian Holdings, not the named defendant. On August 6, 2025, the court granted defendant’s motion to dismiss with leave to amend. The Bureau filed a second amended complaint on August 22, 2025, and defendant filed a motion to dismiss again, making the same argument. On October 22, 2025, the court denied defendant’s motion to dismiss and ordered defendant to answer the complaint. On November 3, 2025, defendant filed an answer. The Bureau filed a motion to strike several of defendant’s affirmative defenses on December 15, 2025, which the court granted in part and denied in part on January 26, 2026. Discovery is ongoing.\nRELATED DOCUMENTS\nComplaint\nFirst Amended Complaint\nSecond Amended Complaint\nPRESS RELEASE\nCFPB Sues Experian for Sham Investigations of Credit Report Errors\nPage last modified\nMar. 13, 2026\n@\n12:53 PM EDT\nView older versions of this page at our public archive.",
+  "date": "2025-01-07",
+  "url": "https://www.consumerfinance.gov/enforcement/actions/experian-information-solutions-inc/",
+  "court": "",
+  "docket_number": "",
+  "status": "",
+  "forum": "",
+  "products": [],
+  "categories": [
+    "Civil Action",
+    "Add-on products",
+    "Credit cards",
+    "Enforcement",
+    "Mortgages",
+    "Servicemembers"
+  ],
+  "description": "On January 7, 2025, the Bureau filed a lawsuit against Experian Information Solutions, Inc., one of the largest consumer reporting agencies in the country.",
+  "pdf_urls": [
+    "https://files.consumerfinance.gov/f/documents/cfpb_experian-information-solutions-complaint_2025-01.pdf",
+    "https://files.consumerfinance.gov/f/documents/cfpb_experian-first-amended-complaint_2025-06.pdf",
+    "https://files.consumerfinance.gov/f/documents/cfpb_experian_second-amended-complaint_2025-08.pdf"
+  ]
+}

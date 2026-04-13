@@ -25,7 +25,6 @@ from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator
 
-import pdfplumber
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -33,6 +32,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -238,45 +240,13 @@ class BiHSudskaPrivadaScraper(BaseScraper):
         }
 
     def _extract_pdf_text(self, attachment_id: int) -> str:
-        """Download PDF attachment and extract text."""
-        self.rate_limiter.wait()
-
-        try:
-            resp = self.client.get(
-                f"/api/case-law-documents/attachments/{attachment_id}/download",
-                headers={"Accept": "application/pdf"},
-            )
-
-            if resp.status_code != 200:
-                logger.warning(
-                    f"PDF download failed for attachment {attachment_id}: "
-                    f"HTTP {resp.status_code}"
-                )
-                return ""
-
-            pdf_bytes = resp.content
-            if not pdf_bytes or len(pdf_bytes) < 100:
-                return ""
-
-            text_parts = []
-            with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-
-            text = "\n\n".join(text_parts)
-
-            # Clean up whitespace
-            text = re.sub(r"\n\s*\n\s*\n+", "\n\n", text)
-            text = re.sub(r" +", " ", text)
-            text = text.replace("\xa0", " ")
-
-            return text.strip()
-
-        except Exception as e:
-            logger.warning(f"PDF extraction failed for attachment {attachment_id}: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="BA/SudskaPrivada",
+            source_id="",
+            pdf_bytes=attachment_id,
+            table="case_law",
+        ) or ""
 
     def normalize(self, raw: dict) -> dict:
         """

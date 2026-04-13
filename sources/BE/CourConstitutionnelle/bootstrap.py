@@ -23,13 +23,11 @@ from typing import Iterator, Optional
 
 import requests
 
-# Try to import pdfplumber for PDF text extraction
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
-    print("Warning: pdfplumber not installed. Install with: pip install pdfplumber")
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown, preload_existing_ids
 
 SOURCE_ID = "BE/CourConstitutionnelle"
 BASE_URL = "https://www.const-court.be"
@@ -44,27 +42,6 @@ HEADERS = {
 
 # Court decisions start from 1985
 START_YEAR = 1985
-
-
-def extract_pdf_text(pdf_content: bytes) -> str:
-    """Extract text from PDF content using pdfplumber."""
-    if not HAS_PDFPLUMBER:
-        return ""
-    
-    import io
-    text_parts = []
-    
-    try:
-        with pdfplumber.open(io.BytesIO(pdf_content)) as pdf:
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-    except Exception as e:
-        print(f"Error extracting PDF text: {e}")
-        return ""
-    
-    return "\n\n".join(text_parts)
 
 
 def build_pdf_url(year: int, nr: int, lang: str = "f") -> str:
@@ -99,14 +76,17 @@ def fetch_decision(session: requests.Session, year: int, nr: int) -> Optional[di
         if "pdf" not in content_type.lower() and not response.content[:4] == b"%PDF":
             return None
         
-        # Extract text
-        full_text = extract_pdf_text(response.content)
-        if not full_text or len(full_text.strip()) < 100:
-            return None
-        
-        # Build record
+        # Build record IDs first for idempotency
         ecli = f"ECLI:BE:GHCC:{year}:{nr}"
         doc_id = f"BE_CONSTCOURT_{year}_{nr:03d}"
+
+        # Extract text via centralized PDF extractor
+        full_text = extract_pdf_markdown(
+            source=SOURCE_ID, source_id=doc_id,
+            pdf_bytes=response.content, table="case_law",
+        )
+        if not full_text or len(full_text.strip()) < 100:
+            return None
         
         return {
             "_id": doc_id,

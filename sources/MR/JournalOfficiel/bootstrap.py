@@ -47,11 +47,8 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
-try:
-    import PyPDF2
-    HAS_PYPDF2 = True
-except ImportError:
-    HAS_PYPDF2 = False
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -171,21 +168,13 @@ class MRJournalOfficielScraper(BaseScraper):
         return issues
 
     def _extract_pdf_text(self, pdf_content: bytes) -> str:
-        """Extract text from a PDF using PyPDF2."""
-        if not HAS_PYPDF2:
-            raise RuntimeError("PyPDF2 is required for PDF text extraction. Install: pip install PyPDF2")
-
-        try:
-            reader = PyPDF2.PdfReader(io.BytesIO(pdf_content))
-            text_parts = []
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-            return "\n\n".join(text_parts)
-        except Exception as e:
-            logger.warning(f"PDF extraction error: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="MR/JournalOfficiel",
+            source_id="",
+            pdf_bytes=pdf_content,
+            table="legislation",
+        ) or ""
 
     def _extract_date_from_pdf_text(self, text: str, year: str) -> Optional[str]:
         """Try to extract the publication date from the PDF text."""

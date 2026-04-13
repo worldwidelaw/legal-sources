@@ -21,14 +21,19 @@ import gc
 import requests
 from bs4 import BeautifulSoup
 
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
+
 # PDF extraction - use pypdf (lighter memory footprint than pdfplumber)
 try:
-    from pypdf import PdfReader
     HAS_PDF_SUPPORT = True
 except ImportError:
     try:
         # Fallback to older PyPDF2
-        from PyPDF2 import PdfReader
         HAS_PDF_SUPPORT = True
     except ImportError:
         HAS_PDF_SUPPORT = False
@@ -199,67 +204,13 @@ def download_pdf(session: requests.Session, doc_uuid: str) -> Optional[bytes]:
 
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
-    """
-    Extract text from PDF bytes using pypdf with memory-efficient streaming.
-
-    Uses pypdf (lighter than pdfplumber) and processes pages one at a time,
-    discarding each page after extraction to minimize memory usage.
-
-    Args:
-        pdf_bytes: PDF content
-
-    Returns:
-        Extracted text
-    """
-    if not HAS_PDF_SUPPORT:
-        return ""
-
-    import io
-    pdf_file = None
-    reader = None
-
-    try:
-        pdf_file = io.BytesIO(pdf_bytes)
-        reader = PdfReader(pdf_file)
-
-        text_parts = []
-        num_pages = len(reader.pages)
-
-        # Process pages one at a time to minimize memory
-        for i in range(num_pages):
-            try:
-                page = reader.pages[i]
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-                # Explicitly dereference page to help GC
-                del page
-            except Exception as page_err:
-                print(f"Failed to extract page {i}: {page_err}", file=sys.stderr)
-                continue
-
-        text = "\n\n".join(text_parts)
-
-        # Clean up text
-        text = re.sub(r'\n{3,}', '\n\n', text)
-        text = re.sub(r'[ \t]+', ' ', text)
-        text = text.strip()
-
-        return text
-
-    except Exception as e:
-        print(f"PDF extraction error: {e}", file=sys.stderr)
-        return ""
-    finally:
-        # Explicit cleanup to free memory
-        if reader is not None:
-            del reader
-        if pdf_file is not None:
-            pdf_file.close()
-            del pdf_file
-        # Force garbage collection after each PDF
-        gc.collect()
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="ME/SluzbenList",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="legislation",
+    ) or ""
 
 def extract_metadata(text: str, doc_uuid: str, issue_info: dict) -> dict:
     """

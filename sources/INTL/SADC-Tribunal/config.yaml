@@ -1,0 +1,22 @@
+source:
+  id: INTL/SADC-Tribunal
+  name: SADC Tribunal Decisions
+  country: INTL
+  url: https://www.saflii.org/sa/cases/SADCT/
+  data_types:
+    - case_law
+  auth: none
+  description: >
+    Southern African Development Community Tribunal decisions (2007-2010).
+    16 decisions total, sourced from SAFLII. Tribunal suspended in 2010.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+
+fetch:
+  rate_limit: 2.0
+  max_retries: 3
+  timeout: 60

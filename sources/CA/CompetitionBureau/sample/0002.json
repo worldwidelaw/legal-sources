@@ -1,0 +1,13 @@
+{
+  "_id": "CA/CompetitionBureau/fd57b641-7a91-4718-b2aa-ce8ae81d5988",
+  "_source": "CA/CompetitionBureau",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-05T19:13:51.221191+00:00",
+  "title": "Subscription form error",
+  "text": "You have entered an invalid email address. Please try again .",
+  "date": "2022-01-20",
+  "url": "https://competition-bureau.canada.ca/en/node/16",
+  "doc_category": "other",
+  "drupal_id": "fd57b641-7a91-4718-b2aa-ce8ae81d5988",
+  "language": "en"
+}

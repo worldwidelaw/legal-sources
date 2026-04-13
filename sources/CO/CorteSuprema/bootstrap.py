@@ -28,6 +28,13 @@ from pathlib import Path
 from typing import Generator, Optional
 from urllib.parse import quote
 
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
+
 try:
     import requests
 except ImportError:
@@ -190,30 +197,6 @@ def download_pdf_text(doc_path: str) -> str:
             return ""
 
         # Try pdfplumber first, then PyPDF2
-        try:
-            import pdfplumber
-            with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-                pages = []
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        pages.append(page_text)
-                return "\n\n".join(pages)
-        except ImportError:
-            pass
-
-        try:
-            import PyPDF2
-            reader = PyPDF2.PdfReader(io.BytesIO(resp.content))
-            pages = []
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    pages.append(page_text)
-            return "\n\n".join(pages)
-        except ImportError:
-            pass
-
         logger.warning("No PDF library available, skipping PDF: %s", doc_path)
         return ""
 
@@ -238,24 +221,30 @@ def is_junk_file(doc_id: str) -> bool:
 
 def fetch_full_text(doc_id: str, room: str) -> str:
     """Fetch full text of a document. Tries docx download first, then PDF, then GraphQL."""
-    # Prefer .docx version for reliable text extraction
-    if doc_id.endswith('.pdf'):
-        # Try the .docx version first
-        docx_path = re.sub(r'\.pdf$', '.docx', doc_id)
-        text = download_docx_text(docx_path)
-        if text and len(text) > 100:
-            return text
-        # Fall back to PDF
-        text = download_pdf_text(doc_id)
-        if text and len(text) > 100:
-            return text
-    elif doc_id.endswith('.docx'):
-        text = download_docx_text(doc_id)
-        if text and len(text) > 100:
-            return text
-        # Try PDF version as fallback
-        pdf_path = re.sub(r'\.docx$', '.pdf', doc_id)
-        text = download_pdf_text(pdf_path)
+    ext = Path(doc_id).suffix.lower()
+
+    # Build list of paths to try: prefer .docx, then .doc (might be mislabeled docx), then .pdf
+    attempts = []
+    if ext == '.docx':
+        attempts.append(('docx', doc_id))
+        attempts.append(('pdf', re.sub(r'\.docx$', '.pdf', doc_id)))
+    elif ext == '.pdf':
+        attempts.append(('docx', re.sub(r'\.pdf$', '.docx', doc_id)))
+        attempts.append(('pdf', doc_id))
+    elif ext == '.doc':
+        # .doc files may actually be docx inside — try docx extraction first
+        docx_path = re.sub(r'\.doc$', '.docx', doc_id)
+        attempts.append(('docx', docx_path))
+        attempts.append(('docx', doc_id))  # try raw .doc as if it were docx
+        attempts.append(('pdf', re.sub(r'\.doc$', '.pdf', doc_id)))
+    else:
+        attempts.append(('docx', doc_id))
+
+    for method, path in attempts:
+        if method == 'docx':
+            text = download_docx_text(path)
+        else:
+            text = download_pdf_text(path)
         if text and len(text) > 100:
             return text
 
@@ -308,7 +297,7 @@ def normalize(raw: dict, room: str) -> dict:
     # Clean temp file names
     title = re.sub(r'^~\$', '', title)
     # Remove file extension from title
-    title = re.sub(r'\.(docx|pdf)$', '', title)
+    title = re.sub(r'\.(docx?|pdf)$', '', title)
 
     date_str = raw.get("fechaCreacion")
     if date_str:
@@ -372,8 +361,7 @@ def fetch_all(rooms: list = None, years: list = None,
 
                 for raw in results:
                     doc_id = raw.get("id", "")
-                    # Skip temp files (~$)
-                    if "~$" in doc_id:
+                    if is_junk_file(doc_id):
                         continue
 
                     record = normalize(raw, room)
@@ -479,14 +467,21 @@ def bootstrap(sample: bool = False):
     if sample:
         logger.info("Running in SAMPLE mode - fetching ~15 documents across rooms")
         records = []
-        # Get ~4 docs per room for sample
-        for room in ROOMS:
-            logger.info("Sampling room: %s", room)
+        # Civil has best file availability; also try other rooms
+        sample_plans = [
+            ("Civil", "2024", 6),
+            ("Civil", "2020", 3),
+            ("Laboral", "2020", 3),
+            ("Penal", "2020", 3),
+        ]
+        for room, year, target in sample_plans:
+            logger.info("Sampling room: %s year: %s (target: %d)", room, year, target)
             count = 0
-            for record in fetch_all(rooms=[room], years=["2024"], max_per_room=4):
-                records.append(record)
-                count += 1
-                if count >= 4:
+            for record in fetch_all(rooms=[room], years=[year], max_per_room=target * 5):
+                if len(record.get("text", "")) > 200:
+                    records.append(record)
+                    count += 1
+                if count >= target:
                     break
             time.sleep(REQUEST_DELAY)
 

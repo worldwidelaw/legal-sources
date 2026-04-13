@@ -1,0 +1,14 @@
+source_id: US/AL-Legislation
+name: Alabama Code of 1975
+country: US
+jurisdiction: US-AL
+url: https://alison.legislature.state.al.us/code-of-alabama
+data_types:
+  - legislation
+language: en
+schedule: quarterly
+schema:
+  key_fields:
+    - _id
+    - title_number
+    - display_id

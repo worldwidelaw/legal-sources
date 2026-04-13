@@ -29,7 +29,13 @@ from pathlib import Path
 from typing import Dict, Any, Iterator, Optional, List, Tuple
 
 import requests
-import PyPDF2
+
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -136,20 +142,13 @@ class LBAFetcher:
             return None
 
     def _extract_text_from_pdf(self, pdf_content: bytes) -> str:
-        """Extract text from PDF using PyPDF2"""
-        try:
-            pdf_reader = PyPDF2.PdfReader(io.BytesIO(pdf_content))
-            text_parts = []
-
-            for page in pdf_reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-
-            return '\n\n'.join(text_parts)
-        except Exception as e:
-            logger.error(f"Error extracting PDF text: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="DE/LBA",
+            source_id="",
+            pdf_bytes=pdf_content,
+            table="doctrine",
+        ) or ""
 
     def _clean_text(self, text: str) -> str:
         """Clean up extracted text"""

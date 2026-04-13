@@ -1,0 +1,76 @@
+# ===================================================================
+# US/CA-FTB -- California Franchise Tax Board Legal Rulings
+# ===================================================================
+# Full text of FTB legal rulings, chief counsel rulings, and FTB notices.
+# Mix of HTML pages (older) and PDF documents (newer).
+# No authentication required. Public government data.
+# ===================================================================
+
+source:
+  id: "US/CA-FTB"
+  country: "US"
+  name: "California Franchise Tax Board Legal Rulings"
+  url: "https://www.ftb.ca.gov/tax-pros/law/"
+  description: |
+    California Franchise Tax Board legal rulings, chief counsel rulings,
+    and FTB notices with full text. Covers tax doctrine from 1958 to present.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.ftb.ca.gov"
+  endpoints:
+    legal_rulings: "/tax-pros/law/legal-rulings/index.html"
+    chief_counsel: "/tax-pros/law/chief-counsel-rulings/index.html"
+    ftb_notices: "/tax-pros/law/ftb-notices/index.html"
+
+data_model:
+  type: "doctrine"
+  primary_key: "ruling_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "ruling_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "ruling_id"
+      description: "Unique ruling identifier (e.g., 'LR-2022-01')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Ruling title or subject"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the ruling"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "ruling_type"
+      description: "Type: legal_ruling, chief_counsel, or ftb_notice"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Ruling date or year (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+notes: |
+  - ~319 documents across three collections
+  - HTML for older rulings, PDF for newer ones
+  - PDF text extracted via pdfplumber
+  - Public domain California government data

@@ -49,6 +49,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -183,39 +186,13 @@ class BDSupremeCourtScraper(BaseScraper):
     # -- PDF text extraction -------------------------------------------------
 
     def _extract_text_from_pdf(self, pdf_url: str, div_id: int) -> Optional[str]:
-        """Download PDF and extract full text."""
-        try:
-            # Set referrer to the listing page
-            self.session.headers["Referer"] = (
-                f"{LISTING_URL}?page=judgments.php&menu=00&div_id={div_id}&start=0"
-            )
-            resp = self.session.get(pdf_url, timeout=60)
-
-            if resp.status_code != 200:
-                logger.debug(f"PDF HTTP {resp.status_code}: {pdf_url}")
-                return None
-
-            ct = resp.headers.get("Content-Type", "")
-            if "pdf" not in ct and len(resp.content) < 1000:
-                logger.debug(f"Not a PDF: {ct}, size={len(resp.content)}")
-                return None
-
-            import pdfplumber
-            pdf = pdfplumber.open(io.BytesIO(resp.content))
-            pages_text = []
-            for page in pdf.pages:
-                text = page.extract_text()
-                if text:
-                    pages_text.append(text)
-            pdf.close()
-
-            full_text = "\n\n".join(pages_text)
-            full_text = re.sub(r"\n{3,}", "\n\n", full_text)
-            full_text = re.sub(r" {2,}", " ", full_text)
-            return full_text.strip() if len(full_text) > 100 else None
-        except Exception as e:
-            logger.debug(f"PDF extraction failed: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="BD/SupremeCourt",
+            source_id="",
+            pdf_url=pdf_url,
+            table="case_law",
+        ) or ""
 
     # -- Core scraper methods ------------------------------------------------
 

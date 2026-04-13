@@ -15,7 +15,6 @@ jurisprudence.
 """
 
 import argparse
-import io
 import json
 import os
 import re
@@ -25,8 +24,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Generator, Optional
 
-import pdfplumber
 import requests
+
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown, preload_existing_ids
 
 # Configuration
 SOURCE_ID = "LU/SupremeCourt"
@@ -95,22 +99,6 @@ def extract_metadata_from_filename(filename: str) -> dict:
         metadata["decision_number"] = decision_match.group(1)
 
     return metadata
-
-
-def extract_text_from_pdf(pdf_content: bytes) -> str:
-    """Extract text from PDF using pdfplumber."""
-    text_parts = []
-    try:
-        with pdfplumber.open(io.BytesIO(pdf_content)) as pdf:
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-    except Exception as e:
-        print(f"    Warning: PDF extraction failed: {e}", file=sys.stderr)
-        return ""
-
-    return "\n\n".join(text_parts)
 
 
 def extract_title_from_text(text: str, filename: str) -> str:
@@ -193,11 +181,17 @@ def fetch_all(limit: Optional[int] = None) -> Generator[dict, None, None]:
         print(f"  [{count+1}] Downloading: {filename}")
 
         try:
-            resp = requests.get(url, timeout=60)
-            resp.raise_for_status()
+            # Build source_id from filename metadata
+            meta = extract_metadata_from_filename(filename)
+            case_num = meta.get("case_number") or "UNKNOWN"
+            dec_num = meta.get("decision_number") or "0"
+            source_id = f"LU-CASS-{case_num.replace('CAS-', '').replace('CASS-', '')}-{dec_num}"
 
-            # Extract text from PDF
-            text = extract_text_from_pdf(resp.content)
+            # Extract text from PDF via centralized extractor
+            text = extract_pdf_markdown(
+                source=SOURCE_ID, source_id=source_id,
+                pdf_url=url, table="case_law",
+            )
 
             if not text or len(text) < 100:
                 print(f"    Skipping: no text extracted")
@@ -243,9 +237,14 @@ def fetch_updates(since: datetime) -> Generator[dict, None, None]:
             continue
 
         try:
-            resp = requests.get(url, timeout=60)
-            resp.raise_for_status()
-            text = extract_text_from_pdf(resp.content)
+            meta_u = extract_metadata_from_filename(filename)
+            case_num_u = meta_u.get("case_number") or "UNKNOWN"
+            dec_num_u = meta_u.get("decision_number") or "0"
+            sid = f"LU-CASS-{case_num_u.replace('CAS-', '').replace('CASS-', '')}-{dec_num_u}"
+            text = extract_pdf_markdown(
+                source=SOURCE_ID, source_id=sid,
+                pdf_url=url, table="case_law",
+            )
 
             if text and len(text) >= 100:
                 yield normalize(resource, text)
@@ -328,8 +327,10 @@ def main():
         if resources:
             r = resources[0]
             print(f"\nTesting PDF: {r.get('title')}")
-            pdf_resp = requests.get(r.get("url"), timeout=60)
-            text = extract_text_from_pdf(pdf_resp.content)
+            text = extract_pdf_markdown(
+                source=SOURCE_ID, source_id="test",
+                pdf_url=r.get("url"), table="case_law", force=True,
+            ) or ""
             print(f"Extracted {len(text)} chars")
             print(f"First 500 chars:\n{text[:500]}")
 

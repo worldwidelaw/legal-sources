@@ -1,0 +1,75 @@
+# ===================================================================
+# US/WY-Legislation -- Wyoming Statutes (wyoleg.gov)
+# ===================================================================
+# Full text of Wyoming Statutes fetched from the Rocket NXT gateway
+# on the official Legislature site. Tree-based discovery of titles
+# and chapters, with full HTML text extraction per chapter.
+# No authentication required. Public domain.
+# ===================================================================
+
+source:
+  id: "US/WY-Legislation"
+  country: "US"
+  name: "Wyoming Statutes (wyoleg.gov)"
+  url: "https://wyoleg.gov/StateStatutes"
+  description: |
+    Wyoming Statutes with full text of every section, fetched from the
+    official Legislature Rocket NXT gateway. Covers all 43 titles.
+    Public domain.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "nxt_gateway"
+  base_url: "https://wyoleg.gov/NXT/gateway.dll"
+  vid: "Publish:10.1048/Enu"
+
+data_model:
+  type: "legislation"
+  primary_key: "section_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "section_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "section_id"
+      description: "Unique section identifier (e.g., '1-2-101')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Section heading with number and title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the statute section"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "statute_title"
+      description: "Title number"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date fetched (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+notes: |
+  - 43 titles, hundreds of chapters
+  - NXT/Folio gateway for tree navigation and document retrieval
+  - Public domain (Wyoming government works)
+  - Chapters fetched as HTML, sections parsed from div.Section markers

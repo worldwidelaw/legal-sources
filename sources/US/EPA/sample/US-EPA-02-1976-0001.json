@@ -1,0 +1,21 @@
+{
+  "_id": "US-EPA-02-1976-0001",
+  "_source": "US/EPA",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T12:32:12.451045+00:00",
+  "title": "EPA v. NEW YORK CITY ET AL",
+  "text": "EPA Enforcement Case 02-1976-0001: NEW YORK CITY ET AL\nType: Civil Judicial Action\nStatus: Closed\nOutcome: Final Order No Penalty\nLead Agency: EPA\n\nCase Summary:\nTHE RED HOOK AND NORTH RIVER FACILITIES JOINTLY DISCHARGE    ABOUT 200 MILLION GALLONS PER DAY OF RAW SEWAGE INTO THE     HUDSON RIVER AND THE EAST RIVER, IN VIOLATION OF THEIR       NPDES PERMITS.  EPA COMMENCED AN ENFORCEMENT ACTION IN       JANUARY OF 1977, WHICH REQUIRED THE CITY TO CONSTRUCT        SECONDARY TREATMENT FACILITIES AT RED HOOK BY 12/1/84, AND   AT NORTH RIVER BY 8/1/86.  WHEN THE CITY BECAME UNABLE TO    MEET THIS SCHEDULE, EPA, THE CITY, AND THE STATE OF NY       NEGOTIATED AN AMENDMENT TO THE CONSENT DECREE WHICH:           1.  EXTENDED THE DATES FOR FINAL COMPLETION TO 9/1/87      AND 3/1/88.                                                    2.  PROVIDED FOR STIPULATED PENALTIES FOR VIOLATIONS OF    THE REVISED SCHEDULES.                                         3.  APPOINTED A SPECIAL MASTER TO ASSIST THE COURT IN      MONITORING COMPLIANCE WITH THE AMENDED DECREE.               THE CITY COMPLIED WITH EACH MILESTONE IN THE REVISED         SCHEDULE UNTIL 2/82 WHEN THE CITY SUBMITTED A REPORT TO      THE SPECIAL MASTER STATING THAT SUBSTANTIAL REDUCTIONS IN    THE AVAILABLE FEDERAL FUNDING MADE IT IMPOSSIBLE FOR THE     CITY TO MEET THE CONSENT DECREE SCHEDULE.  THE CITY CON-     TENDED THAT THE UNAVAILABILITY OF FEDERAL FUNDS CONSTITUTED  'CIRCUMSTANCES BEYOND THE CITY'S REASONABLE CONTROL'         SUFFICIENT TO REQUIRE AN EXTENSION OF THE CONSTRUCTION       SCHEDULES ACCORDING TO PARAGRAPH VIII OF THE CONSENT         DECREE, AND TO RELIEVE IT FROM PAYING STIPULATED PENALTIES.\n\nLaws and Sections Violated:\n  CWA: 402: Clean Water Act, 301: NPDES Discharge without a Permit (Other Unpermitted Discharges)\n\nDefendants:\n  NEW YORK CITY\n\nFacilities:\n  NYCDEP RED HOOK WATER POLLUTION CONTROL PLANT, MARSHALL STREET & LITTLE STREET, BROOKLYN, NY\n\nCase Milestones:\n  01/01/1976: Referred To Headquarters\n  12/20/1976: Referred To Dept Of Justice\n  12/30/1976: Referred TO U.S. Attorney\n  01/07/1977: Complaint Filed With Court\n  03/02/1977: Final Order Entered\n  03/02/1977: Concluded\n  03/02/1977: Final Order Lodged\n  07/23/1993: Enforcement Action Closed\n\nPollutants:\n  NONE\n\nEnforcement Conclusion #1: Consent Decree or Court Order Resolving a Civil Judicial Action\n  Name: NEW YORK, CITY OF\n  Settlement Entered: 03/02/1977",
+  "date": "1993-07-23",
+  "url": "https://echo.epa.gov/enforcement-case-report?id=02-1976-0001",
+  "case_number": "02-1976-0001",
+  "case_name": "NEW YORK CITY ET AL",
+  "case_type": "JDC",
+  "case_status": "Closed",
+  "enforcement_type": "Civil Judicial Action",
+  "enforcement_outcome": "Final Order No Penalty",
+  "primary_law": "CWA",
+  "federal_penalty": "$0",
+  "state_penalty": "$0",
+  "lead_agency": "EPA",
+  "court": "US Environmental Protection Agency"
+}

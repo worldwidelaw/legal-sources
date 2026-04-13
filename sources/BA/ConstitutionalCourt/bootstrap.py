@@ -19,17 +19,12 @@ from typing import Any, Generator, Optional
 
 import requests
 
-# Try to import pdfplumber for PDF text extraction
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
-    try:
-        import PyPDF2
-        HAS_PYPDF2 = True
-    except ImportError:
-        HAS_PYPDF2 = False
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -186,54 +181,13 @@ class ConstitutionalCourtFetcher:
             return None
 
     def extract_text_from_pdf(self, pdf_content: bytes) -> Optional[str]:
-        """
-        Extract text from PDF content.
-
-        Args:
-            pdf_content: PDF file content as bytes
-
-        Returns:
-            Extracted text, or None if extraction fails
-        """
-        if not pdf_content:
-            return None
-
-        # Write to temporary file
-        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-            tmp.write(pdf_content)
-            tmp_path = tmp.name
-
-        try:
-            text = ""
-
-            if HAS_PDFPLUMBER:
-                with pdfplumber.open(tmp_path) as pdf:
-                    for page in pdf.pages:
-                        page_text = page.extract_text()
-                        if page_text:
-                            text += page_text + "\n\n"
-            elif HAS_PYPDF2:
-                with open(tmp_path, "rb") as f:
-                    reader = PyPDF2.PdfReader(f)
-                    for page in reader.pages:
-                        page_text = page.extract_text()
-                        if page_text:
-                            text += page_text + "\n\n"
-            else:
-                logger.error("No PDF extraction library available (pdfplumber or PyPDF2)")
-                return None
-
-            return text.strip() if text else None
-
-        except Exception as e:
-            logger.error(f"Failed to extract text from PDF: {e}")
-            return None
-        finally:
-            # Clean up temp file
-            try:
-                os.unlink(tmp_path)
-            except OSError:
-                pass
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="BA/ConstitutionalCourt",
+            source_id="",
+            pdf_bytes=pdf_content,
+            table="case_law",
+        ) or ""
 
     def normalize(self, raw: dict, full_text: Optional[str] = None) -> dict:
         """

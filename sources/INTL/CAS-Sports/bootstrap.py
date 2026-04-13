@@ -34,6 +34,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -88,19 +91,13 @@ class CASSportsScraper(BaseScraper):
         return r.json()
 
     def _extract_text_from_pdf(self, pdf_bytes: bytes) -> str:
-        """Extract text from PDF using PyMuPDF."""
-        try:
-            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-            pages = []
-            for page in doc:
-                text = page.get_text()
-                if text.strip():
-                    pages.append(text.strip())
-            doc.close()
-            return "\n\n".join(pages)
-        except Exception as e:
-            logger.warning(f"PDF extraction failed: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="INTL/CAS-Sports",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="case_law",
+        ) or ""
 
     def _download_pdf_text(self, file_name: str) -> str:
         """Download PDF and extract text."""

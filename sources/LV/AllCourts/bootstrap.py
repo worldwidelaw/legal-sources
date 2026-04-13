@@ -26,6 +26,13 @@ from typing import Dict, Any, Iterator, Optional
 
 import fitz  # PyMuPDF
 
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
+
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -104,21 +111,13 @@ class LatvianCourtsFetcher:
         return None
 
     def _extract_text_from_pdf(self, pdf_bytes: bytes) -> str:
-        """Extract text from PDF bytes using PyMuPDF"""
-        try:
-            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-            text_parts = []
-            for page in doc:
-                text_parts.append(page.get_text())
-            doc.close()
-            text = '\n'.join(text_parts)
-            # Clean up
-            text = re.sub(r'\n{3,}', '\n\n', text)
-            text = re.sub(r' {2,}', ' ', text)
-            return text.strip()
-        except Exception as e:
-            logger.warning(f"PDF text extraction failed: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="LV/AllCourts",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="case_law",
+        ) or ""
 
     def _search_decisions(self, page: int = 1, limit: int = 50,
                           year_month: str = None) -> Optional[dict]:

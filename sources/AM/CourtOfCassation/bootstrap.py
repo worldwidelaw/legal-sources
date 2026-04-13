@@ -28,9 +28,15 @@ from pathlib import Path
 from typing import Generator, Optional, List, Dict
 from html import unescape
 
-import pdfplumber
 import requests
 from bs4 import BeautifulSoup
+
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 # Configuration
 SOURCE_ID = "AM/CourtOfCassation"
@@ -179,20 +185,13 @@ def extract_metadata_from_html(html_content: str) -> Dict:
 
 
 def extract_text_from_pdf(pdf_content: bytes) -> str:
-    """Extract text from PDF using pdfplumber."""
-    text_parts = []
-    try:
-        with pdfplumber.open(io.BytesIO(pdf_content)) as pdf:
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-    except Exception as e:
-        print(f"    Warning: PDF extraction failed: {e}", file=sys.stderr)
-        return ""
-
-    return "\n\n".join(text_parts)
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="AM/CourtOfCassation",
+        source_id="",
+        pdf_bytes=pdf_content,
+        table="case_law",
+    ) or ""
 
 def clean_text(text: str) -> str:
     """Clean and normalize extracted text."""

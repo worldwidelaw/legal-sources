@@ -28,11 +28,12 @@ from urllib.parse import unquote, urljoin
 
 import requests
 
-try:
-    import PyPDF2
-except ImportError:
-    print("ERROR: PyPDF2 is required. Install with: pip install PyPDF2", file=sys.stderr)
-    sys.exit(1)
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 # Configuration
 BASE_URL = "https://skupstinabd.ba"
@@ -126,37 +127,13 @@ def list_pdf_files(session: requests.Session, law_dir: str) -> list[dict]:
 
 
 def extract_text_from_pdf(pdf_content: bytes) -> str:
-    """
-    Extract text content from a PDF.
-
-    Args:
-        pdf_content: PDF file bytes
-
-    Returns:
-        Extracted text
-    """
-    try:
-        reader = PyPDF2.PdfReader(BytesIO(pdf_content))
-        text_parts = []
-
-        for page in reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text_parts.append(page_text)
-
-        text = "\n\n".join(text_parts)
-
-        # Clean up text
-        text = re.sub(r'\n{3,}', '\n\n', text)  # Reduce multiple newlines
-        text = re.sub(r'[ \t]+', ' ', text)  # Normalize spaces
-        text = re.sub(r' \n', '\n', text)  # Remove trailing spaces
-
-        return text.strip()
-
-    except Exception as e:
-        print(f"PDF extraction error: {e}", file=sys.stderr)
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="BA/Brcko",
+        source_id="",
+        pdf_bytes=pdf_content,
+        table="legislation",
+    ) or ""
 
 def download_pdf(session: requests.Session, url: str) -> Optional[bytes]:
     """

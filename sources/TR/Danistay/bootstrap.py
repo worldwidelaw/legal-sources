@@ -25,6 +25,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -137,64 +140,13 @@ class TurkishCouncilOfStateScraper(BaseScraper):
             logger.error(f"Failed to fetch current decisions: {e}")
 
     def _extract_pdf_text(self, pdf_filename: str) -> str:
-        """
-        Download PDF and extract text content.
-        Uses pdfplumber for reliable text extraction.
-        """
-        try:
-            self.rate_limiter.wait()
-            resp = self.pdf_client.get(f"/{pdf_filename}", stream=True)
-
-            if resp.status_code != 200:
-                logger.warning(f"PDF download failed: {resp.status_code}")
-                return ""
-
-            # Save to temp file for pdfplumber
-            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-                for chunk in resp.iter_content(chunk_size=8192):
-                    tmp.write(chunk)
-                tmp_path = tmp.name
-
-            try:
-                import pdfplumber
-
-                text_parts = []
-                with pdfplumber.open(tmp_path) as pdf:
-                    for page in pdf.pages:
-                        page_text = page.extract_text()
-                        if page_text:
-                            text_parts.append(page_text)
-
-                full_text = "\n\n".join(text_parts)
-                return self._clean_text(full_text)
-
-            except ImportError:
-                # Fallback to PyPDF2 if pdfplumber not available
-                try:
-                    import PyPDF2
-
-                    text_parts = []
-                    with open(tmp_path, "rb") as f:
-                        reader = PyPDF2.PdfReader(f)
-                        for page in reader.pages:
-                            page_text = page.extract_text()
-                            if page_text:
-                                text_parts.append(page_text)
-
-                    full_text = "\n\n".join(text_parts)
-                    return self._clean_text(full_text)
-
-                except ImportError:
-                    logger.error("No PDF library available (install pdfplumber or PyPDF2)")
-                    return ""
-
-            finally:
-                # Clean up temp file
-                Path(tmp_path).unlink(missing_ok=True)
-
-        except Exception as e:
-            logger.error(f"PDF extraction error: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="TR/Danistay",
+            source_id="",
+            pdf_bytes=pdf_filename,
+            table="case_law",
+        ) or ""
 
     def _clean_text(self, text: str) -> str:
         """Clean extracted text."""

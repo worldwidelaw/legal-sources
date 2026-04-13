@@ -1,0 +1,69 @@
+# ===================================================================
+# INTL/ICCLegalTools -- ICC Legal Tools Database
+# ===================================================================
+# 52,000+ ICC judicial documents with full text via PDF extraction.
+# LoopBack REST API + S3-hosted PDFs. No authentication required.
+# ===================================================================
+
+source:
+  id: "INTL/ICCLegalTools"
+  country: "INTL"
+  name: "ICC Legal Tools Database"
+  url: "https://www.legal-tools.org/"
+  description: |
+    The Legal Tools Database (LTD) contains 52,000+ ICC judicial documents
+    including decisions, judgements, submissions, and orders. Documents are
+    listed via a LoopBack REST API and full text is extracted from PDFs
+    hosted on S3. No authentication required.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest_json_pdf"
+  base_url: "https://www.legal-tools.org/api"
+  listing_url: "https://www.legal-tools.org/api/ltddocs"
+  count_url: "https://www.legal-tools.org/api/ltddocs/count"
+
+data_model:
+  type: "case_law"
+  primary_key: "externalId"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "external_id"
+      description: "ICC filing number (e.g., ICC-01/04-01/06-3121)"
+      type: "string"
+      role: "identifier"
+      required: true
+
+notes: |
+  - LoopBack REST API, paginate with filter JSON param
+  - PDFs hosted on S3: ltd-docs.s3.nl-ams.scw.cloud
+  - 52,567 ICC judicial documents (decisions, judgements, submissions)
+  - Text extracted via common/pdf_extract.extract_pdf_markdown
+  - Separate from ICCCaseLaw which uses the CLD (curated legal findings)

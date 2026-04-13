@@ -31,20 +31,12 @@ from typing import Generator, Optional, List, Dict
 
 import requests
 
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
-    try:
-        from pypdf import PdfReader
-        HAS_PYPDF = True
-    except ImportError:
-        try:
-            from PyPDF2 import PdfReader
-            HAS_PYPDF = True
-        except ImportError:
-            HAS_PYPDF = False
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 API_BASE = "https://rattspraxis.etjanst.domstol.se/api/v1"
 SAMPLE_DIR = Path(__file__).parent / "sample"
@@ -144,42 +136,13 @@ def download_attachment(storage_id: str) -> bytes:
 
 
 def extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from a PDF document."""
-    text_parts = []
-
-    if HAS_PDFPLUMBER:
-        try:
-            with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-        except Exception as e:
-            print(f"    -> pdfplumber extraction error: {e}")
-            return ''
-    elif HAS_PYPDF:
-        try:
-            reader = PdfReader(io.BytesIO(pdf_bytes))
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-        except Exception as e:
-            print(f"    -> pypdf extraction error: {e}")
-            return ''
-    else:
-        print("    -> No PDF library available (install pdfplumber or pypdf)")
-        return ''
-
-    full_text = '\n\n'.join(text_parts)
-
-    # Clean up common artifacts
-    full_text = re.sub(r'\n{3,}', '\n\n', full_text)
-    full_text = re.sub(r' {2,}', ' ', full_text)
-    full_text = re.sub(r'Sida \d+ \(\d+\)\n', '', full_text)
-
-    return full_text.strip()
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="SE/SupremeAdministrativeCourt",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="case_law",
+    ) or ""
 
 def process_publication(pub: Dict) -> Optional[Dict]:
     """

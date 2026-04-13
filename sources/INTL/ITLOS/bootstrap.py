@@ -36,15 +36,11 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
-try:
-    import pdfplumber
-    PDF_SUPPORT = True
-except ImportError:
-    PDF_SUPPORT = False
-    print("WARNING: pdfplumber not available. Install with: pip install pdfplumber")
-
 import requests
 from bs4 import BeautifulSoup
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -179,36 +175,13 @@ class ITLOSScraper(BaseScraper):
         return documents
 
     def _extract_pdf_text(self, url: str) -> Optional[str]:
-        """Download a PDF and extract text."""
-        if not PDF_SUPPORT:
-            logger.error("pdfplumber not available")
-            return None
-        try:
-            resp = self.session.get(url, timeout=120, stream=True)
-            resp.raise_for_status()
-            chunks = []
-            total = 0
-            for chunk in resp.iter_content(chunk_size=65536):
-                chunks.append(chunk)
-                total += len(chunk)
-                if total > 50 * 1024 * 1024:  # 50MB limit
-                    logger.warning(f"PDF exceeds 50MB, skipping: {url}")
-                    return None
-            content = b"".join(chunks)
-            if len(content) < 100:
-                return None
-
-            text_parts = []
-            with pdfplumber.open(io.BytesIO(content)) as pdf:
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-            text = "\n\n".join(text_parts).strip()
-            return text if len(text) >= 50 else None
-        except Exception as e:
-            logger.warning(f"Failed to extract PDF {url}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="INTL/ITLOS",
+            source_id="",
+            pdf_url=url,
+            table="case_law",
+        ) or ""
 
     def _extract_date(self, title: str, text: str) -> Optional[str]:
         """Extract the document date from title first, then text."""

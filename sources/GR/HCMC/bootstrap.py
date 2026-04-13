@@ -47,12 +47,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
-# PDF extraction
-try:
-    from pypdf import PdfReader
-    HAS_PYPDF = True
-except ImportError:
-    HAS_PYPDF = False
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
     level=logging.INFO,
@@ -233,36 +228,13 @@ class GreekHCMCScraper(BaseScraper):
             return None
 
     def _extract_pdf_text(self, pdf_url: str) -> str:
-        """Download and extract text from a PDF."""
-        if not HAS_PYPDF:
-            logger.warning("pypdf not available, skipping PDF extraction")
-            return ""
-
-        try:
-            self.rate_limiter.wait()
-            resp = self.client.get(pdf_url)
-            resp.raise_for_status()
-
-            # Skip very large PDFs (>20MB)
-            if len(resp.content) > 20 * 1024 * 1024:
-                logger.warning(f"PDF too large ({len(resp.content)} bytes), skipping")
-                return ""
-
-            reader = PdfReader(io.BytesIO(resp.content))
-            text_parts = []
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-
-            text = "\n".join(text_parts).strip()
-            if text:
-                logger.debug(f"Extracted {len(text)} chars from PDF")
-            return text
-
-        except Exception as e:
-            logger.warning(f"Failed to extract PDF text from {pdf_url}: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="GR/HCMC",
+            source_id="",
+            pdf_url=pdf_url,
+            table="doctrine",
+        ) or ""
 
     def _fetch_detail(self, item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Fetch full text for an item."""

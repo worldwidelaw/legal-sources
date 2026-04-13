@@ -30,7 +30,6 @@ from typing import Generator, Optional
 from collections import defaultdict
 
 import requests
-import PyPDF2
 from bs4 import BeautifulSoup
 
 # Add project root to path
@@ -38,6 +37,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,

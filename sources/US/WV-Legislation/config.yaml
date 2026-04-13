@@ -1,0 +1,76 @@
+# ===================================================================
+# US/WV-Legislation -- West Virginia Code (code.wvlegislature.gov)
+# ===================================================================
+# Full text of the West Virginia Code scraped from the official
+# Legislature WordPress site. Sitemap-driven crawl of ~31k sections.
+# No authentication required. Public domain.
+# ===================================================================
+
+source:
+  id: "US/WV-Legislation"
+  country: "US"
+  name: "West Virginia Code (wvlegislature.gov)"
+  url: "https://code.wvlegislature.gov/"
+  description: |
+    West Virginia Code with full text of every section, fetched from the
+    official Legislature website. Sitemap-driven discovery of all chapters,
+    articles, and sections. Public domain.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scraping"
+  base_url: "https://code.wvlegislature.gov"
+  endpoints:
+    sitemap: "sitemap.xml"
+    section: "/{chapter}-{article}-{section}/"
+
+data_model:
+  type: "legislation"
+  primary_key: "section_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "section_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "section_id"
+      description: "Unique section identifier (e.g., '1-1-1')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Section heading with number and title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the statute section"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "chapter"
+      description: "Chapter number"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date fetched (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+notes: |
+  - ~31k sections across 138 chapters
+  - Sitemap-driven discovery from code.wvlegislature.gov/sitemap.xml
+  - Public domain (West Virginia government works)
+  - Section text in div.sectiontext with h4 heading and p body

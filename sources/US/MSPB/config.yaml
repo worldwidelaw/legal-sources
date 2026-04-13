@@ -1,0 +1,19 @@
+source_id: US/MSPB
+name: US Merit Systems Protection Board Decisions
+country: US
+url: https://www.mspb.gov/decisions/decisions.htm
+data_types:
+  - case_law
+auth: none
+format: json
+language: en
+schedule: monthly
+
+schema:
+  key_fields:
+    - decision_number
+    - docket_number
+    - title
+    - text
+    - date
+    - url

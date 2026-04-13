@@ -50,6 +50,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -289,11 +292,6 @@ class CroatianConstitutionalCourtScraper(BaseScraper):
                 logger.debug(f"DOCX download failed for {url}: {e}")
 
         # Fallback to PDF
-        try:
-            import pypdf
-        except ImportError:
-            pypdf = None
-
         if pypdf:
             for url in meta.get("pdf_urls", []):
                 try:

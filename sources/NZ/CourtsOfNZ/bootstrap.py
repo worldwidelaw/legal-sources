@@ -40,6 +40,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -176,37 +179,13 @@ class CourtsOfNZScraper(BaseScraper):
         return None
 
     def _download_and_extract_pdf(self, pdf_url: str) -> Optional[str]:
-        """Download a PDF and extract text using PyPDF2."""
-        try:
-            import PyPDF2
-        except ImportError:
-            logger.error("PyPDF2 not installed. Run: pip install PyPDF2")
-            return None
-
-        self.rate_limiter.wait()
-        try:
-            resp = self.client.get(pdf_url, timeout=120)
-            if resp is None or resp.status_code != 200:
-                return None
-
-            pdf_bytes = resp.content
-            if len(pdf_bytes) < 100:
-                return None
-
-            reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-            parts = []
-            for page in reader.pages:
-                text = page.extract_text()
-                if text:
-                    parts.append(text.strip())
-
-            full_text = "\n\n".join(parts)
-            full_text = re.sub(r'\n{3,}', '\n\n', full_text)
-            return full_text.strip()
-
-        except Exception as e:
-            logger.debug(f"PDF extraction failed for {pdf_url}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="NZ/CourtsOfNZ",
+            source_id="",
+            pdf_url=pdf_url,
+            table="case_law",
+        ) or ""
 
     def _fetch_case(self, entry: dict) -> Optional[dict]:
         """Fetch full text for a single case."""

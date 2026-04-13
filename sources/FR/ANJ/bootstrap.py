@@ -23,9 +23,15 @@ from pathlib import Path
 from typing import Dict, Iterator, List, Optional
 from urllib.parse import urljoin
 
-import pdfplumber
 import requests
 from bs4 import BeautifulSoup
+
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 # Configuration
 BASE_URL = "https://www.anj.fr"
@@ -131,22 +137,13 @@ def parse_french_date(text: str) -> Optional[str]:
 
 
 def extract_pdf_text(session: requests.Session, pdf_url: str) -> str:
-    """Download PDF and extract text using pdfplumber."""
-    try:
-        resp = session.get(pdf_url, timeout=60)
-        resp.raise_for_status()
-
-        with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-            pages_text = []
-            for page in pdf.pages:
-                text = page.extract_text()
-                if text:
-                    pages_text.append(text)
-            return "\n\n".join(pages_text)
-    except Exception as e:
-        print(f"  PDF extraction failed for {pdf_url}: {e}", file=sys.stderr)
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="FR/ANJ",
+        source_id="",
+        pdf_url=session,
+        table="doctrine",
+    ) or ""
 
 def normalize(raw: Dict, full_text: str) -> Dict:
     """Normalize a decision to standard schema."""

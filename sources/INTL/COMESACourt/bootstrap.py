@@ -35,6 +35,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -109,32 +112,13 @@ class COMESACourtScraper(BaseScraper):
         return decisions
 
     def _download_pdf_text(self, url: str) -> str:
-        """Download PDF from URL and extract text using PyMuPDF."""
-        # Ensure HTTPS
-        if url.startswith("http://"):
-            url = "https://" + url[7:]
-
-        resp = self.session.get(url, timeout=120)
-        resp.raise_for_status()
-
-        content = resp.content
-        if len(content) < 100:
-            logger.warning(f"PDF too small ({len(content)} bytes): {url}")
-            return ""
-
-        try:
-            doc = fitz.open(stream=content, filetype="pdf")
-            text_parts = []
-            for page in doc:
-                text_parts.append(page.get_text())
-            doc.close()
-            text = "\n".join(text_parts).strip()
-            # Clean up excessive whitespace
-            text = re.sub(r"\n{3,}", "\n\n", text)
-            return text
-        except Exception as e:
-            logger.error(f"PDF extraction failed for {url}: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="INTL/COMESACourt",
+            source_id="",
+            pdf_url=url,
+            table="case_law",
+        ) or ""
 
     def _make_id(self, decision: dict) -> str:
         """Generate a stable unique ID from case metadata."""

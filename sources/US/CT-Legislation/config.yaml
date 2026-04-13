@@ -1,0 +1,78 @@
+# ===================================================================
+# US/CT-Legislation -- Connecticut General Statutes (cga.ct.gov)
+# ===================================================================
+# Full text of all Connecticut General Statutes scraped from the
+# official General Assembly website. HTML pages per chapter, parsed
+# into individual sections. No authentication required. Public domain.
+# ===================================================================
+
+source:
+  id: "US/CT-Legislation"
+  country: "US"
+  name: "Connecticut General Statutes (cga.ct.gov)"
+  url: "https://www.cga.ct.gov/current/pub/titles.htm"
+  description: |
+    Connecticut General Statutes with full text of every section, fetched
+    from the official General Assembly website. Covers all titles and
+    chapters of Connecticut law. Public domain.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.cga.ct.gov/current/pub"
+  endpoints:
+    titles: "titles.htm"
+    title_page: "title_{NUM}.htm"
+    chapter_page: "chap_{NUM}.htm"
+
+data_model:
+  type: "legislation"
+  primary_key: "section_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "section_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "section_id"
+      description: "Unique section identifier (e.g., '1-1')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Section heading with number and catchline"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the statute section"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "chapter"
+      description: "Chapter number"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date fetched (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+notes: |
+  - ~81 titles, hundreds of chapters, thousands of sections
+  - HTML scraping from cga.ct.gov/current/pub/
+  - Public domain (Connecticut government works)
+  - Sections parsed from chapter HTML pages using span.catchln anchors
+  - SSL verification disabled due to server certificate issue

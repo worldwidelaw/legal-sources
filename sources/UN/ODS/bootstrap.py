@@ -37,6 +37,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -126,31 +129,13 @@ class ODSScraper(BaseScraper):
     # -- PDF text extraction ------------------------------------------------
 
     def _extract_text_from_pdf(self, pdf_url: str) -> Optional[str]:
-        """Download PDF and extract full text."""
-        try:
-            resp = self.client.get(pdf_url, timeout=60)
-            if resp is None or resp.status_code != 200:
-                return None
-            if len(resp.content) < 100:
-                return None
-
-            import pdfplumber
-            pdf = pdfplumber.open(io.BytesIO(resp.content))
-            pages_text = []
-            for page in pdf.pages:
-                text = page.extract_text()
-                if text:
-                    pages_text.append(text)
-            pdf.close()
-
-            full_text = "\n\n".join(pages_text)
-            # Clean up
-            full_text = re.sub(r"\n{3,}", "\n\n", full_text)
-            full_text = re.sub(r" {2,}", " ", full_text)
-            return full_text.strip() if len(full_text) > 50 else None
-        except Exception as e:
-            logger.debug(f"PDF extraction failed for {pdf_url}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="UN/ODS",
+            source_id="",
+            pdf_url=pdf_url,
+            table="legislation",
+        ) or ""
 
     # -- Title/date parsing from text ---------------------------------------
 

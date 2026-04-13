@@ -26,13 +26,11 @@ from html import unescape
 import requests
 from bs4 import BeautifulSoup
 
-# Try to import pdfplumber for PDF text extraction
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
-    print("Warning: pdfplumber not installed. Install with: pip install pdfplumber")
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown, preload_existing_ids
 
 SOURCE_ID = "BE/ConseilEtat"
 BASE_URL = "https://www.raadvst-consetat.be"
@@ -44,27 +42,6 @@ HEADERS = {
     "Accept": "application/pdf,text/html,*/*",
     "Accept-Language": "fr-BE,fr;q=0.9,nl-BE;q=0.8,en;q=0.7",
 }
-
-
-def extract_pdf_text(pdf_content: bytes) -> str:
-    """Extract text from PDF content using pdfplumber."""
-    if not HAS_PDFPLUMBER:
-        return ""
-    
-    import io
-    text_parts = []
-    
-    try:
-        with pdfplumber.open(io.BytesIO(pdf_content)) as pdf:
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-    except Exception as e:
-        print(f"Error extracting PDF text: {e}")
-        return ""
-    
-    return "\n\n".join(text_parts)
 
 
 def fetch_recent_decision_numbers(session: requests.Session, months: int = 3) -> List[int]:
@@ -112,11 +89,15 @@ def fetch_decision(session: requests.Session, nr: int, lang: str = "fr") -> Opti
         if "pdf" not in content_type.lower() and not response.content[:4] == b"%PDF":
             return None
         
-        # Extract text
-        full_text = extract_pdf_text(response.content)
+        # Extract text via centralized PDF extractor
+        source_id = f"BE_CONSETAT_{nr}"
+        full_text = extract_pdf_markdown(
+            source=SOURCE_ID, source_id=source_id,
+            pdf_bytes=response.content, table="case_law",
+        )
         if not full_text or len(full_text.strip()) < 100:
             return None
-        
+
         # Try to extract date and case info from PDF text
         date_match = re.search(r'(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})', full_text.lower())
         date_iso = None
@@ -150,10 +131,8 @@ def fetch_decision(session: requests.Session, nr: int, lang: str = "fr") -> Opti
                 subject = line.strip()[:200]
                 break
         
-        doc_id = f"BE_CONSETAT_{nr}"
-        
         return {
-            "_id": doc_id,
+            "_id": source_id,
             "_source": SOURCE_ID,
             "_type": "case_law",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),

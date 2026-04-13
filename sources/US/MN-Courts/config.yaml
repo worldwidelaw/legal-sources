@@ -1,0 +1,54 @@
+source_id: US/MN-Courts
+name: Minnesota Supreme Court & Court of Appeals
+country: US
+data_types:
+  - case_law
+url: https://mn.gov/law-library/archive/supct/
+auth:
+  type: none
+
+schema:
+  key_fields:
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: true
+    - name: case_number
+      type: string
+      required: false
+    - name: court
+      type: string
+      required: true
+    - name: citation
+      type: string
+      required: false
+    - name: judge
+      type: string
+      required: false
+    - name: opinion_type
+      type: string
+      required: false
+
+fetch:
+  api_base: https://www.courtlistener.com/api/rest/v4/search/
+  pdf_base: https://storage.courtlistener.com/
+  courts:
+    - id: minn
+      name: Minnesota Supreme Court
+    - id: minnctapp
+      name: Minnesota Court of Appeals
+  page_size: 20
+  delay: 1.5
+
+license: Public Domain (government works)
+
+notes: |
+  Minnesota court opinions via CourtListener open search API (no auth required).
+  MN Supreme Court: ~45,000 opinions.
+  MN Court of Appeals: ~13,000 opinions.
+  Full text extracted from PDFs hosted on CourtListener S3 storage.

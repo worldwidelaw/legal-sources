@@ -39,14 +39,19 @@ from urllib.parse import urljoin, quote, unquote
 import requests
 from bs4 import BeautifulSoup
 
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
+
 # PDF extraction - try multiple backends
 PDF_EXTRACTOR = None
 try:
-    from PyPDF2 import PdfReader
     PDF_EXTRACTOR = "pypdf2"
 except ImportError:
     try:
-        from pdfminer.high_level import extract_text as pdfminer_extract
         PDF_EXTRACTOR = "pdfminer"
     except ImportError:
         pass
@@ -82,30 +87,13 @@ HEADERS = {
 
 
 def extract_pdf_text(pdf_content: bytes) -> Optional[str]:
-    """Extract text from PDF content using available library."""
-    if PDF_EXTRACTOR == "pypdf2":
-        try:
-            reader = PdfReader(io.BytesIO(pdf_content))
-            text = ""
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text += page_text + "\n"
-            return text.strip() if text.strip() else None
-        except Exception as e:
-            logger.warning(f"PyPDF2 extraction failed: {e}")
-            return None
-    elif PDF_EXTRACTOR == "pdfminer":
-        try:
-            text = pdfminer_extract(io.BytesIO(pdf_content))
-            return text.strip() if text.strip() else None
-        except Exception as e:
-            logger.warning(f"pdfminer extraction failed: {e}")
-            return None
-    else:
-        logger.error("No PDF extraction library available. Install PyPDF2 or pdfminer.six")
-        return None
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="XK/SupremeCourt",
+        source_id="",
+        pdf_bytes=pdf_content,
+        table="case_law",
+    ) or ""
 
 class KosovoSupremeCourtFetcher:
     """Fetcher for Kosovo Supreme Court judgments from EULEX."""

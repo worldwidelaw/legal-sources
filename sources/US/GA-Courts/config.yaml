@@ -1,0 +1,42 @@
+source_id: US/GA-Courts
+name: Georgia Supreme Court & Court of Appeals
+country: US
+data_types:
+  - case_law
+url: https://www.gasupreme.us/
+auth:
+  type: none
+
+schema:
+  key_fields:
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: true
+    - name: case_number
+      type: string
+      required: false
+    - name: court
+      type: string
+      required: true
+    - name: citation
+      type: string
+      required: false
+
+fetch:
+  # CourtListener open search API (no auth needed for search)
+  # Court IDs: ga (Supreme Court), gactapp (Court of Appeals)
+  api_base: https://www.courtlistener.com/api/rest/v4/search/
+  pdf_base: https://storage.courtlistener.com/
+  courts:
+    - id: ga
+      name: Supreme Court of Georgia
+    - id: gactapp
+      name: Court of Appeals of Georgia
+  page_size: 20
+  delay: 1.5

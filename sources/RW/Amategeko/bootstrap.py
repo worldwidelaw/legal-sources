@@ -26,16 +26,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Generator, Optional
 
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
+
 try:
     import requests
 except ImportError:
     print("ERROR: requests not installed. Run: pip3 install requests")
-    sys.exit(1)
-
-try:
-    import pdfplumber
-except ImportError:
-    print("ERROR: pdfplumber not installed. Run: pip3 install pdfplumber")
     sys.exit(1)
 
 SOURCE_ID = "RW/Amategeko"
@@ -102,20 +103,13 @@ def download_pdf(file_path: str) -> Optional[bytes]:
 
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using pdfplumber."""
-    try:
-        pdf = pdfplumber.open(io.BytesIO(pdf_bytes))
-        pages = []
-        for page in pdf.pages:
-            text = page.extract_text()
-            if text:
-                pages.append(text)
-        pdf.close()
-        return "\n\n".join(pages)
-    except Exception as e:
-        logger.warning(f"Failed to extract PDF text: {e}")
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="RW/Amategeko",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="legislation",
+    ) or ""
 
 def fetch_document(record: dict) -> Optional[dict]:
     """Fetch a single document with full text from PDF."""

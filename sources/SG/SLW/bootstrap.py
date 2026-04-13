@@ -29,6 +29,13 @@ from urllib.parse import quote
 import fitz  # PyMuPDF
 import requests
 
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
+
 SOURCE_ID = "SG/SLW"
 SAMPLE_DIR = Path(__file__).parent / "sample"
 BASE_URL = "https://www.singaporelawwatch.sg"
@@ -65,21 +72,13 @@ COURTS = {
 
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using PyMuPDF."""
-    try:
-        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-        text = ""
-        for page in doc:
-            text += page.get_text()
-        doc.close()
-        # Clean up whitespace
-        text = re.sub(r'[ \t]+', ' ', text)
-        text = re.sub(r'\n{3,}', '\n\n', text)
-        return text.strip()
-    except Exception as e:
-        print(f"  Error extracting PDF text: {e}")
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="SG/SLW",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="case_law",
+    ) or ""
 
 def parse_listing_page(html: str) -> list[dict]:
     """Parse a listing page and extract judgment entries."""

@@ -39,6 +39,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -83,32 +86,13 @@ def _strip_html(html_text: str) -> str:
 
 
 def _extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using pdfplumber."""
-    try:
-        import pdfplumber
-    except ImportError:
-        logger.warning("pdfplumber not available, trying PyPDF2")
-        try:
-            import PyPDF2
-            reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-            pages = []
-            for page in reader.pages:
-                t = page.extract_text()
-                if t:
-                    pages.append(t)
-            return "\n\n".join(pages)
-        except ImportError:
-            logger.error("No PDF library available (pdfplumber or PyPDF2)")
-            return ""
-
-    with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-        pages = []
-        for page in pdf.pages:
-            t = page.extract_text()
-            if t:
-                pages.append(t)
-    return "\n\n".join(pages)
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="HK/IRD-TaxDoctrine",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="doctrine",
+    ) or ""
 
 def _parse_dipn_index() -> Dict[str, Dict[str, str]]:
     """Parse the DIPN index page for titles and revision dates."""

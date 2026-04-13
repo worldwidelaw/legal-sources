@@ -1,0 +1,52 @@
+id: ET/FederalCourts
+name: Ethiopia Federal Courts Case Law
+country: ET
+url: https://lawethiopia.com/
+description: >
+  Federal Supreme Court Cassation Bench decisions from LawEthiopia.com.
+  ~1,300+ decisions organized by volume (1-24+), with full text in Amharic
+  embedded in HTML article pages. Covers family, criminal, civil, labor,
+  commercial, administrative, and constitutional law.
+data_types:
+  - case_law
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: case_number
+      type: string
+      required: false
+    - name: volume
+      type: string
+      required: false
+    - name: subject_tags
+      type: array
+      required: false

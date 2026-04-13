@@ -1,0 +1,13 @@
+{
+  "_id": "cftc-9205-26",
+  "_source": "US/CFTC",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T08:52:05.560880+00:00",
+  "title": "Federal Court Grants CFTC Motion for Summary Judgment, Orders Former Hedge Fund Manager to Pay $2.2 Million for Swap Valuation Fraud",
+  "text": "April 02, 2026\n\nWASHINGTON— The Commodity Futures Trading Commission today announced the U.S. District Court for the Southern District of New York entered an order granting the CFTC’s motion for summary judgment againstJames R. Velissaris, finding that he engaged in a fraudulent scheme in violation of the Commodity Exchange Act.\n\nThe order imposes a $2.2 million civil monetary penalty and permanently enjoins Velissaris from engaging in further violations of the CEA, trading in any CFTC-regulated markets, entering into any transaction involving commodity interests, and registering with the Commission.\n\nThe court cited the egregiousness of Velissaris’s misconduct, which lasted for years and resulted in substantial investor losses. The court also noted the significant sanctions imposed upon him in a related criminal case, including a 15-year prison sentence, $125,969,962 in criminal restitution, and $22 million in forfeiture.\n\nThe summary judgment order resolves the CFTC’s enforcement action filed Feb.17, 2022, which charged Velissaris with operating a fraudulent scheme to overvalue assets managed by his multi-billion-dollar hedge fund, Infinity Q Capital Management LLC, a CFTC-registered commodity pool operator. [See CFTC Press Release No.8495-22]\n\nAccording to that complaint, from 2018 – 2021, Velissaris engaged in a fraudulent valuation scheme to inflate the value of swaps held by two commodity pools managed by Infinity Q. He repeatedly represented that the funds valued their over-the-counter derivative positions using an independent third-party system without any substantive input from Infinity Q. In reality, Velissaris made manual adjustments in the system to artificially increase the reported value of the funds’ OTC derivative positions. These adjustments artificially inflated the funds’ net asset values and created a false record of success. Infinity Q then used those inflated values to charge inflated fees, induce additional investments from existing pool participants, and lure in new participants. Ultimately, the scheme resulted in customers paying more than $125 million in excess fees, of which approximately $22 million Velissaris used for his own benefit.\n\n-CFTC-",
+  "date": "2026-04-02",
+  "url": "https://www.cftc.gov/PressRoom/PressReleases/9205-26",
+  "pdf_urls": [
+    "https://www.cftc.gov/media/13606/EnfVelissarisOrder033026/download"
+  ]
+}

@@ -1,0 +1,69 @@
+# ===================================================================
+# US/TN-Legislation -- Tennessee Code Annotated
+# ===================================================================
+# Full text of Tennessee statutes from Internet Archive's public
+# domain collection (Public.Resource.Org). Release 76, May 2021.
+# 67 titles, HTML format. No authentication required.
+# ===================================================================
+
+source:
+  id: "US/TN-Legislation"
+  country: "US"
+  name: "Tennessee Code Annotated"
+  url: "https://www.capitol.tn.gov/legislation/laws.html"
+  description: |
+    Tennessee Code Annotated (TCA) with full text of all statutes
+    across 67 titles. Sourced from Internet Archive's public domain
+    collection published by Public.Resource.Org. Release 76 (May 2021).
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 1
+
+api:
+  type: "static_html"
+  base_url: "https://archive.org/download/gov.tn.tca"
+  release: "release76.2021.05.21"
+  file_pattern: "gov.tn.tca.title.{num:02d}.html"
+
+data_model:
+  type: "legislation"
+  primary_key: "section_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "section_number"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "section_number"
+      description: "TCA section number (e.g., 1-1-101)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Section heading"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the statute section"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "title_number"
+      description: "Title number"
+      type: "integer"
+      role: "classification"
+      required: true
+    - name: "chapter"
+      description: "Chapter name"
+      type: "string"
+      role: "classification"
+      required: false

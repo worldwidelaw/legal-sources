@@ -50,13 +50,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
-# PDF extraction
-try:
-    import pypdf
-    HAS_PYPDF = True
-except ImportError:
-    HAS_PYPDF = False
+from common.pdf_extract import extract_pdf_markdown
 
+
+# PDF extraction
 # DOCX extraction
 try:
     import docx
@@ -175,25 +172,13 @@ class SlovakDPAScraper(BaseScraper):
         )
 
     def _extract_pdf_text(self, pdf_bytes: bytes, max_size: int = 20_000_000) -> str:
-        """Extract text from PDF bytes using pypdf."""
-        if not HAS_PYPDF:
-            logger.warning("pypdf not available, cannot extract PDF text")
-            return ""
-        if len(pdf_bytes) > max_size:
-            logger.warning(f"PDF too large ({len(pdf_bytes)} bytes), skipping")
-            return ""
-
-        try:
-            reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
-            texts = []
-            for page in reader.pages:
-                text = page.extract_text()
-                if text:
-                    texts.append(text.strip())
-            return "\n\n".join(texts)
-        except Exception as e:
-            logger.warning(f"Failed to extract PDF text: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="SK/UOOU",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="doctrine",
+        ) or ""
 
     def _extract_docx_text(self, docx_bytes: bytes) -> str:
         """Extract text from DOCX bytes using python-docx."""

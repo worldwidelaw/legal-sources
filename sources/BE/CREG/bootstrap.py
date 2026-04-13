@@ -32,18 +32,12 @@ from urllib.parse import urljoin, urlparse, parse_qs
 import requests
 from bs4 import BeautifulSoup
 
-try:
-    import pdfplumber
-    PDF_AVAILABLE = True
-    USE_PDFPLUMBER = True
-except ImportError:
-    try:
-        import pypdf
-        PDF_AVAILABLE = True
-        USE_PDFPLUMBER = False
-    except ImportError:
-        PDF_AVAILABLE = False
-        print("Warning: pdfplumber/pypdf not available, PDF text extraction disabled", file=sys.stderr)
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 # Constants
 SOURCE_ID = "BE/CREG"
@@ -77,38 +71,13 @@ def get_session() -> requests.Session:
 
 
 def extract_text_from_pdf(pdf_content: bytes) -> str:
-    """Extract text from PDF content."""
-    if not PDF_AVAILABLE:
-        return ""
-
-    try:
-        if USE_PDFPLUMBER:
-            with pdfplumber.open(io.BytesIO(pdf_content)) as pdf:
-                text_parts = []
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-                full_text = "\n\n".join(text_parts)
-        else:
-            import pypdf
-            reader = pypdf.PdfReader(io.BytesIO(pdf_content))
-            text_parts = []
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-            full_text = "\n\n".join(text_parts)
-
-        # Clean up the text
-        full_text = re.sub(r'[ \t]+', ' ', full_text)
-        full_text = re.sub(r'\n\s*\n\s*\n+', '\n\n', full_text)
-
-        return full_text.strip()
-    except Exception as e:
-        print(f"Error extracting text from PDF: {e}", file=sys.stderr)
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="BE/CREG",
+        source_id="",
+        pdf_bytes=pdf_content,
+        table="case_law",
+    ) or ""
 
 def parse_publication_list(session: requests.Session, url: str) -> list[dict]:
     """Parse publication list page and extract publication metadata."""

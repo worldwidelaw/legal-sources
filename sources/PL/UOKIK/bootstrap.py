@@ -32,8 +32,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
-import pdfplumber
 import requests
+
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 # Suppress SSL warnings for decyzje.uokik.gov.pl
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -130,24 +136,13 @@ class UOKIKFetcher:
         return None
 
     def extract_pdf_text(self, pdf_url: str) -> Optional[str]:
-        """Download PDF and extract text."""
-        full_url = f"{BASE_URL}{pdf_url}" if pdf_url.startswith('/') else pdf_url
-        try:
-            resp = self.session.get(full_url, timeout=60)
-            resp.raise_for_status()
-            if len(resp.content) < 100:
-                return None
-
-            with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-                pages_text = []
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        pages_text.append(text)
-                return '\n\n'.join(pages_text) if pages_text else None
-        except Exception as e:
-            logger.warning(f"PDF extraction failed for {pdf_url}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="PL/UOKIK",
+            source_id="",
+            pdf_url=pdf_url,
+            table="doctrine",
+        ) or ""
 
     def normalize(self, unid: str, meta: Dict[str, str], full_text: str,
                   pdf_url: Optional[str]) -> Dict[str, Any]:

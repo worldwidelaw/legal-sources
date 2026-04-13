@@ -1,0 +1,24 @@
+source_id: US/CT-Courts
+name: Connecticut Supreme Court & Appellate Court
+country: US
+data_types:
+  - case_law
+url: https://www.jud.ct.gov/external/supapp/aro.htm
+auth:
+  type: none
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - case_number
+    - court
+    - volume
+
+fetch:
+  archive_base: https://www.jud.ct.gov/external/supapp/
+  pdf_base: https://www.jud.ct.gov/external/supapp/
+  years: 2003-2026
+  delay: 2.0

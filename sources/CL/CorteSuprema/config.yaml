@@ -1,0 +1,89 @@
+# ===================================================================
+# CL/CorteSuprema -- Chile Supreme Court Jurisprudence
+# ===================================================================
+# Chilean Supreme Court (Corte Suprema) decisions via juris.pjud.cl
+# JSON API (Solr backend). ~281,981 public decisions with full text.
+# No authentication required (CSRF token needed). Spanish language.
+# ===================================================================
+
+source:
+  id: "CL/CorteSuprema"
+  country: "CL"
+  name: "Chile Corte Suprema - Jurisprudencia"
+  url: "https://juris.pjud.cl"
+  description: |
+    Chilean Supreme Court decisions from the official Poder Judicial
+    jurisprudence search system (Buscador Jurisprudencial).
+    JSON API backed by Solr. ~281,981 publicly available decisions.
+    Full text in HTML format. Rich metadata including case number,
+    chamber, judges, subject classification, and cited norms.
+    No API key needed - uses CSRF token from session.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+data_model:
+  type: "case_law"
+  primary_key: "id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "id"
+      description: "Unique document ID from Solr"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (caratulado)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "case_number"
+      description: "ROL number (e.g., 32642-2024)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "chamber"
+      description: "Court chamber"
+      type: "string"
+      role: "category"
+      required: false
+    - name: "appeal_type"
+      description: "Type of appeal/recurso"
+      type: "string"
+      role: "category"
+      required: false
+    - name: "url"
+      description: "URL on juris.pjud.cl"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - ~281,981 Corte Suprema decisions via juris.pjud.cl JSON API
+  - Full text in texto_sentencia field (HTML, cleaned to plain text)
+  - CSRF token required (obtained from search page)
+  - 2-second delay between requests
+  - Spanish language
+  - Solr backend with faceted search

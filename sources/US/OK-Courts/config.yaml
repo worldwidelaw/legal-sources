@@ -1,0 +1,28 @@
+source_id: US/OK-Courts
+name: Oklahoma Supreme Court & Court of Civil/Criminal Appeals
+country: US
+jurisdiction: US-OK
+data_types:
+  - case_law
+url: https://www.oscn.net/
+auth: none
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - docket_number
+    - citation
+    - court
+    - url
+
+fetch:
+  search_url: https://www.courtlistener.com/api/rest/v4/search/
+  html_base_url: https://storage.courtlistener.com/
+  courts:
+    - okla
+    - oklacivapp
+    - oklacrimapp
+  delay: 2.0

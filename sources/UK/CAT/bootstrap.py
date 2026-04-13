@@ -27,25 +27,15 @@ from html import unescape
 
 from bs4 import BeautifulSoup
 
-# PDF text extraction
-try:
-    from pdfminer.high_level import extract_text as pdfminer_extract
-    HAS_PDFMINER = True
-except ImportError:
-    HAS_PDFMINER = False
-
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
-
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -86,27 +76,13 @@ class UKCATScraper(BaseScraper):
         )
 
     def _extract_pdf_text(self, pdf_content: bytes) -> str:
-        """Extract text from PDF bytes using available library."""
-        if HAS_PDFPLUMBER:
-            try:
-                with pdfplumber.open(io.BytesIO(pdf_content)) as pdf:
-                    pages = []
-                    for page in pdf.pages:
-                        text = page.extract_text()
-                        if text:
-                            pages.append(text)
-                    return "\n\n".join(pages)
-            except Exception as e:
-                logger.debug(f"pdfplumber extraction failed: {e}")
-
-        if HAS_PDFMINER:
-            try:
-                return pdfminer_extract(io.BytesIO(pdf_content))
-            except Exception as e:
-                logger.debug(f"pdfminer extraction failed: {e}")
-
-        logger.error("No PDF extraction library available. Install pdfplumber or pdfminer.six")
-        return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="UK/CAT",
+            source_id="",
+            pdf_bytes=pdf_content,
+            table="case_law",
+        ) or ""
 
     def _get_judgment_urls_from_sitemap(self) -> list:
         """Parse sitemap.xml to get all judgment URLs with lastmod dates."""

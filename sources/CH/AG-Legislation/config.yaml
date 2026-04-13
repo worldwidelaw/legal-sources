@@ -1,0 +1,25 @@
+source_id: CH/AG-Legislation
+name: Kanton Aargau Systematische Gesetzessammlung (SAR)
+country: CH
+jurisdiction: CH-AG
+data_types:
+  - legislation
+url: https://gesetzessammlungen.ag.ch/
+api_base: https://gesetzessammlungen.ag.ch/api/de
+auth: none
+schedule: monthly
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+    - doc_type
+    - systematic_number
+    - jurisdiction
+notes: >
+  Uses the LexWork REST API. 472 in-force laws with full structured JSON text.
+  No PDF extraction needed — text comes directly from the API.

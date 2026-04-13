@@ -1,0 +1,14 @@
+{
+  "_id": "US-MD-grp-1-101",
+  "_source": "US/MD-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-09T07:30:36.807172+00:00",
+  "title": "Real Property §1-101",
+  "text": "§1–101.\n(a)    In this article the following words have the meanings indicated unless otherwise apparent from context.\n(b)    &ldquo;County&rdquo; includes Baltimore City.\n(c)    &ldquo;Deed&rdquo; includes any deed, grant, mortgage, deed of trust, lease, assignment, and release, pertaining to land or property or any interest therein or appurtenant thereto, including an interest in rents and profits from rents.\n(d)    (1)    &ldquo;Deed of trust&rdquo; means a deed of trust that secures a debt or the performance of an obligation.\n(2)    &ldquo;Deed of trust&rdquo; does not include a voluntary grant unrelated to security purposes.\n(e)    &ldquo;Grant&rdquo; includes conveyance, assignment, and transfer.\n(f)    &ldquo;Land&rdquo; means property.\n(g)    &ldquo;Land record&rdquo; means any document recorded by a clerk of the circuit court relating to property.\n(h)    &ldquo;Landlord&rdquo; means any landlord, including a lessor.\n(i)    &ldquo;Lease&rdquo; means any oral or written agreement, express or implied, creating a landlord and tenant relationship, including any sublease and any further sublease.\n(j)    &ldquo;Mortgage&rdquo; means any mortgage, including a deed in the nature of mortgage.\n(k)    &ldquo;Person&rdquo; includes an individual, a receiver, a trustee, a guardian, an executor, an administrator, a fiduciary, or a representative of any kind, or any partnership, firm, association, public or private corporation, or any other entity.\n(l)    &ldquo;Property&rdquo; means real property or any interest in real property.\n(m)    &ldquo;Purchaser&rdquo; means a buyer or vendee.\n(n)    &ldquo;Tenant&rdquo; means any tenant including a lessee.\n(o)    &ldquo;Vendor&rdquo; means a seller.",
+  "date": null,
+  "url": "https://mgaleg.maryland.gov/mgawebsite/Laws/StatuteText?article=grp&section=1-101&enactments=false",
+  "article_code": "grp",
+  "article_name": "Real Property",
+  "section_number": "1-101",
+  "jurisdiction": "US-MD"
+}

@@ -41,6 +41,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -87,31 +90,13 @@ def _download_pdf(blob_id: str, filename: str, timeout: int = 60) -> Optional[by
 
 
 def _extract_text_from_pdf(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using pdfplumber."""
-    try:
-        import pdfplumber
-    except ImportError:
-        logger.error("pdfplumber not available; cannot extract PDF text")
-        return ""
-
-    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-        tmp.write(pdf_bytes)
-        tmp_path = tmp.name
-
-    try:
-        text_parts = []
-        with pdfplumber.open(tmp_path) as pdf:
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-        return "\n\n".join(text_parts)
-    except Exception as e:
-        logger.warning("PDF extraction failed: %s", e)
-        return ""
-    finally:
-        os.unlink(tmp_path)
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="CL/SII-Oficios",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="doctrine",
+    ) or ""
 
 def _parse_date(date_str: str) -> Optional[str]:
     """Parse date string like '23/12/2025' to ISO 8601."""

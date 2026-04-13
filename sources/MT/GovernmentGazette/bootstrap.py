@@ -51,14 +51,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
-# PDF extraction
-try:
-    import pdfplumber
-    PDF_SUPPORT = True
-except ImportError:
-    PDF_SUPPORT = False
-    print("WARNING: pdfplumber not available. Install with: pip install pdfplumber")
+from common.pdf_extract import extract_pdf_markdown
 
+
+# PDF extraction
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -145,42 +141,13 @@ class MaltaGovernmentGazetteScraper(BaseScraper):
         return None
 
     def _download_and_extract_pdf(self, pdf_id: str) -> str:
-        """Download PDF and extract text using pdfplumber."""
-        if not PDF_SUPPORT:
-            logger.error("pdfplumber not available for PDF extraction")
-            return ""
-
-        try:
-            self.rate_limiter.wait()
-            url = f"/getpdf/{pdf_id}"
-            resp = self.client.get(url)
-            resp.raise_for_status()
-
-            # Check if response is actually a PDF
-            content_type = resp.headers.get('content-type', '')
-            if 'pdf' not in content_type.lower() and not resp.content.startswith(b'%PDF'):
-                logger.warning(f"Response is not a PDF for {pdf_id}")
-                return ""
-
-            # Extract text from PDF
-            pdf_bytes = io.BytesIO(resp.content)
-            full_text = ""
-
-            with pdfplumber.open(pdf_bytes) as pdf:
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        full_text += text + "\n"
-
-            # Clean up the text
-            full_text = re.sub(r'\n{3,}', '\n\n', full_text)  # Remove excessive newlines
-            full_text = full_text.strip()
-
-            return full_text
-
-        except Exception as e:
-            logger.warning(f"Failed to extract PDF {pdf_id}: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="MT/GovernmentGazette",
+            source_id="",
+            pdf_bytes=pdf_id,
+            table="legislation",
+        ) or ""
 
     def _fetch_eli_page(self, eli_path: str) -> Optional[Dict[str, Any]]:
         """

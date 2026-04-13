@@ -42,6 +42,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -116,21 +119,6 @@ def _extract_text_docx(content: bytes) -> Optional[str]:
 
 def _extract_text_pdf(content: bytes) -> Optional[str]:
     """Extract text from a PDF file."""
-    try:
-        import PyPDF2
-        reader = PyPDF2.PdfReader(io.BytesIO(content))
-        parts = []
-        for page in reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                parts.append(page_text)
-        text = "\n".join(parts)
-        return text if len(text) > 50 else None
-    except Exception as e:
-        logger.debug(f"PDF extraction failed: {e}")
-        return None
-
-
 def _parse_act_number(number_str: str) -> tuple:
     """Parse act number like '024 of 1972' into (number, year)."""
     match = re.search(r'(\d+)\s+of\s+(\d{4})', number_str)

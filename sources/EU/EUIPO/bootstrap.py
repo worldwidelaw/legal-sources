@@ -27,6 +27,13 @@ from typing import Dict, Any, Iterator, Optional, List
 
 import requests
 
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
+
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -36,13 +43,6 @@ SEARCH_ENDPOINT = "https://euipo.europa.eu/caselaw/officesearch/json/{lang}"
 BASE_URL = "https://euipo.europa.eu"
 
 # Try to import PDF and DOCX libraries
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
-    logger.warning("pdfplumber not installed. PDF extraction disabled.")
-
 try:
     from docx import Document
     HAS_DOCX = True
@@ -151,28 +151,13 @@ class EUIPOFetcher:
             return None
 
     def _extract_text_from_pdf(self, pdf_bytes: bytes) -> str:
-        """Extract text from PDF using pdfplumber."""
-        if not HAS_PDFPLUMBER:
-            return ""
-
-        try:
-            with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
-                tmp.write(pdf_bytes)
-                tmp_path = tmp.name
-
-            text_parts = []
-            with pdfplumber.open(tmp_path) as pdf:
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-
-            Path(tmp_path).unlink()
-            return "\n\n".join(text_parts)
-
-        except Exception as e:
-            logger.warning(f"Failed to extract text from PDF: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="EU/EUIPO",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="case_law",
+        ) or ""
 
     def _extract_text_from_docx(self, docx_bytes: bytes) -> str:
         """Extract text from DOCX using python-docx."""

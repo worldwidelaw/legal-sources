@@ -1,0 +1,67 @@
+# ===================================================================
+# US/WI-Courts -- Wisconsin Supreme Court & Court of Appeals
+# ===================================================================
+# Full text of Wisconsin appellate opinions via CourtListener API.
+# ~58,000 opinions. No authentication required.
+# ===================================================================
+
+source:
+  id: "US/WI-Courts"
+  country: "US"
+  name: "Wisconsin Supreme Court & Court of Appeals"
+  url: "https://www.courtlistener.com/"
+  description: |
+    Wisconsin appellate opinions from the Supreme Court and
+    Court of Appeals. Full text extracted from PDFs via CourtListener.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "rest_json"
+  base_url: "https://www.courtlistener.com/api/rest/v4/"
+  search_endpoint: "search/"
+  court_ids: "wis,wisctapp"
+
+data_model:
+  type: "case_law"
+  primary_key: "cluster_id"
+  update_strategy: "incremental"
+  dedup_key:
+    - "cluster_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "cluster_id"
+      description: "CourtListener cluster ID"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case name"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "court"
+      description: "Court name"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "docket_number"
+      description: "Docket number"
+      type: "string"
+      role: "identifier"
+      required: false

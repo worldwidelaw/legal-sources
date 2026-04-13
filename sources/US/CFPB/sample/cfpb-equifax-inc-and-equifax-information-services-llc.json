@@ -1,0 +1,28 @@
+{
+  "_id": "cfpb-equifax-inc-and-equifax-information-services-llc",
+  "_source": "US/CFPB",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T08:42:51.443888+00:00",
+  "title": "Equifax, Inc. and Equifax Information Services LLC",
+  "text": "Equifax, Inc. and Equifax Information Services LLC\nOn January 17, 2025, the Bureau issued an order against Equifax, Inc. and Equifax Information Services LLC (collectively, Equifax), one of the largest consumer reporting agencies in the country. Equifax collects and organizes data on most adult Americans to generate consumer reports, which it sells to creditors and other businesses that evaluate whether to offer consumers loans, jobs, housing, and certain other products. To promote the accuracy and fairness of information in consumer reports, the federal Fair Credit Reporting Act (FCRA) gives consumers the right to dispute incomplete or inaccurate information in their credit file and requires consumer reporting agencies, like Equifax, to forward notice of the dispute to the company that originally provided the information (called the “furnisher”). FCRA also requires consumer reporting agencies to reinvestigate such disputes and remove or correct any inaccurate, incomplete, or unverifiable information. The Bureau found that Equifax violated FCRA, including by failing to properly conduct reinvestigations of disputed information in consumer files; failing to prevent the improper reinsertion of previously deleted information from consumer files; failing to provide adequate written notice to consumers of the results of its reinvestigations; failing to follow reasonable procedures to assure maximum possible accuracy of information Equifax reports on consumers; and failing to block reporting of information consumers identified as resulting from identity theft and to provide appropriate notice when such blocks were declined or rescinded. The Bureau also found that Equifax engaged in unfair acts or practices in violation of the Consumer Financial Protection Act of 2010 by: (1) using ineffective systems, flawed processes, and excessive deference to furnishers to resolve consumer disputes and failing to adequately inform consumers of the results of reinvestigations; and (2) selling inaccurate consumer credit scores and credit attributes after it introduced “test code” into a production environment in a scoring model server. The order requires Equifax to come into compliance with the law and pay a $15 million civil money penalty.\nRELATED DOCUMENTS\nConsent Order\nStipulation\nPRESS RELEASE\nCFPB Orders Equifax to Pay $15 Million for Improper Investigations of Credit Reporting Errors\nCase Docket\nView case filings\nPage last modified\nJan. 17, 2025\n@\n08:57 AM EST\nView older versions of this page at our public archive.",
+  "date": "2025-01-17",
+  "url": "https://www.consumerfinance.gov/enforcement/actions/equifax-inc-and-equifax-information-services-llc/",
+  "court": "",
+  "docket_number": "",
+  "status": "",
+  "forum": "",
+  "products": [],
+  "categories": [
+    "Administrative Proceeding",
+    "Add-on products",
+    "Credit cards",
+    "Enforcement",
+    "Mortgages",
+    "Servicemembers"
+  ],
+  "description": "On January 17, 2025, the Bureau issued an order against Equifax, Inc. and Equifax Information Services LLC, one of the largest consumer reporting agencies in the country.",
+  "pdf_urls": [
+    "https://files.consumerfinance.gov/f/documents/cfpb_equifax-inc-consent-order_2025-01.pdf",
+    "https://files.consumerfinance.gov/f/documents/cfpb_equifax-inc-stipulation_2025-01.pdf"
+  ]
+}

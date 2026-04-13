@@ -1,0 +1,30 @@
+source:
+  id: "UN/TreatyCollection"
+  name: "UN Treaty Collection (UNTS)"
+  url: "https://treaties.un.org/"
+  country: "INTL"
+  type: "legislation"
+  description: >
+    United Nations Treaty Collection — multilateral treaties deposited with
+    the Secretary-General. Covers ~419 treaties across 29 chapters including
+    human rights, environment, trade, disarmament, and more.
+  license: "UN public domain"
+  auth: none
+  method: "XML metadata + PDF full text extraction"
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+    - chapter
+    - chapter_name
+    - mtdsg_no
+    - entry_into_force
+    - registration_number
+    - signatories_count
+    - parties_count

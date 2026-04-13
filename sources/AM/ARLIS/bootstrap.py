@@ -47,6 +47,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -191,12 +194,6 @@ class ARLISScraper(BaseScraper):
 
     def _fetch_full_text_pdf(self, uniqid: str) -> Optional[str]:
         """Fetch and extract text from PDF as fallback."""
-        try:
-            import fitz  # PyMuPDF
-        except ImportError:
-            logger.warning("PyMuPDF not available for PDF extraction")
-            return None
-
         url = PDF_URL.format(uniqid=uniqid)
 
         try:

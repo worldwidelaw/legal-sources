@@ -45,13 +45,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
-# PDF extraction
-try:
-    import pypdf
-    HAS_PYPDF = True
-except ImportError:
-    HAS_PYPDF = False
+from common.pdf_extract import extract_pdf_markdown
 
+
+# PDF extraction
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -252,55 +249,13 @@ class GreekDPAScraper(BaseScraper):
             return None
 
     def _extract_pdf_text(self, pdf_url: str) -> Optional[str]:
-        """
-        Download and extract text from a PDF.
-
-        Uses pypdf for text extraction with memory bounds.
-        """
-        if not HAS_PYPDF:
-            logger.warning("pypdf not installed, skipping PDF extraction")
-            return None
-
-        try:
-            full_url = urljoin(BASE_URL, pdf_url)
-            self.rate_limiter.wait()
-            resp = self.client.get(pdf_url)
-            resp.raise_for_status()
-
-            # Memory bound: skip very large PDFs (>20MB)
-            content_length = len(resp.content)
-            if content_length > 20 * 1024 * 1024:
-                logger.warning(f"PDF too large ({content_length} bytes): {pdf_url}")
-                return None
-
-            # Extract text using pypdf
-            pdf_file = io.BytesIO(resp.content)
-            reader = pypdf.PdfReader(pdf_file)
-
-            text_parts = []
-            for page_num, page in enumerate(reader.pages):
-                try:
-                    page_text = page.extract_text() or ""
-                    text_parts.append(page_text)
-                except Exception as e:
-                    logger.debug(f"Error extracting page {page_num}: {e}")
-                    continue
-
-            text = "\n\n".join(text_parts)
-
-            # Clean up text
-            text = re.sub(r'\s+', ' ', text)
-            text = text.strip()
-
-            if len(text) < 100:
-                logger.warning(f"Very short PDF text ({len(text)} chars): {pdf_url}")
-                return None
-
-            return text
-
-        except Exception as e:
-            logger.warning(f"Failed to extract PDF text from {pdf_url}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="GR/DPA",
+            source_id="",
+            pdf_url=pdf_url,
+            table="doctrine",
+        ) or ""
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """

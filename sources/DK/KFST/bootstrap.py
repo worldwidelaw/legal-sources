@@ -39,12 +39,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
-# Try to import pypdf for PDF text extraction
-try:
-    from pypdf import PdfReader
-    HAS_PYPDF = True
-except ImportError:
-    HAS_PYPDF = False
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
     level=logging.INFO,
@@ -196,42 +191,13 @@ class KFSTScraper(BaseScraper):
         return None
 
     def _fetch_pdf_text(self, pdf_url: str) -> str:
-        """
-        Download PDF and extract text content.
-
-        Returns:
-            Extracted text or empty string on failure.
-        """
-        if not HAS_PYPDF:
-            logger.warning("pypdf not available, cannot extract PDF text")
-            return ""
-
-        try:
-            self.rate_limiter.wait()
-            resp = self.http.get(pdf_url)
-            resp.raise_for_status()
-
-            # Extract text from PDF
-            reader = PdfReader(io.BytesIO(resp.content))
-            text_parts = []
-
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text.strip())
-
-            full_text = "\n\n".join(text_parts)
-
-            # Clean up common PDF extraction artifacts
-            full_text = re.sub(r'\n{3,}', '\n\n', full_text)
-            full_text = re.sub(r' {2,}', ' ', full_text)
-            full_text = re.sub(r'-\n', '', full_text)  # Join hyphenated words
-
-            return full_text
-
-        except Exception as e:
-            logger.warning(f"Error extracting PDF text from {pdf_url}: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="DK/KFST",
+            source_id="",
+            pdf_url=pdf_url,
+            table="doctrine",
+        ) or ""
 
     def _extract_title_from_html(self, html_content: str) -> str:
         """Extract the decision title from HTML."""

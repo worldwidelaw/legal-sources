@@ -34,13 +34,15 @@ from typing import Generator, Optional
 from urllib.parse import urljoin, unquote
 
 import requests
-import pdfplumber
 from bs4 import BeautifulSoup
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -146,33 +148,13 @@ class LawCommissionScraper(BaseScraper):
         return None
 
     def _extract_text_from_pdf(self, pdf_url: str) -> Optional[str]:
-        """Download a PDF and extract its text content."""
-        try:
-            time.sleep(CRAWL_DELAY)
-            resp = self.session.get(pdf_url, timeout=120)
-            resp.raise_for_status()
-
-            if len(resp.content) < 100:
-                logger.warning(f"PDF too small ({len(resp.content)} bytes): {pdf_url}")
-                return None
-
-            # Extract text with pdfplumber
-            text_parts = []
-            with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-
-            full_text = '\n\n'.join(text_parts).strip()
-            if len(full_text) < 50:
-                logger.warning(f"Very little text extracted ({len(full_text)} chars): {pdf_url}")
-                return full_text if full_text else None
-
-            return full_text
-        except Exception as e:
-            logger.warning(f"Failed to extract PDF text from {pdf_url}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="NP/LawCommission",
+            source_id="",
+            pdf_url=pdf_url,
+            table="legislation",
+        ) or ""
 
     def _fetch_document(self, item: dict, category_type: str) -> Optional[dict]:
         """Fetch a single document: get PDF URL from page, download and extract text."""

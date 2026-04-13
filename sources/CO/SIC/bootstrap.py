@@ -43,6 +43,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -164,49 +167,13 @@ class SICScraper(BaseScraper):
     # -- PDF text extraction --------------------------------------------------
 
     def _extract_text_from_pdf(self, pdf_url: str) -> Optional[str]:
-        """Download PDF and extract full text using PyMuPDF."""
-        try:
-            resp = self.client.get(pdf_url, timeout=60)
-            if resp is None or resp.status_code != 200:
-                return None
-
-            ct = resp.headers.get("Content-Type", "")
-            if "pdf" not in ct and len(resp.content) < 500:
-                return None
-
-            # Limit PDF size to 50MB
-            if len(resp.content) > 50_000_000:
-                logger.warning(f"PDF too large ({len(resp.content)} bytes): {pdf_url[-60:]}")
-                return None
-
-            import fitz
-            doc = fitz.open(stream=resp.content, filetype="pdf")
-            pages_text = []
-            for page in doc:
-                text = page.get_text()
-                if text and text.strip():
-                    pages_text.append(text.strip())
-            page_count = doc.page_count
-            doc.close()
-
-            if not pages_text:
-                logger.debug(f"No text extracted (scanned PDF?): {pdf_url[-60:]}")
-                return None
-
-            full_text = "\n\n".join(pages_text)
-            # Clean up
-            full_text = re.sub(r"\n{3,}", "\n\n", full_text)
-            full_text = re.sub(r" {2,}", " ", full_text)
-            full_text = full_text.strip()
-
-            if len(full_text) < MIN_TEXT_LENGTH:
-                logger.debug(f"Text too short ({len(full_text)} chars): {pdf_url[-60:]}")
-                return None
-
-            return full_text
-        except Exception as e:
-            logger.debug(f"PDF extraction failed: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="CO/SIC",
+            source_id="",
+            pdf_url=pdf_url,
+            table="case_law",
+        ) or ""
 
     # -- Parse date from PDF text ---------------------------------------------
 

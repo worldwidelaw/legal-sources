@@ -27,10 +27,12 @@ from xml.etree import ElementTree as ET
 
 import requests
 
-try:
-    import pdfplumber
-except ImportError:
-    pdfplumber = None
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 # Constants
 BASE_URL = "https://www.amf-france.org"
@@ -67,36 +69,13 @@ def clean_html(text: str) -> str:
 
 
 def extract_pdf_text(pdf_url: str) -> Optional[str]:
-    """Download PDF and extract text using pdfplumber."""
-    if pdfplumber is None:
-        print("Warning: pdfplumber not installed. Cannot extract PDF text.", file=sys.stderr)
-        return None
-
-    try:
-        response = requests.get(pdf_url, timeout=60)
-        response.raise_for_status()
-
-        # Save to temp file
-        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
-            tmp.write(response.content)
-            tmp_path = tmp.name
-
-        try:
-            text_parts = []
-            with pdfplumber.open(tmp_path) as pdf:
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-
-            return '\n\n'.join(text_parts) if text_parts else None
-        finally:
-            os.unlink(tmp_path)
-
-    except Exception as e:
-        print(f"Error extracting PDF from {pdf_url}: {e}", file=sys.stderr)
-        return None
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="FR/AMF",
+        source_id="",
+        pdf_url=pdf_url,
+        table="case_law",
+    ) or ""
 
 def find_pdf_url(page_url: str) -> Optional[str]:
     """Find PDF download URL from an AMF page."""

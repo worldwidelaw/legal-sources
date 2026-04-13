@@ -1,0 +1,25 @@
+source_id: CH/BS-Legislation
+name: Kanton Basel-Stadt Gesetzessammlung (SG)
+country: CH
+jurisdiction: CH-BS
+data_types:
+  - legislation
+url: https://www.gesetzessammlung.bs.ch/
+api_base: https://www.gesetzessammlung.bs.ch/api/de
+auth: none
+schedule: monthly
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+    - doc_type
+    - systematic_number
+    - jurisdiction
+notes: >
+  Uses the LexWork REST API (Basel-Stadt SG). 907 in-force laws with full structured JSON text.
+  No PDF extraction needed — text comes directly from the API.

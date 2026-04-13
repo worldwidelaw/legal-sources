@@ -1,0 +1,21 @@
+{
+  "_id": "US-EPA-02-1975-0006",
+  "_source": "US/EPA",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T12:32:10.069739+00:00",
+  "title": "EPA v. NORTH HEMPSTEAD, TOWN OF",
+  "text": "EPA Enforcement Case 02-1975-0006: NORTH HEMPSTEAD, TOWN OF\nType: Civil Judicial Action\nStatus: Closed\nOutcome: Litigated No Penalty\nLead Agency: EPA\n\nLaws and Sections Violated:\n  CAA: 110: Implementation Plan for National Primary and Secondary Ambient Air Quality Standards (State Implementation Plan for National Primary and Secondary Ambient Air Quality Standards)\n\nDefendants:\n  NORTH HEMPSTEAD, TOWN OF\n\nFacilities:\n  NORTH HEMPSTEAD, TOWN, 220 PLANDOME ROAD, MANHASSET, NY\n\nCase Milestones:\n  12/12/1975: Referred To Headquarters\n  01/03/1976: Referred To Dept Of Justice\n  01/21/1976: Referred TO U.S. Attorney\n  02/19/1976: Complaint Filed With Court\n  07/07/1978: Concluded\n  07/07/1978: Enforcement Action Closed\n\nPollutants:\n  PM PARTICULATES\n\nViolations:\nViolation Of A SIP  Not Otherwise Specified",
+  "date": "1978-07-07",
+  "url": "https://echo.epa.gov/enforcement-case-report?id=02-1975-0006",
+  "case_number": "02-1975-0006",
+  "case_name": "NORTH HEMPSTEAD, TOWN OF",
+  "case_type": "JDC",
+  "case_status": "Closed",
+  "enforcement_type": "Civil Judicial Action",
+  "enforcement_outcome": "Litigated No Penalty",
+  "primary_law": "CAA",
+  "federal_penalty": null,
+  "state_penalty": null,
+  "lead_agency": "EPA",
+  "court": "US Environmental Protection Agency"
+}

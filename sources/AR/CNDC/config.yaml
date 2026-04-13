@@ -1,0 +1,33 @@
+source:
+  id: AR/CNDC
+  name: Argentina National Competition Commission (CNDC)
+  country: AR
+  url: https://cndc.produccion.gob.ar/buscador
+
+data:
+  types:
+    - case_law
+  coverage:
+    temporal: 1980s to present
+    estimated_size: 4,200+ decisions
+    scope: Antitrust/competition law decisions (mergers, conduct, market investigations)
+
+fetch:
+  method: HTML scraping + PDF download
+  base_url: https://cndc.produccion.gob.ar
+  search_url: https://cndc.produccion.gob.ar/buscador
+  auth:
+    type: none
+  response_format: HTML (listing), PDF (decisions)
+  full_text_format: PDF extracted to markdown
+
+schema:
+  key_fields:
+    - case_number
+    - node_id
+  metadata:
+    - title
+    - date
+    - case_type
+    - boletin_number
+    - dictamen_number

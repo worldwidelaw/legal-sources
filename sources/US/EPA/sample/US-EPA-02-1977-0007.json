@@ -1,0 +1,21 @@
+{
+  "_id": "US-EPA-02-1977-0007",
+  "_source": "US/EPA",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T12:32:35.422664+00:00",
+  "title": "EPA v. DONNER-HANNA COKE CO",
+  "text": "EPA Enforcement Case 02-1977-0007: DONNER-HANNA COKE CO\nType: Civil Judicial Action\nStatus: Closed\nOutcome: Dismissed By Tribunal\nLead Agency: EPA\n\nLaws and Sections Violated:\n  CAA: 110: Implementation Plan for National Primary and Secondary Ambient Air Quality Standards (State Implementation Plan for National Primary and Secondary Ambient Air Quality Standards)\n\nDefendants:\n  DONNER-HANNA COKE CO.\n\nFacilities:\n  DONNER HANNA COKE, ABBY & MYSTIC STS., BUFFALO, NY\n\nCase Milestones:\n  05/24/1977: Enforcement Action Data Entered\n  05/24/1977: Referred To Dept Of Justice\n  05/24/1977: Referred TO U.S. Attorney\n  05/24/1977: Complaint Filed With Court\n  02/12/1979: Concluded\n  02/12/1979: Enforcement Action Closed\n\nPollutants:\n  PM PARTICULATES\n\nViolations:\nViolation Of A SIP  Not Otherwise Specified",
+  "date": "1979-02-12",
+  "url": "https://echo.epa.gov/enforcement-case-report?id=02-1977-0007",
+  "case_number": "02-1977-0007",
+  "case_name": "DONNER-HANNA COKE CO",
+  "case_type": "JDC",
+  "case_status": "Closed",
+  "enforcement_type": "Civil Judicial Action",
+  "enforcement_outcome": "Dismissed By Tribunal",
+  "primary_law": "CAA",
+  "federal_penalty": null,
+  "state_penalty": null,
+  "lead_agency": "EPA",
+  "court": "US Environmental Protection Agency"
+}

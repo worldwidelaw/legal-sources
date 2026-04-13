@@ -42,8 +42,14 @@ from pathlib import Path
 from typing import Generator, Optional
 from urllib.parse import urljoin
 
-import pdfplumber
 import requests
+
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 # Configuration
 SOURCE_ID = "LU/CNPD"
@@ -218,21 +224,13 @@ def extract_pdf_url_from_detail(detail_url: str) -> dict:
 
 
 def extract_text_from_pdf(pdf_content: bytes, max_pages: int = 200) -> str:
-    """Extract text from PDF using pdfplumber."""
-    text_parts = []
-    try:
-        with pdfplumber.open(io.BytesIO(pdf_content)) as pdf:
-            for i, page in enumerate(pdf.pages):
-                if i >= max_pages:
-                    break
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-    except Exception as e:
-        print(f"    Warning: PDF extraction failed: {e}", file=sys.stderr)
-        return ""
-    return "\n\n".join(text_parts)
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="LU/CNPD",
+        source_id="",
+        pdf_bytes=pdf_content,
+        table="doctrine",
+    ) or ""
 
 def parse_date(text: str) -> Optional[str]:
     """Parse a date string into ISO format."""

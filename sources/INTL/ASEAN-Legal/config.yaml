@@ -1,0 +1,24 @@
+source:
+  id: INTL/ASEAN-Legal
+  name: ASEAN Legal Instruments Database
+  country: INTL
+  url: https://agreement.asean.org/
+  data_types:
+    - legislation
+  auth: none
+  description: >
+    ASEAN agreements, declarations, protocols, and legal instruments.
+    ~260 instruments with PDFs. Uses AJAX paginated HTML listing and
+    direct PDF downloads.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - document_type
+
+fetch:
+  rate_limit: 1.5
+  max_retries: 3
+  timeout: 60

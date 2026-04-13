@@ -1,0 +1,70 @@
+# ===================================================================
+# US/UT-Courts -- Utah Supreme Court & Court of Appeals Opinions
+# ===================================================================
+# Utah appellate opinions sourced via CourtListener's free search API
+# and PDF storage. No authentication required. Public domain.
+# ~25,900 opinions across both courts.
+# ===================================================================
+
+source:
+  id: "US/UT-Courts"
+  country: "US"
+  name: "Utah Supreme Court & Court of Appeals"
+  url: "https://www.utcourts.gov/opinions/"
+  description: |
+    Utah appellate court opinions from the Supreme Court (~18,100) and
+    Court of Appeals (~7,800). Sourced via CourtListener with PDF text
+    extraction. No authentication required. Public domain.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "rest_json"
+  base_url: "https://www.courtlistener.com/api/rest/v4"
+  endpoints:
+    search: "/search/?type=o&court=utah,utahctapp&order_by=dateFiled+desc"
+  pdf_storage: "https://storage.courtlistener.com"
+
+data_model:
+  type: "case_law"
+  primary_key: "cluster_id"
+  update_strategy: "incremental"
+  dedup_key:
+    - "cluster_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "cluster_id"
+      description: "CourtListener cluster ID"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case name"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date filed (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "docket_number"
+      description: "Docket number"
+      type: "string"
+      role: "classification"
+      required: false

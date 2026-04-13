@@ -1,0 +1,24 @@
+source:
+  id: IN/TRAI
+  name: Telecom Regulatory Authority of India - Regulations & Directions
+  country: IN
+  url: https://www.trai.gov.in/
+  data_types:
+    - doctrine
+  auth: none
+  description: >
+    Regulations, directions, recommendations, and tariff orders from TRAI.
+    Drupal site with HTML pagination and direct PDF downloads.
+    ~350 regulations + ~130 directions + ~340 recommendations + ~260 tariff orders.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - category
+
+fetch:
+  rate_limit: 1.5
+  max_retries: 3
+  timeout: 60

@@ -29,16 +29,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Generator, Optional
 
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
+
 try:
     import requests
 except ImportError:
     print("ERROR: requests not installed. Run: pip3 install requests")
     sys.exit(1)
-
-try:
-    import pdfplumber
-except ImportError:
-    pdfplumber = None
 
 SOURCE_ID = "AR/CNACAF"
 SOURCE_DIR = Path(__file__).parent
@@ -123,31 +125,13 @@ def get_document_detail(uuid: str, timeout: int = 60) -> Optional[dict]:
 
 
 def extract_pdf_text(pdf_uuid: str, pdf_name: str, timeout: int = 60) -> str:
-    """Download a PDF from SAIJ and extract its text content."""
-    if not pdfplumber:
-        return ""
-    try:
-        r = requests.get(
-            DOWNLOAD_URL,
-            params={"guid": pdf_uuid, "name": pdf_name},
-            headers={"User-Agent": HEADERS["User-Agent"]},
-            timeout=timeout,
-        )
-        r.raise_for_status()
-        if len(r.content) < 100:
-            return ""
-        pdf = pdfplumber.open(io.BytesIO(r.content))
-        pages = []
-        for page in pdf.pages:
-            t = page.extract_text()
-            if t:
-                pages.append(t)
-        pdf.close()
-        return "\n".join(pages)
-    except Exception as e:
-        logger.warning(f"PDF extraction failed for {pdf_name}: {e}")
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="AR/CNACAF",
+        source_id="",
+        pdf_bytes=pdf_uuid,
+        table="case_law",
+    ) or ""
 
 def normalize(raw: dict) -> dict:
     metadata = raw.get("metadata", {})

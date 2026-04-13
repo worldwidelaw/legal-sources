@@ -45,14 +45,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
-# Optional PDF extraction
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
-    logging.warning("pdfplumber not installed -- PDF text extraction unavailable")
+from common.pdf_extract import extract_pdf_markdown
 
+
+# Optional PDF extraction
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -140,23 +136,13 @@ class AgenziaEntrateScraper(BaseScraper):
 
     @staticmethod
     def _extract_text_from_pdf(pdf_bytes: bytes) -> Optional[str]:
-        if not HAS_PDFPLUMBER:
-            return None
-        try:
-            parts: list[str] = []
-            with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-                for page in pdf.pages:
-                    t = page.extract_text()
-                    if t:
-                        parts.append(t)
-            text = "\n\n".join(parts)
-            # normalise whitespace
-            text = re.sub(r"[ \t]+", " ", text)
-            text = re.sub(r"\n\s*\n+", "\n\n", text)
-            return text.strip() if len(text) > 100 else None
-        except Exception as e:
-            logger.warning("PDF extraction error: %s", e)
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="IT/AgenziaEntrate",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="doctrine",
+        ) or ""
 
     # ── Listing page parsing ──────────────────────────────────────────
 
