@@ -30,17 +30,12 @@ from typing import Generator, Optional
 import requests
 from bs4 import BeautifulSoup
 
-try:
-    import fitz  # PyMuPDF
-    HAS_FITZ = True
-except ImportError:
-    HAS_FITZ = False
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
 
-try:
-    import PyPDF2
-    HAS_PYPDF2 = True
-except ImportError:
-    HAS_PYPDF2 = False
+from common.pdf_extract import extract_pdf_markdown
+
 
 BASE_URL = "https://cisg-online.org"
 SEARCH_URL = f"{BASE_URL}/cfc/SearchCase.cfc"
@@ -57,32 +52,13 @@ RATE_LIMIT_DELAY = 2.0
 
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using available libraries."""
-    if HAS_FITZ:
-        try:
-            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-            text_parts = []
-            for page in doc:
-                text_parts.append(page.get_text())
-            doc.close()
-            return "\n\n".join(text_parts).strip()
-        except Exception as e:
-            print(f"    PyMuPDF failed: {e}")
-
-    if HAS_PYPDF2:
-        try:
-            reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-            text_parts = []
-            for page in reader.pages:
-                t = page.extract_text()
-                if t:
-                    text_parts.append(t)
-            return "\n\n".join(text_parts).strip()
-        except Exception as e:
-            print(f"    PyPDF2 failed: {e}")
-
-    return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="INTL/CISGOnline",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="case_law",
+    ) or ""
 
 def get_all_case_ids(session: requests.Session, limit: int = 0) -> list:
     """Fetch all case IDs from the CFC search endpoint.

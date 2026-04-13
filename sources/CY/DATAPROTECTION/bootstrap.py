@@ -43,15 +43,11 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 
 # PDF extraction
-try:
-    import pdfplumber
-    PDF_SUPPORT = True
-except ImportError:
-    PDF_SUPPORT = False
-    print("WARNING: pdfplumber not available. Install with: pip install pdfplumber")
-
 import requests
 from bs4 import BeautifulSoup
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -230,29 +226,13 @@ class CyprusDataProtectionScraper(BaseScraper):
             return None
 
     def _extract_pdf_text(self, pdf_bytes: bytes) -> str:
-        """Extract text from PDF bytes using pdfplumber."""
-        if not PDF_SUPPORT:
-            return ""
-
-        try:
-            pdf_file = io.BytesIO(pdf_bytes)
-            full_text = ""
-
-            with pdfplumber.open(pdf_file) as pdf:
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        full_text += text + "\n"
-
-            # Clean up text
-            full_text = re.sub(r'\n{3,}', '\n\n', full_text)
-            full_text = full_text.strip()
-
-            return full_text
-
-        except Exception as e:
-            logger.warning(f"Failed to extract PDF text: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="CY/DATAPROTECTION",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="doctrine",
+        ) or ""
 
     def _extract_title_from_text(self, text: str, filename: str) -> str:
         """Extract or generate a meaningful title from the decision text."""

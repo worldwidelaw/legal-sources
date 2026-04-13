@@ -35,6 +35,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -139,34 +142,13 @@ class ADBTribunalScraper(BaseScraper):
         return decisions
 
     def _download_and_extract_pdf(self, url: str) -> Optional[str]:
-        """Download a PDF and extract text using PyMuPDF."""
-        try:
-            resp = self.session.get(url, timeout=60)
-            if resp.status_code != 200:
-                logger.warning(f"PDF download failed: {url} -> HTTP {resp.status_code}")
-                return None
-            if not resp.content[:4] == b"%PDF":
-                logger.warning(f"Not a PDF: {url}")
-                return None
-
-            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
-                f.write(resp.content)
-                tmp_path = f.name
-
-            try:
-                doc = fitz.open(tmp_path)
-                text_parts = []
-                for page in doc:
-                    text_parts.append(page.get_text())
-                doc.close()
-                text = "\n".join(text_parts).strip()
-                return text if text else None
-            finally:
-                Path(tmp_path).unlink(missing_ok=True)
-
-        except Exception as e:
-            logger.error(f"Error processing PDF {url}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="INTL/ADBTribunal",
+            source_id="",
+            pdf_url=url,
+            table="case_law",
+        ) or ""
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all tribunal decisions with full text."""

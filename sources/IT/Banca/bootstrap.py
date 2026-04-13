@@ -39,11 +39,8 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -79,26 +76,13 @@ class BancaScraper(BaseScraper):
             return None
 
     def _extract_pdf_text(self, pdf_bytes: bytes, max_pages: int = 50) -> Optional[str]:
-        """Extract text from PDF, limiting to max_pages to avoid huge circulars."""
-        if not HAS_PDFPLUMBER:
-            return None
-        # Verify it's actually a PDF
-        if not pdf_bytes[:4] == b'%PDF':
-            return None
-        try:
-            with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-                parts = []
-                for i, page in enumerate(pdf.pages):
-                    if i >= max_pages:
-                        parts.append(f"[... truncated at {max_pages} pages, {len(pdf.pages)} total ...]")
-                        break
-                    text = page.extract_text()
-                    if text:
-                        parts.append(text)
-                return "\n\n".join(parts) if parts else None
-        except Exception as e:
-            logger.warning(f"PDF extraction failed: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="IT/Banca",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="doctrine",
+        ) or ""
 
     def _extract_html_text(self, html: str) -> str:
         """Extract main content text from HTML page."""

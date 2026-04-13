@@ -1,0 +1,21 @@
+{
+  "_id": "US-EPA-01-2007-9070",
+  "_source": "US/EPA",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T12:32:02.713157+00:00",
+  "title": "EPA v. ADMIRAL METAL SERVICE CENTER CO INC",
+  "text": "EPA Enforcement Case 01-2007-9070: ADMIRAL METAL SERVICE CENTER CO INC\nType: EPCRA 325 Action For Penalty\nStatus: Closed\nOutcome: Final Order No Penalty\nLead Agency: EPA\n\nCase Summary:\nVOLUNTARY DISCLOSURE OF EPCRA 312 VIOLATION RESOLVED WITH NOD.\n\nPenalties and Costs:\nCompliance Action Cost: $400\n\nLaws and Sections Violated:\n  EPCRA: 312: Emergency and Hazardous Chemical Inventory Forms (Inventory of Chemicals)\n\nDefendants:\n  ADMIRAL METAL SERVICE CENTER CO INC\n\nFacilities:\n  ADMIRAL METALS SERVICENTER CO IN, 11 FORBES RD, WOBURN, MA\n  ADMIRAL METALS SERVICENTER CO INC, 16 PARK ST, TAUNTON, MA\n  ADMIRAL METALS SERVICE CENTER, 1046 UNIVERSITY AVE, ROCHESTER, NY\n\nCase Milestones:\n  09/17/2007: Enforcement Action Closed\n  09/17/2007: Final Order Issued\n  09/21/2007: Enforcement Action Data Entered\n\nEnforcement Conclusion #1: Notice of Determination\n  Name: ADMIRAL METAL SERVICE CENTER CO INC\n  Settlement Entered: 09/17/2007",
+  "date": "2007-09-17",
+  "url": "https://echo.epa.gov/enforcement-case-report?id=01-2007-9070",
+  "case_number": "01-2007-9070",
+  "case_name": "ADMIRAL METAL SERVICE CENTER CO INC",
+  "case_type": "AFR",
+  "case_status": "Closed",
+  "enforcement_type": "EPCRA 325 Action For Penalty",
+  "enforcement_outcome": "Final Order No Penalty",
+  "primary_law": "EPCRA",
+  "federal_penalty": "$0",
+  "state_penalty": "$0",
+  "lead_agency": "EPA",
+  "court": "US Environmental Protection Agency"
+}

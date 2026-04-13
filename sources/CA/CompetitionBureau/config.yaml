@@ -1,0 +1,29 @@
+name: Canada Competition Bureau
+source_id: CA/CompetitionBureau
+country: CA
+data_types:
+  - doctrine
+
+url: https://competition-bureau.canada.ca/
+license: Crown Copyright (Government of Canada Open Data)
+update_frequency: monthly
+
+schema:
+  key_fields:
+    - _id
+    - doc_category
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+
+notes: |
+  Competition Bureau of Canada doctrine via Drupal JSON:API.
+  Covers ~780 pages: enforcement guidelines, position statements,
+  consultation responses, market studies, and case outcome summaries.
+  Full HTML body text extracted from JSON:API node/page endpoint.

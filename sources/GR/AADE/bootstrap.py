@@ -45,14 +45,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
-# PDF extraction
-try:
-    import pdfplumber
-    PDF_SUPPORT = True
-except ImportError:
-    PDF_SUPPORT = False
-    print("WARNING: pdfplumber not available. Install with: pip install pdfplumber")
+from common.pdf_extract import extract_pdf_markdown
 
+
+# PDF extraction
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -98,96 +94,13 @@ class AADEScraper(BaseScraper):
         )
 
     def _download_and_extract_pdf(self, ada: str, max_pdf_size_mb: int = 10) -> str:
-        """
-        Download PDF and extract text using pdfplumber with memory management.
-
-        Memory optimizations:
-        - Skip PDFs larger than max_pdf_size_mb
-        - Process pages one at a time and release memory
-        - Limit total text to 500KB to prevent memory bloat
-        - Explicit garbage collection after large PDFs
-        """
-        if not PDF_SUPPORT:
-            logger.error("pdfplumber not available for PDF extraction")
-            return ""
-
-        import gc
-        import requests
-
-        try:
-            self.rate_limiter.wait()
-            url = f"{BASE_URL}/doc/{ada}"
-
-            # Stream the response to check size before loading
-            resp = requests.get(url, timeout=60, stream=True, headers={
-                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
-            })
-
-            if resp.status_code != 200:
-                logger.warning(f"Failed to download PDF for {ada}: HTTP {resp.status_code}")
-                return ""
-
-            # Check content length to avoid huge PDFs
-            content_length = resp.headers.get('content-length')
-            if content_length:
-                size_mb = int(content_length) / (1024 * 1024)
-                if size_mb > max_pdf_size_mb:
-                    logger.warning(f"PDF too large for {ada}: {size_mb:.1f}MB > {max_pdf_size_mb}MB limit")
-                    return ""
-
-            # Now read the content
-            content = resp.content
-
-            # Check if response is actually a PDF
-            content_type = resp.headers.get('content-type', '')
-            if 'pdf' not in content_type.lower() and not content.startswith(b'%PDF'):
-                logger.warning(f"Response is not a PDF for {ada}")
-                return ""
-
-            # Extract text from PDF with memory management
-            pdf_bytes = io.BytesIO(content)
-            text_parts = []
-            total_chars = 0
-            max_chars = 500_000  # 500KB text limit
-
-            try:
-                with pdfplumber.open(pdf_bytes) as pdf:
-                    for page in pdf.pages:
-                        if total_chars >= max_chars:
-                            logger.info(f"Text limit reached for {ada} at {total_chars} chars")
-                            break
-                        try:
-                            text = page.extract_text()
-                            if text:
-                                text_parts.append(text)
-                                total_chars += len(text)
-                        except Exception as page_err:
-                            logger.debug(f"Page extraction error in {ada}: {page_err}")
-                        finally:
-                            # Clear page resources
-                            page.flush_cache()
-            finally:
-                # Explicitly close and clear BytesIO
-                pdf_bytes.close()
-                del pdf_bytes
-                del content
-
-            # Join and clean up the text
-            full_text = "\n".join(text_parts)
-            del text_parts  # Free list memory
-
-            full_text = re.sub(r'\n{3,}', '\n\n', full_text)  # Remove excessive newlines
-            full_text = full_text.strip()
-
-            # Trigger garbage collection for large PDFs
-            if total_chars > 100_000:
-                gc.collect()
-
-            return full_text
-
-        except Exception as e:
-            logger.warning(f"Failed to extract PDF {ada}: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="GR/AADE",
+            source_id="",
+            pdf_bytes=ada,
+            table="doctrine",
+        ) or ""
 
     def _search_decisions(
         self,

@@ -37,6 +37,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -186,19 +189,13 @@ class KenyaLawScraper(BaseScraper):
         return text.strip()
 
     def _extract_pdf_text(self, pdf_bytes: bytes) -> str:
-        """Extract text from PDF using PyPDF2."""
-        try:
-            import PyPDF2
-            reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-            pages = []
-            for page in reader.pages:
-                text = page.extract_text()
-                if text:
-                    pages.append(text)
-            return "\n\n".join(pages).strip()
-        except Exception as e:
-            logger.warning(f"  PDF extraction failed: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="KE/KenyaLaw",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="case_law",
+        ) or ""
 
     def _fetch_judgment_pdf(self, path: str) -> bytes:
         """Download judgment PDF source file."""

@@ -1,0 +1,77 @@
+# ===================================================================
+# IN/AllahabadHC -- Allahabad High Court Judgments (ILR System)
+# ===================================================================
+# AFR (Approved for Reporting) judgments from the Allahabad High Court,
+# the largest High Court in India by volume (serves Uttar Pradesh).
+# Accessed via the Indian Law Reports (ILR) search system.
+# ===================================================================
+
+source:
+  id: "IN/AllahabadHC"
+  country: "IN"
+  name: "Allahabad High Court Judgments (ILR)"
+  url: "https://www2.allahabadhighcourt.in/ilr/"
+  description: |
+    AFR (Approved for Reporting) judgments from the Allahabad High Court.
+    Accessed via the ILR (Indian Law Reports) search system with volume-based
+    discovery. Full text extracted from PDF judgments. Coverage from 2022 onwards
+    with consistent monthly volumes. Both English and Hindi versions available.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_search"
+  base_url: "https://www2.allahabadhighcourt.in/ilr"
+  search_endpoint: "/dataextractors/search.jsp"
+  pdf_base: "https://www2.allahabadhighcourt.in/files_ilr/english/splitted/"
+  method: "POST"
+  search_criteria:
+    volume: "V"
+    text: "F"
+    date: "D"
+    case_number: "C"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "case_number"
+      description: "Case number (e.g., CRLP/3487/2019)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (petitioner vs respondent)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the judgment"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Judgment date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "ilr_citation"
+      description: "ILR citation (e.g., (2023) 1 ILRA 14)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+notes: |
+  - ILR search API (POST) returns HTML with embedded PDF links
+  - Volume-based search (criteria=V, searchText=MonYYYY) is most reliable
+  - PDFs freely downloadable without CAPTCHA or auth
+  - Full text extracted using pdfplumber
+  - AFR judgments only (subset of all judgments)
+  - Coverage: 2022-present with monthly volumes

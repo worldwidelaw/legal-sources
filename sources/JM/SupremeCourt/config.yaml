@@ -1,0 +1,61 @@
+source:
+  id: JM/SupremeCourt
+  country: JM
+  name: Jamaica Supreme Court Judgments
+  description: |
+    Jamaica Supreme Court judgments from supremecourt.gov.jm.
+    Full text extracted from PDF judgments via pdfplumber.
+    Coverage: Recent judgments (2024-present visible in listings).
+    Neutral citation format: [YYYY] JMSC Civ/Crim N.
+
+  url: https://supremecourt.gov.jm/content/judgments
+  data_types:
+    - case_law
+
+  auth:
+    type: none
+
+  license:
+    name: Jamaica Government Open Data
+    url: https://supremecourt.gov.jm/
+
+schedule:
+  frequency: weekly
+  reason: New judgments published regularly
+
+schema:
+  key_fields:
+    - name: neutral_citation
+      type: string
+      required: true
+    - name: case_number
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+  secondary_fields:
+    - name: court
+      type: string
+      required: false
+    - name: judge
+      type: string
+      required: false
+    - name: date_delivered
+      type: string
+      required: false
+    - name: topics
+      type: string
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - neutral_citation
+
+notes: |
+  Drupal-based site at supremecourt.gov.jm.
+  Listing pages at /content/judgments?page=N (10 per page).
+  Individual judgment pages at /node/{id} with metadata and PDF link.
+  PDFs at /sites/default/files/judgments/{title}.pdf.
+  Full text extracted using pdfplumber.

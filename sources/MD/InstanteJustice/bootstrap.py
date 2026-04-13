@@ -44,6 +44,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -156,22 +159,13 @@ class MoldovaInstanteScraper(BaseScraper):
         return results
 
     def _extract_pdf_text(self, pdf_bytes: bytes) -> str:
-        """Extract text from PDF using pypdf."""
-        try:
-            from pypdf import PdfReader
-            reader = PdfReader(io.BytesIO(pdf_bytes))
-            pages = []
-            for page in reader.pages:
-                text = page.extract_text()
-                if text:
-                    pages.append(text)
-            text = "\n\n".join(pages)
-            text = re.sub(r'\n{3,}', '\n\n', text)
-            text = re.sub(r' {2,}', ' ', text)
-            return text.strip()
-        except Exception as e:
-            logger.warning(f"PDF extraction failed: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="MD/InstanteJustice",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="case_law",
+        ) or ""
 
     def _download_pdf(self, url: str) -> bytes:
         """Download PDF content."""

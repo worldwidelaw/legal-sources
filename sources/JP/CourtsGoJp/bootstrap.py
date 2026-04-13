@@ -29,13 +29,15 @@ from datetime import datetime, timezone
 from typing import Generator, Optional
 
 import requests
-import pdfplumber
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -93,18 +95,13 @@ class CourtsGoJpScraper(BaseScraper):
         return None
 
     def _extract_text_from_pdf(self, pdf_content: bytes) -> str:
-        """Extract text from PDF bytes using pdfplumber."""
-        try:
-            with pdfplumber.open(io.BytesIO(pdf_content)) as pdf:
-                pages_text = []
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        pages_text.append(text)
-                return "\n\n".join(pages_text)
-        except Exception as e:
-            logger.warning(f"PDF text extraction failed: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="JP/CourtsGoJp",
+            source_id="",
+            pdf_bytes=pdf_content,
+            table="case_law",
+        ) or ""
 
     def _download_pdf(self, case_id: str, retries: int = 3) -> Optional[bytes]:
         """Download a case PDF by ID."""

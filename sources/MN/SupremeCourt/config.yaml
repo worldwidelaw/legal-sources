@@ -1,0 +1,51 @@
+id: MN/SupremeCourt
+name: Mongolia Supreme Court Decisions
+country: MN
+url: https://shuukh.mn
+description: >
+  Court decisions from the Mongolian Court Decisions Electronic Database (shuukh.mn),
+  covering civil, criminal, and administrative cases at the supervisory/cassation
+  (Supreme Court) level. Full text decisions in Mongolian. ~22,900+ decisions.
+data_types:
+  - case_law
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.7
+  burst: 1
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: case_number
+      type: string
+      required: false
+    - name: case_type
+      type: string
+      required: false
+    - name: court_name
+      type: string
+      required: false

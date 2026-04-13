@@ -1,0 +1,31 @@
+source_id: PK/FBR-TaxDoctrine
+country: PK
+name: Pakistan FBR Tax Circulars, SROs and Rulings
+description: >
+  Pakistan Federal Board of Revenue tax circulars, Statutory Regulatory Orders
+  (SROs), and general orders. Covers Income Tax, Sales Tax, Customs, and Federal
+  Excise. Full text extracted from PDF documents via FBR download portal.
+url: https://www.fbr.gov.pk/
+data_types:
+  - doctrine
+auth: none
+license: Government of Pakistan - public domain
+
+api:
+  type: rest
+  base_url: https://www.fbr.gov.pk
+  endpoints:
+    circulars: /Home/ShowOrdersFiltered
+    sros: /Home/LoadSROs
+  pdf_base: https://download1.fbr.gov.pk
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - document_number
+    - category
+    - department
+    - url

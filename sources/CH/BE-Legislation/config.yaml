@@ -1,0 +1,25 @@
+source_id: CH/BE-Legislation
+name: Kanton Bern Gesetzessammlung (BSG)
+country: CH
+jurisdiction: CH-BE
+data_types:
+  - legislation
+url: https://www.belex.sites.be.ch/
+api_base: https://www.belex.sites.be.ch/api/de
+auth: none
+schedule: monthly
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url
+    - doc_type
+    - systematic_number
+    - jurisdiction
+notes: >
+  Uses the LexWork REST API (BELEX). 705 in-force laws with full structured JSON text.
+  No PDF extraction needed — text comes directly from the API.

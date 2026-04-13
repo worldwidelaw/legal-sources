@@ -1,0 +1,21 @@
+{
+  "_id": "US-EPA-01-2003-0107",
+  "_source": "US/EPA",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T12:31:59.792995+00:00",
+  "title": "EPA v. FRANKS VACUUM TRUCK SERVICE INC",
+  "text": "EPA Enforcement Case 01-2003-0107: FRANKS VACUUM TRUCK SERVICE INC\nType: RCRA 3008A AO For Comp And/Or Penalty\nStatus: Final Order Issued\nOutcome: Final Order With Penalty\nRelief Sought: Penalty\nLead Agency: EPA\n\nCase Summary:\nCOMPLAINT AND CAFO AGAINST A HAZARDOUS WASTE TRANSPORTER INVOLVING THE TRANSPORTATION OF HAZARDOUS WASTE FROM THE U.S. INTO CANADA RESULTING IN UNIFORM HAZARDOUS WASTE MANIFEST ON THE PART OF THE TRANSPORTER.\n\nPenalties and Costs:\nFederal Penalty: $7,500\nCompliance Action Cost: $100\n\nLaws and Sections Violated:\n  RCRA: 3003: Standards Applicable to Transporters of Hazardous Waste (Gen Hazardous Waste Management - Subtitle C - Transporter Requirements)\n\nRegulatory Citations:\n  40 CFR Part 263 Section 20(b)\n  40 CFR Part 263 Section 20(g)(2)\n  40 CFR Part 263 Section 20(g)(1)\n\nDefendants:\n  FRANK VACUUM TRUCK SERVICE INC\n\nFacilities:\n  US CUSTOMS PORT, ROADSIDE CHECK, HIGHGATE SPRINGS, VT\n  FRANKS VACUUM TRUCK SERVICE INC, 1717 NEW RD, NIAGARA FALLS, NY\n\nCase Milestones:\n  07/01/2003: Complaint Filed/Proposed Order\n  08/28/2003: Enforcement Action Data Entered\n  12/05/2003: Final Order Issued\n\nEnforcement Conclusion #1: Administrative Penalty Order With or Without Injunctive Relief\n  Name: FRANKS VACUUM TRUCK SERVICE INC\n  Settlement Entered: 12/05/2003\n  Federal Penalty: $7,500",
+  "date": "2003-12-05",
+  "url": "https://echo.epa.gov/enforcement-case-report?id=01-2003-0107",
+  "case_number": "01-2003-0107",
+  "case_name": "FRANKS VACUUM TRUCK SERVICE INC",
+  "case_type": "AFR",
+  "case_status": "Final Order Issued",
+  "enforcement_type": "RCRA 3008A AO For Comp And/Or Penalty",
+  "enforcement_outcome": "Final Order With Penalty",
+  "primary_law": "RCRA",
+  "federal_penalty": "$7,500",
+  "state_penalty": "$0",
+  "lead_agency": "EPA",
+  "court": "US Environmental Protection Agency"
+}

@@ -1,0 +1,55 @@
+id: LU/Courts
+name: Luxembourg Courts Decisions (justice.public.lu)
+country: LU
+data_types:
+  - case_law
+url: https://justice.public.lu
+auth: none
+priority: 2
+
+source:
+  type: html_scrape_with_pdf
+  judicial_url: https://justice.public.lu/fr/jurisprudence/juridictions-judiciaires.html
+  admin_url: https://justice.public.lu/fr/jurisprudence/juridictions-administratives.html
+  judicial_pdf_host: https://anon.public.lu
+  admin_pdf_host: https://ja.public.lu
+  page_size: 20
+
+schema:
+  fields:
+    - name: _id
+      description: "Unique identifier based on PDF filename or case number"
+    - name: court
+      description: "Court name and chamber"
+    - name: case_number
+      description: "Case registry number"
+    - name: ecli
+      description: "European Case Law Identifier (admin courts)"
+    - name: date
+      description: "Decision date in ISO format"
+    - name: title
+      description: "Case title extracted from text"
+    - name: text
+      description: "Full text of the decision"
+    - name: url
+      description: "URL to original PDF"
+    - name: court_type
+      description: "judicial or administrative"
+    - name: chamber
+      description: "Chamber number"
+    - name: content_type
+      description: "Type of case (Administratif, Fiscal, Civil, Penal, etc.)"
+  key_fields:
+    - case_number
+    - court
+
+license: Open Government License
+update_frequency: weekly
+coverage:
+  start_date: null
+  end_date: null
+notes: >
+  All Luxembourg court decisions from justice.public.lu.
+  ~46,435 judicial court decisions (anon.public.lu PDFs) and
+  ~31,779 administrative court decisions (ja.public.lu PDFs).
+  Full text extracted from PDFs using pdfplumber.

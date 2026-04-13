@@ -32,25 +32,15 @@ from typing import Generator, Optional, Dict, List, Tuple
 from urllib.parse import urljoin, unquote
 from bs4 import BeautifulSoup
 
-# PDF text extraction
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
-
-try:
-    from pypdf import PdfReader
-    HAS_PYPDF = True
-except ImportError:
-    HAS_PYPDF = False
-
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -105,38 +95,13 @@ class AKIScraper(BaseScraper):
             logger.warning("No PDF library available. Install pdfplumber or pypdf for full text extraction.")
 
     def _extract_pdf_text(self, pdf_content: bytes) -> str:
-        """
-        Extract text from PDF content.
-
-        Tries pdfplumber first (better quality), falls back to pypdf.
-        """
-        text_parts = []
-
-        if HAS_PDFPLUMBER:
-            try:
-                with pdfplumber.open(io.BytesIO(pdf_content)) as pdf:
-                    for page in pdf.pages:
-                        page_text = page.extract_text()
-                        if page_text:
-                            text_parts.append(page_text)
-                if text_parts:
-                    return "\n\n".join(text_parts)
-            except Exception as e:
-                logger.debug(f"pdfplumber extraction failed: {e}")
-
-        if HAS_PYPDF:
-            try:
-                reader = PdfReader(io.BytesIO(pdf_content))
-                for page in reader.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-                if text_parts:
-                    return "\n\n".join(text_parts)
-            except Exception as e:
-                logger.debug(f"pypdf extraction failed: {e}")
-
-        return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="EE/AKI",
+            source_id="",
+            pdf_bytes=pdf_content,
+            table="doctrine",
+        ) or ""
 
     def _parse_estonian_date(self, date_str: str) -> Optional[str]:
         """

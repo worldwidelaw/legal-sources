@@ -1,0 +1,14 @@
+source_id: US/OH-Legislation
+name: Ohio Revised Code
+country: US
+jurisdiction: US-OH
+url: https://codes.ohio.gov/
+data_types:
+  - legislation
+language: en
+schedule: quarterly
+schema:
+  key_fields:
+    - _id
+    - title_slug
+    - section_number

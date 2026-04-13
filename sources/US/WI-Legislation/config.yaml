@@ -1,0 +1,23 @@
+source_id: US/WI-Legislation
+name: Wisconsin Legislature Statutes
+country: US
+data_types:
+  - legislation
+url: https://docs.legis.wisconsin.gov/statutes
+auth:
+  type: none
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - chapter
+
+fetch:
+  base_url: https://docs.legis.wisconsin.gov
+  toc_url: https://docs.legis.wisconsin.gov/statutes/prefaces/toc
+  chapter_html_pattern: https://docs.legis.wisconsin.gov/statutes/statutes/{chapter}
+  chapter_pdf_pattern: https://docs.legis.wisconsin.gov/statutes/statutes/{chapter}.pdf
+  delay: 2.0

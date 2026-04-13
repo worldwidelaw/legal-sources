@@ -1,0 +1,30 @@
+source_id: US/ME-Legislation
+name: Maine Revised Statutes (legislature.maine.gov)
+country: US
+data_types:
+  - legislation
+url: https://legislature.maine.gov/statutes/
+auth:
+  type: none
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - title_number
+    - chapter
+    - section_number
+
+fetch:
+  base_url: https://legislature.maine.gov/statutes
+  delay: 1.5
+
+license: Public Domain (government works)
+
+notes: |
+  Maine Revised Statutes via legislature.maine.gov HTML pages.
+  39+ titles covering all codified Maine law.
+  Three-level hierarchy: title index → chapter index → section pages.
+  Full text extracted from static HTML pages.

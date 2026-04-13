@@ -1,0 +1,22 @@
+source:
+  id: "US/HI-Legislation"
+  name: "Hawaii Revised Statutes (HRS)"
+  country: US
+  jurisdiction: US-HI
+  url: "https://github.com/OpenHRS/openhrs-data"
+  data_types:
+    - legislation
+  language: en
+  auth: none
+  schedule: monthly
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - section_id
+    - chapter
+    - jurisdiction

@@ -1,0 +1,70 @@
+# ===================================================================
+# SR/SupremeCourt -- Suriname Supreme Court (Hof van Justitie)
+# ===================================================================
+# WordPress REST API for Suriname court decisions. ~1,300 decisions
+# from multiple courts. Full text HTML via WP REST API. No auth required.
+# API: https://rechtspraak.sr/wp-json/wp/v2/
+# ===================================================================
+
+source:
+  id: "SR/SupremeCourt"
+  country: "SR"
+  name: "Suriname Supreme Court (Hof van Justitie)"
+  url: "https://rechtspraak.sr/"
+  description: |
+    Suriname court decisions portal (rechtspraak.sr) providing full text
+    of judicial decisions in Dutch. Covers Hof van Justitie (Supreme Court),
+    Kantongerechten (District Courts), and specialized tribunals.
+    Built on WordPress with standard posts for decisions.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "WordPress REST API, be polite"
+
+api:
+  type: "rest"
+  base_url: "https://rechtspraak.sr/wp-json/wp/v2"
+  endpoints:
+    posts: "/posts?per_page=100&page={page}"
+  response_format: "json"
+
+data_model:
+  type: "case_law"
+  primary_key: "wp_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "wp_id"
+      description: "WordPress post ID"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "SRU case number (e.g., SRU-HvJ-2026-5)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the court decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "court"
+      description: "Court name derived from SRU prefix"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "metadata"
+      required: false

@@ -1,0 +1,82 @@
+# ===================================================================
+# US/KS-Legislation -- Kansas Statutes Annotated
+# ===================================================================
+# Kansas Statutes via kslegislature.gov. HTML scraping of the official
+# statutes browser. 89 chapters, hierarchical: chapter → article → section.
+# No API for statutes. No authentication required. Public domain.
+# ===================================================================
+
+source:
+  id: "US/KS-Legislation"
+  country: "US"
+  name: "Kansas Statutes Annotated (kslegislature.gov)"
+  url: "https://www.kslegislature.gov/li/b2025_26/statute/"
+  description: |
+    Kansas Statutes Annotated with full text of every section,
+    sourced from the official Kansas Legislature website. Covers all
+    89 chapters of the Kansas statutes. Public domain.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.kslegislature.gov"
+  endpoints:
+    all_chapters: "/li/b2025_26/statute/"
+    chapter: "/li/b2025_26/statute/{chapter_slug}/"
+    article: "/li/b2025_26/statute/{chapter_slug}/{article_slug}/"
+    section: "/li/b2025_26/statute/{chapter_slug}/{article_slug}/{section_slug}/{section_k}/"
+
+data_model:
+  type: "legislation"
+  primary_key: "section_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "section_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "section_id"
+      description: "Unique section identifier (e.g., 'KS-21-5402')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Section heading with chapter and number"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the statute section"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "chapter"
+      description: "Chapter number"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "article"
+      description: "Article number within the chapter"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "section_num"
+      description: "Section number (e.g., 21-5402)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date fetched (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true

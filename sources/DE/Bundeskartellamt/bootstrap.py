@@ -28,13 +28,11 @@ from typing import Iterator, List, Optional, Dict, Any
 import requests
 from bs4 import BeautifulSoup
 
-# Try to import pypdf for PDF text extraction
-try:
-    from pypdf import PdfReader
-    HAS_PYPDF = True
-except ImportError:
-    HAS_PYPDF = False
-    print("Warning: pypdf not installed. Install with: pip install pypdf")
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
 
 SOURCE_ID = "DE/Bundeskartellamt"
 BASE_URL = "https://www.bundeskartellamt.de"
@@ -57,33 +55,13 @@ HEADERS = {
 
 
 def extract_pdf_text(pdf_content: bytes) -> str:
-    """Extract text from PDF content using pypdf."""
-    if not HAS_PYPDF:
-        return ""
-
-    text_parts = []
-
-    try:
-        reader = PdfReader(io.BytesIO(pdf_content))
-        for page in reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                # Clean up the text
-                page_text = page_text.strip()
-                text_parts.append(page_text)
-    except Exception as e:
-        print(f"Error extracting PDF text: {e}")
-        return ""
-
-    full_text = "\n\n".join(text_parts)
-
-    # Clean up common PDF extraction artifacts
-    full_text = re.sub(r'\n{3,}', '\n\n', full_text)
-    full_text = re.sub(r' {2,}', ' ', full_text)
-    full_text = re.sub(r'-\n', '', full_text)  # Join hyphenated words
-
-    return full_text
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="DE/Bundeskartellamt",
+        source_id="",
+        pdf_bytes=pdf_content,
+        table="doctrine",
+    ) or ""
 
 class BundeskartellamtFetcher:
     """Fetcher for Bundeskartellamt competition decisions."""

@@ -1,0 +1,25 @@
+source:
+  id: INTL/WorldBank-Documents
+  name: World Bank Open Knowledge Repository
+  country: INTL
+  url: https://openknowledge.worldbank.org/
+  data_types:
+    - doctrine
+  auth: none
+  description: >
+    World Bank legal opinions, governance papers, and policy documents
+    from the "Law and Development" topic. ~40,000 documents with full text
+    accessible via the WDS Search API v2.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - document_type
+    - country
+
+fetch:
+  rate_limit: 1.0
+  max_retries: 3
+  timeout: 60

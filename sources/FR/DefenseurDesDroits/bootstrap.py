@@ -26,9 +26,15 @@ from pathlib import Path
 from typing import Any, Generator, Optional
 from urllib.parse import urljoin, unquote
 
-import pdfplumber
 import requests
 from bs4 import BeautifulSoup
+
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 # Constants
 BASE_URL = "https://juridique.defenseurdesdroits.fr"
@@ -144,24 +150,13 @@ def get_explnum_id_from_page(html: str) -> Optional[str]:
 
 
 def extract_pdf_text(explnum_id: str, session: requests.Session) -> str:
-    """Download PDF and extract text content."""
-    pdf_url = f"{BASE_URL}/doc_num.php?explnum_id={explnum_id}"
-    
-    try:
-        response = session.get(pdf_url, timeout=60)
-        response.raise_for_status()
-        
-        with pdfplumber.open(io.BytesIO(response.content)) as pdf:
-            text_parts = []
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-            return '\n\n'.join(text_parts)
-    except Exception as e:
-        print(f"Error extracting PDF {pdf_url}: {e}", file=sys.stderr)
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="FR/DefenseurDesDroits",
+        source_id="",
+        pdf_url=explnum_id,
+        table="case_law",
+    ) or ""
 
 def categorize_decision(title: str) -> str:
     """Categorize decision type based on title."""

@@ -27,6 +27,13 @@ import fitz  # PyMuPDF
 import requests
 from bs4 import BeautifulSoup
 
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
+
 # Configuration
 BASE_URL = "https://www.concourt.am"
 DECISIONS_PATH = "/decisions/cc-decision/"

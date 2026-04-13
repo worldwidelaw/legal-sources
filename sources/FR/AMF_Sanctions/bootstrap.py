@@ -29,6 +29,13 @@ from urllib.parse import urljoin
 
 import requests
 
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
+
 SOURCE_ID = "FR/AMF_Sanctions"
 BASE_URL = "https://www.amf-france.org"
 
@@ -57,38 +64,13 @@ def clean_html(html_text: str) -> str:
 
 
 def extract_pdf_text(pdf_content: bytes) -> str:
-    """Extract text from PDF content using pdfplumber or PyPDF2."""
-    try:
-        import pdfplumber
-        with pdfplumber.open(io.BytesIO(pdf_content)) as pdf:
-            text_parts = []
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-            return '\n\n'.join(text_parts)
-    except ImportError:
-        pass
-    except Exception as e:
-        print(f"    pdfplumber error: {e}")
-
-    # Fallback to PyPDF2
-    try:
-        from PyPDF2 import PdfReader
-        reader = PdfReader(io.BytesIO(pdf_content))
-        text_parts = []
-        for page in reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text_parts.append(page_text)
-        return '\n\n'.join(text_parts)
-    except ImportError:
-        pass
-    except Exception as e:
-        print(f"    PyPDF2 error: {e}")
-
-    return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="FR/AMF_Sanctions",
+        source_id="",
+        pdf_bytes=pdf_content,
+        table="case_law",
+    ) or ""
 
 def fetch_sanctions_api(session: requests.Session) -> list:
     """Fetch all sanctions decisions from the REST API."""

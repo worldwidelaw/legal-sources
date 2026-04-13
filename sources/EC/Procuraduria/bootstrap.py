@@ -19,8 +19,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Generator, Optional
 
-import PyPDF2
 import requests
+
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 BASE_URL = "https://www.pge.gob.ec"
 SAMPLE_DIR = Path(__file__).parent / "sample"
@@ -114,19 +120,13 @@ def download_extract_pdf(year: int, month: int, session: requests.Session) -> Op
 
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
-    """Extract all text from a PDF using PyPDF2."""
-    try:
-        reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-        parts = []
-        for page in reader.pages:
-            text = page.extract_text()
-            if text:
-                parts.append(text)
-        return '\n'.join(parts)
-    except Exception as e:
-        print(f"    -> PDF extraction error: {e}")
-        return ''
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="EC/Procuraduria",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="doctrine",
+    ) or ""
 
 def parse_pronouncements(full_text: str) -> list:
     """Parse individual pronouncements from extract PDF text."""

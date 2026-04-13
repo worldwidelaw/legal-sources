@@ -1,0 +1,74 @@
+# ===================================================================
+# US/NY-DTF -- New York Department of Taxation and Finance
+# ===================================================================
+# Advisory opinions (TSB-A) and technical memoranda (TSB-M) with full
+# text. Organized by tax type and year. Recent opinions are HTML,
+# older ones are PDF. No authentication required.
+# ===================================================================
+
+source:
+  id: "US/NY-DTF"
+  country: "US"
+  name: "New York Department of Taxation and Finance Advisory Opinions"
+  url: "https://www.tax.ny.gov/pubs_and_bulls/advisory_opinions/"
+  description: |
+    Advisory opinions (TSB-A) from the NY Department of Taxation and
+    Finance. Covers 17 tax types from 1980 to present. Full text
+    extracted from HTML pages (2020+) and PDF documents (pre-2020).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 1
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.tax.ny.gov"
+  endpoints:
+    ao_index: "/pubs_and_bulls/advisory_opinions/ao_tax_types.htm"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_id"
+  update_strategy: "incremental"
+  dedup_key:
+    - "opinion_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "opinion_id"
+      description: "TSB-A opinion number (e.g., 'TSB-A-24-3S')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Opinion subject/title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory opinion"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "tax_type"
+      description: "Tax type category (sales, income, corporation, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+notes: |
+  - ~3000-5000 advisory opinions across 17 tax types
+  - HTML (2020+) and PDF (1980-2019) formats
+  - 1-second delay between requests

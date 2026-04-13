@@ -1,0 +1,14 @@
+source_id: US/AZ-Legislation
+name: Arizona Revised Statutes
+country: US
+jurisdiction: US-AZ
+url: https://www.azleg.gov/arstitle/
+data_types:
+  - legislation
+language: en
+schedule: quarterly
+schema:
+  key_fields:
+    - _id
+    - title_number
+    - section_number

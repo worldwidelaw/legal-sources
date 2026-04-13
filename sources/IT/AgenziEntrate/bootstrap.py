@@ -45,14 +45,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
-# Optional PDF extraction
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
-    logging.warning("pdfplumber not installed. PDF text extraction will be limited.")
+from common.pdf_extract import extract_pdf_markdown
 
+
+# Optional PDF extraction
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -132,31 +128,13 @@ class AgenziEntrateScraper(BaseScraper):
             return None
 
     def _extract_text_from_pdf(self, pdf_bytes: bytes) -> Optional[str]:
-        """Extract text from PDF bytes using pdfplumber."""
-        if not HAS_PDFPLUMBER:
-            logger.warning("pdfplumber not available")
-            return None
-
-        try:
-            pdf_io = io.BytesIO(pdf_bytes)
-            text_parts = []
-
-            with pdfplumber.open(pdf_io) as pdf:
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-
-            full_text = "\n\n".join(text_parts)
-
-            # Clean up the text
-            full_text = self._clean_text(full_text)
-
-            return full_text if len(full_text) > 100 else None
-
-        except Exception as e:
-            logger.warning(f"PDF extraction failed: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="IT/AgenziEntrate",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="doctrine",
+        ) or ""
 
     def _clean_text(self, text: str) -> str:
         """Clean extracted text."""

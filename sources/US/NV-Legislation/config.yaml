@@ -1,0 +1,22 @@
+source_id: US/NV-Legislation
+name: Nevada Revised Statutes
+country: US
+data_types:
+  - legislation
+url: https://www.leg.state.nv.us/nrs/
+auth:
+  type: none
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - section_number
+    - chapter
+
+fetch:
+  base_url: https://nevada.public.law
+  sitemap_url: https://nevada.public.law/sitemaps/sitemap.xml.gz
+  delay: 1.5

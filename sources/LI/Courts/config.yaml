@@ -1,0 +1,15 @@
+source_id: LI/Courts
+name: Liechtenstein Courts Decisions
+country: LI
+url: https://www.gerichtsentscheide.li/
+data_types:
+  - case_law
+language: deu
+auth: none
+schedule: weekly
+schema:
+  key_fields:
+    - _id
+    - case_number
+    - court
+    - date

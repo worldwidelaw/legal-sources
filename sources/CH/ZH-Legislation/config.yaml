@@ -1,0 +1,31 @@
+source:
+  id: CH/ZH-Legislation
+  name: "Kanton Zürich - Zürcher Gesetzessammlung (LS)"
+  country: CH
+  jurisdiction: CH-ZH
+  url: https://www.zh.ch/de/politik-staat/gesetze-beschluesse/gesetzessammlung.html
+  data_types:
+    - legislation
+  language: de
+  license: Public domain (Swiss cantonal legislation)
+  auth: none
+
+schema:
+  key_fields:
+    - systematic_number
+  fields:
+    _id: string
+    _source: string
+    _type: string
+    _fetched_at: string
+    title: string
+    text: string
+    date: string
+    url: string
+    systematic_number: string
+    jurisdiction: string
+
+fetcher:
+  rate_limit_delay: 1.5
+  timeout: 120
+  api_base: https://www.zh.ch/de/politik-staat/gesetze-beschluesse/gesetzessammlung/_jcr_content/main/lawcollectionsearch_312548694.zhweb-zhlex-ls.zhweb-cache.json

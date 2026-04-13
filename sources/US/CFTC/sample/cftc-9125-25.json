@@ -1,0 +1,13 @@
+{
+  "_id": "cftc-9125-25",
+  "_source": "US/CFTC",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T08:52:37.350752+00:00",
+  "title": "CFTC Sanctions Trading Firm $212,500 for Wash Sales",
+  "text": "September 17, 2025\n\nWASHINGTON— The Commodity Futures Trading Commission today issued an order filing and settling charges againstShinhan Securities Co. Ltd., a financial services company, for engaging in wash sales and non-competitive transactions on NYMEX.\n\nShinhan is required to pay a $212,500 civil monetary penalty and cease and desist from further violations of the Commodity Exchange Act and CFTC regulations, as charged.\n\nThe trader entered near-simultaneous bids and offers for the same quantities of the same futures contract for trading accounts that had the same beneficial owner to enhance the likelihood that his buy and sell orders would be filled at the same or similar price, which offset trades upon execution. In doing so, Shinhan negated the risk or price competition incidental to an open and competitive marketplace.\n\nThe Division of Enforcement staff responsible for this action are Daniel Jordan, Aboagye Agyapong, Jordon Grimm, and Paul Hayeck.\n\n-CFTC-",
+  "date": "2025-09-17",
+  "url": "https://www.cftc.gov/PressRoom/PressReleases/9125-25",
+  "pdf_urls": [
+    "https://www.cftc.gov/media/12701/enfShinhanSecuritiesCoLtdAdministrativeOrder091725/download"
+  ]
+}

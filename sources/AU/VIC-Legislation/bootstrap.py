@@ -41,6 +41,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -116,21 +119,6 @@ def _extract_text_docx(content: bytes) -> Optional[str]:
 
 def _extract_text_pdf(content: bytes) -> Optional[str]:
     """Extract text from a PDF file."""
-    try:
-        import PyPDF2
-        reader = PyPDF2.PdfReader(io.BytesIO(content))
-        parts = []
-        for page in reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                parts.append(page_text)
-        text = "\n".join(parts)
-        return text if len(text) > 50 else None
-    except Exception as e:
-        logger.debug(f"PDF extraction failed: {e}")
-        return None
-
-
 def _resolve_files(node: Dict, included: List[Dict]) -> List[Dict]:
     """Resolve the include chain from node → paragraph → media → file.
 

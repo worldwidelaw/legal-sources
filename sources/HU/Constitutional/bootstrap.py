@@ -37,13 +37,7 @@ except ImportError:
     HAS_BROWSER = False
     print("Warning: BrowserScraper not available. Install playwright: pip install playwright && playwright install chromium")
 
-# Try to import pdfplumber for PDF text extraction
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
-    print("Warning: pdfplumber not installed. Install with: pip install pdfplumber")
+from common.pdf_extract import extract_pdf_markdown, preload_existing_ids
 
 SOURCE_ID = "HU/Constitutional"
 BASE_URL = "https://alkotmanybirosag.hu"
@@ -72,43 +66,20 @@ def clean_html(html_text: str) -> str:
     return text
 
 
-def extract_pdf_text(pdf_content: bytes) -> str:
-    """Extract text from PDF content using pdfplumber."""
-    if not HAS_PDFPLUMBER:
-        return ""
-
-    import io
-    text_parts = []
-
-    try:
-        with pdfplumber.open(io.BytesIO(pdf_content)) as pdf:
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-    except Exception as e:
-        print(f"Error extracting PDF text: {e}")
-        return ""
-
-    return "\n\n".join(text_parts)
-
-
-def fetch_pdf_text(pdf_url: str, session: requests.Session) -> str:
-    """Download PDF and extract text."""
-    if not pdf_url or not HAS_PDFPLUMBER:
+def fetch_pdf_text(pdf_url: str, session: requests.Session, source_id: str = "") -> str:
+    """Download PDF and extract text via centralized PDF extractor."""
+    if not pdf_url:
         return ""
 
     # Normalize URL
     if "89.135.41.81" in pdf_url:
         pdf_url = pdf_url.replace("http://89.135.41.81/wp-content/uploads", MEDIA_URL)
 
-    try:
-        response = session.get(pdf_url, timeout=60)
-        response.raise_for_status()
-        return extract_pdf_text(response.content)
-    except Exception as e:
-        print(f"Error fetching PDF {pdf_url}: {e}")
-        return ""
+    text = extract_pdf_markdown(
+        source=SOURCE_ID, source_id=source_id,
+        pdf_url=pdf_url, table="case_law",
+    )
+    return text or ""
 
 
 def load_checkpoint() -> dict:
@@ -306,7 +277,7 @@ class ConstitutionalCourtScraper:
                 for pdf_url in pdf_links:
                     if 'AB_' in pdf_url or 'vegzes' in pdf_url or 'hatarozat' in pdf_url:
                         print(f"  Fetching PDF: {pdf_url}")
-                        pdf_text = fetch_pdf_text(pdf_url, self.session)
+                        pdf_text = fetch_pdf_text(pdf_url, self.session, source_id=f"HU_CONST_{decision_id}")
                         if len(pdf_text) > len(full_text):
                             full_text = pdf_text
                         break
@@ -502,8 +473,8 @@ def fetch_all() -> Iterator[dict]:
             print(f"Processing {i+1}/{len(decisions)}: {acf.get('decision_number', 'unknown')}...")
 
             full_text = ""
-            if pdf_url and HAS_PDFPLUMBER:
-                full_text = fetch_pdf_text(pdf_url, session)
+            if pdf_url:
+                full_text = fetch_pdf_text(pdf_url, session, source_id=f"HU_CONST_{i}")
                 time.sleep(1.5)
 
             yield normalize_legacy(decision, full_text)
@@ -523,7 +494,7 @@ def fetch_updates(since: datetime) -> Iterator[dict]:
                 if dt.replace(tzinfo=timezone.utc) >= since.replace(tzinfo=timezone.utc):
                     acf = decision.get("acf", {})
                     pdf_url = acf.get("attachments_pdf", "")
-                    full_text = fetch_pdf_text(pdf_url, session) if pdf_url and HAS_PDFPLUMBER else ""
+                    full_text = fetch_pdf_text(pdf_url, session, source_id=f"HU_CONST_update_{i}") if pdf_url else ""
                     yield normalize_legacy(decision, full_text)
                     time.sleep(1.5)
             except:
@@ -591,8 +562,8 @@ def bootstrap_sample(sample_dir: Path, count: int = 12, use_browser: bool = True
 
             full_text = ""
             pdf_url = acf.get("attachments_pdf", "")
-            if pdf_url and HAS_PDFPLUMBER:
-                full_text = fetch_pdf_text(pdf_url, session)
+            if pdf_url:
+                full_text = fetch_pdf_text(pdf_url, session, source_id=f"HU_CONST_sample_{i}")
                 time.sleep(1.5)
 
             record = normalize_legacy(decision, full_text)

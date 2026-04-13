@@ -1,0 +1,69 @@
+# ===================================================================
+# US/TTAB -- US Trademark Trial and Appeal Board Decisions
+# ===================================================================
+# TTAB decisions sourced via CourtListener's free search API and
+# PDF storage. No authentication required. Public domain.
+# ===================================================================
+
+source:
+  id: "US/TTAB"
+  country: "US"
+  name: "US Trademark Trial and Appeal Board (TTAB) Decisions"
+  url: "https://ttabvue.uspto.gov/ttabvue/"
+  description: |
+    TTAB decisions on trademark registration disputes, oppositions,
+    and cancellations. Sourced via CourtListener (1,200+ decisions).
+    No authentication required. Public domain (government works).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "rest_json"
+  base_url: "https://www.courtlistener.com/api/rest/v4"
+  endpoints:
+    search: "/search/?type=o&court=ttab&order_by=dateFiled+desc"
+  pdf_storage: "https://storage.courtlistener.com"
+
+data_model:
+  type: "case_law"
+  primary_key: "cluster_id"
+  update_strategy: "incremental"
+  dedup_key:
+    - "cluster_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "cluster_id"
+      description: "CourtListener cluster ID"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case name"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the TTAB decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date filed (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "docket_number"
+      description: "Proceeding number"
+      type: "string"
+      role: "classification"
+      required: false

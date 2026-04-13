@@ -1,0 +1,21 @@
+{
+  "_id": "US-EPA-02-1976-0003",
+  "_source": "US/EPA",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T12:32:15.048329+00:00",
+  "title": "EPA v. CORNWALL PAPER MILLS",
+  "text": "EPA Enforcement Case 02-1976-0003: CORNWALL PAPER MILLS\nType: Civil Judicial Action\nStatus: Closed\nOutcome: Litigated With Penalty\nLead Agency: EPA\n\nPenalties and Costs:\nFederal Penalty: $10,000\n\nLaws and Sections Violated:\n  CWA: 301: NPDES Discharge without a Permit (Other Unpermitted Discharges)\n\nDefendants:\n  CORNWALL PAPER MILL COMPANY\n\nFacilities:\n  CORNWALL PAPER MILL CO, FORGE HILL ROAD, CORNWALL, NY\n\nCase Milestones:\n  01/01/1976: Referred To Headquarters\n  08/10/1976: Referred TO U.S. Attorney\n  08/10/1976: Referred To Dept Of Justice\n  10/20/1976: Complaint Filed With Court\n  04/13/1977: Concluded\n  04/13/1977: Final Order Lodged\n  04/13/1977: Enforcement Action Closed\n  04/13/1977: Final Order Entered\n\nPollutants:\n  NONE\n\nEnforcement Conclusion #1: Consent Decree or Court Order Resolving a Civil Judicial Action\n  Name: CORNWALL PAPER MILLS\n  Settlement Entered: 04/13/1977\n  Federal Penalty: $10,000",
+  "date": "1977-04-13",
+  "url": "https://echo.epa.gov/enforcement-case-report?id=02-1976-0003",
+  "case_number": "02-1976-0003",
+  "case_name": "CORNWALL PAPER MILLS",
+  "case_type": "JDC",
+  "case_status": "Closed",
+  "enforcement_type": "Civil Judicial Action",
+  "enforcement_outcome": "Litigated With Penalty",
+  "primary_law": "CWA",
+  "federal_penalty": "$10,000",
+  "state_penalty": "$0",
+  "lead_agency": "EPA",
+  "court": "US Environmental Protection Agency"
+}

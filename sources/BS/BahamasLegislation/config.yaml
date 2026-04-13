@@ -1,0 +1,29 @@
+source:
+  id: BS/BahamasLegislation
+  name: "Bahamas Legislation Online"
+  country: BS
+  url: https://laws.bahamas.gov.bs/
+  data_types:
+    - legislation
+  auth: none
+  format: html+pdf
+  language: en
+  description: >
+    Official consolidated laws of The Bahamas from the iLAWS platform.
+    Principal and amending acts from 1864 to present, organized alphabetically.
+    Full text extracted from PDF documents served by the site.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - year
+    - act_number
+    - url
+
+fetcher:
+  base_url: "https://laws.bahamas.gov.bs"
+  rate_limit: 2.0
+  api_type: html_scrape

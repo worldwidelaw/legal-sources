@@ -35,6 +35,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -167,22 +170,13 @@ class MYFederalLegislationScraper(BaseScraper):
         }
 
     def _extract_pdf_text(self, pdf_bytes: bytes) -> str:
-        """Extract text from PDF using PyPDF2."""
-        try:
-            import PyPDF2
-            reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-            pages = []
-            for page in reader.pages:
-                text = page.extract_text()
-                if text:
-                    pages.append(text)
-            full_text = "\n\n".join(pages).strip()
-            # Clean up common PDF extraction artifacts
-            full_text = re.sub(r'\n{3,}', '\n\n', full_text)
-            return full_text
-        except Exception as e:
-            logger.warning("PDF text extraction failed: %s", e)
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="MY/FederalLegislation",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="legislation",
+        ) or ""
 
     def _download_pdf(self, url: str) -> Optional[bytes]:
         """Download a PDF file."""

@@ -40,6 +40,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -78,20 +81,6 @@ class AlbanianConstitutionalCourtScraper(BaseScraper):
             headers={"User-Agent": "LegalDataHunter/1.0 (Open Data Research)"},
             timeout=120,
         )
-
-        # Try to import pdfplumber for PDF text extraction
-        try:
-            import pdfplumber
-            self.pdfplumber = pdfplumber
-        except ImportError:
-            logger.warning("pdfplumber not available, trying PyPDF2")
-            self.pdfplumber = None
-            try:
-                import PyPDF2
-                self.pypdf2 = PyPDF2
-            except ImportError:
-                logger.error("No PDF library available (need pdfplumber or PyPDF2)")
-                self.pypdf2 = None
 
     # -- API helpers --------------------------------------------------------
 
@@ -237,59 +226,13 @@ class AlbanianConstitutionalCourtScraper(BaseScraper):
             logger.info(f"  Media page {page}/{total_pages}")
 
     def _extract_pdf_text(self, pdf_url: str) -> str:
-        """
-        Download PDF and extract text content.
-
-        Returns extracted text or empty string if extraction fails.
-        """
-        if not pdf_url:
-            return ""
-
-        try:
-            self.rate_limiter.wait()
-            resp = self.pdf_client.get(pdf_url)
-            resp.raise_for_status()
-
-            # Save to temp file for processing
-            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-                tmp.write(resp.content)
-                tmp_path = tmp.name
-
-            try:
-                text = ""
-                if self.pdfplumber:
-                    import pdfplumber
-                    with pdfplumber.open(tmp_path) as pdf:
-                        for page in pdf.pages:
-                            page_text = page.extract_text()
-                            if page_text:
-                                text += page_text + "\n\n"
-                elif self.pypdf2:
-                    import PyPDF2
-                    with open(tmp_path, "rb") as f:
-                        reader = PyPDF2.PdfReader(f)
-                        for page in reader.pages:
-                            page_text = page.extract_text()
-                            if page_text:
-                                text += page_text + "\n\n"
-                else:
-                    logger.warning("No PDF library available for text extraction")
-                    return ""
-
-                # Clean up text
-                text = text.strip()
-                # Normalize whitespace but preserve paragraph breaks
-                text = re.sub(r"[ \t]+", " ", text)
-                text = re.sub(r"\n{3,}", "\n\n", text)
-
-                return text
-
-            finally:
-                os.unlink(tmp_path)
-
-        except Exception as e:
-            logger.warning(f"Failed to extract PDF text from {pdf_url}: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="AL/ConstitutionalCourt",
+            source_id="",
+            pdf_url=pdf_url,
+            table="case_law",
+        ) or ""
 
     def _clean_html(self, text: str) -> str:
         """Remove HTML tags and decode entities."""

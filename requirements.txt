@@ -18,8 +18,16 @@ sparqlwrapper>=2.0.0
 html5lib>=1.1
 
 # PDF text extraction
+# Primary: opendataloader-pdf — structured markdown output (requires Java 11+ on host).
+# Fallbacks: pdfplumber, pypdf (flat text) — used automatically when Java is absent.
+# All three are orchestrated by common/pdf_extract.py.
+opendataloader-pdf>=0.1.0
 pypdf>=4.0.0
 pdfplumber>=0.10.0
+
+# Neon Postgres client — used by common/pdf_extract.preload_existing_ids()
+# for idempotent skip-if-already-in-Neon checks.
+psycopg2-binary>=2.9.0
 
 # RSS/Atom feed parsing
 feedparser>=6.0.0

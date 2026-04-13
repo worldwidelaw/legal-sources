@@ -1,0 +1,72 @@
+# ===================================================================
+# SV/CorteSuprema -- El Salvador Supreme Court Jurisprudence
+# ===================================================================
+# PHP search portal for Salvadoran court decisions. Full text via
+# downloadable PDFs. No auth required.
+# Portal: https://www.jurisprudencia.gob.sv/
+# ===================================================================
+
+source:
+  id: "SV/CorteSuprema"
+  country: "SV"
+  name: "El Salvador Corte Suprema de Justicia - Centro de Jurisprudencia"
+  url: "https://www.jurisprudencia.gob.sv/"
+  description: |
+    Salvadoran judicial decisions portal operated by the Departamento de
+    Documentacion Judicial. Covers Corte Suprema, Salas (Constitutional,
+    Civil, Administrative, Penal), Camaras, Tribunales, and Juzgados.
+    Full text available as downloadable PDFs.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "Government portal, be polite"
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.jurisprudencia.gob.sv"
+  endpoints:
+    search: "/busqueda/result.php"
+    metadata: "/busqueda/showFile.php"
+    pdf: "/DocumentosBoveda/D/1/{path}"
+  response_format: "html+pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "reference_number"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "reference_number"
+      description: "Case reference number (e.g., 46-2023)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case reference and court name"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the court decision (extracted from PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "court"
+      description: "Name of the deciding court/tribunal"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "date"
+      description: "Decision date"
+      type: "date"
+      role: "metadata"
+      required: false

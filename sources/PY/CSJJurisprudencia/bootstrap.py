@@ -33,16 +33,18 @@ from pathlib import Path
 from typing import Generator, Optional
 from urllib.parse import urlencode
 
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
+
 try:
     import requests
 except ImportError:
     print("ERROR: requests not installed. Run: pip3 install requests")
     sys.exit(1)
-
-try:
-    import PyPDF2
-except ImportError:
-    PyPDF2 = None
 
 # Setup
 SOURCE_ID = "PY/CSJJurisprudencia"
@@ -97,22 +99,13 @@ def parse_dotnet_date(date_str: str) -> Optional[str]:
 
 
 def extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using PyPDF2."""
-    if PyPDF2 is None:
-        logger.warning("PyPDF2 not available, cannot extract PDF text")
-        return ""
-    try:
-        reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-        text_parts = []
-        for page in reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text_parts.append(page_text)
-        return "\n\n".join(text_parts).strip()
-    except Exception as e:
-        logger.warning(f"PDF extraction failed: {e}")
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="PY/CSJJurisprudencia",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="case_law",
+    ) or ""
 
 def clean_text(text: str) -> str:
     """Clean extracted text: normalize whitespace, remove artifacts."""

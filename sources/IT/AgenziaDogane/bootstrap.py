@@ -36,11 +36,8 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -120,20 +117,13 @@ class ADMScraper(BaseScraper):
             return None
 
     def _extract_pdf_text(self, pdf_bytes: bytes) -> Optional[str]:
-        """Extract text from PDF bytes."""
-        if not HAS_PDFPLUMBER:
-            return None
-        try:
-            with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-                parts = []
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        parts.append(text)
-                return "\n\n".join(parts) if parts else None
-        except Exception as e:
-            logger.warning(f"PDF extraction failed: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="IT/AgenziaDogane",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="doctrine",
+        ) or ""
 
     def _extract_pdfs_from_page(self, html: str) -> List[Tuple[str, str]]:
         """Extract PDF URLs and their context text from an HTML page."""

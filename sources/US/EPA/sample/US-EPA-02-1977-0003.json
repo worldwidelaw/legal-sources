@@ -1,0 +1,21 @@
+{
+  "_id": "US-EPA-02-1977-0003",
+  "_source": "US/EPA",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T12:32:27.896564+00:00",
+  "title": "EPA v. QUEENS FARM DAIRY",
+  "text": "EPA Enforcement Case 02-1977-0003: QUEENS FARM DAIRY\nType: Civil Judicial Action\nStatus: Closed\nOutcome: Litigated With Penalty\nLead Agency: EPA\n\nPenalties and Costs:\nFederal Penalty: $49,500\n\nLaws and Sections Violated:\n  CWA: 309: Violation of Existing AO (Administrative Compliance Order)\n\nDefendants:\n  QUEENS FARM DAIRY\n\nFacilities:\n  QUEENS DAIRY PRODUCTS, INC, EISENHOWER RD, PIERREPONT MANOR, NY\n\nCase Milestones:\n  01/01/1977: Referred To Headquarters\n  05/11/1977: Referred To Dept Of Justice\n  05/11/1977: Referred TO U.S. Attorney\n  08/01/1977: Complaint Filed With Court\n  09/23/1980: Enforcement Action Closed\n  09/23/1980: Concluded\n  09/23/1980: Final Order Entered\n  09/23/1980: Final Order Lodged\n\nPollutants:\n  NONE\n\nEnforcement Conclusion #1: Consent Decree or Court Order Resolving a Civil Judicial Action\n  Name: QUEENS FARM DAIRY\n  Settlement Entered: 09/23/1980\n  Federal Penalty: $49,500",
+  "date": "1980-09-23",
+  "url": "https://echo.epa.gov/enforcement-case-report?id=02-1977-0003",
+  "case_number": "02-1977-0003",
+  "case_name": "QUEENS FARM DAIRY",
+  "case_type": "JDC",
+  "case_status": "Closed",
+  "enforcement_type": "Civil Judicial Action",
+  "enforcement_outcome": "Litigated With Penalty",
+  "primary_law": "CWA",
+  "federal_penalty": "$49,500",
+  "state_penalty": "$0",
+  "lead_agency": "EPA",
+  "court": "US Environmental Protection Agency"
+}

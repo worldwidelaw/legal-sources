@@ -1,0 +1,26 @@
+source:
+  id: RW/Courts
+  country: RW
+  name: Rwanda Courts Decisions
+  url: https://www.amategeko.gov.rw/
+  data_types:
+    - case_law
+  auth: none
+
+api:
+  base_url: https://apis.amategeko.gov.rw/v1/site
+  site_url: https://www.amategeko.gov.rw
+  sections:
+    - "2.1"    # Unreported decisions (~3,465)
+    - "2.2.1"  # Reported decisions - Rwanda Law Reports volume entries
+    - "2.2.2"  # Reported decisions
+    - "2.2.3"  # Reported decisions
+  page_size: 200
+  delay: 1.5
+
+schema:
+  key_fields:
+    - _id
+    - document_case_no
+    - court
+    - date

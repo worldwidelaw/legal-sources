@@ -1,0 +1,27 @@
+source_id: US/FCC
+name: US Federal Communications Commission Orders and Rulings
+country: US
+data_types:
+  - doctrine
+url: https://www.federalregister.gov/agencies/federal-communications-commission
+auth: none
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - document_number
+    - document_type
+    - docket_ids
+    - url
+
+fetch:
+  api_base: https://www.federalregister.gov/api/v1
+  document_types:
+    - RULE
+    - PRORULE
+    - NOTICE
+  delay: 1.0
+  per_page: 100

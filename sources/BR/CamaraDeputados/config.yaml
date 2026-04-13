@@ -1,0 +1,43 @@
+source:
+  id: BR/CamaraDeputados
+  name: "Chamber of Deputies Open Data API (Câmara dos Deputados)"
+  country: BR
+  data_types:
+    - legislation
+  url: https://dadosabertos.camara.leg.br/swagger/api.html
+  auth: none
+  license: "Open Data (dados abertos)"
+
+endpoints:
+  rest_api: "https://dadosabertos.camara.leg.br/api/v2/proposicoes"
+  detail: "https://dadosabertos.camara.leg.br/api/v2/proposicoes/{id}"
+
+schema:
+  key_fields:
+    - _id
+    - sigla_tipo
+    - numero
+    - ano
+    - date
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+
+rate_limit:
+  requests_per_second: 2
+  delay_between_requests: 1.0
+
+notes: |
+  Brazilian Chamber of Deputies open data API.
+  Fetches proposições (bills, amendments, provisional measures, etc.) with full text
+  extracted from official PDF documents (inteiro teor).
+  Key proposition types: PL (ordinary bills), PLP (complementary), PEC (constitutional
+  amendments), MPV (provisional measures), PDC/PDL (legislative decrees).
+  Pagination: pagina/itens params, max 100 per page.
+  Full text via urlInteiroTeor PDF download + centralized PDF extraction.

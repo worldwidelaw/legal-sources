@@ -1,0 +1,13 @@
+{
+  "_id": "53a-262",
+  "_source": "US/CT-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-08T10:43:35Z",
+  "title": "Connecticut General Statutes § 53a-262 — Computer extortion by use of ransomware: Class E felony",
+  "text": "(a) A person is guilty of computer extortion by use of ransomware, when such person (1) introduces ransomware into any computer, computer system or computer network, and (2) demands payment of money or other consideration to remove the ransomware, restore access to the computer, computer system, computer network or data contained on such computer, computer system or computer network, or otherwise remediate the impact of the ransomware.\n\r\n\n(b) Computer extortion by use of ransomware is a class E felony.\n\n(c) For purposes of this section, “ransomware” means any computer contaminant or lock placed or introduced without authorization into a computer, computer system or computer network that restricts access by an authorized person to the computer, computer system, computer network, or any data held by the computer, computer system or computer network, but does not include authentication required to upgrade or access purchased content or the blocking of access to subscription content in the case of nonpayment for such access, and “computer contaminant” means any set of computer instructions that are designed to modify, damage, destroy, record or transmit data held by a computer, computer system or computer network without the intent or permission of the owner of the data.\n\nSecs. 53a-263 to 53a-274. Reserved for future use.",
+  "date": "2026-04-08",
+  "url": "https://www.cga.ct.gov/current/pub/chap_952.htm#sec_53a-262",
+  "chapter": "CHAPTER 952*",
+  "chapter_name": "PENAL CODE: OFFENSES",
+  "section_num": "53a-262"
+}

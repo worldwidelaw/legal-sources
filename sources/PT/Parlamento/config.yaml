@@ -1,0 +1,59 @@
+# PT/Parlamento Configuration
+# Portuguese Parliament Open Data (Assembleia da República)
+
+source:
+  id: PT/Parlamento
+  name: Assembleia da República - Dados Abertos
+  country: PT
+  description: Portuguese Parliament Open Data - legislative initiatives with full text PDFs
+  url: https://www.parlamento.pt/Cidadania/Paginas/DadosAbertos.aspx
+  data_types:
+    - legislation
+  language: pt
+  license: Open Government Data
+  auth: none
+
+endpoints:
+  base: https://app.parlamento.pt/webutils/docs
+  initiatives_pattern: "Iniciativas/{leg} Legislatura/Iniciativas{leg}_json.txt"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: true
+    - name: "url"
+      type: "string"
+      required: true
+    - name: "initiative_type"
+      type: "string"
+      required: false
+    - name: "initiative_nr"
+      type: "string"
+      required: false
+    - name: "legislature"
+      type: "string"
+      required: false
+    - name: "authors"
+      type: "string"
+      required: false
+
+rate_limits:
+  requests_per_minute: 20
+  delay_between_requests: 3.0
+
+notes: |
+  Uses the Assembleia da República Open Data JSON feeds. Each legislature
+  has a JSON file listing all initiatives (bills, resolutions, etc.) with
+  metadata and PDF links to the full text of each initiative.
+  Legislatures II through XVII are available (1980-present).
+  PDFs are extracted via common/pdf_extract for full text.

@@ -1,0 +1,21 @@
+{
+  "_id": "US-EPA-02-1977-0005",
+  "_source": "US/EPA",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T12:32:30.639899+00:00",
+  "title": "EPA v. UTICA (MUN), CITY OF",
+  "text": "EPA Enforcement Case 02-1977-0005: UTICA (MUN), CITY OF\nType: Civil Judicial Action\nStatus: Closed\nOutcome: Final Order With Penalty\nLead Agency: EPA\n\nCase Summary:\nCITY WAS SUED FOR FAILURE TO COMPLY WITH ITS NPDES PERMIT  GOVERNING DISCHARGES FROM ITS SEWER SYSTEM AND TWO SUB-      SEQUENT ADMINISTRATIVE ORDERS.  THE NPDES VIOLATIONS,        CONTINUOUS FROM 7/1/75, RESULTED FROM NUMEROUS DRY WEATHER   OVERFLOWS OF RAW SEWAGE TO THE MOHAWK RIVER.  THE COMPLAINT  SOUGHT INJUNCTIVE RELIEF AND A $1,000,000 CIVIL PENALTY.     SEE STATUS COMMENTS FOR LATER DEVELOPMENTS.\n\nPenalties and Costs:\nFederal Penalty: $5,000\n\nLaws and Sections Violated:\n  CWA: 309: Violation of Existing AO, 402: Clean Water Act, 301: NPDES Discharge without a Permit (Administrative Compliance Order, Other Unpermitted Discharges)\n\nDefendants:\n  NEW YORK, STATE OF (3RD PARTY DEF)\n  ONEIDA COUNTY SEWER DISTRICT (3RD PARTY)\n  ONEIDA COUNTY, NY (3RD PARTY DEF)\n  UTICA, NY, CITY OF\n\nFacilities:\n  ONEIDA COUNTY WATER POLLUTION CONTROL PLANT, 51 LELAND AVE., UTICA, NY\n\nCase Milestones:\n  03/09/1977: Referred To Headquarters\n  05/26/1977: Referred TO U.S. Attorney\n  05/26/1977: Referred To Dept Of Justice\n  06/02/1977: Complaint Filed With Court\n  08/16/1977: Final Order Lodged\n  08/16/1977: Concluded\n  08/16/1977: Final Order Entered\n  10/10/1991: Enforcement Action Closed\n\nPollutants:\n  NONE\n\nEnforcement Conclusion #1: Consent Decree or Court Order Resolving a Civil Judicial Action\n  Name: UTICA, CITY OF\n  Settlement Entered: 08/16/1977\n  Federal Penalty: $5,000\n\nViolations:\nViolation Of A Permit Requirement",
+  "date": "1991-10-10",
+  "url": "https://echo.epa.gov/enforcement-case-report?id=02-1977-0005",
+  "case_number": "02-1977-0005",
+  "case_name": "UTICA (MUN), CITY OF",
+  "case_type": "JDC",
+  "case_status": "Closed",
+  "enforcement_type": "Civil Judicial Action",
+  "enforcement_outcome": "Final Order With Penalty",
+  "primary_law": "CWA",
+  "federal_penalty": "$5,000",
+  "state_penalty": "$0",
+  "lead_agency": "EPA",
+  "court": "US Environmental Protection Agency"
+}

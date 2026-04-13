@@ -39,6 +39,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -111,36 +114,13 @@ class CSJNScraper(BaseScraper):
     # -- PDF text extraction -------------------------------------------------
 
     def _extract_text_from_pdf(self, id_documento: int) -> Optional[str]:
-        """Download PDF and extract full text."""
-        try:
-            resp = self.client.get(
-                PDF_URL,
-                params={"idDocumento": id_documento},
-                timeout=60,
-            )
-            if resp is None or resp.status_code != 200:
-                return None
-            ct = resp.headers.get("Content-Type", "")
-            if "pdf" not in ct and len(resp.content) < 500:
-                return None
-
-            import pdfplumber
-            pdf = pdfplumber.open(io.BytesIO(resp.content))
-            pages_text = []
-            for page in pdf.pages:
-                text = page.extract_text()
-                if text:
-                    pages_text.append(text)
-            pdf.close()
-
-            full_text = "\n\n".join(pages_text)
-            # Clean up whitespace
-            full_text = re.sub(r"\n{3,}", "\n\n", full_text)
-            full_text = re.sub(r" {2,}", " ", full_text)
-            return full_text.strip() if len(full_text) > 50 else None
-        except Exception as e:
-            logger.debug(f"PDF extraction failed for doc {id_documento}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="AR/CSJNDatosAbiertos",
+            source_id="",
+            pdf_bytes=id_documento,
+            table="case_law",
+        ) or ""
 
     # -- Date parsing --------------------------------------------------------
 

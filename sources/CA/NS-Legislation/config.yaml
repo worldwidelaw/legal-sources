@@ -1,0 +1,27 @@
+name: Nova Scotia Regulations (Office of the Registrar)
+source_id: CA/NS-Legislation
+country: CA
+data_types:
+  - legislation
+
+url: https://novascotia.ca/just/regulations/
+license: Crown Copyright, Province of Nova Scotia
+update_frequency: monthly
+
+schema:
+  key_fields:
+    - _id
+    - doc_type
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+
+notes: |
+  Nova Scotia consolidated regulations from the Office of the Registrar of Regulations.
+  ~1,500 regulations with full text via HTML scraping.
+  Statutes are on nslegislature.ca which is currently unreachable (connection timeout).

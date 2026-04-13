@@ -1,0 +1,38 @@
+# KG/SupremeCourt - Kyrgyzstan Supreme Court (Digital Justice Portal)
+
+source:
+  id: KG/SupremeCourt
+  name: Kyrgyzstan Supreme Court Decisions (portal.sot.kg)
+  country: KG
+  language: ky
+  url: https://portal.sot.kg
+  api_url: https://portal.sot.kg/api/v1/cc_court_case/
+  license: Public Domain
+  data_types:
+    - case_law
+
+schema:
+  key_fields:
+    - _id
+    - case_number
+  date_fields:
+    - date
+    - _fetched_at
+  text_fields:
+    - text
+    - title
+
+fetcher:
+  type: rest_api
+  pagination: page_based
+  rate_limit: 1.5
+  requires_pdf_extraction: false
+
+notes: |
+  Kyrgyzstan Digital Justice Portal (GRSA) - State Registry of Judicial Acts.
+  - REST API at portal.sot.kg/api/v1/ with no auth required
+  - 209,000+ total cases across all courts
+  - Supreme Court (court_id=87) has ~5,000+ cases with judicial acts
+  - Full text available as inline HTML via file_html field in case_act
+  - Also covers all 73 Kyrgyz courts (not just Supreme Court)
+  - Supports filtering by court, date range, chamber, instance, etc.

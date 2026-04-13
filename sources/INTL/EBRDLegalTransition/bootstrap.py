@@ -44,14 +44,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 
 # PDF extraction
-try:
-    import pdfplumber
-    PDF_SUPPORT = True
-except ImportError:
-    PDF_SUPPORT = False
-    print("WARNING: pdfplumber not available. Install with: pip install pdfplumber")
-
 import requests
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -152,31 +148,13 @@ class EBRDLegalTransitionScraper(BaseScraper):
             return None
 
     def _fetch_pdf_text(self, url: str) -> Optional[str]:
-        """Download a PDF and extract text using pdfplumber."""
-        if not PDF_SUPPORT:
-            logger.error("pdfplumber not available")
-            return None
-        try:
-            resp = self.session.get(url, timeout=60)
-            resp.raise_for_status()
-            pdf_bytes = resp.content
-            if len(pdf_bytes) < 100:
-                logger.warning(f"PDF too small ({len(pdf_bytes)} bytes): {url}")
-                return None
-            text_parts = []
-            with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-            text = "\n\n".join(text_parts).strip()
-            if len(text) < 50:
-                logger.warning(f"Very little text extracted from {url}: {len(text)} chars")
-                return None
-            return text
-        except Exception as e:
-            logger.warning(f"Failed to extract text from {url}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="INTL/EBRDLegalTransition",
+            source_id="",
+            pdf_url=url,
+            table="doctrine",
+        ) or ""
 
     def _get_year_pages(self) -> List[Tuple[str, str]]:
         """Fetch the hub page and return list of (year_label, full_url) for each edition."""

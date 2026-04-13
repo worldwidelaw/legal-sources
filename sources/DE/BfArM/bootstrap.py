@@ -26,7 +26,13 @@ from typing import Any, Dict, Iterator, List, Optional
 from xml.etree import ElementTree as ET
 
 import requests
-from pdfminer.high_level import extract_text
+
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -150,29 +156,13 @@ class BfArMFetcher:
         return entry
 
     def _extract_pdf_text(self, pdf_url: str) -> str:
-        """Download PDF and extract text content"""
-        if not pdf_url:
-            return ""
-
-        try:
-            response = self.session.get(pdf_url, timeout=60)
-            response.raise_for_status()
-
-            # Extract text from PDF
-            pdf_bytes = io.BytesIO(response.content)
-            text = extract_text(pdf_bytes)
-
-            # Clean up text
-            text = text.strip()
-            # Normalize whitespace while preserving structure
-            text = re.sub(r'[ \t]+', ' ', text)
-            text = re.sub(r'\n{3,}', '\n\n', text)
-
-            return text
-
-        except Exception as e:
-            logger.error(f"Error extracting PDF text from {pdf_url}: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="DE/BfArM",
+            source_id="",
+            pdf_url=pdf_url,
+            table="doctrine",
+        ) or ""
 
     def _parse_date(self, date_str: str, pub_date: str = None, year: str = None) -> Optional[str]:
         """Parse various date formats to ISO 8601"""

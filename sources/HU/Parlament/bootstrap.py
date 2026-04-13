@@ -34,7 +34,6 @@ import sys
 import json
 import logging
 import re
-import io
 import time
 from pathlib import Path
 from datetime import datetime, timezone
@@ -46,14 +45,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
-
-# PDF extraction library
-try:
-    import pdfplumber
-    PDF_AVAILABLE = True
-except ImportError:
-    PDF_AVAILABLE = False
-    logging.warning("pdfplumber not available - PDF extraction will fail")
+from common.pdf_extract import extract_pdf_markdown, preload_existing_ids
 
 logging.basicConfig(
     level=logging.INFO,
@@ -123,32 +115,6 @@ class ParlamentScraper(BaseScraper):
             return resp.status_code == 200
         except Exception:
             return False
-
-    def _extract_text_from_pdf(self, pdf_bytes: bytes) -> Tuple[str, int]:
-        """
-        Extract text content from PDF bytes.
-
-        Returns (text, page_count) tuple.
-        """
-        if not PDF_AVAILABLE:
-            raise RuntimeError("pdfplumber not installed")
-
-        text_parts = []
-        page_count = 0
-
-        try:
-            with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-                page_count = len(pdf.pages)
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-        except Exception as e:
-            logger.warning(f"PDF extraction error: {e}")
-            return "", 0
-
-        full_text = "\n\n".join(text_parts)
-        return full_text.strip(), page_count
 
     def _parse_metadata_from_text(self, text: str) -> Dict[str, Any]:
         """
@@ -237,10 +203,15 @@ class ParlamentScraper(BaseScraper):
                 # Might be an error page
                 return None
 
-            # Extract text from PDF
-            full_text, page_count = self._extract_text_from_pdf(resp.content)
+            # Extract text from PDF via centralized extractor
+            doc_id_pre = f"{cycle}-{doc_num:05d}"
+            full_text = extract_pdf_markdown(
+                source="HU/Parlament", source_id=doc_id_pre,
+                pdf_bytes=resp.content, table="legislation",
+            )
+            page_count = 0  # Page count no longer tracked
 
-            if not full_text or len(full_text) < 50:
+            if not full_text or len(full_text.strip()) < 50:
                 logger.warning(f"Insufficient text content for cycle {cycle} doc {doc_num}: {len(full_text)} chars")
                 return None
 

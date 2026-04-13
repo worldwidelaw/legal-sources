@@ -1,0 +1,50 @@
+source:
+  id: JP/FSA
+  country: JP
+  name: Japan Financial Services Agency (FSA) Administrative Actions
+  description: |
+    SESC enforcement actions (insider trading, market manipulation, false disclosure)
+    and FSA supervisory guidelines. English translations available.
+    ~138+ enforcement actions (1998-2026) as HTML + ~12 supervisory guideline PDFs.
+
+  url: https://www.fsa.go.jp/sesc/english/news/reco.html
+  data_types:
+    - doctrine
+
+  auth:
+    type: none
+
+  license:
+    name: Japan Government Public Data
+    url: https://www.fsa.go.jp/en/
+
+schedule:
+  frequency: monthly
+  reason: SESC enforcement actions are published periodically
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+  secondary_fields:
+    - name: doc_type
+      type: string
+      required: false
+    - name: date
+      type: string
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - doc_id
+
+notes: |
+  Two content types:
+  1. SESC enforcement actions: HTML pages at /sesc/english/news/reco/YYYYMMDD-N.html
+  2. FSA supervisory guidelines: PDFs at /en/laws_regulations/index.html
+  Both available in English.

@@ -1,0 +1,37 @@
+source_id: US/KY-Courts
+name: Kentucky Supreme Court & Court of Appeals
+country: US
+data_types:
+  - case_law
+url: https://appellatepublic.kycourts.net/
+auth:
+  type: none
+
+endpoints:
+  api_base: https://appellatepublic.kycourts.net/api/api/v1
+  opinions_search: https://appellatepublic.kycourts.net/api/api/v1/opinions/search
+  case_details: https://appellatepublic.kycourts.net/api/api/v1/cases/{caseID}
+  documents: https://appellatepublic.kycourts.net/api/api/v1/publicaccessdocuments
+
+rate_limit:
+  requests_per_second: 1
+  delay_between_requests: 1.0
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - case_number
+    - court
+    - case_type
+
+license: Public Domain (government works)
+
+notes: |
+  Kentucky appellate opinions from the C-Track Public Access system.
+  Uses header-based pagination (X-CTrack-Paging-*) with max 500 per page.
+  Full text retrieved via publicaccessdocuments endpoint (documentText array).
+  Coverage: Kentucky Supreme Court + Court of Appeals, 1982-present.
+  ~67,000+ opinions available.

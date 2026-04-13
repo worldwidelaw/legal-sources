@@ -1,0 +1,86 @@
+# ===================================================================
+# CI/CourSupreme -- Côte d'Ivoire Supreme Court Decisions (Juricaf)
+# ===================================================================
+# Ivorian court decisions from juricaf.org (AHJUCAF database).
+# ~174 decisions: Cour de Cassation, Cour d'appel d'Abidjan,
+# Tribunal de première instance. Full text in HTML. French language.
+# ODbL 1.0 license. No authentication required.
+# ===================================================================
+
+source:
+  id: "CI/CourSupreme"
+  country: "CI"
+  name: "Côte d'Ivoire Supreme Court Decisions (Juricaf)"
+  url: "https://juricaf.org"
+  description: |
+    Court decisions from Côte d'Ivoire via the Juricaf database
+    (Association des Hautes Juridictions de Cassation des pays ayant
+    en partage l'usage du français - AHJUCAF).
+    Covers Cour de Cassation (1972-2018), Cour d'appel d'Abidjan
+    (2003-2011), and Tribunal de première instance (2006-2012).
+    ~174 decisions with full text. French language.
+    ODbL 1.0 license. No authentication required.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+data_model:
+  type: "case_law"
+  primary_key: "decision_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "decision_id"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "decision_id"
+      description: "Juricaf decision identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the court decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "court"
+      description: "Court name (e.g., Cour supreme, Cour d'appel d'Abidjan)"
+      type: "string"
+      role: "category"
+      required: false
+    - name: "docket_number"
+      description: "Case/docket number"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "url"
+      description: "URL on juricaf.org"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - ~174 decisions via juricaf.org
+  - Full text extracted from individual decision HTML pages
+  - Dublin Core metadata available in HTML meta tags
+  - 2-second delay between requests
+  - French language
+  - ODbL 1.0 license

@@ -43,6 +43,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -109,24 +112,13 @@ class CubaGacetaOficialScraper(BaseScraper):
             return None
 
     def _extract_pdf_text(self, pdf_bytes: bytes) -> str:
-        """Extract text from a PDF using PyPDF2."""
-        try:
-            import PyPDF2
-            reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-            pages_text = []
-            for page in reader.pages:
-                text = page.extract_text()
-                if text:
-                    pages_text.append(text)
-            full_text = "\n".join(pages_text)
-            # Clean up common OCR/PDF artifacts
-            full_text = re.sub(r'[ \t]+', ' ', full_text)
-            full_text = re.sub(r' *\n *', '\n', full_text)
-            full_text = re.sub(r'\n{3,}', '\n\n', full_text)
-            return full_text.strip()
-        except Exception as e:
-            logger.warning(f"PDF extraction failed: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="CU/GacetaOficialDigital",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="legislation",
+        ) or ""
 
     def _parse_norms_listing(self, html: str) -> list:
         """Parse a norms listing page, returning list of norm stubs."""

@@ -1,0 +1,14 @@
+{
+  "_id": "US/AL-Legislation/1-1-4",
+  "_source": "US/AL-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-08T06:08:15.138952+00:00",
+  "title": "Section 1-1-4 Computation of Time.",
+  "text": "Time within which any act is provided by law to be done must be computed by excluding the first day and including the last. However, if the last day is Sunday, or a legal holiday as defined in Section 1-3-8, or a day on which the office in which the act must be done shall close as permitted by any law of this state, the last day also must be excluded, and the next succeeding secular or working day shall be counted as the last day within which the act may be done. In designating the hours of the day, the time used shall be that of the ninetieth degree of longitude west of Greenwich, otherwise known as central standard time; provided, that whenever daylight saving time shall be in effect within the state, the time used shall be that known as central daylight time.",
+  "date": "2025-01-01",
+  "url": "https://alison.legislature.state.al.us/code-of-alabama?section=1-1-4",
+  "display_id": "1-1-4",
+  "title_number": "1",
+  "jurisdiction": "US-AL",
+  "language": "en"
+}

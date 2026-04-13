@@ -1,0 +1,76 @@
+# ===================================================================
+# US/IN-Legislation -- Indiana Code (iga.in.gov)
+# ===================================================================
+# All 36 titles of the Indiana Code with full text of every section.
+# Official data from Indiana General Assembly (iga.in.gov).
+# Per-title PDF downloads with PyMuPDF text extraction. No auth required.
+# ===================================================================
+
+source:
+  id: "US/IN-Legislation"
+  country: "US"
+  name: "Indiana Code"
+  url: "https://iga.in.gov/laws/current/ic/"
+  description: |
+    Indiana Code with full text of every section, downloaded as per-title
+    PDFs from iga.in.gov. Covers all 36 titles (Title 7 repealed).
+    Text extracted using PyMuPDF. Public domain.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "bulk_download"
+  base_url: "https://iga.in.gov"
+  endpoints:
+    title_pdf: "/ic/{year}/Title_{N}.pdf"
+
+data_model:
+  type: "legislation"
+  primary_key: "section_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "section_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "section_id"
+      description: "Unique section identifier (e.g., 'IC-1-1-1-1')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Section heading with IC number and description"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the statute section"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "title_num"
+      description: "Title number (1-36)"
+      type: "integer"
+      role: "classification"
+      required: true
+    - name: "date"
+      description: "Date fetched (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+notes: |
+  - 36 titles (Title 7 repealed), thousands of sections
+  - Per-title PDF downloads from iga.in.gov
+  - Public domain (Indiana government works)
+  - Sections parsed using IC X-X-X-X pattern from extracted PDF text
+  - Requires PyMuPDF (fitz) for text extraction

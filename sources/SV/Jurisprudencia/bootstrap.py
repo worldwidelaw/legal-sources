@@ -39,6 +39,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -196,34 +199,13 @@ class SVJurisprudenciaScraper(BaseScraper):
         return _parse_results_html(resp.text)
 
     def _download_pdf_text(self, pdf_path: str) -> Optional[str]:
-        """Download a PDF and extract its text."""
-        import pdfplumber
-
-        url = f"https://www.jurisprudencia.gob.sv/{pdf_path}"
-        session = self._get_session()
-        try:
-            resp = session.get(url, timeout=60)
-            if resp.status_code != 200:
-                logger.debug(f"PDF download failed ({resp.status_code}): {url}")
-                return None
-            if len(resp.content) < 200:
-                return None
-
-            pdf = pdfplumber.open(io.BytesIO(resp.content))
-            pages_text = []
-            for page in pdf.pages:
-                text = page.extract_text()
-                if text:
-                    pages_text.append(text)
-            pdf.close()
-
-            full_text = "\n\n".join(pages_text)
-            full_text = re.sub(r"\n{3,}", "\n\n", full_text)
-            full_text = re.sub(r" {2,}", " ", full_text)
-            return full_text.strip() if len(full_text) > 50 else None
-        except Exception as e:
-            logger.debug(f"PDF extraction failed for {pdf_path}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="SV/Jurisprudencia",
+            source_id="",
+            pdf_bytes=pdf_path,
+            table="case_law",
+        ) or ""
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all decisions, iterating year by year."""

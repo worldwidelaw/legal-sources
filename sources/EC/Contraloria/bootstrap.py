@@ -19,8 +19,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Generator, Optional
 
-import pdfplumber
 import requests
+
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 BASE_URL = "https://www.contraloria.gob.ec"
 LISTING_URL = f"{BASE_URL}/WFResultados.aspx"
@@ -95,23 +101,13 @@ def download_pdf(file_id: str) -> bytes:
 
 
 def extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from a PDF document using pdfplumber."""
-    text_parts = []
-    try:
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-    except Exception as e:
-        print(f"    -> PDF extraction error: {e}")
-        return ''
-
-    full_text = '\n\n'.join(text_parts)
-    full_text = re.sub(r'\n{3,}', '\n\n', full_text)
-    full_text = re.sub(r' {2,}', ' ', full_text)
-    return full_text.strip()
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="EC/Contraloria",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="doctrine",
+    ) or ""
 
 def normalize(raw: dict) -> dict:
     """Transform raw listing data into standard schema."""

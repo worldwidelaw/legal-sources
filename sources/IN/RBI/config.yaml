@@ -1,0 +1,77 @@
+# ===================================================================
+# IN/RBI -- Reserve Bank of India Circulars and Master Directions
+# ===================================================================
+# Official RBI notifications, circulars, and master directions on
+# banking regulation, monetary policy, and financial markets.
+# Full text available as inline HTML on notification pages.
+#
+# Primary endpoints:
+#   - Notifications: rbi.org.in/Scripts/NotificationUser.aspx?Id={ID}&Mode=0
+#   - Master Directions: rbi.org.in/Scripts/BS_ViewMasDirections.aspx?id={ID}
+# ===================================================================
+
+source:
+  id: "IN/RBI"
+  country: "IN"
+  name: "Reserve Bank of India - Circulars & Master Directions"
+  url: "https://www.rbi.org.in"
+  description: |
+    India's central bank regulatory publications. Includes circulars,
+    notifications, and master directions covering banking regulation,
+    monetary policy, foreign exchange, payment systems, and more.
+    Free public access to full text. IDs range from ~1 (1998) to ~13400 (2026).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html-scraping"
+  base_url: "https://www.rbi.org.in"
+  endpoints:
+    notification: "/Scripts/NotificationUser.aspx?Id={id}&Mode=0"
+    master_directions_list: "/Scripts/BS_ViewMasDirections.aspx"
+    master_direction: "/Scripts/BS_ViewMasDirections.aspx?id={id}"
+    rss: "https://rbi.org.in/notifications_rss.xml"
+
+data_model:
+  type: "doctrine"
+  primary_key: "notification_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "notification_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "notification_id"
+      description: "RBI notification/circular ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Circular/notification title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the circular/notification"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of circular (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to notification on rbi.org.in"
+      type: "string"
+      role: "reference"
+      required: true

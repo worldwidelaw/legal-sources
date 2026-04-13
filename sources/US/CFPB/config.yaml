@@ -1,0 +1,25 @@
+source_id: US/CFPB
+name: US Consumer Financial Protection Bureau Enforcement
+country: US
+data_types:
+  - case_law
+  - doctrine
+url: https://www.consumerfinance.gov/enforcement/actions/
+auth: none
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - court
+    - docket_number
+    - status
+    - action_type
+    - products
+
+fetch:
+  rss_url: https://www.consumerfinance.gov/enforcement/actions/feed/
+  max_pages: 20
+  delay: 2.0

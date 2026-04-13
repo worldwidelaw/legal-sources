@@ -1,0 +1,24 @@
+source:
+  id: IT/Lazio-Legislation
+  name: Lazio Regional Legislation
+  country: IT
+  url: https://www.consiglio.regione.lazio.it/
+  data_types:
+    - legislation
+  auth: none
+  description: >
+    Lazio regional laws (leggi regionali) from the Consiglio Regionale del Lazio.
+    ~2,500 laws from 1974 to present with coordinated full text (testo coordinato).
+    Scraped from HTML pages, year-by-year pagination.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - law_number
+
+fetch:
+  rate_limit: 1.5
+  max_retries: 3
+  timeout: 60

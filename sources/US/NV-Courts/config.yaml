@@ -1,0 +1,23 @@
+source_id: US/NV-Courts
+name: Nevada Supreme Court & Court of Appeals
+country: US
+data_types:
+  - case_law
+url: https://nvcourts.gov/Supreme/Decisions/Advance_Opinions/
+auth:
+  type: none
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - case_number
+    - court
+    - advance_number
+
+fetch:
+  api_url: https://publicaccess.nvsupremecourt.us/WebSupplementalAPI/api/AdvanceOpinions
+  pdf_base: https://caseinfo.nvsupremecourt.us/document/view.do
+  delay: 1.5

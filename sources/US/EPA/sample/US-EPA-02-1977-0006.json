@@ -1,0 +1,21 @@
+{
+  "_id": "US-EPA-02-1977-0006",
+  "_source": "US/EPA",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T12:32:32.922112+00:00",
+  "title": "EPA v. ASHLAND OIL",
+  "text": "EPA Enforcement Case 02-1977-0006: ASHLAND OIL\nType: Civil Judicial Action\nStatus: Closed\nOutcome: Litigated With Penalty\nLead Agency: EPA\n\nPenalties and Costs:\nFederal Penalty: $1,000\n\nLaws and Sections Violated:\n  CWA: 301: NPDES Discharge without a Permit (Other Unpermitted Discharges)\n\nDefendants:\n  ASHLAND OIL\n\nFacilities:\n  ASHLAND PETROLEUM CO, 4545 RIVER RD, TONAWANDA, NY\n\nCase Milestones:\n  03/09/1977: Enforcement Action Data Entered\n  03/09/1977: Referred To Dept Of Justice\n  03/09/1977: Referred TO U.S. Attorney\n  04/02/1977: Complaint Filed With Court\n  07/28/1977: Concluded\n  07/28/1977: Final Order Entered\n  07/28/1977: Final Order Lodged\n  07/28/1979: Enforcement Action Closed\n\nPollutants:\n  NONE\n\nEnforcement Conclusion #1: Consent Decree or Court Order Resolving a Civil Judicial Action\n  Name: ASHLAND OIL\n  Settlement Entered: 07/28/1977\n  Federal Penalty: $1,000",
+  "date": "1979-07-28",
+  "url": "https://echo.epa.gov/enforcement-case-report?id=02-1977-0006",
+  "case_number": "02-1977-0006",
+  "case_name": "ASHLAND OIL",
+  "case_type": "JDC",
+  "case_status": "Closed",
+  "enforcement_type": "Civil Judicial Action",
+  "enforcement_outcome": "Litigated With Penalty",
+  "primary_law": "CWA",
+  "federal_penalty": "$1,000",
+  "state_penalty": "$0",
+  "lead_agency": "EPA",
+  "court": "US Environmental Protection Agency"
+}

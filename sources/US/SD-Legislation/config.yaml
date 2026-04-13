@@ -1,0 +1,23 @@
+source_id: US/SD-Legislation
+name: South Dakota Codified Laws
+country: US
+jurisdiction: US-SD
+url: https://sdlegislature.gov/Statutes/Codified_Laws
+data_types:
+  - legislation
+language: en
+license: public_domain
+auth:
+  type: none
+schedule: monthly
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - section_number
+    - chapter
+
+fetch:
+  delay: 1.0

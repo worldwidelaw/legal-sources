@@ -30,17 +30,12 @@ from urllib.parse import urljoin
 
 import requests
 
-try:
-    import PyPDF2
-    HAS_PYPDF2 = True
-except ImportError:
-    HAS_PYPDF2 = False
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
 
-try:
-    import fitz  # PyMuPDF
-    HAS_FITZ = True
-except ImportError:
-    HAS_FITZ = False
+from common.pdf_extract import extract_pdf_markdown
+
 
 BASE_URL = "https://www.uncitral.org"
 SEARCH_URL = f"{BASE_URL}/clout/search.jspx"
@@ -93,32 +88,13 @@ def strip_html(html_str: str) -> str:
 
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using available library."""
-    if HAS_FITZ:
-        try:
-            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-            text_parts = []
-            for page in doc:
-                text_parts.append(page.get_text())
-            doc.close()
-            return "\n\n".join(text_parts).strip()
-        except Exception as e:
-            print(f"    PyMuPDF extraction failed: {e}")
-
-    if HAS_PYPDF2:
-        try:
-            reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-            text_parts = []
-            for page in reader.pages:
-                t = page.extract_text()
-                if t:
-                    text_parts.append(t)
-            return "\n\n".join(text_parts).strip()
-        except Exception as e:
-            print(f"    PyPDF2 extraction failed: {e}")
-
-    return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="INTL/UNCITRALClout",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="case_law",
+    ) or ""
 
 def fetch_html(url: str) -> Optional[str]:
     """Fetch an HTML page."""
@@ -462,12 +438,8 @@ def test_connectivity():
             print("  Case detail: FAILED")
             return False
 
-    # Test PDF extraction
-    if not HAS_FITZ and not HAS_PYPDF2:
-        print("\n  WARNING: No PDF library available (need PyMuPDF or PyPDF2)")
-        return False
-
-    print(f"\n  PDF libraries: {'PyMuPDF' if HAS_FITZ else ''} {'PyPDF2' if HAS_PYPDF2 else ''}")
+    # Test PDF extraction via common/pdf_extract
+    print(f"\n  PDF extraction: via common/pdf_extract.extract_pdf_markdown")
     print("\nConnectivity test complete.")
     return True
 

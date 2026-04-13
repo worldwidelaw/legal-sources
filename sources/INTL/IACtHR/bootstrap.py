@@ -43,6 +43,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -210,14 +213,13 @@ class IACtHRScraper(BaseScraper):
         return cases
 
     def _extract_text_from_pdf(self, content: bytes) -> str:
-        """Extract text from PDF bytes."""
-        from pdfminer.high_level import extract_text
-        try:
-            text = extract_text(io.BytesIO(content))
-            return text.strip() if text else ""
-        except Exception as e:
-            logger.warning(f"pdfminer extraction failed: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="INTL/IACtHR",
+            source_id="",
+            pdf_bytes=content,
+            table="case_law",
+        ) or ""
 
     def _extract_text_from_docx(self, content: bytes) -> str:
         """Extract text from DOCX bytes."""

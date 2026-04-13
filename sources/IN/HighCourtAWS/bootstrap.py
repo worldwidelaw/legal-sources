@@ -38,13 +38,15 @@ from typing import Generator, Optional, Dict, Any
 from urllib.parse import quote
 
 import requests
-import pdfplumber
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -150,18 +152,13 @@ class IndianHighCourtAWSScraper(BaseScraper):
         return self._list_s3_objects(court_path, delimiter="/")
 
     def _extract_pdf_text(self, pdf_content: bytes) -> str:
-        """Extract text from PDF using pdfplumber."""
-        try:
-            with pdfplumber.open(io.BytesIO(pdf_content)) as pdf:
-                pages_text = []
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        pages_text.append(text)
-                return "\n\n".join(pages_text)
-        except Exception as e:
-            logger.warning(f"PDF text extraction failed: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="IN/HighCourtAWS",
+            source_id="",
+            pdf_bytes=pdf_content,
+            table="case_law",
+        ) or ""
 
     def _parse_raw_html(self, raw_html: str) -> dict:
         """Parse the raw_html field from JSON metadata to extract case details."""

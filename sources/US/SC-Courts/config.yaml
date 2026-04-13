@@ -1,0 +1,23 @@
+source_id: US/SC-Courts
+name: South Carolina Supreme Court & Court of Appeals
+country: US
+jurisdiction: US-SC
+url: https://www.sccourts.org/opinions-orders/opinions/
+data_types:
+  - case_law
+language: en
+license: public_domain
+auth:
+  type: none
+schedule: weekly
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - case_number
+    - court
+
+fetch:
+  delay: 2.0

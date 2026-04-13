@@ -1,0 +1,35 @@
+source_id: US/KY-Legislation
+name: Kentucky Revised Statutes (KRS)
+country: US
+data_types:
+  - legislation
+url: https://apps.legislature.ky.gov/law/statutes/
+auth:
+  type: none
+
+endpoints:
+  index: https://apps.legislature.ky.gov/law/statutes/
+  chapter: https://apps.legislature.ky.gov/law/statutes/chapter.aspx?id={chapter_id}
+  statute_pdf: https://apps.legislature.ky.gov/law/statutes/statute.aspx?id={statute_id}
+
+rate_limit:
+  requests_per_second: 0.5
+  delay_between_requests: 2.0
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - section_num
+    - chapter
+    - chapter_title
+    - caption
+
+license: Public Domain (government works)
+
+notes: |
+  Kentucky Revised Statutes from apps.legislature.ky.gov.
+  548 chapters listed on HTML index, individual sections served as PDFs.
+  PDF text extracted via PyPDF2. ~5,000-8,000 sections across 548 chapters.

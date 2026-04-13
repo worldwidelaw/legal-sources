@@ -40,16 +40,14 @@ from urllib.parse import urljoin
 
 import requests
 
-try:
-    import fitz  # PyMuPDF
-except ImportError:
-    fitz = None
-
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -76,25 +74,13 @@ PAGE_SIZE = 50  # Appellate Division uses 50, HCD uses ~25 but start increments 
 
 
 def extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using PyMuPDF."""
-    if fitz is None:
-        raise ImportError("PyMuPDF (fitz) is required for PDF text extraction")
-
-    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-    text_parts = []
-    for page in doc:
-        text_parts.append(page.get_text())
-    doc.close()
-
-    text = "\n".join(text_parts)
-    # Clean up excessive whitespace
-    text = re.sub(r"\r\n", "\n", text)
-    text = re.sub(r"\n{3,}", "\n\n", text)
-    text = re.sub(r"[ \t]+", " ", text)
-    lines = [line.strip() for line in text.split("\n")]
-    text = "\n".join(lines)
-    return text.strip()
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="BD/SupremeCourt-Judgments",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="case_law",
+    ) or ""
 
 def parse_listing_page(html_content: str, div_id: int) -> List[Dict[str, Any]]:
     """Parse a judgment listing page and return list of judgment metadata dicts."""

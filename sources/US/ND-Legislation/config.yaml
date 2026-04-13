@@ -1,0 +1,15 @@
+source_id: US/ND-Legislation
+name: North Dakota Century Code
+country: US
+jurisdiction: US-ND
+url: https://ndlegis.gov/general-information/north-dakota-century-code
+data_types:
+  - legislation
+language: en
+schedule: quarterly
+schema:
+  key_fields:
+    - _id
+    - title_number
+    - chapter_number
+    - section_number

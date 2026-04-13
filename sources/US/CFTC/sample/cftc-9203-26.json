@@ -1,0 +1,14 @@
+{
+  "_id": "cftc-9203-26",
+  "_source": "US/CFTC",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T08:52:09.805330+00:00",
+  "title": "Federal Court Enters Permanent Injunction Against Peken Global Limited",
+  "text": "March 30, 2026\n\nWASHINGTON— The Commodity Futures Trading Commission today announced the U.S. District Court for the Southern District of New York entered a consent order againstPeken Global Limited, a company incorporated under the laws of the Turks and Caicos Islands, that operates theKuCoinexchange, for allowing U.S. participants to trade directly on its electronic trading and order-matching system without registering with the CFTC as a foreign board of trade.\n\nThe order permanently enjoins Peken Global from future violations, as charged, and requires Peken Global to pay a $500,000 civil monetary penalty.\n\nThe order also states that the CFTC is not seeking, and the court is not imposing, disgorgement based on the facts and circumstances of this case. These include Peken Global’s cooperation in a CFTC investigation and related proceedings, including the criminal action,United States v. Flashdot Limited, et al., No. 24-cr-168 (S.D.N.Y), and the judgment entered in that matter, in which Peken Global was subject to,inter alia, a forfeiture order, as reflected in the consent preliminary order of forfeiture/money judgment in the criminal action.\n\nIn the parallel criminal action, Peken Global pleaded guilty to one count of operating an unlicensed money transmitting business.\n\nThe court also entered an order of voluntary dismissal with prejudice, dismissing all claims the CFTC brought against the other defendants: Mek Global Limited, PhoenixFin PTE Ltd., and Flashdot Limited.\n\nTogether, the consent order and the dismissal resolve all claims the CFTC brought against Peken Global and the dismissed defendants in the complaint [See CFTC Press Release No.8884-24].\n\nThe consent order also dismisses with prejudice counts II through V of the CFTC complaint filed March 26, 2024, against Peken Global.\n\n-CFTC-",
+  "date": "2026-03-30",
+  "url": "https://www.cftc.gov/PressRoom/PressReleases/9203-26",
+  "pdf_urls": [
+    "https://www.cftc.gov/media/13586/EnfPekenGlobalLimitedConsentOrder033026/download",
+    "https://www.cftc.gov/media/13591/EnfMekGlobalLimitedOrder033026/download"
+  ]
+}

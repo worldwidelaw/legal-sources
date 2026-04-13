@@ -28,11 +28,12 @@ from typing import Generator, Optional
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 
-try:
-    import PyPDF2
-    HAS_PYPDF2 = True
-except ImportError:
-    HAS_PYPDF2 = False
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 SOURCE_ID = "TT/DigitalLegislativeLibrary"
 SAMPLE_DIR = Path(__file__).parent / "sample"
@@ -132,32 +133,13 @@ def get_download_info(act_id: str) -> Optional[dict]:
 
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> Optional[str]:
-    """Extract text from a (possibly encrypted) PDF."""
-    if not HAS_PYPDF2:
-        return None
-
-    try:
-        reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-        if reader.is_encrypted:
-            try:
-                reader.decrypt("")
-            except Exception:
-                return None
-
-        text_parts = []
-        for page in reader.pages:
-            try:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-            except Exception:
-                continue
-
-        text = "\n".join(text_parts).strip()
-        return text if len(text) > 50 else None
-    except Exception:
-        return None
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="TT/DigitalLegislativeLibrary",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="legislation",
+    ) or ""
 
 def extract_act_name(text: str) -> Optional[str]:
     """Extract the act name from the first lines of PDF text."""

@@ -1,0 +1,32 @@
+source_id: US/EPA
+name: US Environmental Protection Agency Enforcement Actions
+country: US
+data_types:
+  - case_law
+  - doctrine
+url: https://echo.epa.gov/
+auth: none
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - case_number
+    - primary_law
+    - federal_penalty
+    - url
+
+fetch:
+  api_base: https://echodata.epa.gov/echo
+  case_search: case_rest_services.get_cases
+  case_detail: case_rest_services.get_case_report
+  delay: 1.5
+  states:
+    - AL - AK - AZ - AR - CA - CO - CT - DE - FL - GA
+    - HI - ID - IL - IN - IA - KS - KY - LA - ME - MD
+    - MA - MI - MN - MS - MO - MT - NE - NV - NH - NJ
+    - NM - NY - NC - ND - OH - OK - OR - PA - RI - SC
+    - SD - TN - TX - UT - VT - VA - WA - WV - WI - WY
+    - DC - PR - VI - GU - AS - MP

@@ -1,0 +1,37 @@
+source:
+  id: "EU/CPVO-Decisions"
+  name: "Community Plant Variety Office Board of Appeal"
+  country: "EU"
+  language: "en"
+
+  endpoints:
+    search: "https://online.plantvarieties.eu/api/caselaw/casesSearchPublic"
+    viewcase: "https://online.plantvarieties.eu/api/caselaw/viewcase"
+    download: "https://online.plantvarieties.eu/api/caselaw/downloadfile"
+    casenames: "https://online.plantvarieties.eu/api/caselaw/casenames"
+
+  data_types:
+    - case_law
+
+  rate_limit:
+    requests_per_second: 0.5
+    delay_between_requests: 2
+
+  schema:
+    key_fields:
+      - _id
+      - decision_number
+      - case_name
+      - parties
+      - title
+      - text
+      - date
+
+fetch:
+  sample_count: 15
+  origin_id: "03"
+
+license:
+  type: "Open Data"
+  url: "https://cpvo.europa.eu/"
+  notes: "CPVO Board of Appeal decisions are public. PVR Case Law database is freely accessible."

@@ -45,12 +45,10 @@ from common.base_scraper import BaseScraper
 
 # PDF extraction - use pypdf (lighter memory footprint than pdfplumber)
 try:
-    from pypdf import PdfReader
     PDF_SUPPORT = True
 except ImportError:
     try:
         # Fallback to older PyPDF2
-        from PyPDF2 import PdfReader
         PDF_SUPPORT = True
     except ImportError:
         PDF_SUPPORT = False
@@ -61,6 +59,9 @@ import gc
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.ssl_ import create_urllib3_context
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -159,56 +160,13 @@ class GovernmentGazetteScraper(BaseScraper):
             return None
 
     def _extract_pdf_text(self, pdf_bytes: bytes) -> str:
-        """Extract text from PDF bytes with memory-efficient streaming.
-
-        Uses pypdf (lighter than pdfplumber) and processes pages one at a time,
-        discarding each page after extraction to minimize memory usage.
-        """
-        if not PDF_SUPPORT:
-            return ""
-
-        pdf_file = None
-        reader = None
-        try:
-            pdf_file = io.BytesIO(pdf_bytes)
-            reader = PdfReader(pdf_file)
-
-            text_parts = []
-            num_pages = len(reader.pages)
-
-            # Process pages one at a time
-            for i in range(num_pages):
-                try:
-                    page = reader.pages[i]
-                    page_text = page.extract_text()
-                    if page_text:
-                        text_parts.append(page_text)
-                    # Explicitly dereference page to help GC
-                    del page
-                except Exception as page_err:
-                    logger.debug(f"Failed to extract page {i}: {page_err}")
-                    continue
-
-            full_text = "\n".join(text_parts)
-
-            # Clean up text
-            full_text = re.sub(r'\n{3,}', '\n\n', full_text)
-            full_text = full_text.strip()
-
-            return full_text
-
-        except Exception as e:
-            logger.warning(f"Failed to extract PDF text: {e}")
-            return ""
-        finally:
-            # Explicit cleanup to free memory
-            if reader is not None:
-                del reader
-            if pdf_file is not None:
-                pdf_file.close()
-                del pdf_file
-            # Force garbage collection after each PDF
-            gc.collect()
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="GR/GovernmentGazette",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="legislation",
+        ) or ""
 
     def _parse_fek_metadata(self, text: str, fek_code: str) -> Dict[str, Any]:
         """Extract metadata from FEK text content."""

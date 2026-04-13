@@ -1,0 +1,14 @@
+{
+  "_id": "US/MN-Legislation/1.01",
+  "_source": "US/MN-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-09T10:20:39.149746+00:00",
+  "title": "Minnesota Statutes § 1.01 - EXTENT",
+  "text": "The sovereignty and jurisdiction of this state extend to all places within its boundaries as defined in the constitution and, concurrently, to the waters forming a common boundary between this and adjoining states, subject only to rights of jurisdiction acquired by the United States over places in it.",
+  "date": "2025-01-01",
+  "url": "https://www.revisor.mn.gov/statutes/cite/1.01",
+  "section_id": "1.01",
+  "chapter": "1",
+  "jurisdiction": "US-MN",
+  "language": "en"
+}

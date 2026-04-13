@@ -32,7 +32,6 @@ from datetime import datetime, timezone
 from typing import Generator, Optional
 
 import requests
-from pdfminer.high_level import extract_text
 import xml.etree.ElementTree as ET
 
 # Add project root to path
@@ -40,6 +39,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -99,28 +101,13 @@ class AEPDScraper(BaseScraper):
         super().__init__(source_dir)
 
     def _extract_pdf_text(self, pdf_url: str) -> Optional[str]:
-        """Download PDF and extract text using pdfminer."""
-        try:
-            response = requests.get(pdf_url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
-            response.raise_for_status()
-
-            if 'application/pdf' not in response.headers.get('Content-Type', ''):
-                # Check if it's actually a PDF by magic bytes
-                if not response.content.startswith(b'%PDF'):
-                    logger.debug(f"Not a PDF: {pdf_url}")
-                    return None
-
-            # Extract text from PDF
-            text = extract_text(BytesIO(response.content))
-
-            # Clean up the text
-            text = self._clean_text(text)
-
-            return text if text and len(text) > 100 else None
-
-        except Exception as e:
-            logger.debug(f"Error extracting PDF {pdf_url}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="ES/AEPD",
+            source_id="",
+            pdf_url=pdf_url,
+            table="case_law",
+        ) or ""
 
     def _clean_text(self, text: str) -> str:
         """Clean extracted PDF text."""

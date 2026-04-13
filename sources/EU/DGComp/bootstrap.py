@@ -25,18 +25,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from common.base_scraper import BaseScraper
 
-# Try to import PDF extraction library
-try:
-    import fitz  # PyMuPDF
-    HAS_PYMUPDF = True
-except ImportError:
-    HAS_PYMUPDF = False
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
 
-try:
-    from pdfminer.high_level import extract_text as pdfminer_extract
-    HAS_PDFMINER = True
-except ImportError:
-    HAS_PDFMINER = False
+from common.pdf_extract import extract_pdf_markdown
 
 logger = logging.getLogger("legal-data-hunter")
 
@@ -83,31 +76,13 @@ class DGCompScraper(BaseScraper):
         return None
 
     def _extract_text_from_pdf(self, pdf_content: bytes) -> str:
-        """Extract text from PDF bytes."""
-        if HAS_PYMUPDF:
-            try:
-                doc = fitz.open(stream=pdf_content, filetype="pdf")
-                text_parts = []
-                for page in doc:
-                    text_parts.append(page.get_text())
-                doc.close()
-                text = "\n".join(text_parts)
-                text = re.sub(r'\n{3,}', '\n\n', text)
-                text = re.sub(r' {2,}', ' ', text)
-                return text.strip()
-            except Exception as e:
-                logger.warning(f"PyMuPDF extraction failed: {e}")
-
-        if HAS_PDFMINER:
-            try:
-                text = pdfminer_extract(io.BytesIO(pdf_content))
-                text = re.sub(r'\n{3,}', '\n\n', text)
-                text = re.sub(r' {2,}', ' ', text)
-                return text.strip()
-            except Exception as e:
-                logger.warning(f"pdfminer extraction failed: {e}")
-
-        return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="EU/DGComp",
+            source_id="",
+            pdf_bytes=pdf_content,
+            table="doctrine",
+        ) or ""
 
     def _fetch_pdf_text(self, pdf_url: str) -> str:
         """Download PDF and extract text."""

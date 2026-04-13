@@ -1,0 +1,21 @@
+{
+  "_id": "US-EPA-02-1977-0002",
+  "_source": "US/EPA",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T12:32:25.669934+00:00",
+  "title": "EPA v. MCMILLAN BOOK",
+  "text": "EPA Enforcement Case 02-1977-0002: MCMILLAN BOOK\nType: Civil Judicial Action\nStatus: Closed\nOutcome: Litigated With Penalty\nLead Agency: EPA\n\nCase Summary:\nFACILITY (IN FINDS)                                          BOORUM & PEASE                                               128 SPENCER ST                                               SYRACUSE, NY 13201\n\nPenalties and Costs:\nFederal Penalty: $10,000\n\nLaws and Sections Violated:\n  CWA: 402: Clean Water Act, 301: NPDES Discharge without a Permit (Other Unpermitted Discharges)\n\nDefendants:\n  MCMILLAN BOOK\n\nFacilities:\n  ESSELTE PENDA FLEX CORP BOORUM & PEASE, 128 SPENCER STREET, SYRACUSE, NY\n\nCase Milestones:\n  01/01/1977: Referred To Headquarters\n  02/08/1977: Referred To Dept Of Justice\n  02/08/1977: Referred TO U.S. Attorney\n  04/20/1977: Complaint Filed With Court\n  10/07/1977: Enforcement Action Closed\n  10/07/1977: Concluded\n  10/07/1977: Final Order Entered\n  10/07/1977: Final Order Lodged\n\nPollutants:\n  NONE\n\nEnforcement Conclusion #1: Consent Decree or Court Order Resolving a Civil Judicial Action\n  Name: MCMILLAN BOOK\n  Settlement Entered: 10/07/1977\n  Federal Penalty: $10,000",
+  "date": "1977-10-07",
+  "url": "https://echo.epa.gov/enforcement-case-report?id=02-1977-0002",
+  "case_number": "02-1977-0002",
+  "case_name": "MCMILLAN BOOK",
+  "case_type": "JDC",
+  "case_status": "Closed",
+  "enforcement_type": "Civil Judicial Action",
+  "enforcement_outcome": "Litigated With Penalty",
+  "primary_law": "CWA",
+  "federal_penalty": "$10,000",
+  "state_penalty": "$0",
+  "lead_agency": "EPA",
+  "court": "US Environmental Protection Agency"
+}

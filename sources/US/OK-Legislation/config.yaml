@@ -1,0 +1,16 @@
+source_id: US/OK-Legislation
+name: Oklahoma Statutes
+country: US
+jurisdiction: US-OK
+url: https://www.oklegislature.gov/osStatuesTitle.aspx
+data_types:
+  - legislation
+language: en
+license: public_domain
+auth: none
+schedule: monthly
+schema:
+  key_fields:
+    - _id
+    - title_number
+    - title_name

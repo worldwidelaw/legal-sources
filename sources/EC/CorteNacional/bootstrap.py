@@ -39,6 +39,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -50,48 +53,14 @@ DOC_BASE = "https://api.funcionjudicial.gob.ec/CJ-DOCUMENTO-SERVICE/api/document
 
 # Try multiple PDF backends (pypdf is in requirements.txt)
 PDF_BACKEND = None
-try:
-    import pypdf
-    PDF_BACKEND = "pypdf"
-except ImportError:
-    try:
-        import PyPDF2
-        PDF_BACKEND = "PyPDF2"
-    except ImportError:
-        try:
-            from pdfminer.high_level import extract_text as pdfminer_extract
-            PDF_BACKEND = "pdfminer"
-        except ImportError:
-            PDF_BACKEND = None
-            logger.warning("No PDF backend available (need pypdf, PyPDF2, or pdfminer.six)")
-
-
 def extract_pdf_text(pdf_bytes: bytes) -> Optional[str]:
-    """Extract text from PDF bytes using available backend."""
-    if not PDF_BACKEND:
-        return None
-    try:
-        if PDF_BACKEND == "pypdf":
-            reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
-            parts = [page.extract_text() for page in reader.pages if page.extract_text()]
-            text = "\n\n".join(parts)
-        elif PDF_BACKEND == "PyPDF2":
-            reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-            parts = [page.extract_text() for page in reader.pages if page.extract_text()]
-            text = "\n\n".join(parts)
-        elif PDF_BACKEND == "pdfminer":
-            text = pdfminer_extract(io.BytesIO(pdf_bytes))
-        else:
-            return None
-        if text:
-            text = re.sub(r'\x00', '', text)
-            text = re.sub(r'[\r\n]{3,}', '\n\n', text)
-            text = text.strip()
-        return text if text and len(text) > 100 else None
-    except Exception as e:
-        logger.warning(f"PDF extraction failed ({PDF_BACKEND}): {e}")
-        return None
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="EC/CorteNacional",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="case_law",
+    ) or ""
 
 class CorteNacionalScraper(BaseScraper):
     """

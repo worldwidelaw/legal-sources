@@ -30,8 +30,6 @@ import json
 import logging
 import re
 import html
-import tempfile
-import os
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Optional, Dict, Any, List, Tuple
@@ -42,15 +40,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
-
-# Import pdfplumber for PDF text extraction
-try:
-    import pdfplumber
-    HAS_PDFPLUMBER = True
-except ImportError:
-    HAS_PDFPLUMBER = False
-    print("WARNING: pdfplumber not installed. PDF extraction will fail.")
-    print("Install with: pip install pdfplumber")
+from common.pdf_extract import extract_pdf_markdown, preload_existing_ids
 
 logging.basicConfig(
     level=logging.INFO,
@@ -229,46 +219,20 @@ class IrishCourtsScraper(BaseScraper):
             logger.warning(f"Failed to get listings page {page}: {e}")
             return [], 0
 
-    def _download_and_extract_pdf(self, pdf_url: str) -> str:
+    def _download_and_extract_pdf(self, pdf_url: str, source_id: str = "") -> str:
         """
-        Download PDF and extract text using pdfplumber.
+        Download PDF and extract text using common/pdf_extract.
 
         Returns extracted text or empty string on failure.
         """
-        if not HAS_PDFPLUMBER:
-            logger.error("pdfplumber not available for PDF extraction")
-            return ""
-
-        try:
-            self.rate_limiter.wait()
-            resp = self.client.get(pdf_url, stream=True)
-            resp.raise_for_status()
-
-            # Write to temporary file
-            with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
-                tmp.write(resp.content)
-                tmp_path = tmp.name
-
-            try:
-                # Extract text using pdfplumber
-                text_parts = []
-                with pdfplumber.open(tmp_path) as pdf:
-                    for page in pdf.pages:
-                        page_text = page.extract_text()
-                        if page_text:
-                            text_parts.append(page_text)
-
-                full_text = '\n\n'.join(text_parts)
-                logger.debug(f"Extracted {len(full_text)} chars from PDF")
-                return full_text
-
-            finally:
-                # Clean up temp file
-                os.unlink(tmp_path)
-
-        except Exception as e:
-            logger.warning(f"Failed to extract PDF {pdf_url}: {e}")
-            return ""
+        full_url = f"{BASE_URL}{pdf_url}" if pdf_url.startswith("/") else pdf_url
+        text = extract_pdf_markdown(
+            source="IE/SupremeCourt",
+            source_id=source_id,
+            pdf_url=full_url,
+            table="case_law",
+        )
+        return text or ""
 
     def _parse_citation(self, citation: str) -> Dict[str, Any]:
         """
@@ -347,7 +311,7 @@ class IrishCourtsScraper(BaseScraper):
                 seen_citations.add(citation)
 
                 # Download and extract PDF
-                full_text = self._download_and_extract_pdf(j["pdf_url"])
+                full_text = self._download_and_extract_pdf(j["pdf_url"], source_id=citation)
 
                 if not full_text:
                     logger.warning(f"No text extracted for {citation}, skipping")
@@ -406,7 +370,7 @@ class IrishCourtsScraper(BaseScraper):
                     except:
                         pass
 
-                full_text = self._download_and_extract_pdf(j["pdf_url"])
+                full_text = self._download_and_extract_pdf(j["pdf_url"], source_id=citation)
 
                 if not full_text:
                     continue

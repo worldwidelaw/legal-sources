@@ -1,0 +1,32 @@
+source_id: US/MA-Legislation
+name: Massachusetts General Laws (malegislature.gov)
+country: US
+data_types:
+  - legislation
+url: https://malegislature.gov/Laws/GeneralLaws
+auth:
+  type: none
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - section_number
+    - chapter
+    - part
+
+fetch:
+  base_url: https://raw.githubusercontent.com/morrissinger/MassGenLaws/master
+  tree_api: https://api.github.com/repos/morrissinger/MassGenLaws/git/trees/master?recursive=1
+  delay: 0.5
+
+license: Public Domain (government works)
+
+notes: |
+  Massachusetts General Laws via MassGenLaws GitHub repository (StateDecoded XML format).
+  24,719 sections across 5 parts and 603 chapters.
+  Official site malegislature.gov is unreachable from datacenter IPs.
+  Data snapshot from 2013 — covers all codified statutes.
+  Full text in structured XML with part/title/chapter/section hierarchy.

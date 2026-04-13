@@ -37,6 +37,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -62,21 +65,13 @@ def strip_html(text: str) -> str:
 
 
 def extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using PyMuPDF."""
-    try:
-        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-        text_parts = []
-        for page in doc:
-            text_parts.append(page.get_text())
-        doc.close()
-        text = "\n".join(text_parts).strip()
-        # Clean up common PDF artifacts
-        text = re.sub(r'\n{3,}', '\n\n', text)
-        return text
-    except Exception as e:
-        logger.warning("PDF text extraction failed: %s", e)
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="INTL/ItalawArbitration",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="case_law",
+    ) or ""
 
 class ItalawArbitrationScraper(BaseScraper):
     """

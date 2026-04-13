@@ -1,0 +1,26 @@
+source:
+  id: INTL/IACHR-Commission
+  name: Inter-American Commission on Human Rights Reports
+  country: INTL
+  url: https://www.oas.org/en/iachr/
+  data_types:
+    - doctrine
+  auth: none
+  description: >
+    Reports, admissibility decisions, inadmissibility decisions, friendly
+    settlements, and resolutions from the Inter-American Commission on
+    Human Rights (IACHR). Full text extracted from DOCX files hosted on
+    oas.org. ~2,600+ documents spanning 2000-present.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - report_number
+    - doc_type
+
+fetch:
+  rate_limit: 1.5
+  max_retries: 3
+  timeout: 60

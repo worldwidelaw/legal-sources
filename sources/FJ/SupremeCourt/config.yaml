@@ -1,0 +1,104 @@
+# ===================================================================
+# FJ/SupremeCourt -- Fiji Courts Online Decisions
+# ===================================================================
+# Official Fiji judiciary decisions from judiciary.gov.fj.
+# WordPress REST API with custom "judgments" post type.
+# Full text extracted from linked PDF documents.
+# ===================================================================
+
+source:
+  id: "FJ/SupremeCourt"
+  country: "FJ"
+  name: "Fiji Courts Online Decisions"
+  url: "https://judiciary.gov.fj"
+  description: |
+    Official Fiji judiciary decisions published on judiciary.gov.fj.
+    Covers all courts: Supreme Court, Court of Appeal, High Court
+    (Civil, Criminal, Employment, Family), Magistrates Court,
+    and various tribunals (Tax, Employment, Agriculture, etc.).
+    ~7,400 judgments available via WordPress REST API.
+    Full text extracted from linked PDF documents.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://judiciary.gov.fj/wp-json/wp/v2"
+  endpoints:
+    judgments: "/judgments"
+    courts: "/courts_tribunals"
+  per_page: 100
+  max_offset: 7500
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Unique judgment ID from WordPress post ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title with citation and parties"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the judgment extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date of the judgment"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the judgment page on judiciary.gov.fj"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "court"
+      description: "Court or tribunal name (e.g., Supreme Court, High Court Criminal)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "case_number"
+      description: "Case citation number (e.g., HAC 322.2025)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "parties"
+      description: "Party names from the title"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "pdf_url"
+      description: "Direct URL to the judgment PDF"
+      type: "string"
+      role: "reference"
+      required: false
+
+notes: |
+  - ~7,400 judgments from 2016-present
+  - Pre-2015 decisions are on PacLII, not on judiciary.gov.fj
+  - WordPress REST API with custom "judgments" post type
+  - Full text via PDF extraction (PyPDF2 / pdfplumber fallback)
+  - Court taxonomy IDs: 111=Supreme Court, 112=Court of Appeal,
+    113=HC Criminal, 126=HC Civil, 114=HC Employment, 115=HC Family,
+    117=Magistrates Court, 119=Tax Tribunal, etc.

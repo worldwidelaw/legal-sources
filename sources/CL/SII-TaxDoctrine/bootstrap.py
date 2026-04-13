@@ -41,6 +41,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -89,24 +92,13 @@ def _fetch_text(url: str, timeout: int = 30) -> Optional[str]:
 
 
 def _extract_text_from_pdf(pdf_bytes: bytes) -> Optional[str]:
-    """Extract text from PDF bytes using PyMuPDF."""
-    try:
-        import fitz
-    except ImportError:
-        logger.error("PyMuPDF (fitz) not available for PDF extraction")
-        return None
-    try:
-        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-        pages = []
-        for page in doc:
-            pages.append(page.get_text())
-        doc.close()
-        text = "\n\n".join(pages).strip()
-        return text if len(text) > 50 else None
-    except Exception as e:
-        logger.warning("PDF extraction error: %s", e)
-        return None
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="CL/SII-TaxDoctrine",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="doctrine",
+    ) or ""
 
 def _strip_html(raw_html: str) -> str:
     """Strip HTML tags and decode entities."""

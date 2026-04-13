@@ -1,0 +1,24 @@
+source:
+  id: INTL/UNCITRAL-Texts
+  name: UNCITRAL Model Laws and Legislative Guides
+  country: INTL
+  url: https://uncitral.un.org/en/texts
+  data_types:
+    - legislation
+  auth: none
+  description: >
+    UNCITRAL model laws, conventions, legislative guides, and other
+    instruments across 12 subject areas (arbitration, e-commerce, CISG,
+    insolvency, etc.). ~50 instruments with full text from PDF extraction.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - category
+
+fetch:
+  rate_limit: 2.0
+  max_retries: 3
+  timeout: 120

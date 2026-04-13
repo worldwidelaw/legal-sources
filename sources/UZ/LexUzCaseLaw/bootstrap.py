@@ -30,7 +30,6 @@ from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Optional
 
-import pypdf
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -38,6 +37,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -84,20 +86,13 @@ class LexUzCaseLawScraper(BaseScraper):
         return data_str
 
     def _fetch_pdf_text(self, claim_id: int) -> str:
-        """Download PDF for a criminal case and extract text."""
-        url = f"{CRIMINAL_PDF}/{claim_id}"
-        resp = self.http.get(url, timeout=60)
-        if not resp or resp.status_code != 200:
-            return ""
-        try:
-            reader = pypdf.PdfReader(io.BytesIO(resp.content))
-            text = ""
-            for page in reader.pages:
-                text += (page.extract_text() or "") + "\n"
-            return text.strip()
-        except Exception as e:
-            logger.warning(f"  PDF extraction failed for claim {claim_id}: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="UZ/LexUzCaseLaw",
+            source_id="",
+            pdf_url=claim_id,
+            table="case_law",
+        ) or ""
 
     def test_api(self):
         """Test connectivity to publication.sud.uz."""

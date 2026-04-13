@@ -1,0 +1,32 @@
+source:
+  id: "EG/SCC"
+  name: "Egypt Supreme Constitutional Court"
+  country: EG
+  language: ar
+  domain: "sccourt.gov.eg"
+  url: "https://www.sccourt.gov.eg/"
+  data_types:
+    - case_law
+  auth: none
+  license: "Open government data"
+
+fetcher:
+  type: api
+  base_url: "https://www.sccourt.gov.eg/DjangoPortal"
+  rate_limit:
+    requests_per_second: 1
+  pagination:
+    type: page_number
+    page_size: 25
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - case_id
+    - rule_number
+    - court_year
+    - case_type
+    - disposition

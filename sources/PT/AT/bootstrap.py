@@ -43,15 +43,12 @@ from urllib.parse import urlparse, unquote
 
 import requests
 
-try:
-    import pypdf
-except ImportError:
-    pypdf = None
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
 
-try:
-    import pdfplumber
-except ImportError:
-    pdfplumber = None
+from common.pdf_extract import extract_pdf_markdown
+
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -84,38 +81,13 @@ class ATFetcher:
         })
 
     def _extract_text_from_pdf(self, content: bytes) -> str:
-        """Extract text from PDF bytes using pypdf or pdfplumber"""
-        text = ""
-
-        # Try pypdf first (lighter weight)
-        if pypdf:
-            try:
-                reader = pypdf.PdfReader(io.BytesIO(content))
-                parts = []
-                for page in reader.pages[:200]:  # Limit pages for safety
-                    page_text = page.extract_text()
-                    if page_text:
-                        parts.append(page_text)
-                text = "\n\n".join(parts)
-                if len(text.strip()) > 100:
-                    return text.strip()
-            except Exception as e:
-                logger.debug(f"pypdf failed: {e}")
-
-        # Fallback to pdfplumber
-        if pdfplumber:
-            try:
-                with pdfplumber.open(io.BytesIO(content)) as pdf:
-                    parts = []
-                    for page in pdf.pages[:200]:
-                        page_text = page.extract_text()
-                        if page_text:
-                            parts.append(page_text)
-                    text = "\n\n".join(parts)
-            except Exception as e:
-                logger.debug(f"pdfplumber failed: {e}")
-
-        return text.strip()
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="PT/AT",
+            source_id="",
+            pdf_bytes=content,
+            table="doctrine",
+        ) or ""
 
     def _clean_html(self, html_content: str) -> str:
         """Clean HTML to plain text"""

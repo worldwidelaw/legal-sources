@@ -30,15 +30,11 @@ from pathlib import Path
 
 import requests
 
-try:
-    import pymupdf
-    HAS_PYMUPDF = True
-except ImportError:
-    try:
-        import fitz as pymupdf
-        HAS_PYMUPDF = True
-    except ImportError:
-        HAS_PYMUPDF = False
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
 
 SOURCE_ID = "MA/AdalaJustice"
 SCRIPT_DIR = Path(__file__).parent
@@ -56,22 +52,13 @@ SESSION.headers.update({
 
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using PyMuPDF."""
-    if not HAS_PYMUPDF:
-        return ""
-    try:
-        doc = pymupdf.open(stream=pdf_bytes, filetype="pdf")
-        text_parts = []
-        for page in doc:
-            text_parts.append(page.get_text())
-        doc.close()
-        text = "\n\n".join(text_parts)
-        # Clean up excessive whitespace
-        text = re.sub(r"\n{4,}", "\n\n\n", text)
-        return text.strip()
-    except Exception as e:
-        return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="MA/AdalaJustice",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="legislation",
+    ) or ""
 
 def fetch_law_types() -> dict:
     """Fetch law type mappings."""

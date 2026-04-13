@@ -36,6 +36,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -209,51 +212,13 @@ class ICJDecisionsScraper(BaseScraper):
         return None
 
     def _download_and_extract_pdf(self, pdf_path: str) -> Optional[str]:
-        """Download PDF from UN cloud CDN and extract text."""
-        # Convert icj-cij.org path to cloud CDN URL
-        if pdf_path.startswith("http"):
-            # Replace domain
-            pdf_url = re.sub(
-                r"https?://(www\.)?icj-cij\.org",
-                PDF_CDN,
-                pdf_path
-            )
-        else:
-            pdf_url = f"{PDF_CDN}{pdf_path}"
-
-        try:
-            r = self.session.get(pdf_url, timeout=120)
-            r.raise_for_status()
-
-            if len(r.content) < 100:
-                logger.warning(f"PDF too small ({len(r.content)} bytes): {pdf_url}")
-                return None
-
-            # Extract text from PDF
-            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=True) as tmp:
-                tmp.write(r.content)
-                tmp.flush()
-
-                doc = fitz.open(tmp.name)
-                text_parts = []
-                for page in doc:
-                    text_parts.append(page.get_text())
-                doc.close()
-
-            text = "\n".join(text_parts).strip()
-
-            if len(text) < 50:
-                logger.warning(f"Extracted text too short ({len(text)} chars): {pdf_url}")
-                return None
-
-            return text
-
-        except requests.RequestException as e:
-            logger.error(f"Failed to download PDF {pdf_url}: {e}")
-            return None
-        except Exception as e:
-            logger.error(f"Failed to extract text from {pdf_url}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="INTL/ICJDecisions",
+            source_id="",
+            pdf_url=pdf_path,
+            table="case_law",
+        ) or ""
 
     def normalize(self, raw: dict) -> Optional[dict]:
         """Transform raw decision record into standard schema."""

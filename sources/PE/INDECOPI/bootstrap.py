@@ -39,6 +39,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
+from common.pdf_extract import extract_pdf_markdown
+
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -70,13 +73,6 @@ PAGE_SIZE = 100
 
 def _try_import_fitz():
     """Lazy import PyMuPDF for PDF text extraction fallback."""
-    try:
-        import fitz
-        return fitz
-    except ImportError:
-        return None
-
-
 class INDECOPIScraper(BaseScraper):
     """
     Scraper for PE/INDECOPI -- Peru INDECOPI Resolutions via DSpace 7 API.
@@ -176,47 +172,13 @@ class INDECOPIScraper(BaseScraper):
         return ""
 
     def _extract_pdf_text(self, bundle_uuid: str) -> str:
-        """Download PDF from ORIGINAL bundle and extract text with PyMuPDF."""
-        fitz = _try_import_fitz()
-        if not fitz:
-            return ""
-
-        bs_url = f"{API_BASE}/core/bundles/{bundle_uuid}/bitstreams"
-        data = self._get_json(bs_url)
-        if not data:
-            return ""
-
-        bitstreams = data.get("_embedded", {}).get("bitstreams", [])
-        pdf_bs = None
-        for bs in bitstreams:
-            if bs.get("name", "").lower().endswith(".pdf"):
-                pdf_bs = bs
-                break
-
-        if not pdf_bs:
-            return ""
-
-        # Skip very large PDFs (>20MB)
-        if pdf_bs.get("sizeBytes", 0) > 20_000_000:
-            logger.info(f"Skipping large PDF ({pdf_bs['sizeBytes']} bytes)")
-            return ""
-
-        content_url = f"{API_BASE}/core/bitstreams/{pdf_bs['uuid']}/content"
-        try:
-            resp = self.client.get(content_url)
-            if resp.status_code != 200:
-                return ""
-            doc = fitz.open(stream=resp.content, filetype="pdf")
-            text_parts = []
-            for page in doc:
-                page_text = page.get_text()
-                if page_text:
-                    text_parts.append(page_text)
-            doc.close()
-            return "\n".join(text_parts).strip()
-        except Exception as e:
-            logger.debug(f"PDF extraction error: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="PE/INDECOPI",
+            source_id="",
+            pdf_bytes=bundle_uuid,
+            table="case_law",
+        ) or ""
 
     def _extract_metadata(self, item: dict) -> dict:
         """Extract Dublin Core metadata from a DSpace item."""

@@ -1,0 +1,26 @@
+source:
+  id: INTL/OECD-LegalInstruments
+  name: OECD Legal Instruments
+  country: INTL
+  url: https://legalinstruments.oecd.org/
+  data_types:
+    - legislation
+    - doctrine
+  auth: none
+  description: >
+    OECD legal instruments: Decisions, Recommendations, Declarations,
+    International Agreements, Guidelines, and other substantive outcome
+    documents. ~503 instruments with full HTML text available via REST API.
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - instrument_type
+    - status
+
+fetch:
+  rate_limit: 1.0
+  max_retries: 3
+  timeout: 60

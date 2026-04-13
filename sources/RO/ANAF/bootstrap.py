@@ -31,10 +31,12 @@ from typing import Any, Dict, Iterator, List, Optional
 
 import requests
 
-try:
-    import pypdf
-except ImportError:
-    pypdf = None
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -65,21 +67,13 @@ class ANAFFetcher:
         })
 
     def _extract_text_from_pdf(self, content: bytes) -> str:
-        """Extract text from PDF bytes using pypdf"""
-        if not pypdf:
-            logger.warning("pypdf not available")
-            return ""
-        try:
-            reader = pypdf.PdfReader(io.BytesIO(content))
-            parts = []
-            for page in reader.pages[:200]:
-                page_text = page.extract_text()
-                if page_text:
-                    parts.append(page_text)
-            return "\n\n".join(parts).strip()
-        except Exception as e:
-            logger.debug(f"PDF extraction failed: {e}")
-            return ""
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="RO/ANAF",
+            source_id="",
+            pdf_bytes=content,
+            table="doctrine",
+        ) or ""
 
     def _fetch_with_retry(self, url: str, retries: int = 2, timeout: int = 60) -> Optional[requests.Response]:
         """Fetch URL with retries"""

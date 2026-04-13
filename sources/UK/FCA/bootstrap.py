@@ -29,8 +29,14 @@ from pathlib import Path
 from typing import Generator, List, Optional, Tuple
 from urllib.parse import unquote
 
-import pdfplumber
 import requests
+
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 SITEMAP_INDEX_URL = "https://www.fca.org.uk/sitemap.xml"
 BASE_URL = "https://www.fca.org.uk"
@@ -129,37 +135,13 @@ def fetch_sitemap() -> List[Tuple[str, str, str]]:
 
 
 def extract_text_from_pdf(url: str) -> Optional[str]:
-    """
-    Download a PDF and extract its text content.
-
-    Args:
-        url: URL of the PDF file
-
-    Returns:
-        Extracted text or None on error
-    """
-    try:
-        resp = requests.get(url, headers=HEADERS, timeout=120)
-        resp.raise_for_status()
-
-        pdf_bytes = io.BytesIO(resp.content)
-
-        with pdfplumber.open(pdf_bytes) as pdf:
-            text_parts = []
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-
-            return "\n\n".join(text_parts)
-
-    except requests.RequestException as e:
-        print(f"  Error downloading PDF: {e}")
-        return None
-    except Exception as e:
-        print(f"  Error extracting PDF text: {e}")
-        return None
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="UK/FCA",
+        source_id="",
+        pdf_url=url,
+        table="doctrine",
+    ) or ""
 
 def parse_notice_metadata(url: str, text: str, notice_type: str, lastmod: str) -> dict:
     """

@@ -1,0 +1,23 @@
+source_id: "GT/CC"
+name: "Guatemala Corte de Constitucionalidad"
+country: GT
+url: "https://jurisprudencia.cc.gob.gt/"
+data_types:
+  - case_law
+auth: none
+
+api:
+  base_url: "https://jurisprudencia.cc.gob.gt/coredataretriever/api/jurisprudencia/V1"
+  pdf_base_url: "https://jurisprudencia.cc.gob.gt/Sentencias"
+  method: POST
+  content_type: application/json
+  page_size: 100
+  rate_limit_seconds: 1.5
+
+schema:
+  key_fields:
+    - id
+    - expedientes
+    - fechaSentencia
+    - tipoExpediente
+    - pdf

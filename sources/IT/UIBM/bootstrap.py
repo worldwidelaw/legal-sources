@@ -42,14 +42,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
-# Optional PDF extraction
-try:
-    import fitz  # PyMuPDF
-    HAS_FITZ = True
-except ImportError:
-    HAS_FITZ = False
-    logging.warning("PyMuPDF (fitz) not installed. PDF text extraction will be limited.")
+from common.pdf_extract import extract_pdf_markdown
 
+
+# Optional PDF extraction
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -127,27 +123,13 @@ class UIBMScraper(BaseScraper):
             return None
 
     def _extract_text_from_pdf(self, pdf_bytes: bytes) -> Optional[str]:
-        """Extract text from PDF bytes using PyMuPDF."""
-        if not HAS_FITZ:
-            logger.warning("PyMuPDF not available for text extraction")
-            return None
-
-        try:
-            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-            text_parts = []
-            max_pages = min(len(doc), 50)
-            for i in range(max_pages):
-                page_text = doc[i].get_text()
-                if page_text and page_text.strip():
-                    text_parts.append(page_text.strip())
-            doc.close()
-
-            if text_parts:
-                return "\n\n".join(text_parts)
-            return None
-        except Exception as e:
-            logger.warning(f"PDF text extraction failed: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="IT/UIBM",
+            source_id="",
+            pdf_bytes=pdf_bytes,
+            table="doctrine",
+        ) or ""
 
     def normalize(self, raw: Dict) -> Dict:
         """Transform raw decision data into standard schema."""

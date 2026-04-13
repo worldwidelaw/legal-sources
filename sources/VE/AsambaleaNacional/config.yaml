@@ -1,0 +1,19 @@
+source:
+  id: VE/AsambaleaNacional
+  name: Venezuela Asamblea Nacional - Gaceta Oficial Digital
+  url: https://www.asambleanacional.gob.ve/
+  country: VE
+  data_types:
+    - legislation
+  auth: none
+  method: html_scraping_with_pdf
+  rate_limit: 2
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - gazette_number
+    - url

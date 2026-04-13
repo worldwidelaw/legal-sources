@@ -1,0 +1,54 @@
+source_id: US/MI-Courts
+name: Michigan Supreme Court & Court of Appeals Opinions
+country: US
+data_types:
+  - case_law
+url: https://www.courts.michigan.gov/opinions/
+auth:
+  type: none
+
+schema:
+  key_fields:
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: true
+    - name: case_number
+      type: string
+      required: false
+    - name: court
+      type: string
+      required: true
+    - name: citation
+      type: string
+      required: false
+    - name: judge
+      type: string
+      required: false
+    - name: opinion_type
+      type: string
+      required: false
+
+fetch:
+  api_base: https://www.courtlistener.com/api/rest/v4/search/
+  pdf_base: https://storage.courtlistener.com/
+  courts:
+    - id: mich
+      name: Michigan Supreme Court
+    - id: michctapp
+      name: Michigan Court of Appeals
+  page_size: 20
+  delay: 1.5
+
+license: Public Domain (government works)
+
+notes: |
+  Michigan court opinions via CourtListener open search API (no auth required).
+  MI Supreme Court: ~93,000 opinions (1805-present).
+  MI Court of Appeals: ~29,000 opinions (1965-present).
+  Full text extracted from PDFs hosted on CourtListener S3 storage.

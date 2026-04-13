@@ -1,0 +1,21 @@
+{
+  "_id": "US-EPA-02-1976-0009",
+  "_source": "US/EPA",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-08T12:32:17.733967+00:00",
+  "title": "EPA v. BUFFALO MUN INCIN",
+  "text": "EPA Enforcement Case 02-1976-0009: BUFFALO MUN INCIN\nType: Civil Judicial Action\nStatus: Closed\nOutcome: Final Order No Penalty\nLead Agency: EPA\n\nCase Summary:\nFACILITY ADDRESS:                                                               CITY HALL - ROOM 502                                         BUFFALO, N.Y. 14202                     OWNERSHIP  M                                                 SIC CODE:  4953\n\nLaws and Sections Violated:\n  CAA: 110: Implementation Plan for National Primary and Secondary Ambient Air Quality Standards (State Implementation Plan for National Primary and Secondary Ambient Air Quality Standards)\n\nDefendants:\n  BUFFALO, CITY OF\n\nFacilities:\n  BUFF MUN INCIN, CITY HALL-ROOM 502, BUFFALO, NY\n\nCase Milestones:\n  04/29/1976: Referred To Headquarters\n  06/01/1976: Referred To Dept Of Justice\n  06/18/1976: Referred TO U.S. Attorney\n  07/02/1976: Complaint Filed With Court\n  11/02/1978: Final Order Entered\n  11/02/1978: Concluded\n  11/02/1978: Final Order Lodged\n  11/02/1980: Enforcement Action Closed\n\nPollutants:\n  PM PARTICULATES\n\nEnforcement Conclusion #1: Consent Decree or Court Order Resolving a Civil Judicial Action\n  Name: BUFFALO, CITY OF\n  Settlement Entered: 11/02/1978\n\nViolations:\nViolation Of A SIP  Not Otherwise Specified",
+  "date": "1980-11-02",
+  "url": "https://echo.epa.gov/enforcement-case-report?id=02-1976-0009",
+  "case_number": "02-1976-0009",
+  "case_name": "BUFFALO MUN INCIN",
+  "case_type": "JDC",
+  "case_status": "Closed",
+  "enforcement_type": "Civil Judicial Action",
+  "enforcement_outcome": "Final Order No Penalty",
+  "primary_law": "CAA",
+  "federal_penalty": "$0",
+  "state_penalty": "$0",
+  "lead_agency": "EPA",
+  "court": "US Environmental Protection Agency"
+}

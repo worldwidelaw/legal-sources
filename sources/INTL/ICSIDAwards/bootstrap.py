@@ -29,13 +29,15 @@ from datetime import datetime, timezone
 from typing import Generator, Optional
 
 import requests
-import fitz  # PyMuPDF
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -152,30 +154,13 @@ class ICSIDAwardsScraper(BaseScraper):
         return documents
 
     def _download_and_extract_pdf(self, pdf_url: str) -> Optional[str]:
-        """Download PDF and extract text."""
-        try:
-            r = self.session.get(pdf_url, timeout=120)
-            r.raise_for_status()
-
-            if len(r.content) < 500:
-                return None
-
-            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=True) as tmp:
-                tmp.write(r.content)
-                tmp.flush()
-
-                doc = fitz.open(tmp.name)
-                text_parts = []
-                for page in doc:
-                    text_parts.append(page.get_text())
-                doc.close()
-
-            text = "\n".join(text_parts).strip()
-            return text if len(text) >= 100 else None
-
-        except Exception as e:
-            logger.warning(f"Failed to extract text from {pdf_url}: {e}")
-            return None
+        """Extract text from PDF using centralized extractor."""
+        return extract_pdf_markdown(
+            source="INTL/ICSIDAwards",
+            source_id="",
+            pdf_url=pdf_url,
+            table="case_law",
+        ) or ""
 
     def normalize(self, raw: dict) -> Optional[dict]:
         """Transform raw record into standard schema."""

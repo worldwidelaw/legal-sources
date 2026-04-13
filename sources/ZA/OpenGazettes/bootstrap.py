@@ -20,10 +20,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
 
-try:
-    import fitz  # PyMuPDF
-except ImportError:
-    fitz = None
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -56,28 +58,13 @@ def http_get_bytes(url: str, timeout: int = 60, max_bytes: int = MAX_PDF_BYTES) 
 
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> Optional[str]:
-    """Extract text from PDF bytes using PyMuPDF."""
-    if fitz is None:
-        logger.error("PyMuPDF (fitz) not available")
-        return None
-    try:
-        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-        if doc.page_count > MAX_PDF_PAGES:
-            logger.warning(f"PDF has {doc.page_count} pages (>{MAX_PDF_PAGES}), skipping")
-            doc.close()
-            return None
-        text_parts = []
-        for page in doc:
-            text_parts.append(page.get_text())
-        doc.close()
-        text = "\n".join(text_parts).strip()
-        # Clean up common artifacts
-        text = re.sub(r"\n{3,}", "\n\n", text)
-        return text if len(text) > 50 else None
-    except Exception as e:
-        logger.warning(f"PDF extraction failed: {e}")
-        return None
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="ZA/OpenGazettes",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="legislation",
+    ) or ""
 
 def parse_date(date_str: Optional[str]) -> Optional[str]:
     """Parse date to ISO 8601."""

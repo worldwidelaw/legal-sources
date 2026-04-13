@@ -28,17 +28,12 @@ from typing import Generator, Optional
 
 import requests
 
-try:
-    import fitz  # PyMuPDF
-    HAS_FITZ = True
-except ImportError:
-    HAS_FITZ = False
+# Add project root to path for common imports
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
 
-try:
-    import PyPDF2
-    HAS_PYPDF2 = True
-except ImportError:
-    HAS_PYPDF2 = False
+from common.pdf_extract import extract_pdf_markdown
+
 
 BASE_URL = "https://investmentpolicy.unctad.org"
 SAMPLE_DIR = Path(__file__).parent / "sample"
@@ -63,32 +58,13 @@ SAMPLE_TREATIES_PER_COUNTRY = 5
 
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes."""
-    if HAS_FITZ:
-        try:
-            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-            text_parts = []
-            for page in doc:
-                text_parts.append(page.get_text())
-            doc.close()
-            return "\n\n".join(text_parts).strip()
-        except Exception as e:
-            print(f"    PyMuPDF failed: {e}")
-
-    if HAS_PYPDF2:
-        try:
-            reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-            text_parts = []
-            for page in reader.pages:
-                t = page.extract_text()
-                if t:
-                    text_parts.append(t)
-            return "\n\n".join(text_parts).strip()
-        except Exception as e:
-            print(f"    PyPDF2 failed: {e}")
-
-    return ""
-
+    """Extract text from PDF using centralized extractor."""
+    return extract_pdf_markdown(
+        source="INTL/UNCTADInvestment",
+        source_id="",
+        pdf_bytes=pdf_bytes,
+        table="legislation",
+    ) or ""
 
 def fetch_html(url: str) -> Optional[str]:
     """Fetch an HTML page."""
@@ -454,10 +430,6 @@ def test_connectivity():
         else:
             print("\n  PDF download: FAILED")
 
-    if not HAS_FITZ and not HAS_PYPDF2:
-        print("  WARNING: No PDF library available")
-
-    print(f"  PDF libraries: {'PyMuPDF' if HAS_FITZ else ''} {'PyPDF2' if HAS_PYPDF2 else ''}")
     print("\nConnectivity test complete.")
     return True
 
