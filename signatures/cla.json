@@ -1,3 +1,20 @@
 {
-   "signedContributors": []
+  "signedContributors": [
+    {
+      "name": "Magnussmari",
+      "id": 130930212,
+      "comment_id": 4229474573,
+      "created_at": "2026-04-11T13:08:09Z",
+      "repoId": 1178356315,
+      "pullRequestNo": 42
+    },
+    {
+      "name": "Magnussmari",
+      "id": 130930212,
+      "comment_id": 4256011466,
+      "created_at": "2026-04-15T22:21:32Z",
+      "repoId": 1178356315,
+      "pullRequestNo": 42
+    }
+  ]
 }
