@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-13T15:22:44.848959+00:00",
+  "generated_at": "2026-04-15T22:30:57.917150+00:00",
   "indexing_data_source": "index_yaml",
   "summary": {
     "total": 1477,
@@ -24551,7 +24551,9 @@
       "url": "https://www.landsrettur.is",
       "notes": "robots.txt explicitly disallows /domar* and /Domar* paths (court decisions). No API. Respecting crawl restrictions.",
       "auth": "none",
-      "jurisdictions": null
+      "jurisdictions": null,
+      "sample_count": 12,
+      "avg_text_length": 55643
     },
     {
       "id": "IT/CONSOB",
