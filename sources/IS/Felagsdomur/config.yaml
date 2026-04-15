@@ -1,0 +1,53 @@
+id: IS/Felagsdomur
+name: Icelandic Labour Court (Félagsdómur)
+country: IS
+language: isl
+data_types:
+  - caselaw
+license: Public Domain
+url: https://www.felagsdomur.is/
+fetch_method: html_scrape
+api:
+  base_url: https://www.felagsdomur.is
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.67
+  burst: 2
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - _id
+    - case_number
+    - date
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  optional_fields:
+    - court
+    - case_number
+    - keywords
+    - plaintiff
+    - defendant
+    - abstract
+    - language
+
+notes: |
+  Félagsdómur (the Icelandic Labour Court) publishes its decisions online at
+  felagsdomur.is. The court handles disputes arising from collective bargaining
+  agreements between employers and trade unions. ~200 decisions from 2010-present.
+
+  Case numbers follow the format F-N/YYYY (e.g., F-1/2024).
+  The site uses an AJAX load-more endpoint for pagination.
+  Verdict full text is accessible within the decision detail pages.
+  We use a 1.5 second delay between requests to be respectful.

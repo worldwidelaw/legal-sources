@@ -1,0 +1,54 @@
+id: IS/Reglugerdir
+name: Icelandic Regulations (Reglugerðir)
+country: IS
+language: isl
+data_types:
+  - regulation
+license: Public Domain
+url: https://island.is/reglugerdir
+fetch_method: graphql_api
+api:
+  base_url: https://island.is/api/graphql
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 1.0
+  burst: 3
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - _id
+    - regulation_number
+    - date
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  optional_fields:
+    - regulation_number
+    - ministry
+    - law_chapters
+    - effective_date
+    - language
+
+notes: |
+  The Icelandic government publishes regulations (reglugerðir) via the island.is
+  portal. There are ~2,487 in-force regulations available through a GraphQL API
+  at https://island.is/api/graphql.
+
+  Key GraphQL queries:
+    - getRegulationsYears: lists available years
+    - getRegulationsSearch: search/paginate regulations
+    - getRegulation: fetch individual regulation text
+
+  Regulation numbers follow the format NNNN/YYYY (e.g., 0006/2026).
+  We use a 1.0 second delay between requests to be respectful.
