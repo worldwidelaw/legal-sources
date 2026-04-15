@@ -17,7 +17,8 @@ jobs:
     if: |
       (github.event_name == 'pull_request_target' && github.event.action != 'closed') ||
       (github.event_name == 'issue_comment' && github.event.issue.pull_request &&
-       startsWith(github.event.comment.body, 'I have read the CLA'))
+       (startsWith(github.event.comment.body, 'I have read the CLA') ||
+        github.event.comment.body == 'recheck'))
     steps:
       - name: CLA Assistant
         uses: contributor-assistant/github-action@v2.6.1
