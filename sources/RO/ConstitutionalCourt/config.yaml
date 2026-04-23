@@ -1,0 +1,65 @@
+source:
+  id: "RO/ConstitutionalCourt"
+  country: "RO"
+  name: "Curtea Constituțională a României"
+  url: "https://www.ccr.ro"
+  description: |
+    Romanian Constitutional Court decisions published as PDFs.
+    Coverage: 1992-present. Language: Romanian.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  max_workers: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.ccr.ro"
+
+data_model:
+  type: "case_law"
+  source_nature: "gazette"
+  primary_key: "decision_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "decision_id"
+
+schema:
+  total_fields: null
+  key_fields:
+    - name: "id"
+      description: "Decision number"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of decision"
+      type: "date"
+      role: "temporal_key"
+      required: true
+  secondary_fields: []
+  probably_ignorable: []
+
+notes: |
+  - Decisions published as PDFs on ccr.ro
+  - PDFs extracted via common/pdf_extract.extract_pdf_markdown
+  - No public API, scraping HTML listing pages
+  - Language: Romanian
+  - Coverage: 1992-present
