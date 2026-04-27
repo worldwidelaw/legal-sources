@@ -1,0 +1,93 @@
+last_bootstrap: null
+last_error: 'HTTPSConnectionPool(host=''www.ccr.ro'', port=443): Max retries exceeded
+  with url: /jurisprudenta/jurisprudenta-decizii-de-admitere/?page=1 (Caused by ProtocolError(''Connection
+  aborted.'', ConnectionResetError(54, ''Connection reset by peer'')))'
+last_run: '2026-04-23T16:48:27.408892+00:00'
+run_history:
+- error_message: No module named 'bs4'
+  errors: 0
+  finished_at: '2026-04-23T16:30:39.892032+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-23T16:30:39.891696+00:00'
+- error_message: 'HTTPSConnectionPool(host=''www.ccr.ro'', port=443): Max retries
+    exceeded with url: /decizii-pronuntate?page=1 (Caused by SSLError(SSLCertVerificationError(1,
+    ''[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local
+    issuer certificate (_ssl.c:1081)'')))'
+  errors: 0
+  finished_at: '2026-04-23T16:32:53.445011+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-23T16:32:47.130662+00:00'
+- error_message: 'HTTPSConnectionPool(host=''www.ccr.ro'', port=443): Max retries
+    exceeded with url: /decizii-pronuntate?page=1 (Caused by SSLError(SSLCertVerificationError(1,
+    ''[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local
+    issuer certificate (_ssl.c:1081)'')))'
+  errors: 0
+  finished_at: '2026-04-23T16:33:37.164600+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-23T16:33:30.917293+00:00'
+- error_message: 'HTTPSConnectionPool(host=''www.ccr.ro'', port=443): Max retries
+    exceeded with url: /decizii-pronuntate?page=1 (Caused by ProtocolError(''Connection
+    aborted.'', ConnectionResetError(54, ''Connection reset by peer'')))'
+  errors: 0
+  finished_at: '2026-04-23T16:38:52.667057+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-23T16:38:46.370295+00:00'
+- error_message: 'HTTPSConnectionPool(host=''www.ccr.ro'', port=443): Max retries
+    exceeded with url: /jurisprudenta/jurisprudenta-decizii-de-admitere/?page=1 (Caused
+    by ProtocolError(''Connection aborted.'', ConnectionResetError(54, ''Connection
+    reset by peer'')))'
+  errors: 0
+  finished_at: '2026-04-23T16:43:00.388918+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-23T16:42:54.083194+00:00'
+- errors: 0
+  finished_at: '2026-04-23T16:44:32.723554+00:00'
+  records_fetched: 10
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 10
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-23T16:44:25.261444+00:00'
+- errors: 0
+  finished_at: '2026-04-23T16:48:27.408892+00:00'
+  records_fetched: 10
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 10
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-23T16:48:00.406571+00:00'
+total_records: 0
