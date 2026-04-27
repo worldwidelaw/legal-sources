@@ -42,6 +42,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
     level=logging.INFO,
@@ -53,10 +54,10 @@ BASE_URL = "https://www.oas.org"
 
 # Document type configurations: (slug, label, year_range, language_prefix)
 DOC_TYPES = [
-    ("merits", "Merits Report", range(2014, 2026), "/en/iachr/decisions/pc/merits.asp"),
-    ("admissibility", "Admissibility Decision", range(2006, 2026), "/en/iachr/decisions/pc/admissibilities.asp"),
-    ("inadmissibility", "Inadmissibility Decision", range(2014, 2026), "/en/iachr/decisions/pc/inadmissibilities.asp"),
-    ("friendly", "Friendly Settlement", range(2000, 2026), "/en/iachr/decisions/pc/friendly.asp"),
+    ("merits", "Merits Report", range(2014, 2027), "/en/iachr/decisions/pc/merits.asp"),
+    ("admissibility", "Admissibility Decision", range(2006, 2027), "/en/iachr/decisions/pc/admissibilities.asp"),
+    ("inadmissibility", "Inadmissibility Decision", range(2014, 2027), "/en/iachr/decisions/pc/inadmissibilities.asp"),
+    ("friendly", "Friendly Settlement", range(2000, 2027), "/en/iachr/decisions/pc/friendly.asp"),
 ]
 
 # Non-year-based pages
@@ -363,16 +364,29 @@ class IACHRCommissionScraper(BaseScraper):
                     yield doc
                     count += 1
 
+    def _get_full_text(self, raw_doc: dict) -> str:
+        """Get full text from DOCX (preferred) or PDF fallback."""
+        text = ""
+        if raw_doc.get("docx_url"):
+            logger.info("Downloading DOCX: %s", raw_doc["docx_url"])
+            text = self._download_docx_text(raw_doc["docx_url"])
+
+        if not text and raw_doc.get("pdf_url"):
+            logger.info("DOCX empty/missing, trying PDF: %s", raw_doc["pdf_url"])
+            doc_id = raw_doc.get("title", "")[:80].replace("/", "-")
+            text = extract_pdf_markdown(
+                source="INTL/IACHR-Commission",
+                source_id=doc_id,
+                pdf_url=raw_doc["pdf_url"],
+                table="doctrine",
+                force=True,
+            ) or ""
+        return text
+
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all IACHR documents with full text."""
         for raw_doc in self._fetch_listing_docs(sample_mode=False):
-            # Try to get full text from DOCX
-            text = ""
-            if raw_doc.get("docx_url"):
-                logger.info("Downloading DOCX: %s", raw_doc["docx_url"])
-                text = self._download_docx_text(raw_doc["docx_url"])
-
-            raw_doc["text"] = text
+            raw_doc["text"] = self._get_full_text(raw_doc)
             yield raw_doc
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
@@ -392,10 +406,7 @@ class IACHRCommissionScraper(BaseScraper):
             docs = self._parse_year_listing(html, doc_type_slug, current_year)
             for doc in docs:
                 doc["source_url"] = url
-                text = ""
-                if doc.get("docx_url"):
-                    text = self._download_docx_text(doc["docx_url"])
-                doc["text"] = text
+                doc["text"] = self._get_full_text(doc)
                 yield doc
                 count += 1
 
@@ -454,56 +465,6 @@ class IACHRCommissionScraper(BaseScraper):
             logger.error("Connection test failed: %s", e)
             return False
 
-    def run_bootstrap(self, sample: bool = False):
-        """Run the bootstrap process."""
-        sample_dir = self.source_dir / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        if sample:
-            logger.info("Running in SAMPLE mode (15 records)")
-            count = 0
-            target = 15
-
-            for raw_doc in self._fetch_listing_docs(sample_mode=True):
-                if count >= target:
-                    break
-                # Download full text
-                text = ""
-                if raw_doc.get("docx_url"):
-                    logger.info("Downloading DOCX: %s", raw_doc["docx_url"])
-                    text = self._download_docx_text(raw_doc["docx_url"])
-                raw_doc["text"] = text
-
-                normalized = self.normalize(raw_doc)
-                fname = re.sub(r'[^\w\-.]', '_',
-                               f"{normalized['_id'][:80]}.json")
-                with open(sample_dir / fname, "w", encoding="utf-8") as f:
-                    json.dump(normalized, f, ensure_ascii=False, indent=2)
-                count += 1
-                logger.info("[%d/%d] %s (%d chars text)",
-                            count, target,
-                            normalized["title"][:60],
-                            len(normalized.get("text", "")))
-
-            logger.info("Sample bootstrap complete: %d records saved to %s", count, sample_dir)
-            return count
-        else:
-            count = 0
-            data_dir = self.source_dir / "data"
-            data_dir.mkdir(exist_ok=True)
-            for doc in self.fetch_all():
-                normalized = self.normalize(doc)
-                fname = re.sub(r'[^\w\-.]', '_',
-                               f"{normalized['_id'][:80]}.json")
-                with open(data_dir / fname, "w", encoding="utf-8") as f:
-                    json.dump(normalized, f, ensure_ascii=False, indent=2)
-                count += 1
-                if count % 50 == 0:
-                    logger.info("Progress: %d records saved", count)
-            logger.info("Full bootstrap complete: %d records saved", count)
-            return count
-
-
 def main():
     import argparse
     parser = argparse.ArgumentParser(
@@ -511,6 +472,7 @@ def main():
     parser.add_argument("command", choices=["bootstrap", "update", "test"])
     parser.add_argument("--sample", action="store_true",
                         help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = IACHRCommissionScraper()
@@ -519,13 +481,14 @@ def main():
         ok = scraper.test_connection()
         sys.exit(0 if ok else 1)
     elif args.command == "bootstrap":
-        scraper.run_bootstrap(sample=args.sample)
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+        fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
+        logger.info(f"Bootstrap complete: {fetched} records — {stats}")
+        if fetched == 0:
+            sys.exit(1)
     elif args.command == "update":
-        count = 0
-        for doc in scraper.fetch_updates(datetime.now(timezone.utc) - timedelta(days=180)):
-            normalized = scraper.normalize(doc)
-            count += 1
-        logger.info("Update complete: %d records", count)
+        stats = scraper.update()
+        logger.info(f"Update complete: {stats}")
 
 
 if __name__ == "__main__":

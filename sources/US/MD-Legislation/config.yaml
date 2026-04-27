@@ -1,32 +1,46 @@
-source_id: US/MD-Legislation
-name: Maryland Code and Statutes (mgaleg.maryland.gov)
-country: US
-data_types:
-  - legislation
-url: https://mgaleg.maryland.gov/mgawebsite/Laws/Statutes
 auth:
   type: none
+country: US
+data_types:
+- legislation
+fetch:
+  articles_api: /api/Laws/GetArticles
+  base_url: https://mgaleg.maryland.gov/mgawebsite
+  delay: 1.5
+  sections_api: /api/Laws/GetSections
+license: Public Domain (government works)
+name: Maryland Code and Statutes (mgaleg.maryland.gov)
+notes: 'Maryland Code via mgaleg.maryland.gov JSON APIs and HTML statute text pages.
 
+  65 articles (general code + constitutional provisions).
+
+  API endpoints: GetArticles, GetSections, StatuteText.
+
+  Full text extracted from server-rendered HTML pages.
+
+  '
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - article_code
-    - section_number
-    - article_name
-
-fetch:
-  base_url: https://mgaleg.maryland.gov/mgawebsite
-  articles_api: /api/Laws/GetArticles
-  sections_api: /api/Laws/GetSections
-  delay: 1.5
-
-license: Public Domain (government works)
-
-notes: |
-  Maryland Code via mgaleg.maryland.gov JSON APIs and HTML statute text pages.
-  65 articles (general code + constitutional provisions).
-  API endpoints: GetArticles, GetSections, StatuteText.
-  Full text extracted from server-rendered HTML pages.
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: article_code
+    required: false
+    type: string
+  - name: section_number
+    required: false
+    type: string
+  - name: article_name
+    required: false
+    type: string
+source_id: US/MD-Legislation
+url: https://mgaleg.maryland.gov/mgawebsite/Laws/Statutes

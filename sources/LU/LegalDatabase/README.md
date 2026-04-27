@@ -7,7 +7,7 @@ Official Luxembourg legislation from the [Legilux portal](https://legilux.public
 - **Portal**: https://legilux.public.lu
 - **SPARQL Endpoint**: https://data.legilux.public.lu/sparqlendpoint
 - **Documentation**: https://data.legilux.public.lu/
-- **License**: CC BY 4.0
+- **License**: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 ## Coverage
 
@@ -80,6 +80,10 @@ python bootstrap.py update
   "language": "fr"
 }
 ```
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Luxembourg open government data via [Legilux](https://legilux.public.lu).
 
 ## Notes
 

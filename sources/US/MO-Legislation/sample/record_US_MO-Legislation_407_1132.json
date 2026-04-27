@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/407.1132",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T01:43:16.509979+00:00",
+  "title": "Missouri Revised Statutes § 407.1132 - Interactive computer service may block certain electronic mail without liability — federal law to control if enacted",
+  "text": "407.1132.  Interactive computer service may block certain electronic mail without liability — federal law to control if enacted. — 1.  An interactive computer service may, upon its own initiative, block the receipt or transmission through its service of any commercial electronic mail that it reasonably believes is, or will be, sent in violation of sections 407.1120 to 407.1132.\n  2.  No interactive computer service may be held liable for any action voluntarily taken in good faith to block the receipt or transmission through its service of any commercial electronic mail which it reasonably believes is, or will be, sent in violation of sections 407.1120 to 407.1132.\n  *3.  Sections 407.1120 to 407.1132 shall be of no force and effect on and after the date that federal law is enacted that prohibits or otherwise regulates the transmission of unsolicited commercial electronic mail messages.\n(L. 2000 S.B. 763 § 407.1340) \n*Contingent expiration date\n*Revisor's note:  In 2003, Congress passed the CAN-SPAM Act (15 U.S.C. Section 7701 et seq.) regarding unwanted commercial electronic mail.",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=407.1132",
+  "section_id": "407.1132",
+  "chapter": "407",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

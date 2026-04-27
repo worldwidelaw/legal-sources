@@ -1,0 +1,18 @@
+{
+  "_id": "MX-JAL-79360",
+  "_source": "MX/PoderJudicialJalisco",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-23T13:20:45.844302+00:00",
+  "title": "Toca 267/2025 — QUINTA SALA ESPECIALIZADA EN MATERIA CIVIL",
+  "text": "El documento resume una sentencia de la Quinta Sala del Supremo Tribunal de Justicia del Estado de Jalisco sobre el Toca número 267/2025, derivado de una apelación en un juicio civil ordinario (expediente 746/2023).\n\nUn abogado, representando al demandado, apeló la sentencia definitiva del Juez Cuarto de lo Civil, que absolvió al demandado de las prestaciones reclamadas por el actor, basándose en la prescripción negativa de la acción.  El juez de primera instancia no condenó en costas.\n\nLa Sala, tras revisar el caso, determinó que la apelación era procedente.  Confirmaron la competencia del juez de primera instancia y la validez de la vía ordinaria.  Sin embargo, encontraron fundado el agravio del apelante respecto a la condena en costas.  El demandado SÍ había solicitado la condena en costas en su contestación de demanda, por lo que el juez de primera instancia omitió resolver sobre ese punto.\n\nEn consecuencia, la Sala modificó la sentencia de primera instancia para incluir la condena al actor al pago de gastos y costas, a regularse en ejecución de sentencia.  La Sala se basó en el principio de que, al no haber reenvío en el sistema procesal, el tribunal de apelación puede modificar directamente la sentencia original.  Finalmente, se notificó la sentencia por boletín judicial.",
+  "date": "2025-06-23",
+  "url": "https://publica-sentencias-backend.stjjalisco.gob.mx/toca/79360/file",
+  "court": "QUINTA SALA ESPECIALIZADA EN MATERIA CIVIL",
+  "judge": "Mgdo. Marcelo Romero G. de Quevedo",
+  "subject_area": "Civil",
+  "case_type": "CIVIL ORDINARIA",
+  "ruling": "MODIFICAR",
+  "case_number": "267/2025",
+  "publication_date": "2025-06-25",
+  "crime_or_action": "ACCIÓN DE PAGO"
+}

@@ -57,8 +57,7 @@ Each record contains:
 
 ## License
 
-German court decisions are public domain under § 5 UrhG (official works exemption).
-Data provided by the Bavarian State Chancellery.
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).
 
 ## Notes
 

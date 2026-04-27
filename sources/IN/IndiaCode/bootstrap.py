@@ -372,6 +372,7 @@ def main():
                         help="Fetch only sample records")
     parser.add_argument("--sample-size", type=int, default=15,
                         help="Number of sample records")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = IndiaCodeScraper()

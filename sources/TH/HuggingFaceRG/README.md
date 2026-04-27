@@ -22,3 +22,7 @@ python bootstrap.py test              # Test connectivity
 python bootstrap.py bootstrap --sample # Fetch 15 sample records
 python bootstrap.py bootstrap          # Full bootstrap (all OCR files)
 ```
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — HuggingFace dataset of Royal Gazette pages. Underlying government publications are open data.

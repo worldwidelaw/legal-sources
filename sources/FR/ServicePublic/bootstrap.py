@@ -402,6 +402,7 @@ def main():
                        help="Fetch updates since date (YYYY-MM-DD)")
     parser.add_argument("--audience", type=str, choices=["particuliers", "entreprises", "all"],
                        default="all", help="Which audience(s) to fetch")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

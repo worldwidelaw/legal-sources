@@ -1,23 +1,42 @@
-source:
-  id: UN/OHCHR-Juris
-  name: OHCHR Treaty Body Jurisprudence Database
-  country: UN
-  url: https://juris.ohchr.org/
-  data_types:
-    - case_law
-  auth: none
-  license: "United Nations / OHCHR"
-  rate_limit: 2  # seconds between requests
-
 schema:
   key_fields:
-    - _id
-    - title
-    - symbol
-    - communication_number
-    - treaty_body
-    - country
-    - decision_type
-    - date
-    - text
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: symbol
+    required: false
+    type: string
+  - name: communication_number
+    required: false
+    type: string
+  - name: treaty_body
+    required: false
+    type: string
+  - name: country
+    required: false
+    type: string
+  - name: decision_type
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: UN
+  data_types:
+  - case_law
+  id: UN/OHCHR-Juris
+  license: United Nations / OHCHR
+  name: OHCHR Treaty Body Jurisprudence Database
+  rate_limit: 2
+  url: https://juris.ohchr.org/

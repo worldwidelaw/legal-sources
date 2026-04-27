@@ -1,20 +1,33 @@
-source:
-  id: TH/HuggingFaceRG
-  name: Thailand Royal Gazette OCR Dataset (HuggingFace)
-  country: TH
-  url: https://huggingface.co/datasets/obbzung/soc-ratchakitcha
-  data_types:
-    - legislation
-  auth: none
-  license: CC-BY 4.0
-  rate_limit: 1
-
 schema:
   key_fields:
-    - _id
-    - title
-    - category
-    - publish_date
-    - text
-    - book_no
-    - section
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: category
+    required: false
+    type: string
+  - name: publish_date
+    required: false
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: book_no
+    required: false
+    type: string
+  - name: section
+    required: false
+    type: string
+source:
+  auth: none
+  country: TH
+  data_types:
+  - legislation
+  id: TH/HuggingFaceRG
+  license: CC-BY 4.0
+  name: Thailand Royal Gazette OCR Dataset (HuggingFace)
+  rate_limit: 1
+  url: https://huggingface.co/datasets/obbzung/soc-ratchakitcha

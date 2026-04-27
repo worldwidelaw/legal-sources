@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/432.210",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:01:28.049570+00:00",
+  "title": "Missouri Revised Statutes § 432.210",
+  "text": "432.210.  Scope. — 1.  Except as otherwise provided in subsection 2 of this section, sections 432.200 to 432.295 apply to electronic records and electronic signatures relating to a transaction.\n  2.  Sections 432.200 to 432.295 shall not apply to a transaction to the extent it is governed by:\n  (1)  A law governing the creation and execution of wills, codicils, or testamentary trusts; and\n  (2)  The uniform commercial code other than sections 400.1-107, 400.1-206, 400.2-101 to 400.2-725, and 400.2A-101 to 400.2A-532.\n  3.  Sections 432.200 to 432.295 apply to an electronic record or electronic signature otherwise excluded from the application of sections 432.200 to 432.295 under subsection 2 of this section to the extent it is governed by a law other than those specified in subsection 2 of this section.\n  4.  A transaction subject to sections 432.200 to 432.295 is also subject to other applicable substantive law.\n(L. 2003 H.B. 254)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=432.210",
+  "section_id": "432.210",
+  "chapter": "432",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

@@ -71,3 +71,7 @@ python bootstrap.py update
 - Consent requirements
 - Data subject rights
 - International transfers
+
+## License
+
+Public domain — Danish government decisions are not subject to copyright under [Danish Copyright Act §9](https://www.retsinformation.dk/eli/lta/2023/164).

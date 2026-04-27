@@ -1,83 +1,95 @@
-# UK/LegislationGovUK -- UK National Archives Legislation Portal
-# https://www.legislation.gov.uk
-
-source:
-  id: UK/LegislationGovUK
-  country: UK
-  name: UK Legislation
-  url: https://www.legislation.gov.uk
-  description: |
-    The official UK Government legislation database maintained by The National Archives.
-    Contains all UK Public General Acts from 1801-present, UK Statutory Instruments,
-    Welsh legislation, Scottish legislation, and Northern Ireland legislation.
-    Provides consolidated (revised) versions showing current law.
-  data_types:
-    - legislation
-  license: Open Government Licence v3.0
-  language: en
-
-# Authentication
 auth:
   type: none
-
-# Rate limiting - legislation.gov.uk is public but should be used responsibly
-rate_limit:
-  requests_per_second: 2
-  burst: 5
-  max_workers: 3
-
-# Data model
 data_model:
-  update_strategy: upsert
   dedup_key:
-    - doc_id
-    - version_date
-
-# Schema validation
-schema:
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - title
-    - text
-  key_fields:
-    - doc_id
-    - doc_type
-    - title
-    - year
-    - number
-    - version_date
-    - extent
-
-# Endpoints for different legislation types
+  - doc_id
+  - version_date
+  update_strategy: upsert
 endpoints:
-  # Primary UK legislation
   ukpga:
-    name: UK Public General Acts
-    feed_url: https://www.legislation.gov.uk/ukpga/data.feed
     count: 12003
+    feed_url: https://www.legislation.gov.uk/ukpga/data.feed
+    name: UK Public General Acts
   uksi:
-    name: UK Statutory Instruments
-    feed_url: https://www.legislation.gov.uk/uksi/data.feed
     count: 72000
-  # Devolved legislation (optional - can be enabled for full coverage)
-  # wsi: Welsh Statutory Instruments
-  # ssi: Scottish Statutory Instruments
-  # nisi: Northern Ireland Statutory Instruments
+    feed_url: https://www.legislation.gov.uk/uksi/data.feed
+    name: UK Statutory Instruments
+notes: 'UK legislation.gov.uk is one of the best open legal data systems in the world.
 
-notes: |
-  UK legislation.gov.uk is one of the best open legal data systems in the world.
   - ATOM feed for document discovery with pagination
+
   - XML full text with structured markup (Akoma Ntoso compatible)
+
   - Consolidated/revised versions showing current law
+
   - No authentication required
+
   - Open Government Licence v3.0
 
+
   Document types:
+
   - ukpga: UK Public General Acts (primary legislation since 1801)
+
   - uksi: UK Statutory Instruments (secondary legislation)
+
   - ukla: UK Local Acts
+
   - ukppa: UK Private and Personal Acts
+
   - ukmo: UK Ministerial Orders
+
   - wsi/asp/ssi/nisi: Devolved legislation for Wales/Scotland/N.Ireland
+
+  '
+rate_limit:
+  burst: 5
+  max_workers: 3
+  requests_per_second: 2
+schema:
+  key_fields:
+  - name: doc_id
+    required: false
+    type: string
+  - name: doc_type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: year
+    required: false
+    type: string
+  - name: number
+    required: false
+    type: string
+  - name: version_date
+    required: false
+    type: string
+  - name: extent
+    required: false
+    type: string
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - title
+  - text
+source:
+  country: UK
+  data_types:
+  - legislation
+  description: 'The official UK Government legislation database maintained by The National Archives.
+
+    Contains all UK Public General Acts from 1801-present, UK Statutory Instruments,
+
+    Welsh legislation, Scottish legislation, and Northern Ireland legislation.
+
+    Provides consolidated (revised) versions showing current law.
+
+    '
+  id: UK/LegislationGovUK
+  language: en
+  license: Open Government Licence v3.0
+  name: UK Legislation
+  url: https://www.legislation.gov.uk

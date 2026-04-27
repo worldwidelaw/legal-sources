@@ -323,6 +323,7 @@ def main():
         "--since", type=str, required=True,
         help="ISO date to fetch updates from (e.g., 2024-01-01)"
     )
+    updates_parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

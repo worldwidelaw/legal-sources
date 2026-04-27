@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/191.1146",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T20:47:22.234703+00:00",
+  "title": "Missouri Revised Statutes § 191.1146 - Physician-patient relationship required, how established",
+  "text": "191.1146.  Physician-patient relationship required, how established. — 1.  Physicians licensed under chapter 334 who use telemedicine shall ensure that a properly established physician-patient relationship exists with the person who receives the telemedicine services.  The physician-patient relationship may be established by:\n  (1)  An in-person encounter through a medical interview and physical examination;\n  (2)  Consultation with another physician, or that physician's delegate, who has an established relationship with the patient and an agreement with the physician to participate in the patient's care; or\n  (3)  A telemedicine encounter, if the standard of care does not require an in-person encounter, and in accordance with evidence-based standards of practice and telemedicine practice guidelines that address the clinical and technological aspects of telemedicine.\n  2.  In order to establish a physician-patient relationship through telemedicine:\n  (1)  The technology utilized shall be sufficient to establish an informed diagnosis as though the medical interview and physical examination has been performed in person; and\n  (2)  Prior to providing treatment, including issuing prescriptions or physician certifications under Article XIV of the Missouri Constitution, a physician who uses telemedicine shall interview the patient, collect or review relevant medical history, and perform an examination sufficient for the diagnosis and treatment of the patient.  A questionnaire completed by the patient, whether via the internet or telephone, does not constitute an acceptable medical interview and examination for the provision of treatment by telehealth.\n(L. 2016 S.B. 579, A.L. 2020 H.B. 1682 merged with H.B. 1896)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=191.1146",
+  "section_id": "191.1146",
+  "chapter": "191",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

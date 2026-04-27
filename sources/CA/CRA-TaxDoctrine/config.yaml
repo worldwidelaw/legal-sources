@@ -1,31 +1,38 @@
-name: Canada Revenue Agency Tax Doctrine
-source_id: CA/CRA-TaxDoctrine
 country: CA
 data_types:
-  - doctrine
-
-url: https://www.canada.ca/en/revenue-agency/services/tax/technical-information/income-tax.html
+- doctrine
 license: Crown Copyright (Government of Canada Open Data)
-update_frequency: monthly
+name: Canada Revenue Agency Tax Doctrine
+notes: 'CRA tax doctrine from canada.ca, covering:
 
+  - Income Tax Folios (~50 chapters) - current official interpretations
+
+  - Interpretation Bulletins (~115 ITs) - archived but still referenced
+
+  - Income Tax Technical News (~20 ITTNs)
+
+  - Information Circulars (~50 ICs)
+
+  All documents are HTML full text on canada.ca.
+
+  '
 schema:
   key_fields:
-    - _id
-    - doc_type
+  - name: _id
+    required: true
+    type: string
+  - name: doc_type
+    required: false
+    type: string
   required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
-notes: |
-  CRA tax doctrine from canada.ca, covering:
-  - Income Tax Folios (~50 chapters) - current official interpretations
-  - Interpretation Bulletins (~115 ITs) - archived but still referenced
-  - Income Tax Technical News (~20 ITTNs)
-  - Information Circulars (~50 ICs)
-  All documents are HTML full text on canada.ca.
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source_id: CA/CRA-TaxDoctrine
+update_frequency: monthly
+url: https://www.canada.ca/en/revenue-agency/services/tax/technical-information/income-tax.html

@@ -1,35 +1,35 @@
-source:
-  id: MK/JudicialPortal
-  name: North Macedonia Supreme Court Practice (Судска пракса - Врховен суд)
-  country: MK
-  data_types:
-    - case_law
-  language: mk
-  url: http://vrhoven.sud.mk
-  license: Open Data
-  notes: >
-    Supreme Court case law via IBM Domino XPages database.
-    Searchable via full-text search, documents accessed via OpenDocument URL.
-    Contains sentencies (сентенци), legal positions, and court practice
-    in civil, criminal, and administrative law areas.
-    Full text inline in HTML documents. Macedonian language.
-
-schema:
-  key_fields:
-    - _id
-    - doc_number
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
 api:
-  type: domino_xpages
   base_url: http://vrhoven.sud.mk/VSUD/MatraVSUD.nsf
   format: html
   rate_limit: 2
+  type: domino_xpages
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: doc_number
+    required: false
+    type: string
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  country: MK
+  data_types:
+  - case_law
+  id: MK/JudicialPortal
+  language: mk
+  license: Open Data
+  name: North Macedonia Supreme Court Practice (Судска пракса - Врховен суд)
+  notes: 'Supreme Court case law via IBM Domino XPages database. Searchable via full-text search, documents accessed via OpenDocument URL. Contains sentencies (сентенци), legal positions, and court practice
+    in civil, criminal, and administrative law areas. Full text inline in HTML documents. Macedonian language.
+
+    '
+  url: http://vrhoven.sud.mk

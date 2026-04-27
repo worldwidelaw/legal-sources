@@ -1,0 +1,22 @@
+source:
+  id: MU/CompetitionCommission
+  name: Mauritius Competition Commission Decisions
+  country: MU
+  url: https://competitioncommission.mu
+  data_types:
+    - case_law
+  auth: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url

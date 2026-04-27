@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/472.425",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:34:50.949855+00:00",
+  "title": "Missouri Revised Statutes § 472.425 - Authority of custodian — assessment of cost — partial disclosure, authority of custodian — undue burden, court order",
+  "text": "472.425.  Authority of custodian — assessment of cost — partial disclosure, authority of custodian — undue burden, court order. — 1.  When disclosing digital assets of a user under sections 472.400 to 472.490, the custodian may at its sole discretion:\n  (1)  Grant a fiduciary or designated recipient full access to the user's account;\n  (2)  Grant a fiduciary or designated recipient partial access to the user's account sufficient to perform the tasks with which the fiduciary or designated recipient is charged; or\n  (3)  Provide a fiduciary or designated recipient a copy in a record of any digital asset that, on the date the custodian received the request for disclosure, the user could have accessed if the user were alive and had full capacity and access to the account.\n  2.  A custodian may assess a reasonable administrative charge for the cost of disclosing digital assets under sections 472.400 to 472.490.\n  3.  A custodian shall not disclose under sections 472.400 to 472.490 a digital asset deleted by a user.\n  4.  If a user directs or a fiduciary requests a custodian to disclose under sections 472.400 to 472.490 some, but not all, of the user's digital assets, the custodian need not disclose the assets if segregation of the assets would impose an undue burden on the custodian.  If the custodian believes the direction or request imposes an undue burden, the custodian or fiduciary may seek an order from the court to disclose:\n  (1)  A subset limited by date of the user's digital assets;\n  (2)  All of the user's digital assets to the fiduciary or designated recipient;\n  (3)  None of the user's digital assets; or\n  (4)  All of the user's digital assets to the court for review in camera.\n(L. 2018 H.B. 1250)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=472.425",
+  "section_id": "472.425",
+  "chapter": "472",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

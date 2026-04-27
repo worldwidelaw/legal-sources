@@ -6,7 +6,7 @@ Data source for Swedish Parliamentary documents from the Riksdag (Swedish Parlia
 
 - **API**: https://data.riksdagen.se
 - **Portal**: https://www.riksdagen.se/sv/dokument-och-lagar/
-- **License**: Public Domain (cite Riksdagen as source)
+- **License**: [Public Domain](https://data.riksdagen.se) — Swedish official documents are not subject to copyright (Upphovsrattslag 1960:729, Section 9).
 
 ## Document Types
 
@@ -65,6 +65,10 @@ Key fields in normalized output:
 - `document_type`: Type code (prop, mot, bet, etc.)
 - `session`: Parliamentary session (e.g., "2025/26")
 - `document_number`: Number within session
+
+## License
+
+[Public Domain](https://data.riksdagen.se) — Swedish official documents are not subject to copyright (Upphovsrattslag 1960:729, Section 9).
 
 ## Notes
 

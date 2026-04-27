@@ -363,6 +363,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="UK/TPR data fetcher")
     parser.add_argument("command", choices=["bootstrap", "test"])
     parser.add_argument("--sample", action="store_true")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     if args.command == "test":

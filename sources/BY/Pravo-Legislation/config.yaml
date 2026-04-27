@@ -1,39 +1,42 @@
-# BY/Pravo-Legislation -- Belarus National Legal Internet Portal (Pravo.by)
-# Fetches all legislation (laws, decrees, resolutions) with full text via PDF
-
-source_id: BY/Pravo-Legislation
-country: BY
-name: Belarus National Legal Internet Portal (Pravo.by)
-url: https://pravo.by
-data_types:
-  - legislation
-
 auth:
   type: none
+country: BY
+data_types:
+- legislation
+name: Belarus National Legal Internet Portal (Pravo.by)
+notes: 'Fetches legislation from Belarus National Legal Internet Portal (pravo.by).
 
+  Enumerates documents via the "new arrivals" endpoint with print=1 param.
+
+  Downloads PDFs from /upload/docs/op/ and extracts text via common/pdf_extract.
+
+  Covers: laws (H), codes (Hk), presidential decrees (P), council of ministers
+
+  resolutions (C), ministry acts (W), national bank resolutions (B), court
+
+  plenum acts (S), constitutional court acts (K), international treaties (I),
+
+  local council decisions (D), local executive decisions (R), and more.
+
+  ~500 documents per month, ~6000+ per year.
+
+  '
 rate_limit:
-  requests_per_second: 0.5
   burst: 2
-
+  requests_per_second: 0.5
 schema:
   key_fields:
-    - regnum
+  - name: regnum
+    required: false
+    type: string
   required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
-notes: |
-  Fetches legislation from Belarus National Legal Internet Portal (pravo.by).
-  Enumerates documents via the "new arrivals" endpoint with print=1 param.
-  Downloads PDFs from /upload/docs/op/ and extracts text via common/pdf_extract.
-  Covers: laws (H), codes (Hk), presidential decrees (P), council of ministers
-  resolutions (C), ministry acts (W), national bank resolutions (B), court
-  plenum acts (S), constitutional court acts (K), international treaties (I),
-  local council decisions (D), local executive decisions (R), and more.
-  ~500 documents per month, ~6000+ per year.
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source_id: BY/Pravo-Legislation
+url: https://pravo.by

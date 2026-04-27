@@ -42,3 +42,7 @@ python bootstrap.py update             # Incremental update
 - PDF text extraction works well for English-language judgments
 - Some older judgments may be scanned images (no extractable text)
 - The full dataset is ~1.11 TB; full bootstrap is not recommended locally
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — published via the [AWS Open Data Registry](https://registry.opendata.aws/indian-high-court-judgments/).

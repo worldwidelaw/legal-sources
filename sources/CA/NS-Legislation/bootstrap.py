@@ -270,14 +270,10 @@ def main():
             sys.exit(1)
 
     elif args.command == "bootstrap":
-        SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-        count = 0
-        for record in fetch_all(sample=args.sample):
-            out_path = SAMPLE_DIR / f"{count:04d}.json"
-            out_path.write_text(json.dumps(record, ensure_ascii=False, indent=2))
-            count += 1
-        print(f"Done. Saved {count} records to {SAMPLE_DIR}/", file=sys.stderr)
-
-
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+        fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
+        logger.info(f"Bootstrap complete: {fetched} records — {stats}")
+        if fetched == 0:
+            sys.exit(1)
 if __name__ == "__main__":
     main()

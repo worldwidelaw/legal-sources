@@ -1,0 +1,82 @@
+# ===================================================================
+# MU/SupremeCourt -- Mauritius Supreme Court Judgments
+# ===================================================================
+# Official judgments from the Judiciary of Mauritius covering the
+# Supreme Court (SCJ), Intermediate Court (INT), Industrial Court (IND),
+# Family Law Court (FLQ), District Courts, and Court of Rodrigues.
+# ~11,000+ judgments with full text via PDF download.
+#
+# Discovery: HTML search at /judgment-search with glossaryaz_title A-Z + 0-9
+# Full text: PDF download from /downloadPDF/judgment/{document_id}
+# Format: PDF (Word-to-PDF conversions, text-based)
+# License: Free public access
+# ===================================================================
+
+source:
+  id: "MU/SupremeCourt"
+  country: "MU"
+  name: "Mauritius Supreme Court Judgments"
+  url: "https://supremecourt.govmu.org/"
+  description: |
+    Official judgments from the Judiciary of Mauritius. Covers the Supreme Court,
+    Intermediate Court, Industrial Court, Family Law Court, District Courts, and
+    Court of Rodrigues. Full text downloaded as PDF. ~11,000+ judgments.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://supremecourt.govmu.org"
+  search_url: "/judgment-search"
+  pagination: "?glossaryaz_title={letter}&page={page}"
+  pdf_download: "/downloadPDF/judgment/{document_id}"
+
+data_model:
+  type: "case_law"
+  primary_key: "document_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "document_number"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "document_number"
+      description: "Document number (e.g., 2026 INT 96)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title / parties"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the judgment"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Delivery date (ISO 8601)"
+      type: "string"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to PDF download"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - Full text via PDF download at /downloadPDF/judgment/{document_id}
+  - Search page supports glossaryaz_title (A-Z, 0-9) with 10 results/page
+  - Courts: SCJ (Supreme Court), INT (Intermediate), IND (Industrial), FLQ (Family), District Courts
+  - PDFs are Word-to-PDF conversions (text-based, not scanned)

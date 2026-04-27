@@ -1,0 +1,25 @@
+auth: none
+country: GU
+data_types:
+- case_law
+name: Guam Superior Court Decisions
+notes: 'Superior Court decisions and orders (1998-present) via POST form on
+  guamcourts.gov. ~200-300 decisions per year. Full text extracted from PDFs via
+  pdfplumber.'
+schedule: monthly
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: case_number
+    required: true
+    type: string
+  - name: case_name
+    required: true
+    type: string
+  - name: decision_type
+    required: false
+    type: string
+source_id: GU/SuperiorCourt
+url: https://guamcourts.gov/Superior-Court-Decision-and-Orders/Superior-Court-Decision-and-Orders.asp

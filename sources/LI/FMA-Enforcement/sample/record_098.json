@@ -1,0 +1,14 @@
+{
+  "_id": "warning-en-403",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:41.138342Z",
+  "title": "[Warning] Warning: freedom-finance[dot]nl",
+  "text": "The Liechtenstein Financial Market Authority (FMA) points out that the operator of the website freedom-finance[dot]nl is not licensed or registered by the FMA.",
+  "date": "2024-08-06",
+  "url": "https://www.fma-li.li/en/warning/warning-freedom-finance-dot-nl-403",
+  "language": "eng",
+  "category": "Warning",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

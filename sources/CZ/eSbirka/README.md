@@ -70,6 +70,10 @@ Each normalized document contains:
 - Data is available in Czech language only
 - Some SSL certificate issues may require verification disabled
 
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Czech open data, Ministry of Interior.
+
 ## References
 
 - [Open Data Documentation](https://zakony.gov.cz/gov/otevrena-data-a-verejna-api-systemu-e-sbirka-od-15-ledna/)

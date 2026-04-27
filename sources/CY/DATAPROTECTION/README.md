@@ -72,4 +72,4 @@ Each record contains:
 
 ## License
 
-Open Government Data - Cyprus
+[Open Government Data](https://www.dataprotection.gov.cy) — Cyprus government regulatory decisions are publicly available.

@@ -1,0 +1,67 @@
+# ===================================================================
+# CN/STA-Announcements -- State Taxation Administration English Tax Law Database
+# ===================================================================
+# Official English translations of Chinese tax laws, regulations,
+# and normative documents from fgk.chinatax.gov.cn/eng/.
+# ~160 full-text documents. HTML scraping with pagination.
+# ===================================================================
+
+source:
+  id: "CN/STA-Announcements"
+  country: "CN"
+  name: "State Taxation Administration English Tax Law Database"
+  url: "https://fgk.chinatax.gov.cn/eng/home.html"
+  description: |
+    English translations of Chinese tax laws, regulations, and normative
+    documents published by the State Taxation Administration (STA).
+    Covers individual/corporate income tax, VAT, customs, tax treaties,
+    and administrative measures. ~160 documents with full text.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "Conservative rate limit for Chinese government servers."
+
+api:
+  type: "html_scraping"
+  base_url: "https://fgk.chinatax.gov.cn"
+  endpoints:
+    laws_listing: "/eng/c102962/c102967/c102997/LAWS.html"
+    normative_listing: "/eng/c102962/c102967/c102966/LAWS.html"
+
+schema:
+  key_fields:
+    - name: "doc_id"
+      description: "Document ID extracted from URL path"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+    - name: "category"
+      description: "Document category (laws or normative)"
+      type: "string"
+      role: "classification"
+
+notes: |
+  - English translations published on fgk.chinatax.gov.cn/eng/
+  - Two main categories: Laws (92 docs) and Normative Documents (69 docs)
+  - Listing pages with pagination: LAWS.html, LAWS_2.html, etc.
+  - Content in <div class="zscont"> with <p> tags
+  - Metadata from <meta> tags: ArticleTitle, PubDate
+  - Language: English (translations of Chinese originals)

@@ -1,6 +1,6 @@
 last_bootstrap: null
 last_error: The read operation timed out
-last_run: '2026-04-05T05:40:09.675948+00:00'
+last_run: '2026-04-17T12:19:49.809694+00:00'
 run_history:
 - error_message: The read operation timed out
   errors: 0
@@ -23,4 +23,34 @@ run_history:
   skip_exception: 0
   skip_normalize_none: 0
   started_at: '2026-04-05T05:38:18.808170+00:00'
+- errors: 0
+  finished_at: '2026-04-16T16:53:07.627434+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-16T16:49:12.731149+00:00'
+- errors: 0
+  finished_at: '2026-04-17T12:17:30.856618+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-17T12:15:57.830329+00:00'
+- errors: 0
+  finished_at: '2026-04-17T12:19:49.809694+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-17T12:18:21.630861+00:00'
 total_records: 0

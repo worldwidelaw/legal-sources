@@ -304,6 +304,7 @@ def main():
                         help="Number of sample records")
     parser.add_argument("--max-records", type=int, default=0,
                         help="Maximum records to fetch (0=all)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
     script_dir = Path(__file__).parent

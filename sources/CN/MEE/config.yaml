@@ -1,0 +1,29 @@
+source_id: CN/MEE
+name: China Ministry of Ecology and Environment (生态环境部)
+country: CN
+url: https://www.mee.gov.cn/
+data_types:
+  - legislation
+  - doctrine
+auth: none
+language: zh
+schedule: monthly
+
+endpoints:
+  gzk_search: https://www.mee.gov.cn/was5/web/search?channelid=295523
+  site_search: https://www.mee.gov.cn/was5/web/search?channelid=270514
+  laws_listing: https://www.mee.gov.cn/ywgz/fgbz/fl/
+  admin_regs_listing: https://www.mee.gov.cn/ywgz/fgbz/xzfg/
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - _type
+    - _source
+    - _fetched_at
+    - category
+    - standard_number

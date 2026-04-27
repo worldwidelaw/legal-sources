@@ -1,0 +1,56 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — Samoa Ministry for Revenue Tax Guidance
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "WS/MfR-TaxGuidance"
+  country: "WS"
+  name: "Samoa Ministry for Revenue Tax Guidance"
+  url: "https://revenue.gov.ws"
+  description: |
+    Tax legislation, regulations, forms, and corporate plans from the
+    Samoa Ministry of Customs and Revenue. Covers VAGST (15%), income
+    tax, excise tax, customs, and business licensing.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://revenue.gov.ws"
+
+data_model:
+  type: "doctrine"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+
+schema:
+  key_fields:
+    - name: "doc_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English / Samoan
+  - ~110+ PDFs (acts, regulations, amendments, forms, corporate plans)
+  - Full text extracted from PDFs via pdf_extract
+  - No authentication required

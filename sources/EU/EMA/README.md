@@ -56,3 +56,7 @@ Key fields:
 - `active_substance`: Active pharmaceutical ingredient
 - `therapeutic_area`: MeSH therapeutic area classification
 - `medicine_status`: Authorization status (Authorised, Withdrawn, etc.)
+
+## License
+
+[EUR-Lex legal notice](https://eur-lex.europa.eu/content/legal-notice/legal-notice.html) — EU agency public data, reuse authorised with attribution.

@@ -1,0 +1,39 @@
+auth:
+  type: none
+country: VI
+data_types:
+- case_law
+fetch:
+  base_url: https://supreme.vicourts.org
+  published_path: /court_opinions/published_opinions
+  unpublished_path: /court_opinions/unpublished_opinions
+  delay: 2.0
+name: USVI Supreme Court Opinions
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: citation
+    required: false
+    type: string
+  - name: author
+    required: false
+    type: string
+  - name: opinion_type
+    required: false
+    type: string
+source_id: VI/SupremeCourt
+url: https://supreme.vicourts.org/court_opinions/published_opinions

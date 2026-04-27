@@ -237,7 +237,11 @@ class CorteConstitucionalScraper(BaseScraper):
     # -- Fetchers --------------------------------------------------------
 
     def fetch_all(self) -> Generator[dict, None, None]:
-        """Fetch all decisions with full text from motivo field."""
+        """Yield raw API records for all decisions.
+
+        Yields raw API records (not normalized) so BaseScraper.bootstrap()
+        can call normalize() exactly once per record.
+        """
         total_fetched = 0
         page = 1
 
@@ -248,7 +252,7 @@ class CorteConstitucionalScraper(BaseScraper):
         criteria["sort"] = "desc"
         criteria["paginacion"] = {
             "page": page,
-            "pageSize": 50,
+            "pageSize": 20,
             "total": 0,
             "contar": True,
         }
@@ -267,16 +271,18 @@ class CorteConstitucionalScraper(BaseScraper):
                 criteria["paginacion"]["total"] = total
 
             for record in records:
-                normalized = self.normalize(record)
-                if normalized.get("text"):
-                    yield normalized
+                # Quick check that the raw record has motivo text
+                resolucion = record.get("resolucion", {})
+                if resolucion.get("motivo"):
+                    yield record
                     total_fetched += 1
 
             logger.info(
                 f"Page {page}, fetched {len(records)} records (total: {total_fetched})"
             )
 
-            if len(records) < 50:
+            # API always returns 20 records per page regardless of pageSize
+            if len(records) < 20:
                 break
 
             page += 1
@@ -441,42 +447,11 @@ def main():
         scraper.test_api()
 
     elif command in ("bootstrap", "bootstrap-fast"):
-        if sample:
-            logger.info("Fetching sample records...")
-            samples = scraper.fetch_sample()
-
-            # Save samples
-            sample_dir = Path(__file__).parent / "sample"
-            sample_dir.mkdir(exist_ok=True)
-
-            for i, record in enumerate(samples):
-                path = sample_dir / f"sample_{i:03d}.json"
-                with open(path, "w", encoding="utf-8") as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-
-            logger.info(f"Saved {len(samples)} sample records to {sample_dir}")
-
-            # Validation
-            texts = [r for r in samples if r.get("text") and len(r["text"]) > 100]
-            print(f"\nValidation: {len(texts)}/{len(samples)} records have full text")
-            for r in samples:
-                text_len = len(r.get("text", ""))
-                print(f"  {r['_id']}: {r['title'][:60]} | text: {text_len} chars")
-        else:
-            logger.info("Starting full bootstrap...")
-            count = 0
-            output_dir = Path(__file__).parent / "data"
-            output_dir.mkdir(exist_ok=True)
-
-            for record in scraper.fetch_all():
-                path = output_dir / f"{record['_id']}.json"
-                with open(path, "w", encoding="utf-8") as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-                count += 1
-                if count % 100 == 0:
-                    logger.info(f"  Saved {count} records...")
-
-            logger.info(f"Bootstrap complete: {count} records saved")
+        stats = scraper.bootstrap(sample_mode=sample, sample_size=15)
+        fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
+        logger.info(f"Bootstrap complete: {fetched} records — {stats}")
+        if fetched == 0:
+            sys.exit(1)
 
     elif command == "update":
         since = sys.argv[2] if len(sys.argv) > 2 else "2026-01-01"

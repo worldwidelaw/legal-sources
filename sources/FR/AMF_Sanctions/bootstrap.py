@@ -365,6 +365,7 @@ def main():
                        help="Fetch updates since date (ISO format)")
     parser.add_argument('--no-pdf', action='store_true',
                        help="Skip PDF downloads (faster, less text)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

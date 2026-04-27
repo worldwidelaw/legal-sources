@@ -1,32 +1,36 @@
-source:
-  id: UK/HMRC
-  name: UK HMRC Tax Manuals
-  country: UK
-  url: https://www.gov.uk/government/collections/hmrc-manuals
-  description: |
-    HM Revenue & Customs technical guidance manuals covering UK taxes.
-    Contains 247 manuals with 84,000+ sections covering Income Tax, VAT,
-    Capital Gains Tax, Inheritance Tax, Corporation Tax, and more.
-  data_types:
-    - doctrine
-  license: Open Government Licence v3.0
-  language: en
-  update_frequency: daily
-
 api:
-  type: govuk_content_api
-  search_endpoint: https://www.gov.uk/api/search.json
   content_endpoint: https://www.gov.uk/api/content
-  rate_limit: 1.0  # seconds between requests
+  rate_limit: 1.0
+  search_endpoint: https://www.gov.uk/api/search.json
   timeout: 60
-
-schema:
-  key_fields:
-    - manual_slug
-    - section_id
-  date_fields:
-    - updated_at
-    - first_published_at
-
+  type: govuk_content_api
 auth:
   required: false
+schema:
+  date_fields:
+  - updated_at
+  - first_published_at
+  key_fields:
+  - name: manual_slug
+    required: false
+    type: string
+  - name: section_id
+    required: false
+    type: string
+source:
+  country: UK
+  data_types:
+  - doctrine
+  description: 'HM Revenue & Customs technical guidance manuals covering UK taxes.
+
+    Contains 247 manuals with 84,000+ sections covering Income Tax, VAT,
+
+    Capital Gains Tax, Inheritance Tax, Corporation Tax, and more.
+
+    '
+  id: UK/HMRC
+  language: en
+  license: Open Government Licence v3.0
+  name: UK HMRC Tax Manuals
+  update_frequency: daily
+  url: https://www.gov.uk/government/collections/hmrc-manuals

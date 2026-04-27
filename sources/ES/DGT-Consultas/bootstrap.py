@@ -465,6 +465,8 @@ def main():
                         help="Fetch sample records only")
     parser.add_argument("--count", type=int, default=15,
                         help="Number of sample records")
+    parser.add_argument("--full", action="store_true",
+                        help="Full bootstrap (default behavior, accepted for VPS compat)")
     parser.add_argument("--max-pages", type=int, default=None,
                         help="Maximum pages to fetch (bootstrap)")
     parser.add_argument("--tab", type=int, default=2, choices=[1, 2],
@@ -555,7 +557,9 @@ def main():
                 logger.error("Cannot init session")
                 sys.exit(1)
 
-            output_file = script_dir / "records.jsonl"
+            data_dir = script_dir / "data"
+            data_dir.mkdir(exist_ok=True)
+            output_file = data_dir / "records.jsonl"
             count = 0
 
             with open(output_file, "w", encoding="utf-8") as f:

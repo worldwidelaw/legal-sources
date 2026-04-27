@@ -174,6 +174,7 @@ def main():
     parser.add_argument("command", choices=["bootstrap", "test"])
     parser.add_argument("--sample", action="store_true",
                         help="Fetch only sample records")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     if args.command == "test":

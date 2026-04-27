@@ -61,7 +61,7 @@ Conservative rate limiting at 2 requests/second with burst of 3.
 
 ## License
 
-Irish legislation is Crown Copyright but available for reuse under open government license terms.
+Irish legislation is Crown Copyright, available for reuse under the [Irish Open Government Licence](https://www.irishstatutebook.ie/eli/about.html). See also [data.gov.ie licence](https://data.gov.ie/pages/licence).
 
 ## References
 

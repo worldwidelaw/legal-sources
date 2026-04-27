@@ -45,3 +45,7 @@ python bootstrap.py updates --since 2026-01-01
 - Rate limited to 0.5 req/sec to respect server load
 - Decision numbers follow SAN-YYYY-NN format
 - Full decision PDFs usually available on page
+
+## License
+
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

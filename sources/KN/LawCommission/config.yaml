@@ -1,0 +1,79 @@
+# ===================================================================
+# KN/LawCommission -- St Kitts & Nevis Law Commission
+# ===================================================================
+# Revised Acts, Revised Ordinances, Annual Laws (2018-2025), and SROs.
+# ~1600 PDFs served via EE Simple File List WordPress plugin.
+# No authentication required.
+# ===================================================================
+
+source:
+  id: "KN/LawCommission"
+  country: "KN"
+  name: "St Kitts & Nevis Law Commission"
+  url: "https://lawcommission.gov.kn/laws/"
+  description: |
+    Legislation of St Kitts and Nevis published by the Law Commission.
+    Includes Revised Acts, Revised Ordinances of Nevis, Annual Laws
+    (Acts and SROs 2018-2025), and repealed legislation. Full text
+    extracted from PDF documents.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scraping"
+  base_url: "https://lawcommission.gov.kn"
+
+data_model:
+  type: "legislation"
+  primary_key: "law_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "law_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "law_id"
+      description: "Unique ID derived from folder path and filename"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Law title derived from filename"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year of enactment or revision (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the PDF document"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "category"
+      description: "Type: annual_act, annual_sro, revised_act, revised_ordinance, repealed"
+    - name: "chapter"
+      description: "Chapter number for revised acts/ordinances"
+    - name: "act_number"
+      description: "Act or SRO number for annual laws"
+    - name: "year"
+      description: "Year of enactment or revision"
+    - name: "pdf_filename"
+      description: "Original PDF filename"

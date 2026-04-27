@@ -63,6 +63,10 @@ python bootstrap.py update
 - pdfplumber (for PDF text extraction)
 - requests
 
+## License
+
+Open government data — no authentication required, freely accessible.
+
 ## Notes
 
 - Albania is an EU candidate country

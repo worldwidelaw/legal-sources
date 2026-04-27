@@ -49,6 +49,10 @@ Each normalized document contains:
 - `url` - Original PDF URL
 - `document_type` - Specific type (guideline, opinion, decision, etc.)
 
+## License
+
+[EUR-Lex legal notice](https://eur-lex.europa.eu/content/legal-notice/legal-notice.html) — EU agency publications, reuse authorised with attribution.
+
 ## Notes
 - EBA publishes primarily in PDF format
 - Rate limiting is set to 2 seconds between requests

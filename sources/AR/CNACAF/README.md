@@ -24,3 +24,7 @@ python bootstrap.py bootstrap            # Full bootstrap
 - Summaries (sumario) contain inline full text
 - Full judgments (fallo) reference PDF files
 - Rate limited to 2 requests/second
+
+## License
+
+[Open Government Data](https://www.saij.gob.ar) — official court decisions published by the Argentine Judiciary via SAIJ.

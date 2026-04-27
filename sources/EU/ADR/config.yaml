@@ -1,36 +1,52 @@
-source:
-  id: EU/ADR
-  name: EU Domain Dispute Resolution (.eu)
-  country: EU
-  url: https://eu.adr.eu
-  data_types:
-    - case_law
-  description: >
-    .eu domain name dispute resolution decisions from the Czech Arbitration Court
-    (CAC). Full panel decisions with factual background, legal analysis, and
-    reasoning. Covers domain disputes since 2006. 155 pages x 10 decisions per page.
-  auth: none
-  license: Public (published by Czech Arbitration Court)
-
 fetch:
-  method: html_paginated_scrape
-  listing_url: https://eu.adr.eu/decisions/list
   detail_url: https://eu.adr.eu/decisions/detail
-  pagination_param: grid-page
-  total_pages: 16
+  estimated_total: 1550
   items_per_page: 100
+  listing_url: https://eu.adr.eu/decisions/list
+  method: html_paginated_scrape
+  pagination_param: grid-page
   rate_limit: 1.5
   timeout: 30
-  estimated_total: 1550
-
+  total_pages: 16
 schema:
   key_fields:
-    - _id
-    - _source
-    - _type
-    - title
-    - text
-    - date
-    - url
-    - case_number
-    - domain_name
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: domain_name
+    required: false
+    type: string
+source:
+  auth: none
+  country: EU
+  data_types:
+  - case_law
+  description: '.eu domain name dispute resolution decisions from the Czech Arbitration Court (CAC). Full panel decisions with factual background, legal analysis, and reasoning. Covers domain disputes since
+    2006. 155 pages x 10 decisions per page.
+
+    '
+  id: EU/ADR
+  license: Public (published by Czech Arbitration Court)
+  name: EU Domain Dispute Resolution (.eu)
+  url: https://eu.adr.eu

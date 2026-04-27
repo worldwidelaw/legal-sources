@@ -19,7 +19,6 @@ Usage:
   python bootstrap.py test               # Quick connectivity test
 """
 
-import io
 import re
 import sys
 import json
@@ -205,11 +204,6 @@ class NuevoLeonLegislationScraper(BaseScraper):
             return None
 
         content_hash = hashlib.md5(resp.content).hexdigest()[:12]
-        page_count = 0
-        try:
-            page_count = len(PdfReader(io.BytesIO(resp.content)).pages)
-        except Exception:
-            pass
 
         return {
             'title': law['title'],
@@ -219,7 +213,6 @@ class NuevoLeonLegislationScraper(BaseScraper):
             'reform_date': law['reform_date'],
             'content_hash': content_hash,
             'file_size': len(resp.content),
-            'page_count': page_count,
         }
 
     def normalize(self, raw: dict) -> dict:
@@ -236,7 +229,6 @@ class NuevoLeonLegislationScraper(BaseScraper):
             'text': raw['text'],
             'date': iso_date,
             'reform_date': reform_date,
-            'page_count': raw.get('page_count', 0),
             'url': raw['pdf_url'],
         }
 
@@ -256,7 +248,7 @@ class NuevoLeonLegislationScraper(BaseScraper):
                 record = self.normalize(raw)
                 yield record
                 total += 1
-                logger.info(f"  OK: {len(raw['text'])} chars, {raw['page_count']} pages")
+                logger.info(f"  OK: {len(raw['text'])} chars")
             else:
                 logger.warning(f"  SKIP: {law['title'][:60]}")
 
@@ -284,7 +276,7 @@ if __name__ == "__main__":
             logger.info(f"Found {len(laws)} laws. Testing first PDF...")
             raw = scraper._fetch_law(laws[0])
             if raw:
-                logger.info(f"SUCCESS: {raw['title'][:60]} - {len(raw['text'])} chars, {raw['page_count']} pages")
+                logger.info(f"SUCCESS: {raw['title'][:60]} - {len(raw['text'])} chars")
             else:
                 logger.error("FAILED: Could not extract text from first PDF")
                 sys.exit(1)
@@ -293,15 +285,7 @@ if __name__ == "__main__":
             sys.exit(1)
 
     elif command == "bootstrap":
-        SAMPLE_DIR.mkdir(exist_ok=True)
-        count = 0
-        for record in scraper.fetch_all(sample=sample):
-            if sample:
-                fname = SAMPLE_DIR / f"{record['_id']}.json"
-                with open(fname, 'w', encoding='utf-8') as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-        logger.info(f"Bootstrap complete: {count} records")
+        scraper.bootstrap(sample_mode=sample)
 
     elif command == "update":
         count = 0

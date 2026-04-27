@@ -35,3 +35,7 @@ python bootstrap.py bootstrap --sample
 # Full bootstrap (all years)
 python bootstrap.py bootstrap
 ```
+
+## License
+
+[Open Government Data](https://www.csj.gov.py/jurisprudencia/) — official decisions published by the Supreme Court of Justice of Paraguay.

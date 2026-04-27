@@ -1,42 +1,45 @@
-source:
-  id: SE/SupremeAdministrativeCourt
-  name: Swedish Supreme Administrative Court (Högsta förvaltningsdomstolen)
-  country: SE
-  url: https://www.domstol.se/hogsta-forvaltningsdomstolen/avgoranden/
-  type: caselaw
-  language: sv
-  license: public_domain
-  court: Högsta förvaltningsdomstolen
-  court_code: HFD
-
 data:
-  format: pdf
+  coverage:
+    notes: Decisions from 2008-March 2025 in archive, newer in rattspraxis.etjanst.domstol.se
+    start_year: 2008
   endpoints:
-    rss_feed: https://www.domstol.se/feed/1092/?searchPageId=1092&scope=decision
     decisions: https://www.domstol.se/hogsta-forvaltningsdomstolen/avgoranden2/{year}/{id}/
     pdfs: https://www.domstol.se/globalassets/filer/domstol/hogstaforvaltningsdomstolen/{year}/domar-och-beslut/{case}.pdf
-  coverage:
-    start_year: 2008
-    notes: "Decisions from 2008-March 2025 in archive, newer in rattspraxis.etjanst.domstol.se"
-
+    rss_feed: https://www.domstol.se/feed/1092/?searchPageId=1092&scope=decision
+  format: pdf
+fetcher:
+  batch_size: 20
+  rate_limit: 2
+  update_schedule: daily
 schema:
   key_fields:
-    - _id
-    - case_number
-    - date
-  required_fields:
-    - text
-    - title
-    - case_number
+  - name: _id
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
   metadata_fields:
-    - decision_type
-    - legal_areas
-    - summary
-    - court
-    - court_code
-    - pdf_url
-
-fetcher:
-  rate_limit: 2
-  batch_size: 20
-  update_schedule: daily
+  - decision_type
+  - legal_areas
+  - summary
+  - court
+  - court_code
+  - pdf_url
+  required_fields:
+  - text
+  - title
+  - case_number
+source:
+  country: SE
+  court: Högsta förvaltningsdomstolen
+  court_code: HFD
+  id: SE/SupremeAdministrativeCourt
+  language: sv
+  license: public_domain
+  name: Swedish Supreme Administrative Court (Högsta förvaltningsdomstolen)
+  type: caselaw
+  url: https://www.domstol.se/hogsta-forvaltningsdomstolen/avgoranden/

@@ -1,49 +1,53 @@
-source:
-  id: HU/FelsoBirosag
-  name: Hungarian Supreme Court (Kúria)
-  country: HU
-  data_type: caselaw
-  url: https://kuria-birosag.hu
-  license: Public Domain
-  language: hu
-
 endpoints:
   base_url: https://kuria-birosag.hu
-  sitemap: /hu/sitemap.xml
   decision_patterns:
-    - /hu/valhat/       # Electoral decisions
-    - /hu/joghat/       # Legal unity decisions
-    - /hu/onkugy/       # Municipal cases
-    - /hu/nepszavugy/   # Referendum cases
-    - /hu/ejeb/         # ECHR cases
-    - /hu/alkotmbir-hat/  # Constitutional court cases
-    - /hu/jogegysegi-panasz/  # Legal unity complaints
-    - /hu/kuriai-dontesek/    # Curia decisions
-    - /hu/gyulhat/      # Assembly cases
-    - /hu/kollvel/      # Collegial opinions
-
-schema:
-  key_fields:
-    - case_number
-    - decision_number
-  normalized_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-    - decision_number
-    - case_number
-    - decision_type
-
+  - /hu/valhat/
+  - /hu/joghat/
+  - /hu/onkugy/
+  - /hu/nepszavugy/
+  - /hu/ejeb/
+  - /hu/alkotmbir-hat/
+  - /hu/jogegysegi-panasz/
+  - /hu/kuriai-dontesek/
+  - /hu/gyulhat/
+  - /hu/kollvel/
+  sitemap: /hu/sitemap.xml
 fetch:
   method: sitemap_scrape
-  rate_limit: 1.5
-  user_agent: "Legal Data Hunter/1.0 (EU Legal Research)"
-  notes: |
-    Uses XML sitemap to discover decision URLs.
+  notes: 'Uses XML sitemap to discover decision URLs.
+
     Full text extracted from HTML body field.
+
     Uses curl subprocess due to Python SSL compatibility issues.
+
+    '
+  rate_limit: 1.5
+  user_agent: Legal Data Hunter/1.0 (EU Legal Research)
+schema:
+  key_fields:
+  - name: case_number
+    required: false
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  normalized_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+  - decision_number
+  - case_number
+  - decision_type
+source:
+  country: HU
+  data_type: caselaw
+  id: HU/FelsoBirosag
+  language: hu
+  license: Public Domain
+  name: Hungarian Supreme Court (Kúria)
+  url: https://kuria-birosag.hu

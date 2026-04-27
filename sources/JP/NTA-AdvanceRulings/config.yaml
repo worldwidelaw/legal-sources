@@ -1,0 +1,56 @@
+source:
+  id: JP/NTA-AdvanceRulings
+  country: JP
+  name: Japan NTA Advance Rulings (文書回答事例)
+  description: |
+    Japan National Tax Agency (国税庁) Written Response Examples (文書回答事例).
+    ~400 advance ruling documents across 9 tax categories: income tax,
+    withholding tax, capital gains, inheritance tax, gift tax, property
+    valuation, corporate tax, consumption tax, and other taxes. Each ruling
+    has a formal inquiry (照会), official response (回答), and detailed
+    appendix analysis (別紙). Japanese language.
+
+  data_types:
+    - doctrine
+
+  url: https://www.nta.go.jp/law/bunshokaito/01.htm
+  auth: none
+
+  languages:
+    - ja
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: category
+      type: string
+      required: true
+    - name: response_date
+      type: string
+      required: false
+
+data_model:
+  update_strategy: full_refresh
+  dedup_key:
+    - path
+
+rate_limits:
+  requests_per_second: 0.5
+  delay_between_requests: 2.0
+
+license:
+  name: "Public Domain (Government of Japan)"
+  url: "https://www.nta.go.jp/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Official government tax rulings published by the National Tax Agency"

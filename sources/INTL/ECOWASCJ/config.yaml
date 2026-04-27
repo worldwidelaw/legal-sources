@@ -1,22 +1,30 @@
-source:
-  id: INTL/ECOWASCJ
-  name: "ECOWAS Community Court of Justice"
-  country: INTL
-  url: https://africanlii.org/en/judgments/ECOWASCJ/
-  data_types:
-    - case_law
-  auth: none
-  license: "Free access (AfricanLII open access)"
-  description: >
-    West African community court covering 15 ECOWAS member states.
-    ~296 judgments (2008-present), primarily human rights disputes.
-    Full text extracted from judgment PDFs via AfricanLII.
-  method: "HTML scraping of AfricanLII listing + metadata pages, PDF text extraction"
-
 schema:
   key_fields:
-    - citation
-    - case_number
-    - judges
-    - language
-    - date
+  - name: citation
+    required: false
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: judges
+    required: false
+    type: string
+  - name: language
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: 'West African community court covering 15 ECOWAS member states. ~296 judgments (2008-present), primarily human rights disputes. Full text extracted from judgment PDFs via AfricanLII.
+
+    '
+  id: INTL/ECOWASCJ
+  license: Free access (AfricanLII open access)
+  method: HTML scraping of AfricanLII listing + metadata pages, PDF text extraction
+  name: ECOWAS Community Court of Justice
+  url: https://africanlii.org/en/judgments/ECOWASCJ/

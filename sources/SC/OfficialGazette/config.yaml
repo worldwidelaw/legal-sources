@@ -1,0 +1,23 @@
+country: SC
+data_types:
+- legislation
+description: 'Seychelles Official Gazette — Acts, Statutory Instruments, and Bills
+  published by the Government of Seychelles. PDFs downloaded from gazette.sc and text
+  extracted. Covers 2020-present.'
+id: SC/OfficialGazette
+source_dir: sources/SC/OfficialGazette
+language: en
+name: Seychelles Official Gazette
+schema:
+  key_fields:
+  - name: doc_type
+    required: true
+    type: string
+  - name: doc_number
+    required: false
+    type: string
+  - name: year
+    required: true
+    type: integer
+strategy: pdf_download
+url: https://www.gazette.sc/

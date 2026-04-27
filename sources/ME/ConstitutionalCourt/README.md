@@ -61,6 +61,10 @@ python3 bootstrap.py bootstrap
 python3 bootstrap.py updates --since 2024-01-01
 ```
 
+## License
+
+Open government data — publicly accessible court decisions.
+
 ## Notes
 
 - Full text may have encoding issues (missing diacritics for č, ž, š characters)

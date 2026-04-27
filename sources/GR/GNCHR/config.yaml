@@ -1,36 +1,42 @@
-source:
-  id: GR/GNCHR
-  country: GR
-  name: Greek National Commission for Human Rights (EEDA)
-  name_native: Εθνική Επιτροπή για τα Δικαιώματα του Ανθρώπου
-  url: https://www.nchr.gr
-  data_url: https://www.nchr.gr/2020-02-26-05-51-20.html
-  description: >
-    Advisory body on human rights policy. Decisions, positions, and opinions
-    on topics including discrimination, refugees, children's rights, environment,
-    AI, disabilities, and more. ~443 documents since 1998.
-  data_types:
-    - doctrine
-  auth: none
-  license: Public
-  coverage:
-    start_date: "1998-01-01"
-    jurisdictions:
-      - GR
-  update_frequency: weekly
-  notes: >
-    Joomla CMS. HTML scraping with ?limit=0 for full listing, ?format=raw
-    for clean article content. Full text inline in HTML. 35 thematic subcategories.
-
 api:
+  article_format: raw
   base_url: https://www.nchr.gr
   listing_url: https://www.nchr.gr/2020-02-26-05-51-20.html?limit=0
-  article_format: raw
   rate_limit: 2.0
-
 schema:
   key_fields:
-    - article_id
-    - title
-    - date
-    - category
+  - name: article_id
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: category
+    required: false
+    type: string
+source:
+  auth: none
+  country: GR
+  coverage:
+    jurisdictions:
+    - GR
+    start_date: '1998-01-01'
+  data_types:
+  - doctrine
+  data_url: https://www.nchr.gr/2020-02-26-05-51-20.html
+  description: 'Advisory body on human rights policy. Decisions, positions, and opinions on topics including discrimination, refugees, children''s rights, environment, AI, disabilities, and more. ~443 documents
+    since 1998.
+
+    '
+  id: GR/GNCHR
+  license: Public
+  name: Greek National Commission for Human Rights (EEDA)
+  name_native: Εθνική Επιτροπή για τα Δικαιώματα του Ανθρώπου
+  notes: 'Joomla CMS. HTML scraping with ?limit=0 for full listing, ?format=raw for clean article content. Full text inline in HTML. 35 thematic subcategories.
+
+    '
+  update_frequency: weekly
+  url: https://www.nchr.gr

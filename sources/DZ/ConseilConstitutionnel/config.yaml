@@ -1,34 +1,35 @@
-source:
-  id: DZ/ConseilConstitutionnel
-  name: Algeria Constitutional Court (Cour constitutionnelle)
-  country: DZ
-  data_types:
-    - case_law
-  language: fr
-  url: https://cour-constitutionnelle.dz/
-  license: Public domain (government decisions)
-  notes: >
-    Algeria's Constitutional Court decisions via WordPress REST API.
-    Replaced the former Conseil constitutionnel after the 2020 Constitution.
-    Covers constitutionality reviews, QPC-equivalent exceptions, electoral disputes,
-    and advisory opinions. Full text in HTML via WP REST API.
-
-schema:
-  key_fields:
-    - _id
-    - wp_id
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
 api:
-  type: rest
   base_url: https://cour-constitutionnelle.dz/wp-json/wp/v2/posts
   format: json
   rate_limit: 2
+  type: rest
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: wp_id
+    required: false
+    type: string
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  country: DZ
+  data_types:
+  - case_law
+  id: DZ/ConseilConstitutionnel
+  language: fr
+  license: Public domain (government decisions)
+  name: Algeria Constitutional Court (Cour constitutionnelle)
+  notes: 'Algeria''s Constitutional Court decisions via WordPress REST API. Replaced the former Conseil constitutionnel after the 2020 Constitution. Covers constitutionality reviews, QPC-equivalent exceptions,
+    electoral disputes, and advisory opinions. Full text in HTML via WP REST API.
+
+    '
+  url: https://cour-constitutionnelle.dz/

@@ -83,41 +83,69 @@ class ILCourtsScraper(BaseScraper):
 
     def _search_opinions(self, court: str = COURTS, page_size: int = 20,
                          filed_after: str = None, filed_before: str = None,
-                         page: int = 1) -> Dict[str, Any]:
-        """Query CourtListener search API for Illinois opinions."""
-        params = {
-            "format": "json",
-            "type": "o",
-            "court": court,
-            "page_size": min(page_size, 20),
-            "order_by": "dateFiled desc",
-            "page": page,
-        }
-        if filed_after:
-            params["filed_after"] = filed_after
-        if filed_before:
-            params["filed_before"] = filed_before
+                         page: int = 1, url: str = None) -> Dict[str, Any]:
+        """Query CourtListener search API for Illinois opinions.
 
-        for attempt in range(3):
+        If `url` is provided (e.g., the `next` URL from a previous response),
+        fetch it directly so cursor-based pagination state is preserved.
+        Otherwise, build params from court/page/page_size/date filters.
+        """
+        if url:
+            request_url = url
+            params = None
+        else:
+            request_url = SEARCH_URL
+            params = {
+                "format": "json",
+                "type": "o",
+                "court": court,
+                "page_size": min(page_size, 20),
+                "order_by": "dateFiled desc",
+                "page": page,
+            }
+            if filed_after:
+                params["filed_after"] = filed_after
+            if filed_before:
+                params["filed_before"] = filed_before
+
+        # CourtListener can return 503 during heavy load. Retry with exponential
+        # backoff up to 12 attempts (~30 minutes total worst case).
+        max_attempts = 12
+        for attempt in range(max_attempts):
             try:
-                resp = self.session.get(SEARCH_URL, params=params, timeout=60)
-                if resp.status_code == 429:
-                    wait = 2 ** (attempt + 1)
-                    logger.warning(f"Rate limited, waiting {wait}s...")
+                resp = self.session.get(request_url, params=params, timeout=60)
+                if resp.status_code in (429, 503, 502, 504):
+                    wait = min(300, 5 * (2 ** min(attempt, 6)))
+                    logger.warning(
+                        f"Got {resp.status_code}, waiting {wait}s (attempt {attempt + 1}/{max_attempts})..."
+                    )
                     time.sleep(wait)
                     continue
                 resp.raise_for_status()
                 return resp.json()
             except requests.exceptions.Timeout:
-                if attempt < 2:
-                    logger.warning("Timeout, retrying...")
-                    time.sleep(2)
+                if attempt < max_attempts - 1:
+                    wait = min(120, 5 * (2 ** min(attempt, 5)))
+                    logger.warning(f"Timeout, retrying in {wait}s...")
+                    time.sleep(wait)
                     continue
+                raise
+            except requests.exceptions.HTTPError as e:
+                status = e.response.status_code if e.response is not None else None
+                if status in (429, 503, 502, 504) and attempt < max_attempts - 1:
+                    wait = min(300, 5 * (2 ** min(attempt, 6)))
+                    logger.warning(
+                        f"HTTPError {status}, waiting {wait}s (attempt {attempt + 1}/{max_attempts})..."
+                    )
+                    time.sleep(wait)
+                    continue
+                logger.error(f"Search API HTTPError: {e}")
                 raise
             except Exception as e:
                 logger.error(f"Search API error: {e}")
-                if attempt < 2:
-                    time.sleep(2)
+                if attempt < max_attempts - 1:
+                    wait = min(120, 5 * (2 ** min(attempt, 5)))
+                    time.sleep(wait)
                     continue
                 raise
         return {"count": 0, "results": []}
@@ -206,32 +234,61 @@ class ILCourtsScraper(BaseScraper):
         }
 
     def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
-        """Fetch all Illinois opinions via CourtListener search API."""
-        page = 1
+        """Fetch all Illinois opinions via CourtListener search API.
+
+        Iterates each court separately to keep result sets manageable, and
+        follows the `next` URL (cursor-based pagination) to avoid the deep
+        page-number cap. If a single page fails after all retries, it is
+        skipped so the bootstrap can still make progress.
+        """
         total_fetched = 0
+        for court in COURTS.split(","):
+            logger.info(f"=== Fetching court={court} ===")
+            page = 1
+            next_url: Optional[str] = None
+            consecutive_failures = 0
 
-        while True:
-            logger.info(f"Fetching search results page {page}...")
-            data = self._search_opinions(page=page)
+            while True:
+                if next_url:
+                    logger.info(f"[{court}] Fetching next cursor page (>= page {page})...")
+                else:
+                    logger.info(f"[{court}] Fetching page {page}...")
+                try:
+                    data = self._search_opinions(court=court, page=page, url=next_url)
+                except Exception as e:
+                    consecutive_failures += 1
+                    logger.error(
+                        f"[{court}] Page {page} failed after retries: {e} "
+                        f"(consecutive_failures={consecutive_failures})"
+                    )
+                    if consecutive_failures >= 3:
+                        logger.error(f"[{court}] Aborting after 3 consecutive page failures")
+                        break
+                    # Skip this page: bump page number and retry the next one.
+                    next_url = None
+                    page += 1
+                    time.sleep(30)
+                    continue
+                consecutive_failures = 0
 
-            results = data.get("results", [])
-            if not results:
-                logger.info("No more results.")
-                break
+                results = data.get("results", [])
+                if not results:
+                    logger.info(f"[{court}] No more results.")
+                    break
 
-            for result in results:
-                time.sleep(self.config.get("fetch", {}).get("delay", 1.5))
-                raw = self._process_search_result(result)
-                if raw:
-                    total_fetched += 1
-                    yield raw
+                for result in results:
+                    time.sleep(self.config.get("fetch", {}).get("delay", 1.5))
+                    raw = self._process_search_result(result)
+                    if raw:
+                        total_fetched += 1
+                        yield raw
 
-            # Check for next page
-            if not data.get("next"):
-                break
-            page += 1
+                next_url = data.get("next")
+                if not next_url:
+                    break
+                page += 1
 
-        logger.info(f"Total fetched: {total_fetched}")
+        logger.info(f"Total fetched across all courts: {total_fetched}")
 
     def fetch_updates(self, since: Optional[str] = None) -> Generator[Dict[str, Any], None, None]:
         """Fetch opinions filed since a given date."""
@@ -240,24 +297,41 @@ class ILCourtsScraper(BaseScraper):
             from datetime import timedelta
             since = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
 
-        page = 1
-        while True:
-            logger.info(f"Fetching updates since {since}, page {page}...")
-            data = self._search_opinions(filed_after=since, page=page)
+        for court in COURTS.split(","):
+            page = 1
+            next_url: Optional[str] = None
+            consecutive_failures = 0
+            while True:
+                logger.info(f"[{court}] Fetching updates since {since}, page {page}...")
+                try:
+                    data = self._search_opinions(
+                        court=court, filed_after=since, page=page, url=next_url
+                    )
+                except Exception as e:
+                    consecutive_failures += 1
+                    logger.error(f"[{court}] Update page {page} failed: {e}")
+                    if consecutive_failures >= 3:
+                        break
+                    next_url = None
+                    page += 1
+                    time.sleep(30)
+                    continue
+                consecutive_failures = 0
 
-            results = data.get("results", [])
-            if not results:
-                break
+                results = data.get("results", [])
+                if not results:
+                    break
 
-            for result in results:
-                time.sleep(self.config.get("fetch", {}).get("delay", 1.5))
-                raw = self._process_search_result(result)
-                if raw:
-                    yield raw
+                for result in results:
+                    time.sleep(self.config.get("fetch", {}).get("delay", 1.5))
+                    raw = self._process_search_result(result)
+                    if raw:
+                        yield raw
 
-            if not data.get("next"):
-                break
-            page += 1
+                next_url = data.get("next")
+                if not next_url:
+                    break
+                page += 1
 
     def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
         """Normalize a raw opinion record into the standard schema."""

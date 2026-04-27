@@ -44,6 +44,8 @@ PRODUCTION_URL = "https://api.piste.gouv.fr/cassation/judilibre/v1.0"
 USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 REQUEST_DELAY = 0.5  # seconds between requests
 JURISDICTIONS = ["cc", "ca", "tj", "tcom"]  # All jurisdictions: Cour de cassation, Cours d'appel, Tribunaux judiciaires, Tribunaux de commerce
+WINDOW_DAYS = 7  # Date window size for /scan queries — weekly to avoid PISTE gateway caps (~10K/query)
+TRUNCATION_THRESHOLD = 9500  # If a window returns >= this many results, it's likely truncated
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent
@@ -53,7 +55,7 @@ STATUS_FILE = SCRIPT_DIR / "status.yaml"
 CHECKPOINT_FILE = SCRIPT_DIR / "checkpoint.json"
 
 # Default date range
-START_YEAR = 2010  # Judilibre has data from 2010
+START_YEAR = 1860  # Judilibre now has historical CC decisions back to 1860
 END_YEAR = datetime.now().year
 
 
@@ -290,106 +292,131 @@ def clear_checkpoint():
 
 
 def fetch_all(api: JudilibreAPI, days: int = 30) -> Generator[Dict, None, None]:
-    """Fetch all decisions from the last N days."""
-    end_date = datetime.now().strftime("%Y-%m-%d")
-    start_date = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
-    print(f"Scanning decisions from {start_date} to {end_date} (all jurisdictions)...")
+    """Fetch all decisions from the last N days, using weekly windows per jurisdiction."""
+    now = datetime.now()
+    start = now - timedelta(days=days)
+    print(f"Scanning decisions from {start.strftime('%Y-%m-%d')} to {now.strftime('%Y-%m-%d')} "
+          f"(all jurisdictions, {WINDOW_DAYS}-day windows)...")
 
-    for decision in api.get_scan(start_date, end_date, jurisdiction=JURISDICTIONS):
+    for jurisdiction in JURISDICTIONS:
+        window_start = start
+        while window_start <= now:
+            window_end = min(window_start + timedelta(days=WINDOW_DAYS - 1), now)
+            ds = window_start.strftime("%Y-%m-%d")
+            de = window_end.strftime("%Y-%m-%d")
+            for record in _scan_window(api, ds, de, jurisdiction):
+                yield record
+            window_start = window_end + timedelta(days=1)
+
+
+def _scan_window(api: JudilibreAPI, date_start: str, date_end: str,
+                  jurisdiction: str) -> Generator[Dict, None, None]:
+    """Scan a single date window. If the result count hits the truncation
+    threshold, automatically subdivide into daily windows and re-scan."""
+    count = 0
+    for decision in api.get_scan(date_start, date_end,
+                                 jurisdiction=[jurisdiction]):
         record = normalize(decision)
         if record.get("text"):
+            count += 1
             yield record
+
+    if count >= TRUNCATION_THRESHOLD:
+        # Likely truncated by PISTE gateway — re-scan with daily windows
+        print(f"    ⚠ {count} results in {date_start}→{date_end} (≥{TRUNCATION_THRESHOLD}), "
+              f"re-scanning with daily windows...")
+        seen_ids: set = set()
+        day = datetime.strptime(date_start, "%Y-%m-%d")
+        end = datetime.strptime(date_end, "%Y-%m-%d")
+        while day <= end:
+            ds = day.strftime("%Y-%m-%d")
+            de = ds  # single day
+            try:
+                for decision in api.get_scan(ds, de, jurisdiction=[jurisdiction]):
+                    record = normalize(decision)
+                    doc_id = record.get("_id")
+                    if record.get("text") and doc_id and doc_id not in seen_ids:
+                        seen_ids.add(doc_id)
+                        yield record
+            except Exception as e:
+                print(f"      Error on {ds}: {e}")
+            day += timedelta(days=1)
+        print(f"    ⚠ Daily re-scan recovered {len(seen_ids)} unique records "
+              f"(vs {count} from wide window)")
 
 
 def fetch_full_archive(api: JudilibreAPI, use_checkpoint: bool = True) -> Generator[Dict, None, None]:
     """
-    Fetch all decisions from 2010 to present, per jurisdiction, month by month.
+    Fetch all decisions from 2010 to present, per jurisdiction, using weekly
+    date windows to avoid PISTE gateway result caps (~10K per query).
     Supports checkpoint/resume for this long-running operation.
     """
     if use_checkpoint:
         checkpoint = load_checkpoint()
         start_jurisdiction = checkpoint.get("current_jurisdiction") or JURISDICTIONS[0]
-        start_year = checkpoint.get("current_year") or START_YEAR
-        start_month = checkpoint.get("current_month") or 1
+        resume_date = checkpoint.get("current_date")  # ISO date string
         fetched_count = checkpoint.get("fetched_count", 0)
         completed_jurisdictions = checkpoint.get("completed_jurisdictions", [])
         jurisdiction_counts = checkpoint.get("jurisdiction_counts", {})
+        # Backwards-compat: old checkpoints used year/month
+        if not resume_date and checkpoint.get("current_year"):
+            y = checkpoint["current_year"]
+            m = checkpoint.get("current_month", 1)
+            resume_date = f"{y}-{m:02d}-01"
         if checkpoint.get("current_jurisdiction"):
-            print(f"Resuming from checkpoint: {start_jurisdiction} {start_year}-{start_month:02d}, "
+            print(f"Resuming from checkpoint: {start_jurisdiction} {resume_date}, "
                   f"{fetched_count} fetched")
     else:
         start_jurisdiction = JURISDICTIONS[0]
-        start_year = START_YEAR
-        start_month = 1
+        resume_date = None
         fetched_count = 0
         completed_jurisdictions = []
         jurisdiction_counts = {}
 
-    current_date = datetime.now()
+    now = datetime.now()
+    archive_start = datetime(START_YEAR, 1, 1)
 
     for jurisdiction in JURISDICTIONS:
         if jurisdiction in completed_jurisdictions:
             continue
 
-        if jurisdiction == start_jurisdiction:
-            year_start = start_year
-            month_start_val = start_month
+        if jurisdiction == start_jurisdiction and resume_date:
+            window_start = datetime.strptime(resume_date, "%Y-%m-%d")
         else:
-            year_start = START_YEAR
-            month_start_val = 1
+            window_start = archive_start
 
         jurisdiction_count = jurisdiction_counts.get(jurisdiction, 0)
         print(f"\n=== Jurisdiction: {jurisdiction} ===")
 
-        for year in range(year_start, current_date.year + 1):
-            m_start = month_start_val if year == year_start else 1
-            m_end = 12 if year < current_date.year else current_date.month
+        while window_start <= now:
+            window_end = min(window_start + timedelta(days=WINDOW_DAYS - 1), now)
+            ds = window_start.strftime("%Y-%m-%d")
+            de = window_end.strftime("%Y-%m-%d")
 
-            for month in range(m_start, m_end + 1):
-                month_start_date = datetime(year, month, 1)
-                if month == 12:
-                    month_end_date = datetime(year + 1, 1, 1) - timedelta(days=1)
-                else:
-                    month_end_date = datetime(year, month + 1, 1) - timedelta(days=1)
-                if month_end_date > current_date:
-                    month_end_date = current_date
+            window_count = 0
+            try:
+                for record in _scan_window(api, ds, de, jurisdiction):
+                    fetched_count += 1
+                    window_count += 1
+                    jurisdiction_count += 1
+                    yield record
+            except Exception as e:
+                print(f"    Error in {jurisdiction} {ds}→{de}: {e}")
 
-                date_start = month_start_date.strftime("%Y-%m-%d")
-                date_end = month_end_date.strftime("%Y-%m-%d")
-                print(f"  [{jurisdiction}] {year}-{month:02d} ({date_start} to {date_end})...")
+            if window_count > 0:
+                print(f"  [{jurisdiction}] {ds}→{de}: {window_count} records")
 
-                month_count = 0
-                try:
-                    for decision in api.get_scan(date_start, date_end,
-                                                 jurisdiction=[jurisdiction]):
-                        record = normalize(decision)
-                        if record.get("text"):
-                            fetched_count += 1
-                            month_count += 1
-                            jurisdiction_count += 1
-                            yield record
-                except Exception as e:
-                    print(f"    Error in {jurisdiction} {year}-{month:02d}: {e}")
+            window_start = window_end + timedelta(days=1)
 
-                print(f"    -> {month_count} records")
-
-                if use_checkpoint:
-                    next_month = month + 1
-                    next_year = year
-                    if next_month > 12:
-                        next_month = 1
-                        next_year = year + 1
-                    jurisdiction_counts[jurisdiction] = jurisdiction_count
-                    save_checkpoint({
-                        "current_jurisdiction": jurisdiction,
-                        "current_year": next_year,
-                        "current_month": next_month,
-                        "fetched_count": fetched_count,
-                        "completed_jurisdictions": completed_jurisdictions,
-                        "jurisdiction_counts": jurisdiction_counts,
-                    })
-
-            month_start_val = 1
+            if use_checkpoint:
+                jurisdiction_counts[jurisdiction] = jurisdiction_count
+                save_checkpoint({
+                    "current_jurisdiction": jurisdiction,
+                    "current_date": window_start.strftime("%Y-%m-%d"),
+                    "fetched_count": fetched_count,
+                    "completed_jurisdictions": completed_jurisdictions,
+                    "jurisdiction_counts": jurisdiction_counts,
+                })
 
         completed_jurisdictions.append(jurisdiction)
         print(f"  === {jurisdiction} complete: {jurisdiction_count} records ===")
@@ -402,15 +429,20 @@ def fetch_full_archive(api: JudilibreAPI, use_checkpoint: bool = True) -> Genera
 
 
 def fetch_updates(api: JudilibreAPI, since: datetime) -> Generator[Dict, None, None]:
-    """Fetch updates since a given date."""
-    end_date = datetime.now().strftime("%Y-%m-%d")
-    start_date = since.strftime("%Y-%m-%d")
-    print(f"Scanning updates from {start_date} to {end_date} (all jurisdictions)...")
+    """Fetch updates since a given date, using weekly windows per jurisdiction."""
+    now = datetime.now()
+    print(f"Scanning updates from {since.strftime('%Y-%m-%d')} to {now.strftime('%Y-%m-%d')} "
+          f"(all jurisdictions, {WINDOW_DAYS}-day windows)...")
 
-    for decision in api.get_scan(start_date, end_date, jurisdiction=JURISDICTIONS):
-        record = normalize(decision)
-        if record.get("text"):
-            yield record
+    for jurisdiction in JURISDICTIONS:
+        window_start = since.replace(tzinfo=None) if since.tzinfo else since
+        while window_start <= now:
+            window_end = min(window_start + timedelta(days=WINDOW_DAYS - 1), now)
+            ds = window_start.strftime("%Y-%m-%d")
+            de = window_end.strftime("%Y-%m-%d")
+            for record in _scan_window(api, ds, de, jurisdiction):
+                yield record
+            window_start = window_end + timedelta(days=1)
 
 
 def save_samples(records: List[Dict]) -> None:
@@ -463,7 +495,7 @@ def main():
 
     bootstrap_parser = subparsers.add_parser("bootstrap", help="Initial data fetch")
     bootstrap_parser.add_argument("--sample", action="store_true", help="Fetch sample only")
-    bootstrap_parser.add_argument("--full", action="store_true", help="Full archive (2010-present)")
+    bootstrap_parser.add_argument("--full", action="store_true", help="Full archive (1860-present)")
     bootstrap_parser.add_argument("--recent", action="store_true", help="Last 30 days only")
     bootstrap_parser.add_argument("--count", type=int, default=15, help="Number of samples")
     bootstrap_parser.add_argument("--days", type=int, default=30, help="Days to fetch for --recent")
@@ -486,8 +518,7 @@ def main():
         checkpoint = load_checkpoint()
         print("Checkpoint status:")
         print(f"  Current jurisdiction: {checkpoint.get('current_jurisdiction', 'N/A')}")
-        print(f"  Current year: {checkpoint.get('current_year', 'N/A')}")
-        print(f"  Current month: {checkpoint.get('current_month', 'N/A')}")
+        print(f"  Current date: {checkpoint.get('current_date', checkpoint.get('current_year', 'N/A'))}")
         print(f"  Fetched count: {checkpoint.get('fetched_count', 0)}")
         print(f"  Completed jurisdictions: {checkpoint.get('completed_jurisdictions', [])}")
         counts = checkpoint.get('jurisdiction_counts', {})

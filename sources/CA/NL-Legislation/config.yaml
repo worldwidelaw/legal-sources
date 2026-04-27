@@ -1,0 +1,47 @@
+source:
+  id: CA/NL-Legislation
+  name: Newfoundland and Labrador Consolidated Statutes & Regulations
+  country: CA
+  url: https://assembly.nl.ca/legislation/sr/consolidation/
+  language: en
+  data_types:
+    - legislation
+
+endpoints:
+  statutes_index: https://assembly.nl.ca/legislation/sr/titleindex.htm
+  regulations_index: https://assembly.nl.ca/legislation/sr/regulations/titleindex2.htm
+  statutes_base: https://assembly.nl.ca/Legislation/sr/statutes/
+  regulations_base: https://assembly.nl.ca/Legislation/sr/regulations/
+
+rate_limit:
+  requests_per_second: 1
+  delay_seconds: 1.5
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: false
+    - name: _type
+      type: string
+      required: false
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id

@@ -46,7 +46,7 @@ Each document includes:
 
 ## License
 
-Public Domain - BMF-Schreiben are "amtliche Werke" (official works) which are not protected by copyright under German law (§ 5 UrhG).
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).
 
 ## Usage
 

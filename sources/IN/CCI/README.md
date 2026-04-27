@@ -28,3 +28,7 @@ python bootstrap.py update --days 90   # Recent orders
 ## Full Text
 
 Full text extracted from PDF orders using pdfplumber. PDFs contain selectable text.
+
+## License
+
+[Open Government Data](https://www.cci.gov.in/) — official orders published by the Competition Commission of India.

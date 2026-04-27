@@ -1,0 +1,65 @@
+# ===================================================================
+# SH/Legislation -- Saint Helena, Ascension & Tristan da Cunha Laws
+# ===================================================================
+# PDF scraping of sainthelena.gov.sh alphabetical legislation lists.
+# Full text extracted from PDF ordinances and regulations.
+# ===================================================================
+
+source:
+  id: "SH/Legislation"
+  country: "SH"
+  name: "Saint Helena, Ascension & Tristan da Cunha Legislation"
+  url: "https://www.sainthelena.gov.sh/government/legislation/"
+  description: |
+    Consolidated ordinances and regulations for Saint Helena, Ascension Island,
+    and Tristan da Cunha. Published by the Saint Helena Government as PDF files.
+    ~261 documents across three territories.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "2-second delay between requests. Small government server."
+
+api:
+  type: "scraping"
+  base_url: "https://www.sainthelena.gov.sh"
+  endpoints:
+    st_helena: "/government/legislation/laws-of-st-helena/alphabetical-list-st-helena/"
+    ascension: "/st-helena/government/legislation/laws-of-ascension/alphabetical-list-ascension/"
+    tristan: "/st-helena/government/legislation/laws-of-tristan-da-cunha/alphabetical-list-tristan-da-cunha/"
+  response_format: "html+pdf"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "_id"
+      description: "Unique document ID from URL slug"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Ordinance or regulation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year of enactment (from title)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to original PDF"
+      type: "string"
+      role: "reference"
+      required: true

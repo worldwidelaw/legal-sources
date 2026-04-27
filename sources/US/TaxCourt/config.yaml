@@ -1,0 +1,26 @@
+source:
+  id: US/TaxCourt
+  name: US Tax Court Published Opinions
+  country: US
+  url: https://www.ustaxcourt.gov
+  data_types:
+    - case_law
+  auth: none
+  description: >
+    United States Tax Court published opinions (T.C. Opinions, Memorandum Opinions,
+    and Summary Opinions) via the DAWSON public API. Covers disputes over income tax,
+    estate tax, gift tax, and related penalties. Opinions from May 1986 to present.
+
+schema:
+  key_fields:
+    - docket_number
+    - opinion_type
+  record_type: case_law
+
+fetcher:
+  method: api
+  rate_limit: 4.0
+  notes: >
+    DAWSON public API at public-api-green.dawson.ustaxcourt.gov with blue failover.
+    15 requests per 60-second window. Search by date range (10-day intervals) and
+    opinion type (TCOP, MOP, SOP). PDF download via signed S3 URLs.

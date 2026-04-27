@@ -20,7 +20,7 @@ AADE publishes all official documents through the Greek government transparency 
 - **Base URL:** https://diavgeia.gov.gr/luminapi/opendata
 - **Organization UID:** 100029495
 - **Document format:** PDF (full text extracted)
-- **License:** CC-BY
+- **License:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 ## Coverage
 
@@ -57,6 +57,10 @@ Key fields in normalized records:
 | `circular_name` | Circular reference (e.g., "Ε.2012") |
 | `protocol_number` | Protocol number |
 | `decision_type` | Α.3 (circular) or Α.4 (opinion) |
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — published via [Diavgeia](https://diavgeia.gov.gr).
 
 ## Notes
 

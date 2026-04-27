@@ -14,7 +14,7 @@ This source fetches case law from the German Federal Social Court (Bundessozialg
 
 ## License
 
-German court decisions are "amtliche Werke" (official works) which are not protected by copyright under German law (§ 5 UrhG). Decisions are offered in all formats for free use and reuse.
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).
 
 ## Data Structure
 

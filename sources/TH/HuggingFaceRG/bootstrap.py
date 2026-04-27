@@ -280,6 +280,7 @@ def main():
     parser = argparse.ArgumentParser(description="TH/HuggingFaceRG Thailand Royal Gazette Fetcher")
     parser.add_argument("command", choices=["bootstrap", "test"], help="Command to run")
     parser.add_argument("--sample", action="store_true", help="Fetch only sample records")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     if args.command == "test":

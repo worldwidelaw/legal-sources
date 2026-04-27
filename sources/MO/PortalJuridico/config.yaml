@@ -1,0 +1,50 @@
+source:
+  id: MO/PortalJuridico
+  name: Macau Legal Portal (Portal Jurídico / 法律資料庫)
+  country: MO
+  url: https://www.bo.dsaj.gov.mo/pt/portaljur/
+  description: >
+    Consolidated laws (Leis) of Macau SAR from the Portal Jurídico.
+    769 laws with full HTML text extracted from bo.dsaj.gov.mo.
+    Detail pages use Windows-1252 encoding.
+
+data_model:
+  types:
+    - legislation
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: diploma
+      type: string
+      required: false
+    - name: gazette_info
+      type: string
+      required: false
+    - name: publication_date
+      type: string
+      required: false
+
+schedule:
+  full_refresh: monthly
+  update_check: weekly

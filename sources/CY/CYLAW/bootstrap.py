@@ -397,6 +397,7 @@ def main():
                         help="Fetch updates since date (ISO 8601)")
     parser.add_argument("--max", type=int,
                         help="Maximum number of documents to fetch")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

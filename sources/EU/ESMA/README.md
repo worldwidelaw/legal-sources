@@ -61,6 +61,10 @@ python3 bootstrap.py
 | url | string | URL to document page |
 | pdf_url | string | Direct URL to PDF file |
 
+## License
+
+[EUR-Lex legal notice](https://eur-lex.europa.eu/content/legal-notice/legal-notice.html) — EU agency publications, reuse authorised with attribution.
+
 ## Notes
 
 - Rate limited to 2 seconds between requests

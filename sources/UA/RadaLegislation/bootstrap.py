@@ -629,6 +629,7 @@ def main():
                         help="Skip per-record HTML text downloads (ingest metadata only, ~287K records)")
     parser.add_argument("--workers", type=int, default=None, help="Concurrent threads (bootstrap-fast)")
     parser.add_argument("--batch-size", type=int, default=100, help="Batch size (bootstrap-fast)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

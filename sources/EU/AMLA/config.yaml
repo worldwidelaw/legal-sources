@@ -1,28 +1,37 @@
-source:
-  id: EU/AMLA
-  name: EU Anti-Money Laundering Authority
-  country: EU
-  data_types:
-    - doctrine
-  url: https://www.amla.europa.eu
-  description: >
-    AMLA is the EU's Anti-Money Laundering Authority, established in 2024.
-    Fetches regulatory technical standards, consultation papers, final reports,
-    and other regulatory guidance documents.
-
 fetcher:
-  type: html_scraper
   base_url: https://www.amla.europa.eu
   document_library: /resources/document-library_en
-  requires_auth: false
-  rate_limit_seconds: 2
   max_pages: 10
-
+  rate_limit_seconds: 2
+  requires_auth: false
+  type: html_scraper
 schema:
   key_fields:
-    - _id
-    - title
-    - document_type
-    - text
-    - date
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: document_type
+    required: false
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+source:
+  country: EU
+  data_types:
+  - doctrine
+  description: 'AMLA is the EU''s Anti-Money Laundering Authority, established in 2024. Fetches regulatory technical standards, consultation papers, final reports, and other regulatory guidance documents.
+
+    '
+  id: EU/AMLA
+  name: EU Anti-Money Laundering Authority
+  url: https://www.amla.europa.eu

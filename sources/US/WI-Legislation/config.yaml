@@ -1,23 +1,31 @@
-source_id: US/WI-Legislation
-name: Wisconsin Legislature Statutes
-country: US
-data_types:
-  - legislation
-url: https://docs.legis.wisconsin.gov/statutes
 auth:
   type: none
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - chapter
-
+country: US
+data_types:
+- legislation
 fetch:
   base_url: https://docs.legis.wisconsin.gov
-  toc_url: https://docs.legis.wisconsin.gov/statutes/prefaces/toc
   chapter_html_pattern: https://docs.legis.wisconsin.gov/statutes/statutes/{chapter}
   chapter_pdf_pattern: https://docs.legis.wisconsin.gov/statutes/statutes/{chapter}.pdf
   delay: 2.0
+  toc_url: https://docs.legis.wisconsin.gov/statutes/prefaces/toc
+name: Wisconsin Legislature Statutes
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: chapter
+    required: false
+    type: string
+source_id: US/WI-Legislation
+url: https://docs.legis.wisconsin.gov/statutes

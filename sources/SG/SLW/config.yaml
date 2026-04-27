@@ -1,21 +1,36 @@
-source:
-  id: SG/SLW
-  name: Singapore Law Watch Judgments
-  country: SG
-  url: https://www.singaporelawwatch.sg/Judgments
-  data_types:
-    - case_law
-  auth: none
-  license: "Singapore Government / Singapore Academy of Law"
-  rate_limit: 2  # seconds between requests
-
 schema:
   key_fields:
-    - _id
-    - citation
-    - court
-    - title
-    - date
-    - text
-    - categories
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: citation
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: categories
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: SG
+  data_types:
+  - case_law
+  id: SG/SLW
+  license: Singapore Government / Singapore Academy of Law
+  name: Singapore Law Watch Judgments
+  rate_limit: 2
+  url: https://www.singaporelawwatch.sg/Judgments

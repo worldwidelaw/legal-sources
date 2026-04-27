@@ -177,7 +177,11 @@ class TSTScraper(BaseScraper):
         }
 
     def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
-        """Yield all TST decisions via paginated search."""
+        """Yield raw TST records via paginated search.
+
+        Yields raw API records (not normalized) so BaseScraper.bootstrap()
+        can call normalize() exactly once per record.
+        """
         start = 1
         total = None
         fetched = 0
@@ -199,13 +203,14 @@ class TSTScraper(BaseScraper):
                 break
 
             for rec in records:
-                try:
-                    normalized = self.normalize(rec)
-                    if normalized.get("text"):
-                        yield normalized
-                        fetched += 1
-                except Exception as e:
-                    logger.warning("Failed to normalize record: %s", e)
+                # Quick check that the raw record has some text content
+                reg = rec.get("registro", rec)
+                has_text = (reg.get("inteiroTeorHtml") or
+                            reg.get("inteiroTeorHTMLHighlight") or
+                            reg.get("ementa"))
+                if has_text:
+                    yield rec
+                    fetched += 1
 
             start += PAGE_SIZE
             if total and start > total:
@@ -219,7 +224,7 @@ class TSTScraper(BaseScraper):
         logger.info("Fetch complete: %d records", fetched)
 
     def fetch_updates(self, since: str) -> Generator[Dict[str, Any], None, None]:
-        """Fetch decisions published since a given date."""
+        """Fetch raw decisions published since a given date."""
         body = {"publicacaoInicial": since}
         start = 1
         total = None
@@ -241,13 +246,13 @@ class TSTScraper(BaseScraper):
                 break
 
             for rec in records:
-                try:
-                    normalized = self.normalize(rec)
-                    if normalized.get("text"):
-                        yield normalized
-                        fetched += 1
-                except Exception as e:
-                    logger.warning("Failed to normalize record: %s", e)
+                reg = rec.get("registro", rec)
+                has_text = (reg.get("inteiroTeorHtml") or
+                            reg.get("inteiroTeorHTMLHighlight") or
+                            reg.get("ementa"))
+                if has_text:
+                    yield rec
+                    fetched += 1
 
             start += PAGE_SIZE
             if total and start > total:
@@ -290,46 +295,11 @@ def main():
 
     elif command == "bootstrap":
         sample_mode = "--sample" in sys.argv
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        if sample_mode:
-            logger.info("Sample mode: fetching %d records", SAMPLE_SIZE)
-            count = 0
-            try:
-                data = scraper._search(1, SAMPLE_SIZE)
-            except Exception as e:
-                logger.error("Sample fetch failed: %s", e)
-                sys.exit(1)
-
-            records = data.get("registros", [])
-            for rec in records:
-                try:
-                    normalized = scraper.normalize(rec)
-                    if not normalized.get("text"):
-                        logger.warning("Skipping record with no text: %s", normalized.get("_id"))
-                        continue
-                    out_path = sample_dir / f"{normalized['_id'][:40]}.json"
-                    with open(out_path, "w", encoding="utf-8") as f:
-                        json.dump(normalized, f, ensure_ascii=False, indent=2)
-                    count += 1
-                    logger.info("Saved sample %d: %s (%d chars text)",
-                                count, normalized.get("process_number", "?"),
-                                len(normalized.get("text", "")))
-                except Exception as e:
-                    logger.warning("Failed to process record: %s", e)
-
-            logger.info("Sample complete: %d records saved to %s", count, sample_dir)
-        else:
-            data_dir = Path(__file__).parent / "data"
-            data_dir.mkdir(exist_ok=True)
-            count = 0
-            for rec in scraper.fetch_all():
-                out_path = data_dir / f"{rec['_id'][:40]}.json"
-                with open(out_path, "w", encoding="utf-8") as f:
-                    json.dump(rec, f, ensure_ascii=False, indent=2)
-                count += 1
-            logger.info("Bootstrap complete: %d records saved", count)
+        stats = scraper.bootstrap(sample_mode=sample_mode, sample_size=SAMPLE_SIZE)
+        fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
+        logger.info("Bootstrap complete: %d records — %s", fetched, stats)
+        if fetched == 0:
+            sys.exit(1)
     else:
         print(f"Unknown command: {command}")
         sys.exit(1)

@@ -1,41 +1,40 @@
-source:
-  id: EU/EEA
-  name: European Environment Agency (EEA)
-  description: EU environment data and assessments - briefings, reports, and analyses on environmental policy
-  country: EU
-  data_types:
-    - doctrine
-  url: https://www.eea.europa.eu
-
-fetch:
-  base_url: https://www.eea.europa.eu
-  api_url: https://www.eea.europa.eu/++api++/en/analysis/publications
-  search_endpoint: /@search
-  rate_limit_seconds: 1.5
-  timeout_seconds: 30
-  max_retries: 3
-  items_per_page: 50
-  content_types:
-    - briefing
-    - web_report
-
-schema:
-  key_fields:
-    - uid
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-  optional_fields:
-    - description
-    - topics
-    - geo_coverage
-    - language
-
 auth:
   type: none
+fetch:
+  api_url: https://www.eea.europa.eu/++api++/en/analysis/publications
+  base_url: https://www.eea.europa.eu
+  content_types:
+  - briefing
+  - web_report
+  items_per_page: 50
+  max_retries: 3
+  rate_limit_seconds: 1.5
+  search_endpoint: /@search
+  timeout_seconds: 30
+schema:
+  key_fields:
+  - name: uid
+    required: false
+    type: string
+  optional_fields:
+  - description
+  - topics
+  - geo_coverage
+  - language
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  country: EU
+  data_types:
+  - doctrine
+  description: EU environment data and assessments - briefings, reports, and analyses on environmental policy
+  id: EU/EEA
+  name: European Environment Agency (EEA)
+  url: https://www.eea.europa.eu

@@ -198,12 +198,16 @@ class SVJurisprudenciaScraper(BaseScraper):
         resp.raise_for_status()
         return _parse_results_html(resp.text)
 
-    def _download_pdf_text(self, pdf_path: str) -> Optional[str]:
-        """Extract text from PDF using centralized extractor."""
+    def _download_pdf_text(self, pdf_path: str, numero: str = "") -> Optional[str]:
+        """Download PDF and extract text using centralized extractor."""
+        if not pdf_path:
+            return ""
+        # PDF paths are relative to site root, not /busqueda/
+        url = f"https://www.jurisprudencia.gob.sv/{pdf_path}"
         return extract_pdf_markdown(
             source="SV/Jurisprudencia",
-            source_id="",
-            pdf_bytes=pdf_path,
+            source_id=f"SV-{numero}" if numero else "",
+            pdf_url=url,
             table="case_law",
         ) or ""
 
@@ -226,7 +230,7 @@ class SVJurisprudenciaScraper(BaseScraper):
                 seen.add(key)
 
                 time.sleep(2)
-                text = self._download_pdf_text(rec["pdf_path"])
+                text = self._download_pdf_text(rec["pdf_path"], numero=rec.get("numero", ""))
                 if not text:
                     continue
 
@@ -243,7 +247,7 @@ class SVJurisprudenciaScraper(BaseScraper):
                 date_iso = _parse_date_sv(rec["fecha"])
                 if date_iso and date_iso >= since.strftime("%Y-%m-%d"):
                     time.sleep(2)
-                    text = self._download_pdf_text(rec["pdf_path"])
+                    text = self._download_pdf_text(rec["pdf_path"], numero=rec.get("numero", ""))
                     if text:
                         rec["_full_text"] = text
                         yield rec
@@ -310,7 +314,7 @@ if __name__ == "__main__":
                 print(f"  Case: {r['numero']}, Date: {r['fecha']}")
                 print(f"  Court: {r['tribunal']}, Subject: {r['materia']}")
                 print(f"  PDF: {r['pdf_path']}")
-                text = scraper._download_pdf_text(r["pdf_path"])
+                text = scraper._download_pdf_text(r["pdf_path"], numero=r.get("numero", ""))
                 if text:
                     print(f"  Text: {len(text)} chars")
                     print(f"  Preview: {text[:200]}")
@@ -321,42 +325,14 @@ if __name__ == "__main__":
             sys.exit(1)
 
     elif cmd == "bootstrap":
-        sample_dir = scraper.source_dir / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        count = 0
-        limit = 15 if sample else None
-
-        for raw in scraper.fetch_all():
-            normalized = scraper.normalize(raw)
-            if normalized is None:
-                continue
-
-            count += 1
-            out_path = sample_dir / f"{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(normalized, f, ensure_ascii=False, indent=2)
-
-            if count % 50 == 0:
-                logger.info(f"Processed {count} records")
-
-            if limit and count >= limit:
-                break
-
-        print(f"Saved {count} records to {sample_dir}/")
-
+        stats = scraper.bootstrap(sample_mode="--sample" in sys.argv, sample_size=15)
+        fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
+        logger.info(f"Bootstrap complete: {fetched} records — {stats}")
+        if fetched == 0:
+            sys.exit(1)
     elif cmd == "update":
-        from datetime import timedelta
-        since = datetime.now(timezone.utc) - timedelta(days=30)
-        count = 0
-        sample_dir = scraper.source_dir / "sample"
-        sample_dir.mkdir(exist_ok=True)
-        for raw in scraper.fetch_updates(since):
-            normalized = scraper.normalize(raw)
-            if normalized:
-                count += 1
-        print(f"Updated {count} records")
-
+        stats = scraper.update()
+        logger.info(f"Update complete: {stats}")
     else:
         print(f"Unknown command: {cmd}")
         sys.exit(1)

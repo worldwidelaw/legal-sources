@@ -25,6 +25,7 @@ Usage:
   python bootstrap.py test               # Quick connectivity test
 """
 
+import gc
 import sys
 import json
 import logging
@@ -120,7 +121,10 @@ class WipoLexScraper(BaseScraper):
             return []
 
         from bs4 import BeautifulSoup
-        soup = BeautifulSoup(resp.text, "html.parser")
+        html_text = resp.text
+        del resp
+        soup = BeautifulSoup(html_text, "html.parser")
+        del html_text
 
         results = []
         tables = soup.find_all("table", id="members_profile_laws_table")
@@ -162,6 +166,10 @@ class WipoLexScraper(BaseScraper):
                     "country_code": country_code,
                 })
 
+        # Free soup memory
+        soup.decompose()
+        del soup
+
         return results
 
     def _extract_full_text_html(self, soup) -> str:
@@ -192,13 +200,27 @@ class WipoLexScraper(BaseScraper):
         return None
 
     def _download_pdf_text(self, pdf_url: str) -> str:
-        """Extract text from PDF using centralized extractor."""
-        return extract_pdf_markdown(
+        """Extract text from PDF using centralized extractor.
+
+        Skips PDFs larger than 20MB to avoid OOM on constrained VPS.
+        """
+        # Check PDF size before downloading (HEAD request)
+        try:
+            head = self.client.session.head(pdf_url, timeout=15, allow_redirects=True)
+            content_length = int(head.headers.get("Content-Length", 0))
+            if content_length > 20 * 1024 * 1024:  # 20MB
+                logger.warning(f"Skipping oversized PDF ({content_length // 1024 // 1024}MB): {pdf_url}")
+                return ""
+        except Exception:
+            pass  # If HEAD fails, proceed with download anyway
+
+        result = extract_pdf_markdown(
             source="INTL/WIPO-LexDB",
             source_id="",
             pdf_url=pdf_url,
             table="legislation",
         ) or ""
+        return result
 
     def _extract_detail_metadata(self, soup) -> Dict[str, str]:
         """Extract metadata from detail page spans."""
@@ -234,7 +256,10 @@ class WipoLexScraper(BaseScraper):
             return None
 
         from bs4 import BeautifulSoup
-        soup = BeautifulSoup(resp.text, "html.parser")
+        html_text = resp.text
+        del resp  # Free response memory
+        soup = BeautifulSoup(html_text, "html.parser")
+        del html_text
 
         # Get metadata from page
         page_meta = self._extract_detail_metadata(soup)
@@ -242,12 +267,17 @@ class WipoLexScraper(BaseScraper):
         # Get full text - prefer inline HTML
         full_text = self._extract_full_text_html(soup)
 
+        pdf_url = None
         if not full_text:
-            # Fallback to PDF
             pdf_url = self._extract_signed_pdf_url(soup)
-            if pdf_url:
-                logger.debug(f"Falling back to PDF for {detail_id}")
-                full_text = self._download_pdf_text(pdf_url)
+
+        # Free soup memory before potentially downloading PDF
+        soup.decompose()
+        del soup
+
+        if not full_text and pdf_url:
+            logger.debug(f"Falling back to PDF for {detail_id}")
+            full_text = self._download_pdf_text(pdf_url)
 
         if not full_text:
             logger.debug(f"No full text for detail {detail_id}")
@@ -265,6 +295,7 @@ class WipoLexScraper(BaseScraper):
         countries = self._get_country_codes()
         logger.info(f"Found {len(countries)} countries/organizations")
 
+        record_count = 0
         for country in countries:
             code = country["code"]
             name = country["name"]
@@ -276,7 +307,12 @@ class WipoLexScraper(BaseScraper):
             for law in laws:
                 record = self._fetch_detail(law["detail_id"], law)
                 if record:
+                    record_count += 1
                     yield record
+                    # Periodic garbage collection to avoid OOM on constrained VPS
+                    if record_count % 100 == 0:
+                        gc.collect()
+                        logger.info(f"  Progress: {record_count} records yielded")
 
     def fetch_sample(self, n: int = 15) -> Generator[dict, None, None]:
         """Yield a sample of legislation from a few countries."""

@@ -215,7 +215,7 @@ class LesothoLIIScraper(BaseScraper):
                     "doc_type": doc_type,
                 }
                 count += 1
-                yield self.normalize(raw)
+                yield raw
 
                 if max_docs and count >= max_docs:
                     return
@@ -273,6 +273,7 @@ def main():
         action="store_true",
         help="Only fetch a small sample (for validation)",
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = LesothoLIIScraper()
@@ -282,47 +283,15 @@ def main():
         sys.exit(0 if success else 1)
 
     elif args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        if args.sample:
-            count = 0
-
-            # Get legislation samples
-            for record in scraper._fetch_paginated(LEGIS_URL, "/akn/ls/act/", "legislation", max_docs=8):
-                out_path = sample_dir / f"{count:04d}.json"
-                with open(out_path, "w", encoding="utf-8") as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-                logger.info(f"[{count+1}] {record['title'][:80]} ({len(record['text']):,} chars)")
-                count += 1
-
-            # Get judgment samples
-            for record in scraper._fetch_paginated(JUDGMENTS_URL, "/akn/ls/judgment/", "case_law", max_docs=8):
-                if count >= 15:
-                    break
-                out_path = sample_dir / f"{count:04d}.json"
-                with open(out_path, "w", encoding="utf-8") as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-                logger.info(f"[{count+1}] {record['title'][:80]} ({len(record['text']):,} chars)")
-                count += 1
-
-            logger.info(f"Bootstrap complete: {count} records saved to {sample_dir}")
-        else:
-            count = 0
-            for record in scraper.fetch_all():
-                out_path = sample_dir / f"{count:04d}.json"
-                with open(out_path, "w", encoding="utf-8") as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-                count += 1
-                if count % 100 == 0:
-                    logger.info(f"Saved {count} records...")
-            logger.info(f"Bootstrap complete: {count} records saved to {sample_dir}")
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+        fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
+        logger.info(f"Bootstrap complete: {fetched} records — {stats}")
+        if fetched == 0:
+            sys.exit(1)
 
     elif args.command == "update":
-        count = 0
-        for record in scraper.fetch_updates():
-            count += 1
-        logger.info(f"Update complete: {count} records")
+        stats = scraper.update()
+        logger.info(f"Update complete: {stats}")
 
 
 if __name__ == "__main__":

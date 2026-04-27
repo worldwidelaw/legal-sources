@@ -1,0 +1,45 @@
+source:
+  id: US/EyeciteCitations
+  name: US Case Law Citation Index (Eyecite + CourtListener)
+  country: US
+  type: caselaw
+  url: https://free.law/projects/eyecite
+  description: >
+    Citation-enriched US case law via CourtListener search API + Eyecite parser.
+    Each record contains the full opinion text plus structured citation metadata
+    extracted by eyecite (volume, reporter, page, year, court for every citation).
+    Enables citation resolution and citation graph analysis across US case law.
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 3
+
+fetch:
+  delay: 1.5
+  page_size: 20
+  sample_count: 15
+
+schema:
+  key_fields:
+    - name: _id
+      required: true
+      type: string
+    - name: cluster_id
+      required: false
+      type: string
+    - name: citation_count
+      required: false
+      type: integer
+  text_fields:
+    - text
+  date_fields:
+    - date
+    - _fetched_at
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id

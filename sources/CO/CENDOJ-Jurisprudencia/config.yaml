@@ -36,7 +36,7 @@ api:
 
 schema:
   key_fields:
-    - name: "doc_id"
+    - name: "_id"
       description: "Document identifier (e.g. AC055-2024)"
       type: "string"
       role: "primary_key"

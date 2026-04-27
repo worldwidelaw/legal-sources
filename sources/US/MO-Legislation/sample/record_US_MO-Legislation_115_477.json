@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/115.477",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T19:26:47.796242+00:00",
+  "title": "Missouri Revised Statutes § 115.477 - Ballots, procedure for counting (electronic voting)",
+  "text": "115.477.  Ballots, procedure for counting (electronic voting). — 1.  In each jurisdiction using an electronic voting system, all proceedings at the counting location shall be under the direction of the election authority.  The election authority shall appoint two judges, one from each major political party, to be present and observe the count.  The counting shall be open to the public, but no persons, except those employed and authorized for the purpose, shall touch any ballot, ballot container or return.\n  2.  The automatic tabulating equipment shall produce a return showing the total number of votes cast for each candidate and on each question at each polling place and in the jurisdiction as a whole.\n  3.  If any ballot is damaged and cannot be properly counted by the automatic tabulating equipment, it may be handcounted in the manner provided for absentee ballots, or a true duplicate copy may be made of the defective ballot.  If any ballot contains a number of votes and write-in votes for any office which exceeds the number allowed by law, it may be handcounted in the manner provided for absentee ballots, a true duplicate copy be made which does not include the invalid votes or, at the discretion of the election judges, a self-adhesive removable label, sensitized, may be placed over any mark to allow the ballot to be processed through the automatic tabulating equipment.  The duplication of each ballot shall be closely observed by two election judges or employees of the election authority, one from each major political party.  Each duplicate ballot shall be clearly labeled \"duplicate\", shall bear a serial number which shall be recorded on the defective ballot, and shall be counted in lieu of the defective ballot.\n(L. 1977 H.B. 101 § 12.070, A.L. 1979 S.B. 275, A.L. 2014 H.B. 1136)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=115.477",
+  "section_id": "115.477",
+  "chapter": "115",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

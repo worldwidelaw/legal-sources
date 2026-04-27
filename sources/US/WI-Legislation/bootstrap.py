@@ -305,7 +305,7 @@ class WILegislationScraper(BaseScraper):
             try:
                 sections = self.parse_chapter(ch)
                 for raw in sections:
-                    yield self.normalize(raw)
+                    yield raw
                     total += 1
                 if sections:
                     logger.info(f"  Chapter {ch}: {len(sections)} sections (total: {total})")
@@ -327,7 +327,7 @@ class WILegislationScraper(BaseScraper):
             try:
                 sections = self.parse_chapter(ch)
                 for raw in sections:
-                    yield self.normalize(raw)
+                    yield raw
                     count += 1
                 logger.info(f"  Chapter {ch}: {len(sections)} sections")
             except Exception as e:
@@ -345,6 +345,7 @@ def main():
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = WILegislationScraper()
@@ -363,7 +364,8 @@ def main():
             gen = scraper.fetch_all()
 
         count = 0
-        for record in gen:
+        for raw in gen:
+            record = scraper.normalize(raw)
             out_path = sample_dir / f"{record['_id']}.json"
             with open(out_path, "w", encoding="utf-8") as f:
                 json.dump(record, f, ensure_ascii=False, indent=2)

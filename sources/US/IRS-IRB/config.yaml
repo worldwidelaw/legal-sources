@@ -1,36 +1,48 @@
-name: IRS Internal Revenue Bulletins
-source_id: US/IRS-IRB
 country: US
 data_types:
-  - doctrine
-
-url: https://www.irs.gov/irb/
+- doctrine
 license: U.S. Government Work (Public Domain)
-update_frequency: weekly
+name: IRS Internal Revenue Bulletins
+notes: 'IRS Internal Revenue Bulletins contain official tax guidance:
 
-schema:
-  key_fields:
-    - _id
-    - year
-    - week
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
-notes: |
-  IRS Internal Revenue Bulletins contain official tax guidance:
   - Revenue Rulings (interpretations of tax law)
+
   - Revenue Procedures (administrative procedures)
+
   - Notices (public guidance)
+
   - Treasury Decisions (regulations)
+
   - Announcements
 
+
   HTML full text available at /irb/YYYY-WW_IRB from ~2005 to present.
+
   ~52 bulletins per year × 21+ years = ~1,100+ bulletins.
+
   Each bulletin contains multiple items with full text.
+
+  '
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: year
+    required: false
+    type: string
+  - name: week
+    required: false
+    type: string
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source_id: US/IRS-IRB
+update_frequency: weekly
+url: https://www.irs.gov/irb/

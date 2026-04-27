@@ -14,7 +14,7 @@ All Greek laws, presidential decrees, and regulatory acts must be published in t
 - **API:** PDF download via `/api/DownloadFeksApi/?fek_pdf={code}`
 - **Format:** PDF documents
 - **Language:** Greek
-- **License:** Public Domain (Official Government Acts)
+- **License:** Public Domain (official government acts)
 
 ## FEK Code Format
 
@@ -73,6 +73,10 @@ python bootstrap.py update
   "fek_issue": 61
 }
 ```
+
+## License
+
+Public domain — official acts of the Hellenic Republic published in the Government Gazette.
 
 ## Related Sources
 

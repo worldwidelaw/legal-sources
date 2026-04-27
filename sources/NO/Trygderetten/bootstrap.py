@@ -20,6 +20,8 @@ from pathlib import Path
 from typing import Generator, Optional
 from urllib.parse import urljoin
 
+import logging
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -27,6 +29,12 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("legal-data-hunter.NO.Trygderetten")
 
 BASE_URL = "https://lovdata.no"
 REGISTRY_URL = "https://lovdata.no/register/trygderetten"
@@ -248,7 +256,7 @@ class TrygderettenScraper(BaseScraper):
 
                     raw = self._fetch_decision(item['url'])
                     if raw and raw.get('text') and len(raw['text']) >= 100:
-                        yield self.normalize(raw)
+                        yield raw
                         count += 1
                         fetched_ids.add(cid)
                         print(f"    -> {len(raw['text']):,} chars")
@@ -296,6 +304,7 @@ def main():
                        help="Command to run")
     parser.add_argument('--sample', action='store_true',
                        help="Fetch sample records only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = TrygderettenScraper()
@@ -305,45 +314,13 @@ def main():
         sys.exit(0 if success else 1)
 
     elif args.command == 'bootstrap':
-        SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-
-        if args.sample:
-            count = 0
-            # Sample from a few different years
-            for year in [2025, 2020, 2015, 2010]:
-                if count >= 15:
-                    break
-                items, total = scraper._fetch_registry_page(year, 0)
-                for item in items[:4]:
-                    if count >= 15:
-                        break
-                    raw = scraper._fetch_decision(item['url'])
-                    if raw and raw.get('text') and len(raw['text']) >= 100:
-                        record = scraper.normalize(raw)
-                        out_path = SAMPLE_DIR / f"{count:04d}.json"
-                        with open(out_path, 'w', encoding='utf-8') as f:
-                            json.dump(record, f, ensure_ascii=False, indent=2)
-                        print(f"  [{count+1}] {record['case_id']}: {len(record['text']):,} chars")
-                        count += 1
-
-            print(f"\nBootstrap complete: {count} records saved to {SAMPLE_DIR}")
-        else:
-            count = 0
-            for record in scraper.fetch_all():
-                out_path = SAMPLE_DIR / f"{count:04d}.json"
-                with open(out_path, 'w', encoding='utf-8') as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-                count += 1
-                if count % 100 == 0:
-                    print(f"Saved {count} records...")
-            print(f"Bootstrap complete: {count} records saved to {SAMPLE_DIR}")
-
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+        fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
+        logger.info(f"Bootstrap complete: {fetched} records — {stats}")
+        if fetched == 0:
+            sys.exit(1)
     elif args.command == 'update':
-        count = 0
-        for record in scraper.fetch_updates():
-            count += 1
-        print(f"Update complete: {count} records")
-
-
+        stats = scraper.update()
+        logger.info(f"Update complete: {stats}")
 if __name__ == '__main__':
     main()

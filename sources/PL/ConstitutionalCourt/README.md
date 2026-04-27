@@ -42,7 +42,7 @@ The SAOS API provides:
 
 ## License
 
-The SAOS database is made available under CC-BY license.
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — SAOS database, cite source.
 
 ## Usage
 

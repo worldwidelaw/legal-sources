@@ -43,7 +43,8 @@ ECLI:BG:SC001:YYYY:NNNNNNNNNNNN.NNN
 ```
 
 ## License
-Open Government Data - Bulgarian judicial decisions are publicly available.
+
+[Open Government Data](https://data.egov.bg/) — Bulgarian judicial decisions are publicly available for reuse.
 
 ## References
 - [VKS Official Website](https://www.vks.bg)

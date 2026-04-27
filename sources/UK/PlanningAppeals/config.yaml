@@ -1,0 +1,67 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — UK Planning Appeal Decisions Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/PlanningAppeals"
+  country: "UK"
+  name: "UK Planning Appeal Decisions"
+  url: "https://acp.planninginspectorate.gov.uk"
+  description: |
+    Planning appeal decisions from the UK Planning Inspectorate Appeals
+    Casework Portal. Covers appeals under Town and Country Planning Act 1990.
+    Full text extracted from decision PDFs.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "html_scrape"
+  base_url: "https://acp.planninginspectorate.gov.uk"
+  endpoints:
+    case:
+      path: "/ViewCase.aspx?caseid={case_id}"
+      method: "GET"
+    document:
+      path: "/ViewDocument.aspx?fileid={file_id}"
+      method: "GET"
+
+data_model:
+  type: "case_law"
+  primary_key: "case_id"
+  update_strategy: "upsert"
+  versioning: "decision_date"
+
+schema:
+  key_fields:
+    - name: "case_id"
+      type: "string"
+      role: "primary_key"
+    - name: "reference"
+      type: "string"
+      role: "identifier"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - Sequential case IDs starting ~3300000
+  - Full text extracted from decision PDFs via pdf_extract
+  - Only cases with status "Decision issued" have decision documents

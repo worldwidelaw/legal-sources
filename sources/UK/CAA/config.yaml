@@ -59,7 +59,7 @@ data_model:
 # ── Schema ────────────────────────────────────────────────────────
 schema:
   key_fields:
-    - name: "document_id"
+    - name: "_id"
       type: "string"
       role: "primary_key"
     - name: "title"
@@ -71,6 +71,7 @@ schema:
     - name: "date"
       type: "date"
       role: "temporal_key"
+      required: false
     - name: "url"
       type: "string"
       role: "reference"
@@ -84,6 +85,7 @@ schema:
       type: "list"
       role: "classification"
 
+      required: false
 # ── Notes ─────────────────────────────────────────────────────────
 notes: |
   - Language: English

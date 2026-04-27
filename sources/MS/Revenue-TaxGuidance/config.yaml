@@ -1,0 +1,58 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — Montserrat Tax Guidance Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "MS/Revenue-TaxGuidance"
+  country: "MS"
+  name: "Montserrat Inland Revenue Department Guidance"
+  url: "https://www.gov.ms"
+  description: |
+    Tax legislation, SROs, and budget documents from Montserrat.
+    Covers income tax, customs duties, property tax, stamp duty,
+    consumption tax, and related fiscal legislation. PDFs from
+    the Attorney General's Chambers revised acts collection and
+    Ministry of Finance budget publications.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.gov.ms"
+
+data_model:
+  type: "doctrine"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+
+schema:
+  key_fields:
+    - name: "doc_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+
+notes: |
+  - Language: English
+  - Tax-related acts, SROs, and budget documents
+  - Full text extracted from PDFs via pdf_extract
+  - No authentication required

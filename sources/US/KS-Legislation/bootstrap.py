@@ -293,7 +293,7 @@ class KSLegislationScraper(BaseScraper):
                     raw = self.fetch_section_text(chapter_slug, article_slug,
                                                   section_slug, section_k)
                     if raw:
-                        yield self.normalize(raw)
+                        yield raw
                         total += 1
                         if total % 50 == 0:
                             logger.info(f"  Progress: {total} sections fetched")
@@ -311,7 +311,7 @@ class KSLegislationScraper(BaseScraper):
             raw = self.fetch_section_text(chapter_slug, article_slug,
                                           section_slug, section_k)
             if raw:
-                yield self.normalize(raw)
+                yield raw
                 count += 1
             else:
                 logger.warning(f"Failed to fetch sample section {display}")
@@ -328,6 +328,7 @@ def main():
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = KSLegislationScraper()

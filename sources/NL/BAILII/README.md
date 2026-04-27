@@ -7,7 +7,7 @@ Dutch court decisions from the Rechtspraak.nl Open Data service.
 - **URL**: https://data.rechtspraak.nl
 - **Documentation**: https://www.rechtspraak.nl/Uitspraken/Paginas/Open-Data.aspx
 - **Technical Docs**: https://www.rechtspraak.nl/SiteCollectionDocuments/Technische-documentatie-Open-Data-van-de-Rechtspraak.pdf
-- **License**: CC0 / Public Domain
+- **License**: [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) (Public Domain)
 
 ## Coverage
 
@@ -71,6 +71,10 @@ python bootstrap.py bootstrap
 # Incremental update
 python bootstrap.py update
 ```
+
+## License
+
+[CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) — Public Domain, Dutch Open Government Data.
 
 ## Schema
 

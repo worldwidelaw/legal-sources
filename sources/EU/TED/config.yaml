@@ -1,31 +1,40 @@
-source:
-  id: "EU/TED"
-  country: "EU"
-  name: "EU Tenders Electronic Daily (TED)"
-  description: "EU public procurement notices and contract awards"
-  url: "https://ted.europa.eu"
-  data_types:
-    - doctrine
-
+api:
+  auth: none
+  endpoints:
+    notice_xml: https://ted.europa.eu/en/notice/{id}/xml
+    search: https://api.ted.europa.eu/v3/notices/search
+  rate_limit:
+    delay_seconds: 0.5
+    requests_per_minute: 700
+  type: rest
+pagination:
+  page_size: 250
+  type: cursor
 schema:
   key_fields:
-    - notice_id
-    - title
-    - date
-    - url
-    - notice_type
-    - text
-
-api:
-  type: "rest"
-  endpoints:
-    search: "https://api.ted.europa.eu/v3/notices/search"
-    notice_xml: "https://ted.europa.eu/en/notice/{id}/xml"
-  auth: "none"
-  rate_limit:
-    requests_per_minute: 700
-    delay_seconds: 0.5
-
-pagination:
-  type: "cursor"
-  page_size: 250
+  - name: notice_id
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: notice_type
+    required: false
+    type: string
+  - name: text
+    required: true
+    type: string
+source:
+  country: EU
+  data_types:
+  - doctrine
+  description: EU public procurement notices and contract awards
+  id: EU/TED
+  name: EU Tenders Electronic Daily (TED)
+  url: https://ted.europa.eu

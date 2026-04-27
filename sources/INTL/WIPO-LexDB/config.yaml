@@ -37,3 +37,7 @@ fetch:
   rate_limit: 1.0
   timeout: 60
   retry: 3
+
+rate_limit:
+  max_workers: 1
+  requests_per_second: 1.0

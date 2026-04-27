@@ -1,0 +1,81 @@
+# ===================================================================
+# AU/ACTLegislation -- ACT Legislation Register
+# ===================================================================
+# Australian Capital Territory Acts and subordinate legislation from
+# the authorised electronic statute book at legislation.act.gov.au.
+#
+# Primary: DOCX full text via /DownloadFile/{type}/{id}/current/DOCX/{id}.DOCX
+# Discovery: Browse listing at /results?category=cAct&status=Current&action=browse
+# Format: DOCX (Word) with full text, extracted via python-docx
+# License: Crown copyright, free public access
+# ===================================================================
+
+source:
+  id: "AU/ACTLegislation"
+  country: "AU"
+  name: "ACT Legislation Register (legislation.act.gov.au)"
+  url: "https://www.legislation.act.gov.au/"
+  description: |
+    Australian Capital Territory in-force Acts and subordinate legislation.
+    Full text downloaded as DOCX from the authorised electronic statute book.
+    Covers ~319 Acts and ~222 subordinate laws.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.1
+  burst: 1
+
+api:
+  type: "docx_download"
+  base_url: "https://www.legislation.act.gov.au"
+  browse_acts: "/results?category=cAct&status=Current&action=browse"
+  browse_sl: "/results?category=cSub&status=Current&action=browse"
+  docx_pattern: "/DownloadFile/{type}/{id}/current/DOCX/{id}.DOCX"
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "doc_id"
+      description: "Document ID (e.g., 2001-14)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act or regulation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year from document ID"
+      type: "string"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to original document"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - DOCX full text via /DownloadFile/{type}/{id}/current/DOCX/{id}.DOCX
+  - Browse listing at /results?category=cAct|cSub&status=Current&action=browse
+  - 10-second crawl delay per robots.txt; /DownloadFile/ path is NOT blocked
+  - Crown copyright, free public access
+  - ~319 Acts + ~222 subordinate legislation = ~541 documents

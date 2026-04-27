@@ -46,7 +46,7 @@ data_model:
 schema:
   total_fields: 11
   key_fields:
-    - name: "gazette_id"
+    - name: "_id"
       description: "Unique gazette identifier (territory_id + date + hash)"
       type: "string"
       role: "primary_key"

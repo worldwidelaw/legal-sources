@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/486.1115",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:56:53.685001+00:00",
+  "title": "Missouri Revised Statutes § 486.1115 - Standards for remote online notarization, secretary's duties",
+  "text": "486.1115.  Standards for remote online notarization, secretary's duties. — 1.  The secretary of state by rule shall develop and maintain standards for remote online notarization in accordance with sections 486.1100 to 486.1205, including, but not limited to, standards for credential analysis and identity proofing.  Such rules shall be subject to the limitations in section 486.830.\n  2.  In developing standards for remote online notarization, the secretary of state shall review and consider standards established by the National Association of Secretaries of State (NASS) or its successor agency, and national standard setting bodies, such as the Mortgage Industry Standards and Maintenance Organization (MISMO).\n  3.  Before use by remote online notaries in this state, the secretary shall approve the software to be used in remote online notarial acts.  The secretary may only approve remote online notarization software that, at a minimum:\n  (1)  Records and archives the remote online session;\n  (2)  Provides sufficient audio clarity and video resolution to enable the remote online notary and the principal to see and communicate to each other simultaneously through live, real time transmission;\n  (3)  Provides reasonable security measures to prevent unauthorized access to:\n  (a)  The live transmission of the audio-video communication;\n  (b)  A recording of the audio-video communication;\n  (c)  The verification methods and credentials used to verify the identity of the principal; and\n  (d)  The electronic documents presented for electronic notarization;\n  (4)  Utilizes video technology to be used in a remote electronic notarization session that provides sufficient high-definition for the notary to reasonably assess the principal's comprehension and volition;\n  (5)  Permits the remote online notary to identify the principal to the remote online notary's satisfaction through a form of authentication that complies with section 486.1145;\n  (6)  Permits the principal to identify the remote online notary to his or her satisfaction; and\n  (7)  Presents the document being notarized as an electronic document.\n  4.  Before being used by a remote online notary in this state, the secretary shall test and certify remote online notarization software.  The expenses of any such testing shall be paid by the vendor of the software.\n(L. 2020 H.B. 1655)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=486.1115",
+  "section_id": "486.1115",
+  "chapter": "486",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

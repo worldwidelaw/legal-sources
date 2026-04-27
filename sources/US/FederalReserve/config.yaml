@@ -1,28 +1,42 @@
-source_id: US/FederalReserve
-name: US Federal Reserve Board Enforcement Actions and Regulatory Guidance
+auth: none
 country: US
 data_types:
-  - case_law
-  - doctrine
-url: https://www.federalregister.gov/agencies/federal-reserve-system
-auth: none
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - document_number
-    - document_type
-    - docket_ids
-    - url
-
+- case_law
+- doctrine
 fetch:
   api_base: https://www.federalregister.gov/api/v1
-  document_types:
-    - RULE
-    - PRORULE
-    - NOTICE
   delay: 1.0
+  document_types:
+  - RULE
+  - PRORULE
+  - NOTICE
   per_page: 100
+name: US Federal Reserve Board Enforcement Actions and Regulatory Guidance
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: document_number
+    required: false
+    type: string
+  - name: document_type
+    required: false
+    type: string
+  - name: docket_ids
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source_id: US/FederalReserve
+url: https://www.federalregister.gov/agencies/federal-reserve-system

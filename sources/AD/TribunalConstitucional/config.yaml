@@ -1,31 +1,43 @@
-source:
-  id: AD/TribunalConstitucional
-  name: "Constitutional Court of Andorra (Tribunal Constitucional)"
-  country: AD
-  url: https://www.tribunalconstitucional.ad/
-  data_types:
-    - case_law
-  auth: none
-  format: json_api
-  language: ca
-  description: >
-    2,273 decisions from the Andorra Constitutional Court (1994-present).
-    541 sentencies (judgments) + 1,732 autes (orders). Full text in Catalan
-    via Drupal JSON:API. Includes case metadata, rapporteur, BOPA references.
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - case_number
-    - decision_type
-    - url
-
 fetcher:
-  base_url: "https://www.tribunalconstitucional.ad"
-  jsonapi_sentencia: "/jsonapi/node/sentencia"
-  jsonapi_aute: "/jsonapi/node/aute"
+  base_url: https://www.tribunalconstitucional.ad
+  jsonapi_aute: /jsonapi/node/aute
+  jsonapi_sentencia: /jsonapi/node/sentencia
   page_limit: 50
   rate_limit: 1.0
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: case_number
+    required: false
+    type: string
+  - name: decision_type
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: AD
+  data_types:
+  - case_law
+  description: '2,273 decisions from the Andorra Constitutional Court (1994-present). 541 sentencies (judgments) + 1,732 autes (orders). Full text in Catalan via Drupal JSON:API. Includes case metadata,
+    rapporteur, BOPA references.
+
+    '
+  format: json_api
+  id: AD/TribunalConstitucional
+  language: ca
+  name: Constitutional Court of Andorra (Tribunal Constitucional)
+  url: https://www.tribunalconstitucional.ad/

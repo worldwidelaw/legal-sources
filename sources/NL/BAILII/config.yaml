@@ -1,44 +1,67 @@
-# NL/BAILII - Dutch Case Law via Rechtspraak.nl Open Data API
-# =============================================================
-
-source:
-  id: NL/BAILII
-  country: NL
-  name: Dutch Case Law (Rechtspraak.nl)
-  description: |
-    Dutch court decisions from Rechtspraak.nl Open Data service.
-    Covers all Dutch courts including Supreme Court (Hoge Raad), Courts of Appeal,
-    District Courts, and specialized tribunals.
-    Data is provided via a RESTful API with XML responses containing full text.
-  url: https://data.rechtspraak.nl
-  data_types:
-    - caselaw
-  license: CC0 / Public Domain
-  auth: none
-
 api:
-  # Search endpoint - returns Atom feed with ECLI identifiers
-  search_url: https://data.rechtspraak.nl/uitspraken/zoeken
-  # Content endpoint - returns full XML document by ECLI
   content_url: https://data.rechtspraak.nl/uitspraken/content
-  # Rate limit: max 10 requests per second
-  rate_limit_per_second: 10
-  # Response format
   format: XML
-
+  rate_limit_per_second: 10
+  search_url: https://data.rechtspraak.nl/uitspraken/zoeken
 schema:
   key_fields:
-    - _id           # ECLI identifier
-    - ecli          # European Case Law Identifier
-    - court         # Court name (Dutch)
-    - court_id      # Court identifier URI
-    - date          # Decision date
-    - case_number   # Internal case number
-    - procedure     # Procedure type
-    - legal_area    # Legal area (civil, criminal, administrative, etc.)
-    - text          # Full text of the decision (MANDATORY)
-    - summary       # Short summary/abstract
-    - url           # Deeplink URL
-    - relations     # Related cases (appeals, etc.)
-    - citations     # Legal citations in the decision
-    - publication_date # When decision was published
+  - name: _id
+    required: true
+    type: string
+  - name: ecli
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: court_id
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: case_number
+    required: false
+    type: string
+  - name: procedure
+    required: false
+    type: string
+  - name: legal_area
+    required: false
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: summary
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+  - name: relations
+    required: false
+    type: string
+  - name: citations
+    required: false
+    type: string
+  - name: publication_date
+    required: false
+    type: date
+source:
+  auth: none
+  country: NL
+  data_types:
+  - caselaw
+  description: 'Dutch court decisions from Rechtspraak.nl Open Data service.
+
+    Covers all Dutch courts including Supreme Court (Hoge Raad), Courts of Appeal,
+
+    District Courts, and specialized tribunals.
+
+    Data is provided via a RESTful API with XML responses containing full text.
+
+    '
+  id: NL/BAILII
+  license: CC0 / Public Domain
+  name: Dutch Case Law (Rechtspraak.nl)
+  url: https://data.rechtspraak.nl

@@ -64,7 +64,7 @@ Includes records from 1960 (Lawless v. Ireland) through 2026.
 
 ## License
 
-Open access. ECHR case law is in the public domain.
+[Public domain](https://www.echr.coe.int/Pages/home.aspx?p=caselaw) — ECHR case law is openly accessible.
 
 ## Usage
 

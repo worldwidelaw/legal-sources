@@ -1,0 +1,78 @@
+# ===================================================================
+# BM/CourtJudgments -- Bermuda Court Judgments
+# ===================================================================
+# ~2,059 Supreme Court and Court of Appeal judgments (2007-2026).
+# Organized by year pages on gov.bm Drupal site.
+# Judgments are PDF files, freely downloadable without auth.
+# Link text contains case citation with court, year, and number.
+# ===================================================================
+
+source:
+  id: "BM/CourtJudgments"
+  country: "BM"
+  name: "Bermuda Court Judgments (gov.bm)"
+  url: "https://www.gov.bm/court-judgments"
+  description: |
+    Supreme Court and Court of Appeal decisions from 2007 onwards.
+    Full text unedited transcripts published as PDFs on gov.bm.
+    Organized by year, then by court type and month.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "pdf_download"
+  base_url: "https://www.gov.bm"
+  endpoints:
+    current_year: "/court-judgments"
+    past_year: "/court-judgments-{year}"
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document ID derived from PDF filename"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title from link text"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full judgment text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Judgment date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the PDF"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "court"
+      description: "Court (Court of Appeal, Supreme Court)"
+    - name: "citation"
+      description: "Neutral citation (e.g. [2026] CA (BDA) 3 Civ)"
+    - name: "year"
+      description: "Judgment year"

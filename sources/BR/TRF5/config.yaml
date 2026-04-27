@@ -1,20 +1,24 @@
-source_id: BR/TRF5
-name: "TRF-5 Federal Regional Court (5th Region - NE)"
-description: >
-  Court decisions from the Tribunal Regional Federal da 5ª Região via the
-  Julia Pesquisa REST API. TRF-5 covers Northeastern states (AL, CE, PB,
-  PE, RN, SE). Full text returned directly in JSON responses.
-base_url: "https://juliapesquisa.trf5.jus.br/julia-pesquisa/"
-data_types:
-  - case_law
-country: BR
-language: pt
 auth:
   type: none
+base_url: https://juliapesquisa.trf5.jus.br/julia-pesquisa/
+country: BR
+data_types:
+- case_law
+description: 'Court decisions from the Tribunal Regional Federal da 5ª Região via the Julia Pesquisa REST API. TRF-5 covers Northeastern states (AL, CE, PB, PE, RN, SE). Full text returned directly in JSON
+  responses.
+
+  '
+language: pt
+name: TRF-5 Federal Regional Court (5th Region - NE)
 rate_limit:
-  requests_per_second: 0.5
   burst: 2
+  requests_per_second: 0.5
 schema:
   key_fields:
-    - _id
-    - process_number
+  - name: _id
+    required: true
+    type: string
+  - name: process_number
+    required: false
+    type: string
+source_id: BR/TRF5

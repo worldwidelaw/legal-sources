@@ -384,6 +384,7 @@ if __name__ == "__main__":
 
     upd = sub.add_parser("update", help="Fetch recent orders")
     upd.add_argument("--days", type=int, default=90, help="Look back N days (default 90)")
+    upd.add_argument("--full", action="store_true", help="Fetch all records")
 
     sub.add_parser("test", help="Quick connectivity test")
 

@@ -1,46 +1,55 @@
-source_id: DE/BfArM
-name: German Federal Institute for Drugs and Medical Devices (BfArM) - Rote-Hand-Briefe
 country: DE
-language: de
 data_types:
-  - doctrine
-
+- doctrine
 endpoints:
   base_url: https://www.bfarm.de
-  rss_feed: /SiteGlobals/Functions/RSSFeed/DE/Pharmakovigilanz/Rote-Hand-Briefe/RSSNewsfeed.xml?nn=591002
   list_page: /DE/Arzneimittel/Pharmakovigilanz/Risikoinformationen/Rote-Hand-Briefe/_node.html
   pagination_param: gtp=964792_list%253D
+  rss_feed: /SiteGlobals/Functions/RSSFeed/DE/Pharmakovigilanz/Rote-Hand-Briefe/RSSNewsfeed.xml?nn=591002
+language: de
+license: 'Public domain - Official German government regulatory communications.
 
-schema:
-  key_fields:
-    - rhb_id
-  date_fields:
-    - date
-    - pub_date
-  text_fields:
-    - text
-    - title
-    - description
-
-rate_limit:
-  requests_per_second: 1
-  delay_between_requests: 1.5
-
-license: |
-  Public domain - Official German government regulatory communications.
   Provided by Bundesinstitut fuer Arzneimittel und Medizinprodukte (BfArM).
+
   https://www.bfarm.de/
 
-notes: |
-  This source fetches Rote-Hand-Briefe (Red Hand Letters) - urgent safety communications
+  '
+name: German Federal Institute for Drugs and Medical Devices (BfArM) - Rote-Hand-Briefe
+notes: 'This source fetches Rote-Hand-Briefe (Red Hand Letters) - urgent safety communications
+
   about pharmaceuticals. These are official regulatory decisions/warnings from BfArM.
+
 
   Documents are primarily available as PDFs. Text is extracted using pdfminer.
 
+
   Total archive: ~540+ documents from 2007 to present.
+
   New documents typically 2-10 per month.
 
+
   Access methods:
+
   - RSS feed for recent entries (20 most recent)
+
   - HTML pagination for full archive (54+ pages)
+
   - Direct PDF download for full text extraction
+
+  '
+rate_limit:
+  delay_between_requests: 1.5
+  requests_per_second: 1
+schema:
+  date_fields:
+  - date
+  - pub_date
+  key_fields:
+  - name: rhb_id
+    required: false
+    type: string
+  text_fields:
+  - text
+  - title
+  - description
+source_id: DE/BfArM

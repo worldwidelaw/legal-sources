@@ -76,6 +76,10 @@ python3 bootstrap.py
 - The CELLAR repository provides additional metadata via SPARQL
 - Web service access requires registration for bulk operations
 
+## License
+
+[EUR-Lex legal notice](https://eur-lex.europa.eu/content/legal-notice/legal-notice.html) — reuse authorised provided the source is acknowledged.
+
 ## Resources
 
 - [EUR-Lex Data Reuse](https://eur-lex.europa.eu/content/help/data-reuse/reuse-contents-eurlex-details.html)

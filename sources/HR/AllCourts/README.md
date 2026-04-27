@@ -9,7 +9,7 @@ This source fetches Croatian court decisions from **odluke.sudovi.hr**, the offi
 - **Authentication**: None required
 - **Coverage**: 900,000+ decisions from all Croatian courts
 - **Language**: Croatian (HRV)
-- **License**: Open Government Data
+- **License**: [Open Government Data](https://data.gov.hr/en)
 
 ## Courts Covered
 
@@ -81,6 +81,10 @@ Each record includes:
 - 12 sample records fetched
 - Average 2,763 characters per document
 - Courts represented: Supreme Court, High Commercial Court, Municipal Courts, etc.
+
+## License
+
+[Open Government Data](https://data.gov.hr/en) — Croatian court decisions are freely reusable under open government data terms.
 
 ## References
 

@@ -63,3 +63,7 @@ python3 bootstrap.py updates --since 2026-01-01
 - Most decisions are 1-10 pages (1,000-30,000 characters)
 - Some large decisions (market analyses, consultations) can be 100+ pages
 - Annexes are listed separately and linked when available
+
+## License
+
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

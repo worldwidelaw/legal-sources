@@ -1,0 +1,27 @@
+source:
+  id: US/JuriscraperUpdater
+  name: Juriscraper US Court Opinions (Daily Updates)
+  country: US
+  type: caselaw
+  url: https://github.com/freelawproject/juriscraper
+  description: >
+    Uses Free Law Project's Juriscraper library (BSD-2) to fetch recent court
+    opinions directly from state and federal court websites. Covers 198 state
+    court scrapers and 22 federal appellate scrapers. Complements the
+    CourtListener-based bootstrap sources with daily-fresh opinions.
+fetch:
+  delay: 2.0
+  sample_count: 15
+  max_pdf_size_mb: 50
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: court_module
+    required: true
+    type: string
+  text_fields:
+  - text
+  date_fields:
+  - date

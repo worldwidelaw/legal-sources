@@ -1,0 +1,27 @@
+source:
+  id: US/IRS-PrivateLetterRulings
+  name: US IRS Private Letter Rulings and Revenue Rulings
+  country: US
+  url: https://www.irs.gov/privacy-disclosure/irs-written-determinations
+  data_types:
+    - doctrine
+  auth: none
+  description: >
+    IRS Section 6110 written determinations: Private Letter Rulings, Technical
+    Advice Memoranda, Determination Letters, and Chief Counsel Advice. ~77K+
+    documents from 1999 to present, released every Friday.
+
+schema:
+  key_fields:
+    - document_number
+    - year
+    - week
+  record_type: doctrine
+
+fetcher:
+  method: pdf_enumeration
+  rate_limit: 1.5
+  notes: >
+    PDFs at irs.gov/pub/irs-wd/{YYYYWWNNN}.pdf (2020+) or {YYWWNNN}.pdf (pre-2020).
+    Directory listing at /downloads/irs-wd provides filenames. Weekly index PDFs
+    available at {YYYYWW}_idx.pdf. Metadata from /written-determinations listing page.

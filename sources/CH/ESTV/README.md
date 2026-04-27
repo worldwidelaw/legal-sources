@@ -42,6 +42,10 @@ python bootstrap.py bootstrap --sample --count 20
 - requests
 - pdfplumber or pypdf (for PDF text extraction)
 
+## License
+
+[OGD Switzerland](https://opendata.swiss/en/terms-of-use) — Open Government Data.
+
 ## Output Schema
 
 Each record contains:

@@ -1,24 +1,34 @@
-source:
-  id: CO/SIC
-  name: Colombia SIC - Competition & Consumer Protection Authority
-  country: CO
-  url: https://www.sic.gov.co
-  data_types:
-    - case_law
-  auth: none
-  license: open_data
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - resolution_number
-    - section
-
 fetcher:
-  method: drupal_views_ajax_pdf
   base_url: https://www.sic.gov.co
+  method: drupal_views_ajax_pdf
   rate_limit: 1.5
   timeout: 60
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: resolution_number
+    required: false
+    type: string
+  - name: section
+    required: false
+    type: string
+source:
+  auth: none
+  country: CO
+  data_types:
+  - case_law
+  id: CO/SIC
+  license: open_data
+  name: Colombia SIC - Competition & Consumer Protection Authority
+  url: https://www.sic.gov.co

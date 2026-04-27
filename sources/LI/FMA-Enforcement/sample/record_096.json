@@ -1,0 +1,14 @@
+{
+  "_id": "warning-en-850",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:41.137885Z",
+  "title": "[Abuse] Warning: xtrempeak[dot]com",
+  "text": "The Liechtenstein Financial Market Authority (FMA) points out that the operator of the website xtrempeak[dot]com with the email address support&#64;xtrempeak[dot]com is not licensed or registered by the FMA.",
+  "date": "2024-10-27",
+  "url": "https://www.fma-li.li/en/warning/warning-xtrempeak-dot-com-850",
+  "language": "eng",
+  "category": "Abuse",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

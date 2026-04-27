@@ -325,6 +325,7 @@ def main():
     parser = argparse.ArgumentParser(description="INTL/ASEAN-Legal Bootstrap")
     parser.add_argument("command", choices=["bootstrap", "update", "test"])
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = ASEANLegalScraper()

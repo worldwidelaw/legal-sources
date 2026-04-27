@@ -1,23 +1,34 @@
-source_id: US/SD-Legislation
-name: South Dakota Codified Laws
-country: US
-jurisdiction: US-SD
-url: https://sdlegislature.gov/Statutes/Codified_Laws
-data_types:
-  - legislation
-language: en
-license: public_domain
 auth:
   type: none
+country: US
+data_types:
+- legislation
+fetch:
+  delay: 1.0
+jurisdiction: US-SD
+language: en
+license: public_domain
+name: South Dakota Codified Laws
 schedule: monthly
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - section_number
-    - chapter
-
-fetch:
-  delay: 1.0
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: section_number
+    required: false
+    type: string
+  - name: chapter
+    required: false
+    type: string
+source_id: US/SD-Legislation
+url: https://sdlegislature.gov/Statutes/Codified_Laws

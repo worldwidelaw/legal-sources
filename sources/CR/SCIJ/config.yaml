@@ -78,6 +78,7 @@ schema:
       description: "Ente emisor (issuing body)"
       type: "string"
       role: "metadata"
+      required: false
     - name: "url"
       description: "URL to full text on SCIJ"
       type: "string"

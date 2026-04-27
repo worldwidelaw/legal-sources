@@ -1,36 +1,61 @@
-source:
-  id: UK/PHSO
-  name: UK Parliamentary and Health Service Ombudsman (PHSO)
-  country: UK
-  url: https://decisions.ombudsman.org.uk
-  data_types:
-    - case_law
-  description: |
-    Decisions from the UK Parliamentary and Health Service Ombudsman.
-    Covers complaints about UK government departments, NHS hospitals,
-    and other public organisations. ~3,100+ decisions from April 2021 onward.
-  license: Open Government Licence v3.0
-  language: en
-  auth: none
-
 api:
   base_url: https://api.ombudsman.org.uk/dpp
-  list_endpoint: /decisions
   detail_endpoint: /decision
-  rate_limit: 1.0
+  list_endpoint: /decisions
   page_size: 10
-
+  rate_limit: 1.0
 schema:
   key_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-    - complaint_type
-    - organisation
-    - outcome
-    - decision_type
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: _fetched_at
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: complaint_type
+    required: false
+    type: string
+  - name: organisation
+    required: false
+    type: string
+  - name: outcome
+    required: false
+    type: string
+  - name: decision_type
+    required: false
+    type: string
+source:
+  auth: none
+  country: UK
+  data_types:
+  - case_law
+  description: 'Decisions from the UK Parliamentary and Health Service Ombudsman.
+
+    Covers complaints about UK government departments, NHS hospitals,
+
+    and other public organisations. ~3,100+ decisions from April 2021 onward.
+
+    '
+  id: UK/PHSO
+  language: en
+  license: Open Government Licence v3.0
+  name: UK Parliamentary and Health Service Ombudsman (PHSO)
+  url: https://decisions.ombudsman.org.uk

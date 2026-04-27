@@ -1,51 +1,37 @@
-source:
-  id: BA/ConstitutionalCourt
-  name: Constitutional Court of Bosnia and Herzegovina
-  name_local: Ustavni sud Bosne i Hercegovine
-  country: BA
-  url: https://www.ustavnisud.ba
-  data_types:
-    - caselaw
-  languages:
-    - bs  # Bosnian
-    - hr  # Croatian
-    - sr  # Serbian
-  license: Public domain - official court decisions
-
 api:
   base_url: https://www.ustavnisud.ba
   endpoints:
-    decisions: /bs/api/odluke
-    decision_types: /bs/api/vrsteOdluka
     case_types: /bs/api/vrstePredmeta
+    decision_types: /bs/api/vrsteOdluka
+    decisions: /bs/api/odluke
     keywords: /bs/api/kljucneRijeci
   rate_limit:
-    requests_per_second: 1
     delay_between_requests: 1.5
-
+    requests_per_second: 1
+notes: "The Constitutional Court of Bosnia and Herzegovina publishes decisions in three official\nlanguages (Bosnian, Croatian, Serbian) plus English. The API at /bs/api/odluke returns\nJSON with metadata.\
+  \ Full text is available as PDF at /uploads/odluke/{filename}.pdf.\n\nThe API requires the fp=1 parameter to return results (predefined filter for latest\nsession decisions). Direct queries without filters\
+  \ return 500 errors due to server\nmemory limitations when loading all decisions.\n\nDecision types:\n  1 - Odluka o dopustivosti (Admissibility decision)\n  2 - Odluka o meritumu (Merit decision)\n \
+  \ 3 - Odluka o privremenoj mjeri (Interim measure)\n  4 - Rješenje, zaključak, obavještenje (Ruling, conclusion, notice)\n  5 - Rješenje o neizvršenju (Non-compliance ruling)\n  6 - Odluka o obustavi\
+  \ postupka (Discontinuation decision)\n\nCase types:\n  1 - AP (Appeals/Apelacije)\n  2 - U (Abstract review/Ustavnost)\n"
 schema:
+  date_format: '%Y-%m-%dT%H:%M:%S'
   key_fields:
-    - case_number
-    - decision_id
-  date_format: "%Y-%m-%dT%H:%M:%S"
-
-notes: |
-  The Constitutional Court of Bosnia and Herzegovina publishes decisions in three official
-  languages (Bosnian, Croatian, Serbian) plus English. The API at /bs/api/odluke returns
-  JSON with metadata. Full text is available as PDF at /uploads/odluke/{filename}.pdf.
-
-  The API requires the fp=1 parameter to return results (predefined filter for latest
-  session decisions). Direct queries without filters return 500 errors due to server
-  memory limitations when loading all decisions.
-
-  Decision types:
-    1 - Odluka o dopustivosti (Admissibility decision)
-    2 - Odluka o meritumu (Merit decision)
-    3 - Odluka o privremenoj mjeri (Interim measure)
-    4 - Rješenje, zaključak, obavještenje (Ruling, conclusion, notice)
-    5 - Rješenje o neizvršenju (Non-compliance ruling)
-    6 - Odluka o obustavi postupka (Discontinuation decision)
-
-  Case types:
-    1 - AP (Appeals/Apelacije)
-    2 - U (Abstract review/Ustavnost)
+  - name: case_number
+    required: false
+    type: string
+  - name: decision_id
+    required: false
+    type: string
+source:
+  country: BA
+  data_types:
+  - caselaw
+  id: BA/ConstitutionalCourt
+  languages:
+  - bs
+  - hr
+  - sr
+  license: Public domain - official court decisions
+  name: Constitutional Court of Bosnia and Herzegovina
+  name_local: Ustavni sud Bosne i Hercegovine
+  url: https://www.ustavnisud.ba

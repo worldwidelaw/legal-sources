@@ -1,63 +1,60 @@
-# Swedish Legislation (SFS) Data Source Configuration
-# Official data from the Riksdag (Swedish Parliament)
-
-source_id: "SE/SvenskaForfattningssamlingen"
-name: "Svenska Författningssamlingen (SFS) - Swedish Legislation"
-country: "SE"
-language: "sv"
+country: SE
 data_types:
-  - legislation
-
-# Data endpoints (no authentication required)
+- legislation
 endpoints:
-  # Document list API with filtering
-  list: "https://data.riksdagen.se/dokumentlista/"
-
-  # Individual document endpoints
-  # Full text: https://data.riksdagen.se/dokument/{dok_id}.text
-  # JSON with metadata: https://data.riksdagen.se/dokument/{dok_id}.json
-  # HTML: https://data.riksdagen.se/dokument/{dok_id}.html
-
-  # Portal
-  portal: "https://www.riksdagen.se/sv/dokument-och-lagar/"
-
-# Schema information
-schema:
-  key_fields:
-    - "dok_id"      # Document ID (e.g., "sfs-2026-62")
-    - "beteckning"  # SFS number (e.g., "2026:62")
-  date_format: "ISO8601"
-  text_field: "text"
-
-# License
-license:
-  name: "Public Domain"
-  url: "https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/"
-  notes: |
-    Data from the Riksdag may be used freely without fees or licenses.
-    The Swedish Parliament must be cited as the source.
-
-# Fetcher configuration
+  list: https://data.riksdagen.se/dokumentlista/
+  portal: https://www.riksdagen.se/sv/dokument-och-lagar/
 fetcher:
+  max_retries: 3
   rate_limit_ms: 1500
   ssl_verify: true
   timeout_s: 60
-  max_retries: 3
+language: sv
+license:
+  name: Public Domain
+  notes: 'Data from the Riksdag may be used freely without fees or licenses.
 
-# Notes
-notes: |
-  Svenska Författningssamlingen (SFS) is the official Swedish Code of Statutes
+    The Swedish Parliament must be cited as the source.
+
+    '
+  url: https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/
+name: Svenska Författningssamlingen (SFS) - Swedish Legislation
+notes: 'Svenska Författningssamlingen (SFS) is the official Swedish Code of Statutes
+
   containing all Swedish legislation. The data is provided by the Riksdag
+
   (Swedish Parliament) through their open data API.
 
+
   The API provides:
+
   - Document metadata (title, dates, identifiers)
+
   - Full text in plain text format
+
   - Filtering by document type, date range, etc.
 
+
   Document types in SFS include:
+
   - Laws (lagar)
+
   - Ordinances (förordningar)
+
   - Regulations (föreskrifter)
 
+
   Over 11,000 documents are currently available.
+
+  '
+schema:
+  date_format: ISO8601
+  key_fields:
+  - name: dok_id
+    required: false
+    type: string
+  - name: beteckning
+    required: false
+    type: string
+  text_field: text
+source_id: SE/SvenskaForfattningssamlingen

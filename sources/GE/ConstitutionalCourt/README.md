@@ -61,3 +61,7 @@ Key fields:
 - Some landmark decisions are translated to English
 - Rate limiting: 2 seconds between requests
 - The court has been active since 1996
+
+## License
+
+[Public Government Data](https://www.constcourt.ge) — official decisions published by the Constitutional Court of Georgia.

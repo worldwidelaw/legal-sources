@@ -1,24 +1,38 @@
-source:
-  id: FR/CdesC
-  name: "French Court of Auditors (Cour des comptes)"
-  country: FR
-  url: https://www.ccomptes.fr
-  data_types:
-    - case_law
-  auth: none
-  license: "Licence Ouverte (Open Licence 2.0)"
-
-schema:
-  key_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
 fetch:
   rate_limit_delay: 1.5
   sitemap_url: https://www.ccomptes.fr/sitemaps/sitemap_publication/sitemap.xml
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: _fetched_at
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: FR
+  data_types:
+  - case_law
+  id: FR/CdesC
+  license: Licence Ouverte (Open Licence 2.0)
+  name: French Court of Auditors (Cour des comptes)
+  url: https://www.ccomptes.fr

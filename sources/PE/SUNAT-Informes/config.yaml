@@ -43,7 +43,7 @@ data_model:
 schema:
   total_fields: 10
   key_fields:
-    - name: "doc_id"
+    - name: "_id"
       description: "Document identifier (e.g., i000088-2024-7T0000)"
       type: "string"
       role: "primary_key"

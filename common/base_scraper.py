@@ -244,13 +244,13 @@ class BaseScraper(ABC):
                         logger.warning(f"Normalization exceptions: {skip_exception} so far")
                     continue
 
-                # Handle normalize returning None (intentional skip)
-                if record is None:
+                # Handle normalize returning None or non-dict (intentional skip)
+                if not isinstance(record, dict):
                     skip_normalize_none += 1
                     stats["errors"] += 1
                     if first_skips_logged < 3:
-                        raw_id = raw.get("id") or raw.get("_id") or str(raw)[:50]
-                        logger.debug(f"Skip (normalize returned None): {raw_id}")
+                        raw_id = (raw.get("id") or raw.get("_id") or str(raw)[:50]) if isinstance(raw, dict) else str(raw)[:50]
+                        logger.debug(f"Skip (normalize returned {type(record).__name__}): {raw_id}")
                         first_skips_logged += 1
                     continue
 
@@ -366,13 +366,13 @@ class BaseScraper(ABC):
                         logger.warning(f"Normalization exceptions: {skip_exception} so far")
                     continue
 
-                # Handle normalize returning None (intentional skip)
-                if record is None:
+                # Handle normalize returning None or non-dict (intentional skip)
+                if not isinstance(record, dict):
                     skip_normalize_none += 1
                     stats["errors"] += 1
                     if first_skips_logged < 3:
-                        raw_id = raw.get("id") or raw.get("_id") or str(raw)[:50]
-                        logger.debug(f"Skip (normalize returned None): {raw_id}")
+                        raw_id = (raw.get("id") or raw.get("_id") or str(raw)[:50]) if isinstance(raw, dict) else str(raw)[:50]
+                        logger.debug(f"Skip (normalize returned {type(record).__name__}): {raw_id}")
                         first_skips_logged += 1
                     continue
 

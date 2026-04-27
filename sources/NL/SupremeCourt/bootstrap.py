@@ -459,7 +459,7 @@ class SupremeCourtScraper(BaseScraper):
 
                     doc = self._fetch_document(ecli)
                     if doc and doc.get("text"):
-                        yield self.normalize(doc)
+                        yield doc
                         fetched += 1
                         fetched_eclis.add(ecli)
 
@@ -525,7 +525,7 @@ class SupremeCourtScraper(BaseScraper):
             for ecli in eclis:
                 doc = self._fetch_document(ecli)
                 if doc and doc.get("text"):
-                    yield self.normalize(doc)
+                    yield doc
 
             offset += len(eclis)
 
@@ -624,6 +624,7 @@ def main():
         action="store_true",
         help="Clear checkpoint before starting bootstrap",
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

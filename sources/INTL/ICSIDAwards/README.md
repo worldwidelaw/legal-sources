@@ -25,6 +25,10 @@ python bootstrap.py bootstrap                   # Full fetch (~1,400 documents)
 python bootstrap.py update                      # Fetch recent decisions
 ```
 
+## License
+
+[ICSID Terms](https://icsid.worldbank.org/terms-and-conditions) — published awards are publicly available. Verify World Bank/ICSID terms before commercial redistribution.
+
 ## Notes
 
 - ~50% of concluded cases have published documents

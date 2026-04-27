@@ -1,6 +1,6 @@
 last_bootstrap: null
 last_error: null
-last_run: '2026-04-01T17:35:38.131809+00:00'
+last_run: '2026-04-20T23:37:16.051382+00:00'
 run_history:
 - errors: 0
   finished_at: '2026-04-01T17:34:18.518337+00:00'
@@ -22,4 +22,14 @@ run_history:
   skip_exception: 0
   skip_normalize_none: 0
   started_at: '2026-04-01T17:34:35.366343+00:00'
+- errors: 0
+  finished_at: '2026-04-20T23:37:16.051382+00:00'
+  records_fetched: 5
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 5
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-20T23:36:48.641485+00:00'
 total_records: 0

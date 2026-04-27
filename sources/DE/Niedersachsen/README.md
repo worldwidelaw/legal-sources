@@ -18,7 +18,7 @@ Wolters Kluwer under contract with the state government. It provides access to:
 - **Verordnungen** - Regulations issued by the executive branch
 - **Verwaltungsvorschriften** - Administrative regulations and directives
 
-All content is public domain under German law (§ 5 UrhG - amtliche Werke).
+All content is public domain under German law ([§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html)).
 
 ## Technical Implementation
 
@@ -74,6 +74,10 @@ python bootstrap.py bootstrap
 - 1.5 seconds between requests
 - 60-second timeout per request
 - Headless browser mode by default
+
+## License
+
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).
 
 ## Notes
 

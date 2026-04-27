@@ -513,6 +513,7 @@ def main():
     parser.add_argument("--count", type=int, default=15, help="Number of samples")
     parser.add_argument("--since", help="ISO date for updates (e.g., 2024-01-01)")
     parser.add_argument("--max-pages", type=int, help="Max pages to fetch")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     script_dir = Path(__file__).parent

@@ -74,6 +74,10 @@ Each record includes:
 - `chamber_type`: Chamber type (administrative/civil/criminal/constitutional)
 - `ecli`: European Case Law Identifier
 
+## License
+
+Public domain — Estonian state court decisions are public domain.
+
 ## References
 
 - Riigikohus website: https://www.riigikohus.ee

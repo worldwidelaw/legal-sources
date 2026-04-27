@@ -1,0 +1,47 @@
+source:
+  id: BM/BMA-Guidance
+  name: Bermuda Monetary Authority Regulatory Guidance
+  country: BM
+  url: https://www.bma.bm/document-centre/policy-and-guidance
+  description: >
+    Regulatory guidance notes, codes of conduct, and policy documents from the
+    Bermuda Monetary Authority across 15 categories: banking, insurance,
+    investment, AML/ATF, digital assets, etc. Full text extracted from PDFs.
+
+data_model:
+  types:
+    - doctrine
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: category
+      type: string
+      required: false
+    - name: pdf_url
+      type: string
+      required: false
+
+schedule:
+  full_refresh: quarterly
+  update_check: monthly

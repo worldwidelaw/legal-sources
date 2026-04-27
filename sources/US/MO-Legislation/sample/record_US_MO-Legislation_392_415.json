@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/392.415",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T01:28:53.792866+00:00",
+  "title": "Missouri Revised Statutes § 392.415 - Call location information to be provided in emergencies — immunity from liability, when",
+  "text": "392.415.  Call location information to be provided in emergencies — immunity from liability, when. — 1.  Upon request, a telecommunications carrier or commercial mobile service provider as identified in 47 U.S.C. Section 332(d)(1) and 47 CFR Parts 22 or 24 shall provide call location information concerning the user of a telecommunications service or a wireless communications service, in an emergency situation, to a law enforcement official or agency in order to respond to a call for emergency service by a subscriber, customer, or user of such service, or to provide caller location information (or do a ping locate) in an emergency situation that involves danger of death or serious physical injury to any person where disclosure of communications relating to the emergency is required without delay.\n  2.  No cause of action shall lie in any court of law against any telecommunications carrier or telecommunications service or commercial mobile service provider, or other provider of communications-related service, or its officers, employees, agents, or other specified persons, for:\n  (1)  Providing any information, facilities, or assistance to a law enforcement official or agency in response to requests made under the circumstances of subsection 1 of this section;\n  (2)  Providing such information, facilities, or assistance through any plan or system required by sections 190.300 to 190.340; or\n  (3)  Any loss, damage, or other injury, whether to person or property, resulting from a disruption or loss of communication services during an emergency situation, except in cases of gross negligence, recklessness, or intentional misconduct.\n  3.  Notwithstanding any other provision of law, nothing in this section prohibits a telecommunications carrier, commercial mobile service provider, or other provider of communications-related service from establishing protocols by which such carrier or provider could voluntarily disclose call location information.\n(L. 2012 H.B. 1108, A.L. 2013 H.B. 331, A.L. 2014 S.B. 651)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=392.415",
+  "section_id": "392.415",
+  "chapter": "392",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

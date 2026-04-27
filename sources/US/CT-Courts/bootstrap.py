@@ -9,7 +9,8 @@ Strategy:
   - Supreme Court archives: archiveAROsup{YY}.htm (2002-present)
   - Appellate Court archives: archiveAROap{YY}.htm (2003-present)
   - Download opinion PDFs and extract full text via pdfplumber
-  - Skip dissent/concurrence PDFs (suffix E/A in filename)
+  - Skip dissent/concurrence PDFs (identified by case name containing
+    "Dissent" or "Concurrence", or filename suffix E/A)
 
 Data Coverage:
   - Supreme Court opinions from 2002 to present
@@ -33,7 +34,6 @@ import time
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Optional, Dict, Any, List, Tuple
-from html.parser import HTMLParser
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -43,6 +43,8 @@ from common.base_scraper import BaseScraper
 
 # PDF extraction
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from common.pdf_extract import extract_pdf_markdown
 
@@ -60,11 +62,12 @@ ARCHIVE_BASE = f"{BASE_URL}/external/supapp/"
 # Archive URL patterns
 # Supreme Court: archiveAROsup{YY}.htm (2002-present)
 # Appellate Court: archiveAROap{YY}.htm (2003-present)
-SUPREME_COURT_YEARS = list(range(2026, 2001, -1))  # 2026 down to 2002
-APPELLATE_COURT_YEARS = list(range(2026, 2002, -1))  # 2026 down to 2003
+CURRENT_YEAR = datetime.now().year
+SUPREME_COURT_YEARS = list(range(CURRENT_YEAR, 2001, -1))
+APPELLATE_COURT_YEARS = list(range(CURRENT_YEAR, 2002, -1))
 
 # Pattern to match opinion PDF links and extract case info
-# HTML structure: <li><a href="Cases/AROcr/CR353/CR353.8.pdf">SC21125</a> - State v. Enrrique H.</li>
+# HTML structure: <li><a href="Cases/AROcr/CR353/CR353.8.pdf" title="opens a pdf">SC21125</a> - State v. Enrrique H.</li>
 OPINION_PATTERN = re.compile(
     r'<li>\s*<a\s+href=["\']([^"\']+\.pdf)["\'][^>]*>([^<]+)</a>\s*-\s*([^<]+)</li>',
     re.IGNORECASE
@@ -76,15 +79,19 @@ DATE_HEADING_PATTERN = re.compile(
     re.IGNORECASE
 )
 
-# Skip dissent/concurrence PDFs (filenames ending in E.pdf or A.pdf before .pdf)
-DISSENT_PATTERN = re.compile(r'[A-Z]\.pdf$', re.IGNORECASE)
 
-# Standard disclaimer text to strip from opinions
-DISCLAIMER_MARKERS = [
-    "The operative date for the beginning of all time periods",
-    "All opinions are subject to modification",
-    "The syllabus and procedural history accompanying",
-]
+def _is_dissent_or_concurrence(case_name: str, filename: str) -> bool:
+    """Check if an opinion entry is a dissent or concurrence rather than the main opinion."""
+    # Check case name for explicit dissent/concurrence labels
+    name_lower = case_name.strip().lower()
+    if "dissent" in name_lower or "concurrence" in name_lower:
+        return True
+    # Check filename: dissent/concurrence PDFs end with a letter suffix before .pdf
+    # e.g., CR354.25E.pdf (E = dissent), CR354.17A.pdf (A = appendix/concurrence)
+    base = filename.replace('.pdf', '').replace('.PDF', '')
+    if re.search(r'\d+[A-Za-z]$', base):
+        return True
+    return False
 
 
 def clean_opinion_text(text: str) -> str:
@@ -96,7 +103,6 @@ def clean_opinion_text(text: str) -> str:
     # Find where actual opinion content starts (after the asterisk block)
     lines = text.split('\n')
     start_idx = 0
-    in_disclaimer = False
     asterisk_count = 0
 
     for i, line in enumerate(lines):
@@ -138,6 +144,32 @@ def parse_date(date_str: str) -> Optional[str]:
     return None
 
 
+def _build_session() -> requests.Session:
+    """Build a requests.Session with retry logic and browser-like headers."""
+    session = requests.Session()
+    # Use a browser-like User-Agent -- some government sites block bot UAs
+    # from datacenter/VPS IP ranges while allowing browser-like UAs.
+    session.headers.update({
+        "User-Agent": (
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+    })
+    # Retry on transient errors (502, 503, 504, connection errors)
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=2,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET"],
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
+
+
 class CTCourtsScraper(BaseScraper):
     """
     Scraper for US/CT-Courts -- Connecticut Supreme & Appellate Court Opinions.
@@ -152,10 +184,7 @@ class CTCourtsScraper(BaseScraper):
         if source_dir is None:
             source_dir = str(Path(__file__).parent)
         super().__init__(source_dir)
-        self.session = requests.Session()
-        self.session.headers.update({
-            "User-Agent": "LegalDataHunter/1.0 (legal research; open data collection)"
-        })
+        self.session = _build_session()
 
     def _get_archive_url(self, court: str, year: int) -> str:
         """Build archive page URL for a given court and year."""
@@ -168,21 +197,19 @@ class CTCourtsScraper(BaseScraper):
     def _parse_archive_page(self, html: str, court: str) -> List[Dict[str, Any]]:
         """Parse an archive HTML page and extract opinion entries."""
         opinions = []
-        current_date = None
 
         # Find all date headings and opinion links
         # Process line by line to track current publication date
         for date_match in DATE_HEADING_PATTERN.finditer(html):
             date_str = date_match.group(1)
             pub_date = parse_date(date_str)
-            date_pos = date_match.start()
 
             # Find next date heading position
             next_date = DATE_HEADING_PATTERN.search(html, date_match.end())
             end_pos = next_date.start() if next_date else len(html)
 
             # Extract all opinion links in this date section
-            section = html[date_pos:end_pos]
+            section = html[date_match.start():end_pos]
             for op_match in OPINION_PATTERN.finditer(section):
                 pdf_href = op_match.group(1)
                 case_number = op_match.group(2).strip()
@@ -190,10 +217,8 @@ class CTCourtsScraper(BaseScraper):
 
                 # Skip dissent/concurrence variants
                 filename = pdf_href.split('/')[-1]
-                # Check for suffix letter before .pdf (e.g., CR353.8E.pdf = dissent)
-                base = filename.replace('.pdf', '')
-                if re.search(r'\d+[A-Z]$', base):
-                    logger.debug(f"Skipping dissent/concurrence: {filename}")
+                if _is_dissent_or_concurrence(case_name, filename):
+                    logger.debug(f"Skipping dissent/concurrence: {case_number} - {filename}")
                     continue
 
                 # Build full PDF URL
@@ -214,29 +239,44 @@ class CTCourtsScraper(BaseScraper):
 
         return opinions
 
-    def _extract_pdf_text(self, pdf_data: bytes) -> str:
-        """Extract text from PDF using centralized extractor."""
+    def _extract_pdf_text(self, pdf_data: bytes, source_id: str) -> str:
+        """Extract text from PDF using centralized extractor.
+
+        Args:
+            pdf_data: Raw PDF bytes.
+            source_id: Unique identifier for this document (used for Neon
+                       idempotency). Must NOT be empty.
+        """
         return extract_pdf_markdown(
             source="US/CT-Courts",
-            source_id="",
+            source_id=source_id,
             pdf_bytes=pdf_data,
             table="case_law",
         ) or ""
 
     def _download_pdf(self, url: str) -> Optional[bytes]:
-        """Download a PDF file."""
+        """Download a PDF file with retry logic."""
         try:
-            resp = self.session.get(url, timeout=30)
+            resp = self.session.get(url, timeout=60)
             resp.raise_for_status()
-            if resp.headers.get('Content-Type', '').startswith('application/pdf') or \
-               url.endswith('.pdf'):
-                return resp.content
-            else:
-                logger.warning(f"Unexpected content type for {url}: {resp.headers.get('Content-Type')}")
-                return resp.content  # Try anyway
+            content = resp.content
+            # Sanity check: PDF should start with %PDF
+            if content[:5] != b'%PDF-':
+                ct = resp.headers.get('Content-Type', 'unknown')
+                logger.warning(
+                    f"Response from {url} does not look like a PDF "
+                    f"(Content-Type: {ct}, first bytes: {content[:20]})"
+                )
+                # Still return it -- the extraction backend will reject bad data
+            return content
         except Exception as e:
             logger.warning(f"Failed to download {url}: {e}")
             return None
+
+    def _build_doc_id(self, case_number: str, court: str) -> str:
+        """Build a stable document ID from court + case number."""
+        court_abbr = "CTSC" if "Supreme" in court else "CTAC"
+        return f"US-CT-{court_abbr}-{case_number}"
 
     def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
         """Fetch all opinions from both courts, all years."""
@@ -244,6 +284,11 @@ class CTCourtsScraper(BaseScraper):
             ("supreme", SUPREME_COURT_YEARS),
             ("appellate", APPELLATE_COURT_YEARS),
         ]
+
+        total_archives_fetched = 0
+        total_opinions_found = 0
+        total_pdfs_failed = 0
+        total_text_failed = 0
 
         for court_type, years in courts:
             for year in years:
@@ -260,27 +305,61 @@ class CTCourtsScraper(BaseScraper):
                     logger.warning(f"Failed to fetch archive {url}: {e}")
                     continue
 
+                # Verify we got HTML, not an error page
+                content_type = resp.headers.get('Content-Type', '')
+                if 'text/html' not in content_type and 'text/plain' not in content_type:
+                    logger.warning(
+                        f"Unexpected content type for archive {url}: {content_type}"
+                    )
+
+                total_archives_fetched += 1
                 opinions = self._parse_archive_page(resp.text, court_type)
+                total_opinions_found += len(opinions)
                 logger.info(f"Found {len(opinions)} opinions for {court_type} {year}")
 
+                if not opinions and '<li>' in resp.text:
+                    # Archive page has content but our parser found nothing --
+                    # HTML structure may have changed.
+                    logger.warning(
+                        f"Archive page {url} has <li> tags but parser found 0 opinions. "
+                        f"HTML structure may have changed. Response length: {len(resp.text)}"
+                    )
+
                 for opinion in opinions:
-                    time.sleep(self.config.get("fetch", {}).get("delay", 2.0))
+                    delay = self.config.get("fetch", {}).get("delay", 2.0)
+                    time.sleep(delay)
+
+                    doc_id = self._build_doc_id(
+                        opinion["case_number"], opinion["court"]
+                    )
 
                     pdf_data = self._download_pdf(opinion["pdf_url"])
                     if not pdf_data:
+                        total_pdfs_failed += 1
                         continue
 
-                    raw_text = self._extract_pdf_text(pdf_data)
+                    raw_text = self._extract_pdf_text(pdf_data, source_id=doc_id)
                     text = clean_opinion_text(raw_text)
 
                     if not text or len(text) < 100:
-                        logger.warning(f"Insufficient text for {opinion['case_number']}: {len(text)} chars")
+                        total_text_failed += 1
+                        logger.warning(
+                            f"Insufficient text for {opinion['case_number']}: "
+                            f"{len(text) if text else 0} chars"
+                        )
                         continue
 
                     opinion["text"] = text
                     yield opinion
 
                 time.sleep(1.0)  # Rate limit between archive pages
+
+        logger.info(
+            f"fetch_all summary: {total_archives_fetched} archives fetched, "
+            f"{total_opinions_found} opinions found, "
+            f"{total_pdfs_failed} PDF downloads failed, "
+            f"{total_text_failed} text extractions failed"
+        )
 
     def fetch_updates(self, since: Optional[str] = None) -> Generator[Dict[str, Any], None, None]:
         """Fetch recent opinions (current year and previous year)."""
@@ -309,13 +388,18 @@ class CTCourtsScraper(BaseScraper):
                         if opinion["publication_date"] < since:
                             continue
 
-                    time.sleep(self.config.get("fetch", {}).get("delay", 2.0))
+                    delay = self.config.get("fetch", {}).get("delay", 2.0)
+                    time.sleep(delay)
+
+                    doc_id = self._build_doc_id(
+                        opinion["case_number"], opinion["court"]
+                    )
 
                     pdf_data = self._download_pdf(opinion["pdf_url"])
                     if not pdf_data:
                         continue
 
-                    raw_text = self._extract_pdf_text(pdf_data)
+                    raw_text = self._extract_pdf_text(pdf_data, source_id=doc_id)
                     text = clean_opinion_text(raw_text)
 
                     if not text or len(text) < 100:
@@ -328,10 +412,7 @@ class CTCourtsScraper(BaseScraper):
         """Normalize a raw opinion record into the standard schema."""
         case_num = raw.get("case_number", "")
         court = raw.get("court", "Connecticut Court")
-
-        # Build a unique ID from court abbreviation and case number
-        court_abbr = "CTSC" if "Supreme" in court else "CTAC"
-        doc_id = f"US-CT-{court_abbr}-{case_num}"
+        doc_id = self._build_doc_id(case_num, court)
 
         return {
             "_id": doc_id,
@@ -350,11 +431,28 @@ class CTCourtsScraper(BaseScraper):
     def test_connection(self) -> bool:
         """Test that the archive pages are accessible."""
         try:
-            url = self._get_archive_url("supreme", 2025)
+            url = self._get_archive_url("supreme", CURRENT_YEAR)
             resp = self.session.get(url, timeout=15)
+            if resp.status_code == 404:
+                # Try previous year if current year archive not posted yet
+                url = self._get_archive_url("supreme", CURRENT_YEAR - 1)
+                resp = self.session.get(url, timeout=15)
             resp.raise_for_status()
             opinions = self._parse_archive_page(resp.text, "supreme")
-            logger.info(f"Connection test: found {len(opinions)} Supreme Court opinions for 2025")
+            logger.info(f"Connection test: found {len(opinions)} Supreme Court opinions")
+
+            # Also test that we can download a PDF
+            if opinions:
+                pdf_data = self._download_pdf(opinions[0]["pdf_url"])
+                if pdf_data:
+                    logger.info(
+                        f"PDF download test: OK ({len(pdf_data)} bytes from "
+                        f"{opinions[0]['pdf_url']})"
+                    )
+                else:
+                    logger.error("PDF download test: FAILED")
+                    return False
+
             return len(opinions) > 0
         except Exception as e:
             logger.error(f"Connection test failed: {e}")
@@ -379,6 +477,7 @@ def main():
         "--since",
         help="ISO date for incremental updates (YYYY-MM-DD)",
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = CTCourtsScraper()

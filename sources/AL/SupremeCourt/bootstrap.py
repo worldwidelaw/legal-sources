@@ -444,11 +444,10 @@ class AlbanianSupremeCourtFetcher:
                                 'type': 'archive'
                             }
 
-    def fetch_bulletin_documents(self, max_pages: int = 5) -> Iterator[dict]:
-        """Fetch documents from informative bulletins."""
-        page = 1
-
-        while page <= max_pages:
+    def _get_bulletin_slugs(self, max_pages: int = 5) -> list[dict]:
+        """Get bulletin slugs from paginated list using pageContext.articles."""
+        slugs = []
+        for page in range(1, max_pages + 1):
             if page == 1:
                 url = f"{self.API_BASE}/sq/lajme/buletini/page-data.json"
             else:
@@ -458,142 +457,213 @@ class AlbanianSupremeCourtFetcher:
             if not data:
                 break
 
-            # Get bulletin list
-            try:
-                result = data['result']['data']['api']
-                # Handle both newsList and article formats
-                news_list = result.get('newsList', {}).get('news', [])
-                if not news_list:
-                    news_list = result.get('news', [])
-            except (KeyError, TypeError):
-                break
-
-            if not news_list:
-                break
-
-            for news_item in news_list:
-                slug = news_item.get('slug')
-                if not slug:
-                    continue
-
-                # Fetch bulletin detail
-                detail_url = f"{self.API_BASE}/sq/lajme/buletini/{slug}/page-data.json"
-                detail_data = self._fetch_json(detail_url)
-
-                if not detail_data:
-                    continue
-
+            # New API: articles in pageContext
+            articles = (data.get('result', {}).get('pageContext', {})
+                        .get('articles', []))
+            # Fallback to old API structure
+            if not articles:
                 try:
-                    article = detail_data['result']['data']['api']['newsArticle']
-                    body = article.get('body', [])
+                    result = data['result']['data']['api']
+                    articles = (result.get('newsList', {}).get('news', [])
+                                or result.get('news', []))
                 except (KeyError, TypeError):
-                    continue
+                    pass
 
-                # Find document links in body
-                for item in body:
-                    if item.get('__typename') == 'API_ComponentArticlePatternBodyParagraph':
-                        content_list = item.get('content', [])
-                        for content in content_list:
-                            text_sq = content.get('text_sq', '')
+            if not articles:
+                break
 
-                            # Find document links
-                            doc_links = re.findall(
-                                r'href="(https://gjykata-media\.s3\.eu-central-1\.amazonaws\.com/[^"]+\.doc[x]?)"[^>]*>([^<]+)',
-                                text_sq
-                            )
+            for item in articles:
+                slug = item.get('slug')
+                if slug:
+                    slugs.append({
+                        'slug': slug,
+                        'publishDate': item.get('publishDate'),
+                        'title': (item.get('title', {}).get('text_sq', '')
+                                  if isinstance(item.get('title'), dict)
+                                  else item.get('title', ''))
+                    })
 
-                            for doc_url, doc_title in doc_links:
-                                yield {
-                                    'url': doc_url,
-                                    'title': re.sub(r'<[^>]+>', '', doc_title).strip(),
-                                    'bulletin_slug': slug,
-                                    'type': 'bulletin'
-                                }
+        return slugs
 
-            page += 1
+    def _parse_decisions_from_inline_html(self, raw_html: str, bulletin_info: dict) -> list[dict]:
+        """Parse individual decisions from bulletin inline HTML text."""
+        import html as html_mod
+        # Strip HTML tags, decode entities
+        text = re.sub(r'<[^>]+>', '\n', raw_html)
+        text = html_mod.unescape(text)
+        text = re.sub(r'\n{3,}', '\n\n', text).strip()
+
+        # Split on decision headers: "Vendimi nr. XX-YYYY-ZZZZ, datë DD.MM.YYYY i Kolegjit X"
+        header_pattern = r'(Vendimi? nr\.\s*\d[\d\-\(\)\s,\.a-zA-Zëë]+i Kolegjit[^\n]+)'
+        parts = re.split(header_pattern, text, flags=re.IGNORECASE)
+
+        decisions = []
+        # parts alternates: [preamble, header1, body1, header2, body2, ...]
+        i = 1
+        while i < len(parts) - 1:
+            header = parts[i].strip()
+            body = parts[i + 1].strip()
+            i += 2
+
+            if len(body) < 100:
+                continue
+
+            # Extract decision number
+            num_match = re.search(r'nr\.\s*([\d\-\(\)\s]+)', header, re.IGNORECASE)
+            decision_num = num_match.group(1).strip() if num_match else None
+
+            # Extract date
+            date = None
+            date_match = re.search(r'dat[ëe]\s+(\d{1,2})\.(\d{1,2})\.(\d{4})', header)
+            if date_match:
+                day, month, year = date_match.groups()
+                date = f"{year}-{month.zfill(2)}-{day.zfill(2)}"
+
+            # Extract college
+            college = 'unknown'
+            header_lower = header.lower()
+            if 'civil' in header_lower:
+                college = 'civil'
+            elif 'penal' in header_lower:
+                college = 'penal'
+            elif 'administrat' in header_lower:
+                college = 'administrative'
+            elif 'bashk' in header_lower:
+                college = 'united'
+
+            # Extract maxima
+            maxima = None
+            maxima_match = re.search(
+                r'Maksima\s*[-–—]\s*(.+?)(?=Fjalë kyçe|Përmbledhje|$)',
+                body, re.DOTALL | re.IGNORECASE)
+            if maxima_match:
+                maxima = maxima_match.group(1).strip()
+
+            # Extract keywords
+            keywords = []
+            kw_match = re.search(
+                r'Fjalë kyçe\s*[-–—]\s*(.+?)(?=Përmbledhje|$)',
+                body, re.DOTALL | re.IGNORECASE)
+            if kw_match:
+                kw_text = kw_match.group(1).strip()
+                keywords = [k.strip() for k in re.split(r'[,;]', kw_text) if k.strip()]
+
+            full_text = f"{header}\n\n{body}"
+            decision_id = (f"AL-SC-{decision_num.replace(' ', '')}"
+                          if decision_num else
+                          f"AL-SC-bulletin-{len(decisions)}")
+
+            decisions.append({
+                '_id': decision_id,
+                '_source': self.SOURCE_ID,
+                '_type': 'case_law',
+                '_fetched_at': datetime.now(timezone.utc).isoformat(),
+                'title': header,
+                'text': full_text,
+                'date': date,
+                'decision_number': decision_num,
+                'college': college,
+                'maxima': maxima,
+                'keywords': keywords,
+                'url': f"https://www.gjykataelarte.gov.al/sq/lajme/buletini/{bulletin_info['slug']}",
+                'document_type': 'bulletin_decision',
+                'bulletin_slug': bulletin_info['slug'],
+                'bulletin_title': bulletin_info.get('title', ''),
+                'language': 'sq'
+            })
+
+        return decisions
+
+    def fetch_bulletin_decisions(self, max_pages: int = 5) -> Iterator[dict]:
+        """Fetch decisions from bulletins using inline HTML text (no .doc needed)."""
+        slugs = self._get_bulletin_slugs(max_pages=max_pages)
+        print(f"  Found {len(slugs)} bulletins", file=sys.stderr)
+
+        for info in slugs:
+            slug = info['slug']
+            detail_url = f"{self.API_BASE}/sq/lajme/buletini/{slug}/page-data.json"
+            detail_data = self._fetch_json(detail_url)
+            if not detail_data:
+                continue
+
+            try:
+                article = detail_data['result']['data']['api']['newsArticle']
+                body = article.get('body', [])
+            except (KeyError, TypeError):
+                continue
+
+            # Collect all inline HTML from paragraph blocks
+            raw_html = ''
+            for item in body:
+                if 'Paragraph' in item.get('__typename', ''):
+                    for c in item.get('content', []):
+                        raw_html += c.get('text_sq', '')
+
+            if not raw_html:
+                continue
+
+            decisions = self._parse_decisions_from_inline_html(raw_html, info)
+            print(f"  {slug}: {len(decisions)} decisions", file=sys.stderr)
+            yield from decisions
 
     def fetch_all(self, sample_only: bool = False) -> Iterator[dict]:
         """Fetch all court decisions."""
-        seen_urls = set()
+        seen_ids = set()
         record_count = 0
         max_sample = 15 if sample_only else float('inf')
 
-        # Fetch from archive
-        print("Fetching from 1999-2019 archive...", file=sys.stderr)
-        for doc_info in self.fetch_archive_documents():
+        # Fetch from bulletins first (inline HTML — works without .doc tools)
+        print("Fetching from bulletins (inline text)...", file=sys.stderr)
+        for decision in self.fetch_bulletin_decisions(
+                max_pages=2 if sample_only else 10):
             if record_count >= max_sample:
                 break
-
-            url = doc_info['url']
-            if url in seen_urls:
+            did = decision['_id']
+            if did in seen_ids:
                 continue
-            seen_urls.add(url)
+            seen_ids.add(did)
+            yield decision
+            record_count += 1
 
-            print(f"  Downloading: {doc_info['title']}", file=sys.stderr)
-            content = self._download_file(url)
-            if not content:
-                continue
-
-            text = self._extract_text_from_doc(content, url)
-            if not text or len(text) < 500:
-                continue
-
-            # Parse decisions from bundle
-            decisions = self._parse_decision_from_bundle(text, doc_info)
-            for decision in decisions:
-                if record_count >= max_sample:
-                    break
-                yield decision
-                record_count += 1
-
-            if sample_only and record_count >= 5:  # Get 5 from archive
-                break
-
-        # Fetch from bulletins
+        # Fetch from archive (.doc files — requires extraction tools)
         if record_count < max_sample:
-            print("\nFetching from bulletins...", file=sys.stderr)
-            for doc_info in self.fetch_bulletin_documents(max_pages=2 if sample_only else 10):
+            print("\nFetching from 1999-2019 archive...", file=sys.stderr)
+            for doc_info in self.fetch_archive_documents():
                 if record_count >= max_sample:
                     break
 
                 url = doc_info['url']
-                if url in seen_urls:
-                    continue
-                seen_urls.add(url)
-
-                print(f"  Downloading: {doc_info['title'][:60]}...", file=sys.stderr)
+                print(f"  Downloading: {doc_info['title']}", file=sys.stderr)
                 content = self._download_file(url)
                 if not content:
                     continue
 
                 text = self._extract_text_from_doc(content, url)
-                if not text or len(text) < 200:
+                if not text or len(text) < 500:
                     continue
 
-                decision = self._parse_bulletin_decision(text, doc_info)
-                yield decision
-                record_count += 1
+                decisions = self._parse_decision_from_bundle(text, doc_info)
+                for decision in decisions:
+                    if record_count >= max_sample:
+                        break
+                    did = decision['_id']
+                    if did in seen_ids:
+                        continue
+                    seen_ids.add(did)
+                    yield decision
+                    record_count += 1
+
+                if sample_only and record_count >= max_sample:
+                    break
 
         print(f"\nTotal records: {record_count}", file=sys.stderr)
 
     def fetch_updates(self, since: str) -> Iterator[dict]:
         """Fetch decisions updated since a date.
 
-        For this source, we check recent bulletins only.
+        For this source, we check recent bulletins only (inline text).
         """
-        since_date = datetime.fromisoformat(since.replace('Z', '+00:00'))
-
-        for doc_info in self.fetch_bulletin_documents(max_pages=3):
-            url = doc_info['url']
-            content = self._download_file(url)
-            if not content:
-                continue
-
-            text = self._extract_text_from_doc(content, url)
-            if not text:
-                continue
-
-            decision = self._parse_bulletin_decision(text, doc_info)
+        for decision in self.fetch_bulletin_decisions(max_pages=3):
             yield decision
 
     def normalize(self, raw: dict) -> dict:
@@ -668,6 +738,7 @@ def main():
                        help='Fetch updates since date (ISO format)')
     parser.add_argument('--output', type=str,
                        help='Output directory for sample files')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

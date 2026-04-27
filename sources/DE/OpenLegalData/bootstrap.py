@@ -282,13 +282,27 @@ def clear_checkpoint(checkpoint_type: str) -> None:
         checkpoint_file.unlink()
 
 
+def fetch_case_detail(case_id: int) -> Dict:
+    """Fetch full case detail including content from the detail endpoint.
+
+    The list endpoint (/api/cases/) no longer includes the 'content' field.
+    Each case must be fetched individually via /api/cases/{id}/ to get full text.
+    """
+    data = api_request(f"/cases/{case_id}/", {"format": "json"})
+    return data if data else {}
+
+
 def fetch_cases(
     state_id: Optional[int] = None,
     limit: Optional[int] = None,
     offset: int = 0,
     use_checkpoint: bool = True
 ) -> Iterator[Dict]:
-    """Fetch court decisions from the API with checkpoint/resume support."""
+    """Fetch court decisions from the API with checkpoint/resume support.
+
+    Two-step fetch: list endpoint for IDs, then detail endpoint for full text.
+    The list endpoint no longer returns the 'content' field.
+    """
     # Load checkpoint if resuming
     checkpoint = {}
     if use_checkpoint and offset == 0:
@@ -304,7 +318,7 @@ def fetch_cases(
 
     count = 0
     consecutive_failures = 0
-    max_consecutive_failures = 10  # Increased tolerance for VPS rate limiting
+    max_consecutive_failures = 10
 
     while True:
         print(f"Fetching cases (offset={params['offset']})...")
@@ -314,22 +328,30 @@ def fetch_cases(
             consecutive_failures += 1
             if consecutive_failures >= max_consecutive_failures:
                 print(f"Too many consecutive failures ({consecutive_failures}), stopping")
-                # Save checkpoint before stopping
                 if use_checkpoint:
                     save_checkpoint("cases", {"offset": params["offset"], "state_id": state_id})
                 break
-            # Wait before retry on failure
             print(f"Empty response, waiting 30s before retry ({consecutive_failures}/{max_consecutive_failures})...")
             time.sleep(30)
             continue
 
-        consecutive_failures = 0  # Reset on success
+        consecutive_failures = 0
         results = data.get("results", [])
         if not results:
             break
 
-        for case in results:
-            yield normalize_case(case)
+        for case_stub in results:
+            case_id = case_stub.get("id")
+            if not case_id:
+                continue
+
+            # Fetch full detail (with content) from detail endpoint
+            detail = fetch_case_detail(case_id)
+            if not detail:
+                print(f"  Skipping case {case_id}: detail fetch failed")
+                continue
+
+            yield normalize_case(detail)
             count += 1
 
             if limit and count >= limit:
@@ -337,14 +359,13 @@ def fetch_cases(
 
         # Check for next page
         if not data.get("next"):
-            # Completed successfully - clear checkpoint
             if use_checkpoint:
                 clear_checkpoint("cases")
             break
 
         params["offset"] = params["offset"] + 100
 
-        # Save checkpoint every 500 records (more frequent for VPS reliability)
+        # Save checkpoint every 500 records
         if use_checkpoint and count % 500 == 0:
             save_checkpoint("cases", {"offset": params["offset"], "state_id": state_id})
             print(f"Checkpoint saved at {count} cases")
@@ -568,6 +589,7 @@ def main():
         default=100,
         help="Batch size for writes (for bootstrap-fast)"
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

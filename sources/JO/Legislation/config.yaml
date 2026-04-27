@@ -1,26 +1,41 @@
-source:
-  id: JO/Legislation
-  name: Jordan Legislation and Opinion Bureau
-  country: JO
-  url: https://www.lob.gov.jo/
-  data_types:
-    - legislation
-  description: >
-    Jordanian laws, bylaws, regulations, instructions, and agreements from
-    the Legislation and Opinion Bureau (ديوان التشريع والرأي). Covers
-    6,000+ legislative instruments. Arabic language. Free access.
-  method: ASMX web service with AES/RSA encryption
-  license: Free access (public government data)
-  language: ar
-  auth: none
-
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - url
-    - legislation_type
-    - legislation_number
-    - legislation_year
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: legislation_type
+    required: false
+    type: string
+  - name: legislation_number
+    required: false
+    type: string
+  - name: legislation_year
+    required: false
+    type: string
+source:
+  auth: none
+  country: JO
+  data_types:
+  - legislation
+  description: 'Jordanian laws, bylaws, regulations, instructions, and agreements from the Legislation and Opinion Bureau (ديوان التشريع والرأي). Covers 6,000+ legislative instruments. Arabic language.
+    Free access.
+
+    '
+  id: JO/Legislation
+  language: ar
+  license: Free access (public government data)
+  method: ASMX web service with AES/RSA encryption
+  name: Jordan Legislation and Opinion Bureau
+  url: https://www.lob.gov.jo/

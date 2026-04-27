@@ -1,0 +1,13 @@
+source_id: US/OLCOpinions
+name: DOJ Office of Legal Counsel Opinions
+country: US
+url: https://www.justice.gov/olc/opinions
+data_types:
+  - doctrine
+auth: none
+schedule: weekly
+schema:
+  key_fields:
+    - media_id
+    - date
+    - year

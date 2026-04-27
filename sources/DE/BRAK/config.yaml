@@ -1,36 +1,48 @@
-source:
-  id: DE/BRAK
-  name: German Federal Bar Association (BRAK)
-  country: DE
-  url: https://www.brak.de
-  data_types:
-    - doctrine
-  description: >
-    Legal news, case law commentary, and professional guidance from the
-    Bundesrechtsanwaltskammer (BRAK). Content includes legal analysis of court
-    decisions, regulatory updates, professional ethics guidance, and bar
-    association news. Full text extracted from HTML article pages via paginated
-    news listing (111 pages, ~1,440 articles).
-  auth: none
-  license: Public domain (§ 5 UrhG amtliche Werke)
-
 fetch:
-  method: html_listing_scrape
-  listing_url: https://www.brak.de/newsroom/news/
-  pagination_param: tx_wwt3list_recordlist[page]
-  total_pages: 111
   articles_per_page: 13
+  estimated_total: 1440
+  listing_url: https://www.brak.de/newsroom/news/
+  method: html_listing_scrape
+  pagination_param: tx_wwt3list_recordlist[page]
   rate_limit: 1.5
   timeout: 30
-  estimated_total: 1440
-
+  total_pages: 111
 schema:
   key_fields:
-    - _id
-    - _source
-    - _type
-    - title
-    - text
-    - date
-    - url
-    - tags
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: tags
+    required: false
+    type: string
+source:
+  auth: none
+  country: DE
+  data_types:
+  - doctrine
+  description: 'Legal news, case law commentary, and professional guidance from the Bundesrechtsanwaltskammer (BRAK). Content includes legal analysis of court decisions, regulatory updates, professional
+    ethics guidance, and bar association news. Full text extracted from HTML article pages via paginated news listing (111 pages, ~1,440 articles).
+
+    '
+  id: DE/BRAK
+  license: Public domain (§ 5 UrhG amtliche Werke)
+  name: German Federal Bar Association (BRAK)
+  url: https://www.brak.de

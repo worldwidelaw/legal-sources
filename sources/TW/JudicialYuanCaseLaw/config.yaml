@@ -1,31 +1,44 @@
-source:
-  id: TW/JudicialYuanCaseLaw
-  name: Taiwan Judicial Yuan Judgment Search
-  country: TW
-  url: https://judgment.judicial.gov.tw/
-  data_types:
-    - case_law
-  method: html_scrape
-  auth: none
-  license: Taiwan Government Open Data
-  description: >
-    Full-text court judgments from Taiwan's Judicial Yuan.
-    Covers all court levels: Supreme Court, High Courts, District Courts,
-    Administrative Courts, Constitutional Court.
-    Civil and Criminal cases. Public access, no authentication.
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - court
-    - case_type
-    - case_number
-    - cause
-
 fetch:
   rate_limit_seconds: 2
   results_per_page: 20
   search_method: asp_net_viewstate
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: court
+    required: false
+    type: string
+  - name: case_type
+    required: false
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: cause
+    required: false
+    type: string
+source:
+  auth: none
+  country: TW
+  data_types:
+  - case_law
+  description: 'Full-text court judgments from Taiwan''s Judicial Yuan. Covers all court levels: Supreme Court, High Courts, District Courts, Administrative Courts, Constitutional Court. Civil and Criminal
+    cases. Public access, no authentication.
+
+    '
+  id: TW/JudicialYuanCaseLaw
+  license: Taiwan Government Open Data
+  method: html_scrape
+  name: Taiwan Judicial Yuan Judgment Search
+  url: https://judgment.judicial.gov.tw/

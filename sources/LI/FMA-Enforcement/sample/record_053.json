@@ -1,0 +1,14 @@
+{
+  "_id": "warning-de-403",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:24.984714Z",
+  "title": "[Warnung] Warnung: freedom-finance[dot]nl",
+  "text": "Die Finanzmarktaufsicht Liechtenstein (FMA) weist darauf hin, dass der Betreiber der Website freedom-finance[dot]nl über keine aufsichtsrechtliche Bewilligung oder Registrierung der FMA verfügt. Somit ist es diesem nicht gestattet, bewilligungs- oder registrierungspflichtige Finanzdienstleistungen in Liechtenstein zu erbringen. Die FMA rät dringend davon ab, Investitionen über die Website freedom-finance[dot]nl zu tätigen, insbesondere auf Angebote zu reagieren oder Gelder zu überweisen oder Kryptowährungen zu übertragen.",
+  "date": "2024-08-06",
+  "url": "https://www.fma-li.li/de/warning/warnung-freedom-finance-dot-nl-403",
+  "language": "deu",
+  "category": "Warnung",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

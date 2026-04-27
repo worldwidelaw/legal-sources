@@ -92,13 +92,14 @@ def download_pdf(url: str) -> Optional[bytes]:
         return None
 
 
-def extract_text_from_pdf(pdf_bytes: bytes) -> str:
+def extract_text_from_pdf(pdf_bytes: bytes, source_id: str = "") -> str:
     """Extract text from PDF using centralized extractor."""
     return extract_pdf_markdown(
         source="CA/SK-Legislation",
-        source_id="",
+        source_id=source_id,
         pdf_bytes=pdf_bytes,
         table="legislation",
+        force=True,
     ) or ""
 
 def get_product_detail(product_id: int) -> Optional[dict]:
@@ -205,7 +206,9 @@ def fetch_products(subtype_id: int, doc_type: str, sample: bool = False,
             continue
 
         # Extract text
-        text = extract_text_from_pdf(pdf_bytes)
+        custom_id = product.get("customIdentifier", str(pid))
+        source_id = f"CA/SK-Legislation/{doc_type}/{custom_id}"
+        text = extract_text_from_pdf(pdf_bytes, source_id=source_id)
         if not text or len(text) < 100:
             print(f"  Insufficient text for {pid}: {len(text)} chars", file=sys.stderr)
             time.sleep(RATE_LIMIT_DELAY)

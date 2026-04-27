@@ -97,6 +97,10 @@ python bootstrap.py bootstrap --sample --output ./my_samples
 }
 ```
 
+## License
+
+Open government data — state-level official gazette freely accessible.
+
 ## Notes
 
 - Bosnia and Herzegovina has a complex federal structure with multiple official gazettes

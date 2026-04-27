@@ -1,0 +1,14 @@
+source_id: US/GAOReports
+name: GAO Reports and Comptroller General Decisions
+country: US
+url: https://www.govinfo.gov/app/collection/gaoreports
+data_types:
+  - doctrine
+auth: none
+schedule: weekly
+schema:
+  key_fields:
+    - package_id
+    - report_number
+    - document_type
+    - subject

@@ -233,6 +233,7 @@ def main():
     parser.add_argument("--limit", type=int, default=None, help="Maximum records to fetch")
     parser.add_argument("--start-year", type=int, help="Start year")
     parser.add_argument("--end-year", type=int, help="End year")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

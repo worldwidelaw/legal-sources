@@ -130,12 +130,12 @@ def download_pdf(pdf_name: str) -> Optional[bytes]:
 def extract_sections_from_pdf(pdf_bytes: bytes, pdf_name: str) -> list:
     """Extract individual statute sections from a chapter PDF."""
     try:
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+        full_text = extract_pdf_markdown(
+            SOURCE_ID, pdf_name, pdf_bytes=pdf_bytes,
+            table="legislation", force=True,
+        )
+        if not full_text:
             full_text = ""
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    full_text += page_text + "\n"
     except Exception as e:
         logger.warning(f"Failed to parse PDF {pdf_name}: {e}")
         return []
@@ -343,6 +343,7 @@ def main():
     parser = argparse.ArgumentParser(description="US/ND-Legislation Data Fetcher")
     parser.add_argument("command", choices=["bootstrap", "test-api"])
     parser.add_argument("--sample", action="store_true")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

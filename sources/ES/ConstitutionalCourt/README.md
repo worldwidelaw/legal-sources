@@ -4,7 +4,7 @@
 **URL:** https://hj.tribunalconstitucional.es
 **Country:** Spain (ES)
 **Data Type:** Case Law
-**License:** Public Domain (official court decisions)
+**License:** Public Domain (official court decisions — see [License](#license) below)
 
 ## Overview
 
@@ -73,6 +73,10 @@ Decisions are primarily in Spanish. Some have translations:
 - Spanish: `/HJ/es/Resolucion/Show/{id}`
 - English: `/HJ/en/Resolucion/Show/{id}`
 - French: `/HJ/fr/Resolucion/Show/{id}`
+
+## License
+
+Open government data under [Spanish Reuse of Public Sector Information regulations](https://datos.gob.es/en/terms). Official court decisions are public domain.
 
 ## Notes
 

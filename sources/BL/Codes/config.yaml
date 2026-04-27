@@ -1,0 +1,38 @@
+# BL/Codes -- Saint-Barthélemy Codes & Regulations
+source:
+  id: "BL/Codes"
+  name: "Saint-Barthélemy Codes & Regulations"
+  url: "https://actes.eservices-comstbarth.fr/jo_consult.php"
+  country: "BL"
+  data_types:
+    - legislation
+  auth:
+    type: none
+  license: "Open Government Data"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+    - name: url
+      type: string
+      required: true
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id

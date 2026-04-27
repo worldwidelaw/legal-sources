@@ -1,0 +1,18 @@
+{
+  "_id": "MX-JAL-79872",
+  "_source": "MX/PoderJudicialJalisco",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-23T13:20:51.126040+00:00",
+  "title": "Toca 179/2025 — SEGUNDA SALA ESPECIALIZADA EN MATERIA PENAL",
+  "text": "El documento resume la resolución del toca de apelación 179/2025, en un juicio oral, por la Segunda Sala Penal del Supremo Tribunal de Justicia del Estado de Jalisco.  La apelación fue interpuesta por el Ministerio Público contra un auto de no vinculación a proceso emitido por el Juez Décimo Primero de Control, Enjuiciamiento y Justicia Integral para Adolescentes del Primer Distrito Judicial.  El caso se refiere a la carpeta administrativa 755/2025 (derivada de la carpeta de investigación 6828/2025) contra un imputado por delitos contra la salud, específicamente narcomenudeo y posesión con fines de comercio, en agravio de una víctima.\n\nEl Juez de Control inicialmente decretó el auto de no vinculación a proceso argumentando que el Ministerio Público no fundamentó adecuadamente su solicitud de vinculación, omitiendo explicar los fundamentos de la clasificación jurídica del delito.  El Ministerio Público apeló esta decisión.\n\nLa Segunda Sala, tras analizar las constancias, grabaciones y agravios, determinó que el Juez de Control erró al no vincular a proceso.  Consideraron que el Ministerio Público SÍ fundamentó su solicitud, reiterando los datos de prueba presentados en la audiencia inicial, incluyendo el informe policial, el dictamen químico que confirmaba la presencia de narcóticos, la descripción de los hechos por parte de los policías,  y otros elementos que demostraban la posesión y probable intención de comercio.\n\nLa Sala argumenta que para la vinculación a proceso basta con que el Juez encuadre la conducta en la norma penal y que existan datos de prueba que hagan probable la responsabilidad del acusado, sin necesidad de un análisis exhaustivo de tipicidad como en una sentencia definitiva.  Se cita jurisprudencia que apoya esta postura, enfatizando que en la etapa de vinculación a proceso no se requiere la acreditación plena de todos los elementos del tipo penal.\n\nEn consecuencia, la Sala revoca el auto de no vinculación a proceso y dicta auto de vinculación a proceso contra el imputado.  El caso se devuelve al Juez de Control para que determine las medidas cautelares correspondientes. Se enfatiza el respeto a los derechos humanos del imputado, incluyendo la presunción de inocencia, y se aclara que la información del caso es pública con la supresión de datos personales.  Finalmente, se detalla la fundamentación legal para la eliminación de datos personales del documento.",
+  "date": "2025-06-18",
+  "url": "https://publica-sentencias-backend.stjjalisco.gob.mx/toca/79872/file",
+  "court": "SEGUNDA SALA ESPECIALIZADA EN MATERIA PENAL",
+  "judge": "Mgdo. Antonio Flores Allende",
+  "subject_area": "Penal",
+  "case_type": "PENAL EN LINEA",
+  "ruling": "REVOCAR",
+  "case_number": "179/2025",
+  "publication_date": "2025-07-11",
+  "crime_or_action": "CONTRA LA SALUD EN SU MODALIDAD DE NARCOMENUDEO"
+}

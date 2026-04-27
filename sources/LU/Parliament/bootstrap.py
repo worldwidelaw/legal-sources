@@ -276,7 +276,7 @@ def bootstrap(sample_size: int = 15, legislature: str = None) -> None:
     print(f"\n=== Bootstrapping {SOURCE_ID} ===\n")
     print(f"Sample size: {sample_size}")
 
-    legislatures = [legislature] if legislature else ['2023_2028']  # Most recent by default
+    legislatures = [legislature] if legislature else list(RESOURCES.keys())  # All legislatures
 
     count = 0
     total_text_len = 0
@@ -310,20 +310,26 @@ def bootstrap(sample_size: int = 15, legislature: str = None) -> None:
 
 def main():
     parser = argparse.ArgumentParser(description='LU/Parliament data fetcher')
-    parser.add_argument('command', choices=['bootstrap', 'fetch', 'updates'],
+    parser.add_argument('command', choices=['bootstrap', 'bootstrap-fast', 'fetch', 'updates'],
                         help='Command to execute')
-    parser.add_argument('--sample', '-n', type=int, default=15,
-                        help='Number of sample records (default: 15)')
+    parser.add_argument('--sample', action='store_true',
+                        help='Fetch sample only (15 records)')
+    parser.add_argument('--sample-size', type=int, default=15,
+                        help='Number of sample records to fetch')
     parser.add_argument('--legislature', '-l', type=str,
                         choices=['2013_2018', '2018_2023', '2023_2028'],
                         help='Specific legislature to fetch')
     parser.add_argument('--since', '-s', type=str,
                         help='Date for updates (ISO format)')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
+    parser.add_argument("--workers", type=int, default=5, help="Ignored (compat)")
+    parser.add_argument("--batch-size", type=int, default=100, help="Ignored (compat)")
 
     args = parser.parse_args()
 
-    if args.command == 'bootstrap':
-        bootstrap(sample_size=args.sample, legislature=args.legislature)
+    if args.command in ('bootstrap', 'bootstrap-fast'):
+        size = args.sample_size if args.sample else 999999
+        bootstrap(sample_size=size, legislature=args.legislature)
     elif args.command == 'fetch':
         for raw in fetch_all(legislatures=[args.legislature] if args.legislature else None):
             normalized = normalize(raw)

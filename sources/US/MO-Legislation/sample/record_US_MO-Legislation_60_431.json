@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/60.431",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T18:04:56.398716+00:00",
+  "title": "Missouri Revised Statutes § 60.431 - Position or location, use of plane coordinate to establish",
+  "text": "60.431.  Position or location, use of plane coordinate to establish. — The plane coordinate of a point on the earth's surface, to be used in expressing the position or location of the point in the appropriate zone of the Missouri state plane coordinate system, shall consist of two distances expressed in feet and decimals of a foot or in meters and decimals of a meter.  If and when values are expressed in feet, the international foot (one international foot equals 0.3048 meters)* shall be used as the standard foot for the Missouri state plane coordinate system.  One of these distances, to be known as the \"East x-coordinate\", shall give the distance east of the Y-axis; the other, to be known as the \"North y-coordinate\", shall give the distance north of the X-axis.  The Y-axis of any zone shall be parallel with the central meridian of that zone.  The X-axis of any zone shall be at right angles to the central meridian of that zone.  These coordinates shall depend upon and conform to plane rectangular coordinate values as established, published, or broadcast by the National Geodetic Survey, or its successors, and whose plane coordinates have been computed on the systems defined in sections 60.401 to 60.496.  Any such station or method may be used for establishing a survey connection to the Missouri state plane coordinate system.\n(L. 1984 S.B. 479, A.L. 2023 H.B. 202 merged with S.B. 138) \n*Words \"which is equal to three thousand forty-eight ten-thousandths meter\" appear in original rolls of S.B. 138, 2023.",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=60.431",
+  "section_id": "60.431",
+  "chapter": "60",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

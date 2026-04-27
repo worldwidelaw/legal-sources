@@ -1,0 +1,18 @@
+source_id: CN/SPP
+country: CN
+name: "China Supreme People's Procuratorate (最高人民检察院)"
+url: https://www.spp.gov.cn/
+data_types:
+  - case_law
+  - doctrine
+language: zh
+update_frequency: weekly
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - text
+    - url
+    - category

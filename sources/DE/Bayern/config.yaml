@@ -1,59 +1,65 @@
-source:
-  id: DE/Bayern
-  name: Bavaria State Law (BAYERN.RECHT)
-  country: DE
-  url: https://www.gesetze-bayern.de
-  description: |
-    Official legal information portal for Bavaria (Bayern), providing
-    court decisions and legislation from all Bavarian courts and
-    state legislative bodies.
-
 api:
-  type: rss
   base_url: https://www.gesetze-bayern.de
   endpoints:
-    rss_feed: /Api/Feed
     document: /Content/Document/{id}
+    rss_feed: /Api/Feed
   format: html
   rate_limit:
     requests_per_second: 1
-
+  type: rss
 data:
-  types:
-    - caselaw
+  courts:
+  - Verfassungsgerichtshof Bayern (Constitutional Court)
+  - Bayerischer Verwaltungsgerichtshof (VGH)
+  - Oberlandesgerichte (OLG)
+  - Landgerichte (LG)
+  - Amtsgerichte (AG)
+  - Verwaltungsgerichte (VG)
+  - Arbeitsgerichte
+  - Sozialgerichte
+  - Finanzgerichte
   coverage:
     caselaw: 23000+
-  courts:
-    - Verfassungsgerichtshof Bayern (Constitutional Court)
-    - Bayerischer Verwaltungsgerichtshof (VGH)
-    - Oberlandesgerichte (OLG)
-    - Landgerichte (LG)
-    - Amtsgerichte (AG)
-    - Verwaltungsgerichte (VG)
-    - Arbeitsgerichte
-    - Sozialgerichte
-    - Finanzgerichte
-
-schema:
-  key_fields:
-    - guid
-    - file_number
-  required_fields:
-    - guid
-    - title
-    - text
-    - court_name
-    - date
-  optional_fields:
-    - norm_chain
-    - keywords
-    - prior_instance
-    - citation
-    - pub_date
-
+  types:
+  - caselaw
 license:
   name: Public Domain (amtliche Werke)
-  notes: |
-    German court decisions are public domain under § 5 UrhG
+  notes: 'German court decisions are public domain under § 5 UrhG
+
     (official works exemption). Data from gesetze-bayern.de
+
     is provided by the Bavarian State Chancellery.
+
+    '
+schema:
+  key_fields:
+  - name: guid
+    required: false
+    type: string
+  - name: file_number
+    required: false
+    type: string
+  optional_fields:
+  - norm_chain
+  - keywords
+  - prior_instance
+  - citation
+  - pub_date
+  required_fields:
+  - guid
+  - title
+  - text
+  - court_name
+  - date
+source:
+  country: DE
+  description: 'Official legal information portal for Bavaria (Bayern), providing
+
+    court decisions and legislation from all Bavarian courts and
+
+    state legislative bodies.
+
+    '
+  id: DE/Bayern
+  name: Bavaria State Law (BAYERN.RECHT)
+  url: https://www.gesetze-bayern.de

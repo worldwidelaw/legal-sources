@@ -426,6 +426,7 @@ def main():
                        help="Fetch sample records only (12 records)")
     parser.add_argument('--count', type=int, default=15,
                        help="Number of sample records to fetch")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

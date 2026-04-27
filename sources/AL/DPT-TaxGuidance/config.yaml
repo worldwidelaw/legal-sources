@@ -1,0 +1,28 @@
+fetch:
+  max_retries: 3
+  rate_limit: 2.0
+  timeout: 120
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: category
+    required: false
+    type: string
+source:
+  auth: none
+  country: AL
+  data_types:
+  - doctrine
+  description: >-
+    Albanian General Directorate of Taxation (DPT) tax legislation and guidance
+    from tatime.gov.al. Covers tax procedures, income tax, VAT, national taxes,
+    local taxes, social security contributions, international agreements, and
+    GDT technical decisions. ~160 documents as downloadable PDFs.
+  id: AL/DPT-TaxGuidance
+  name: DPT Tax Legislation & Guidance
+  url: https://www.tatime.gov.al/

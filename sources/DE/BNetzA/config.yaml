@@ -1,32 +1,54 @@
-id: DE/BNetzA
-name: German Network Agency (Bundesnetzagentur) Decisions
-url: https://www.bundesnetzagentur.de/DE/Beschlusskammern/BDB/start.html
+auth: none
 country: DE
 data_types:
-  - doctrine
-schema:
-  key_fields:
-    - _id
-    - aktenzeichen
-    - chamber
-    - decision_date
-    - subject
-    - affected_party
-    - applicant
-auth: none
-rate_limit:
-  delay_seconds: 1.5
+- doctrine
+id: DE/BNetzA
 language: de
-license: |
-  Use of the documents and their text content for private use is permitted without authorization.
+license: 'Use of the documents and their text content for private use is permitted without authorization.
+
   Any form of commercial use requires consent from the Bundesnetzagentur.
-notes: |
-  The Bundesnetzagentur (Federal Network Agency) is the German regulatory authority for
+
+  '
+name: German Network Agency (Bundesnetzagentur) Decisions
+notes: 'The Bundesnetzagentur (Federal Network Agency) is the German regulatory authority for
+
   electricity, gas, telecommunications, post, and railway markets.
 
+
   The decision database (Beschlussdatenbank) contains 19,217 decisions from ruling chambers
+
   (Beschlusskammern) dating from 1998 to present.
+
 
   Chambers: GBK (Grand Ruling Chamber for Energy), BK1-BK11 (specialized ruling chambers)
 
+
   Decisions are provided as PDF documents. Full text is extracted using pypdf.
+
+  '
+rate_limit:
+  delay_seconds: 1.5
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: aktenzeichen
+    required: false
+    type: string
+  - name: chamber
+    required: false
+    type: string
+  - name: decision_date
+    required: false
+    type: date
+  - name: subject
+    required: false
+    type: string
+  - name: affected_party
+    required: false
+    type: string
+  - name: applicant
+    required: false
+    type: string
+url: https://www.bundesnetzagentur.de/DE/Beschlusskammern/BDB/start.html

@@ -503,6 +503,7 @@ def main():
 
     updates_parser = subparsers.add_parser("updates", help="Fetch updates")
     updates_parser.add_argument("--since", required=True, help="Date to fetch from (YYYY-MM-DD)")
+    updates_parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     subparsers.add_parser("validate", help="Validate sample records")
 

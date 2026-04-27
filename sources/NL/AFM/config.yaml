@@ -1,25 +1,35 @@
-source:
-  id: NL/AFM
-  name: Dutch Financial Markets Authority (AFM)
-  country: NL
-  url: https://www.afm.nl
-  data_types:
-    - doctrine
-  auth: none
-  license: Public Domain (Dutch government publications)
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - url
-    - doc_type
-
 fetch:
-  method: sitecore_api_plus_html
   api_url: https://www.afm.nl/api/sitecore/News/PagedNews
-  context_item_id: "{E28FA557-8A42-43B1-AB89-E05C563C9423}"
+  context_item_id: '{E28FA557-8A42-43B1-AB89-E05C563C9423}'
+  method: sitecore_api_plus_html
   page_size: 12
   rate_limit_delay: 2.0
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: url
+    required: true
+    type: string
+  - name: doc_type
+    required: false
+    type: string
+source:
+  auth: none
+  country: NL
+  data_types:
+  - doctrine
+  id: NL/AFM
+  license: Public Domain (Dutch government publications)
+  name: Dutch Financial Markets Authority (AFM)
+  url: https://www.afm.nl

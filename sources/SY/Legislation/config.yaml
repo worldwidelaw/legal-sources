@@ -1,0 +1,63 @@
+# ===================================================================
+# SY/Legislation -- Syrian Presidential Decrees (SANA)
+# ===================================================================
+# HTML scraping of sana.sy presidency decree pages.
+# Full text of presidential decrees in Arabic.
+# ===================================================================
+
+source:
+  id: "SY/Legislation"
+  country: "SY"
+  name: "Syrian Presidential Decrees (SANA)"
+  url: "https://sana.sy/presidency/"
+  description: |
+    Presidential decrees published by the Syrian Arab News Agency (SANA).
+    Full text of decrees in Arabic from the transitional government (2025+).
+    ~104 decrees searchable via keyword مرسوم (decree).
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "2-second delay between requests."
+
+api:
+  type: "scraping"
+  base_url: "https://sana.sy"
+  endpoints:
+    search: "/?s=%D9%85%D8%B1%D8%B3%D9%88%D9%85&category_name=presidency&paged={page}"
+  response_format: "html"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "_id"
+      description: "Unique document ID from SANA post ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decree title in Arabic"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decree in Arabic"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL on sana.sy"
+      type: "string"
+      role: "reference"
+      required: true

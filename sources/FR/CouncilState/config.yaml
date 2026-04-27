@@ -1,68 +1,58 @@
-# FR/CouncilState - French Administrative Courts Case Law
-# Covers all three levels of French administrative justice
-
-source_id: FR/CouncilState
-name: French Administrative Courts
-country: FR
-language: fr
-data_types:
-  - caselaw
-
-# Data access via ZIP archives
 api:
-  type: zip_archive
   base_url: https://opendata.justice-administrative.fr
   endpoints:
-    CE:
-      name: Conseil d'État (Supreme Administrative Court)
-      dir: /DCE/
-      zip_pattern: /DCE/{year}/{month:02d}/CE_{year}{month:02d}.zip
     CAA:
-      name: Cours Administratives d'Appel (Administrative Courts of Appeal)
       dir: /DCA/
+      name: Cours Administratives d'Appel (Administrative Courts of Appeal)
       zip_pattern: /DCA/{year}/{month:02d}/CAA_{year}{month:02d}.zip
+    CE:
+      dir: /DCE/
+      name: Conseil d'État (Supreme Administrative Court)
+      zip_pattern: /DCE/{year}/{month:02d}/CE_{year}{month:02d}.zip
     TA:
-      name: Tribunaux Administratifs (Administrative Tribunals)
       dir: /DTA/
+      name: Tribunaux Administratifs (Administrative Tribunals)
       zip_pattern: /DTA/{year}/{month:02d}/TA_{year}{month:02d}.zip
+  type: zip_archive
+country: FR
+coverage:
+  courts:
+  - CE: Conseil d'État (Supreme Administrative Court) - from Sept 2021
+  - CAA: Cours Administratives d'Appel (Administrative Courts of Appeal) - from March 2022
+  - TA: Tribunaux Administratifs (Administrative Tribunals) - from June 2022
+  notes: 'Open data decisions from all French administrative courts. Available since September 30, 2021 per French law n°2019-222. Documents are pseudonymized and available in XML format. Use --court CE/CAA/TA
+    flag to filter by court level.
 
-# XML document structure
+    '
+  start_date: 2021-09-30
+data_types:
+- caselaw
 format: xml
-schema:
-  key_fields:
-    - Numero_ECLI
-    - Numero_Dossier
-  metadata_fields:
-    - Code_Juridiction
-    - Nom_Juridiction
-    - Date_Lecture
-    - Type_Decision
-    - Type_Recours
-    - Code_Publication
-    - Formation_Jugement
-    - Solution
-  text_field: Texte_Integral
-
-# Rate limiting
-rate_limit:
-  requests_per_second: 1
-  delay_between_requests: 1.0
-
-# License
+language: fr
 license:
+  commercial_use: true
   name: Licence Ouverte / Open Licence
   url: https://www.etalab.gouv.fr/licence-ouverte-open-licence
-  commercial_use: true
-
-# Coverage
-coverage:
-  start_date: 2021-09-30
-  courts:
-    - CE: Conseil d'État (Supreme Administrative Court) - from Sept 2021
-    - CAA: Cours Administratives d'Appel (Administrative Courts of Appeal) - from March 2022
-    - TA: Tribunaux Administratifs (Administrative Tribunals) - from June 2022
-  notes: >
-    Open data decisions from all French administrative courts.
-    Available since September 30, 2021 per French law n°2019-222.
-    Documents are pseudonymized and available in XML format.
-    Use --court CE/CAA/TA flag to filter by court level.
+name: French Administrative Courts
+rate_limit:
+  delay_between_requests: 1.0
+  requests_per_second: 1
+schema:
+  key_fields:
+  - name: Numero_ECLI
+    required: false
+    type: string
+  - name: Numero_Dossier
+    required: false
+    type: string
+  metadata_fields:
+  - Code_Juridiction
+  - Nom_Juridiction
+  - Date_Lecture
+  - Type_Decision
+  - Type_Recours
+  - Code_Publication
+  - Formation_Jugement
+  - Solution
+  text_field: Texte_Integral
+source_id: FR/CouncilState

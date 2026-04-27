@@ -1,0 +1,42 @@
+source_id: FK/Legislation
+name: Falkland Islands Legislation
+country: FK
+url: https://www.legislation.gov.fk/
+data_url: https://www.legislation.gov.fk/getdata
+description: |
+  Falkland Islands consolidated legislation from the official TeraText-based
+  legislation portal. Covers Ordinances (~654), Subsidiary Legislation (~977),
+  and Proclamations (~17). Full text via JSON API fragments.
+
+data_types:
+  - legislation
+
+license: "© Falkland Islands Government (public information)"
+language: en
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+update_frequency: monthly
+
+schema:
+  key_fields:
+    - name: title
+      required: true
+      type: string
+    - name: doc_type
+      required: true
+      type: string
+  date_field: date
+  text_field: text
+  title_field: title
+  url_field: url
+
+notes: |
+  TeraText for Legislation (TTFL) JSON API. No auth required for public
+  datasources. ~1650 laws across ordinances, subsidiary legislation,
+  and proclamations.

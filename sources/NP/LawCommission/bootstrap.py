@@ -287,7 +287,7 @@ class LawCommissionScraper(BaseScraper):
                 continue
             raw = self._fetch_document(item, 'act')
             if raw:
-                yield self.normalize(raw)
+                yield raw
 
     def test(self):
         """Quick connectivity test."""
@@ -324,6 +324,7 @@ def main():
     parser = argparse.ArgumentParser(description='NP/LawCommission fetcher')
     parser.add_argument('command', choices=['bootstrap', 'update', 'test'])
     parser.add_argument('--sample', action='store_true', help='Fetch only 15 sample records')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = LawCommissionScraper()
@@ -333,15 +334,7 @@ def main():
         sys.exit(0 if success else 1)
 
     elif args.command == 'bootstrap':
-        SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-        count = 0
-        for record in scraper.fetch_all(sample=args.sample):
-            out_file = SAMPLE_DIR / f"{record['_id']}.json"
-            with open(out_file, 'w', encoding='utf-8') as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-            logger.info(f"Saved [{count}]: {record['title'][:60]} ({len(record.get('text', ''))} chars)")
-        logger.info(f"\nBootstrap complete: {count} records saved to {SAMPLE_DIR}")
+        scraper.bootstrap(sample_mode=args.sample)
 
     elif args.command == 'update':
         count = 0

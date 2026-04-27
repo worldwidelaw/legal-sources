@@ -1,0 +1,51 @@
+id: PH/BSP
+name: Bangko Sentral ng Pilipinas (BSP) Circulars
+country: PH
+url: https://www.bsp.gov.ph/SitePages/Regulations/RegulationsList.aspx
+description: >
+  BSP regulatory issuances — circulars, memoranda, and circular letters.
+  Fetched via SharePoint REST API. Full text extracted from PDF documents.
+  Covers banking supervision, monetary policy, AML/CFT, consumer protection,
+  payment systems, and financial technology regulations.
+data_types:
+  - doctrine
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+license:
+  name: "BSP Terms of Use (custom)"
+  url: "https://www.bsp.gov.ph/Pages/AboutTheBank/Terms-of-Use.aspx"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Commercial reuse permitted with BSP attribution. No standard open license."

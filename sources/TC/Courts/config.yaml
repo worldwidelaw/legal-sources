@@ -1,0 +1,60 @@
+source:
+  id: TC/Courts
+  name: Turks & Caicos Islands Court Decisions
+  country: TC
+  url: https://tcilii.org
+  description: >
+    Court judgments from TCILII (Turks & Caicos Islands Legal Information Institute),
+    the official judiciary database. Covers Supreme Court (TCASC), Court of Appeal
+    (TCACA), and Privy Council (UKPC). ~805 judgments. Full text extracted from PDFs
+    via Akoma Ntoso URI pattern.
+
+data_model:
+  types:
+    - case_law
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: citation
+      type: string
+      required: false
+    - name: case_number
+      type: string
+      required: false
+    - name: court
+      type: string
+      required: false
+    - name: judge
+      type: string
+      required: false
+    - name: decision_date
+      type: string
+      required: false
+    - name: summary
+      type: string
+      required: false
+
+schedule:
+  full_refresh: monthly
+  update_check: weekly

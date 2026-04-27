@@ -1,0 +1,67 @@
+# ===================================================================
+# MH/PacLII -- Marshall Islands Legal Information (PacLII)
+# ===================================================================
+# Case law (3 courts, ~382 decisions) and consolidated legislation
+# (~287 acts) from the Pacific Islands Legal Information Institute.
+# All documents are PDF-based; text extracted via pdfplumber.
+# ===================================================================
+
+source:
+  id: "MH/PacLII"
+  country: "MH"
+  name: "Marshall Islands Court Decisions & Legislation (PacLII)"
+  url: "https://www.paclii.org/countries/mh.html"
+  description: |
+    Court decisions and consolidated legislation of the Republic of
+    the Marshall Islands, hosted by the Pacific Islands Legal Information
+    Institute (PacLII). Covers Supreme Court, High Court, and Traditional
+    Rights Court decisions, plus the 2024 Revised Code consolidated acts
+    and sessional legislation.
+
+data_types:
+  - case_law
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "2-second delay between requests to respect PacLII servers."
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.paclii.org"
+  response_format: "html+pdf"
+  pagination:
+    type: "year_index"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Document identifier from URL path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision or enactment date"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "court"
+      description: "Court code (for case law)"
+      type: "string"
+      role: "metadata"
+      required: false

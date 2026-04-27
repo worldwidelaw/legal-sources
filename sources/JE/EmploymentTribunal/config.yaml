@@ -1,0 +1,76 @@
+# ===================================================================
+# JE/EmploymentTribunal -- Jersey Employment & Discrimination Tribunal
+# ===================================================================
+# Tribunal decisions published on jerseylaw.je as server-rendered HTML.
+# URL pattern: /judgments/tribunal/Pages/[YEAR]TRE[NNN].aspx
+# Numbers are sparse (case registry numbers, not sequential decisions).
+# Covers 2005-present, ~30-60 decisions per year.
+# No authentication required.
+# ===================================================================
+
+source:
+  id: "JE/EmploymentTribunal"
+  country: "JE"
+  name: "Jersey Employment & Discrimination Tribunal"
+  url: "https://www.jerseylaw.je/judgments/tribunal/"
+  description: |
+    Decisions of the Jersey Employment and Discrimination Tribunal.
+    Covers unfair dismissal, discrimination, and employment disputes.
+    Full text judgments with case references, parties, and reasons.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.jerseylaw.je"
+  endpoints:
+    decision_pattern: "/judgments/tribunal/Pages/[YEAR]TRE[NNN].aspx"
+
+data_model:
+  type: "case_law"
+  primary_key: "case_ref"
+  update_strategy: "upsert"
+  dedup_key:
+    - "case_ref"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "case_ref"
+      description: "Case reference (e.g., [2025] TRE 081)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the tribunal judgment"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the decision page"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "tribunal_members"
+      description: "Names of tribunal members"
+    - name: "hearing_date"
+      description: "Date(s) of hearing"

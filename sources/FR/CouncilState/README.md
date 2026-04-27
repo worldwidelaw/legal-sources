@@ -63,3 +63,7 @@ python bootstrap.py updates --since 2024-01-01
 ## Legal Framework
 
 Open data access is mandated by French law n°2019-222 of March 23, 2019 (Justice Reform Act), which requires progressive publication of all court decisions in open data format.
+
+## License
+
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

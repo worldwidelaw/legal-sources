@@ -1,0 +1,18 @@
+{
+  "_id": "MX-JAL-80128",
+  "_source": "MX/PoderJudicialJalisco",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-23T13:20:53.759592+00:00",
+  "title": "Toca 327/2025 — NOVENA SALA ESPECIALIZADA EN MATERIA CIVIL",
+  "text": "El documento es una sentencia del Toca 327/2025, Expediente 299/2024, emitida por la Novena Sala del Supremo Tribunal de Justicia del Estado de Jalisco el 9 de julio de 2025. Se trata de una apelación interpuesta el 25 de febrero de 2025 por el abogado del actor contra una sentencia definitiva del 11 de febrero de 2025, dictada por el Juez Primero de lo Civil del Décimo Octavo Partido Judicial en Tepatitlán de Morelos. El juicio sumario 299/2024 fue promovido por el actor contra la demandada, ambos con nombres omitidos en el documento.\n\nLa apelación se centra en la improcedencia de la acción ejercida por el actor, alegando incumplimiento de la carga procesal del artículo 286 del Código de Procedimientos Civiles del Estado de Jalisco. La sentencia de primera instancia absolvió a la demandada de las prestaciones reclamadas y condenó al actor al pago de costas.\n\nLa Novena Sala, tras analizar los agravios, considera que el juez de primera instancia erró al basar su decisión en el derecho de habitación (artículo 1108 del Código Civil), en lugar del derecho de los copropietarios a usar los bienes comunes (artículos 966 y 967 del mismo código).  El actor, como copropietario, tiene derecho a usar la totalidad del inmueble, sin necesidad del consentimiento de los demás copropietarios.  La demandada, al impedir este uso, ha vulnerado los derechos del actor.\n\nEn consecuencia, la Sala revoca la sentencia de primera instancia.  Declara que el actor tiene derecho a poseer, habitar, usar y aprovechar el inmueble. Condena a la demandada a abstenerse de impedir el uso del inmueble por parte del actor, bajo apercibimiento de pagar daños y perjuicios.  Asimismo, condena a la demandada al pago de las costas del juicio, cuantificadas en $16,971.00. Finalmente, absuelve al apelante del pago de las costas generadas en segunda instancia.\n\nEl documento incluye una detallada fundamentación legal y la identificación de las magistradas que integraron la Sala, así como del secretario de acuerdos. También se detalla la omisión de datos personales en cumplimiento de los Lineamientos Generales para la Protección de la Información Confidencial y Reservada del Estado de Jalisco.",
+  "date": "2025-07-09",
+  "url": "https://publica-sentencias-backend.stjjalisco.gob.mx/toca/80128/file",
+  "court": "NOVENA SALA ESPECIALIZADA EN MATERIA CIVIL",
+  "judge": "Mgda. Verónica Elizabeth Ucaranza Sánchez",
+  "subject_area": "Civil",
+  "case_type": "CIVIL SUMARIA",
+  "ruling": "REVOCAR",
+  "case_number": "327/2025",
+  "publication_date": "2025-08-06",
+  "crime_or_action": "JUICIO SUCESORIO TESTAMENTARIO"
+}

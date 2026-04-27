@@ -1,0 +1,67 @@
+# ===================================================================
+# VU/VFSC-Enforcement -- Vanuatu Financial Services Commission
+# ===================================================================
+# Enforcement actions, fraud notices, license revocations, public
+# warnings, and liquidation notices from the VFSC. Documents are PDFs
+# linked from the public-notices page, discovered via WP REST API.
+# ===================================================================
+
+source:
+  id: "VU/VFSC-Enforcement"
+  country: "VU"
+  name: "Vanuatu Financial Services Commission Enforcement"
+  url: "https://www.vfsc.vu/"
+  description: |
+    Enforcement actions from the Vanuatu Financial Services Commission
+    including license revocations, intentions to revoke, warning
+    advisories, fraud notices, and liquidation notices. Documents are
+    PDFs hosted on WordPress, discovered via the WP REST API media
+    endpoint and public-notices page.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "WordPress site. 1-2s delay between requests."
+
+api:
+  type: "rest"
+  base_url: "https://www.vfsc.vu"
+  endpoints:
+    public_notices_page: "/wp-json/wp/v2/pages/6609"
+    media: "/wp-json/wp/v2/media?media_type=application&per_page=100&page={page}"
+  response_format: "json"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "_id"
+      description: "Document identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to original PDF"
+      type: "string"
+      role: "reference"
+      required: true

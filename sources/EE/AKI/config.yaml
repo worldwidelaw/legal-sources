@@ -1,44 +1,40 @@
-# EE/AKI -- Estonian Data Protection Authority (Andmekaitse Inspektsioon)
-# Regulatory decisions on GDPR and data protection enforcement
-
-source:
-  id: EE/AKI
-  name: Andmekaitse Inspektsioon (Estonian Data Protection Authority)
-  country: EE
-  url: https://www.aki.ee
-  data_types:
-    - doctrine
-  language: et  # Estonian
-
 auth:
   type: none
-
-rate_limit:
-  requests_per_second: 1
-  burst: 3
-
 data_model:
-  update_strategy: append_only
   dedup_key:
-    - _id
-
+  - _id
+  update_strategy: append_only
+rate_limit:
+  burst: 3
+  requests_per_second: 1
 schema:
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
   key_fields:
-    - decision_type
-    - case_number
-    - addressee
-    - topic
-
-# Decision types:
-#   - ettekirjutused: Directives/Orders (enforcement)
-#   - vaideotsused: Appeal decisions
-#   - seisukohad: Positions/Statements
+  - name: decision_type
+    required: false
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: addressee
+    required: false
+    type: string
+  - name: topic
+    required: false
+    type: string
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  country: EE
+  data_types:
+  - doctrine
+  id: EE/AKI
+  language: et
+  name: Andmekaitse Inspektsioon (Estonian Data Protection Authority)
+  url: https://www.aki.ee

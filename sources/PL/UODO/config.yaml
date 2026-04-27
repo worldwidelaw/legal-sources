@@ -1,32 +1,52 @@
-source_id: PL/UODO
-name: Polish Data Protection Authority (UODO) Decisions
-country: PL
-url: https://orzeczenia.uodo.gov.pl
-data_types:
-  - doctrine
-auth:
-  type: none
 api:
   base_url: https://orzeczenia.uodo.gov.pl
   csv_export: /search/export/csv?targetUrl=https://orzeczenia.uodo.gov.pl&download=true
   document_content: /document/{urn}/content?query=
   document_meta: /document/{urn}/meta?query=
-rate_limit:
-  requests_per_second: 1.0
-  burst: 3
+auth:
+  type: none
+country: PL
 data_model:
-  update_strategy: append_only
   dedup_key:
-    - _id
+  - _id
+  update_strategy: append_only
+data_types:
+- doctrine
+name: Polish Data Protection Authority (UODO) Decisions
+rate_limit:
+  burst: 3
+  requests_per_second: 1.0
 schema:
   key_fields:
-    - _id
-    - _source
-    - _type
-    - title
-    - text
-    - date
-    - url
-    - case_number
-    - status
-    - publication_date
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: status
+    required: false
+    type: string
+  - name: publication_date
+    required: false
+    type: date
+source_id: PL/UODO
+url: https://orzeczenia.uodo.gov.pl

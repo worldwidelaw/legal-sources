@@ -41,7 +41,7 @@ Example: https://www.boe.es/eli/es/l/1978/12/27/78 (Spanish Constitution)
 
 ## License
 
-Open Data - Free reuse under Spanish open data regulations.
+Open data — [BOE Legal Notice](https://www.boe.es/sede_electronica/informacion/aviso_legal.php). Free reuse permitted under Spanish Law 37/2007 on PSI reuse.
 
 ## Usage
 

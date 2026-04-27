@@ -53,3 +53,7 @@ python bootstrap.py update
 - Documents are in Greek (windows-1253 encoding)
 - Full text is extracted from HTML, with styles/scripts removed
 - Average document size: ~60KB HTML, ~20K+ characters text
+
+## License
+
+[Open Access](http://www.cylaw.org) — Cyprus court decisions are freely accessible via the Cyprus Bar Association.

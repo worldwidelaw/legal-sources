@@ -66,3 +66,7 @@ python bootstrap.py update
 - Rate limit: 1 request/second
 - Total estimated decisions: ~22,000
 - Full text is embedded in HTML pages (not just PDF)
+
+## License
+
+[Open Government Data](https://www.anayasa.gov.tr) — official decisions published by the Constitutional Court of the Republic of Turkey.

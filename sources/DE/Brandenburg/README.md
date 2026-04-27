@@ -53,7 +53,7 @@ Laws are accessible via two URL patterns:
 
 ## License
 
-German official works (§ 5 UrhG) - public domain. Legal texts published by government authorities are not protected by copyright in Germany.
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).
 
 ## Usage
 

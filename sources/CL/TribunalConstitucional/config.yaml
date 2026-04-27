@@ -1,39 +1,44 @@
-source:
-  id: CL/TribunalConstitucional
-  name: Chilean Constitutional Court (Tribunal Constitucional)
-  country: CL
-  data_type: case_law
-  url: https://buscador.tcchile.cl
-  license: Public Domain
-  language: es
-
 endpoints:
   base_url: https://buscador-backend.tcchile.cl/api
-  search: /extended/sentencias
   by_id: /extended/sentenciaByID
-
-schema:
-  key_fields:
-    - rol
-    - sentence_id
-  normalized_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-    - rol
-    - competencia
-    - page_count
-
+  search: /extended/sentencias
 fetch:
   method: json_api
-  rate_limit: 1.0
-  notes: |
-    REST API at buscador-backend.tcchile.cl (Laravel). No auth required.
+  notes: 'REST API at buscador-backend.tcchile.cl (Laravel). No auth required.
+
     Search with common word "que" returns all ~9,884 sentencias with IDs.
+
     Fetch individual decisions by ID with full OCR text.
+
     Rate limit: 60 req/min (X-RateLimit-Limit header).
+
+    '
+  rate_limit: 1.0
+schema:
+  key_fields:
+  - name: rol
+    required: false
+    type: string
+  - name: sentence_id
+    required: false
+    type: string
+  normalized_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+  - rol
+  - competencia
+  - page_count
+source:
+  country: CL
+  data_type: case_law
+  id: CL/TribunalConstitucional
+  language: es
+  license: Public Domain
+  name: Chilean Constitutional Court (Tribunal Constitucional)
+  url: https://buscador.tcchile.cl

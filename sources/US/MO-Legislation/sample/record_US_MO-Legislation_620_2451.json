@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/620.2451",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T04:07:19.576279+00:00",
+  "title": "Missouri Revised Statutes § 620.2451 - Grants, use of moneys — recordkeeping requirements — failure to use grant moneys for specific purpose",
+  "text": "620.2451.  Grants, use of moneys — recordkeeping requirements — failure to use grant moneys for specific purpose. — 1.  Grants awarded under sections 620.2450 to 620.2458 shall fund the acquisition and installation of retail broadband internet service, prioritizing projects providing speeds of at least the higher of:\n  (1)  One hundred megabits per-second download and one hundred megabits per-second upload that is scalable to higher speeds; or\n  (2)  The minimum acceptable speed established by the Federal Communications Commission as authorized in 7 U.S.C. Section 950bb(e)(1) to (2).  Any provider that is incapable of meeting the speed requirement under this subdivision shall be allowed to continue deploying broadband infrastructure at current speeds, provided that each provider quarterly updates the office of broadband development regarding the provider's maximum speed.\n  2.  The department shall maintain a record of all federal grants awarded to entities for the purposes of providing, maintaining, and expanding rural broadband in the state of Missouri.  In cases in which funds have been awarded by a federal agency but later retained, withheld, or otherwise not distributed to the original grant recipient due to failure to meet performance standards or other criteria, the department shall seek to have the funds awarded to another eligible, qualified Missouri broadband provider.\n  3.  The funds awarded by the department to an entity for the purposes of providing, maintaining, and expanding rural broadband in the state of Missouri shall require the entity to use the funds specifically for purposes set forth in the grant.  If the entity uses the proceeds or funds for any other purposes or fails to comply with any requirement established by the department through the grant or funds awarded pursuant thereto, the entity shall return any remaining proceeds expended or the value of any incentives or services received by the entity to which a monetary value can be assigned, to be repaid to the department as required by the terms of the grant or contract.\n(L. 2018 H.B. 1456 merged with H.B. 1872, A.L. 2020 H.B. 1768, A.L. 2022 S.B. 820) \nSunset date 6-30-27; see § 620.2459\nTermination date 9-01-28; see § 620.2459",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=620.2451",
+  "section_id": "620.2451",
+  "chapter": "620",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

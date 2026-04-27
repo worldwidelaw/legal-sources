@@ -342,6 +342,7 @@ if __name__ == '__main__':
                         help='Fetch sample data only')
     parser.add_argument('--fast', action='store_true',
                         help='Reduce crawl delay (for testing)')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     if args.command == 'bootstrap':

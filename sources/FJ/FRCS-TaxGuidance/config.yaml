@@ -1,0 +1,26 @@
+source:
+  id: FJ/FRCS-TaxGuidance
+  name: Fiji Revenue and Customs Service Tax Guidance
+  country: FJ
+  url: https://www.frcs.org.fj
+  data_types:
+    - doctrine
+  auth: none
+  description: >
+    FRCS Standard Interpretation Guidelines (SIGs), Practice Statements, and
+    draft SIGs covering income tax, VAT, fringe benefits, incentives, stamp
+    duty, and other Fiji tax legislation. ~185 PDF documents.
+
+schema:
+  key_fields:
+    - doc_id
+    - doc_type
+  record_type: doctrine
+
+fetcher:
+  method: scrape
+  rate_limit: 1.5
+  notes: >
+    Scrapes SIG, Practice Statement, and Draft SIG index pages for PDF links.
+    Downloads and extracts text from each PDF via common/pdf_extract.
+    PDFs hosted across frcs.org.fj, revamp.frcs.org.fj, and webmediassp.com.

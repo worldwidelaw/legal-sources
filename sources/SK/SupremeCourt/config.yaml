@@ -52,7 +52,7 @@ data_model:
 
 schema:
   key_fields:
-    - name: "ID"
+    - name: "_id"
       description: "Supreme Court decision ID"
       type: "string"
       role: "primary_key"

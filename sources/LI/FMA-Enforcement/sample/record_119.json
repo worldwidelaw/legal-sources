@@ -1,0 +1,14 @@
+{
+  "_id": "warning-en-214",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:49.104463Z",
+  "title": "[Abuse] Warning: EXW Global AG",
+  "text": "EXW Global AG has not been licensed by the FMA as a financial intermediary.   The Financial Market Authority Liechtenstein (FMA) points out that EXW Global AG, c/o CONFIDENTIA Treuhand Anstalt, Bergstrasse 10, 9490 Vaduz, registration number FL-0002.620.252-2, has not been licensed by the FMA.   In particular, it is not permitted to provide banking activities or payment services.",
+  "date": "2020-01-09",
+  "url": "https://www.fma-li.li/en/warning/warning-exw-global-ag-214",
+  "language": "eng",
+  "category": "Abuse",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

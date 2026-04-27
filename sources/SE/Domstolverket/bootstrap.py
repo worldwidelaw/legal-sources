@@ -525,6 +525,7 @@ def main():
                        help="Include supreme courts (HDO, HFD) in fetch")
     parser.add_argument('--all-types', action='store_true',
                        help="Include all publication types")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

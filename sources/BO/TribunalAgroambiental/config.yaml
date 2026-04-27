@@ -50,7 +50,7 @@ data_model:
 schema:
   total_fields: 10
   key_fields:
-    - name: "id"
+    - name: "_id"
       description: "Internal resolution ID (from data-key attribute)"
       type: "integer"
       role: "primary_key"

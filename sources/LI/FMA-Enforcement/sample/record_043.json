@@ -1,0 +1,14 @@
+{
+  "_id": "warning-de-1506",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:20.983997Z",
+  "title": "[Warnung] Warnung: https://aaa-vermoegensverwaltung[dot]com",
+  "text": "Die Finanzmarktaufsicht (FMA) Liechtenstein weist darauf hin, dass sich der unbekannte Betreiber der Webseite https://aaa-vermoegensverwaltung[dot]com sowie der E-Mail-Adressen paymentteam&#64;aaa-vermoegensverwaltung[dot]com und contractteam&#64;aaa-vermoegensverwaltung[dot]com in unrechtmässiger Weise des Namens des in der Schweiz bewilligten Vermögensverwalters «AAA Vermögensverwaltung Wiggenhauser» bedient und weder über eine aufsichtsrechtliche Bewilligung oder Registrierung der FMA noch über eine  Zweigstelle in Liechtenstein verfügt. Weiters besteht weder eine Verbindung zu einer in Liechtenstein bewilligten Bank noch zu der in Dänemark bewilligten «Fynske Bank A/S».",
+  "date": "2025-09-14",
+  "url": "https://www.fma-li.li/de/warning/warnung-https-aaa-vermoegensverwaltung-dot-com-1506",
+  "language": "deu",
+  "category": "Warnung",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

@@ -9,7 +9,7 @@ This source fetches Croatian legislation from **Narodne novine** (Official Gazet
 - **Authentication**: None required
 - **Coverage**: 1990 to present
 - **Language**: Croatian (HRV)
-- **License**: Open Government Data
+- **License**: [Open Government Data](https://data.gov.hr/en)
 
 ## Data Access
 
@@ -63,6 +63,10 @@ Each record includes:
 | `year` | Publication year |
 | `issue` | Gazette issue number |
 | `doc_num` | Document number within issue |
+
+## License
+
+[Open Government Data](https://data.gov.hr/en) — Croatian official legislation is freely reusable under open government data terms.
 
 ## References
 

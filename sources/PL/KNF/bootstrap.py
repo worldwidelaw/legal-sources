@@ -256,6 +256,7 @@ def main():
                         help='Number of parallel workers (bootstrap-fast)')
     parser.add_argument('--batch-size', type=int, default=100,
                         help='Batch size (bootstrap-fast)')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     fetcher = KNFFetcher()

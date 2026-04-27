@@ -1,34 +1,60 @@
-source:
-  id: BE/APD
-  name: Belgian Data Protection Authority (APD/GBA)
-  country: BE
-  type: caselaw
-  url: https://www.autoriteprotectiondonnees.be
-  language: [fr, nl]
+fetch:
+  listing_url_fr: https://www.autoriteprotectiondonnees.be/citoyen/chercher?q=&search_category[]=taxonomy%3Apublications&search_type[]=decision&s=recent&l=50
+  listing_url_nl: https://www.gegevensbeschermingsautoriteit.be/burger/zoeken?q=&search_category[]=taxonomy%3Apublications&search_type[]=decision&s=recent&l=50
+  method: html_scrape_pdf
+  rate_limit_seconds: 2.0
+notes: 'Belgian Data Protection Authority decisions since 2018.
 
+  Decisions published as PDFs in both French and Dutch.
+
+  ~1200 decisions total across both languages (some overlap).
+
+  Decision types: décisions au fond (substantive), classements sans suite (dismissals),
+
+  avertissements (warnings), ordonnances (orders), arrêts (court judgments).
+
+  '
 schema:
   key_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-    - decision_number
-    - decision_type
-    - language
-
-fetch:
-  rate_limit_seconds: 2.0
-  method: html_scrape_pdf
-  listing_url_fr: "https://www.autoriteprotectiondonnees.be/citoyen/chercher?q=&search_category[]=taxonomy%3Apublications&search_type[]=decision&s=recent&l=50"
-  listing_url_nl: "https://www.gegevensbeschermingsautoriteit.be/burger/zoeken?q=&search_category[]=taxonomy%3Apublications&search_type[]=decision&s=recent&l=50"
-
-notes: |
-  Belgian Data Protection Authority decisions since 2018.
-  Decisions published as PDFs in both French and Dutch.
-  ~1200 decisions total across both languages (some overlap).
-  Decision types: décisions au fond (substantive), classements sans suite (dismissals),
-  avertissements (warnings), ordonnances (orders), arrêts (court judgments).
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: _fetched_at
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  - name: decision_type
+    required: false
+    type: string
+  - name: language
+    required: false
+    type: string
+source:
+  country: BE
+  id: BE/APD
+  language:
+  - fr
+  - nl
+  name: Belgian Data Protection Authority (APD/GBA)
+  type: caselaw
+  url: https://www.autoriteprotectiondonnees.be

@@ -71,3 +71,7 @@ python bootstrap.py update
 - Austria's largest case law database by volume
 - Rate limited to 1 request per 2 seconds for bulk operations
 - Full text is MANDATORY - metadata-only records are rejected
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Austrian Open Government Data.

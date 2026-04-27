@@ -1,0 +1,105 @@
+# ===================================================================
+# AE/ADGM-Courts -- Abu Dhabi Global Market Courts Judgments
+# ===================================================================
+# Server-side rendered HTML pages with PDF judgments hosted on
+# assets.adgm.com. No authentication required.
+# ===================================================================
+
+source:
+  id: "AE/ADGM-Courts"
+  country: "AE"
+  name: "ADGM Courts Judgments"
+  url: "https://www.adgm.com/adgm-courts/judgments"
+  description: |
+    Abu Dhabi Global Market (ADGM) Courts — an independent common-law
+    judiciary operating within the ADGM international financial centre.
+    Comprises the Court of First Instance (CFI) and Court of Appeal.
+    Publishes sealed judgments as PDFs on assets.adgm.com.
+    ~143 judgments (2017–present). Language: English.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 3
+
+api:
+  type: "html_ssr"
+  base_url: "https://www.adgm.com/adgm-courts/judgments"
+  params:
+    page: "page number (1-indexed)"
+    psize: "items per page (max 50)"
+    sortby: "date#desc or date#asc"
+    filter: "0=all, 97965=Court of Appeal, 97966=CFI"
+  pdf_host: "https://assets.adgm.com"
+  pagination:
+    page_param: "page"
+    page_size_param: "psize"
+    max_page_size: 50
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Unique ID (ADGM-{caseNumber})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case name (parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from judgment PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Judgment date (YYYY-MM-DD)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the judgment PDF"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "case_number"
+      description: "Case number (e.g., ADGMCFI-2022-265)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "neutral_citation"
+      description: "Neutral citation (e.g., [2026] ADGMCFI 0010)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "court"
+      description: "Court name (CFI or Court of Appeal)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "summary_pdf_url"
+      description: "URL to the judgment summary PDF"
+      type: "string"
+      role: "reference"
+      required: false
+
+notes: |
+  - Server-side rendered HTML with custom web components (adgm-table-row/cell)
+  - PDFs hosted on assets.adgm.com, no auth required
+  - ~143 judgments total (12 Court of Appeal, 131 CFI)
+  - Pagination via query params: page, psize (max 50)
+  - English common-law jurisdiction within Abu Dhabi

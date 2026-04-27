@@ -27,7 +27,7 @@ api:
 
 schema:
   key_fields:
-    - name: "number"
+    - name: "report_number"
       description: "CRS report number (e.g., R45770, IF12033)"
       type: "string"
       role: "primary_key"

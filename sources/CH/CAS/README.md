@@ -53,7 +53,9 @@ python bootstrap.py bootstrap --full
 
 ## License
 
-CAS awards are published for public information. The texts are specifically formatted for the jurisprudence database and may be used for legal research purposes.
+> ⚠️ **Commercial use unclear.** CAS awards are published for public information and legal research. Verify terms before commercial redistribution.
+
+[CAS Jurisprudence](https://jurisprudence.tas-cas.org/) — texts are specifically formatted for the jurisprudence database.
 
 ## Notes
 

@@ -1,44 +1,58 @@
-source_id: PA/CorteSuprema
-country: PA
-name: Panama Corte Suprema de Justicia - Jurisprudencia
-description: >
-  Panamanian Supreme Court decisions from the DSpace digital repository.
-  Covers Plenary (Pleno), Chamber (Sala), and Unconstitutionality decisions.
-  Full text pre-extracted by DSpace (TEXT bundle bitstreams).
-url: https://repositoriodigital.organojudicial.gob.pa/
-data_types:
-  - case_law
-auth: none
-license: CC BY 4.0
-
 api:
-  type: dspace_rest
   base_url: https://repositoriodigital.organojudicial.gob.pa/rest
   collections:
-    - uuid: 3b62618c-4933-4f17-986e-5208db9e56de
-      name: "FA. Pleno"
-    - uuid: 6c086157-80d1-4841-9d15-a466cc95a681
-      name: "FB. Sala"
-    - uuid: f8992a6b-881c-4b26-a40b-bd63ffe35031
-      name: "EA. Fallos sobre Inconstitucionalidad"
-    - uuid: de99376f-b275-45f8-94b5-e4debb3c6f1e
-      name: "Compendio de Fallos 2021"
-    - uuid: 76d0ccb0-b136-4df9-a23a-e931445b6166
-      name: "Compendio de Fallos 2022"
-    - uuid: c1600f9f-a68c-4def-bd00-a4614026f29f
-      name: "Compendio de Fallos 2023"
-    - uuid: 49762cf9-4b94-4384-88e2-4d9cbd1ab068
-      name: "Compendio de Fallos 2024"
-    - uuid: 94ec2637-5caa-4703-b165-233bd0371a11
-      name: "Compendio de Fallos 2025"
+  - name: FA. Pleno
+    uuid: 3b62618c-4933-4f17-986e-5208db9e56de
+  - name: FB. Sala
+    uuid: 6c086157-80d1-4841-9d15-a466cc95a681
+  - name: EA. Fallos sobre Inconstitucionalidad
+    uuid: f8992a6b-881c-4b26-a40b-bd63ffe35031
+  - name: Compendio de Fallos 2021
+    uuid: de99376f-b275-45f8-94b5-e4debb3c6f1e
+  - name: Compendio de Fallos 2022
+    uuid: 76d0ccb0-b136-4df9-a23a-e931445b6166
+  - name: Compendio de Fallos 2023
+    uuid: c1600f9f-a68c-4def-bd00-a4614026f29f
+  - name: Compendio de Fallos 2024
+    uuid: 49762cf9-4b94-4384-88e2-4d9cbd1ab068
+  - name: Compendio de Fallos 2025
+    uuid: 94ec2637-5caa-4703-b165-233bd0371a11
+  type: dspace_rest
+auth: none
+country: PA
+data_types:
+- case_law
+description: 'Panamanian Supreme Court decisions from the DSpace digital repository. Covers Plenary (Pleno), Chamber (Sala), and Unconstitutionality decisions. Full text pre-extracted by DSpace (TEXT bundle
+  bitstreams).
 
+  '
+license: CC BY 4.0
+name: Panama Corte Suprema de Justicia - Jurisprudencia
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - collection
-    - magistrado
-    - handle
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: collection
+    required: false
+    type: string
+  - name: magistrado
+    required: false
+    type: string
+  - name: handle
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source_id: PA/CorteSuprema
+url: https://repositoriodigital.organojudicial.gob.pa/

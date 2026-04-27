@@ -195,6 +195,7 @@ def main():
                         help="Only fetch a sample of records")
     parser.add_argument("--since", type=str, default=None,
                         help="Fetch updates since date (ISO 8601)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     SAMPLE_DIR.mkdir(exist_ok=True)

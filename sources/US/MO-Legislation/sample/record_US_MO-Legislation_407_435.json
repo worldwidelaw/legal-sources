@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/407.435",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T01:38:29.097847+00:00",
+  "title": "Missouri Revised Statutes § 407.435 - Card scanner, illegal use of — penalty",
+  "text": "407.435.  Card scanner, illegal use of — penalty. — 1.  A person commits the offense of illegal use of a card scanner if the person:\n  (1)  Directly or indirectly uses a scanning device to access, read, obtain, memorize, or store, temporarily or permanently, information stored in the chip or encoded on the magnetic strip or stripe of a credit card without the permission of the cardholder, the credit card issuer, or a merchant;\n  (2)  Possesses a scanning device with the intent to defraud a cardholder, credit card issuer, or merchant or possesses a scanning device with the knowledge that some other person intends to use the scanning device to defraud a cardholder, credit card issuer, or merchant;\n  (3)  Directly or indirectly uses a reencoder to copy a credit card without the permission of the cardholder of the card from which the information is being reencoded and does so with the intent to defraud the cardholder, the credit card issuer, or a merchant; or\n  (4)  Possesses a reencoder with the intent to defraud a cardholder, credit card issuer, or merchant or possesses a reencoder with the knowledge that some other person intends to use the reencoder to defraud a cardholder, credit card issuer, or merchant.\n  2.  The offense of illegal use of a card scanner is a class D felony.  However, a second or subsequent offense arising from a separate incident is a class C felony.\n(L. 2018 H.B. 1832)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=407.435",
+  "section_id": "407.435",
+  "chapter": "407",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

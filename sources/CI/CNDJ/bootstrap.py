@@ -253,7 +253,7 @@ class CivLIIScraper(BaseScraper):
                     "doc_type": doc_type,
                 }
                 count += 1
-                yield self.normalize(raw)
+                yield raw
 
         logger.info(f"[{doc_type}] Completed: {count} documents fetched")
 
@@ -317,6 +317,7 @@ def main():
         action="store_true",
         help="Only fetch a small sample (for validation)",
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = CivLIIScraper()

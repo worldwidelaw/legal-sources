@@ -149,68 +149,85 @@ class LegalBaseScraper(BaseScraper):
             logger.error(f"API request failed: {e}")
             return {"_data": [], "_page": {}}
 
-    def _stream_all(self) -> Generator[dict, None, None]:
+    def _stream_all(self, seen_ids: Optional[set] = None) -> Generator[dict, None, None]:
         """
         Stream all documents using JSONL endpoint.
 
         This avoids the cursor pagination issues (Issue #229) by using the
         streaming JSONL endpoint which returns all documents line-by-line.
 
-        Uses a long read timeout (30min) since the full stream can take a while
-        for large datasets. The connect timeout is 30s.
+        The stream can drop mid-transfer (ChunkedEncodingError). Callers should
+        retry with seen_ids to skip duplicates.
         """
         url = f"{BASE_URL}{DOCUMENTS_STREAM_ENDPOINT}"
 
         logger.info(f"Starting JSONL stream from {url}")
 
-        try:
-            with requests.get(
-                url,
-                stream=True,
-                timeout=(30, 1800),  # 30s connect, 30min read timeout for full stream
-                headers={
-                    "User-Agent": "Legal-Data-Hunter/1.0",
-                    "Accept": "application/x-ndjson",
-                }
-            ) as resp:
-                resp.raise_for_status()
+        with requests.get(
+            url,
+            stream=True,
+            timeout=(30, 1800),
+            headers={
+                "User-Agent": "Legal-Data-Hunter/1.0",
+                "Accept": "application/x-ndjson",
+            }
+        ) as resp:
+            resp.raise_for_status()
 
-                for line in resp.iter_lines(decode_unicode=True):
-                    if line:
-                        try:
-                            doc = json.loads(line)
-                            yield doc
-                        except json.JSONDecodeError as e:
-                            logger.warning(f"Failed to parse line: {e}")
+            for line in resp.iter_lines(decode_unicode=True):
+                if line:
+                    try:
+                        doc = json.loads(line)
+                        doc_id = doc.get("_id") or doc.get("dokumento_id", "")
+                        if seen_ids is not None and doc_id in seen_ids:
                             continue
-
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Stream request failed: {e}")
-            raise
+                        yield doc
+                    except json.JSONDecodeError as e:
+                        logger.warning(f"Failed to parse line: {e}")
+                        continue
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """
         Yield all documents from the Lithuanian Legal Database.
 
-        Uses JSONL streaming endpoint to avoid cursor pagination issues (Issue #229).
-        The data.gov.lt API returns 500 errors when using cursor pagination with
-        multiple parameters, so we use the :all/:format/jsonl endpoint instead.
+        Uses JSONL streaming endpoint with retry logic — the stream frequently
+        drops with ChunkedEncodingError after ~20K records. On each retry,
+        already-seen IDs are skipped to avoid duplicates.
         """
-        total_fetched = 0
+        max_retries = 5
+        seen_ids: set = set()
+        total_yielded = 0
 
-        try:
-            for doc in self._stream_all():
-                total_fetched += 1
-                if total_fetched % 1000 == 0:
-                    logger.info(f"Streamed {total_fetched} documents...")
-                yield doc
+        for attempt in range(1, max_retries + 1):
+            new_in_attempt = 0
+            try:
+                for doc in self._stream_all(seen_ids=seen_ids):
+                    doc_id = doc.get("_id") or doc.get("dokumento_id", "")
+                    seen_ids.add(doc_id)
+                    new_in_attempt += 1
+                    total_yielded += 1
+                    if total_yielded % 1000 == 0:
+                        logger.info(f"Streamed {total_yielded} documents...")
+                    yield doc
 
-            logger.info(f"Stream complete. Total fetched: {total_fetched}")
+                # Stream completed without error
+                logger.info(f"Stream complete. Total fetched: {total_yielded}")
+                return
 
-        except Exception as e:
-            logger.error(f"Streaming failed after {total_fetched} documents: {e}")
-            # If streaming fails, we can't fall back to pagination (it's broken)
-            raise
+            except (requests.exceptions.ChunkedEncodingError,
+                    requests.exceptions.ConnectionError,
+                    requests.exceptions.RequestException) as e:
+                logger.warning(
+                    f"Stream dropped after {new_in_attempt} new records on attempt {attempt}/{max_retries} "
+                    f"(total so far: {total_yielded}): {e}"
+                )
+                if attempt < max_retries:
+                    import time
+                    time.sleep(5)
+                    logger.info(f"Retrying stream (attempt {attempt + 1}), skipping {len(seen_ids)} already-seen IDs")
+                else:
+                    logger.error(f"All {max_retries} stream attempts exhausted. Got {total_yielded} records total.")
+                    # Don't raise — yield what we have
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """

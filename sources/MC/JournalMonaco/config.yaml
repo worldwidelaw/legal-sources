@@ -1,53 +1,54 @@
-source:
-  id: MC/JournalMonaco
-  name: Journal de Monaco
-  country: MC
-  language: fr
-  url: https://journaldemonaco.gouv.mc
-  data_types:
-    - legislation
-  update_frequency: weekly
-  license: public_domain
-  description: >
-    Official Gazette of the Principality of Monaco (Journal de Monaco).
-    Contains all laws (Lois), sovereign ordinances (Ordonnances Souveraines),
-    ministerial decrees (Arrêtés Ministériels), and other legal acts.
-    Weekly publication since 1858, available in digital format.
-
 fetch:
   base_url: https://journaldemonaco.gouv.mc
-  endpoints:
-    years: /Journaux/{year}
-    issue: /Journaux/{year}/Journal-{issue_number}
-    article: /Journaux/{year}/Journal-{issue_number}/{slug}
-  rate_limit:
-    requests_per_second: 1
-    delay_between_requests: 1.5
-  retry:
-    max_attempts: 3
-    backoff_factor: 2
   categories:
-    - Lois
-    - Ordonnances Souveraines
-    - Ordonnances-Lois
-    - Arrêtés Ministériels
-    - Décisions Souveraines
-    - Décisions Ministérielles
+  - Lois
+  - Ordonnances Souveraines
+  - Ordonnances-Lois
+  - Arrêtés Ministériels
+  - Décisions Souveraines
+  - Décisions Ministérielles
+  endpoints:
+    article: /Journaux/{year}/Journal-{issue_number}/{slug}
+    issue: /Journaux/{year}/Journal-{issue_number}
+    years: /Journaux/{year}
+  rate_limit:
+    delay_between_requests: 1.5
+    requests_per_second: 1
+  retry:
+    backoff_factor: 2
+    max_attempts: 3
   years:
-    start: 2020
     end: 2026
-
+    start: 2020
 schema:
   key_fields:
-    - journal_issue
-    - article_slug
+  - name: journal_issue
+    required: false
+    type: string
+  - name: article_slug
+    required: false
+    type: string
   normalized_fields:
-    _id: "MC-JDM-{journal_issue}-{article_index}"
+    _id: MC-JDM-{journal_issue}-{article_index}
     _source: MC/JournalMonaco
     _type: legislation
-    title: title
-    text: content
-    date: publication_date
-    url: source_url
     category: category
+    date: publication_date
     journal_issue: journal_issue
+    text: content
+    title: title
+    url: source_url
+source:
+  country: MC
+  data_types:
+  - legislation
+  description: 'Official Gazette of the Principality of Monaco (Journal de Monaco). Contains all laws (Lois), sovereign ordinances (Ordonnances Souveraines), ministerial decrees (Arrêtés Ministériels),
+    and other legal acts. Weekly publication since 1858, available in digital format.
+
+    '
+  id: MC/JournalMonaco
+  language: fr
+  license: public_domain
+  name: Journal de Monaco
+  update_frequency: weekly
+  url: https://journaldemonaco.gouv.mc

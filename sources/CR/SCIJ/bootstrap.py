@@ -377,6 +377,7 @@ def main():
         action="store_true",
         help="Only fetch a small sample (for validation)",
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = CostaRicaSCIJScraper()
@@ -386,39 +387,11 @@ def main():
         sys.exit(0 if success else 1)
 
     elif args.command in ("bootstrap", "update"):
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        if args.sample:
-            # Use known-good sample IDs for quick validation
-            max_records = 15
-            ids_to_try = SAMPLE_IDS
-        else:
-            max_records = None
-            ids_to_try = range(1, MAX_ID + 1)
-
-        count = 0
-        for norm_id in ids_to_try:
-            raw = scraper._fetch_document(norm_id)
-            if raw is None:
-                continue
-
-            record = scraper.normalize(raw)
-            out_path = sample_dir / f"{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-
-            text_len = len(record.get("text", ""))
-            logger.info(
-                f"[{count + 1}] ID {norm_id}: {record.get('title', 'unknown')[:80]} "
-                f"({text_len:,} chars)"
-            )
-
-            count += 1
-            if max_records and count >= max_records:
-                break
-
-        logger.info(f"Bootstrap complete: {count} records saved to {sample_dir}")
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+        fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
+        logger.info(f"Bootstrap complete: {fetched} records — {stats}")
+        if fetched == 0:
+            sys.exit(1)
 
 
 if __name__ == "__main__":

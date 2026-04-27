@@ -1,0 +1,80 @@
+# ===================================================================
+# AE/ADGM-Legislation -- ADGM Legal Framework (Courts & Abu Dhabi)
+# ===================================================================
+# Direct PDF downloads from assets.adgm.com for courts regulations,
+# rules, procedure rules, practice directions, and Abu Dhabi founding
+# laws. No authentication required.
+#
+# Note: Commercial and FSRA regulations are only on Thomson Reuters
+# portal (en.adgm.thomsonreuters.com) which uses AWS WAF.
+# ===================================================================
+
+source:
+  id: "AE/ADGM-Legislation"
+  country: "AE"
+  name: "ADGM Legal Framework"
+  url: "https://www.adgm.com/legal-framework"
+  description: |
+    Abu Dhabi Global Market (ADGM) legislation — courts regulations,
+    rules, procedure rules, practice directions, guidance notes, and
+    Abu Dhabi founding laws. PDFs hosted on assets.adgm.com.
+    ~60 documents. Language: English.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 3
+
+api:
+  type: "html_ssr"
+  pages:
+    - "https://www.adgm.com/adgm-courts/legislation-and-procedures"
+    - "https://www.adgm.com/legal-framework/abu-dhabi-legislation"
+  pdf_host: "https://assets.adgm.com"
+
+data_model:
+  type: "legislation"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Unique ID derived from PDF filename"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title derived from filename"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "url"
+      description: "PDF download URL"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "category"
+      description: "Category (courts_regulation, courts_rules, practice_direction, abu_dhabi_law)"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - 57 PDFs from courts legislation page + 3 from Abu Dhabi legislation
+  - Commercial and FSRA legislation only on Thomson Reuters (WAF-blocked)
+  - PDF filenames are descriptive and serve as document titles
+  - English common-law jurisdiction within Abu Dhabi

@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/115.467",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T19:26:39.960255+00:00",
+  "title": "Missouri Revised Statutes § 115.467 - Duties of judges after polls close (electronic voting)",
+  "text": "115.467.  Duties of judges after polls close (electronic voting). — 1.  As soon as the polls close in each polling place using an electronic voting system, the election judges shall secure the marking devices against further voting and begin to count the write-in votes.  If earlier counting of write-in votes is begun pursuant to section 115.469, the election judges shall complete the count in the manner provided in this section.  Once begun, the count shall not be adjourned or postponed until all proper write-in votes in the ballot box have been counted.\n  2.  The election judges shall remove the ballot cards from the ballot box and separate the ballots with write-in votes from those without write-in votes.  If there is a separate form for write-in votes, all forms on which write-in votes have been recorded shall be consecutively numbered, starting with the number one, and the same number shall be placed on the ballot card of the voter.  Where tallying of write-in votes is to be done at the polling place, the election judges shall compare the write-in votes with the votes cast on the ballot card.  If the total number of votes including write-in votes for any office exceeds the number allowed by law, or if a voter has voted more than once for the same person for the same office at the same election, a notation of the fact shall be noted on the back of the ballot card, and it shall be returned with the write-in form, if any, to the counting location in an envelope marked \"DEFECTIVE BALLOTS\".\n  3.  All proper write-in votes shall be read, recorded and counted as provided in sections 115.449 and 115.453.  No write-in vote shall be counted for any candidate for any office whose name appears on the ballot label as a candidate for the office, except when more than one person is to be nominated or elected to an office.  When more than one person is to be nominated or elected to an office, the voter may write in the names of one or more persons whose names do not appear on the ballot label with or without the names of one or more persons whose names do appear.\n  4.  If any ballot card is damaged so that it cannot properly be counted by the automatic tabulating equipment, the fact shall be noted on the back of the ballot card and it shall be returned to the counting location in the envelope marked \"DEFECTIVE BALLOTS\".\n(L. 1977 H.B. 101 § 12.050, A.L. 1978 S.B. 582)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=115.467",
+  "section_id": "115.467",
+  "chapter": "115",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

@@ -1,22 +1,32 @@
-source_id: US/NV-Legislation
-name: Nevada Revised Statutes
-country: US
-data_types:
-  - legislation
-url: https://www.leg.state.nv.us/nrs/
 auth:
   type: none
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - section_number
-    - chapter
-
+country: US
+data_types:
+- legislation
 fetch:
   base_url: https://nevada.public.law
-  sitemap_url: https://nevada.public.law/sitemaps/sitemap.xml.gz
   delay: 1.5
+  sitemap_url: https://nevada.public.law/sitemaps/sitemap.xml.gz
+name: Nevada Revised Statutes
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: section_number
+    required: false
+    type: string
+  - name: chapter
+    required: false
+    type: string
+source_id: US/NV-Legislation
+url: https://www.leg.state.nv.us/nrs/

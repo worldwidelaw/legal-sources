@@ -464,6 +464,7 @@ def main():
         type=str,
         help="Fetch records since date (YYYY-MM-DD)",
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

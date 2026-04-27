@@ -52,6 +52,10 @@ python bootstrap.py update
 - 1,336 pages of search results (as of 2026)
 - Average document length: 5,000-20,000 characters
 
+## License
+
+Public government data — Italian Data Protection Authority official publications. No formal open data license specified; reuse is generally permitted for public government information.
+
 ## Rate Limiting
 
 - 0.5 requests per second (2 second delay)

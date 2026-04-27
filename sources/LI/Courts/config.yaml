@@ -1,15 +1,23 @@
-source_id: LI/Courts
-name: Liechtenstein Courts Decisions
-country: LI
-url: https://www.gerichtsentscheide.li/
-data_types:
-  - case_law
-language: deu
 auth: none
+country: LI
+data_types:
+- case_law
+language: deu
+name: Liechtenstein Courts Decisions
 schedule: weekly
 schema:
   key_fields:
-    - _id
-    - case_number
-    - court
-    - date
+  - name: _id
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+source_id: LI/Courts
+url: https://www.gerichtsentscheide.li/

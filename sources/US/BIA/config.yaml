@@ -1,13 +1,19 @@
-source_id: US/BIA
-name: US Board of Immigration Appeals Decisions
 country: US
-url: https://www.justice.gov/eoir/board-of-immigration-appeals-decisions
 data_types:
-  - case_law
+- case_law
 language: en
+name: US Board of Immigration Appeals Decisions
 schedule: monthly
 schema:
   key_fields:
-    - _id
-    - volume
-    - decision_number
+  - name: _id
+    required: true
+    type: string
+  - name: volume
+    required: false
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+source_id: US/BIA
+url: https://www.justice.gov/eoir/board-of-immigration-appeals-decisions

@@ -276,7 +276,7 @@ class DCLegislationScraper(BaseScraper):
                 xml_text = self._get(f"{RAW_BASE}/{full_path}")
                 raw = self.parse_section_xml(xml_text, title_num)
                 if raw:
-                    yield self.normalize(raw)
+                    yield raw
                     total += 1
                     if total % 500 == 0:
                         logger.info(f"  Progress: {total} sections fetched")
@@ -306,7 +306,7 @@ class DCLegislationScraper(BaseScraper):
                 xml_text = self._get(f"{RAW_BASE}/{full_path}")
                 raw = self.parse_section_xml(xml_text, title_num)
                 if raw:
-                    yield self.normalize(raw)
+                    yield raw
                     count += 1
                     title_counts[title_num] = tc + 1
             except Exception as e:
@@ -325,6 +325,7 @@ def main():
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = DCLegislationScraper()

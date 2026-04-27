@@ -64,7 +64,7 @@ schema:
       description: "Ruling date (ISO 8601)"
       type: "date"
       role: "temporal_key"
-      required: true
+      required: false
     - name: "url"
       description: "URL to ruling on kfs.go.jp"
       type: "string"

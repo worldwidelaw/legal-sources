@@ -1,41 +1,38 @@
-# DK/KFST - Danish Competition and Consumer Authority (Konkurrence- og Forbrugerstyrelsen)
-# Competition decisions and merger control rulings
-
-source:
-  id: DK/KFST
-  name: Danish Competition and Consumer Authority
-  name_da: Konkurrence- og Forbrugerstyrelsen
-  country: DK
-  url: https://kfst.dk
-  data_types:
-    - doctrine
-  coverage: 2024-present  # Starting with recent decisions
-  language: da
-  license: public_domain  # Danish government publication
-
 api:
-  type: sitemap_scraper
   base_url: https://kfst.dk
-  sitemap_url: https://kfst.dk/sitemap
   decision_url_pattern: /konkurrenceforhold/afgoerelser/afgoerelser-paa-konkurrenceomraadet/raads-og-styrelsesafgoerelser/
-
+  sitemap_url: https://kfst.dk/sitemap
+  type: sitemap_scraper
 auth:
   type: none
-
 rate_limit:
-  requests_per_second: 1
   burst: 3
-
+  requests_per_second: 1
 schema:
   key_fields:
-    - case_number
-    - date
+  - name: case_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
   required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  country: DK
+  coverage: 2024-present
+  data_types:
+  - doctrine
+  id: DK/KFST
+  language: da
+  license: public_domain
+  name: Danish Competition and Consumer Authority
+  name_da: Konkurrence- og Forbrugerstyrelsen
+  url: https://kfst.dk

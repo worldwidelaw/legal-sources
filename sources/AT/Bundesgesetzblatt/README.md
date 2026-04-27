@@ -72,3 +72,7 @@ python bootstrap.py update
 - **AT/Bundesgesetzblatt (BgblAuth)**: Authentic gazette - original text as published, immutable record of what was enacted
 
 Use BGBl for legal citation and historical research. Use consolidated law for current legal state.
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Austrian Open Government Data.

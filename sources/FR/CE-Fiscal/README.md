@@ -29,3 +29,7 @@ python bootstrap.py updates --since 2025-01-01   # Incremental
 - **Type**: case_law (fiscal/tax)
 - **Format**: XML with full text
 - **License**: Licence Ouverte / Open Licence
+
+## License
+
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

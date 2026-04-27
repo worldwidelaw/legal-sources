@@ -40,4 +40,4 @@ python bootstrap.py bootstrap            # Full pull (260K+ records)
 
 ## License
 
-Open data from the UN Office of the High Commissioner for Human Rights.
+[UN Terms of Use](https://www.un.org/en/about-us/terms-of-use) — open data from the UN Office of the High Commissioner for Human Rights.

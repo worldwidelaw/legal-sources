@@ -414,6 +414,7 @@ def main():
                        help='Number of concurrent workers for bootstrap-fast')
     parser.add_argument('--since', type=str,
                        help='Fetch updates since date (YYYY-MM-DD)')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

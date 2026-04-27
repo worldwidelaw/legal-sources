@@ -51,4 +51,4 @@ python bootstrap.py update
 
 ## License
 
-Italian public sector information - CC0 1.0 Universal (Public Domain Dedication)
+[CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) — public domain, no restrictions.

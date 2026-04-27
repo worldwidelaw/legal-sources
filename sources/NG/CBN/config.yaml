@@ -1,0 +1,43 @@
+id: NG/CBN
+name: Central Bank of Nigeria Circulars
+country: NG
+url: https://www.cbn.gov.ng/documents/circulars.html
+description: >
+  Central Bank of Nigeria regulatory circulars, guidelines, and policy documents.
+  Fetched via JSON API (/api/GetAllCirculars). Full text extracted from PDF documents.
+  Covers banking supervision, monetary policy, trade & exchange, financial markets,
+  development finance, payments systems, and AML/CFT circulars.
+data_types:
+  - doctrine
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true

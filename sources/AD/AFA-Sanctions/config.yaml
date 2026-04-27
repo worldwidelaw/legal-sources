@@ -1,0 +1,44 @@
+source:
+  id: AD/AFA-Sanctions
+  name: Andorra Financial Authority Sanctions
+  country: AD
+  url: https://www.afa.ad/en/entitats-supervisades/sancions-a-entitats-supervisades
+  description: >
+    Sanctions imposed by the Andorra Financial Authority (AFA) on supervised
+    entities and individuals. Published per Article 22. ~15 sanctions covering
+    serious/very serious infringements. Plone CMS, HTML scraping.
+
+data_model:
+  types:
+    - doctrine
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: status
+      type: string
+      required: false
+
+schedule:
+  full_refresh: monthly
+  update_check: weekly

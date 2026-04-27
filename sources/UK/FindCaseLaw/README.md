@@ -21,6 +21,10 @@ Covers UKSC, EWCA, EWHC, and tribunals. Full text in Akoma Ntoso XML.
 - Akoma Ntoso (LegalDocML) format
 - Rate limit: 1,000 requests per 5-minute window
 
+## License
+
+[Open Justice Licence](https://caselaw.nationalarchives.gov.uk/open-justice-licence) — open access to court judgments.
+
 ## Usage
 
 ```bash

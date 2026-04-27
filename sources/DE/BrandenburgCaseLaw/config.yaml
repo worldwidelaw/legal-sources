@@ -1,0 +1,62 @@
+source_id: DE/BrandenburgCaseLaw
+name: Brandenburg State Court Decisions
+description: Brandenburg court decisions from gerichtsentscheidungen.brandenburg.de
+url: https://gerichtsentscheidungen.brandenburg.de
+country: DE
+jurisdiction: Brandenburg
+data_types:
+  - case_law
+
+access:
+  type: html_scraping
+  rate_limit: 0.5/s
+  auth: none
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: doc_id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: court
+      type: string
+      required: false
+    - name: case_number
+      type: string
+      required: false
+    - name: ecli
+      type: string
+      required: false
+    - name: decision_type
+      type: string
+      required: false
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: false
+  text_field: text
+  date_field: date
+  title_field: title
+
+update:
+  frequency: weekly
+  method: fetch_updates
+
+license:
+  type: public_domain
+  notes: German official works (§ 5 UrhG) - public domain
+
+notes: |
+  Brandenburg state court decisions from the official Entscheidungsdatenbank.
+  ~25K decisions from 30+ courts (OLG, OVG, LG, VG, AG, ArbG, SG, FG, etc.).
+  HTML scraping with paginated search and individual decision detail pages.

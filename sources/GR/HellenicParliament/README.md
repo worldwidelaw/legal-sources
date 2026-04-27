@@ -41,6 +41,10 @@ python bootstrap.py bootstrap --sample # Fetch 15 sample records
 python bootstrap.py bootstrap          # Full dataset download (~47K records)
 ```
 
+## License
+
+Public domain — Greek legislation from the Raptarchis Code, available via [HuggingFace](https://huggingface.co/datasets/AI-team-UoA/greek_legal_code) as open data.
+
 ## Dependencies
 
 - `pandas` (for parquet reading)

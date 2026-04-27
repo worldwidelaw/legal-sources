@@ -1,0 +1,35 @@
+source:
+  id: HK/SFAT
+  name: Hong Kong Securities and Futures Appeals Tribunal
+  country: HK
+  url: https://www.sfat.gov.hk/
+  data_types:
+    - case_law
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: case_number
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - case_number
+    - document_type

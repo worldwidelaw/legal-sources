@@ -1,33 +1,39 @@
-source_id: IN/eGazette
-name: Gazette of India (egazette.gov.in)
-country: IN
-url: https://egazette.gov.in/
-data_types:
-  - legislation
-
 auth:
   type: none
-
+country: IN
+data_types:
+- legislation
 endpoints:
-  search: https://archive.org/advancedsearch.php
-  metadata: https://archive.org/metadata/{identifier}
   download: https://archive.org/download/{identifier}/{filename}
+  metadata: https://archive.org/metadata/{identifier}
+  search: https://archive.org/advancedsearch.php
+license: Public Domain (Government of India)
+name: Gazette of India (egazette.gov.in)
+notes: 'Gazette of India — official government notifications, Acts, ordinances,
 
+  rules, appointments, etc. Data sourced from Internet Archive''s
+
+  "gazetteofindia" collection (~736K items) maintained by Public.Resource.Org.
+
+  Pre-extracted OCR full text available as _djvu.txt files.
+
+  '
 rate_limit:
-  requests_per_second: 1
   delay_between_requests: 1.0
-
+  requests_per_second: 1
 schema:
   key_fields:
-    - _id
-    - gazette_type
-    - date
-    - gazette_number
-
-license: Public Domain (Government of India)
-
-notes: |
-  Gazette of India — official government notifications, Acts, ordinances,
-  rules, appointments, etc. Data sourced from Internet Archive's
-  "gazetteofindia" collection (~736K items) maintained by Public.Resource.Org.
-  Pre-extracted OCR full text available as _djvu.txt files.
+  - name: _id
+    required: true
+    type: string
+  - name: gazette_type
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: gazette_number
+    required: false
+    type: string
+source_id: IN/eGazette
+url: https://egazette.gov.in/

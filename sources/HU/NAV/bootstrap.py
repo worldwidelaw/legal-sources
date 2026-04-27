@@ -235,6 +235,7 @@ def main():
                         help='Fetch sample data only')
     parser.add_argument('--since', type=str, help='Fetch updates since date')
     parser.add_argument('--output', type=str, help='Output directory')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     output_dir = args.output or str(Path(__file__).parent / 'sample')

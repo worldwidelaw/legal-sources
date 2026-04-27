@@ -1,37 +1,46 @@
-name: Chilean SII Tax Oficios (Administrative Rulings)
-source_id: CL/SII-Oficios
 country: CL
 data_types:
-  - doctrine
-
-url: https://www.sii.cl/normativa_legislacion/jurisprudencia_702.html
+- doctrine
 license: Public domain (Chilean government open data)
-update_frequency: weekly
+name: Chilean SII Tax Oficios (Administrative Rulings)
+notes: 'SII (Servicio de Impuestos Internos) Oficios Ordinarios:
 
+  - Official tax interpretations responding to taxpayer queries
+
+  - Categories: RENTA (income tax), IVA (value added tax), OTRAS (other)
+
+  - JSON API at www3.sii.cl/getPublicacionesCTByMateria for listing
+
+  - PDF download at www4.sii.cl/gabineteAdmInternet/descargaArchivo
+
+  - ~2,000+ oficios from 2019-2026
+
+  - Full text extracted from PDF via pdfplumber
+
+  '
 rate_limit:
-  requests_per_second: 1
   burst: 2
-
+  requests_per_second: 1
 schema:
   key_fields:
-    - _id
-    - oficio_number
-    - date
+  - name: _id
+    required: true
+    type: string
+  - name: oficio_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
   required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
-notes: |
-  SII (Servicio de Impuestos Internos) Oficios Ordinarios:
-  - Official tax interpretations responding to taxpayer queries
-  - Categories: RENTA (income tax), IVA (value added tax), OTRAS (other)
-  - JSON API at www3.sii.cl/getPublicacionesCTByMateria for listing
-  - PDF download at www4.sii.cl/gabineteAdmInternet/descargaArchivo
-  - ~2,000+ oficios from 2019-2026
-  - Full text extracted from PDF via pdfplumber
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source_id: CL/SII-Oficios
+update_frequency: weekly
+url: https://www.sii.cl/normativa_legislacion/jurisprudencia_702.html

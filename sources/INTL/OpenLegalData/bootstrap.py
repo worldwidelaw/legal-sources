@@ -213,6 +213,7 @@ def main():
     bp = subparsers.add_parser("bootstrap", help="Full initial fetch")
     bp.add_argument("--sample", action="store_true", help="Fetch sample records only")
     bp.add_argument("--sample-size", type=int, default=15, help="Number of sample records")
+    bp.add_argument("--full", action="store_true", help="Fetch all records")
 
     subparsers.add_parser("update", help="Incremental update")
     subparsers.add_parser("test", help="Quick connectivity test")

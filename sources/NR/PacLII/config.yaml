@@ -1,0 +1,64 @@
+# ===================================================================
+# NR/PacLII -- Nauru Court Decisions (PacLII)
+# ===================================================================
+# HTML scraping of PacLII Nauru case law databases.
+# Full text in HTML pages for all court decisions.
+# ===================================================================
+
+source:
+  id: "NR/PacLII"
+  country: "NR"
+  name: "Nauru Court Decisions (PacLII)"
+  url: "https://www.paclii.org/nr/"
+  description: |
+    Nauru court decisions via PacLII. Covers 5 courts: Supreme Court (NRSC),
+    District Court (NRDC), Court of Appeal (NRCA), Public Service Appeal Board
+    (NRPSAB), and High Court of Australia - Nauru (NRHCA). ~1,550 decisions
+    from 1969 to present. Full text in HTML.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "2-second delay between requests. Browser User-Agent required."
+
+api:
+  type: "scraping"
+  base_url: "https://www.paclii.org"
+  endpoints:
+    cases: "/nr/cases/{court}/{year}/"
+  response_format: "html"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "_id"
+      description: "Unique document ID from URL path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Document URL on PacLII"
+      type: "string"
+      role: "reference"
+      required: true

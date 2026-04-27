@@ -1,43 +1,53 @@
-source_id: CZ/ConstitutionalCourt
-name: Czech Constitutional Court (Ústavní soud)
 country: CZ
-language: cs
 data_types:
-  - caselaw
-
+- caselaw
 endpoints:
-  nalus_search: https://nalus.usoud.cz/Search/Search.aspx
   nalus_gettext: https://nalus.usoud.cz/Search/GetText.aspx
+  nalus_search: https://nalus.usoud.cz/Search/Search.aspx
   official_site: https://www.usoud.cz/en/decisions
-
-license: Open access (no explicit license, public government data)
-
-schema:
-  key_fields:
-    - _id
-    - ecli
-    - case_reference
-  content_fields:
-    - text
-  date_fields:
-    - date
-    - _fetched_at
-
 fetcher:
   class: ConstitutionalCourtFetcher
   module: bootstrap
-  rate_limit: 1.0  # seconds between requests
+  rate_limit: 1.0
+language: cs
+license: Open access (no explicit license, public government data)
+name: Czech Constitutional Court (Ústavní soud)
+notes: 'The Czech Constitutional Court publishes decisions through the NALUS database.
 
-notes: |
-  The Czech Constitutional Court publishes decisions through the NALUS database.
   Full text access is available via GetText.aspx endpoint using case reference numbers.
 
+
   Case reference format: {senate}-{number}-{year}
+
   - Senate: 1-4 (I-IV), Pl (Plenum)
+
   - Number: case number within year
+
   - Year: last 2 digits (e.g., 24 for 2024)
+
 
   ECLI format: ECLI:CZ:US:{year}:{senate}.US.{number}.{year}.{ordinal}
 
+
   The database contains decisions from 1993 onwards, with approximately
+
   70,000+ decisions available as of 2024.
+
+  '
+schema:
+  content_fields:
+  - text
+  date_fields:
+  - date
+  - _fetched_at
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: ecli
+    required: false
+    type: string
+  - name: case_reference
+    required: false
+    type: string
+source_id: CZ/ConstitutionalCourt

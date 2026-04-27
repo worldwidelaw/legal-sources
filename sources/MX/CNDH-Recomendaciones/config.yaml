@@ -1,0 +1,79 @@
+# ===================================================================
+# MX/CNDH-Recomendaciones -- Mexico CNDH Human Rights Recommendations
+# ===================================================================
+# The Comisión Nacional de los Derechos Humanos (CNDH) publishes
+# recommendations, general recommendations, serious violations reports,
+# torture prevention reports, and unconstitutionality actions.
+# ~5,000 documents from 1990 to present, accessed via REST API.
+# ===================================================================
+
+source:
+  id: "MX/CNDH-Recomendaciones"
+  country: "MX"
+  name: "Mexico CNDH Human Rights Recommendations"
+  url: "https://www.cndh.org.mx/tipo/1/recomendacion"
+  description: |
+    Mexico's National Human Rights Commission (CNDH) recommendations,
+    including regular recommendations, serious violations, general
+    recommendations, torture prevention reports, and unconstitutionality
+    actions. ~5,000 documents from 1990 to present with PDF full text.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "rest"
+  base_url: "https://apiportal.cndh.org.mx/api"
+  endpoints:
+    listing: "/Seccion/paginacion?Tipo={tipo}&idPagina={page}&numPagina=10"
+  response_format: "json"
+
+data_model:
+  type: "doctrine"
+  primary_key: "document_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "document_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "_id"
+      description: "Unique document identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Recommendation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the recommendation (PDF extracted)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year of the recommendation"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the PDF document"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "category"
+      description: "Category (Resoluciones, ResolucionesVG, etc.)"
+    - name: "authority"
+      description: "Responsible authority"
+    - name: "description"
+      description: "Summary description"

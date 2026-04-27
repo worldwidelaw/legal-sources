@@ -3,7 +3,7 @@
 **Source:** Tribunal Constitucional de Portugal
 **URL:** https://www.tribunalconstitucional.pt
 **Data Type:** Case Law
-**License:** Public (Open Government Data)
+**License:** [Open Government Data](https://dados.gov.pt) (public, free for reuse)
 **Language:** Portuguese
 
 ## Overview
@@ -74,6 +74,10 @@ python bootstrap.py update
 - Full text extracted from `div.textoacordao` element
 - HTML entities decoded and tags stripped for clean text
 - Binary search used to efficiently find decision ranges per year
+
+## License
+
+[Open Government Data](https://dados.gov.pt) — Portuguese court decisions, public and free for reuse.
 
 ## Search Interface
 

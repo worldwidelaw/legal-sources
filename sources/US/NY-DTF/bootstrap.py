@@ -435,7 +435,7 @@ class NYDTFScraper(BaseScraper):
             for op_info in opinions:
                 raw = self.fetch_opinion(op_info)
                 if raw and raw.get("text"):
-                    yield self.normalize(raw)
+                    yield raw
                     total += 1
                     if total % 50 == 0:
                         logger.info(f"  Progress: {total} opinions fetched")

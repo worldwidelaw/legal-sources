@@ -1,42 +1,51 @@
-id: IS/SupremeCourt
-name: Icelandic Supreme Court (Hæstiréttur)
-country: IS
-language: isl
-data_types:
-  - caselaw
-license: Public Domain
-url: https://www.haestirettur.is/domar/
-fetch_method: html_scrape
 auth: none
-rate_limit: 1.5s
+country: IS
+data_types:
+- caselaw
+fetch_method: html_scrape
+id: IS/SupremeCourt
+language: isl
+license: Public Domain
+name: Icelandic Supreme Court (Hæstiréttur)
+notes: 'The Icelandic Supreme Court (Hæstiréttur Íslands) publishes its decisions
 
-schema:
-  key_fields:
-    - _id
-    - case_number
-    - date
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-  optional_fields:
-    - court
-    - uuid
-    - keywords
-    - appellants
-    - plaintiffs
-    - summary
-    - language
-
-notes: |
-  The Icelandic Supreme Court (Hæstiréttur Íslands) publishes its decisions
   online at haestirettur.is. Decisions are available in HTML format with
+
   full text, keywords, and party information.
 
+
   robots.txt blocks /domar* paths but pages are publicly accessible.
+
   We use a 1.5 second delay between requests to be respectful.
+
+  '
+rate_limit: 1.5s
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  optional_fields:
+  - court
+  - uuid
+  - keywords
+  - appellants
+  - plaintiffs
+  - summary
+  - language
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+url: https://www.haestirettur.is/domar/

@@ -41,7 +41,7 @@ data_model:
 schema:
   total_fields: 9
   key_fields:
-    - name: "decision_id"
+    - name: "_id"
       description: "Juricaf decision identifier"
       type: "string"
       role: "primary_key"

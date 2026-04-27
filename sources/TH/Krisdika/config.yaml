@@ -1,17 +1,36 @@
-source:
-  id: TH/Krisdika
-  name: Office of the Council of State (Krisdika) Thai Laws
-  country: TH
-  url: https://huggingface.co/datasets/pythainlp/thailaw
-  data_types:
-    - legislation
-  auth: none
-  license: CC0 1.0
-  rate_limit: 0
+source_id: TH/Krisdika
+name: Office of the Council of State (Krisdika) Thai Laws
+country: TH
+url: https://huggingface.co/datasets/pythainlp/thailaw
+description: |
+  Thai legislation from the pythainlp/thailaw HuggingFace dataset.
+  Coverage: 42,755 Acts, Royal Decrees, Ministerial Regulations, and ordinances.
+  Source: Office of the Council of State (Krisdika), Thailand.
+
+data_types:
+  - legislation
+
+license: CC0 1.0
+language: th
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+update_frequency: quarterly
 
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - sysid
+    - name: sysid
+      required: true
+      type: string
+    - name: title
+      required: true
+      type: string
+  date_field: date
+  text_field: text
+  title_field: title
+  url_field: url

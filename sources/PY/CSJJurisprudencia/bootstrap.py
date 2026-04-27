@@ -246,10 +246,6 @@ def normalize(raw: dict, pdf_text: str) -> dict:
 
 def fetch_all(sample: bool = False) -> Generator[dict, None, None]:
     """Fetch all decisions, optionally limited to sample size."""
-    if PyPDF2 is None:
-        logger.error("PyPDF2 is required for PDF text extraction. Install: pip3 install PyPDF2")
-        return
-
     csj = CSJSession()
     total_yielded = 0
     sample_limit = 15 if sample else None
@@ -354,12 +350,9 @@ def test_api():
         pdf_bytes = csj.fetch_document_pdf(codigo)
         logger.info(f"PDF downloaded: {len(pdf_bytes)} bytes")
 
-        if PyPDF2:
-            text = extract_pdf_text(pdf_bytes)
-            logger.info(f"Extracted text: {len(text)} chars")
-            logger.info(f"Preview: {text[:200]}...")
-        else:
-            logger.warning("PyPDF2 not installed, cannot test text extraction")
+        text = extract_pdf_text(pdf_bytes)
+        logger.info(f"Extracted text: {len(text)} chars")
+        logger.info(f"Preview: {text[:200]}...")
 
     logger.info("API test passed!")
     return True
@@ -390,6 +383,7 @@ def main():
                         help="Command to run")
     parser.add_argument("--sample", action="store_true",
                         help="Only fetch a small sample for validation")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     if args.command == "test-api":

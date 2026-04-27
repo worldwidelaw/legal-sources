@@ -72,4 +72,4 @@ Each normalized record contains:
 
 ## License
 
-Public government data. Original content is published by the Azerbaijan Constitutional Court.
+[Public Government Data](https://www.constcourt.gov.az) — official decisions published by the Constitutional Court of the Republic of Azerbaijan.

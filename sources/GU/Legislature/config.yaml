@@ -1,0 +1,27 @@
+auth: none
+country: GU
+data_types:
+- legislation
+name: Guam Legislature Public Laws
+notes: 'Public laws from 34th-38th Guam Legislature via WordPress REST API + PDF download
+  from guamlegislature.gov and archives.guamlegislature.gov.'
+schedule: monthly
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: law_number
+    required: true
+    type: string
+  - name: legislature_number
+    required: true
+    type: integer
+  - name: bill_number
+    required: false
+    type: string
+  - name: signed_date
+    required: false
+    type: string
+source_id: GU/Legislature
+url: https://guamlegislature.gov/public-laws/

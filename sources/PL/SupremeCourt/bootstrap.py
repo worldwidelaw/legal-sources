@@ -549,6 +549,7 @@ def main():
         action="store_true",
         help="Clear checkpoint before starting bootstrap",
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

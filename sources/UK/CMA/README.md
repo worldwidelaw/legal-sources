@@ -45,6 +45,10 @@ python bootstrap.py bootstrap --sample
 python bootstrap.py bootstrap --sample --count 30
 ```
 
+## License
+
+[Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) — free reuse with attribution.
+
 ## API Details
 
 1. **Search API** (`/api/search.json`): Lists cases with filtering

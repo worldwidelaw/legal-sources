@@ -1,0 +1,77 @@
+# ===================================================================
+# IM/TaxTribunal -- Isle of Man Income Tax Division Determinations
+# ===================================================================
+# Practice Notes and Guidance Notes from the IoM Income Tax Division.
+# ~236 Practice Notes (PN series, 1994-present) and ~52 Guidance Notes.
+# All documents are PDFs hosted on gov.im/media/.
+# No authentication required. Listing pages are standard HTML.
+# ===================================================================
+
+source:
+  id: "IM/TaxTribunal"
+  country: "IM"
+  name: "Isle of Man Income Tax Division Determinations"
+  url: "https://www.gov.im/categories/tax-vat-and-your-money/income-tax-and-national-insurance/"
+  description: |
+    Practice Notes and Guidance Notes from the Isle of Man Income Tax Division.
+    Practice Notes cover tax policy changes, budget measures, NI contributions,
+    and procedural updates. Guidance Notes provide taxpayer guidance on returns,
+    assessments, self-employment, and specific topics.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "pdf_download"
+  base_url: "https://www.gov.im"
+  endpoints:
+    practice_notes: "/categories/tax-vat-and-your-money/income-tax-and-national-insurance/tax-practitioners-and-technical-information/practice-notes/"
+    guidance_notes: "/categories/tax-vat-and-your-money/income-tax-and-national-insurance/tax-practitioners-and-technical-information/guidance-notes/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document identifier (e.g., pn-225-25)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Title of the practice/guidance note"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the PDF document"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "doc_type"
+      description: "Type: practice_note or guidance_note"
+    - name: "note_number"
+      description: "Note identifier (e.g., PN 225/25, GN 1)"

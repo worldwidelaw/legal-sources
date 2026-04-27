@@ -32,3 +32,7 @@ python bootstrap.py update 2026-01-01    # Incremental update
 - API intermittently returns 500 errors (reCAPTCHA validation); retries handle this
 - `salaId` filter parameter is ignored by API; pagination covers all records across all salas
 - PDF extraction requires pdfminer.six (`pip install pdfminer.six`)
+
+## License
+
+[Open Government Data](https://www.cortenacional.gob.ec) — official decisions published by the National Court of Justice of Ecuador.

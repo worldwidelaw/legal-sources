@@ -78,6 +78,10 @@ python bootstrap.py bootstrap
 python bootstrap.py update
 ```
 
+## License
+
+Open government data — publicly accessible court decisions.
+
 ## Schema
 
 | Field | Description |

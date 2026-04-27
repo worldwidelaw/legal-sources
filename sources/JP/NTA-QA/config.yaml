@@ -21,7 +21,7 @@ source:
 
 schema:
   key_fields:
-    - name: path
+    - name: "_id"
       type: string
       required: true
     - name: text

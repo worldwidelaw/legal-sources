@@ -1,23 +1,33 @@
-source:
-  id: PT/AdC
-  name: Portuguese Competition Authority (AdC)
-  country: PT
-  url: https://www.concorrencia.pt
-  data_types:
-    - doctrine
-  auth: none
-  schedule: weekly
-  description: >
-    Competition decisions, communications, and working papers from the Portuguese
-    Competition Authority (Autoridade da Concorrência). Covers merger decisions
-    (CCENT), antitrust cases (PRC), studies, and press releases. Data accessed
-    via Drupal JSON:API at concorrencia.pt/jsonapi.
-
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - url
-    - doc_type
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: doc_type
+    required: false
+    type: string
+source:
+  auth: none
+  country: PT
+  data_types:
+  - doctrine
+  description: 'Competition decisions, communications, and working papers from the Portuguese Competition Authority (Autoridade da Concorrência). Covers merger decisions (CCENT), antitrust cases (PRC),
+    studies, and press releases. Data accessed via Drupal JSON:API at concorrencia.pt/jsonapi.
+
+    '
+  id: PT/AdC
+  name: Portuguese Competition Authority (AdC)
+  schedule: weekly
+  url: https://www.concorrencia.pt

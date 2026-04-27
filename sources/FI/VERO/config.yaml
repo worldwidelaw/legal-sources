@@ -1,28 +1,40 @@
-source:
-  id: "FI/VERO"
-  country: "FI"
-  name: "Finnish Tax Administration (Vero)"
-  description: "Tax guidance, preliminary rulings, decisions, and statements from Verohallinto"
-  url: "https://www.vero.fi"
-  data_types:
-    - doctrine
-
+api:
+  auth: none
+  endpoints:
+    base: https://www.vero.fi/syventavat-vero-ohjeet/
+    sitemap: https://www.vero.fi/sitemap.xml
+  rate_limit:
+    delay_seconds: 1
+    requests_per_second: 1
+  type: scraping
 schema:
   key_fields:
-    - document_id
-    - title
-    - date
-    - url
-    - doc_type
-    - diary_number
-    - text
-
-api:
-  type: "scraping"
-  endpoints:
-    sitemap: "https://www.vero.fi/sitemap.xml"
-    base: "https://www.vero.fi/syventavat-vero-ohjeet/"
-  auth: "none"
-  rate_limit:
-    requests_per_second: 1
-    delay_seconds: 1
+  - name: document_id
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: doc_type
+    required: false
+    type: string
+  - name: diary_number
+    required: false
+    type: string
+  - name: text
+    required: true
+    type: string
+source:
+  country: FI
+  data_types:
+  - doctrine
+  description: Tax guidance, preliminary rulings, decisions, and statements from Verohallinto
+  id: FI/VERO
+  name: Finnish Tax Administration (Vero)
+  url: https://www.vero.fi

@@ -1,0 +1,49 @@
+source:
+  id: "LU/TribAdmin-TaxDecisions"
+  country: "LU"
+  name: "Luxembourg Administrative Tribunal Tax Decisions"
+  url: "https://justice.public.lu/fr/jurisprudence/juridictions-administratives.html"
+  description: |
+    Tax decisions from the Luxembourg Tribunal administratif and Cour administrative.
+    Covers corporate tax, wealth tax, IP regime, holding companies, and other fiscal matters.
+    Full decisions published as PDFs at ja.public.lu since 1996.
+    Filtered by subject_type=fiscal (~3,560 decisions).
+  data_types:
+    - case_law
+  auth:
+    type: none
+  language: fr
+  schedule: monthly
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  key_fields:
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true
+    - name: "case_number"
+      type: "string"
+      required: false
+    - name: "court"
+      type: "string"
+      required: false
+    - name: "chamber"
+      type: "string"
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id

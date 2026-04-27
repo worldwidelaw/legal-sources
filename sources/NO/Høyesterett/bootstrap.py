@@ -610,6 +610,7 @@ def main():
                        help="Disable checkpoint/resume functionality")
     parser.add_argument('--clear-checkpoint', action='store_true',
                        help="Clear existing checkpoint before fetching")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

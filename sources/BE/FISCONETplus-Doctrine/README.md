@@ -32,3 +32,7 @@ python bootstrap.py update --since 2026-01-01  # Incremental
 ## Languages
 
 Documents are available in French, Dutch, German, and English.
+
+## License
+
+[Belgian Open Government Data](https://data.gov.be/en/licence-conditions) — free reuse of Belgian public sector information.

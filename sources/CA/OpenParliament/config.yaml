@@ -27,7 +27,7 @@ api:
 
 schema:
   key_fields:
-    - name: "debate_date"
+    - name: "date"
       description: "Date of the debate"
       type: "date"
       role: "primary_key"

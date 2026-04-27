@@ -1,31 +1,36 @@
-source_id: CoE/TreatyOffice
-name: Council of Europe Treaty Office
-country: CoE
-url: https://www.coe.int/en/web/conventions/full-list
-data_types:
-  - legislation
-
 auth:
   type: none
-
+country: CoE
+data_types:
+- legislation
 endpoints:
-  search: https://conventions-ws.coe.int/WS_LFRConventions/api/traites/search
   pdf_base: https://rm.coe.int
+  search: https://conventions-ws.coe.int/WS_LFRConventions/api/traites/search
+license: Open Access (Council of Europe)
+name: Council of Europe Treaty Office
+notes: 'Council of Europe Treaty Office — all 232 CoE treaties (conventions,
 
+  charters, protocols). Full text extracted from official PDFs hosted on
+
+  rm.coe.int. Metadata via JSON API at conventions-ws.coe.int.
+
+  '
 rate_limit:
-  requests_per_second: 1
   delay_between_requests: 1.0
-
+  requests_per_second: 1
 schema:
   key_fields:
-    - _id
-    - treaty_number
-    - date_opened
-    - date_entry_into_force
-
-license: Open Access (Council of Europe)
-
-notes: |
-  Council of Europe Treaty Office — all 232 CoE treaties (conventions,
-  charters, protocols). Full text extracted from official PDFs hosted on
-  rm.coe.int. Metadata via JSON API at conventions-ws.coe.int.
+  - name: _id
+    required: true
+    type: string
+  - name: treaty_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: date_entry_into_force
+    required: false
+    type: string
+source_id: CoE/TreatyOffice
+url: https://www.coe.int/en/web/conventions/full-list

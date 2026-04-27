@@ -1,0 +1,62 @@
+source_id: DE/NordrheinWestfalenCaseLaw
+name: Nordrhein-Westfalen State Court Decisions
+description: NRW court decisions from the NRWE database (nrwe.de)
+url: https://nrwe.de/
+country: DE
+jurisdiction: Nordrhein-Westfalen
+data_types:
+  - case_law
+
+access:
+  type: html_scraping
+  rate_limit: 0.5/s
+  auth: none
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: doc_id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: court
+      type: string
+      required: false
+    - name: case_number
+      type: string
+      required: false
+    - name: ecli
+      type: string
+      required: false
+    - name: decision_type
+      type: string
+      required: false
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: false
+  text_field: text
+  date_field: date
+  title_field: title
+
+update:
+  frequency: weekly
+  method: fetch_updates
+
+license:
+  type: public_domain
+  notes: German official works (§ 5 UrhG) - public domain
+
+notes: |
+  NRW court decisions from the NRWE database (nrwesuche.justiz.nrw.de).
+  ~208K+ decisions from all NRW courts (OLG, OVG, LG, VG, AG, ArbG, SG, FG, etc.).
+  Search via POST form, full text from individual decision HTML pages.

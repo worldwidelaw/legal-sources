@@ -415,6 +415,7 @@ def main():
     parser = argparse.ArgumentParser(description="UY/IMPODatosAbiertos bootstrap")
     parser.add_argument("command", choices=["bootstrap", "test-api"])
     parser.add_argument("--sample", action="store_true", help="Sample mode (15 docs)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = IMPODatosAbiertosScraper()

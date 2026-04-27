@@ -59,3 +59,7 @@ Install via: `pip install pdfplumber`
 - This scraper accesses only the public API which provides high-value precedent decisions
 - All text is in Turkish (UTF-8)
 - Rate limited to 1 request/second to respect server limits
+
+## License
+
+[Open Government Data](https://www.danistay.gov.tr) — official decisions published by the Council of State of the Republic of Turkey.

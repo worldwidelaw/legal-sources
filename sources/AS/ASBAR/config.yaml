@@ -1,0 +1,48 @@
+fetcher:
+  rate_limit_seconds: 2.0
+  sitemaps:
+  - code_annotated-sitemap.xml
+  - code_annotated-sitemap2.xml
+  - code_annotated-sitemap3.xml
+  - code_annotated-sitemap4.xml
+  - case_law-sitemap.xml
+  - case_law-sitemap2.xml
+  - case_law-sitemap3.xml
+  - regulation-sitemap.xml
+  - regulation-sitemap2.xml
+  - regulation-sitemap3.xml
+  - court_rule-sitemap.xml
+  strategy: sitemap_html_scraping
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: content_type
+    required: false
+    type: string
+source:
+  auth: none
+  country: AS
+  data_types:
+  - legislation
+  - case_law
+  description: 'American Samoa Bar Association legal resources. Includes ASCA (Code Annotated), ASR (High Court Reports), ASAC (Administrative Code regulations), and court rules. Full text available as
+    HTML pages indexed via XML sitemaps.
+
+    '
+  id: AS/ASBAR
+  name: American Samoa Code Annotated & Case Law
+  url: https://asbar.org/legal-resources/code-annotated/

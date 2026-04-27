@@ -21,8 +21,8 @@ The source uses the public web API:
 - Document: `GET /webapi/api/Case/document/{id}` - Full document content (HTML)
 
 ## License
-Danish court decisions are in the **public domain** under Danish Copyright Law §9:
-> "Laws, administrative regulations, court decisions and similar public documents are not subject to copyright."
+
+Public domain — Danish court decisions are not subject to copyright under [Danish Copyright Act §9](https://www.retsinformation.dk/eli/lta/2023/164).
 
 ## Usage
 ```bash

@@ -1,0 +1,33 @@
+source_id: CA/YukonLaws
+name: Yukon Consolidated Laws
+country: CA
+url: https://laws.yukon.ca/cms/
+data_url: https://laws.yukon.ca/cms/images/LEGISLATION/
+description: |
+  Consolidated Yukon Acts (PRINCIPAL) and Regulations (SUBORDINATE) from
+  the official laws.yukon.ca portal. Documents are PDF-only, hosted under
+  open Apache directory listings. Each document folder may contain multiple
+  versions; the highest-numbered version is the current consolidated text.
+
+data_types:
+  - legislation
+
+license: "© Government of Yukon (open access)"
+language: en
+
+update_frequency: monthly
+
+schema:
+  key_fields:
+    - name: doc_id
+      required: true
+      type: string
+  date_field: date
+  text_field: text
+  title_field: title
+  url_field: url
+
+notes: |
+  All documents are PDFs. Text extraction via common/pdf_extract.
+  Directory listings at /cms/images/LEGISLATION/PRINCIPAL/ and
+  /cms/images/LEGISLATION/SUBORDINATE/ enumerate all folders by year.

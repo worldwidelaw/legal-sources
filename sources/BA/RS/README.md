@@ -41,6 +41,10 @@ Each document includes:
 - `url`: Link to source document
 - `language`: "sr" (Serbian, Cyrillic/Latin)
 
+## License
+
+Open government data — publicly accessible legislation.
+
 ## Notes
 
 - Paragraf BA provides consolidated (prečišćeni) versions with all amendments incorporated

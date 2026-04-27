@@ -353,32 +353,11 @@ if __name__ == "__main__":
             sys.exit(1)
 
     elif cmd == "bootstrap":
-        sample_dir = scraper.source_dir / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        count = 0
-        limit = 15 if sample else None
-
-        for raw in scraper.fetch_all():
-            normalized = scraper.normalize(raw)
-            if normalized is None:
-                continue
-
-            count += 1
-            out_path = sample_dir / f"{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(normalized, f, ensure_ascii=False, indent=2)
-
-            logger.info(
-                f"Saved {normalized.get('doc_symbol') or normalized['title'][:40]} "
-                f"({count} total, {len(normalized['text'])} chars)"
-            )
-
-            if limit and count >= limit:
-                break
-
-        print(f"Saved {count} records to {sample_dir}/")
-
+        stats = scraper.bootstrap(sample_mode="--sample" in sys.argv, sample_size=15)
+        fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
+        logger.info(f"Bootstrap complete: {fetched} records — {stats}")
+        if fetched == 0:
+            sys.exit(1)
     else:
         print(f"Unknown command: {cmd}")
         sys.exit(1)

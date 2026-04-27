@@ -21,3 +21,7 @@
 - Parlamento provides original text for all laws, free of charge
 - Server reports ISO-8859-1 encoding but content is actually UTF-8
 - Rate limit: 2 sec between Parlamento requests
+
+## License
+
+[Open Government Data](https://parlamento.gub.uy) — official legislation published by the Parliament of Uruguay.

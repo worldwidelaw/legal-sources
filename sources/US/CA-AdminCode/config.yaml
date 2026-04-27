@@ -62,7 +62,7 @@ schema:
       type: "string"
       role: "content"
       required: true
-    - name: "ccr_title"
+    - name: "title_num"
       description: "CCR title number and name"
       type: "string"
       role: "classification"

@@ -1,0 +1,18 @@
+{
+  "_id": "MX-JAL-78592",
+  "_source": "MX/PoderJudicialJalisco",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-23T13:20:37.686605+00:00",
+  "title": "Toca 381/2024 — QUINTA SALA ESPECIALIZADA EN MATERIA CIVIL",
+  "text": "El documento trata sobre el amparo indirecto 427/2025-III, relacionado con el toca 381/2024, derivado de un juicio mercantil ejecutivo (expediente 500/2017).  El Juzgado Quinto de Distrito en Materia Civil en Zapopan ordenó al Supremo Tribunal de Justicia de Jalisco el cumplimiento de la ejecutoria de amparo.\n\nEl amparo fue interpuesto por una acreedora perjudicada en el juicio original, cuyo incidente de cancelación de embargo fue desechado por el Juez Séptimo de lo Mercantil.  El Juzgado Quinto de Distrito concedió el amparo, ordenando dejar insubsistente la resolución que confirmó el desechamiento del incidente y emitir una nueva que revocara dicha decisión, reconociendo la legitimación de la quejosa para solicitar la cancelación del embargo.\n\nEn cumplimiento a la ejecutoria, la Quinta Sala del Supremo Tribunal de Jalisco modifica su resolución anterior.  Detalla los antecedentes del juicio mercantil, incluyendo la demanda, el embargo de bienes, la sentencia, la liquidación y el convenio judicial. Se argumenta que, aunque la acreedora no sea parte formal del juicio principal, su calidad de acreedora embargante le otorga interés jurídico para solicitar la cancelación del embargo.  Se cita el artículo 3035 del Código Civil Federal y el 127 de la Ley del Registro Público de la Propiedad de Jalisco, que permiten a cualquier interesado solicitar la cancelación de un asiento registral.\n\nLa Sala considera fundados los agravios de la apelante y modifica el auto original para admitir el incidente de cancelación de embargo, ordenando dar vista a las partes para que manifiesten lo que a su derecho convenga.  No se hace especial condena al pago de costas en segunda instancia. Finalmente, se ordena remitir testimonio del fallo al Juzgado Quinto de Distrito en cumplimiento a la ejecutoria de amparo y devolver los autos al juzgado de origen para su archivo.",
+  "date": "2025-05-20",
+  "url": "https://publica-sentencias-backend.stjjalisco.gob.mx/toca/78592/file",
+  "court": "QUINTA SALA ESPECIALIZADA EN MATERIA CIVIL",
+  "judge": "Mgda. Arcelia García Casares",
+  "subject_area": "Mercantil",
+  "case_type": "MERCANTIL EJECUTIVA",
+  "ruling": "MODIFICAR",
+  "case_number": "381/2024",
+  "publication_date": "2025-05-26",
+  "crime_or_action": "ACCIÓN CAMBIARIA DIRECTA"
+}

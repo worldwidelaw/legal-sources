@@ -1,0 +1,58 @@
+fetcher:
+  base_url: https://www.qicdrc.gov.qa
+  rate_limit: 2.0
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: case_number
+    required: false
+    type: string
+  - name: neutral_citation
+    required: false
+    type: string
+  - name: court_type
+    required: false
+    type: string
+  - name: judges
+    required: false
+    type: string
+  - name: keywords
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: QA
+  data_types:
+  - case_law
+  description: >
+    Judgments from the Qatar International Court and Dispute Resolution Centre
+    (QICDRC), including the Civil and Commercial Court, Appellate Division,
+    and Regulatory Tribunal. English-language common-law court. ~492 judgments
+    with full text extracted from PDF decisions via sitemap discovery.
+  format: pdf
+  id: QA/QFCRT
+  language: en
+  name: Qatar Financial Centre Regulatory Tribunal (QICDRC)
+  url: https://www.qicdrc.gov.qa/judgments
+license:
+  name: "Government open access"
+  url: "https://www.qicdrc.gov.qa/privacy-policy-data-protection"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official court judgments published by QICDRC for public access."

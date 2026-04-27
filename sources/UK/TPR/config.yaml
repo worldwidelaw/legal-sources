@@ -1,30 +1,39 @@
-source:
-  id: UK/TPR
-  name: UK Pensions Regulator
-  country: UK
-  url: https://www.thepensionsregulator.gov.uk
-  language: en
-  data_types:
-    - doctrine
-  description: >
-    TPR publications including codes of practice, regulatory guidance,
-    enforcement activity reports, scheme management guidance, and
-    consultation papers covering UK pension scheme regulation.
-  license: Open Government Licence v3.0
-  method: Sitemap parsing + HTML extraction
-  auth: none
-
+fetcher:
+  max_retries: 3
+  rate_limit: 1.5
+  sample_count: 15
+  timeout: 60
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - document_type
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: document_type
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: UK
+  data_types:
+  - doctrine
+  description: 'TPR publications including codes of practice, regulatory guidance, enforcement activity reports, scheme management guidance, and consultation papers covering UK pension scheme regulation.
 
-fetcher:
-  rate_limit: 1.5
-  timeout: 60
-  max_retries: 3
-  sample_count: 15
+    '
+  id: UK/TPR
+  language: en
+  license: Open Government Licence v3.0
+  method: Sitemap parsing + HTML extraction
+  name: UK Pensions Regulator
+  url: https://www.thepensionsregulator.gov.uk

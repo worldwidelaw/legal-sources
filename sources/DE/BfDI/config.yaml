@@ -1,0 +1,13 @@
+source_id: DE/BfDI
+name: German Federal Data Protection Authority (BfDI)
+country: DE
+url: https://www.bfdi.bund.de
+data_types:
+  - doctrine
+auth: none
+schedule: weekly
+schema:
+  key_fields:
+    - doc_type
+    - date
+    - topic

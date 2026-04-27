@@ -62,3 +62,7 @@ python3 bootstrap.py bootstrap --start-nr 265000 --end-nr 264000 --limit 500
 - Full text extracted from PDF using pdfplumber
 - Decisions categorized by subject matter (urbanisme, fonction publique, marchés publics, etc.)
 - Both arrêts (judgments) and ordonnances (cassation non-admissions) available
+
+## License
+
+[Belgian Open Government Data](https://data.gov.be/en/licence-conditions) — free reuse of Belgian public sector information.

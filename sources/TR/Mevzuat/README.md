@@ -91,3 +91,7 @@ python3 bootstrap.py updates --since 2025-01-01
 - Rate limit: 1 request per 1.5 seconds
 - Full text is extracted from HTML iframe content
 - Content is in WordSection1 div (Microsoft Word export format)
+
+## License
+
+[Open Government Data](https://www.mevzuat.gov.tr) — official legislation published by the Presidency of the Republic of Turkey.

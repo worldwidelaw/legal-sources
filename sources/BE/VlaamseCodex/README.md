@@ -57,3 +57,7 @@ Each record contains:
 - Rate limit: ~1 request/second recommended
 - Not all documents have full text (`HeeftInhoud` flag)
 - Text is extracted from `ArtikelVersies[].ArtikelVersie.Tekst`
+
+## License
+
+[Open Data — Gratis hergebruik](https://codex.opendata.api.vlaanderen.be/docs/) — Flemish Government free reuse.

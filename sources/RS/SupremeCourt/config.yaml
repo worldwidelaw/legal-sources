@@ -72,7 +72,7 @@ schema:
       description: "Case reference number (e.g., Kzz 293/2023)"
       type: "string"
       role: "identifier"
-      required: true
+      required: false
     - name: "title"
       description: "Decision title from og:title"
       type: "string"

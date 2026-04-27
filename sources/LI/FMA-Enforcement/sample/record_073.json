@@ -1,0 +1,14 @@
+{
+  "_id": "warning-de-201",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:29.145973Z",
+  "title": "[Betrug] Warnung: Advigon Versicherung AG",
+  "text": "Die FMA Liechtenstein wurde von der ADVIGON VERSICHERUNG AG, einem Versicherungsunternehmen der HanseMerkur Gruppe mit Sitz in Liechtenstein, über einen Betrugsversuch informiert. Unbekannte geben sich als ADVIGON VERSICHERUNG AG aus und suggerieren Kreditnehmern, sie müssten eine Kreditausfallversicherung bei der ADVIGON VERSICHERUNG AG abschliessen. Die ADVIGON VERSICHERUNG AG weist darauf hin, dass sie zu keiner Zeit Kreditausfallsversicherungsverträge abgeschlossen hat und bietet eine solche Versicherung auch nicht an.",
+  "date": "2021-10-07",
+  "url": "https://www.fma-li.li/de/warning/warnung-advigon-versicherung-ag-201",
+  "language": "deu",
+  "category": "Betrug",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

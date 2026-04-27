@@ -1,27 +1,15 @@
-name: EBA
-country: EU
-description: European Banking Authority - Guidelines, Opinions, Decisions, Reports, Technical Standards
-url: https://www.eba.europa.eu
-data_types:
-  - guidelines
-  - opinions
-  - decisions
-  - reports
-  - recommendations
-  - regulatory_technical_standards
-  - implementing_technical_standards
 auth: none
-rate_limit: 2.0  # seconds between requests (be respectful)
-schema:
-  key_fields:
-    - document_id
-    - document_type
-    - title
-    - date
-    - text
-    - url
+country: EU
+data_types:
+- guidelines
+- opinions
+- decisions
+- reports
+- recommendations
+- regulatory_technical_standards
+- implementing_technical_standards
+description: European Banking Authority - Guidelines, Opinions, Decisions, Reports, Technical Standards
 document_types:
-  # Maps EBA document_type IDs to human-readable names
   241: annual_report
   242: call_for_advice
   243: comment
@@ -42,3 +30,26 @@ document_types:
   261: warning
   5294: staff_paper
   5606: factsheet
+name: EBA
+rate_limit: 2.0
+schema:
+  key_fields:
+  - name: document_id
+    required: false
+    type: string
+  - name: document_type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: url
+    required: true
+    type: string
+url: https://www.eba.europa.eu

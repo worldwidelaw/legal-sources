@@ -63,6 +63,7 @@ schema:
       description: "Date of enactment"
       type: "date"
       role: "temporal_key"
+      required: false
     - name: "url"
       description: "URL on SUIN-Juriscol"
       type: "string"

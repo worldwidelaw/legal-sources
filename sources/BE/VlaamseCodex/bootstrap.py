@@ -355,6 +355,7 @@ def main():
         "--sample-size", type=int, default=15,
         help="Number of samples to fetch (default: 15)"
     )
+    bootstrap_parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     # Status command
     subparsers.add_parser("status", help="Show API status")

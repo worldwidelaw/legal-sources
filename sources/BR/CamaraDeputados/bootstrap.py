@@ -188,11 +188,18 @@ def fetch_all(max_records: int = None, sigla_tipos: list = None,
             if max_records and count >= max_records:
                 return
 
-            try:
-                data = fetch_proposicoes_page(session, sigla, pagina=pagina,
-                                              data_inicio=data_inicio)
-            except requests.RequestException as e:
-                print(f"  Error on page {pagina}: {e}")
+            data = None
+            for attempt in range(3):
+                try:
+                    data = fetch_proposicoes_page(session, sigla, pagina=pagina,
+                                                  data_inicio=data_inicio)
+                    break
+                except requests.RequestException as e:
+                    print(f"  Error on page {pagina} (attempt {attempt+1}/3): {e}")
+                    if attempt < 2:
+                        time.sleep(5 * (attempt + 1))
+            if data is None:
+                print(f"  Giving up on {sigla} after 3 retries on page {pagina}")
                 break
 
             items = data.get("dados", [])

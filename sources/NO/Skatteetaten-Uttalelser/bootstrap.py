@@ -71,6 +71,8 @@ class SkatteetatenUttalelser(BaseScraper):
     SOURCE_ID = "NO/Skatteetaten-Uttalelser"
 
     def __init__(self):
+        source_dir = Path(__file__).parent
+        super().__init__(source_dir)
         self.http = HttpClient(
             base_url=BASE_URL,
             headers={
@@ -143,10 +145,10 @@ class SkatteetatenUttalelser(BaseScraper):
 
         return strip_html(content)
 
-    def normalize(self, item: Dict[str, Any], category: str, text: str) -> Dict[str, Any]:
+    def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
         """Normalize a catalog item into the standard schema."""
-        props = item.get("properties", {})
-        product_id = item.get("productId", "")
+        props = raw.get("properties", {})
+        product_id = raw.get("productId", "")
 
         # Date: prefer metadataDate, then startPublish
         date_str = props.get("metadataDate") or props.get("startPublish", "")
@@ -165,12 +167,12 @@ class SkatteetatenUttalelser(BaseScraper):
             "_source": self.SOURCE_ID,
             "_type": "doctrine",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
-            "title": item.get("title", ""),
-            "text": text,
+            "title": raw.get("title", ""),
+            "text": raw.get("_text", ""),
             "date": date_iso,
-            "url": f"{BASE_URL}{item.get('url', '')}",
+            "url": f"{BASE_URL}{raw.get('url', '')}",
             "language": "no",
-            "category": category,
+            "category": raw.get("_category", ""),
             "serial_number": serial,
             "year": props.get("appliesForYear", ""),
         }
@@ -207,8 +209,9 @@ class SkatteetatenUttalelser(BaseScraper):
                     logger.warning("Empty text for %s: %s", item.get("productId"), item.get("title", "")[:60])
                     continue
 
-                record = self.normalize(item, category, text)
-                yield record
+                item["_text"] = text
+                item["_category"] = category
+                yield item
                 total_yielded += 1
 
                 if total_yielded % 50 == 0:
@@ -233,7 +236,9 @@ class SkatteetatenUttalelser(BaseScraper):
                         continue
                     text = self.fetch_document_text(doc_url)
                     if text:
-                        yield self.normalize(item, category, text)
+                        item["_text"] = text
+                        item["_category"] = category
+                        yield item
 
     def test(self) -> bool:
         """Quick connectivity test."""
@@ -255,6 +260,7 @@ def main():
     parser.add_argument("command", choices=["bootstrap", "update", "test"])
     parser.add_argument("--sample", action="store_true", help="Fetch only 10-15 sample records")
     parser.add_argument("--since", type=str, help="Date for incremental update (YYYY-MM-DD)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = SkatteetatenUttalelser()
@@ -264,23 +270,29 @@ def main():
         sys.exit(0 if success else 1)
 
     if args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
+        if args.sample:
+            sample_dir = Path(__file__).parent / "sample"
+            sample_dir.mkdir(exist_ok=True)
 
-        count = 0
-        for record in scraper.fetch_all(sample=args.sample):
-            safe_name = re.sub(r'[^\w\-.]', '_', str(record['_id']))
-            out_file = sample_dir / f"{safe_name}.json"
-            out_file.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
-            count += 1
-            text_len = len(record.get("text", ""))
-            logger.info(
-                "  [%d] %s | %s | text=%d chars",
-                count, record["date"], record["title"][:60], text_len
-            )
+            count = 0
+            for raw in scraper.fetch_all(sample=True):
+                record = scraper.normalize(raw)
+                safe_name = re.sub(r'[^\w\-.]', '_', str(record['_id']))
+                out_file = sample_dir / f"{safe_name}.json"
+                out_file.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
+                count += 1
+                text_len = len(record.get("text", ""))
+                logger.info(
+                    "  [%d] %s | %s | text=%d chars",
+                    count, record["date"], record["title"][:60], text_len
+                )
 
-        logger.info("Bootstrap complete: %d records saved to sample/", count)
-        sys.exit(0 if count >= 10 else 1)
+            logger.info("Bootstrap complete: %d records saved to sample/", count)
+            sys.exit(0 if count >= 10 else 1)
+        else:
+            stats = scraper.bootstrap()
+            logger.info("Bootstrap complete: %s", stats)
+            sys.exit(0)
 
     if args.command == "update":
         since = args.since or "2026-01-01"

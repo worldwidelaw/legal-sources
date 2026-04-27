@@ -1,0 +1,67 @@
+# ===================================================================
+# CN/NFRA -- China National Financial Regulatory Administration
+#            (国家金融监督管理总局)
+# ===================================================================
+# Banking/insurance regulations, normative documents, and notices.
+# ~3,600 documents with full text via internal JSON API.
+# ===================================================================
+
+source:
+  id: "CN/NFRA"
+  country: "CN"
+  name: "China National Financial Regulatory Administration (国家金融监督管理总局)"
+  url: "https://www.nfra.gov.cn/"
+  description: |
+    Official regulations and doctrine from China's unified financial regulator
+    (merged from CBRC + CIRC in 2023). Covers banking rules, insurance regulations,
+    financial consumer protection, and normative documents.
+    ~3,600 documents. Chinese language. Free access via JSON API.
+
+data_types:
+  - legislation
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "Conservative rate limit for Chinese government servers."
+
+api:
+  type: "rest"
+  base_url: "https://www.nfra.gov.cn/cbircweb"
+  endpoints:
+    list: "/DocInfo/SelectDocByItemIdAndChild?itemId={itemId}&pageSize={size}&pageNo={page}"
+    detail: "/DocInfo/SelectByDocId?docId={docId}"
+
+schema:
+  key_fields:
+    - name: "docId"
+      description: "Unique document identifier"
+      type: "integer"
+      role: "primary_key"
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+    - name: "category"
+      description: "Document category (law/regulation/notice)"
+      type: "string"
+      role: "classification"
+
+notes: |
+  - AngularJS SPA backed by hidden REST API at /cbircweb/DocInfo/
+  - Categories: 927 (Laws, 18), 928 (Regulations/Normative, 1902), 925 (Notices, 1696)
+  - Full text from docClob (HTML) or docClobNohtml (plain text) in detail response
+  - Successor to CBIRC (中国银保监会), merged in 2023
+  - Language: Chinese (Simplified)

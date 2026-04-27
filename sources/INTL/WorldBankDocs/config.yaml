@@ -1,31 +1,51 @@
-id: INTL/WorldBankDocs
-name: World Bank Documents & Reports
-country: INTL
-url: https://documents.worldbank.org
-description: >
-  World Bank legal agreements including loan agreements, credit agreements,
-  grant agreements, guarantee agreements, project agreements, and financing
-  agreements. 48,000+ legal documents with full text via REST API.
-data_types:
-  - legislation
 auth:
   type: none
-rate_limit:
-  requests_per_second: 2
-  burst: 5
+country: INTL
 data_model:
-  update_strategy: upsert
   dedup_key:
-    - _id
+  - _id
+  update_strategy: upsert
+data_types:
+- legislation
+description: 'World Bank legal agreements including loan agreements, credit agreements, grant agreements, guarantee agreements, project agreements, and financing agreements. 48,000+ legal documents with
+  full text via REST API.
+
+  '
+id: INTL/WorldBankDocs
+name: World Bank Documents & Reports
+rate_limit:
+  burst: 5
+  requests_per_second: 2
 schema:
   key_fields:
-    - _id
-    - _source
-    - _type
-    - title
-    - text
-    - date
-    - url
-    - document_type
-    - country
-    - project_id
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: document_type
+    required: false
+    type: string
+  - name: country
+    required: false
+    type: string
+  - name: project_id
+    required: false
+    type: string
+url: https://documents.worldbank.org

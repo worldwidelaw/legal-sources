@@ -1,0 +1,79 @@
+# ===================================================================
+# TC/RevisedLaws -- Turks and Caicos Revised Laws (Attorney General)
+# ===================================================================
+# Official consolidated legislation from the TCI Attorney General's
+# Chambers. The 2021 Revised Laws contain ~150 consolidated ordinances
+# organized by title/chapter. Annual ordinances and subsidiary
+# legislation from 2015-2023 are also available.
+#
+# Discovery: HTML listing pages at gov.tc/agc/
+# Full text: PDF download via eDocman component
+# License: Free public access
+# ===================================================================
+
+source:
+  id: "TC/RevisedLaws"
+  country: "TC"
+  name: "Turks and Caicos Revised Laws"
+  url: "https://gov.tc/agc/laws/revised"
+  description: |
+    Official consolidated laws of the Turks and Caicos Islands, maintained
+    by the Attorney General's Chambers. Includes the 2021 Revised Laws
+    (consolidated ordinances) and annual ordinances/subsidiary legislation
+    from 2015-2023. Full text extracted from PDF via eDocman.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://gov.tc"
+  listing_pages:
+    - "/agc/2021-revised-laws"
+    - "/agc/2023-ordinances"
+    - "/agc/2022-ordinances"
+    - "/agc/2023-subsidiary-legislation"
+    - "/agc/2022-subsidiary-legislation"
+
+data_model:
+  type: "legislation"
+  primary_key: "legislation_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "legislation_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "legislation_id"
+      description: "Unique identifier based on eDocman document ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Ordinance or regulation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year of revision or enactment"
+      type: "string"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to document on gov.tc"
+      type: "string"
+      role: "reference"
+      required: true

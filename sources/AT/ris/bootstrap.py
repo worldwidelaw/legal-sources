@@ -604,6 +604,7 @@ def main():
     parser.add_argument("--sample-size", type=int, default=10, help="Number of sample records")
     parser.add_argument("--workers", type=int, default=None, help="Concurrent download threads (bootstrap-fast)")
     parser.add_argument("--batch-size", type=int, default=100, help="Records per batch write (bootstrap-fast)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

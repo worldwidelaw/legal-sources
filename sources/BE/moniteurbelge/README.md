@@ -80,3 +80,7 @@ After running `bootstrap --sample`, sample records are saved to:
 - Rate limit: 1 request every 2 seconds (0.5 req/s)
 - The Vlaamse Codex API (Flemish regional legislation) could be added as a separate source
 - German-language documents are included but less common
+
+## License
+
+[CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) — Public domain dedication.

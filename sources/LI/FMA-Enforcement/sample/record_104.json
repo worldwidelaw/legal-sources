@@ -1,0 +1,14 @@
+{
+  "_id": "warning-en-66",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:45.036851Z",
+  "title": "[Abuse] Warning: sslkzz[dot]com",
+  "text": "The Liechtenstein Financial Market Authority (FMA) informs that SSLKZZ Ltd as the operator of the website https://sslkzz[dot]com is not licensed or registered by the FMA and also not registered in the Liechtenstein Commercial Register.   The entity is therefore not authorized to provide services in Liechtenstein that are subject to licensing or registration and is not subject to supervision by the FMA.",
+  "date": "2023-09-24",
+  "url": "https://www.fma-li.li/en/warning/warning-sslkzz-dot-com-66",
+  "language": "eng",
+  "category": "Abuse",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

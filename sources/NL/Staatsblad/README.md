@@ -12,7 +12,7 @@ This source fetches Dutch national legislation from the Staatsblad, the official
 - **Endpoint**: `https://repository.overheid.nl/sru`
 - **Full Text**: XML documents at `https://repository.overheid.nl/frbr/officielepublicaties/stb/{year}/{id}/1/xml/{id}.xml`
 - **Auth**: None required (Open Government Data)
-- **License**: CC0 (Public Domain)
+- **License**: [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) (Public Domain)
 
 ## Document Types
 
@@ -62,6 +62,10 @@ Staatsblad XML documents follow the KOOP schema with elements:
 - `<lid>` - Paragraphs within articles
 - `<al>` - Text paragraphs (alinea)
 - `<nota-toelichting>` - Explanatory memorandum
+
+## License
+
+[CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) — Public Domain, Dutch Open Government Data.
 
 ## Links
 

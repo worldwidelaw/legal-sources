@@ -1,0 +1,52 @@
+source:
+  id: DO/CorteSuprema
+  name: Dominican Republic Suprema Corte de Justicia
+  country: DO
+  url: https://consultasentenciascj.poderjudicial.gob.do/
+  data_types:
+    - case_law
+  description: |
+    Monthly judicial bulletins (Boletines Judiciales) from the Dominican Republic
+    Supreme Court of Justice (Suprema Corte de Justicia). Each boletin compiles
+    all Supreme Court decisions for a given month. Coverage: 1994-present.
+    ~380 monthly boletines with full text via PDF extraction. Spanish language.
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: rest
+  base_url: https://consultasentenciascj.poderjudicial.gob.do
+  format: json_pdf
+  endpoints:
+    boletines: /Home/GetBoletines
+
+schema:
+  key_fields:
+    - name: boletin_id
+      type: integer
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: true
+    - name: year
+      type: integer
+      required: true
+    - name: month
+      type: integer
+      required: true
+
+fetch:
+  strategy: api_with_pdf_download
+  coverage: 1994-present
+  granularity: monthly

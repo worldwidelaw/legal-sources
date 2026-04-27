@@ -30,6 +30,10 @@ The database provides two views:
 - Full text HTML: `https://www.gesetze.li/konso/html/{lgbl_id}?version={version}`
 - PDF download: `https://www.gesetze.li/konso/pdf/{lgbl_id}?version={version}`
 
+## License
+
+Open government data, public domain — official government publications.
+
 ## Technical Notes
 
 - No official API available

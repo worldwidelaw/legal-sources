@@ -29,3 +29,7 @@ python bootstrap.py test               # Test connectivity
 python bootstrap.py bootstrap --sample # Fetch 15 samples
 python bootstrap.py bootstrap          # Full fetch (all bodies, latest snapshots)
 ```
+
+## License
+
+[Open Government Data](https://dadosabertos.web.stj.jus.br/dataset/) — official open data published by the Superior Court of Justice (STJ) of Brazil.

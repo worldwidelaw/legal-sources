@@ -1,0 +1,87 @@
+# ===================================================================
+# INTL/UN-ModelTaxConvention -- UN Tax Committee Documents
+# ===================================================================
+# Fetches E/C.18 documents (Model Double Taxation Convention, manuals,
+# session reports) from the UN Digital Library + ODS.
+# ~190 documents. No auth required.
+# ===================================================================
+
+source:
+  id: "INTL/UN-ModelTaxConvention"
+  country: "INTL"
+  name: "UN Model Double Taxation Convention and Tax Committee Documents"
+  url: "https://digitallibrary.un.org"
+  description: |
+    UN Committee of Experts on International Cooperation in Tax Matters
+    (E/C.18) documents including the Model Double Taxation Convention,
+    Manual for Negotiation of Bilateral Tax Treaties, session reports,
+    and working papers. Full text via ODS DOCX endpoint.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://digitallibrary.un.org"
+  endpoints:
+    search: "/search?p=\"E/C.18\"&f=191__a&of=recjson&rg={count}&jrec={offset}"
+    record: "/record/{recid}?of=recjson"
+  full_text:
+    base_url: "https://documents.un.org"
+    endpoint: "/api/symbol/access?s={symbol}&l=en&t=doc"
+    format: "docx"
+
+data_model:
+  type: "doctrine"
+  primary_key: "symbol"
+  update_strategy: "upsert"
+  dedup_key:
+    - "symbol"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "symbol"
+      description: "UN document symbol (e.g., E/C.18/2025/2)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL on UN Digital Library"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "doc_type"
+      description: "Document type (report, publication, draft_resolution, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - ~190 E/C.18 tax committee documents (2005-2026)
+  - Full text via DOCX from documents.un.org (modern docs)
+  - Older documents use OLE2 .doc format, not parseable with stdlib
+  - Includes Model Convention, manuals, session reports, draft resolutions
+  - CRP (Conference Room Papers) not in Digital Library — only on financing.desa.un.org behind WAF

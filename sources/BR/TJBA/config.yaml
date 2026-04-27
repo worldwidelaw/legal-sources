@@ -1,0 +1,37 @@
+endpoints:
+  graphql: https://jurisprudenciaws.tjba.jus.br/graphql
+  pdf: https://jurisprudenciaws.tjba.jus.br/inteiroTeor/{hash}
+rate_limit:
+  delay_seconds: 1.5
+  items_per_page: 10
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+source:
+  country: BR
+  data_types:
+  - case_law
+  id: BR/TJBA
+  language: pt
+  name: TJBA - Bahia State Court (GraphQL API)
+  url: https://jurisprudencia.tjba.jus.br/

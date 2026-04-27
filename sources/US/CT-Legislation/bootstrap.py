@@ -300,7 +300,7 @@ class CTLegislationScraper(BaseScraper):
             try:
                 sections = self.parse_chapter(cf)
                 for raw in sections:
-                    yield self.normalize(raw)
+                    yield raw
                     total += 1
                 if sections:
                     logger.info(f"  {cf}: {len(sections)} sections (total: {total})")
@@ -322,7 +322,7 @@ class CTLegislationScraper(BaseScraper):
             try:
                 sections = self.parse_chapter(cf)
                 for raw in sections:
-                    yield self.normalize(raw)
+                    yield raw
                     count += 1
                 logger.info(f"  {cf}: {len(sections)} sections")
             except Exception as e:
@@ -340,6 +340,7 @@ def main():
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = CTLegislationScraper()

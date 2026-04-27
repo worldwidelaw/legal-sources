@@ -76,3 +76,7 @@ python bootstrap.py update
 - Some older cases may have less detailed metadata
 - PDF versions are also available but HTML is used for text extraction
 - The RSS feed provides both new decisions and updates to existing decisions (translations, corrections)
+
+## License
+
+[Open Government Licence - Canada](https://open.canada.ca/en/open-government-licence-canada) — Crown Copyright, re-use permitted under OGL terms.

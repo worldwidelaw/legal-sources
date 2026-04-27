@@ -71,4 +71,4 @@ python bootstrap.py update
 
 ## License
 
-Open Government Data (similar to CC0) per Slovak public sector data policy.
+[Open Government Data](https://data.gov.sk) — similar to [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/), per Slovak public sector data policy.

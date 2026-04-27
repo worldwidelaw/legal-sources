@@ -1,0 +1,39 @@
+fetch:
+  max_retries: 3
+  rate_limit: 2.0
+  timeout: 30
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: string
+source:
+  auth: none
+  country: KE
+  data_types:
+  - case_law
+  - doctrine
+  description: >-
+    Competition Authority of Kenya (CAK) determinations — merger decisions,
+    abuse of dominance investigations, consumer protection cases, and
+    exemption applications. ~100+ PDF determinations from 2014-2026.
+  id: KE/CAK
+  name: Competition Authority of Kenya Determinations
+  url: https://www.cak.go.ke/information-center/CAK-latest-determinations
+license:
+  name: "Kenya Government Open Data"
+  url: "https://www.cak.go.ke/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Official government regulatory decisions, publicly available"

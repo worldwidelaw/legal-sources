@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/115.479",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T19:26:49.123462+00:00",
+  "title": "Missouri Revised Statutes § 115.479 - Tabulating equipment to be tested, when (electronic voting)",
+  "text": "115.479.  Tabulating equipment to be tested, when (electronic voting). — In each jurisdiction using an electronic voting system, the election authority shall, after the count has been completed and the results received, have the automatic tabulating equipment tested to ascertain that the equipment has correctly counted the votes for all offices and on all questions.  The test shall be observed by at least two persons designated by the election authority, one from each major political party, and shall be open to the public.  The test shall be conducted by processing the same preaudited group of ballots used in the preelection test provided for in section 115.233.  If any error is detected, the cause shall be ascertained and corrected, and an errorless count shall be made before the final results are announced.  After the completion of an errorless count, the programs and the ballots shall be sealed, retained and disposed of as provided for paper ballots.\n(L. 1977 H.B. 101 § 12.075, A.L. 1997 S.B. 132, A.L. 2014 H.B. 1136)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=115.479",
+  "section_id": "115.479",
+  "chapter": "115",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

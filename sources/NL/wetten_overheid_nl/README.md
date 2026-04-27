@@ -39,7 +39,7 @@ https://zoekservice.overheid.nl/sru/Search?operation=searchRetrieve&version=1.2&
 
 ## License
 
-CC0 1.0 Universal (Public Domain) - Dutch Open Government Data
+[CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) — Dutch Open Government Data.
 
 ## Usage
 

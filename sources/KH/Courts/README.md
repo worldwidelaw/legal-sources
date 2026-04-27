@@ -22,3 +22,7 @@ archive at `archive.eccc.gov.kh`.
 python bootstrap.py bootstrap --sample   # Fetch 15 sample records
 python bootstrap.py bootstrap            # Full bootstrap (all decisions/orders/judgments)
 ```
+
+## License
+
+[Open Government Data](https://archive.eccc.gov.kh) — official documents published by the Extraordinary Chambers in the Courts of Cambodia (ECCC).

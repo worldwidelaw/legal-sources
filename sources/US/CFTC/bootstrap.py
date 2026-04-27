@@ -349,6 +349,7 @@ def main():
     parser.add_argument("command", choices=["bootstrap", "update", "test"])
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
     parser.add_argument("--since", type=str, help="ISO date for updates")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = CFTCScraper()

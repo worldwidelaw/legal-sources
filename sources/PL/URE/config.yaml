@@ -1,36 +1,54 @@
-source_id: PL/URE
-name: Polish Energy Regulatory Office (URE) Decisions
-country: PL
-url: https://bip.ure.gov.pl
-data_types:
-  - doctrine
-auth:
-  type: none
 api:
   base_url: https://bip.ure.gov.pl
-  sectors:
-    - energia-elektryczna
-    - paliwa-gazowe
-    - cieplo
-    - paliwa-ciekle
-    - inne-decyzje-informacj
-  sector_index: /bip/taryfy-i-inne-decyzje-b/{sector}?page={page}
   pdf_download: /download/3/{id}/{filename}.pdf
-rate_limit:
-  requests_per_second: 1.0
-  burst: 3
+  sector_index: /bip/taryfy-i-inne-decyzje-b/{sector}?page={page}
+  sectors:
+  - energia-elektryczna
+  - paliwa-gazowe
+  - cieplo
+  - paliwa-ciekle
+  - inne-decyzje-informacj
+auth:
+  type: none
+country: PL
 data_model:
-  update_strategy: append_only
   dedup_key:
-    - _id
+  - _id
+  update_strategy: append_only
+data_types:
+- doctrine
+name: Polish Energy Regulatory Office (URE) Decisions
+rate_limit:
+  burst: 3
+  requests_per_second: 1.0
 schema:
   key_fields:
-    - _id
-    - _source
-    - _type
-    - title
-    - text
-    - date
-    - url
-    - decision_number
-    - sector
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  - name: sector
+    required: false
+    type: string
+source_id: PL/URE
+url: https://bip.ure.gov.pl

@@ -496,6 +496,7 @@ def main():
         default=20,
         help="Maximum items to list"
     )
+    list_parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

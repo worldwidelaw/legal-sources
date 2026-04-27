@@ -53,6 +53,7 @@ schema:
       description: "Last consolidated date"
       type: "date"
       role: "temporal_key"
+      required: false
     - name: "url"
       description: "Direct URL to legislation"
       type: "string"

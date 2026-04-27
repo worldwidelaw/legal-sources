@@ -1,46 +1,32 @@
-source:
-  id: "EE/RiigiTeatajaLoomal"
-  country: "EE"
-  name: "Riigi Teataja - Estonian Legal Portal"
-  url: "https://www.riigiteataja.ee"
-  data_types: [legislation]
-  license: "CC0 (Public Domain)"
-  update_frequency: daily
-  language: "et"
-
 fetch:
-  base_url: "https://www.riigiteataja.ee"
-  rate_limit: 1.5  # seconds between requests
-  timeout: 60
+  base_url: https://www.riigiteataja.ee
+  rate_limit: 1.5
   retry_attempts: 3
-
-  # Chronology endpoint for browsing by date
-  # /kronoloogia_tulemus.html?rtOsaId=&kpv=DD.MM.YYYY
-
-  # Document XML endpoint
-  # /akt/{id}.xml
-
-  # RT parts:
-  # - RT I: Laws and national regulations
-  # - RT II: International agreements
-  # - RT III: Administrative acts
-  # - RT IV: Local government acts
-
+  timeout: 60
 schema:
   key_fields:
-    - "_id"
-    - "title"
-    - "text"
-    - "date"
-    - "url"
-
-  # Additional fields from Riigi Teataja XML:
-  # - issuer (valjaandja)
-  # - document_type (dokumentLiik)
-  # - text_type (tekstiliik)
-  # - abbreviation (lyhend)
-  # - enacted_date (vastuvoetud)
-  # - effective_date (kehtivuseAlgus)
-  # - expired_date (kehtivuseLopp)
-  # - rt_part (RTosa)
-  # - global_id (globaalID)
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+source:
+  country: EE
+  data_types:
+  - legislation
+  id: EE/RiigiTeatajaLoomal
+  language: et
+  license: CC0 (Public Domain)
+  name: Riigi Teataja - Estonian Legal Portal
+  update_frequency: daily
+  url: https://www.riigiteataja.ee

@@ -354,6 +354,7 @@ def main():
                        help="Number of sample records to fetch")
     parser.add_argument('--year', type=int, default=None,
                        help="Specific year to fetch")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 
@@ -372,9 +373,21 @@ def main():
             print(f"  File ID: {row['file_id']}")
 
     elif args.command == 'bootstrap':
-        if args.sample or True:
+        if args.sample:
             success = bootstrap_sample(args.count)
             sys.exit(0 if success else 1)
+        else:
+            sample_dir = Path(__file__).parent / "sample"
+            sample_dir.mkdir(parents=True, exist_ok=True)
+            count = 0
+            for record in fetch_all(year=args.year):
+                count += 1
+                filename = sample_dir / f"record_{count:04d}.json"
+                with open(filename, 'w', encoding='utf-8') as f:
+                    json.dump(record, f, ensure_ascii=False, indent=2)
+                if count % 50 == 0:
+                    print(f"Progress: {count} records saved")
+            print(f"Bootstrap complete: {count} records saved")
 
     elif args.command == 'fetch':
         for record in fetch_all(year=args.year):

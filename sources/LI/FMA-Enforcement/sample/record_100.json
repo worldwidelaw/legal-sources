@@ -1,0 +1,14 @@
+{
+  "_id": "warning-en-61",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:41.138643Z",
+  "title": "[Abuse] Warning: mexc[dot]com",
+  "text": "The Financial Market Authority (FMA) Liechtenstein points out that the operator of the website mexc[dot]com is not licensed or registered by the FMA and therefore is not listed in the official register of the FMA. In particular, the operator of the website mexc[dot]com is not permitted to provide financial services requiring a licence or registration by the FMA. ",
+  "date": "2024-04-27",
+  "url": "https://www.fma-li.li/en/warning/warning-mexc-dot-com-61",
+  "language": "eng",
+  "category": "Abuse",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

@@ -49,6 +49,10 @@ python3 bootstrap.py fetch
 Documents are provided in XML-compatible HTML with structured elements
 (chapters, paragraphs, sections) enabling machine-readable access.
 
+## License
+
+[NLOD 2.0](https://data.norge.no/nlod/en/2.0) — Norwegian Licence for Open Government Data.
+
 ## Contact
 
 - ELI information: eli@Lovdata.no

@@ -1,57 +1,68 @@
-source:
-  id: BA/BrckoDistrikt
-  country: BA
-  name: Brčko District Official Gazette (Službeni glasnik Brčko distrikta)
-  url: https://skupstinabd.ba
-  data_types:
-    - legislation
-  auth: none
-  license: Open Government Data
-  notes: |
-    Legislation of Brčko District, an autonomous administrative unit in Bosnia
-    and Herzegovina. Brčko District has its own legal system, separate from
-    the Federation of BiH and Republika Srpska.
-
-    Document access: PDF files in directory listing at /3-zakon/ba/
-    Each law has its own directory with original PDFs and amendments.
-    Consolidated texts (prečišćeni tekst) are preferred when available.
-
-    Coverage: ~200 laws covering all aspects of district governance
-    Languages: Bosnian, Croatian, Serbian (trilingual)
-
-schema:
-  key_fields:
-    - law_dir
-    - gazette_year
-    - gazette_issue
-
-  fields:
-    law_dir:
-      type: string
-      description: Directory name on the server
-    gazette_issue:
-      type: integer
-      description: Official Gazette issue number
-    gazette_year:
-      type: integer
-      description: Year of publication
-    title:
-      type: string
-      description: Law title
-    text:
-      type: string
-      description: Full text of the law (extracted from PDF)
-    is_consolidated:
-      type: boolean
-      description: Whether this is a consolidated text version
-    filename:
-      type: string
-      description: Source PDF filename
-
 fetch:
-  method: pdf_extraction
   endpoints:
     directory: /3-zakon/ba/
+  method: pdf_extraction
   rate_limit:
-    requests_per_second: 1.0
     delay_ms: 1000
+    requests_per_second: 1.0
+schema:
+  fields:
+    filename:
+      description: Source PDF filename
+      type: string
+    gazette_issue:
+      description: Official Gazette issue number
+      type: integer
+    gazette_year:
+      description: Year of publication
+      type: integer
+    is_consolidated:
+      description: Whether this is a consolidated text version
+      type: boolean
+    law_dir:
+      description: Directory name on the server
+      type: string
+    text:
+      description: Full text of the law (extracted from PDF)
+      type: string
+    title:
+      description: Law title
+      type: string
+  key_fields:
+  - name: law_dir
+    required: false
+    type: string
+  - name: gazette_year
+    required: false
+    type: string
+  - name: gazette_issue
+    required: false
+    type: string
+source:
+  auth: none
+  country: BA
+  data_types:
+  - legislation
+  id: BA/BrckoDistrikt
+  license: Open Government Data
+  name: Brčko District Official Gazette (Službeni glasnik Brčko distrikta)
+  notes: 'Legislation of Brčko District, an autonomous administrative unit in Bosnia
+
+    and Herzegovina. Brčko District has its own legal system, separate from
+
+    the Federation of BiH and Republika Srpska.
+
+
+    Document access: PDF files in directory listing at /3-zakon/ba/
+
+    Each law has its own directory with original PDFs and amendments.
+
+    Consolidated texts (prečišćeni tekst) are preferred when available.
+
+
+    Coverage: ~200 laws covering all aspects of district governance
+
+    Languages: Bosnian, Croatian, Serbian (trilingual)
+
+    '
+  url: https://skupstinabd.ba

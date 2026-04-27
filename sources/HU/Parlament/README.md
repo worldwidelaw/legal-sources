@@ -10,7 +10,7 @@ This source fetches parliamentary documents (irományok) from the Hungarian Parl
 
 **Coverage:** Parliamentary cycles 38-42 (2006-present)
 
-**License:** Open Government Data
+**License:** [Open Government Data](https://njt.hu)
 
 ## What This Source Provides
 
@@ -128,6 +128,10 @@ python bootstrap.py update
 Both sources are complementary:
 - Use **HU/NJT** for current law and legal research
 - Use **HU/Parlament** for legislative process tracking and historical analysis
+
+## License
+
+Open Government Data — Hungarian parliamentary documents are freely reusable.
 
 ## Notes
 

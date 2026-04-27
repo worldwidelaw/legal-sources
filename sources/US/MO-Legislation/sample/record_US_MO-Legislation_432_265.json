@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/432.265",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:01:42.702134+00:00",
+  "title": "Missouri Revised Statutes § 432.265 - Automated transaction",
+  "text": "432.265.  Automated transaction. — In an automated transaction, the following rules apply:\n  (1)  A contract may be formed by the interaction of electronic agents of the parties, even if no individual was aware of or reviewed the electronic agents' actions or the resulting terms and agreements;\n  (2)  A contract may be formed by the interaction of an electronic agent and an individual, acting on the individual's own behalf or for another person, including by an interaction in which the individual performs actions that the individual is free to refuse to perform and which the individual knows or has reason to know will cause the electronic agent to complete the transaction or performance;\n  (3)  The terms of the contract are determined by the substantive law applicable to it.\n(L. 2003 H.B. 254)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=432.265",
+  "section_id": "432.265",
+  "chapter": "432",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

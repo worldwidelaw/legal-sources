@@ -38,3 +38,7 @@ python bootstrap.py bootstrap --sample   # Fetch sample data
 python bootstrap.py bootstrap            # Full data pull
 python bootstrap.py update 2026-01-01    # Incremental update
 ```
+
+## License
+
+[Open Government Data](https://www.corteconstitucional.gob.ec) — official decisions published by the Constitutional Court of Ecuador.

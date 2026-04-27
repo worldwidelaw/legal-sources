@@ -461,6 +461,7 @@ def main():
         action="store_true",
         help="Fetch oldest records first (for historical bootstrap)",
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

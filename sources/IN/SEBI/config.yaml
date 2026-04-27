@@ -1,26 +1,31 @@
-source:
-  id: IN/SEBI
-  name: Securities and Exchange Board of India - Orders & Circulars
-  country: IN
-  url: https://www.sebi.gov.in/
-  data_types:
-    - case_law
-    - doctrine
-  auth: none
-  description: >
-    Enforcement orders and regulatory circulars from SEBI.
-    Uses AJAX listing endpoint with session cookie for pagination,
-    then downloads PDFs and extracts full text via pdfplumber.
-    ~6,385 enforcement orders + ~2,762 circulars.
-
+fetch:
+  max_retries: 3
+  rate_limit: 1.5
+  timeout: 60
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - category
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: category
+    required: false
+    type: string
+source:
+  auth: none
+  country: IN
+  data_types:
+  - case_law
+  - doctrine
+  description: 'Enforcement orders and regulatory circulars from SEBI. Uses AJAX listing endpoint with session cookie for pagination, then downloads PDFs and extracts full text via pdfplumber. ~6,385 enforcement
+    orders + ~2,762 circulars.
 
-fetch:
-  rate_limit: 1.5
-  max_retries: 3
-  timeout: 60
+    '
+  id: IN/SEBI
+  name: Securities and Exchange Board of India - Orders & Circulars
+  url: https://www.sebi.gov.in/

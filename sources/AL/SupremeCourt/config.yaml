@@ -1,53 +1,38 @@
-source_id: "AL/SupremeCourt"
-name: "Albanian Supreme Court (Gjykata e Lartë)"
-country: "AL"
-language: "sq"
+access_method: gatsby_page_data_api
+api_base: https://www.gjykataelarte.gov.al/page-data
+country: AL
 data_types:
-  - caselaw
-url: "https://www.gjykataelarte.gov.al"
-
-description: |
-  Court decisions from the Supreme Court of Albania (Gjykata e Lartë).
-
-  Data sources:
-  1. Archive 1999-2019: Monthly bundle documents (.doc) containing multiple decisions
-     organized by year and month, plus United Colleges (Kolegje të Bashkuara) decisions.
-  2. Bulletins 2020+: Individual decision files (.doc) embedded in periodic and thematic
-     bulletins published by the court.
-
-  Court structure:
-  - Kolegji Civil (Civil College)
-  - Kolegji Penal (Penal College)
-  - Kolegji Administrativ (Administrative College)
-  - Kolegjet e Bashkuara (United Colleges)
-
-access_method: "gatsby_page_data_api"
-api_base: "https://www.gjykataelarte.gov.al/page-data"
-media_base: "https://gjykata-media.s3.eu-central-1.amazonaws.com"
-
+- caselaw
+description: "Court decisions from the Supreme Court of Albania (Gjykata e Lartë).\n\nData sources:\n1. Archive 1999-2019: Monthly bundle documents (.doc) containing multiple decisions\n   organized by\
+  \ year and month, plus United Colleges (Kolegje të Bashkuara) decisions.\n2. Bulletins 2020+: Individual decision files (.doc) embedded in periodic and thematic\n   bulletins published by the court.\n\
+  \nCourt structure:\n- Kolegji Civil (Civil College)\n- Kolegji Penal (Penal College)\n- Kolegji Administrativ (Administrative College)\n- Kolegjet e Bashkuara (United Colleges)\n"
 endpoints:
-  archive_1999_2019: "/sq/vendimet-e-gjykates/vendimet-1999-2019/page-data.json"
-  bulletins: "/sq/lajme/buletini/page-data.json"
-  bulletin_detail: "/sq/lajme/buletini/{slug}/page-data.json"
-
-schema:
-  key_fields:
-    - decision_number
-    - year
-    - month
-    - college
-  date_format: "ISO8601"
-  text_extraction: "textutil"  # macOS native, fallback to python-docx
-
+  archive_1999_2019: /sq/vendimet-e-gjykates/vendimet-1999-2019/page-data.json
+  bulletin_detail: /sq/lajme/buletini/{slug}/page-data.json
+  bulletins: /sq/lajme/buletini/page-data.json
+language: sq
+media_base: https://gjykata-media.s3.eu-central-1.amazonaws.com
+name: Albanian Supreme Court (Gjykata e Lartë)
+notes: "- Bundle documents in archive contain table of contents (PERMBAJTJA) with case summaries\n  followed by full text of each decision\n- Individual decisions in bulletins contain maxima (legal principle),\
+  \ keywords,\n  and full text summaries\n- All content is in Albanian language\n- Decision numbers follow format: Nr. XX or Nr. 00-YYYY-XXXX (XXX)\n- Coverage: 1999-present, thousands of decisions\n"
 rate_limit:
-  requests_per_second: 1
   delay_between_requests: 1.0
-
-notes: |
-  - Bundle documents in archive contain table of contents (PERMBAJTJA) with case summaries
-    followed by full text of each decision
-  - Individual decisions in bulletins contain maxima (legal principle), keywords,
-    and full text summaries
-  - All content is in Albanian language
-  - Decision numbers follow format: Nr. XX or Nr. 00-YYYY-XXXX (XXX)
-  - Coverage: 1999-present, thousands of decisions
+  requests_per_second: 1
+schema:
+  date_format: ISO8601
+  key_fields:
+  - name: decision_number
+    required: false
+    type: string
+  - name: year
+    required: false
+    type: string
+  - name: month
+    required: false
+    type: string
+  - name: college
+    required: false
+    type: string
+  text_extraction: textutil
+source_id: AL/SupremeCourt
+url: https://www.gjykataelarte.gov.al

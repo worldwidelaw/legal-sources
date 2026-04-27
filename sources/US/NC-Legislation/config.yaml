@@ -1,14 +1,20 @@
-source_id: US/NC-Legislation
-name: North Carolina General Statutes
 country: US
-jurisdiction: US-NC
-url: https://www.ncleg.gov/Laws/GeneralStatutes
 data_types:
-  - legislation
+- legislation
+jurisdiction: US-NC
 language: en
+name: North Carolina General Statutes
 schedule: quarterly
 schema:
   key_fields:
-    - _id
-    - chapter
-    - section_number
+  - name: _id
+    required: true
+    type: string
+  - name: chapter
+    required: false
+    type: string
+  - name: section_number
+    required: false
+    type: string
+source_id: US/NC-Legislation
+url: https://www.ncleg.gov/Laws/GeneralStatutes

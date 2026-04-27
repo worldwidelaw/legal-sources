@@ -1,0 +1,80 @@
+# ===================================================================
+# GI/GibraltarLaws -- Laws of Gibraltar (gibraltarlaws.gov.gi)
+# ===================================================================
+# Official consolidated legislation for Gibraltar. Contains ~8,300+
+# Acts, subsidiary legislation, EU regulations/decisions, and notices.
+#
+# Discovery: Single listing page at /legislations returns all items
+# Full text: PDF download via /legislations/{slug}-{id}/download
+# Format: PDF extracted via pdfplumber/pypdf
+# License: Crown copyright, free public access
+# ===================================================================
+
+source:
+  id: "GI/GibraltarLaws"
+  country: "GI"
+  name: "Laws of Gibraltar (gibraltarlaws.gov.gi)"
+  url: "https://www.gibraltarlaws.gov.gi/"
+  description: |
+    Official consolidated legislation for Gibraltar. Covers all primary
+    and secondary legislation, EU retained regulations and decisions,
+    notices, and repealed acts. Full text downloaded as PDF.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.gibraltarlaws.gov.gi"
+  listing_url: "/legislations"
+  download_pattern: "/legislations/{slug}-{id}/download"
+
+data_model:
+  type: "legislation"
+  primary_key: "slug_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "slug_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "slug_id"
+      description: "Slug-ID from URL (e.g., inquiry-rules-2026-8424)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Legislation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication/enactment date"
+      type: "string"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to original legislation page"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - PDF full text via /legislations/{slug}-{id}/download
+  - Single listing page returns all ~8,300+ items
+  - No API — HTML scraping of listing + PDF download
+  - Crown copyright, free public access
+  - Columns: DATE, LAST UPDATE, NUMBER, TITLE, TOPIC, TYPE

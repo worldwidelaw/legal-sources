@@ -118,3 +118,7 @@ Each record contains:
 - Full decision text extracted from `<BLOC_TEXTUEL>` elements
 - HTML tags are stripped from content
 - ECLI format: `ECLI:FR:CCASS:YYYY:{chamber}{number}`
+
+## License
+
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

@@ -247,6 +247,7 @@ def main():
                         help='Fetch updates since date (ISO format)')
     parser.add_argument('--limit', type=int, default=15,
                         help='Max documents for sample')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     fetcher = ContraloriaFetcher()

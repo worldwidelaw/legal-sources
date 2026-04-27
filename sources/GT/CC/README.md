@@ -28,3 +28,7 @@ Guatemala Constitutional Court decisions.
 
 - `requests`
 - PDF extraction: `PyMuPDF` (fitz), `PyPDF2`, or `pdfminer.six`
+
+## License
+
+[Open Government Data](https://jurisprudencia.cc.gob.gt/) — official decisions published by the Constitutional Court of Guatemala.

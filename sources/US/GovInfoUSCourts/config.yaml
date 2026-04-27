@@ -1,44 +1,45 @@
-source:
-  id: US/GovInfoUSCourts
-  name: GovInfo Federal Court Opinions (USCOURTS)
-  country: US
-  url: https://www.govinfo.gov/app/collection/uscourts
-
 data:
-  types:
-    - case_law
   court_types:
-    - appellate
-    - district
-    - bankruptcy
+  - appellate
+  - district
+  - bankruptcy
   coverage:
-    temporal: 2004 to present
-    estimated_size: 4,500,000+ opinions
     courts: 130+ federal courts
-
+    estimated_size: 4,500,000+ opinions
+    temporal: 2004 to present
+  types:
+  - case_law
 fetch:
-  method: GovInfo wssearch API + PDF download
-  search_url: https://www.govinfo.gov/wssearch/search
-  detail_url: https://www.govinfo.gov/wssearch/getContentDetail
-  content_url: https://www.govinfo.gov/content/pkg
-  metadata_url: https://www.govinfo.gov/metadata/granule
   auth:
-    type: none
     note: No API key required for wssearch and direct content
-  response_format: JSON (search), PDF (opinions)
+    type: none
+  content_url: https://www.govinfo.gov/content/pkg
+  detail_url: https://www.govinfo.gov/wssearch/getContentDetail
   full_text_format: PDF extracted to markdown
-
+  metadata_url: https://www.govinfo.gov/metadata/granule
+  method: GovInfo wssearch API + PDF download
+  response_format: JSON (search), PDF (opinions)
+  search_url: https://www.govinfo.gov/wssearch/search
 schema:
   key_fields:
-    - granule_id
-    - package_id
+  - name: granule_id
+    required: false
+    type: string
+  - name: package_id
+    required: false
+    type: string
   metadata:
-    - title
-    - date
-    - court_name
-    - court_type
-    - court_code
-    - circuit
-    - case_number
-    - parties
-    - docket_text
+  - title
+  - date
+  - court_name
+  - court_type
+  - court_code
+  - circuit
+  - case_number
+  - parties
+  - docket_text
+source:
+  country: US
+  id: US/GovInfoUSCourts
+  name: GovInfo Federal Court Opinions (USCOURTS)
+  url: https://www.govinfo.gov/app/collection/uscourts

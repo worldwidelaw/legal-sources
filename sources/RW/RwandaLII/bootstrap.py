@@ -297,6 +297,7 @@ if __name__ == "__main__":
     sub.add_parser("test-api", help="Test connectivity")
     boot = sub.add_parser("bootstrap", help="Fetch legislation")
     boot.add_argument("--sample", action="store_true", help="Fetch 15 sample records only")
+    boot.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

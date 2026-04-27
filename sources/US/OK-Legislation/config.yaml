@@ -1,16 +1,22 @@
-source_id: US/OK-Legislation
-name: Oklahoma Statutes
+auth: none
 country: US
-jurisdiction: US-OK
-url: https://www.oklegislature.gov/osStatuesTitle.aspx
 data_types:
-  - legislation
+- legislation
+jurisdiction: US-OK
 language: en
 license: public_domain
-auth: none
+name: Oklahoma Statutes
 schedule: monthly
 schema:
   key_fields:
-    - _id
-    - title_number
-    - title_name
+  - name: _id
+    required: true
+    type: string
+  - name: title_number
+    required: false
+    type: string
+  - name: title_name
+    required: false
+    type: string
+source_id: US/OK-Legislation
+url: https://www.oklegislature.gov/osStatuesTitle.aspx

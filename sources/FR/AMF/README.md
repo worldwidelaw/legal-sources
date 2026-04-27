@@ -38,4 +38,4 @@ python3 bootstrap.py list --feed all
 
 ## License
 
-AMF publications are official French regulatory documents (open data).
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

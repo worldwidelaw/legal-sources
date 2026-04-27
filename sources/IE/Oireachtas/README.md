@@ -27,7 +27,7 @@ legislative documents. The XML includes:
 
 ## License
 
-Oireachtas (Open Data) PSI Licence — Creative Commons Attribution 4.0 equivalent.
+Oireachtas (Open Data) PSI Licence — [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) equivalent. See [data.gov.ie licence](https://data.gov.ie/pages/licence).
 
 ## Usage
 

@@ -23,9 +23,9 @@ Each decision is downloaded as a ZIP file containing XML with full text.
 
 - **Case Law**: Patent appeals, trademark disputes, utility model proceedings
 
-## Legal Basis
+## License
 
-Data is public domain under German law (amtliche Werke, § 5 UrhG).
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).
 
 ## Fields Captured
 

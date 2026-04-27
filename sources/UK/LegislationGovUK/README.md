@@ -70,6 +70,10 @@ python bootstrap.py bootstrap
 python bootstrap.py update
 ```
 
+## License
+
+[Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) — free reuse with attribution.
+
 ## Notes
 
 - No authentication required

@@ -1,41 +1,53 @@
-source_id: CoE/VeniceCommission
-name: Venice Commission - CODICES Database
-country: CoE
-url: https://codices.coe.int
-data_types:
-  - doctrine
-  - case_law
-
 auth:
   type: none
-
+country: CoE
+data_types:
+- doctrine
+- case_law
 endpoints:
-  search: https://codices.coe.int/api/search
-  precis: https://codices.coe.int/api/precis/{id}
   constitution: https://codices.coe.int/api/constitution
   court_description: https://codices.coe.int/api/courtdescription
-
-rate_limit:
-  requests_per_second: 1
-  delay_between_requests: 1.0
-
-schema:
-  key_fields:
-    - _id
-    - referenceCode
-    - country
-    - decisionDate
-    - docType
-
+  precis: https://codices.coe.int/api/precis/{id}
+  search: https://codices.coe.int/api/search
 license: Open Access (Council of Europe)
+name: Venice Commission - CODICES Database
+notes: 'CODICES is the Venice Commission''s database of constitutional case law
 
-notes: |
-  CODICES is the Venice Commission's database of constitutional case law
   from 90+ constitutional courts worldwide. Contains ~12,500 precis (case
+
   law summaries with headnotes), ~22,000 constitutions, and ~4,500 full texts.
 
+
   API Access:
+
   - POST /api/search for discovery (returns IDs)
+
   - GET /api/precis/{id} for individual precis with full content
+
   - GET /api/constitution for all constitutions
+
   - Precis contain: headNote, summary, text, additionalInformation, crossReference
+
+  '
+rate_limit:
+  delay_between_requests: 1.0
+  requests_per_second: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: referenceCode
+    required: false
+    type: string
+  - name: country
+    required: false
+    type: string
+  - name: decisionDate
+    required: false
+    type: string
+  - name: docType
+    required: false
+    type: string
+source_id: CoE/VeniceCommission
+url: https://codices.coe.int

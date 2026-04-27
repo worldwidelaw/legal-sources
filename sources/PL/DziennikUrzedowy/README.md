@@ -44,4 +44,4 @@ python bootstrap.py update
 
 ## License
 
-Open Government Data - free for reuse.
+[Open Government Data](https://dane.gov.pl) — free for reuse under Polish open data policy.

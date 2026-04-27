@@ -294,6 +294,7 @@ def main():
     parser.add_argument("command", choices=["bootstrap", "update", "test-api"])
     parser.add_argument("--sample", action="store_true")
     parser.add_argument("--sample-size", type=int, default=15)
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
     fetcher = UKEFetcher()

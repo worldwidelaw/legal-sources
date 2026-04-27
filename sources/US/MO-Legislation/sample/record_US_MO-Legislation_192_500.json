@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/192.500",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T20:49:23.216687+00:00",
+  "title": "Missouri Revised Statutes § 192.500 - Inspection of cone beam computed tomography systems and panoramic x-ray systems, when",
+  "text": "192.500.  Inspection of cone beam computed tomography systems and panoramic x-ray systems, when. — 1.  For purposes of this section, the following terms shall mean:\n  (1)  \"Cone beam computed tomography system\", a medical imaging device using x-ray computed tomography to capture data using a cone-shaped x-ray beam;\n  (2)  \"Panoramic x-ray system\", an imaging device that captures the entire mouth in a single, two-dimensional image including the teeth, upper and lower jaws, and surrounding structures and tissues.\n  2.  Cone beam computed tomography systems and panoramic x-ray systems that cannot produce radiation intensity greater than thirty milligrays shall not be required to be inspected more frequently than every three years.\n  3.  Cone beam computed tomography systems that can produce radiation intensity of greater than thirty milligrays shall be inspected annually.\n  4.  In addition to the requirements of subsections 2 and 3 of this section, all cone beam computed tomography systems and panoramic x-ray systems shall be inspected within thirty days of installation and whenever moved within an office.\n  5.  Notwithstanding any law to the contrary, inspections of conventional x-ray equipment used exclusively on animals by a licensed veterinarian or veterinary facility under chapter 340 shall not be required to be inspected more frequently than every four years.\n(L. 2017 S.B. 50)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=192.500",
+  "section_id": "192.500",
+  "chapter": "192",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

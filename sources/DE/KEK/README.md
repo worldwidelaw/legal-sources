@@ -19,4 +19,4 @@ python3 bootstrap.py bootstrap --full
 
 ## License
 
-Public domain official works under German law (§ 5 UrhG).
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).

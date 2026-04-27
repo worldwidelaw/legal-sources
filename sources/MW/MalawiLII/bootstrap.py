@@ -198,7 +198,7 @@ class MalawiLIIScraper(BaseScraper):
                     "url": doc_url,
                 }
                 count += 1
-                yield self.normalize(raw)
+                yield raw
 
         logger.info(f"Completed: {count} acts fetched")
 
@@ -229,7 +229,7 @@ class MalawiLIIScraper(BaseScraper):
                     "url": doc["url"],
                 }
                 count += 1
-                yield self.normalize(raw)
+                yield raw
 
         logger.info(f"Updates: {count} acts fetched")
 
@@ -270,6 +270,7 @@ def main():
         action="store_true",
         help="Only fetch a small sample (for validation)",
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = MalawiLIIScraper()

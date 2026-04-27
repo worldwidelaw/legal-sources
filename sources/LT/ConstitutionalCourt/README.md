@@ -14,7 +14,7 @@ Data fetcher for Constitutional Court of the Republic of Lithuania (Lietuvos Res
 - **Time period**: 1993 onwards (since CC establishment)
 - **Total documents**: ~720 (as of 2026-02)
 - **Full text**: Yes (in Lithuanian)
-- **License**: CC BY 4.0
+- **License**: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 ## Data Access
 
@@ -73,6 +73,10 @@ Key fields from normalized records:
 | `document_type_lt` | Type in Lithuanian |
 | `court` | Court name in Lithuanian |
 | `court_en` | Court name in English |
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Lithuanian open government data.
 
 ## Notes
 

@@ -1,48 +1,57 @@
-source:
-  id: UK/LexAPI
-  name: UK Lex API (i.AI Government Lab)
-  country: UK
-  data_type: legislation
-  url: https://lex.lab.i.ai.gov.uk
-  license: Open Government Licence v3.0
-  language: en
-
 endpoints:
   base_url: https://lex.lab.i.ai.gov.uk
-  search: /legislation/search
   lookup: /legislation/lookup
-  text: /legislation/text
+  search: /legislation/search
   stats: /api/stats
-
-schema:
-  key_fields:
-    - legislation_id
-    - type
-    - year
-    - number
-  normalized_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-    - legislation_type
-    - year
-    - number
-    - category
-    - status
-    - extent
-    - description
-    - number_of_provisions
-
+  text: /legislation/text
 fetch:
   method: json_api
-  rate_limit: 1.0
-  notes: |
-    REST API by UK Government AI Lab (i.AI). No auth required.
+  notes: 'REST API by UK Government AI Lab (i.AI). No auth required.
+
     Enumeration via sequential lookup by type/year/number.
+
     Full text via POST /legislation/text endpoint.
+
     219K+ Acts and Statutory Instruments available.
+
+    '
+  rate_limit: 1.0
+schema:
+  key_fields:
+  - name: legislation_id
+    required: false
+    type: string
+  - name: type
+    required: false
+    type: string
+  - name: year
+    required: false
+    type: string
+  - name: number
+    required: false
+    type: string
+  normalized_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+  - legislation_type
+  - year
+  - number
+  - category
+  - status
+  - extent
+  - description
+  - number_of_provisions
+source:
+  country: UK
+  data_type: legislation
+  id: UK/LexAPI
+  language: en
+  license: Open Government Licence v3.0
+  name: UK Lex API (i.AI Government Lab)
+  url: https://lex.lab.i.ai.gov.uk

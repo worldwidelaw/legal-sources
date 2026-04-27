@@ -49,3 +49,7 @@ Key fields in normalized records:
 - Publications available in French, Dutch, and some English
 - Decision reference numbers follow pattern: (B)XXXX for decisions, (F)XXXX for studies
 - Rate limiting: 2 second delay between requests
+
+## License
+
+[Belgian Open Government Data](https://data.gov.be/en/licence-conditions) — free reuse of Belgian public sector information.

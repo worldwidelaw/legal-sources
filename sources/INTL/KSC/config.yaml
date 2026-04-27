@@ -1,0 +1,44 @@
+source:
+  id: "INTL/KSC"
+  name: "Kosovo Specialist Chambers"
+  description: "War crimes tribunal decisions, orders, judgments, and transcripts from the Kosovo Specialist Chambers repository"
+  url: "https://repository.scp-ks.org"
+  country: "INTL"
+  language: "EN"
+  data_types:
+    - case_law
+  auth:
+    type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  key_fields:
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true
+    - name: "case_number"
+      type: "string"
+      required: false
+    - name: "filing_id"
+      type: "string"
+      required: false
+    - name: "record_type"
+      type: "string"
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id

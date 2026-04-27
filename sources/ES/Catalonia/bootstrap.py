@@ -31,8 +31,12 @@ import json
 import logging
 import re
 import html
+import socket
 import ssl
 from pathlib import Path
+
+# Issue #502: hard safety net against silent socket hangs
+socket.setdefaulttimeout(120)
 from datetime import datetime, timezone
 from typing import Generator, Dict, Any, Optional
 from xml.etree import ElementTree as ET
@@ -205,7 +209,7 @@ class CataloniaScraper(BaseScraper):
         """
         try:
             self.rate_limiter.wait()
-            resp = self.session.get(xml_url, timeout=60)
+            resp = self.session.get(xml_url, timeout=(15, 60))
 
             if resp.status_code != 200:
                 logger.warning(f"XML fetch failed: HTTP {resp.status_code} for {xml_url}")
@@ -241,7 +245,7 @@ class CataloniaScraper(BaseScraper):
 
         try:
             self.rate_limiter.wait()
-            resp = self.session.get(SOCRATA_API, params=params, timeout=60)
+            resp = self.session.get(SOCRATA_API, params=params, timeout=(15, 60))
             resp.raise_for_status()
             return resp.json()
         except Exception as e:
@@ -329,7 +333,7 @@ class CataloniaScraper(BaseScraper):
 
         try:
             self.rate_limiter.wait()
-            resp = self.session.get(SOCRATA_API, params=params, timeout=60)
+            resp = self.session.get(SOCRATA_API, params=params, timeout=(15, 60))
             resp.raise_for_status()
             records = resp.json()
 
@@ -483,7 +487,7 @@ class CataloniaScraper(BaseScraper):
             resp = self.session.get(
                 SOCRATA_API,
                 params={"$select": "count(*) as total"},
-                timeout=30
+                timeout=(15, 30)
             )
             resp.raise_for_status()
             data = resp.json()

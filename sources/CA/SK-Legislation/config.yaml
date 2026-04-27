@@ -1,26 +1,46 @@
-source_id: CA/SK-Legislation
-name: Saskatchewan Publications Centre (Statutes & Regulations)
-country: CA
-jurisdiction: CA-SK
-data_types:
-  - legislation
-url: https://publications.saskatchewan.ca/
 api_base: https://publications.saskatchewan.ca/api/v1
 auth: none
+country: CA
+data_types:
+- legislation
+jurisdiction: CA-SK
+name: Saskatchewan Publications Centre (Statutes & Regulations)
+notes: 'Uses the official Publications Saskatchewan REST API (JSON). Statutes: productSubTypeId=2 (~515 active), Regulations: productSubTypeId=15 (~683 active). Full text extracted from free PDF downloads
+  via PyMuPDF.
+
+  '
 schedule: monthly
 schema:
   key_fields:
-    - _id
-    - _source
-    - _type
-    - title
-    - text
-    - date
-    - url
-    - doc_type
-    - custom_identifier
-    - jurisdiction
-notes: >
-  Uses the official Publications Saskatchewan REST API (JSON).
-  Statutes: productSubTypeId=2 (~515 active), Regulations: productSubTypeId=15 (~683 active).
-  Full text extracted from free PDF downloads via PyMuPDF.
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: doc_type
+    required: false
+    type: string
+  - name: custom_identifier
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string
+source_id: CA/SK-Legislation
+url: https://publications.saskatchewan.ca/

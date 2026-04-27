@@ -1,0 +1,51 @@
+id: TR/RekabetKurumu
+name: Turkish Competition Authority (Rekabet Kurumu)
+country: TR
+url: https://www.rekabet.gov.tr/tr/Kararlar
+description: >
+  Board decisions of the Turkish Competition Authority (Rekabet Kurumu).
+  Covers mergers & acquisitions, competition violations, negative assessments,
+  exemptions, and privatization decisions. Full text from PDF documents.
+  ~10,000+ decisions since 1997.
+data_types:
+  - case_law
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+license:
+  name: "Turkish Competition Authority (public decisions)"
+  url: "https://www.rekabet.gov.tr/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official government decisions are public records. No explicit terms restricting reuse."

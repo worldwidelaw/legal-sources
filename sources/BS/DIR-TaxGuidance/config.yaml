@@ -1,0 +1,81 @@
+# ===================================================================
+# BS/DIR-TaxGuidance -- Bahamas Department of Inland Revenue
+# ===================================================================
+# Tax guidance from Bahamas DIR: VAT guides, VAT rules, excise guidance,
+# business licence guidance, real property tax guidance.
+#
+# Primary: WordPress REST API (media endpoint for PDFs)
+# Format: PDFs at wp-content/uploads/
+# ===================================================================
+
+source:
+  id: "BS/DIR-TaxGuidance"
+  country: "BS"
+  name: "Bahamas Department of Inland Revenue Tax Guidance"
+  url: "https://inlandrevenue.finance.gov.bs"
+  description: |
+    Bahamas DIR tax guidance: VAT guides (12% rate since 2022), VAT rules,
+    VAT legislation, business licence guidance, real property tax guidance.
+    150+ PDFs available via WordPress REST API media endpoint.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "rest_api"
+  base_url: "https://inlandrevenue.finance.gov.bs"
+  media_endpoint: "/wp-json/wp/v2/media"
+
+data_model:
+  type: "doctrine"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document identifier (WP media ID)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Upload date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct PDF URL"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "category"
+      description: "Document category (VAT Guide, VAT Rule, Legislation, etc.)"
+      type: "string"
+      role: "category"
+      required: false
+
+notes: |
+  - WordPress REST API provides paginated PDF listing (no auth needed)
+  - 150+ PDFs including VAT guides, rules, acts, amendments, regulations
+  - Filter out forms and registration lists (not substantive guidance)
+  - PDF extraction via common/pdf_extract

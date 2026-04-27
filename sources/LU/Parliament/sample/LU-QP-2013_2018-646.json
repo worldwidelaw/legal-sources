@@ -1,0 +1,20 @@
+{
+  "_id": "LU-QP-2013_2018-646",
+  "_source": "LU/Parliament",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-17T09:52:06.132218+00:00",
+  "title": "le site Internet www.budget.l",
+  "text": "QUESTION:\nSelon nos recherches sur Internet, nous avons constaté que le site www.budget.public.lu serait logé sur un serveur installé à Roubaix en France.\nDans ce contexte, nous aimerions poser les questions suivantes à Monsieur le Ministre les Communications et à Monsieur le Ministre des Finances:\n- Messieurs les Ministres peuvent-ils nous confirmer cette donne?\n- Si oui, quelles sont les raisons de loger ce site Internet sur un serveur installé à l’étranger?\n- Dans le cadre «Digital Lëtzebuerg» et au vu des investissements importants dans des data centers Tier IV à Luxembourg, ne serait-il pas logique de loger un site du Gouvernement luxembourgeois auprès d’un fournisseur Tier IV installé à Luxembourg?\n\nRÉPONSE:\nTel qu’il ressort de la réponse à la question parlementaire n°0522 (cf. compte rendu n°1/session extraordinaire 2013-2014), le développement du site Internet a été confié à une société luxembourgeoise. En raison des délais, la société en question a également pris en charge l’hébergement, en attendant le transfert du site à une date ultérieure vers un des serveurs du Centre des technologies de l’information de l’État.\nPour des raisons pratiques, le site a effectivement été temporairement hébergé sur un serveur d’un opérateur situé hors du Luxembourg, auprès duquel la société disposait dans l’immédiat des ressources nécessaires.\nÀ noter encore que le site en question a depuis été rapatrié sur les serveurs du Centre des technologies de l’information de l’État.",
+  "date": "2014-10-23",
+  "url": "https://www.chd.lu/fr/question/12775",
+  "legislature": "2013_2018",
+  "question_number": "646",
+  "author": "Mme Diane Adehm et M. Gilles Roth(CSV)",
+  "political_party": "CSV",
+  "languages": "FR",
+  "question_date": "2014-10-23",
+  "answer_date": "2014-11-24",
+  "answer_author": "M. Pierre Gramegna,Ministre des Finances",
+  "question_pdf_url": "https://wdocs-pub.chd.lu/docs/exped/161/318/136107.pdf",
+  "answer_pdf_url": "https://wdocs-pub.chd.lu/docs/exped/171/342/137401.pdf"
+}

@@ -20,3 +20,7 @@ python3 bootstrap.py bootstrap --sample
 # Full fetch (~900 cases, ~3 hours due to crawl delay)
 python3 bootstrap.py bootstrap
 ```
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — ECRE/EDAL content licensed under Creative Commons Attribution 4.0.

@@ -44,9 +44,11 @@ There is no official REST API. The fetcher scrapes the search results and downlo
 
 Decisions are published as PDF documents. Full text is extracted using the `pypdf` library.
 
-## License / Usage Terms
+## License
 
-> The use of the documents and their text content for private use is permitted without authorization. Any form of commercial use requires consent from the Bundesnetzagentur.
+> ⚠️ **Commercial use restricted.** Any form of commercial use requires consent from the Bundesnetzagentur.
+
+[BNetzA Terms of Use](https://www.bundesnetzagentur.de/EN/General/LegalNotice/LegalNotice_node.html) — private use permitted without authorization.
 
 ## Usage
 

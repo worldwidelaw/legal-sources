@@ -1,0 +1,27 @@
+{
+  "_id": "CV_BO_100494",
+  "_source": "CV/BoletimOficial",
+  "_type": "legislation",
+  "_fetched_at": "2026-03-26T02:36:28.150635+00:00",
+  "title": "Resolução n.º 57/2026",
+  "text": "A celebração da Semana Santa encontra seu ápice no Tríduo Pascal, que compreende a Quinta-feira Santa, a Sexta-feira da Paixão e a Solene Vigília Pascal, no sábado à noite.\n\nAssim, \n\nTendo em conta a prática de concessão de tolerância de ponto na Semana Santa e a celebração da Páscoa em todo o Território Nacional; e \n\nNos termos do n.º 2 do artigo 265º da Constituição, o Governo aprova a seguinte Resolução:\n\nArtigo 1º\n\nTolerância de ponto\n\n1 - É concedida tolerância de ponto aos funcionários e agentes do Estado, dos Institutos Públicos e das Autarquias Locais no período de tarde da Quinta-feira Santa, dia 2 de abril de 2026, em todo o território nacional.\n\n2 - O horário de funcionamento e de comparência dos funcionários e trabalhadores dos serviços referidos no número anterior é das 8h00 às 12h00.\n\nArtigo 2º\n\nExclusão\n\nNão estão abrangidos pela presente tolerância de ponto a que se refere o artigo anterior, as Forças Armadas, a Polícia Nacional, a Polícia Judiciaria, os Estabelecimentos de Saúde, os Agentes Prisionais, os guardas e vigilantes e os serviços que laboram em regime ininterrupto, cuja presença se torne imperiosa, os quais continuarão a praticar os mesmos horários a que se encontram legalmente vinculados.\n\nArtigo 3º\n\nEntrada em vigor\n\nA presente Resolução entra em vigor no dia seguinte ao da sua publicação.\n\nAprovada em Conselho de Ministros do dia 17 de março de 2026. ― O Primeiro-Ministro, José Ulisses de Pina Correia e Silva.",
+  "date": "2026-03-24",
+  "url": "https://boe.incv.cv/Bulletins/View/100494",
+  "ref_act": 28665,
+  "part": {
+    "id": 19,
+    "code": "",
+    "description": "Resolução do Conselho de Ministros",
+    "hide": false,
+    "refParent": 1,
+    "parent": {
+      "id": 1,
+      "description": "I Série",
+      "hide": false,
+      "order": 0
+    },
+    "order": 0
+  },
+  "entities": [],
+  "language": "pt"
+}

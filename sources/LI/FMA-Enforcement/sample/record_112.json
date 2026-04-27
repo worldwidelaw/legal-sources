@@ -1,0 +1,14 @@
+{
+  "_id": "warning-en-204",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:45.037968Z",
+  "title": "[Abuse] Warning notice: dcapital(dot)global",
+  "text": "The Liechtenstein Financial Market Authority (FMA) points out that the operator of the website www(dot)dcapital(dot)globald does not have a FMA authorisation and is therefore not allowed to provide any financial services that are subject to authorisation under Liechtenstein law.",
+  "date": "2021-06-07",
+  "url": "https://www.fma-li.li/en/warning/warning-notice-dcapital-dot-global-204",
+  "language": "eng",
+  "category": "Abuse",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

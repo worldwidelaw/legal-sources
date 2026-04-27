@@ -1,0 +1,18 @@
+{
+  "_id": "MX-JAL-78848",
+  "_source": "MX/PoderJudicialJalisco",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-23T13:20:40.382985+00:00",
+  "title": "Toca 32/2025 — DÉCIMA SALA ESPECIALIZADA EN JUSTICIA INTEGRAL PARA ADOLESCENTES Y PENAL",
+  "text": "El documento trata sobre la resolución de un conflicto de competencia (TOCA 32/2025) entre el Juez Primero de Control de Chapala, Jalisco, y la Juez Segundo Especializada en Control de Zapotlán el Grande, Jalisco,  para determinar quién debe encargarse de la carpeta de Ejecución 013/2024, derivada de la causa penal 643/2019 contra un imputado por Robo Calificado.\n\nLa Juez de Zapotlán el Grande inicialmente recibió el expediente 643/2019 y lo registró bajo la carpeta de ejecución 93/2022. Sin embargo, al notar que el imputado, tras obtener libertad anticipada, había establecido su domicilio en otra localidad, declinó la competencia a favor del Juez de Chapala, basándose en los artículos 24 y 25 de la Ley Nacional de Ejecución Penal.\n\nEl Juez de Chapala, tras analizar el caso, rechazó la competencia declinada argumentando que los hechos ocurrieron en Zapotlán el Grande y que, por lo tanto, la Juez Segundo Especializada de ese distrito judicial era la competente.\n\nAnte este conflicto, la Décima Sala del Supremo Tribunal de Justicia del Estado de Jalisco asumió el caso. Tras analizar los argumentos de ambas partes y la jurisprudencia de la Suprema Corte de Justicia de la Nación, la Sala determinó que la Juez Segundo Especializada en Control de Zapotlán el Grande es la competente para conocer la carpeta de ejecución 013/2024.  La Sala basó su decisión en el hecho de que, si bien el imputado reside en otra localidad, la ejecución de la pena se lleva a cabo en el distrito judicial de Zapotlán el Grande, donde se cometieron los delitos y se otorgó la libertad condicional. Se ordenó al Juez de Chapala acatar la resolución y a la Juez de Zapotlán el Grande continuar con el proceso de ejecución.",
+  "date": "2025-04-08",
+  "url": "https://publica-sentencias-backend.stjjalisco.gob.mx/toca/78848/file",
+  "court": "DÉCIMA SALA ESPECIALIZADA EN JUSTICIA INTEGRAL PARA ADOLESCENTES Y PENAL",
+  "judge": "Mgdo. José Luis Gutiérrez Miranda",
+  "subject_area": "Penal",
+  "case_type": "PENAL ORAL",
+  "ruling": "IMPROCEDENTE",
+  "case_number": "32/2025",
+  "publication_date": "2025-05-30",
+  "crime_or_action": "ROBO CALIFICADO"
+}

@@ -75,6 +75,7 @@ schema:
       type: "string"
       role: "classification"
 
+      required: false
 # ── Notes ─────────────────────────────────────────────────────────
 notes: |
   - Language: English

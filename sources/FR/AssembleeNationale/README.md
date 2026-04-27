@@ -41,7 +41,7 @@ from the French National Assembly's Open Data portal with full text content.
 
 ## License
 
-Data is provided under the French Open License (Licence Ouverte / Open Licence).
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.
 
 ## Usage
 

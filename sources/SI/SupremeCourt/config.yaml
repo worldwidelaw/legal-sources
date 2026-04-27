@@ -1,81 +1,94 @@
+api:
+  databases:
+    IESP: Higher Courts
+    SEU: Court of Justice of the EU
+    SOVS: Supreme Court
+    UPRS: Administrative Court
+    VDSS: Higher Labor and Social Court
+  document_url: https://www.sodnapraksa.si/?id={doc_id}
+  pdf_url: https://www.sodnapraksa.si/printPdf.php?id={doc_id}
+  rate_limit: 2
+  search_url: https://www.sodnapraksa.si/
+schema:
+  fields:
+    court:
+      description: Court name
+      type: string
+    date:
+      description: Decision date (ISO 8601)
+      type: date
+    decision_number:
+      description: Court decision reference number
+      type: string
+    department:
+      description: Court department/division
+      type: string
+    disposition:
+      description: Disposition/ruling (Izrek)
+      type: string
+    ecli:
+      description: European Case Law Identifier
+      type: string
+    keywords:
+      description: Legal keywords/institutes
+      type: string
+    legal_area:
+      description: Legal area/field
+      type: string
+    references:
+      description: Legal references (Zveza)
+      type: string
+    summary:
+      description: Core summary (Jedro)
+      type: string
+    text:
+      description: Full reasoning text (Obrazložitev) - MANDATORY
+      type: string
+  key_fields:
+  - name: ecli
+    required: false
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
 source:
-  id: SI/SupremeCourt
-  name: Slovenian Case Law Database (sodnapraksa.si)
+  attribution: 'Javne informacije Slovenije, Vrhovno sodišče Republike Slovenije
+
+    https://www.sodnapraksa.si
+
+    '
   country: SI
-  type: caselaw
-  url: https://www.sodnapraksa.si
-  description: |
-    Slovenian court decisions from the Supreme Court and other courts.
+  description: 'Slovenian court decisions from the Supreme Court and other courts.
+
 
     Databases available:
+
     - SOVS: Vrhovno sodišče (Supreme Court)
+
     - IESP: Višja sodišča (Higher Courts)
+
     - VDSS: Višje delovno in socialno sodišče (Higher Labor and Social Court)
+
     - UPRS: Upravno sodišče (Administrative Court)
+
     - SEU: Sodišče Evropske unije (Court of Justice of the EU)
+
     - NEGM: Odmera nepremoženjske škode (Non-pecuniary Damage Assessment)
+
     - SOSC: Strokovni članki (Expert Articles)
+
     - SOPM: Pravna mnenja in stališča (Legal Opinions)
+
 
     Total: 283,450+ documents searchable via SOLR.
 
+    '
+  id: SI/SupremeCourt
   license: Open Government Data
   license_url: https://www.sodnapraksa.si
-  attribution: |
-    Javne informacije Slovenije, Vrhovno sodišče Republike Slovenije
-    https://www.sodnapraksa.si
-
-api:
-  search_url: https://www.sodnapraksa.si/
-  document_url: https://www.sodnapraksa.si/?id={doc_id}
-  pdf_url: https://www.sodnapraksa.si/printPdf.php?id={doc_id}
-  rate_limit: 2  # seconds between requests
-
-  # Database codes
-  databases:
-    SOVS: Supreme Court
-    IESP: Higher Courts
-    VDSS: Higher Labor and Social Court
-    UPRS: Administrative Court
-    SEU: Court of Justice of the EU
-
-schema:
-  key_fields:
-    - ecli
-    - decision_number
-    - date
-
-  fields:
-    ecli:
-      type: string
-      description: European Case Law Identifier
-    decision_number:
-      type: string
-      description: Court decision reference number
-    court:
-      type: string
-      description: Court name
-    department:
-      type: string
-      description: Court department/division
-    date:
-      type: date
-      description: Decision date (ISO 8601)
-    legal_area:
-      type: string
-      description: Legal area/field
-    keywords:
-      type: string
-      description: Legal keywords/institutes
-    summary:
-      type: string
-      description: Core summary (Jedro)
-    disposition:
-      type: string
-      description: Disposition/ruling (Izrek)
-    text:
-      type: string
-      description: Full reasoning text (Obrazložitev) - MANDATORY
-    references:
-      type: string
-      description: Legal references (Zveza)
+  name: Slovenian Case Law Database (sodnapraksa.si)
+  type: caselaw
+  url: https://www.sodnapraksa.si

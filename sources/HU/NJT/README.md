@@ -4,7 +4,7 @@
 **URL:** https://njt.hu
 **Country:** Hungary (HU)
 **Data Types:** Legislation
-**License:** CC BY 4.0 (Open Government Data)
+**License:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 ## Overview
 
@@ -66,6 +66,10 @@ python bootstrap.py bootstrap
 # Incremental update
 python bootstrap.py update
 ```
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Hungarian national legislation is open government data.
 
 ## References
 

@@ -1,54 +1,42 @@
-source:
-  id: US/LegiScan
-  name: LegiScan State Legislation API
-  country: US
-  data_types:
-    - legislation
-  base_url: https://api.legiscan.com
-
 auth:
-  type: api_key
   env_var: LEGISCAN_API_KEY
-  # Free tier: 30,000 queries/month. Register at
-  # https://legiscan.com/legiscan-register
-
-rate_limit:
-  requests_per_second: 1
-  burst: 2
-
-schema:
-  key_fields:
-    - bill_id
-
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
-  optional_fields:
-    - bill_number
-    - state
-    - session_id
-    - status
-    - sponsors
-    - subjects
-    - committee
-    - last_action
-    - history
-
+  type: api_key
 fetch:
-  # All 50 states + DC + US Congress via LegiScan's getSessionList → getDataset flow.
-  # Each getDataset call counts as 1 query and returns an entire session as a
-  # ZIP of per-bill JSON files, so a full historical backfill fits easily in
-  # the 30k/month free quota.
-  states:  # leave empty = all 52 jurisdictions
-    []
-  # Optional cutoff — set to a year_start to skip very old sessions.
   min_year: null
   pagination:
     delay_seconds: 1.0
+  states: []
+rate_limit:
+  burst: 2
+  requests_per_second: 1
+schema:
+  key_fields:
+  - name: bill_id
+    required: false
+    type: string
+  optional_fields:
+  - bill_number
+  - state
+  - session_id
+  - status
+  - sponsors
+  - subjects
+  - committee
+  - last_action
+  - history
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  base_url: https://api.legiscan.com
+  country: US
+  data_types:
+  - legislation
+  id: US/LegiScan
+  name: LegiScan State Legislation API

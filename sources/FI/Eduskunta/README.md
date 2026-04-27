@@ -49,4 +49,4 @@ python bootstrap.py update
 
 ## License
 
-Open Data - Public Domain (no restrictions on reuse)
+Open Data — Public Domain (no restrictions on reuse). See [Eduskunta Open Data](https://avoindata.eduskunta.fi).

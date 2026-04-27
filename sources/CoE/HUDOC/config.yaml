@@ -1,45 +1,62 @@
-source_id: CoE/HUDOC
-name: HUDOC (European Court of Human Rights)
-country: CoE
-url: https://hudoc.echr.coe.int
-data_types:
-  - caselaw
-
 auth:
   type: none
-
+country: CoE
+data_types:
+- caselaw
 endpoints:
-  search: https://hudoc.echr.coe.int/app/query/results
   full_text: https://hudoc.echr.coe.int/app/conversion/docx/html/body
-
-rate_limit:
-  requests_per_second: 1
-  delay_between_requests: 1.0
-
-schema:
-  key_fields:
-    - _id
-    - itemid
-    - docname
-    - kpdate
-    - doctype
-
+  search: https://hudoc.echr.coe.int/app/query/results
 license: Open Access (Council of Europe)
+name: HUDOC (European Court of Human Rights)
+notes: 'HUDOC is the official case-law database of the European Court of Human Rights.
 
-notes: |
-  HUDOC is the official case-law database of the European Court of Human Rights.
   Contains 227K+ judgments and decisions.
 
+
   API Access:
+
   - Search: POST to /app/query/results with query parameters
+
   - Full text: GET /app/conversion/docx/html/body?library=ECHR&id={itemid}
 
+
   Document types (doctype):
+
   - HEJUD: Judgments in English
+
   - HFJUD: Judgments in French
+
   - HEDEC: Decisions in English
+
   - HFDEC: Decisions in French
+
   - HECOMOLD: Commission reports
+
   - HFCOMOLD: Commission reports (French)
 
+
   The API returns JSON for search and HTML for full text.
+
+  '
+rate_limit:
+  delay_between_requests: 1.0
+  requests_per_second: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: itemid
+    required: false
+    type: string
+  - name: docname
+    required: false
+    type: string
+  - name: kpdate
+    required: false
+    type: string
+  - name: doctype
+    required: false
+    type: string
+source_id: CoE/HUDOC
+url: https://hudoc.echr.coe.int

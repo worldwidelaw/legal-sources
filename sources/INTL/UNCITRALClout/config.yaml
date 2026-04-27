@@ -1,29 +1,47 @@
-source:
-  id: INTL/UNCITRALClout
-  name: UNCITRAL CLOUT Case Law Database
-  country: INTL
-  url: https://www.uncitral.org/clout/search.jspx
-  data_types:
-    - case_law
-  auth: none
-  license: UN public domain
-
 api:
   base_url: https://www.uncitral.org
-  type: html_scraping
-  search_endpoint: /clout/search.jspx
   pagination: offset-based (start param, 10 per page)
   rate_limit_delay: 2.0
-
+  search_endpoint: /clout/search.jspx
+  type: html_scraping
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - url
-    - case_number
-    - country
-    - court
-    - legislative_text
-    - keywords
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: country
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: legislative_text
+    required: false
+    type: string
+  - name: keywords
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  id: INTL/UNCITRALClout
+  license: UN public domain
+  name: UNCITRAL CLOUT Case Law Database
+  url: https://www.uncitral.org/clout/search.jspx

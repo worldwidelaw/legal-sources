@@ -131,6 +131,15 @@ class MICourtsScraper(BaseScraper):
 
                 if resp.status_code == 429:
                     retry_after = int(resp.headers.get("Retry-After", 60))
+                    # Cap retry sleep at 15 minutes — if the API asks for more,
+                    # give up on this court so we don't block the VPS for hours.
+                    MAX_RETRY_SLEEP = 900
+                    if retry_after > MAX_RETRY_SLEEP:
+                        logger.warning(
+                            f"Rate limited with Retry-After={retry_after}s "
+                            f"(> {MAX_RETRY_SLEEP}s cap); skipping remainder of {court_id}"
+                        )
+                        break
                     logger.warning(f"Rate limited, sleeping {retry_after}s")
                     time.sleep(retry_after)
                     continue

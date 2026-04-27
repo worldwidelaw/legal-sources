@@ -1,68 +1,62 @@
-# EU/EPO -- European Patent Office Boards of Appeal Decisions
-#
-# Source: EPO Bulk Data Download Service (BDDS)
-# URL: https://publication-bdds.apps.epo.org
-# Product ID: 21 (14.6 EPO Boards of Appeal decisions)
-#
-# Data:
-#   - All Boards of Appeal decisions from 1979 to present (~51,000 decisions)
-#   - Full text XML with headnotes, facts, reasons, and orders
-#   - Updated twice yearly (March and September)
-#
-# Strategy:
-#   - Download bulk ZIP from BDDS API (no auth required for public products)
-#   - Extract and stream-parse the large XML file
-#   - Extract full text from structured elements
-
-name: "European Patent Office - Boards of Appeal"
-country: EU
-url: https://www.epo.org/en/law-practice/case-law-appeals
-data_types:
-  - case_law
-
-# BDDS API endpoint
 api:
   base_url: https://publication-bdds.apps.epo.org/bdds/bdds-bff-service/prod/api
   product_id: 21
-
 auth:
-  type: none  # Public data, no auth required
-
-rate_limit:
-  requests_per_second: 1
-  burst: 3
-
+  type: none
+country: EU
 data_model:
-  update_strategy: append_only  # Case law decisions don't change once published
   dedup_key:
-    - ecli  # Use ECLI as primary key
-
+  - ecli
+  update_strategy: append_only
+data_types:
+- case_law
+name: European Patent Office - Boards of Appeal
+rate_limit:
+  burst: 3
+  requests_per_second: 1
 schema:
-  key_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - text
   field_types:
+    _fetched_at: datetime
     _id: string
     _source: string
     _type: string
-    _fetched_at: datetime
-    title: string
-    text: string
-    date: date
-    url: url
-    ecli: string
-    case_number: string
-    decision_date: date
     board_code: string
+    case_number: string
+    date: date
+    decision_date: date
+    ecli: string
     language: string
+    text: string
+    title: string
+    url: url
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: _fetched_at
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - text
+url: https://www.epo.org/en/law-practice/case-law-appeals

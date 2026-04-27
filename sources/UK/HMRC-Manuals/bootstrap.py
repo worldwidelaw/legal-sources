@@ -30,7 +30,7 @@ SEARCH_API = "https://www.gov.uk/api/search.json"
 CONTENT_API = "https://www.gov.uk/api/content"
 GOV_UK = "https://www.gov.uk"
 
-RATE_LIMIT_DELAY = 1.5  # seconds between content API requests
+RATE_LIMIT_DELAY = 0.3  # seconds between content API requests
 SEARCH_PAGE_SIZE = 500  # max useful page size for search API
 CURL_TIMEOUT = 30
 
@@ -244,6 +244,14 @@ def normalize(raw: dict) -> dict:
     }
 
 
+def fetch_all(max_sections=None):
+    """Yield all HMRC manual sections as normalized records (pipeline-compatible)."""
+    for item in iterate_all_sections(max_sections=max_sections):
+        raw = extract_section_record(item)
+        if raw and raw["text"]:
+            yield normalize(raw)
+
+
 def bootstrap_sample(sample_dir: Path, count: int = 15) -> None:
     """Generate sample data files."""
     sample_dir.mkdir(parents=True, exist_ok=True)
@@ -353,6 +361,7 @@ def main():
                         help="Generate sample data only")
     parser.add_argument("--count", type=int, default=15,
                         help="Number of samples to generate")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

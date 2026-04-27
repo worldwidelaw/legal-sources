@@ -1,0 +1,66 @@
+# ===================================================================
+# PN/PacLII -- Pitcairn Islands Legislation & Court Decisions (PacLII)
+# ===================================================================
+# HTML scraping of PacLII Pitcairn Islands databases.
+# Full text in HTML pages for both case law and legislation.
+# ===================================================================
+
+source:
+  id: "PN/PacLII"
+  country: "PN"
+  name: "Pitcairn Islands Legislation & Court Decisions (PacLII)"
+  url: "https://www.paclii.org/pn/"
+  description: |
+    Pitcairn Islands case law and legislation via PacLII. Covers 3 courts
+    (Privy Council, Court of Appeal, Supreme Court) with ~25 decisions and
+    4 legislation databases with ~158 documents plus court rules. Full text
+    in HTML.
+
+data_types:
+  - case_law
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "2-second delay between requests. Browser User-Agent required."
+
+api:
+  type: "scraping"
+  base_url: "https://www.paclii.org"
+  endpoints:
+    cases: "/pn/cases/{court}/{year}/"
+    legislation: "/pn/legis/{type}/toc-{letter}.html"
+  response_format: "html"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "_id"
+      description: "Unique document ID from URL path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision/enactment date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Document URL on PacLII"
+      type: "string"
+      role: "reference"
+      required: true

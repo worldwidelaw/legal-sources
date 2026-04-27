@@ -1,33 +1,35 @@
-source:
-  id: DZ/CourSupreme
-  name: Algeria Supreme Court (Cour suprême)
-  country: DZ
-  data_types:
-    - case_law
-  language: ar
-  url: https://coursupreme.dz/
-  license: Public domain (government decisions)
-  notes: >
-    Algeria Supreme Court decisions via WordPress REST API custom post type.
-    1,261 decisions covering criminal, civil, commercial, family, real estate,
-    and combined chambers. Full text in Arabic with structured metadata.
-
-schema:
-  key_fields:
-    - _id
-    - wp_id
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
 api:
-  type: rest
   base_url: https://coursupreme.dz/wp-json/wp/v2/decision
   format: json
   rate_limit: 2
+  type: rest
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: wp_id
+    required: false
+    type: string
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  country: DZ
+  data_types:
+  - case_law
+  id: DZ/CourSupreme
+  language: ar
+  license: Public domain (government decisions)
+  name: Algeria Supreme Court (Cour suprême)
+  notes: 'Algeria Supreme Court decisions via WordPress REST API custom post type. 1,261 decisions covering criminal, civil, commercial, family, real estate, and combined chambers. Full text in Arabic with
+    structured metadata.
+
+    '
+  url: https://coursupreme.dz/

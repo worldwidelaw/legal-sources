@@ -1,0 +1,77 @@
+# ===================================================================
+# KY/OfficialGazette -- Cayman Islands Consolidated Legislation
+# ===================================================================
+# Current legislation from legislation.gov.ky: principal acts and
+# subordinate legislation (regulations). PDF extraction via
+# common.pdf_extract. No authentication required. Crawl delay 10s.
+# ===================================================================
+
+source:
+  id: "KY/OfficialGazette"
+  country: "KY"
+  name: "Cayman Islands Official Gazette"
+  url: "https://legislation.gov.ky/cms/legislation/current/by-title.html"
+  description: |
+    Consolidated legislation from the Cayman Islands government,
+    published via legislation.gov.ky. Includes principal acts and
+    subordinate legislation (regulations). PDF-only, extracted via
+    common.pdf_extract.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.1
+  burst: 1
+
+api:
+  type: "html_scraping"
+  base_url: "https://legislation.gov.ky"
+  endpoints:
+    by_title: "/cms/legislation/current/by-title.html"
+
+data_model:
+  type: "legislation"
+  primary_key: "item_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "item_number"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "item_number"
+      description: "Legislation item number (e.g. 2016-0006)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Short title of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Commencement date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the PDF"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "legislation_type"
+      description: "Type (principal/subordinate/amending)"
+    - name: "subject"
+      description: "Subject category"
+    - name: "language"
+      description: "Language code (eng)"

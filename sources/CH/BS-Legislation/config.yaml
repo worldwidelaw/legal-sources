@@ -1,25 +1,45 @@
-source_id: CH/BS-Legislation
-name: Kanton Basel-Stadt Gesetzessammlung (SG)
-country: CH
-jurisdiction: CH-BS
-data_types:
-  - legislation
-url: https://www.gesetzessammlung.bs.ch/
 api_base: https://www.gesetzessammlung.bs.ch/api/de
 auth: none
+country: CH
+data_types:
+- legislation
+jurisdiction: CH-BS
+name: Kanton Basel-Stadt Gesetzessammlung (SG)
+notes: 'Uses the LexWork REST API (Basel-Stadt SG). 907 in-force laws with full structured JSON text. No PDF extraction needed — text comes directly from the API.
+
+  '
 schedule: monthly
 schema:
   key_fields:
-    - _id
-    - _source
-    - _type
-    - title
-    - text
-    - date
-    - url
-    - doc_type
-    - systematic_number
-    - jurisdiction
-notes: >
-  Uses the LexWork REST API (Basel-Stadt SG). 907 in-force laws with full structured JSON text.
-  No PDF extraction needed — text comes directly from the API.
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: doc_type
+    required: false
+    type: string
+  - name: systematic_number
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string
+source_id: CH/BS-Legislation
+url: https://www.gesetzessammlung.bs.ch/

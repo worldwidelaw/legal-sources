@@ -1,34 +1,38 @@
-source:
-  id: LK/LawNet
-  name: LawNet Sri Lanka (Acts, Supreme Court & Appeal Court)
-  country: LK
-  url: https://www.lawnet.gov.lk/
-  description: >
-    Sri Lankan legal data aggregated from three open datasets by nuuuwan (CC BY 4.0):
-    Acts of Parliament (1981-2026, ~2,865 acts), Supreme Court judgments (2009-2026,
-    ~2,641 decisions), and Appeal Court judgments (2012-2026, ~10,574 decisions).
-    Full text extracted from official PDFs. Original sources: parliament.lk,
-    supremecourt.lk, courtofappeal.lk.
-  data_types:
-    - legislation
-    - case_law
-  auth: none
-  license: CC-BY-4.0
-
-schema:
-  key_fields:
-    - _id
-    - text
-    - date
-    - doc_type
-
 fetch:
-  method: api
   base_urls:
     acts_index: https://raw.githubusercontent.com/nuuuwan/lk_acts_data/main/data/hf/acts.json
-    sc_index: https://raw.githubusercontent.com/nuuuwan/lk_supreme_court_judgements/data/data/lk_supreme_court_judgements/summary.json
     ca_index: https://raw.githubusercontent.com/nuuuwan/lk_appeal_court_judgements/data/data/lk_appeal_court_judgements/docs_all.tsv
+    sc_index: https://raw.githubusercontent.com/nuuuwan/lk_supreme_court_judgements/data/data/lk_supreme_court_judgements/summary.json
   format: json+txt
+  method: api
   rate_limit:
-    requests_per_second: 5
     burst: 10
+    requests_per_second: 5
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: doc_type
+    required: false
+    type: string
+source:
+  auth: none
+  country: LK
+  data_types:
+  - legislation
+  - case_law
+  description: 'Sri Lankan legal data aggregated from three open datasets by nuuuwan (CC BY 4.0): Acts of Parliament (1981-2026, ~2,865 acts), Supreme Court judgments (2009-2026, ~2,641 decisions), and
+    Appeal Court judgments (2012-2026, ~10,574 decisions). Full text extracted from official PDFs. Original sources: parliament.lk, supremecourt.lk, courtofappeal.lk.
+
+    '
+  id: LK/LawNet
+  license: CC-BY-4.0
+  name: LawNet Sri Lanka (Acts, Supreme Court & Appeal Court)
+  url: https://www.lawnet.gov.lk/

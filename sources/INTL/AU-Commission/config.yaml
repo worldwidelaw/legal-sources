@@ -1,23 +1,29 @@
-source:
-  id: INTL/AU-Commission
-  name: African Union Legal Instruments
-  country: INTL
-  url: https://au.int/en/treaties
-  data_types:
-    - legislation
-  auth: none
-  description: >
-    African Union treaties, protocols, conventions, and charters.
-    ~79 instruments. Drupal 7 site with HTML detail pages and PDF downloads.
-
+fetch:
+  max_retries: 3
+  rate_limit: 1.5
+  timeout: 60
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - category
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: category
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - legislation
+  description: 'African Union treaties, protocols, conventions, and charters. ~79 instruments. Drupal 7 site with HTML detail pages and PDF downloads.
 
-fetch:
-  rate_limit: 1.5
-  max_retries: 3
-  timeout: 60
+    '
+  id: INTL/AU-Commission
+  name: African Union Legal Instruments
+  url: https://au.int/en/treaties

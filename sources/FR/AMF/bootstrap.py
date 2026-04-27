@@ -516,6 +516,7 @@ def main():
     # List command
     list_parser = subparsers.add_parser('list', help='List available documents')
     list_parser.add_argument('--source', choices=['sanctions', 'doctrine', 'all'], default='all')
+    list_parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

@@ -1,31 +1,45 @@
-source_id: US/MD-Courts
-name: Maryland Court of Appeals & Court of Special Appeals
-country: US
-data_types:
-  - case_law
-url: https://www.courts.state.md.us/appellate/
 auth:
   type: none
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - case_number
-    - court
-    - citation
-
+country: US
+data_types:
+- case_law
 fetch:
   base_url: https://www.courtlistener.com/api/rest/v4
   courts: md,mdctspecapp
   delay: 1.5
-
 license: Public Domain (government works)
+name: Maryland Court of Appeals & Court of Special Appeals
+notes: 'Maryland appellate opinions via CourtListener search API.
 
-notes: |
-  Maryland appellate opinions via CourtListener search API.
   Court of Appeals (md): Supreme Court of Maryland.
+
   Court of Special Appeals (mdctspecapp): Appellate Court of Maryland.
+
   ~49K opinions total. Full text extracted from PDFs using pdfplumber.
+
+  '
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: citation
+    required: false
+    type: string
+source_id: US/MD-Courts
+url: https://www.courts.state.md.us/appellate/

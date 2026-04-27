@@ -1,38 +1,47 @@
-source:
-  id: DE/BKartG
-  name: German Cartel Court (BGH Kartellsenat)
-  country: DE
-  url: https://www.rechtsprechung-im-internet.de
-  description: |
-    Case law from the Cartel Senate (Kartellsenat) of the German Federal Court
-    of Justice (Bundesgerichtshof). The Kartellsenat handles appeals in competition
-    law matters including antitrust, cartel enforcement, and merger control cases.
-
-    Data is sourced from rechtsprechung-im-internet.de, the official German federal
-    court decision database operated by the Federal Office of Justice.
-  data_types:
-    - caselaw
-  language: de
-  license: Public Domain (§ 5 UrhG - amtliche Werke)
-  auth: none
-
 fetcher:
-  type: xml_toc
-  toc_url: https://www.rechtsprechung-im-internet.de/rii-toc.xml
   filter: gericht="BGH Kartellsenat"
-  rate_limit: 1.5  # seconds between requests
+  rate_limit: 1.5
   timeout: 60
-
+  toc_url: https://www.rechtsprechung-im-internet.de/rii-toc.xml
+  type: xml_toc
 schema:
   key_fields:
-    - _id
-    - ecli
-    - aktenzeichen
+  - name: _id
+    required: true
+    type: string
+  - name: ecli
+    required: false
+    type: string
+  - name: aktenzeichen
+    required: false
+    type: string
   required_fields:
-    - _id
-    - _source
-    - _type
-    - title
-    - text
-    - date
-    - url
+  - _id
+  - _source
+  - _type
+  - title
+  - text
+  - date
+  - url
+source:
+  auth: none
+  country: DE
+  data_types:
+  - caselaw
+  description: 'Case law from the Cartel Senate (Kartellsenat) of the German Federal Court
+
+    of Justice (Bundesgerichtshof). The Kartellsenat handles appeals in competition
+
+    law matters including antitrust, cartel enforcement, and merger control cases.
+
+
+    Data is sourced from rechtsprechung-im-internet.de, the official German federal
+
+    court decision database operated by the Federal Office of Justice.
+
+    '
+  id: DE/BKartG
+  language: de
+  license: Public Domain (§ 5 UrhG - amtliche Werke)
+  name: German Cartel Court (BGH Kartellsenat)
+  url: https://www.rechtsprechung-im-internet.de

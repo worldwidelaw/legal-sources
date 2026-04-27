@@ -204,12 +204,12 @@ class CARFScraper(BaseScraper):
             "decision_text": decisao,
         }
 
-    def fetch_all(self, sample: bool = False) -> Generator[dict, None, None]:
-        """Fetch all CARF decisions via Solr pagination."""
-        if sample:
-            yield from self._fetch_sample()
-            return
+    def fetch_all(self) -> Generator[dict, None, None]:
+        """Fetch all CARF decisions via Solr pagination.
 
+        Yields raw Solr documents (not normalized). BaseScraper.bootstrap()
+        calls self.normalize() on each yielded record.
+        """
         checkpoint = self._load_checkpoint()
         start = checkpoint.get("last_start", 0)
         total_yielded = 0
@@ -234,10 +234,7 @@ class CARFScraper(BaseScraper):
                 break
 
             for doc in docs:
-                record = self.normalize(doc)
-                if not record["text"] or len(record["text"]) < 50:
-                    continue
-                yield record
+                yield doc
                 total_yielded += 1
 
             start += ROWS_PER_PAGE
@@ -250,43 +247,15 @@ class CARFScraper(BaseScraper):
 
         logger.info("Fetch complete. Total: %d documents", total_yielded)
 
-    def _fetch_sample(self) -> Generator[dict, None, None]:
-        """Fetch a diverse sample of 15 decisions from different years."""
-        count = 0
-        # Sample from different years for diversity
-        for year in ["2024", "2023", "2022", "2020", "2018", "2015", "2012", "2010"]:
-            if count >= 15:
-                break
-            result = self._solr_query(
-                q="*:*",
-                fq=f"ano_sessao_s:{year}",
-                start=0,
-                rows=2,
-                sort="dt_sessao_tdt desc",
-            )
-            if not result:
-                continue
-            docs = result["response"]["docs"]
-            for doc in docs:
-                if count >= 15:
-                    break
-                record = self.normalize(doc)
-                if not record["text"] or len(record["text"]) < 50:
-                    continue
-                yield record
-                count += 1
-                logger.info("  [%d] %s | %s | text=%d chars",
-                            count, record["date"], record["title"][:50], len(record["text"]))
-
-        logger.info("Sample complete: %d decisions fetched", count)
-
-    def fetch_updates(self, since: Optional[str] = None) -> Generator[dict, None, None]:
-        """Fetch decisions from the last 90 days."""
+    def fetch_updates(self, since=None) -> Generator[dict, None, None]:
+        """Fetch decisions from the last 90 days. Yields raw Solr docs."""
         if not since:
-            since = "NOW-90DAYS"
+            since_str = "NOW-90DAYS"
+        elif isinstance(since, str):
+            since_str = since + "T00:00:00Z"
         else:
-            since = since + "T00:00:00Z"
-        fq = f"dt_sessao_tdt:[{since} TO NOW]"
+            since_str = since.isoformat() + "Z"
+        fq = f"dt_sessao_tdt:[{since_str} TO NOW]"
         start = 0
         total = 0
 
@@ -299,10 +268,8 @@ class CARFScraper(BaseScraper):
             if not docs:
                 break
             for doc in docs:
-                record = self.normalize(doc)
-                if record["text"] and len(record["text"]) >= 50:
-                    yield record
-                    total += 1
+                yield doc
+                total += 1
             start += ROWS_PER_PAGE
 
         logger.info("Update complete: %d new records", total)
@@ -334,8 +301,9 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description='BR/CARF fetcher')
     parser.add_argument('command', choices=['bootstrap', 'update', 'test'])
-    parser.add_argument('--sample', action='store_true', help='Fetch 15 sample records')
+    parser.add_argument('--sample', action='store_true', help='Fetch sample records')
     parser.add_argument('--since', type=str, help='Date for update (YYYY-MM-DD)')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = CARFScraper()
@@ -345,22 +313,18 @@ def main():
         sys.exit(0 if success else 1)
 
     elif args.command == 'bootstrap':
-        SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-        count = 0
-        for record in scraper.fetch_all(sample=args.sample):
-            safe_name = re.sub(r'[^\w\-.]', '_', record['_id'])
-            out_file = SAMPLE_DIR / f"{safe_name}.json"
-            out_file.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding='utf-8')
-            count += 1
-        logger.info("Bootstrap complete: %d records saved to sample/", count)
+        if args.sample:
+            stats = scraper.bootstrap(sample_mode=True, sample_size=15)
+            count = stats.get("sample_records_saved", 0)
+        else:
+            stats = scraper.bootstrap()
+            count = stats.get("records_new", 0)
+        logger.info("Bootstrap complete: %s", json.dumps(stats, indent=2, default=str))
         sys.exit(0 if count >= 10 else 1)
 
     elif args.command == 'update':
-        count = 0
-        for record in scraper.fetch_updates(since=args.since):
-            count += 1
-            logger.info("  [%d] %s: %s", count, record["date"], record["title"][:50])
-        logger.info("Update complete: %d new records", count)
+        stats = scraper.update()
+        logger.info("Update complete: %s", json.dumps(stats, indent=2, default=str))
 
 
 if __name__ == '__main__':

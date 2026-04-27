@@ -1,26 +1,37 @@
-source:
-  id: BR/TJDFT
-  name: TJDFT - Federal District Court Open Data API
-  country: BR
-  url: https://jurisdf.tjdft.jus.br/
-  data_types:
-    - case_law
-  language: pt
-
 endpoints:
-  search: https://jurisdf.tjdft.jus.br/api/v1/pesquisa
   download: https://jurisdf.tjdft.jus.br/api/v1/pesquisa/download/{uuid}
-
-schema:
-  key_fields:
-    - _id
-    - _source
-    - _type
-    - title
-    - text
-    - date
-    - url
-
+  search: https://jurisdf.tjdft.jus.br/api/v1/pesquisa
 rate_limit:
   delay_seconds: 1.5
   max_page_size: 40
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+source:
+  country: BR
+  data_types:
+  - case_law
+  id: BR/TJDFT
+  language: pt
+  name: TJDFT - Federal District Court Open Data API
+  url: https://jurisdf.tjdft.jus.br/

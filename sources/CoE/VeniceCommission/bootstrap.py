@@ -319,6 +319,7 @@ def main():
     parser.add_argument("--count", type=int, default=15, help="Number of records to fetch")
     parser.add_argument("--country", type=str, default="", help="Country filter (3-letter code)")
     parser.add_argument("--since", type=str, help="Fetch records since date (YYYY-MM-DD)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

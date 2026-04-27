@@ -1,7 +1,7 @@
 id: MX/SCJNDatosAbiertosAPI
 name: Mexico SCJN Open Data Platform (JSON API)
 country: MX
-url: https://bj.scjn.gob.mx/datos-abiertos/
+url: https://sjf.scjn.gob.mx/SJFHome/home
 description: >
   Mexico Supreme Court (SCJN) open data platform with JSON REST API.
   560K+ documents including sentencias, tesis, ejecutorias, votos, acuerdos.

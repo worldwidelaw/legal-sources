@@ -1,21 +1,27 @@
-source:
-  id: TR/GIB-Ozelgeler
-  name: Turkish Revenue Administration Tax Rulings (Özelgeler)
-  country: TR
-  url: https://gib.gov.tr
-  data_types:
-    - doctrine
-  auth: none
-  language: tr
-  description: >
-    Binding tax rulings (özelgeler) issued by the Turkish Revenue
-    Administration (Gelir İdaresi Başkanlığı - GİB). Covers all Turkish tax
-    laws including income tax, VAT, corporate tax, and stamp duty.
-    ~18,000+ rulings from 2007 to present.
-
 schema:
   key_fields:
-    - _id
-    - num_ozelge
-    - date
-    - kanun
+  - name: _id
+    required: true
+    type: string
+  - name: num_ozelge
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: kanun
+    required: false
+    type: string
+source:
+  auth: none
+  country: TR
+  data_types:
+  - doctrine
+  description: 'Binding tax rulings (özelgeler) issued by the Turkish Revenue Administration (Gelir İdaresi Başkanlığı - GİB). Covers all Turkish tax laws including income tax, VAT, corporate tax, and stamp
+    duty. ~18,000+ rulings from 2007 to present.
+
+    '
+  id: TR/GIB-Ozelgeler
+  language: tr
+  name: Turkish Revenue Administration Tax Rulings (Özelgeler)
+  url: https://gib.gov.tr

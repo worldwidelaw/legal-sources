@@ -42,3 +42,7 @@ No API key required - all data is freely accessible.
 ## Rate Limits
 
 Be respectful with request frequency. The script uses 0.3s delay between requests.
+
+## License
+
+[Public domain](https://www.law.cornell.edu/uscode/text/17/105) — US government works under 17 U.S.C. § 105.

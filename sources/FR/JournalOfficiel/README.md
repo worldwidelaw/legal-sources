@@ -103,3 +103,7 @@ Each record contains:
 - Recommended rate limit: 1 request/second
 - Full text is extracted from LEGIARTI `<BLOC_TEXTUEL>` elements
 - HTML tags are stripped from content
+
+## License
+
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

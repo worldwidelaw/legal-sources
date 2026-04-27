@@ -1,33 +1,34 @@
-source:
-  id: MK/ConstitutionalCourt
-  name: North Macedonia Constitutional Court (Уставен суд)
-  country: MK
-  data_types:
-    - case_law
-  language: mk
-  url: https://ustavensud.mk
-  license: Open Data
-  notes: >
-    7,947 case law documents via WordPress REST API (1991-present).
-    Decisions (одлуки), resolutions (решенија), separate opinions.
-    Full text in content.rendered field. Macedonian language.
-
-schema:
-  key_fields:
-    - _id
-    - wp_id
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
 api:
-  type: wordpress_rest
   base_url: https://ustavensud.mk/wp-json/wp/v2/posts
   format: json
   rate_limit: 1
+  type: wordpress_rest
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: wp_id
+    required: false
+    type: string
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  country: MK
+  data_types:
+  - case_law
+  id: MK/ConstitutionalCourt
+  language: mk
+  license: Open Data
+  name: North Macedonia Constitutional Court (Уставен суд)
+  notes: '7,947 case law documents via WordPress REST API (1991-present). Decisions (одлуки), resolutions (решенија), separate opinions. Full text in content.rendered field. Macedonian language.
+
+    '
+  url: https://ustavensud.mk

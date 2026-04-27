@@ -1,0 +1,71 @@
+# ===================================================================
+# KW/MOF-TaxGuidance -- Kuwait Ministry of Finance Tax Guidance
+# ===================================================================
+# Scrapes tax laws, decree-laws, ministerial decisions, circulars,
+# periodic letters, guidance manuals, and DMTT documents from
+# mof.gov.kw ASPX pages. ~252 PDFs. No auth required.
+# ===================================================================
+
+source:
+  id: "KW/MOF-TaxGuidance"
+  country: "KW"
+  name: "Kuwait Ministry of Finance Tax Guidance"
+  url: "https://www.mof.gov.kw"
+  description: |
+    Kuwait Ministry of Finance tax-related documents including laws,
+    decree-laws, ministerial decisions, circulars, periodic letters,
+    guidance manuals, DMTT/Pillar Two legislation, and FATCA/CRS
+    materials. All documents are PDFs on static ASP.NET pages.
+    Arabic primary with some English translations.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.mof.gov.kw"
+
+data_model:
+  type: "doctrine"
+  primary_key: "pdf_url"
+  update_strategy: "upsert"
+  dedup_key:
+    - "pdf_url"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "title"
+      description: "Document title (Arabic or English)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "section"
+      description: "Source section (laws, decrees, circulars, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "url"
+      description: "Direct URL to the PDF file"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - ~252 PDFs across tax laws, decrees, circulars, guidance manuals, DMTT docs
+  - ASP.NET WebForms site, static HTML pages with direct PDF links
+  - No API available; double taxation agreements inaccessible (internal API only)
+  - Arabic primary, some English translations available
+  - No WAF or rate limiting detected

@@ -71,6 +71,10 @@ python3 bootstrap.py bootstrap
 - Maximum 3 retries per request
 - 120 second timeout
 
+## License
+
+[EUR-Lex legal notice](https://eur-lex.europa.eu/content/legal-notice/legal-notice.html) — EU agency publications, reuse authorised with attribution.
+
 ## Notes
 
 - PDFs are stored under `/system/files/` path

@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/472.445",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:34:56.308013+00:00",
+  "title": "Missouri Revised Statutes § 472.445 - Catalogue of electronic communications, disclosure to agent, when",
+  "text": "472.445.  Catalogue of electronic communications, disclosure to agent, when. — Unless otherwise ordered by the court, directed by the principal, or provided by a power of attorney, a custodian shall disclose to an agent with specific authority over digital assets or general authority to act on behalf of a principal a catalogue of electronic communications sent or received by the principal and digital assets, other than the content of electronic communications, of the principal if the agent gives the custodian:\n  (1)  A written request for disclosure in physical or electronic form;\n  (2)  An original or a copy of the power of attorney that gives the agent specific authority over digital assets or general authority to act on behalf of the principal;\n  (3)  A certification by the agent, under penalty of perjury, that the power of attorney is in effect; and\n  (4)  If requested by the custodian for the purpose of identifying the correct account of the correct user:\n  (a)  A number, username, address, or other unique subscriber or account identifier assigned by the custodian to identify the principal's account; or\n  (b)  Evidence linking the account to the principal.\n(L. 2018 H.B. 1250)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=472.445",
+  "section_id": "472.445",
+  "chapter": "472",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

@@ -13,6 +13,10 @@ Finnish Tax Authority detailed guidance from Verohallinto (vero.fi).
 
 ~1,790 documents: guidance (~472), advance rulings (~1,134), decisions (~118), statements (~55). Language: Finnish (some English translations available).
 
+## License
+
+Public sector information — reuse permitted under Finnish open data terms. See [vero.fi](https://www.vero.fi).
+
 ## Usage
 
 ```bash

@@ -22,5 +22,9 @@ python bootstrap.py bootstrap           # Full fetch
 python bootstrap.py update              # Incremental update
 ```
 
+## License
+
+[PCA Terms](https://pca-cpa.org/en/terms-of-use/) — published awards are publicly available. Verify PCA terms before commercial redistribution.
+
 ## Dependencies
 - requests, beautifulsoup4, PyMuPDF (fitz)

@@ -1,22 +1,30 @@
-source:
-  id: INTL/HFforLegalCaseLaw
-  name: "HuggingFace for Legal Global Case Law Dataset"
-  country: INTL
-  url: https://huggingface.co/datasets/HFforLegal/case-law
-  data_types:
-    - case_law
-  auth: none
-  license: "CC-BY-4.0"
-  description: >
-    541,371 US state court decisions with full text from 37 states.
-    Accessed via HuggingFace datasets-server REST API (streaming, no bulk download).
-    Average document length ~17K chars.
-  method: "HuggingFace datasets-server REST API (paginated JSON)"
-
 schema:
   key_fields:
-    - citation
-    - docket_number
-    - state
-    - issuer
-    - hash
+  - name: citation
+    required: false
+    type: string
+  - name: docket_number
+    required: false
+    type: string
+  - name: state
+    required: false
+    type: string
+  - name: issuer
+    required: false
+    type: string
+  - name: hash
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: '541,371 US state court decisions with full text from 37 states. Accessed via HuggingFace datasets-server REST API (streaming, no bulk download). Average document length ~17K chars.
+
+    '
+  id: INTL/HFforLegalCaseLaw
+  license: CC-BY-4.0
+  method: HuggingFace datasets-server REST API (paginated JSON)
+  name: HuggingFace for Legal Global Case Law Dataset
+  url: https://huggingface.co/datasets/HFforLegal/case-law

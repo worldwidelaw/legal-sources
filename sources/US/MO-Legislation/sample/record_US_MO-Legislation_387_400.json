@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/387.400",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T01:23:11.689187+00:00",
+  "title": "Missouri Revised Statutes § 387.400 - Definitions",
+  "text": "387.400.  Definitions. — As used in sections 387.400 to 387.440, the following terms mean:\n  (1)  \"Department\", the Missouri department of revenue;\n  (2)  \"Digital network\", any online-enabled technology application, website, or system offered or utilized by a transportation network company that enables the prearrangement of rides with transportation network company drivers;\n  (3)  \"Prearranged ride\", the provision of transportation by a TNC driver to a rider, beginning when a TNC driver accepts a ride requested by a rider through a digital network controlled by a transportation network company, continuing while the TNC driver transports a requesting rider, and ending when the last requesting rider departs from the TNC vehicle.  A prearranged ride shall not include:\n  (a)  Transportation provided using a taxi, limousine, or other for-hire vehicle under chapter 390; or\n  (b)  A shared-expense carpool or vanpool arrangement or service;\n  (4)  \"Transportation network company\" or \"TNC\", a corporation, partnership, sole proprietorship, or other entity that is licensed pursuant to sections 387.400 to 387.440 and operating in the state of Missouri, that uses a digital network to connect TNC riders to TNC drivers who provide prearranged rides.  A TNC shall not be deemed to own, control, direct, operate, or manage the TNC vehicles or TNC drivers that connect to its digital network, except where agreed to by written contract;\n  (5)  \"Transportation network company (TNC) driver\" or \"driver\", an individual who:\n  (a)  Receives connections to potential riders from a transportation network company in exchange for payment of a fee to the transportation network company; and\n  (b)  Uses a TNC vehicle to offer or provide a prearranged ride to riders upon connection through a digital network controlled by a transportation network company in return for compensation;\n  (6)  \"Transportation network company (TNC) rider\" or \"rider\", an individual or persons who use a TNC's digital network to connect with a TNC driver who provides prearranged rides to the rider in the TNC driver's TNC vehicle between points chosen by the rider;\n  (7)  \"Transportation network company (TNC) vehicle\" or \"TNC vehicle\", a vehicle that is used by a transportation network company driver and is:\n  (a)  Owned, leased, or otherwise authorized for use by the TNC driver; and\n  (b)  Not a taxicab, limousine, or for-hire vehicle under chapter 390.\n(L. 2017 H.B. 130)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=387.400",
+  "section_id": "387.400",
+  "chapter": "387",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

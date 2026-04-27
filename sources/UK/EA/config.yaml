@@ -51,7 +51,7 @@ data_model:
 # ── Schema ────────────────────────────────────────────────────────
 schema:
   key_fields:
-    - name: "content_id"
+    - name: "_id"
       type: "string"
       role: "primary_key"
     - name: "title"

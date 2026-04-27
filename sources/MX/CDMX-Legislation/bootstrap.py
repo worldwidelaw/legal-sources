@@ -17,10 +17,8 @@ Usage:
   python bootstrap.py test               # Quick connectivity test
 """
 
-import io
 import re
 import sys
-import json
 import time
 import hashlib
 import logging
@@ -47,7 +45,6 @@ logger = logging.getLogger("legal-data-hunter.MX.CDMX-Legislation")
 
 LISTING_URL = "https://www.congresocdmx.gob.mx/marco-legal-cdmx-107-2.html"
 BASE_URL = "https://www.congresocdmx.gob.mx"
-SAMPLE_DIR = Path(__file__).parent / "sample"
 SOURCE_ID = "MX/CDMX-Legislation"
 
 HEADERS = {
@@ -159,7 +156,6 @@ class CDMXLegislationScraper(BaseScraper):
             'pub_date': law['pub_date'],
             'reform_info': law['reform_info'],
             'pdf_size': len(resp.content),
-            'page_count': len(PdfReader(io.BytesIO(resp.content)).pages),
         }
 
     def normalize(self, raw: dict) -> dict:
@@ -177,7 +173,6 @@ class CDMXLegislationScraper(BaseScraper):
             'date': iso_date,
             'pub_date_raw': raw.get('pub_date', ''),
             'reform_info': raw.get('reform_info', ''),
-            'page_count': raw.get('page_count', 0),
             'url': raw['pdf_url'],
         }
 
@@ -198,7 +193,7 @@ class CDMXLegislationScraper(BaseScraper):
                 record = self.normalize(raw)
                 yield record
                 total += 1
-                logger.info(f"  OK: {len(raw['text'])} chars, {raw['page_count']} pages")
+                logger.info(f"  OK: {len(raw['text'])} chars")
             else:
                 logger.warning(f"  SKIP: {law['title'][:60]}")
 
@@ -235,15 +230,7 @@ if __name__ == "__main__":
             sys.exit(1)
 
     elif command == "bootstrap":
-        SAMPLE_DIR.mkdir(exist_ok=True)
-        count = 0
-        for record in scraper.fetch_all(sample=sample):
-            if sample:
-                fname = SAMPLE_DIR / f"{record['_id']}.json"
-                with open(fname, 'w', encoding='utf-8') as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-        logger.info(f"Bootstrap complete: {count} records")
+        scraper.bootstrap(sample_mode=sample)
 
     elif command == "update":
         count = 0

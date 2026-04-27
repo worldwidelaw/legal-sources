@@ -1,0 +1,31 @@
+source:
+  id: HK/SFC
+  name: Hong Kong Securities and Futures Commission Enforcement
+  country: HK
+  url: https://www.sfc.hk/en/Regulatory-functions/Enforcement
+  data_types:
+    - case_law
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+schema:
+  key_fields:
+    - name: ref_no
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - ref_no

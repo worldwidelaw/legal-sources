@@ -1,0 +1,14 @@
+{
+  "_id": "warning-de-206",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:33.000430Z",
+  "title": "[Missbrauch] Warnung: www[dot]investexp[dot]de",
+  "text": "Die Finanzmarktaufsicht (FMA) Liechtenstein weist darauf hin, dass die Betreiber der nachfolgend genannten Webseiten über keine spezialgesetzliche Bewilligung der FMA verfügen und keine spezialgesetzlich bewilligungspflichtigen Finanzdienstleistungen anbieten dürfen.   www[dot]investexp[dot]de www[dot]finanzexp[dot]de www[dot]beexp[dot]de www[dot]europexp[dot]de www[dot]bexstock[dot]com   Es wird zudem unzulässig das Logo der FMA in Vertragsunterlagen verwendet und damit der falsche Anschein einer Prüfung oder Aufsicht durch die FMA erzeugt.  ",
+  "date": "2021-02-23",
+  "url": "https://www.fma-li.li/de/warning/warnung-www-dot-investexp-dot-de-206",
+  "language": "deu",
+  "category": "Missbrauch",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

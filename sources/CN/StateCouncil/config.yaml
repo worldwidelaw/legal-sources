@@ -1,0 +1,43 @@
+id: CN/StateCouncil
+name: China State Council Administrative Regulations (国务院行政法规)
+country: CN
+url: https://flk.npc.gov.cn/
+description: >
+  State Council administrative regulations from China's NPC National Laws Database.
+  Uses flfgCodeId=[210, 215] to filter for 行政法规 (administrative regulations)
+  and their amendment/repeal decisions. 818+ documents. Full text via DOCX download.
+  Chinese language.
+data_types:
+  - legislation
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.3
+  burst: 1
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true

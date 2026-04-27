@@ -1,0 +1,13 @@
+{
+  "_id": "CA/CompetitionBureau/a29e6459-f948-41d8-8eca-0089f952c161",
+  "_source": "CA/CompetitionBureau",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-17T09:51:59.517580+00:00",
+  "title": "Tips for searching",
+  "text": "What is searched The search will query all CA Identification Numbers that have been \"issued\" or \"cancelled\" by the Competition Bureau. A maximum of 100 records will be returned from a search. You can search for a CA Identification Number (it must be a five digit number). You can search for a company name. You can search for all CA Identification Numbers from a selected province (a maximum of 100 records will be returned). You can search for a combination of a company name and a province. If you enter a CA Identification Number, then you do not need to enter a company name and/or province. Search syntax When entering a company name, you can only search for ONE company name at a time. You cannot use boolean operators such as \"AND\" to search for more than one company. For example: if you enter \"Company A and Company B\" you will NOT have any results. Putting your text in quotation marks is not necessary. For example: \"123 Company Ltd. \" will return the same results as 123 Company Ltd. (without the quotes). Wildcards (such as using an asterisk), will NOT work to search for word variances. For example: Company* will NOT have any results. If you do not know the full spelling of a company name, then just type in partial text. The search looks for partial words. For example, entering \"123 Company\" will return \"123 Company\" and \"123 Company Ltd. \".",
+  "date": "2022-01-20",
+  "url": "https://competition-bureau.canada.ca/en/node/96",
+  "doc_category": "other",
+  "drupal_id": "a29e6459-f948-41d8-8eca-0089f952c161",
+  "language": "en"
+}

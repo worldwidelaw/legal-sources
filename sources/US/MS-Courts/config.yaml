@@ -1,0 +1,37 @@
+auth:
+  type: none
+country: US
+data_types:
+- case_law
+fetch:
+  base_url: https://www.courtlistener.com/api/rest/v4
+  courts: miss,missctapp
+  delay: 1.5
+license: Public Domain (government works)
+name: Mississippi State Courts
+notes: 'Mississippi appellate opinions via CourtListener search API. ~71K opinions. Full text from PDFs.'
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: citation
+    required: false
+    type: string
+source_id: US/MS-Courts
+url: https://courts.ms.gov/

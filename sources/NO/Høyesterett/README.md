@@ -68,6 +68,10 @@ Each record contains:
 | `judges` | Names of judges |
 | `parties` | Anonymized party names |
 
+## License
+
+Public domain — court decisions are public records under the Norwegian Copyright Act.
+
 ## Notes
 
 - Some decisions are marked "Full tekst til avgjørelsen er ikke tilgjengelig" (full text not available) - these are skipped

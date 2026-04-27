@@ -1,0 +1,26 @@
+last_bootstrap: null
+last_error: '''str'' object has no attribute ''get'''
+last_run: '2026-04-25T18:06:50.700365+00:00'
+run_history:
+- error_message: '''str'' object has no attribute ''get'''
+  errors: 0
+  finished_at: '2026-04-25T18:05:35.858178+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-25T18:05:32.063113+00:00'
+- errors: 0
+  finished_at: '2026-04-25T18:06:50.700365+00:00'
+  records_fetched: 12
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 12
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-25T18:06:25.447103+00:00'
+total_records: 0

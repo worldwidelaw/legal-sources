@@ -68,3 +68,7 @@ Each record includes:
 - Full text fetched from /content/ECLI:... endpoint
 - Rate limited to 1.5 seconds between requests
 - Supports checkpoint/resume for large fetches
+
+## License
+
+[Belgian Open Government Data](https://data.gov.be/en/licence-conditions) — free reuse of Belgian public sector information.

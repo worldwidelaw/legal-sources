@@ -62,4 +62,4 @@ python bootstrap.py bootstrap --full
 
 ## License
 
-Belgian Federal Government Open Data
+[Belgian Open Government Data](https://data.gov.be/en/licence-conditions) — free reuse of Belgian public sector information.

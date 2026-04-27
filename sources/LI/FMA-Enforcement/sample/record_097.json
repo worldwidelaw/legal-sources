@@ -1,0 +1,14 @@
+{
+  "_id": "warning-en-1010",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:41.138178Z",
+  "title": "[Clone Firm] Warning: e-mail address corporate[at]bankfrick.cc",
+  "text": "The Liechtenstein Financial Market Authority (FMA) points out that there is no connection between the e-mail address corporate[at]bankfrick.cc and the Liechtenstein Bank Frick AG, Landstrasse 14, 9496 Balzers (register number: FL-0001.548.501-4).   The operators of the e-mail address corporate[at]bankfrick.cc unlawfully use the name, the address and the website of Bank Frick AG. The operators of the e-mail address corporate[at]bankfrick.cc are not licensed or registered by the FMA and are therefore not allowed to provide any financial services that are subject to authorisation or registration under Liechtenstein law. They are not subject to supervision by the FMA.",
+  "date": "2024-09-03",
+  "url": "https://www.fma-li.li/en/warning/warning-e-mail-address-corporate-at-bankfrick-cc-1010",
+  "language": "eng",
+  "category": "Clone Firm",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

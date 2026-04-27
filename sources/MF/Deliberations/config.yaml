@@ -1,0 +1,75 @@
+# ===================================================================
+# MF/Deliberations -- Saint-Martin Territorial Council Deliberations
+# ===================================================================
+# Prismic CMS API for 2,675+ deliberations from the Collectivité de
+# Saint-Martin (executive council + territorial council decisions).
+# Full text via PDF extraction from Prismic CDN.
+# ===================================================================
+
+source:
+  id: "MF/Deliberations"
+  country: "MF"
+  name: "Saint-Martin Deliberations"
+  url: "https://www.com-saint-martin.fr/deliberations_actes/deliberations"
+  description: |
+    Official deliberations of the Collectivité de Saint-Martin
+    (French overseas collectivity). Covers executive council and
+    territorial council decisions on legislation, regulations,
+    urban planning, fiscal policy, and public administration.
+    Data accessed via Prismic CMS REST API.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  notes: "Prismic CDN is rate-friendly. 0.5s delay between PDF downloads."
+
+api:
+  type: "rest"
+  base_url: "https://comsaintmartin.cdn.prismic.io/api/v2"
+  endpoints:
+    master_ref: "/api/v2"
+    search: "/api/v2/documents/search"
+  response_format: "json"
+  pagination:
+    type: "page_number"
+    page_size: 100
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Prismic document ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Deliberation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from deliberation PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "council"
+      description: "Council type (executive or territorial)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "department"
+      description: "Government department/direction"
+      type: "string"
+      role: "metadata"
+      required: false

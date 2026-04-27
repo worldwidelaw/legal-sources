@@ -56,6 +56,10 @@ python bootstrap.py bootstrap
 python bootstrap.py update
 ```
 
+## License
+
+[CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) — public domain, no restrictions.
+
 ## Notes
 
 - The XML endpoint uses HTTP (not HTTPS) but provides consistent access

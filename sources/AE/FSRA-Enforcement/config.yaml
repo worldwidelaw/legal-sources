@@ -1,0 +1,58 @@
+source:
+  id: "AE/FSRA-Enforcement"
+  country: "AE"
+  name: "ADGM FSRA Regulatory Actions"
+  url: "https://www.adgm.com/operating-in-adgm/additional-obligations-of-financial-services-entities/enforcement/regulatory-actions"
+  description: |
+    ADGM Financial Services Regulatory Authority (FSRA) enforcement decisions.
+    Final Notices, Penalty Notices, Enforceable Undertakings, and Censures.
+    Covers AML/CFT violations, CRS/FATCA penalties, unauthorized activities.
+    ~69 decisions (2017-present). Language: English.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://www.adgm.com/RegulatoryTable/GetRegulatoryItemsAfterFilterationPagination"
+  method: "POST"
+  content_id: "84284"
+  pdf_host: "https://assets.adgm.com"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: true
+    - name: "url"
+      type: "string"
+      required: true
+    - name: "person"
+      type: "string"
+      required: false
+    - name: "category"
+      type: "string"
+      required: false

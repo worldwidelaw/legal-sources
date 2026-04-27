@@ -1,0 +1,14 @@
+{
+  "_id": "KY_DITC_post_224798",
+  "_source": "KY/DITC-TaxGuidance",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-20T23:52:30.971765+00:00",
+  "title": "Date of Birth Information (CRS)",
+  "text": "After reviewing the submitted data for the 2022 Reporting Period, the Department for International Tax Cooperation (“DITC”) determined that approximately 10 percent of Financial Institutions (“FIs”) failed to report a date of birth (“DoB”) for individual Account Holders and/or Controlling Persons on their submitted CRS XML Returns.\nThe DITC is reminding industry that the\nTax Information Authority (International Tax Compliance) (Common Reporting Standard) Regulations (2021 Revision)\nrequire the DoB to be reported for all individuals who are Reportable Persons, i.e. both for Account Holders and Controlling Persons.\nThe DITC is aware that, within the CRS XML schema, the DoB element is labelled “(Optional) Mandatory”. For the avoidance of doubt, where an FI holds this information within its records, it is required to be included within the CRS XML Return.\nIt is expected that an FI will hold DoB information in its records, irrespective of whether the account is a Pre-existing Account under the CRS, due to its AML obligations (e.g. the requirement to collect a valid passport that contains a DoB). Therefore, the DITC will review submitted returns as part of its annual compliance and enforcement activities, with a focus on FIs that fail to report a DoB.\nAction required\nFIs must ensure the correct DoB is provided for all individual Account Holders and Controlling Persons in CRS XML Returns for the 2023 Reporting Period (the deadline to report is 31 July 2024).\nFailure to include the DoB in a CRS XML Return may result in compliance and enforcement action being taken against the FI.",
+  "date": "2024-03-22",
+  "url": "https://www.ditc.ky/press/industry-advisory/date-of-birth-information-crs/",
+  "category": "Industry Advisory",
+  "framework": null,
+  "doc_type": "post",
+  "language": "en"
+}

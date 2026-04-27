@@ -1,0 +1,81 @@
+# ===================================================================
+# AU/NTLegislation -- Northern Territory Legislation
+# ===================================================================
+# Northern Territory Acts and subordinate legislation from the
+# official register at legislation.nt.gov.au (Sitecore CMS).
+#
+# Discovery: Browse listing at /en/LegislationPortal/Acts/By-Title
+# Full text: PDF download via /api/sitecore/Act/PDF?id={NUMERIC_ID}
+# Format: PDF extracted via pypdf
+# License: Crown copyright, free public access (non-official reproduction OK)
+# ===================================================================
+
+source:
+  id: "AU/NTLegislation"
+  country: "AU"
+  name: "Northern Territory Legislation (legislation.nt.gov.au)"
+  url: "https://legislation.nt.gov.au/"
+  description: |
+    Northern Territory in-force Acts and subordinate legislation.
+    Full text downloaded as PDF from the official legislation register.
+    Covers ~385 Acts and ~304 subordinate laws.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.1
+  burst: 1
+
+api:
+  type: "pdf_download"
+  base_url: "https://legislation.nt.gov.au"
+  browse_acts: "/en/LegislationPortal/Acts/By-Title"
+  browse_sl: "/en/LegislationPortal/Subordinate-Legislation/By-Title"
+  pdf_pattern: "/api/sitecore/Act/PDF?id={NUMERIC_ID}"
+
+data_model:
+  type: "legislation"
+  primary_key: "slug"
+  update_strategy: "upsert"
+  dedup_key:
+    - "slug"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "slug"
+      description: "Document slug from URL (e.g., CRIMINAL-CODE-ACT-1983)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act or regulation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Assent or gazette date"
+      type: "string"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to original legislation page"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - PDF full text via /api/sitecore/Act/PDF?id={NUMERIC_ID}
+  - Browse listing at /en/LegislationPortal/Acts/By-Title and /Subordinate-Legislation/By-Title
+  - No crawl-delay in robots.txt but 10-second delay for courtesy
+  - Crown copyright, free public access
+  - ~385 Acts + ~304 subordinate legislation = ~689 documents

@@ -1,37 +1,51 @@
-source_id: US/KY-Courts
-name: Kentucky Supreme Court & Court of Appeals
-country: US
-data_types:
-  - case_law
-url: https://appellatepublic.kycourts.net/
 auth:
   type: none
-
+country: US
+data_types:
+- case_law
 endpoints:
   api_base: https://appellatepublic.kycourts.net/api/api/v1
-  opinions_search: https://appellatepublic.kycourts.net/api/api/v1/opinions/search
   case_details: https://appellatepublic.kycourts.net/api/api/v1/cases/{caseID}
   documents: https://appellatepublic.kycourts.net/api/api/v1/publicaccessdocuments
+  opinions_search: https://appellatepublic.kycourts.net/api/api/v1/opinions/search
+license: Public Domain (government works)
+name: Kentucky Supreme Court & Court of Appeals
+notes: 'Kentucky appellate opinions from the C-Track Public Access system.
 
+  Uses header-based pagination (X-CTrack-Paging-*) with max 500 per page.
+
+  Full text retrieved via publicaccessdocuments endpoint (documentText array).
+
+  Coverage: Kentucky Supreme Court + Court of Appeals, 1982-present.
+
+  ~67,000+ opinions available.
+
+  '
 rate_limit:
-  requests_per_second: 1
   delay_between_requests: 1.0
-
+  requests_per_second: 1
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - case_number
-    - court
-    - case_type
-
-license: Public Domain (government works)
-
-notes: |
-  Kentucky appellate opinions from the C-Track Public Access system.
-  Uses header-based pagination (X-CTrack-Paging-*) with max 500 per page.
-  Full text retrieved via publicaccessdocuments endpoint (documentText array).
-  Coverage: Kentucky Supreme Court + Court of Appeals, 1982-present.
-  ~67,000+ opinions available.
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: case_type
+    required: false
+    type: string
+source_id: US/KY-Courts
+url: https://appellatepublic.kycourts.net/

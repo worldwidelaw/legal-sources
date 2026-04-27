@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/293.160",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T23:00:43.786616+00:00",
+  "title": "Missouri Revised Statutes § 293.160 - Electrical equipment requirements",
+  "text": "293.160.  Electrical equipment requirements. — 1.  Metal conduit and metallic coverings and armor of cables shall be grounded and shall be electrically continuous to afford a conductor path for the ground circuit.\n  2.  Metallic frames, casings, and other electrical equipment that can become \"alive\" through failure of insulation by contact with energized parts shall be grounded.\n  3.  Casings of transformers shall be grounded unless protected by isolation or freedom from contact hazard by position.\n  4.  Mining equipment mounted on rubber tires or caterpillar treads receiving power through a trailing cable shall be grounded effectively.\n  5.  All trolley and positive feed wires crossing places where persons or animals are required to travel shall be safely guarded or protected.\n  6.  Dry wooden platforms, rubber mats, or other electrically nonconductive material shall be kept in place at each switchboard and power control switch, and at stationary machinery where shock hazards exist.\n  7.  Readily accessible fuses or equivalent protective devices of the correct type and capacity shall be installed on electric equipment to protect against excessive overload.  Wires or other conducting materials shall not be used as a substitute for properly designed fuses, and where circuit breakers are used, they shall be maintained in good operating condition and adjusted so that equipment cannot be overloaded.\n(L. 1959 S.B. 188 § 17)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=293.160",
+  "section_id": "293.160",
+  "chapter": "293",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

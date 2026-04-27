@@ -70,4 +70,4 @@ python bootstrap.py updates --since 2024-01-01
 
 ## License
 
-Public domain — official government publication.
+[Public Domain](https://www.concourt.am) — official government publication of the Republic of Armenia.

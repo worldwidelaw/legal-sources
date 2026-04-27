@@ -1,0 +1,69 @@
+# ===================================================================
+# KH/OpenDevCambodia -- Cambodia Laws via Open Development Cambodia CKAN
+# ===================================================================
+# ~2,969 laws_record packages (laws, sub-decrees, royal decrees, etc.)
+# CKAN v3 API with paginated search + PDF text extraction.
+# ===================================================================
+
+source:
+  id: "KH/OpenDevCambodia"
+  country: "KH"
+  name: "Cambodia Laws via Open Development Cambodia CKAN"
+  url: "https://data.opendevelopmentcambodia.net/"
+  description: |
+    Cambodian legal instruments from the Open Development Cambodia CKAN portal.
+    2,969 laws_record packages spanning constitution, laws, sub-decrees,
+    royal decrees, proclamations, decisions, circulars, and ministerial orders.
+    Bilingual metadata (Khmer/English). PDFs directly downloadable.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "ckan_v3"
+  base_url: "https://data.opendevelopmentcambodia.net/api/3/action"
+  search_endpoint: "package_search"
+  query: "fq=type:laws_record+organization:cambodia-organization"
+  page_size: 1000
+
+data_model:
+  type: "legislation"
+  primary_key: "id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "title"
+      description: "Document title (English or Khmer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Effective or promulgation date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "document_type"
+      description: "law, sub-decree, royal_decree, proclamation, etc."
+      type: "string"
+      role: "category"
+      required: false
+
+notes: |
+  - CKAN v3 API, paginated at 1000 per page (3 pages for all records)
+  - ~98% of packages have PDF resources (Khmer and/or English)
+  - Prefers English PDFs when available; falls back to Khmer
+  - Text extracted via common/pdf_extract pipeline

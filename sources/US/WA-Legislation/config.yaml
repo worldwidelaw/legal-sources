@@ -48,7 +48,7 @@ data_model:
 schema:
   total_fields: 12
   key_fields:
-    - name: "section_id"
+    - name: "_id"
       description: "Unique identifier (e.g., 'RCW-1.04.010', 'BILL-2025-HB1001')"
       type: "string"
       role: "primary_key"

@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/650.225",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T04:23:55.708543+00:00",
+  "title": "Missouri Revised Statutes § 650.225 - Maximum allowable pressure",
+  "text": "650.225.  Maximum allowable pressure. — 1.  The maximum allowable pressure of a boiler carrying the ASME code symbol or of a pressure vessel carrying the ASME or API-ASME code symbol shall be determined by the applicable sections of the code under which it was constructed and stamped, or a later edition of the ASME code, provided that the rerating has been performed in accordance with the rules of such later edition.\n  2.  The maximum allowable pressure of a boiler or pressure vessel which does not carry the ASME or the API-ASME code symbol shall be computed in accordance with the inspection code of the National Board of Boiler and Pressure Vessel Inspectors, or, when applicable, ANSI/API Standard 510, Pressure Vessel Inspection Code, unless the pressure vessel is of a special construction, in which case the board may grant at its discretion a special installation and operating permit for a pressure vessel of special design or construction, consistent with the safety objectives of the rules and regulations.\n  3.  Sections 650.200 to 650.290 shall not be construed as in any way preventing the use, sale or reinstallation of a boiler or pressure vessel referred to in this section, provided it has been made to conform to the rules and regulations of the board governing existing installations; and provided, further, it has not been found upon inspection to be in an unsafe condition.\n(L. 1984 H.B. 1060 § 6)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=650.225",
+  "section_id": "650.225",
+  "chapter": "650",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

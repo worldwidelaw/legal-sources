@@ -1,0 +1,18 @@
+{
+  "_id": "MX-JAL-79104",
+  "_source": "MX/PoderJudicialJalisco",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-23T13:20:43.169531+00:00",
+  "title": "Toca 65/2025 — TERCERA SALA ESPECIALIZADA EN MATERIA CIVIL",
+  "text": "El documento resume una sentencia definitiva de la Tercera Sala del Supremo Tribunal de Justicia del Estado de Jalisco, en el Toca 65/2025, confirmando una sentencia previa.  Se trata de una apelación interpuesta por la parte demandada en un juicio civil ordinario sobre una acción reivindicatoria de un bien inmueble.\n\nLa apelante argumenta lo siguiente:\n\n1. **Error en el análisis de los elementos de la acción reivindicatoria:**  Alega que no se acreditó que ella poseyera el inmueble, requisito fundamental para dicha acción. Cuestiona la no admisión de una prueba pericial en identificación y señala una supuesta incongruencia en el criterio del juez.\n2. **Valoración incorrecta de la excepción de falta de capacidad jurídica:**  Argumenta que el poder notarial del transmisor del inmueble al actor había excedido su vigencia según el Código Civil de Jalisco.  Cuestiona la validez de las tesis utilizadas por el juez y la no valoración de una prueba sobre una sanción administrativa al notario involucrado en la compraventa.\n3. **Falta de llamamiento a juicio de un tercero interesado:**  Considera que un tercero debía haber sido llamado a juicio según el Código de Procedimientos Civiles, lo que habría llevado a la suspensión del procedimiento.\n4. **Falta de congruencia externa e interna:**  Argumenta que se otorgó valor probatorio pleno al certificado catastral a pesar de que la clave catastral y la cuenta predial no coincidían con el inmueble.\n\nLa Tercera Sala, tras analizar los agravios, los considera inoperantes e infundados, confirmando la sentencia de primera instancia. Señala que:\n\n* La denuncia a tercero se tuvo por no interpuesta al no cumplir la demandada con los requisitos solicitados por el juez, y esta decisión, al no ser impugnada, se convirtió en un acto consentido.\n* El poder notarial otorgado en Michoacán es válido en Jalisco, inaplicando los artículos del Código Civil de Jalisco que limitan su vigencia, basándose en la jurisprudencia de la Suprema Corte de Justicia de la Nación. La prueba sobre la sanción administrativa al notario no es eficaz para restar valor a la escritura de compraventa, ya que no se opuso excepción o reconvención de nulidad y solo acredita la publicación de la sanción, no su firmeza o ejecución.\n* La propiedad del actor está acreditada por la escritura pública de compraventa.\n* La posesión del inmueble por la demandada se justifica con su propia confesión en la contestación de la demanda y en la prueba confesional, no siendo necesaria una prueba pericial.\n* La identidad formal del inmueble también se acredita con la confesión de la demandada y se corrobora con la escritura pública y otros documentos, incluyendo la clave catastral y cuenta predial registradas a nombre del actor.\n\nPor lo tanto, se confirma la sentencia que declara procedente la acción reivindicatoria, la propiedad del actor sobre el inmueble y condena a la demandada a la desocupación, entrega del inmueble y pago de frutos civiles y costas.  Se condena a la demandada al pago de costas de segunda instancia. La sentencia se notificará por boletín judicial.",
+  "date": "2025-06-10",
+  "url": "https://publica-sentencias-backend.stjjalisco.gob.mx/toca/79104/file",
+  "court": "TERCERA SALA ESPECIALIZADA EN MATERIA CIVIL",
+  "judge": "Mgdo. Enrique Flores Domínguez",
+  "subject_area": "Civil",
+  "case_type": "CIVIL ORDINARIA",
+  "ruling": "CONFIRMAR",
+  "case_number": "65/2025",
+  "publication_date": "2025-06-11",
+  "crime_or_action": "ACCIÓN REIVINDICATORIA"
+}

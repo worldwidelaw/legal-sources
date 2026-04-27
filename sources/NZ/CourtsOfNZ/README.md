@@ -25,3 +25,7 @@ python bootstrap.py bootstrap            # Full pull
 python bootstrap.py bootstrap --sample   # 15 sample records
 python bootstrap.py test-api             # Connectivity test
 ```
+
+## License
+
+[New Zealand Government Open Access and Licensing framework (NZGOAL)](https://www.data.govt.nz/manage-data/policies/nzgoal/) — Crown Copyright, re-use permitted under CC BY 4.0 terms.

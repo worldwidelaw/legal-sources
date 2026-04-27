@@ -1,29 +1,38 @@
-source:
-  id: AD/PortalJuridic
-  name: "Andorra Portal Juridic - Consolidated Legislation"
-  country: AD
-  url: https://www.portaljuridicandorra.ad/
-  data_types:
-    - legislation
-  auth: none
-  format: html
-  language: ca
-  description: >
-    Consolidated legislation of the Principality of Andorra since 1989.
-    ~1,658 laws and regulations. Full text HTML in Catalan.
-    Tiki Wiki CMS. Year-based enumeration via tracker filter.
-
+fetcher:
+  base_url: https://www.portaljuridicandorra.ad
+  index_url: https://www.portaljuridicandorra.ad/tiki-index.php?page=IndexPerAnys
+  rate_limit: 10.0
+  years: 1985-2026
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - doc_type
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: doc_type
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: AD
+  data_types:
+  - legislation
+  description: 'Consolidated legislation of the Principality of Andorra since 1989. ~1,658 laws and regulations. Full text HTML in Catalan. Tiki Wiki CMS. Year-based enumeration via tracker filter.
 
-fetcher:
-  base_url: "https://www.portaljuridicandorra.ad"
-  index_url: "https://www.portaljuridicandorra.ad/tiki-index.php?page=IndexPerAnys"
-  rate_limit: 10.0
-  years: "1985-2026"
+    '
+  format: html
+  id: AD/PortalJuridic
+  language: ca
+  name: Andorra Portal Juridic - Consolidated Legislation
+  url: https://www.portaljuridicandorra.ad/

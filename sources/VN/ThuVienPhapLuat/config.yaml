@@ -1,33 +1,47 @@
-source:
-  id: VN/ThuVienPhapLuat
-  name: "Thu Vien Phap Luat - Vietnamese Legal Library"
-  country: VN
-  url: https://thuvienphapluat.vn/
-  data_types:
-    - legislation
-  auth: none
-  format: parquet
-  language: vi
-  description: >
-    518,255 Vietnamese legal documents (1924-2026) from thuvienphapluat.vn.
-    Accessed via HuggingFace dataset th1nhng0/vietnamese-legal-documents (CC-BY-4.0).
-    Full text content in Vietnamese. 36 document types from 1,335 issuing authorities.
-
+fetcher:
+  configs:
+    content: content
+    metadata: metadata
+  dataset: th1nhng0/vietnamese-legal-documents
+  rate_limit: 1.0
+  split: data
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - document_number
-    - legal_type
-    - issuing_authority
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: document_number
+    required: false
+    type: string
+  - name: legal_type
+    required: false
+    type: string
+  - name: issuing_authority
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: VN
+  data_types:
+  - legislation
+  description: '518,255 Vietnamese legal documents (1924-2026) from thuvienphapluat.vn. Accessed via HuggingFace dataset th1nhng0/vietnamese-legal-documents (CC-BY-4.0). Full text content in Vietnamese.
+    36 document types from 1,335 issuing authorities.
 
-fetcher:
-  dataset: "th1nhng0/vietnamese-legal-documents"
-  configs:
-    metadata: "metadata"
-    content: "content"
-  split: "data"
-  rate_limit: 1.0
+    '
+  format: parquet
+  id: VN/ThuVienPhapLuat
+  language: vi
+  name: Thu Vien Phap Luat - Vietnamese Legal Library
+  url: https://thuvienphapluat.vn/

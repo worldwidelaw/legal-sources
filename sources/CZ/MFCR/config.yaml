@@ -1,0 +1,51 @@
+# Configuration for CZ/MFCR (Czech Ministry of Finance Tax Guidance)
+# Finanční zpravodaj — official gazette for tax doctrine
+
+source:
+  id: CZ/MFCR
+  name: Czech Finance Ministry Tax Guidance
+  country: CZ
+  url: https://mf.gov.cz
+  description: >
+    Finanční zpravodaj (Financial Gazette) published by the Czech Ministry of
+    Finance. Contains tax instructions (pokyny), communications (sdělení), and
+    guidance from the General Financial Directorate. Published electronically
+    since 2016, archives back to 2003.
+
+data_model:
+  types:
+    - doctrine
+  update_strategy: append_only
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: issue_number
+      type: integer
+      required: true
+    - name: year
+      type: integer
+      required: true
+    - name: pdf_url
+      type: string
+      required: false

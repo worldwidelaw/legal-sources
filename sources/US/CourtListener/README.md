@@ -54,3 +54,7 @@ Each record contains:
 - `author`: Author of the opinion
 - `opinion_type`: Type of opinion (lead, dissent, concurrence, etc.)
 - `citations`: List of citations
+
+## License
+
+[CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) — Free Law Project dedicates data to public domain.

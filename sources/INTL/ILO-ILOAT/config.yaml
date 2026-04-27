@@ -1,34 +1,53 @@
-source:
-  id: INTL/ILO-ILOAT
-  name: ILO Administrative Tribunal (TRIBLEX)
-  country: INTL
-  url: https://www.ilo.org/dyn/triblex/triblexmain.home
-  data_types:
-    - case_law
-  auth: none
-  language: en
-  description: |
-    ILO Administrative Tribunal judgments from the TRIBLEX database.
-    5,200+ judgments (1946-present) on employment disputes at 60+
-    international organizations (WHO, UNESCO, CERN, EPO, etc.).
-    Full text extracted from PDFs, metadata from detail pages.
-    Judgments numbered sequentially from 1 to ~5203.
-
+fetch:
+  base_url: https://www.ilo.org/dyn/triblex/triblexmain
+  detail_url_pattern: '{base_url}.detail?p_lang=en&p_judgment_no={no}'
+  max_judgment_no: 5203
+  method: sequential_pdf
+  pdf_url_pattern: '{base_url}.fullText?p_lang=en&p_judgment_no={no}'
+  rate_limit_seconds: 2
 schema:
   key_fields:
-    - _id
-    - judgment_no
-    - organization
-    - title
-    - text
-    - date
-    - judges
-    - keywords
+  - name: _id
+    required: true
+    type: string
+  - name: judgment_no
+    required: false
+    type: string
+  - name: organization
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: judges
+    required: false
+    type: string
+  - name: keywords
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: 'ILO Administrative Tribunal judgments from the TRIBLEX database.
 
-fetch:
-  method: sequential_pdf
-  base_url: https://www.ilo.org/dyn/triblex/triblexmain
-  detail_url_pattern: "{base_url}.detail?p_lang=en&p_judgment_no={no}"
-  pdf_url_pattern: "{base_url}.fullText?p_lang=en&p_judgment_no={no}"
-  rate_limit_seconds: 2
-  max_judgment_no: 5203
+    5,200+ judgments (1946-present) on employment disputes at 60+
+
+    international organizations (WHO, UNESCO, CERN, EPO, etc.).
+
+    Full text extracted from PDFs, metadata from detail pages.
+
+    Judgments numbered sequentially from 1 to ~5203.
+
+    '
+  id: INTL/ILO-ILOAT
+  language: en
+  name: ILO Administrative Tribunal (TRIBLEX)
+  url: https://www.ilo.org/dyn/triblex/triblexmain.home

@@ -137,8 +137,16 @@ class SAFLIICaseLawScraper(BaseScraper):
                 "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                 "Accept-Language": "en-US,en;q=0.5",
-            }
+            },
+            # saflii.org SSL chain is incomplete on some Python/OS combos (e.g. VPS)
+            verify=False,
         )
+        # Suppress only the InsecureRequestWarning for SAFLII
+        try:
+            import urllib3
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        except Exception:
+            pass
 
     def _get_all_courts(self) -> List[str]:
         """Get all court codes from the South Africa index page."""
@@ -242,7 +250,7 @@ class SAFLIICaseLawScraper(BaseScraper):
         }
 
     def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
-        """Yield all cases from all courts, all years."""
+        """Yield raw case dicts; BaseScraper will call normalize() on each."""
         courts = self._get_all_courts()
         logger.info("Found %d courts to scrape", len(courts))
 
@@ -259,20 +267,15 @@ class SAFLIICaseLawScraper(BaseScraper):
                     if html is None:
                         continue
 
-                    raw = {
+                    yield {
                         "title": case_info["title"],
                         "court_code": court,
                         "path": case_info["path"],
                         "html": html,
                     }
-                    record = self.normalize(raw)
-                    if record["text"] and len(record["text"]) > 100:
-                        yield record
-                    else:
-                        logger.warning("Skipping %s: insufficient text", case_info["path"])
 
     def fetch_updates(self, since: Optional[str] = None) -> Generator[Dict[str, Any], None, None]:
-        """Yield recent cases (current year) from priority courts."""
+        """Yield recent raw case dicts from priority courts."""
         current_year = str(datetime.now().year)
         courts = PRIORITY_COURTS
 
@@ -285,15 +288,12 @@ class SAFLIICaseLawScraper(BaseScraper):
                 if html is None:
                     continue
 
-                raw = {
+                yield {
                     "title": case_info["title"],
                     "court_code": court,
                     "path": case_info["path"],
                     "html": html,
                 }
-                record = self.normalize(raw)
-                if record["text"] and len(record["text"]) > 100:
-                    yield record
 
     def test_connection(self) -> bool:
         """Test that we can access SAFLII."""
@@ -312,6 +312,7 @@ def main():
     parser = argparse.ArgumentParser(description="ZA/SAFLII-CaseLaw bootstrap")
     parser.add_argument("command", choices=["bootstrap", "update", "test"])
     parser.add_argument("--sample", action="store_true", help="Fetch only 10+ sample records")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = SAFLIICaseLawScraper()
@@ -375,14 +376,9 @@ def main():
 
         logger.info("Sample complete: %d records saved to %s", count, sample_dir)
     else:
-        # Full bootstrap
-        count = 0
-        for record in scraper.fetch_all():
-            scraper.storage.save(record)
-            count += 1
-            if count % 100 == 0:
-                logger.info("Saved %d records", count)
-        logger.info("Bootstrap complete: %d records", count)
+        # Full bootstrap (handles normalize, dedup, write to data/records.jsonl)
+        stats = scraper.bootstrap()
+        logger.info("Bootstrap complete: %s", stats)
 
 
 if __name__ == "__main__":

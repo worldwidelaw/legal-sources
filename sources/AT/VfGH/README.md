@@ -53,3 +53,7 @@ python bootstrap.py update
 - Full text extracted from XML content URLs (preferred) or HTML fallback
 - For Rechtssatz (legal principle) records, links to corresponding decision text documents
 - Rate limited to 2 seconds between requests
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Austrian Open Government Data.

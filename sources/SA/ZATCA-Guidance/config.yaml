@@ -1,0 +1,31 @@
+fetch:
+  max_retries: 3
+  rate_limit: 2.0
+  timeout: 120
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: activity_type
+    required: false
+    type: string
+  - name: tax_type
+    required: false
+    type: string
+source:
+  auth: none
+  country: SA
+  data_types:
+  - doctrine
+  description: >-
+    ZATCA (Zakat, Tax and Customs Authority) tax guidelines and circulars from
+    zatca.gov.sa. Uses SharePoint PortalHandler.ashx JSON API. 74 guidelines +
+    19 publications, all as downloadable PDFs. Covers VAT, Zakat, CIT, Excise,
+    Transfer Pricing, E-Invoicing, and Customs.
+  id: SA/ZATCA-Guidance
+  name: ZATCA Tax Guidelines & Circulars
+  url: https://zatca.gov.sa/

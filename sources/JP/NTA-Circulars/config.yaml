@@ -1,23 +1,33 @@
-source:
-  id: JP/NTA-Circulars
-  name: Japanese National Tax Agency Circulars
-  country: JP
-  url: https://www.nta.go.jp/law/tsutatsu/menu.htm
-  data_types:
-    - doctrine
-  language: ja
-  auth: none
-  description: >
-    Administrative circulars (通達) from the Japanese National Tax Agency covering
-    income tax, corporate tax, inheritance/gift tax, consumption tax, stamp tax,
-    liquor tax, collection law, and other tax areas. These are authoritative
-    interpretive guidance documents used by tax officials and practitioners.
-
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - url
-    - category
-    - section_path
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: url
+    required: true
+    type: string
+  - name: category
+    required: false
+    type: string
+  - name: section_path
+    required: false
+    type: string
+source:
+  auth: none
+  country: JP
+  data_types:
+  - doctrine
+  description: 'Administrative circulars (通達) from the Japanese National Tax Agency covering income tax, corporate tax, inheritance/gift tax, consumption tax, stamp tax, liquor tax, collection law, and
+    other tax areas. These are authoritative interpretive guidance documents used by tax officials and practitioners.
+
+    '
+  id: JP/NTA-Circulars
+  language: ja
+  name: Japanese National Tax Agency Circulars
+  url: https://www.nta.go.jp/law/tsutatsu/menu.htm

@@ -1,34 +1,50 @@
-source_id: BR/TCU
-name: Brazil Federal Audit Court (TCU) Decisions
-country: BR
-url: https://sites.tcu.gov.br/dados-abertos/jurisprudencia/
-data_types:
-  - case_law
-  - doctrine
-
-description: >
-  Acórdãos (decisions) from the Tribunal de Contas da União (TCU), Brazil's
-  supreme audit institution. Includes full text of decisions, reports, and
-  votes from all panels (Plenário, 1ª Câmara, 2ª Câmara). Data sourced
-  from TCU's open data CSV bulk downloads (1992–present) and JSON REST API.
-
 api:
-  json_endpoint: https://dados-abertos.apps.tcu.gov.br/api/acordao/recupera-acordaos
+  auth: none
   csv_index: https://sites.tcu.gov.br/dados-abertos/jurisprudencia/arquivos/jurisprudencia-arquivos.csv
   csv_pattern: https://sites.tcu.gov.br/dados-abertos/jurisprudencia/arquivos/acordao-completo/acordao-completo-{year}.csv
-  delimiter: "|"
-  auth: none
+  delimiter: '|'
+  json_endpoint: https://dados-abertos.apps.tcu.gov.br/api/acordao/recupera-acordaos
   rate_limit: 2s between requests
+country: BR
+data_types:
+- case_law
+- doctrine
+description: 'Acórdãos (decisions) from the Tribunal de Contas da União (TCU), Brazil''s supreme audit institution. Includes full text of decisions, reports, and votes from all panels (Plenário, 1ª Câmara,
+  2ª Câmara). Data sourced from TCU''s open data CSV bulk downloads (1992–present) and JSON REST API.
 
+  '
+name: Brazil Federal Audit Court (TCU) Decisions
 schema:
   key_fields:
-    - key
-    - titulo
-    - colegiado
-    - dataSessao
-    - relator
-    - sumario
-    - acordao
-    - decisao
-    - relatorio
-    - voto
+  - name: key
+    required: false
+    type: string
+  - name: titulo
+    required: false
+    type: string
+  - name: colegiado
+    required: false
+    type: string
+  - name: dataSessao
+    required: false
+    type: string
+  - name: relator
+    required: false
+    type: string
+  - name: sumario
+    required: false
+    type: string
+  - name: acordao
+    required: false
+    type: string
+  - name: decisao
+    required: false
+    type: string
+  - name: relatorio
+    required: false
+    type: string
+  - name: voto
+    required: false
+    type: string
+source_id: BR/TCU
+url: https://sites.tcu.gov.br/dados-abertos/jurisprudencia/

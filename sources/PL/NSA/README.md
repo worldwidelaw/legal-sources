@@ -74,7 +74,7 @@ Administrative court decisions cover:
 
 ## License
 
-Public domain - official court decisions published by the Polish judiciary.
+[Public Domain](https://dane.gov.pl) — official court decisions published by the Polish judiciary.
 
 ## Notes
 

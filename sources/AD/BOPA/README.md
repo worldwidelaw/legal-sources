@@ -84,3 +84,7 @@ Each normalized document contains:
 Per Law 25/2014 (October 30) on BOPA:
 - The electronic version at www.bopa.ad is authentic and legally valid from 2015
 - Content is open government data
+
+## License
+
+[Open Government Data](https://www.bopa.ad) — official gazette of the Principality of Andorra, per Llei 25/2014.

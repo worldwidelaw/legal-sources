@@ -1,7 +1,7 @@
 id: MX/DOF
 name: Diario Oficial de la Federación (DOF)
 country: MX
-url: https://sidof.segob.gob.mx
+url: https://www.dof.gob.mx/
 description: >
   Mexico's Official Federal Gazette (DOF). Contains all federal laws, decrees,
   regulations, agreements, and official notices. Full text via SIDOF Open Data API.

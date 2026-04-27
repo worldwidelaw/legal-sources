@@ -266,7 +266,7 @@ class CameraFetcher:
             if raw:
                 consecutive_failures = 0
                 fetched += 1
-                yield self.normalize(raw)
+                yield raw
                 print(f"Fetched bill {bill_id} ({fetched}/{max_bills})", file=sys.stderr)
             else:
                 consecutive_failures += 1
@@ -360,6 +360,7 @@ def main():
     fetch_parser.add_argument('--start', type=int, default=1, help='Starting bill ID')
     fetch_parser.add_argument('--max', type=int, default=1000, help='Maximum bills to fetch')
     fetch_parser.add_argument('--legislature', type=int, default=19, help='Legislature number')
+    fetch_parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

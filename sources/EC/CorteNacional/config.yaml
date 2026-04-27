@@ -53,7 +53,7 @@ data_model:
 schema:
   total_fields: 15
   key_fields:
-    - name: "id"
+    - name: "_id"
       description: "Internal sentence ID"
       type: "string"
       role: "primary_key"

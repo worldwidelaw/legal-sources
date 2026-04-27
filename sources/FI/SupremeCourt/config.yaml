@@ -1,25 +1,23 @@
-source_id: FI/SupremeCourt
-name: Finnish Supreme Court (Korkein oikeus)
-country: FI
-url: https://www.korkeinoikeus.fi
-
-data_types:
-  - caselaw
-
+api:
+  documentation: https://seco.cs.aalto.fi/projects/lakisampo/en/
+  endpoint: http://ldf.fi/lawsampo/sparql
+  type: sparql
 auth:
   type: none
-
-api:
-  type: sparql
-  endpoint: http://ldf.fi/lawsampo/sparql
-  documentation: https://seco.cs.aalto.fi/projects/lakisampo/en/
-
-schema:
-  key_fields:
-    - ecli
-    - judgment_uri
-
+country: FI
+data_types:
+- caselaw
+license: CC-BY
+name: Finnish Supreme Court (Korkein oikeus)
 rate_limit:
   requests_per_second: 1.0
-
-license: CC-BY
+schema:
+  key_fields:
+  - name: ecli
+    required: false
+    type: string
+  - name: judgment_uri
+    required: false
+    type: string
+source_id: FI/SupremeCourt
+url: https://www.korkeinoikeus.fi

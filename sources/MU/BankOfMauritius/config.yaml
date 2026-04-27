@@ -1,0 +1,22 @@
+source:
+  id: MU/BankOfMauritius
+  name: Bank of Mauritius Guidelines & Circulars
+  country: MU
+  url: https://www.bom.mu
+  data_types:
+    - doctrine
+  auth: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url

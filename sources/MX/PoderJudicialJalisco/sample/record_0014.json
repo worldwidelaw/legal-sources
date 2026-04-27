@@ -1,0 +1,18 @@
+{
+  "_id": "MX-JAL-80896",
+  "_source": "MX/PoderJudicialJalisco",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-23T13:21:01.705761+00:00",
+  "title": "Toca 175/2024 — OCTAVA SALA ESPECIALIZADA EN MATERIA CIVIL",
+  "text": "El documento es una ejecutoria de amparo, Toca 175/2024, relacionada con el expediente 602/2022, emitida por la Octava Sala Civil del Supremo Tribunal de Justicia del Estado de Jalisco el 15 de agosto de 2025.  Se origina a partir de un recurso de apelación interpuesto por el abogado del demandado en un juicio civil ordinario, contra una sentencia definitiva del Juzgado Séptimo de lo Civil del Primer Partido Judicial del Estado de Jalisco, fechada el 2 de febrero de 2024.\n\nLa sentencia de primera instancia declaró parcialmente procedente la acción reivindicatoria, otorgando al actor el derecho de propiedad y dominio pleno de un inmueble específico, condenando al demandado a la reivindicación del mismo, incluyendo frutos civiles y accesiones, a calcularse como renta mensual desde el 29 de octubre de 2022 hasta la desocupación y entrega del bien.  Se absolvió al demandado del pago de daños y perjuicios, así como de las costas.\n\nLa apelación fue admitida en ambos efectos y remitida a la Octava Sala Civil.  El 15 de abril de 2024, la Sala revocó la sentencia de primera instancia, absolviendo al demandado y condenando al actor al pago de costas.\n\nEl actor promovió amparo directo, el cual fue concedido por el Quinto Tribunal Colegiado en Materia Civil del Tercer Circuito el 10 de julio de 2025.  El amparo ordenó a la Sala dejar insubsistente el fallo reclamado y emitir uno nuevo absteniéndose de exigir al actor la deducción de una acción derivada de un supuesto contrato de arrendamiento.\n\nEn cumplimiento al amparo, la Sala emitió una nueva resolución.  Confirmó la sentencia de primera instancia, argumentando que el demandado no podía oponer como excepción un contrato de arrendamiento en el cual el actor no participó.  Se aclaró que la acción personal derivada de dicho contrato solo podía ser ejercida por las partes contratantes. No se hizo especial condena en costas de segunda instancia.  Finalmente, se comunicó el cumplimiento de la ejecutoria de amparo al Tribunal Colegiado correspondiente y se reservaron los autos originales hasta recibir confirmación de dicho cumplimiento, para luego ser devueltos al Juzgado de origen.",
+  "date": "2025-08-15",
+  "url": "https://publica-sentencias-backend.stjjalisco.gob.mx/toca/80896/file",
+  "court": "OCTAVA SALA ESPECIALIZADA EN MATERIA CIVIL",
+  "judge": "Mgdo. Felipe Sánchez Montes de Oca",
+  "subject_area": "Civil",
+  "case_type": "CIVIL ORDINARIA",
+  "ruling": "CONFIRMAR",
+  "case_number": "175/2024",
+  "publication_date": "2025-09-09",
+  "crime_or_action": "ACCIÓN REIVINDICATORIA"
+}

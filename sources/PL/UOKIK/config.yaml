@@ -1,34 +1,58 @@
-source_id: PL/UOKIK
-name: Polish Competition Authority (UOKiK) Decisions
-country: PL
-url: https://decyzje.uokik.gov.pl
-data_types:
-  - doctrine
-auth:
-  type: none
 api:
   base_url: https://decyzje.uokik.gov.pl
-  listing: /bp/dec_prez.nsf/UOKiK?OpenForm&Start=1&Count=10000&ExpandView
   document: /bp/dec_prez.nsf/0/{UNID}?OpenDocument
+  listing: /bp/dec_prez.nsf/UOKiK?OpenForm&Start=1&Count=10000&ExpandView
   metadata: /bp/dec_prez.nsf/0/{UNID}?editDocument&act=Decyzja
-rate_limit:
-  requests_per_second: 1.0
-  burst: 3
+auth:
+  type: none
+country: PL
 data_model:
-  update_strategy: append_only
   dedup_key:
-    - _id
+  - _id
+  update_strategy: append_only
+data_types:
+- doctrine
+name: Polish Competition Authority (UOKiK) Decisions
+rate_limit:
+  burst: 3
+  requests_per_second: 1.0
 schema:
   key_fields:
-    - _id
-    - _source
-    - _type
-    - title
-    - text
-    - date
-    - url
-    - case_number
-    - practice_type
-    - industry
-    - region
-    - penalty
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: practice_type
+    required: false
+    type: string
+  - name: industry
+    required: false
+    type: string
+  - name: region
+    required: false
+    type: string
+  - name: penalty
+    required: false
+    type: string
+source_id: PL/UOKIK
+url: https://decyzje.uokik.gov.pl

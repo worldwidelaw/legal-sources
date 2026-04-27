@@ -1,30 +1,44 @@
-source_id: US/ME-Legislation
-name: Maine Revised Statutes (legislature.maine.gov)
-country: US
-data_types:
-  - legislation
-url: https://legislature.maine.gov/statutes/
 auth:
   type: none
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - title_number
-    - chapter
-    - section_number
-
+country: US
+data_types:
+- legislation
 fetch:
   base_url: https://legislature.maine.gov/statutes
   delay: 1.5
-
 license: Public Domain (government works)
+name: Maine Revised Statutes (legislature.maine.gov)
+notes: 'Maine Revised Statutes via legislature.maine.gov HTML pages.
 
-notes: |
-  Maine Revised Statutes via legislature.maine.gov HTML pages.
   39+ titles covering all codified Maine law.
+
   Three-level hierarchy: title index → chapter index → section pages.
+
   Full text extracted from static HTML pages.
+
+  '
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: title_number
+    required: false
+    type: string
+  - name: chapter
+    required: false
+    type: string
+  - name: section_number
+    required: false
+    type: string
+source_id: US/ME-Legislation
+url: https://legislature.maine.gov/statutes/

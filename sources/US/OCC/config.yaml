@@ -1,23 +1,35 @@
-source_id: US/OCC
-name: US Office of Comptroller of Currency Enforcement Actions
+auth: none
 country: US
 data_types:
-  - case_law
-  - doctrine
-url: https://apps.occ.gov/EASearch
-auth: none
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - action_type
-    - docket_number
-    - url
-
+- case_law
+- doctrine
 fetch:
+  delay: 2.0
   json_url: https://apps.occ.gov/EASearch/Search/ExportToJSON
   pdf_base_url: https://www.occ.treas.gov/static/enforcement-actions/ea
-  delay: 2.0
+name: US Office of Comptroller of Currency Enforcement Actions
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: action_type
+    required: false
+    type: string
+  - name: docket_number
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source_id: US/OCC
+url: https://apps.occ.gov/EASearch

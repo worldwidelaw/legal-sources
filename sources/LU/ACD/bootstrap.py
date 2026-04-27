@@ -368,6 +368,7 @@ def main():
     parser.add_argument("command", choices=["bootstrap", "update", "test-api"])
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
     parser.add_argument("--count", type=int, default=15, help="Sample size")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     if args.command == "test-api":

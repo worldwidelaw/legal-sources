@@ -190,7 +190,7 @@ class EUADRFetcher:
                 logger.info(f"  Fetching decision: {did}")
                 decision = self._extract_decision(did)
                 if decision:
-                    yield self.normalize(decision)
+                    yield decision
                 time.sleep(1.5)
 
             time.sleep(1.0)
@@ -206,7 +206,7 @@ class EUADRFetcher:
                     if decision.get('date') and decision['date'] < since:
                         found_old = True
                         break
-                    yield self.normalize(decision)
+                    yield decision
                 time.sleep(1.5)
 
             if found_old:

@@ -1,0 +1,39 @@
+# GI/IncomeTax-Guidance - Gibraltar Income Tax Office Practice Notes
+# Source configuration
+
+source_id: GI/IncomeTax-Guidance
+name: Gibraltar Income Tax Office Practice Notes
+country: GI
+url: https://www.gibraltar.gov.gi/income-tax-office
+description: >
+  Tax guidance and practice notes from the Gibraltar Income Tax Office covering
+  corporate tax (12.5%), personal tax, PAYE, self-employment, pensions (QNUPS,
+  imported schemes, occupational), Cat 2/HEPSS individual tax status, gift aid,
+  notifiable arrangements, country-by-country reporting, dispute resolution (MAP),
+  and the Spain international tax agreement.
+
+# Data model
+data_model:
+  type: doctrine
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+# Authentication
+auth:
+  type: none
+
+# Rate limiting
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  max_workers: 1
+
+# Schema
+schema:
+  key_fields:
+    - doc_id
+    - title
+    - category
+    - text
+    - url

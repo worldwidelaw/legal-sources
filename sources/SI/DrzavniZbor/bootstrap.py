@@ -313,11 +313,8 @@ def main():
                 print(f"  All have text: {all(r.get('text') for r in records)}")
                 print(f"  Min text length: {min(len(r['text']) for r in records):,}")
                 print(f"  Max text length: {max(len(r['text']) for r in records):,}")
-        elif args.full:
-            bootstrap_full()
         else:
-            print("Specify --sample or --full")
-            sys.exit(1)
+            bootstrap_full()
 
 
 if __name__ == "__main__":

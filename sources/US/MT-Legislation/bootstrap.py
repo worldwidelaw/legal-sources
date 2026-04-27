@@ -353,7 +353,7 @@ class MTLegislationScraper(BaseScraper):
                             full_path = f"{title_path}/{chapter}/{sec_file}"
                             raw = self.fetch_section(full_path)
                             if raw:
-                                yield self.normalize(raw)
+                                yield raw
                                 total += 1
                                 if total % 100 == 0:
                                     logger.info(f"  Progress: {total} sections fetched")
@@ -364,7 +364,7 @@ class MTLegislationScraper(BaseScraper):
                         full_path = f"{title_path}/{chapter}/{part_item}/{sec_path}"
                         raw = self.fetch_section(full_path)
                         if raw:
-                            yield self.normalize(raw)
+                            yield raw
                             total += 1
                             if total % 100 == 0:
                                 logger.info(f"  Progress: {total} sections fetched")
@@ -382,7 +382,7 @@ class MTLegislationScraper(BaseScraper):
         for rel_path, section_id in SAMPLE_SECTIONS:
             raw = self.fetch_section(rel_path)
             if raw:
-                yield self.normalize(raw)
+                yield raw
                 count += 1
             else:
                 logger.warning(f"Could not fetch sample section {section_id}")
@@ -399,6 +399,7 @@ def main():
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = MTLegislationScraper()

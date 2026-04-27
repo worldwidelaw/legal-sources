@@ -411,36 +411,55 @@ class ConsiglioDiStatoScraper(BaseScraper):
             "cga-sicilia-sentenze",
         ]
 
+        since_str = since.strftime("%Y-%m-%d")
         since_year = since.year
 
         for dataset_name in priority_datasets:
             try:
-                resource_id = self._get_json_resource_id(dataset_name, year=since_year)
-                if not resource_id:
-                    resource_id = self._get_json_resource_id(dataset_name)
-
-                if not resource_id:
+                # Get all year resources, filter to relevant years
+                year_resources = self._get_all_json_resources(dataset_name)
+                if not year_resources:
                     continue
 
                 schema = self._extract_schema_from_dataset(dataset_name)
 
-                # Get recent records
-                result = self._query_datastore(resource_id, limit=100, offset=0)
+                # Only check years from since_year onwards
+                relevant = [(y, rid) for y, rid in year_resources if y >= since_year]
+                if not relevant:
+                    # Fallback: check the most recent year available
+                    relevant = [year_resources[-1]]
 
-                if result.get("success"):
-                    for record in result.get("result", {}).get("records", []):
-                        pub_date = record.get("DATA_PUBBLICAZIONE", "")
-                        if pub_date and pub_date >= since.strftime("%Y-%m-%d"):
-                            nrg = record.get("NUMERO_RICORSO")
-                            num_provv = record.get("NUMERO_PROVVEDIMENTO")
+                for year, resource_id in relevant:
+                    logger.info(f"Checking updates in {dataset_name}/{year}...")
 
-                            if nrg and num_provv:
-                                full_text = self._fetch_full_text(schema, nrg, num_provv)
-                                if full_text:
-                                    # Enrich raw record with text and metadata
-                                    record["_text"] = full_text
-                                    record["_dataset_name"] = dataset_name
-                                    yield record
+                    # Paginate through records, filtering by date
+                    offset = 0
+                    limit = 100
+
+                    while True:
+                        result = self._query_datastore(resource_id, limit=limit, offset=offset)
+
+                        if not result.get("success"):
+                            break
+
+                        records = result.get("result", {}).get("records", [])
+                        if not records:
+                            break
+
+                        for record in records:
+                            pub_date = record.get("DATA_PUBBLICAZIONE", "")
+                            if pub_date and pub_date >= since_str:
+                                nrg = record.get("NUMERO_RICORSO")
+                                num_provv = record.get("NUMERO_PROVVEDIMENTO")
+
+                                if nrg and num_provv:
+                                    full_text = self._fetch_full_text(schema, nrg, num_provv)
+                                    if full_text:
+                                        record["_text"] = full_text
+                                        record["_dataset_name"] = dataset_name
+                                        yield record
+
+                        offset += limit
 
             except Exception as e:
                 logger.error(f"Error fetching updates from {dataset_name}: {e}")
@@ -562,6 +581,7 @@ def main():
         default=15,
         help="Number of sample records to fetch"
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
     scraper = ConsiglioDiStatoScraper()
@@ -595,25 +615,28 @@ def main():
             logger.info(f"Sample complete: {count} records, avg {avg_chars} chars/doc")
 
         else:
-            # Full bootstrap
-            count = 0
-            for record in scraper.fetch_all():
-                count += 1
-                if count % 100 == 0:
-                    logger.info(f"Fetched {count} records")
-
-            logger.info(f"Bootstrap complete: {count} total records")
+            # Full bootstrap — delegate to BaseScraper.bootstrap() which
+            # handles normalization, deduplication, and storage persistence.
+            stats = scraper.bootstrap()
+            logger.info(
+                f"Bootstrap complete: {stats['records_fetched']} fetched, "
+                f"{stats['records_new']} new, "
+                f"{stats['records_updated']} updated, "
+                f"{stats['records_skipped']} skipped, "
+                f"{stats['errors']} errors"
+            )
 
     elif args.command == "update":
-        from datetime import timedelta
-        since = datetime.now(timezone.utc) - timedelta(days=30)
-
-        count = 0
-        for record in scraper.fetch_updates(since):
-            count += 1
-            logger.info(f"Update: {record['_id']}")
-
-        logger.info(f"Update complete: {count} new records")
+        # Delegate to BaseScraper.update() which handles normalization,
+        # deduplication, storage persistence, and status tracking.
+        stats = scraper.update()
+        logger.info(
+            f"Update complete: {stats['records_fetched']} fetched, "
+            f"{stats['records_new']} new, "
+            f"{stats['records_updated']} updated, "
+            f"{stats['records_skipped']} skipped, "
+            f"{stats['errors']} errors"
+        )
 
 
 if __name__ == "__main__":

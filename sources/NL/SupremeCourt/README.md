@@ -97,7 +97,7 @@ python bootstrap.py update --since 2024-01-01
 
 ## License
 
-Open Government Data. Free for commercial and non-commercial use.
+[Open Government Data](https://data.overheid.nl/licenties) — free for commercial and non-commercial use.
 
 ## Notes
 

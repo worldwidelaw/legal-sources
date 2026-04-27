@@ -253,6 +253,7 @@ def main():
     parser.add_argument('--sample', action='store_true')
     parser.add_argument('--since', type=str)
     parser.add_argument('--output', type=str)
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     output_dir = args.output or str(Path(__file__).parent / 'sample')

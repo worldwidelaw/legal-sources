@@ -59,6 +59,10 @@ python bootstrap.py bootstrap
 python bootstrap.py update
 ```
 
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — free reuse with attribution.
+
 ## Rate Limits
 
 - No documented rate limits

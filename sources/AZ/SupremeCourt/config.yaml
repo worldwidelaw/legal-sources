@@ -1,23 +1,19 @@
-# AZ/SupremeCourt - Azerbaijan Supreme Court
-# Source: https://sc.supremecourt.gov.az/decision-search/
-# Method: JSON API + HTML full text extraction
-
-source_id: AZ/SupremeCourt
-country: AZ
-name: Azerbaijan Supreme Court
-data_types:
-  - caselaw
-
 api:
   base_url: https://sc.supremecourt.gov.az
-  search_endpoint: /decision-search/
   detail_endpoint: /decision-search/show/
-
-# Rate limiting
+  search_endpoint: /decision-search/
+country: AZ
+data_types:
+- caselaw
+name: Azerbaijan Supreme Court
 rate_limit:
-  requests_per_second: 0.5  # 1 request every 2 seconds
-
+  requests_per_second: 0.5
 schema:
   key_fields:
-    - work_no
-    - date
+  - name: work_no
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+source_id: AZ/SupremeCourt

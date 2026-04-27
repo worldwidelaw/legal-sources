@@ -32,3 +32,7 @@ python bootstrap.py bootstrap            # Full pull
 python bootstrap.py bootstrap --sample   # 15 sample records
 python bootstrap.py test-api             # Connectivity test
 ```
+
+## License
+
+[Open Government Data](https://lawcommission.gov.np/) — official legislation published by the Nepal Law Commission.

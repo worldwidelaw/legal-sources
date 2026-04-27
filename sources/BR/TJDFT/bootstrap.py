@@ -122,7 +122,7 @@ class TJDFTScraper(BaseScraper):
         logger.error("All retries exhausted")
         return None
 
-    def normalize(self, doc: dict) -> dict:
+    def normalize(self, doc: dict) -> Optional[dict]:
         """Transform an API record into the standard schema."""
         uuid = doc.get("uuid", "")
         processo = doc.get("processo", "")
@@ -142,6 +142,9 @@ class TJDFTScraper(BaseScraper):
             if decisao:
                 parts.append(f"DECISÃO: {decisao}")
             text = "\n\n".join(parts)
+
+        if len(text) < 20:
+            return None
 
         # Date
         raw_date = doc.get("dataJulgamento", "")
@@ -196,10 +199,7 @@ class TJDFTScraper(BaseScraper):
             for doc in records:
                 if count >= sample_limit:
                     break
-                record = self.normalize(doc)
-                if len(record["text"]) < 20:
-                    continue
-                yield record
+                yield doc
                 count += 1
 
             if count >= sample_limit:
@@ -222,10 +222,7 @@ class TJDFTScraper(BaseScraper):
                 for doc in records:
                     if count >= sample_limit:
                         break
-                    record = self.normalize(doc)
-                    if len(record["text"]) < 20:
-                        continue
-                    yield record
+                    yield doc
                     count += 1
 
                 if page % 10 == 0:
@@ -259,10 +256,8 @@ class TJDFTScraper(BaseScraper):
                 for doc in records:
                     pub_date = (doc.get("dataPublicacao", "") or "")[:10]
                     if pub_date and pub_date >= since:
-                        record = self.normalize(doc)
-                        if len(record["text"]) >= 20:
-                            yield record
-                            yielded += 1
+                        yield doc
+                        yielded += 1
                     elif pub_date and pub_date < since:
                         return  # Results are sorted by date desc, so we can stop
 
@@ -294,17 +289,8 @@ def main():
         return
 
     if command == "bootstrap":
-        SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-        count = 0
-        for record in scraper.fetch_all(sample=sample):
-            count += 1
-            safe_id = record["_id"].replace("/", "_")[:100]
-            fname = SAMPLE_DIR / f"{safe_id}.json"
-            with open(fname, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            if count % 50 == 0:
-                logger.info("Saved %d records...", count)
-        logger.info("Bootstrap complete: %d records saved to %s", count, SAMPLE_DIR)
+        stats = scraper.bootstrap(sample_mode=sample)
+        logger.info("Bootstrap complete: %s", json.dumps(stats, indent=2))
 
     elif command == "update":
         since = sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith("-") else "2025-01-01"

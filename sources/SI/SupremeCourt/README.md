@@ -50,11 +50,7 @@ python bootstrap.py bootstrap --full
 
 ## License
 
-Open Government Data - freely reusable for commercial and non-commercial purposes.
-
-**Required Attribution**:
-> Javne informacije Slovenije, Vrhovno sodišče Republike Slovenije
-> https://www.sodnapraksa.si
+[Open Government Data](https://podatki.gov.si) — freely reusable for commercial and non-commercial purposes. Attribution required: Javne informacije Slovenije, Vrhovno sodišče Republike Slovenije, https://www.sodnapraksa.si.
 
 ## Notes
 

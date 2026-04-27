@@ -52,3 +52,7 @@ The fetcher respects a 2-second delay between PDF downloads to avoid overloading
 ## Dependencies
 
 Requires `pdfplumber` or `PyPDF2` for PDF text extraction.
+
+## License
+
+[EUR-Lex legal notice](https://eur-lex.europa.eu/content/legal-notice/legal-notice.html) — EU agency publications, reuse authorised with attribution.

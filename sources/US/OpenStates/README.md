@@ -70,3 +70,7 @@ PDFs are skipped as they require specialized extraction libraries.
 
 The API currently does not enforce strict rate limits, but we use 1-second delays
 between requests to be respectful.
+
+## License
+
+[Public domain](https://www.law.cornell.edu/uscode/text/17/105) — US government works under 17 U.S.C. § 105. Open States aggregated data is public domain with attribution appreciated.

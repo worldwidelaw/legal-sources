@@ -58,3 +58,7 @@ python bootstrap.py update
 - Full text is extracted from PDF documents
 - Historical decisions back to ~2019 are available
 - Some older decisions may only be available via information requests
+
+## License
+
+Public domain — Estonian government regulatory decisions are publicly available.

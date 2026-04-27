@@ -1,0 +1,50 @@
+source:
+  id: AG/ECSC-Judgments
+  name: Antigua & Barbuda Court Judgments (ECSC)
+  country: AG
+  url: https://judgments.eccourts.org
+  description: >
+    Antigua & Barbuda court judgments from the Eastern Caribbean Supreme Court
+    WordPress site. Full text available via WP REST API. Category 34 =
+    Antigua & Barbuda. ~1,316 judgments.
+
+data_model:
+  types:
+    - case_law
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: case_number
+      type: string
+      required: false
+    - name: court
+      type: string
+      required: false
+    - name: decision_date
+      type: string
+      required: false
+
+schedule:
+  full_refresh: monthly
+  update_check: weekly

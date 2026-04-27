@@ -1,0 +1,63 @@
+# ===================================================================
+# JE/JerseyLaw -- Jersey Legal Information Board (Enacted Laws)
+# ===================================================================
+# Enacted legislation from jerseylaw.je (SharePoint-based).
+# Full text from server-rendered HTML pages (~750-1100 laws, 1950-present).
+# ===================================================================
+
+source:
+  id: "JE/JerseyLaw"
+  country: "JE"
+  name: "Jersey Legal Information Board (JerseyLaw)"
+  url: "https://www.jerseylaw.je/"
+  description: |
+    Official Jersey law portal run by JLIB since 2004. Enacted legislation
+    (Laws/Lois) from 1950 to present with full text in HTML.
+    English and Norman French.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "Polite 1-second delay between requests."
+
+api:
+  type: "scraping"
+  base_url: "https://www.jerseylaw.je"
+  endpoints:
+    enacted_law: "/laws/enacted/Pages/L-{num:02d}-{year}.aspx"
+  response_format: "html"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "_id"
+      description: "Law code (e.g., L-03-2018)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Full title of the law"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the enacted law"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year of enactment"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL on jerseylaw.je"
+      type: "string"
+      role: "reference"
+      required: true

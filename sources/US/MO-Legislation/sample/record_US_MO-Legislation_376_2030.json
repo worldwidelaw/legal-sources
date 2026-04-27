@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/376.2030",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T01:04:52.497070+00:00",
+  "title": "Missouri Revised Statutes § 376.2030 - Definitions",
+  "text": "376.2030.  Definitions. — As used in sections 376.2030 to 376.2036, the following terms mean:\n  (1)  \"Health benefit plan\", the same meaning as such term is defined in section 376.1350;\n  (2)  \"Health care provider\", the same meaning as such term is defined in section 376.1350;\n  (3)  \"Health carrier\", the same meaning as such term is defined in section 376.1350;\n  (4)  \"Step therapy override exception determination\", a determination as to whether a step therapy protocol should apply in a particular situation, or whether the step therapy protocol should be overridden in favor of immediate coverage of the health care provider's preferred prescription drug.  This determination is based on a review of the patient's health care provider's request for an override, along with supporting rationale and documentation;\n  (5)  \"Step therapy override exception request\", a written request from the patient's health care provider for the step therapy protocol to be overridden in favor of immediate coverage of the health care provider's preferred prescription drug.  The manner and form of the written request shall be disclosed to the patient and the health care provider as described in subsection 1 of section 376.2034;\n  (6)  \"Step therapy protocol\", a protocol or program that establishes the specific sequence in which prescription drugs for a specified medical condition and medically appropriate for a particular patient are to be prescribed and covered by a health carrier or health benefit plan;\n  (7)  \"Utilization review organization\", an entity that conducts utilization review other than an insurer or health carrier performing utilization review for its own health benefit plans.\n(L. 2016 H.B. 2029)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=376.2030",
+  "section_id": "376.2030",
+  "chapter": "376",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

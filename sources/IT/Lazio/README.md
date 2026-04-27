@@ -58,6 +58,12 @@ python bootstrap.py update
 - ~1,500+ total regional laws since 1971
 - Average text length: 5-15KB per law
 
+## License
+
+> ⚠️ **Commercial use prohibited.** This data is licensed under a non-commercial license.
+
+[CC BY-NC-SA 2.0](https://creativecommons.org/licenses/by-nc-sa/2.0/) — non-commercial use only, attribution required, share-alike.
+
 ## Notes
 
 - Uses "testo coordinato" (consolidated text with amendments)

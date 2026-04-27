@@ -37,7 +37,7 @@ api:
 schema:
   total_fields: 10
   key_fields:
-    - name: "document_id"
+    - name: "_id"
       description: "Unique document ID from URL path"
       type: "string"
       role: "primary_key"

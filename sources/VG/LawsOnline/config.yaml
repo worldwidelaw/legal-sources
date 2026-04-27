@@ -1,0 +1,47 @@
+source:
+  id: VG/LawsOnline
+  name: Virgin Islands Laws Online
+  country: VG
+  url: https://laws.gov.vg/
+  description: >
+    Official BVI legislation portal (Attorney General's Chambers).
+    ~200 acts and statutory instruments with full text PDFs.
+    Accessed via Drupal JSON:API (node/laws) with included file entities.
+
+data_model:
+  types:
+    - legislation
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.2
+  burst: 1
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: reference
+      type: string
+      required: false
+    - name: date
+      type: string
+      required: false
+
+schedule:
+  full_refresh: monthly
+  update_check: weekly

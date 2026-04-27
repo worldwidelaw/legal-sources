@@ -1,39 +1,44 @@
-source:
-  id: GR/EETT
-  country: GR
-  name: Hellenic Telecommunications & Post Commission (EETT)
-  name_native: Εθνική Επιτροπή Τηλεπικοινωνιών και Ταχυδρομείων
-  url: https://www.eett.gr
-  data_url: https://diavgeia.gov.gr/luminapi/opendata
-  description: >
-    Greek telecom and postal regulator decisions. Fetches from the Diavgeia
-    transparency portal. Covers regulatory acts (Α.2) and individual
-    administrative decisions (2.4.7.1).
-  data_types:
-    - doctrine
-  auth: none
-  license: CC-BY
-  coverage:
-    start_date: "2010-01-01"
-    jurisdictions:
-      - GR
-  update_frequency: daily
-  notes: >
-    EETT regulates telecommunications, postal services, and domain names (.gr).
-    Data accessed via Diavgeia API using organization UID 7726.
-
 api:
   base_url: https://diavgeia.gov.gr/luminapi
-  organization_uid: "7726"
   decision_types:
-    - "Α.2"      # ΚΑΝΟΝΙΣΤΙΚΗ ΠΡΑΞΗ (Regulatory Act)
-    - "2.4.7.1"  # ΛΟΙΠΕΣ ΑΤΟΜΙΚΕΣ ΔΙΟΙΚΗΤΙΚΕΣ ΠΡΑΞΕΙΣ (Individual Admin Acts)
-  rate_limit: 2.0
+  - Α.2
+  - 2.4.7.1
+  organization_uid: '7726'
   page_size: 50
-
+  rate_limit: 2.0
 schema:
   key_fields:
-    - ada
-    - subject
-    - issue_date
-    - protocol_number
+  - name: ada
+    required: false
+    type: string
+  - name: subject
+    required: false
+    type: string
+  - name: issue_date
+    required: false
+    type: string
+  - name: protocol_number
+    required: false
+    type: string
+source:
+  auth: none
+  country: GR
+  coverage:
+    jurisdictions:
+    - GR
+    start_date: '2010-01-01'
+  data_types:
+  - doctrine
+  data_url: https://diavgeia.gov.gr/luminapi/opendata
+  description: 'Greek telecom and postal regulator decisions. Fetches from the Diavgeia transparency portal. Covers regulatory acts (Α.2) and individual administrative decisions (2.4.7.1).
+
+    '
+  id: GR/EETT
+  license: CC-BY
+  name: Hellenic Telecommunications & Post Commission (EETT)
+  name_native: Εθνική Επιτροπή Τηλεπικοινωνιών και Ταχυδρομείων
+  notes: 'EETT regulates telecommunications, postal services, and domain names (.gr). Data accessed via Diavgeia API using organization UID 7726.
+
+    '
+  update_frequency: daily
+  url: https://www.eett.gr

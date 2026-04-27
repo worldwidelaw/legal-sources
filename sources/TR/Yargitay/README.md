@@ -70,3 +70,7 @@ python bootstrap.py update
 - [Yargıtay Official Website](https://www.yargitay.gov.tr)
 - [Mevzuat Portal](https://mevzuat.adalet.gov.tr)
 - [Court of Cassation (Wikipedia)](https://en.wikipedia.org/wiki/Court_of_Cassation_(Turkey))
+
+## License
+
+[Open Government Data](https://www.yargitay.gov.tr) — official decisions published by the Court of Cassation of the Republic of Turkey.

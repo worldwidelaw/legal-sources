@@ -126,6 +126,7 @@ class WorldBankDocumentsScraper(BaseScraper):
         logger.info("Total documents: %d", total)
 
         offset = 0
+        count = 0
         while offset < total:
             if offset == 0:
                 data = first_page
@@ -138,8 +139,18 @@ class WorldBankDocumentsScraper(BaseScraper):
             for key, doc in docs.items():
                 if key == "facets" or not isinstance(doc, dict):
                     continue
+                # Fetch full text inline so BaseScraper.bootstrap() gets it
+                txturl = doc.get("txturl", "")
+                if txturl:
+                    self.rate_limiter.wait()
+                    doc["_full_text"] = self._fetch_full_text(txturl)
+                else:
+                    doc["_full_text"] = ""
                 yield doc
                 page_count += 1
+                count += 1
+                if count % 500 == 0:
+                    logger.info("Progress: %d/%d documents fetched", count, total)
 
             logger.info("Fetched offset %d: %d docs (total %d)", offset, page_count, total)
             if page_count == 0:
@@ -188,10 +199,17 @@ class WorldBankDocumentsScraper(BaseScraper):
             abstracts = re.sub(r"\s+", " ", abstracts).strip()
 
         full_text = raw.get("_full_text", "")
+        # Use abstract as fallback when full text is unavailable
+        if not full_text and abstracts:
+            full_text = abstracts
 
         country = raw.get("count", "")
         if isinstance(country, list):
             country = ", ".join(country)
+
+        # Skip records with no text content at all
+        if not full_text or len(full_text.strip()) < 50:
+            return None
 
         return {
             "_id": f"WB-{doc_id}",
@@ -222,10 +240,11 @@ class WorldBankDocumentsScraper(BaseScraper):
         count = 0
         with_text = 0
         for raw in self.fetch_all():
-            # Fetch full text from txturl
-            txturl = raw.get("txturl", "")
-            self.rate_limiter.wait()
-            raw["_full_text"] = self._fetch_full_text(txturl)
+            # fetch_all() already populates _full_text; skip if present
+            if "_full_text" not in raw:
+                txturl = raw.get("txturl", "")
+                self.rate_limiter.wait()
+                raw["_full_text"] = self._fetch_full_text(txturl)
 
             normalized = self.normalize(raw)
 
@@ -252,6 +271,7 @@ def main():
     parser = argparse.ArgumentParser(description="INTL/WorldBank-Documents Bootstrap")
     parser.add_argument("command", choices=["bootstrap", "update", "test"])
     parser.add_argument("--sample", action="store_true", help="Fetch sample only (15 records)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = WorldBankDocumentsScraper()
@@ -260,7 +280,7 @@ def main():
         ok = scraper.test_connection()
         sys.exit(0 if ok else 1)
     elif args.command == "bootstrap":
-        scraper.run_bootstrap(sample=args.sample)
+        scraper.bootstrap(sample_mode=args.sample)
     elif args.command == "update":
         count = 0
         for raw in scraper.fetch_updates(since=datetime.now(timezone.utc)):

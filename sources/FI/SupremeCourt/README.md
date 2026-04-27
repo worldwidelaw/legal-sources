@@ -9,7 +9,7 @@ Case law from the Finnish Supreme Court (Korkein oikeus / KKO).
 - **Endpoint**: LawSampo SPARQL endpoint at `http://ldf.fi/lawsampo/sparql`
 - **Coverage**: ~6,000 KKO judgments with full text
 - **Date Range**: Historical through 2021 (based on LawSampo dataset updates)
-- **License**: CC-BY (Creative Commons Attribution)
+- **License**: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 ## Data Format
 
@@ -45,6 +45,10 @@ python bootstrap.py bootstrap
 # Incremental update
 python bootstrap.py update
 ```
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (LawSampo / Semantic Finlex)
 
 ## Related
 

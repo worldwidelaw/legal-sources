@@ -100,23 +100,29 @@ class MDCourtsScraper(BaseScraper):
 
     def _search_opinions(self, court: str = COURTS, page_size: int = 20,
                          filed_after: str = None, filed_before: str = None,
-                         page: int = 1) -> Dict[str, Any]:
-        params = {
-            "format": "json",
-            "type": "o",
-            "court": court,
-            "page_size": min(page_size, 20),
-            "order_by": "dateFiled desc",
-            "page": page,
-        }
-        if filed_after:
-            params["filed_after"] = filed_after
-        if filed_before:
-            params["filed_before"] = filed_before
+                         cursor_url: str = None) -> Dict[str, Any]:
+        """Query CourtListener search API for Maryland opinions.
 
+        Uses cursor-based pagination: pass cursor_url from the previous
+        response's 'next' field to get the next page of results.
+        """
         for attempt in range(3):
             try:
-                resp = self.session.get(SEARCH_URL, params=params, timeout=60)
+                if cursor_url:
+                    resp = self.session.get(cursor_url, timeout=60)
+                else:
+                    params = {
+                        "format": "json",
+                        "type": "o",
+                        "court": court,
+                        "page_size": min(page_size, 20),
+                        "order_by": "dateFiled desc",
+                    }
+                    if filed_after:
+                        params["filed_after"] = filed_after
+                    if filed_before:
+                        params["filed_before"] = filed_before
+                    resp = self.session.get(SEARCH_URL, params=params, timeout=60)
                 if resp.status_code == 429:
                     wait = 2 ** (attempt + 1)
                     logger.warning(f"Rate limited, waiting {wait}s...")
@@ -214,12 +220,14 @@ class MDCourtsScraper(BaseScraper):
         }
 
     def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
-        page = 1
+        cursor_url = None
         total_fetched = 0
+        page = 0
 
         while True:
+            page += 1
             logger.info(f"Fetching search results page {page}...")
-            data = self._search_opinions(page=page)
+            data = self._search_opinions(cursor_url=cursor_url)
 
             results = data.get("results", [])
             if not results:
@@ -232,9 +240,9 @@ class MDCourtsScraper(BaseScraper):
                     total_fetched += 1
                     yield raw
 
-            if not data.get("next"):
+            cursor_url = data.get("next")
+            if not cursor_url:
                 break
-            page += 1
 
         logger.info(f"Total fetched: {total_fetched}")
 
@@ -243,10 +251,12 @@ class MDCourtsScraper(BaseScraper):
             from datetime import timedelta
             since = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
 
-        page = 1
+        cursor_url = None
+        page = 0
         while True:
+            page += 1
             logger.info(f"Fetching updates since {since}, page {page}...")
-            data = self._search_opinions(filed_after=since, page=page)
+            data = self._search_opinions(filed_after=since, cursor_url=cursor_url)
 
             results = data.get("results", [])
             if not results:
@@ -258,9 +268,9 @@ class MDCourtsScraper(BaseScraper):
                 if raw:
                     yield raw
 
-            if not data.get("next"):
+            cursor_url = data.get("next")
+            if not cursor_url:
                 break
-            page += 1
 
     def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
         court_id = raw.get("court_id", "")

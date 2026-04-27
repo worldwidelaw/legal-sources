@@ -238,27 +238,34 @@ class ATInformacoesVinculativas(BaseScraper):
         return documents
 
     def fetch_pdf_text(self, pdf_path: str) -> str:
-        """Download a PDF and extract its text."""
+        """Download a PDF and extract its text via common helper."""
         url = f"{BASE_URL}{pdf_path}" if pdf_path.startswith("/") else pdf_path
         resp = self.http.get(url)
         time.sleep(DELAY)
         if resp is None or resp.status_code != 200:
             return ""
 
+        source_id = re.sub(r'[^\w]', '_', pdf_path.split("/")[-1].replace(".pdf", ""))
         try:
-            with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-                pages = []
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        pages.append(text)
-                return "\n\n".join(pages)
+            md = extract_pdf_markdown(
+                source=self.SOURCE_ID,
+                source_id=source_id,
+                pdf_bytes=resp.content,
+                table="doctrine",
+                force=True,
+            )
+            return md or ""
         except Exception as e:
             logger.warning("Failed to extract PDF text from %s: %s", pdf_path, e)
             return ""
 
-    def normalize(self, doc_meta: Dict[str, Any], text: str) -> Dict[str, Any]:
-        """Normalize a document into the standard schema."""
+    def normalize(self, doc_meta: Dict[str, Any], text: Optional[str] = None) -> Dict[str, Any]:
+        """Normalize a document into the standard schema.
+
+        Accepts (doc_meta, text) or a single dict with `_text` key embedded.
+        """
+        if text is None:
+            text = doc_meta.get("_text", "") or ""
         pdf_path = doc_meta.get("pdf_path", "")
         subject = doc_meta.get("subject", "")
         vinc_num = doc_meta.get("vinculativa_number", "")
@@ -312,8 +319,9 @@ class ATInformacoesVinculativas(BaseScraper):
                     logger.warning("Empty text for %s", pdf_path)
                     continue
 
-                record = self.normalize(doc_meta, text)
-                yield record
+                raw = dict(doc_meta)
+                raw["_text"] = text
+                yield raw
                 total_yielded += 1
 
                 if total_yielded % 50 == 0:
@@ -334,7 +342,9 @@ class ATInformacoesVinculativas(BaseScraper):
                 if doc_date and doc_date >= since:
                     text = self.fetch_pdf_text(doc_meta.get("pdf_path", ""))
                     if text:
-                        yield self.normalize(doc_meta, text)
+                        raw = dict(doc_meta)
+                        raw["_text"] = text
+                        yield raw
                 elif doc_date and doc_date < since:
                     break  # Catalog is sorted by date DESC
 
@@ -358,6 +368,7 @@ def main():
     parser.add_argument("command", choices=["bootstrap", "update", "test"])
     parser.add_argument("--sample", action="store_true", help="Fetch only 10-15 sample records")
     parser.add_argument("--since", type=str, help="Date for incremental update (YYYY-MM-DD)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = ATInformacoesVinculativas()
@@ -371,7 +382,8 @@ def main():
         sample_dir.mkdir(exist_ok=True)
 
         count = 0
-        for record in scraper.fetch_all(sample=args.sample):
+        for raw in scraper.fetch_all(sample=args.sample):
+            record = scraper.normalize(raw)
             safe_name = re.sub(r'[^\w\-.]', '_', str(record['_id']))
             out_file = sample_dir / f"{safe_name}.json"
             out_file.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -388,7 +400,8 @@ def main():
     if args.command == "update":
         since = args.since or "2026-01-01"
         count = 0
-        for record in scraper.fetch_updates(since):
+        for raw in scraper.fetch_updates(since):
+            record = scraper.normalize(raw)
             count += 1
             logger.info("  [%d] %s: %s", count, record["date"], record["title"][:60])
         logger.info("Update complete: %d new records since %s", count, since)

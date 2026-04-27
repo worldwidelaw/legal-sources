@@ -54,3 +54,7 @@ python bootstrap.py bootstrap
 ```bash
 pip install datasets
 ```
+
+## License
+
+[MIT License](https://huggingface.co/datasets/muhammetakkurt/mevzuat-gov-dataset) — HuggingFace dataset. Underlying legislation is open government data from mevzuat.gov.tr.

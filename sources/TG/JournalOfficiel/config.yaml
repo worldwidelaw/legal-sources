@@ -1,0 +1,82 @@
+# ===================================================================
+# TG/JournalOfficiel -- Journal Officiel de la République Togolaise
+# ===================================================================
+# Togo's Official Gazette (Journal Officiel) containing laws, decrees,
+# arrêtés, and other official texts published since 1920.
+# Full text available inline on Drupal node pages.
+# ===================================================================
+
+source:
+  id: "TG/JournalOfficiel"
+  country: "TG"
+  name: "Journal Officiel de la République Togolaise"
+  url: "https://jo.gouv.tg/"
+  description: |
+    Togo's Official Gazette containing the full text of laws, decrees,
+    arrêtés, and other official texts. ~12,000 documents from 1920 to
+    present, published on a Drupal 7 platform with inline full text.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "scraping"
+  base_url: "https://jo.gouv.tg"
+  endpoints:
+    listing: "/recherche?page={page}"
+    document: "/node/{node_id}"
+  response_format: "html"
+
+data_model:
+  type: "legislation"
+  primary_key: "document_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "document_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Unique document identifier (TG-JO-{node_id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title/description"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legal document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of signature (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the document on jo.gouv.tg"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "nature"
+      description: "Document type (Loi, Décret, Arrêté, etc.)"
+    - name: "number"
+      description: "Official document number"
+    - name: "institution"
+      description: "Issuing institution"
+    - name: "jo_number"
+      description: "Journal Officiel issue number"
+    - name: "jo_type"
+      description: "Journal Officiel type (Ordinaire, Spécial)"

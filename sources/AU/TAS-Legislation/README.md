@@ -31,3 +31,7 @@ python bootstrap.py update             # Latest from Atom feed
 - API returns single object (not array) when only 1 result for a year
 - ID format: `act-YYYY-NNN` for Acts, `sr-YYYY-NNN` for Statutory Rules
 - Atom feed at `/feed?id=crawler` provides recent updates
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — published by the Office of Parliamentary Counsel, Tasmania.

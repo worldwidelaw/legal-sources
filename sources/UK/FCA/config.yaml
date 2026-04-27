@@ -1,32 +1,53 @@
-source:
-  id: UK/FCA
-  name: UK Financial Conduct Authority (FCA)
-  country: UK
-  url: https://www.fca.org.uk
-  data_types:
-    - doctrine
-  description: |
-    Decision notices and final notices from the UK Financial Conduct Authority.
-    Includes enforcement actions, bans, fines, and regulatory decisions against
-    firms and individuals in the UK financial services sector.
-  license: Open Government Licence v3.0
-  language: en
-  auth: none
-
 api:
-  sitemap_url: https://www.fca.org.uk/sitemap.xml?page=2
   base_url: https://www.fca.org.uk
-  rate_limit: 1.0  # seconds between requests
-
+  rate_limit: 1.0
+  sitemap_url: https://www.fca.org.uk/sitemap.xml?page=2
 schema:
   key_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-    - notice_type
-    - subject_name
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: _fetched_at
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: notice_type
+    required: false
+    type: string
+  - name: subject_name
+    required: false
+    type: string
+source:
+  auth: none
+  country: UK
+  data_types:
+  - doctrine
+  description: 'Decision notices and final notices from the UK Financial Conduct Authority.
+
+    Includes enforcement actions, bans, fines, and regulatory decisions against
+
+    firms and individuals in the UK financial services sector.
+
+    '
+  id: UK/FCA
+  language: en
+  license: Open Government Licence v3.0
+  name: UK Financial Conduct Authority (FCA)
+  url: https://www.fca.org.uk

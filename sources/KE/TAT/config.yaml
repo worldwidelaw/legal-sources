@@ -1,0 +1,39 @@
+fetcher:
+  base_url: https://new.kenyalaw.org
+  court_code: KETAT
+  rate_limit: 5.0
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: citation
+    required: false
+    type: string
+source:
+  auth: none
+  country: KE
+  data_types:
+  - case_law
+  description: >
+    Tax Appeals Tribunal decisions from Kenya Law (new.kenyalaw.org).
+    The TAT is an independent quasi-judicial body for resolving tax disputes
+    between taxpayers and the Kenya Revenue Authority (KRA). ~2,000 decisions
+    from 2016-2026. Full text extracted from PDF source files.
+  format: pdf
+  id: KE/TAT
+  language: en
+  name: Kenya Tax Appeals Tribunal
+  url: https://new.kenyalaw.org/judgments/KETAT/

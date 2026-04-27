@@ -360,6 +360,7 @@ def main():
                        help='Limit number of records to fetch')
     parser.add_argument('--output', type=str, default=None,
                        help='Output file path')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

@@ -1,0 +1,42 @@
+fetcher:
+  document_pages:
+  - /document/supervision-legislation
+  - /document/supervisory-directives-credit-institutions
+  - /document/policy-papers
+  - /document/guidelines
+  - /document/aml-cft-state-ordinance-downloads
+  - /document/captive-insurance-companies
+  rate_limit_seconds: 2.0
+  strategy: html_scraping_with_pdf
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: category
+    required: false
+    type: string
+source:
+  auth: none
+  country: AW
+  data_types:
+  - doctrine
+  description: 'Central Bank of Aruba regulatory documents: state ordinances, supervisory directives, policy papers, guidelines, AML/CFT framework docs. All documents served as PDFs via readBlob.do endpoint.
+    Also includes HTML regulatory descriptions from sector pages.
+
+    '
+  id: AW/CBA-Regulations
+  name: Central Bank of Aruba Regulations
+  url: https://www.cbaruba.org/

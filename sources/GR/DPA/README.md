@@ -81,6 +81,10 @@ python bootstrap.py update
 - `requests` - HTTP client
 - `beautifulsoup4` (optional) - HTML parsing fallback
 
+## License
+
+Public domain — official regulatory decisions of the Hellenic Data Protection Authority.
+
 ## Notes
 
 - PDFs are anonymized versions (anonym suffix in filename)

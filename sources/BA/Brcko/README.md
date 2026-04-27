@@ -51,6 +51,10 @@ python3 bootstrap.py bootstrap --sample --count 20
 - PyPDF2 (for PDF text extraction)
 - requests
 
+## License
+
+Open government data — publicly accessible legislation.
+
 ## Notes
 
 - Text extraction from PDFs preserves structure reasonably well

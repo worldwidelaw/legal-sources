@@ -354,6 +354,7 @@ def main():
     parser = argparse.ArgumentParser(description="US/CornellLII bootstrapper")
     parser.add_argument("command", choices=["bootstrap", "test-api"])
     parser.add_argument("--sample", action="store_true", help="Fetch sample only (15 sections)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = CornellLIIScraper()

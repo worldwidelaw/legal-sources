@@ -62,3 +62,7 @@ python bootstrap.py update
 - All documents are publicly available under Open Government Licence
 - XML contains detailed structural markup (sections, subsections, schedules)
 - GitHub mirror available at: https://github.com/justicecanada/laws-lois-xml
+
+## License
+
+[Open Government Licence - Canada](https://open.canada.ca/en/open-government-licence-canada) — Crown Copyright, re-use permitted under OGL terms.

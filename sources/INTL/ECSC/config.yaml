@@ -1,24 +1,34 @@
-source:
-  id: INTL/ECSC
-  name: "Eastern Caribbean Supreme Court Judgments"
-  country: INTL
-  url: https://judgments.eccourts.org/wp-json/wp/v2/posts
-  data_types:
-    - case_law
-  auth: none
-  license: "Free access"
-  description: >
-    8500+ judgments from 1996+. Covers 9 Caribbean jurisdictions:
-    Antigua & Barbuda, Dominica, Grenada, St Kitts & Nevis, St Lucia,
-    St Vincent & Grenadines, Anguilla, BVI, Montserrat.
-    High Court, Court of Appeal, Privy Council, Caribbean Court of Justice.
-  method: "WordPress REST API with ACF fields; full text from HTML content"
-
 schema:
   key_fields:
-    - case_number
-    - court_type
-    - jurisdiction
-    - judges
-    - pdf_url
-    - date
+  - name: case_number
+    required: false
+    type: string
+  - name: court_type
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string
+  - name: judges
+    required: false
+    type: string
+  - name: pdf_url
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: '8500+ judgments from 1996+. Covers 9 Caribbean jurisdictions: Antigua & Barbuda, Dominica, Grenada, St Kitts & Nevis, St Lucia, St Vincent & Grenadines, Anguilla, BVI, Montserrat. High Court,
+    Court of Appeal, Privy Council, Caribbean Court of Justice.
+
+    '
+  id: INTL/ECSC
+  license: Free access
+  method: WordPress REST API with ACF fields; full text from HTML content
+  name: Eastern Caribbean Supreme Court Judgments
+  url: https://judgments.eccourts.org/wp-json/wp/v2/posts

@@ -1,23 +1,34 @@
-source:
-  id: INTL/CISGOnline
-  name: "CISG-online (UN Sales Convention Case Law)"
-  country: INTL
-  url: https://cisg-online.org/
-  data_types:
-    - case_law
-  auth: none
-  license: "Free access, pro bono project"
-  description: >
-    Comprehensive database of court and arbitral tribunal decisions applying
-    the UN Convention on Contracts for the International Sale of Goods (CISG).
-    Over 7,600 cases from 74+ jurisdictions worldwide.
-  method: "CFC endpoint for case listing + HTML scraping + PDF text extraction"
-
 schema:
   key_fields:
-    - cisg_online_number
-    - jurisdiction
-    - court
-    - date
-    - case_number
-    - cisg_articles
+  - name: cisg_online_number
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: case_number
+    required: false
+    type: string
+  - name: cisg_articles
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: 'Comprehensive database of court and arbitral tribunal decisions applying the UN Convention on Contracts for the International Sale of Goods (CISG). Over 7,600 cases from 74+ jurisdictions
+    worldwide.
+
+    '
+  id: INTL/CISGOnline
+  license: Free access, pro bono project
+  method: CFC endpoint for case listing + HTML scraping + PDF text extraction
+  name: CISG-online (UN Sales Convention Case Law)
+  url: https://cisg-online.org/

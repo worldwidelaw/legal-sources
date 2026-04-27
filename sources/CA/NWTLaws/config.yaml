@@ -1,0 +1,49 @@
+source:
+  id: CA/NWTLaws
+  name: Northwest Territories Legislation
+  country: CA
+  url: https://www.justice.gov.nt.ca/en/legislation/
+  description: >
+    Consolidated Acts and Regulations of the Northwest Territories.
+    ~240 Acts and ~567 Regulations in PDF format from justice.gov.nt.ca.
+
+data_model:
+  types:
+    - legislation
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: doc_type
+      type: string
+      required: false
+    - name: slug
+      type: string
+      required: false
+    - name: file_url
+      type: string
+      required: false
+
+schedule:
+  full_refresh: monthly
+  update_check: weekly

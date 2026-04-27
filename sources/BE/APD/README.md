@@ -31,4 +31,4 @@ HTML scraping + PDF text extraction:
 
 ## License
 
-Belgian Federal Government Open Data
+[Belgian Open Government Data](https://data.gov.be/en/licence-conditions) — free reuse of Belgian public sector information.

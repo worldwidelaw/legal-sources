@@ -1,25 +1,39 @@
-source_id: US/DOL
-name: US Department of Labor Administrative Review Board Decisions
+auth: none
 country: US
 data_types:
-  - case_law
-url: https://www.dol.gov/agencies/oalj/topics/libraries/LIBARB
-auth: none
-
+- case_law
+fetch:
+  delay: 2.0
+  new_index_base: https://www.dol.gov/agencies/oalj/PUBLIC/ARB/REFERENCES/CASELISTS/
+  new_pdf_base: https://www.dol.gov
+  old_index_base: https://www.oalj.dol.gov/PUBLIC/ARB/REFERENCES/CASELISTS/
+  old_pdf_base: https://www.oalj.dol.gov
+name: US Department of Labor Administrative Review Board Decisions
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - arb_number
-    - alj_number
-    - program_area
-    - url
-
-fetch:
-  old_index_base: https://www.oalj.dol.gov/PUBLIC/ARB/REFERENCES/CASELISTS/
-  new_index_base: https://www.dol.gov/agencies/oalj/PUBLIC/ARB/REFERENCES/CASELISTS/
-  old_pdf_base: https://www.oalj.dol.gov
-  new_pdf_base: https://www.dol.gov
-  delay: 2.0
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: arb_number
+    required: false
+    type: string
+  - name: alj_number
+    required: false
+    type: string
+  - name: program_area
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source_id: US/DOL
+url: https://www.dol.gov/agencies/oalj/topics/libraries/LIBARB

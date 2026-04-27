@@ -65,3 +65,7 @@ python3 bootstrap.py updates --since 2026-01-01
 - **Total documents:** ~2,928
 - **Coverage:** 2011-present
 - **Update frequency:** New decisions added regularly
+
+## License
+
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

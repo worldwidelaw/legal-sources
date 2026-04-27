@@ -1,0 +1,24 @@
+source_id: ET/FederalNegaritGazetta
+name: Ethiopia Federal Negarit Gazetta (Official Gazette)
+country: ET
+url: https://lawethiopia.com/index.php/proclamations-by-number
+description: >-
+  Federal Negarit Gazetta - the official law gazette of the Federal Democratic
+  Republic of Ethiopia, containing proclamations (laws) published by the House
+  of Peoples' Representatives. Fetches PDF proclamations from lawethiopia.com,
+  a free-access Ethiopian legal information portal.
+data_types:
+  - legislation
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - proclamation_number

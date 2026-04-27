@@ -1,37 +1,44 @@
-source:
-  id: CH/ZurichGesetzessammlung
-  name: Zurich Law Collection (Gesetzessammlung seit 1803)
-  country: CH
-  url: https://opendata.swiss/en/dataset/erlasse-der-zurcher-gesetzessammlung-seit-1803
-
-data:
-  types:
-    - legislation
-  format: tei-xml
-  api_type: bulk_download
-  update_frequency: periodic
-
-schema:
-  key_fields:
-    - signature
-    - title
-    - date
-    - text
-
 auth:
   type: none
-
-rate_limit:
-  requests_per_second: 1
-  delay_between_requests: 1.0
-
+data:
+  api_type: bulk_download
+  format: tei-xml
+  types:
+  - legislation
+  update_frequency: periodic
 license:
   name: CC-BY-SA 4.0
   url: https://creativecommons.org/licenses/by-sa/4.0/
+notes: 'Zurich cantonal legislation from 1803-1998 published by the State Archives
 
-notes: |
-  Zurich cantonal legislation from 1803-1998 published by the State Archives
   of Canton Zurich (Staatsarchiv). 9,527 TEI-XML files in a single ZIP archive
+
   hosted on Zenodo (117 MB). Each file contains full text of one legislative
+
   enactment with NER annotations (places, persons, organizations).
+
   DOI: 10.5281/zenodo.13347459
+
+  '
+rate_limit:
+  delay_between_requests: 1.0
+  requests_per_second: 1
+schema:
+  key_fields:
+  - name: signature
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+source:
+  country: CH
+  id: CH/ZurichGesetzessammlung
+  name: Zurich Law Collection (Gesetzessammlung seit 1803)
+  url: https://opendata.swiss/en/dataset/erlasse-der-zurcher-gesetzessammlung-seit-1803

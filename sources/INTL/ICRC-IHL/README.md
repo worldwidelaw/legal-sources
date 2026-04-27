@@ -25,6 +25,10 @@ python bootstrap.py bootstrap                   # Full fetch (~6,634 documents)
 python bootstrap.py update                      # Fetch recent changes
 ```
 
+## License
+
+[ICRC Terms of Use](https://www.icrc.org/en/terms-and-conditions) — ICRC databases are provided for informational/research purposes. Verify terms before commercial redistribution.
+
 ## Notes
 
 - JSON:API endpoints require `--globoff` flag with curl (URLs contain `[]`)

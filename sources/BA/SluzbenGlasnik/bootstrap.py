@@ -480,6 +480,7 @@ def main():
         default="",
         help="Search query"
     )
+    search_parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

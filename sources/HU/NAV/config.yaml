@@ -1,28 +1,46 @@
-source:
-  id: HU/NAV
-  name: Hungarian Tax Authority (NAV)
-  country: HU
-  url: https://nav.gov.hu
-  data_types:
-    - doctrine
-  auth: none
-  license: public_domain
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - year
-    - booklet_number
-    - url
-
 fetch:
-  method: html_scraping
   base_url: https://nav.gov.hu
   info_booklets_base: /ugyfeliranytu/nezzen-utana/inf_fuz
+  method: html_scraping
   pdf_base: /pfile/file?path=
-  years: [2021, 2022, 2023, 2024, 2025, 2026]
   rate_limit:
     delay_seconds: 1.5
+  years:
+  - 2021
+  - 2022
+  - 2023
+  - 2024
+  - 2025
+  - 2026
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: year
+    required: false
+    type: string
+  - name: booklet_number
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: HU
+  data_types:
+  - doctrine
+  id: HU/NAV
+  license: public_domain
+  name: Hungarian Tax Authority (NAV)
+  url: https://nav.gov.hu

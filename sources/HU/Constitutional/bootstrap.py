@@ -613,6 +613,7 @@ def main():
                        help="Start fresh, don't resume from checkpoint")
     parser.add_argument("--clear-checkpoint", action="store_true",
                        help="Clear checkpoint file and exit")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

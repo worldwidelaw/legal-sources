@@ -37,3 +37,7 @@ Uses the DSpace 7 REST API (HAL+JSON, no authentication required).
   SSL/connectivity issues and uses JSF/Seam (no REST API), so we use the
   DSpace repository instead.
 - Some older PDFs are scanned images with no extractable text — these are skipped.
+
+## License
+
+[Open Government Data](https://repositorio.indecopi.gob.pe/) — official tribunal resolutions published by INDECOPI, Peru's competition and IP authority.

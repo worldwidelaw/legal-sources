@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/387.436",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T01:23:42.234025+00:00",
+  "title": "Missouri Revised Statutes § 387.436 - Revocation of driver's ability to accept requests through digital network, when — confidentiality of information",
+  "text": "387.436.  Revocation of driver's ability to accept requests through digital network, when — confidentiality of information. — 1.  Upon receipt of information that a TNC driver has been convicted of a violation of section 577.010 or 577.012, fraud, a sexual offense, use of a motor vehicle to commit a felony, an offense involving property damage, theft, an act of violence, or an act of terror, or no longer maintains the minimum motor vehicle financial responsibility required to be carried under chapter 303, a TNC shall immediately revoke such driver's ability to accept trip requests through the TNC's digital platform, and as soon as practicable, notify the department of the TNC driver's name, license number, and license plate number.\n  2.  Upon receipt of information that a TNC driver has been involved in a traffic accident or incident that results in serious bodily injury or a fatality, a TNC shall notify the department of the driver's name, license number, and license plate number.\n  3.  The department shall develop and implement a process to provide any information received under subsections 1 and 2 of this section to all other TNCs licensed in this state.\n  4.  Notwithstanding any other provision of law, any information provided to the department under this section shall be exempt from disclosure under chapter 610.\n(L. 2017 H.B. 130)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=387.436",
+  "section_id": "387.436",
+  "chapter": "387",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

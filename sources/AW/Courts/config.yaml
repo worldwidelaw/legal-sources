@@ -1,0 +1,52 @@
+fetcher:
+  api_base: https://data.rechtspraak.nl/uitspraken
+  content_endpoint: /content
+  creator_id: http://psi.rechtspraak.nl/GHACSMBES
+  rate_limit_seconds: 1.0
+  search_endpoint: /zoeken
+  strategy: rest_api
+  total_documents: ~3976
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: ecli
+    required: false
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: procedure_type
+    required: false
+    type: string
+  - name: subject_area
+    required: false
+    type: string
+source:
+  auth: none
+  country: AW
+  data_types:
+  - case_law
+  description: 'Court decisions from the Gemeenschappelijk Hof van Justitie van Aruba, Curaçao, Sint Maarten en van Bonaire, Sint Eustatius en Saba, via the Dutch rechtspraak.nl Open Data API. Full text
+    in XML format, converted to plain text. ECLI prefix: OGHACMB.
+
+    '
+  id: AW/Courts
+  name: Aruba Court Decisions (Gemeenschappelijk Hof)
+  url: https://data.rechtspraak.nl/

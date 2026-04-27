@@ -1,0 +1,108 @@
+source:
+  id: US/CourtListenerBulk
+  name: CourtListener Bulk Data (Free Law Project)
+  country: US
+  type: caselaw
+  url: https://www.courtlistener.com/help/api/bulk-data/
+  description: >
+    Quarterly PostgreSQL CSV dumps from CourtListener (Free Law Project),
+    served from a public AWS S3 bucket. Covers ~10M federal and state court
+    opinions across 2,000+ courts, with no API token required.
+
+    This source supersedes US/CaselawAccessProject (frozen 2024 snapshot)
+    by providing a cleaned, current superset that Free Law Project actively
+    maintains. Documents that CourtListener marks as 'blocked' (privacy
+    redactions for individuals who requested removal) are skipped at
+    ingest time.
+
+s3:
+  bucket: com-courtlistener-storage
+  region: us-west-2
+  prefix: bulk-data/
+  # Anonymous access — bucket is public, no credentials required.
+  anonymous: true
+
+# Filenames in the bucket are stamped with the dump generation date.
+# The bootstrap discovers the latest available date by listing each
+# table prefix and picking the most recent matching file.
+files:
+  courts: courts-{date}.csv.bz2
+  dockets: dockets-{date}.csv.bz2
+  opinion_clusters: opinion-clusters-{date}.csv.bz2
+  opinions: opinions-{date}.csv.bz2
+  citation_map: citation-map-{date}.csv.bz2
+
+auth:
+  type: none
+
+rate_limit:
+  # No rate limit — S3 GETs against a public bucket. We just stream.
+  requests_per_second: 50
+  burst: 50
+  max_workers: 1  # Single-threaded streaming (CSV order matters for joins)
+
+data_model:
+  type: case_law
+  update_strategy: append_only
+  # Stable per-opinion ID. CourtListener opinion IDs are immutable.
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: false  # A small fraction of opinions are PDF-only with no extracted text
+    - name: date
+      type: string
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: court
+      type: string
+      required: false
+    - name: opinion_id
+      type: string
+      required: true
+    - name: cluster_id
+      type: string
+      required: true
+
+  secondary_fields:
+    - name: court_id
+    - name: docket_id
+    - name: case_number
+    - name: author
+    - name: precedential_status
+    - name: citations
+
+# Sample mode tuning. Sample mode reads the heads of each CSV and
+# performs a best-effort join. If a referenced cluster/docket isn't
+# found within sample_streaming_max_bytes of compressed CSV scanned,
+# the sample record is emitted with partial metadata (and a warning).
+sample:
+  count: 10
+  streaming_max_bytes: 524288000  # 500 MB compressed cap per supporting file
+
+license:
+  name: Public domain (US government works)
+  notes: >
+    CourtListener bulk data is "free of known copyright restrictions"
+    per https://www.courtlistener.com/help/api/bulk-data/. Court opinions
+    themselves are not copyrightable in the US. Free Law Project's
+    enhancements are not claimed under copyright.
+
+coverage:
+  notes: >
+    Covers federal courts (SCOTUS, circuit courts, district courts, Tax
+    Court, Court of Federal Claims, etc.) and all 50 states' courts of
+    last resort plus most intermediate appellate state courts. Most
+    coverage is precedential opinions; non-precedential opinions are
+    flagged via the `precedential_status` field.

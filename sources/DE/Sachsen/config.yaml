@@ -1,25 +1,31 @@
+api:
+  base_url: https://www.revosax.sachsen.de
+  rate_limit: 2.0
+  sitemap_url: https://www.revosax.sachsen.de/sitemap.xml
+  type: sitemap_html
+schema:
+  date_fields:
+  - date
+  - valid_from
+  - _fetched_at
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: vorschrift_id
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
 source:
-  id: DE/Sachsen
-  name: Saxony State Law (REVOSAX)
   country: DE
   data_types:
-    - legislation
-  url: https://www.revosax.sachsen.de
+  - legislation
+  id: DE/Sachsen
   license: Public Domain (amtliche Werke § 5 UrhG)
-
-api:
-  type: sitemap_html
-  base_url: https://www.revosax.sachsen.de
-  sitemap_url: https://www.revosax.sachsen.de/sitemap.xml
-  rate_limit: 2.0  # requests per second
-
-schema:
-  key_fields:
-    - _id
-    - vorschrift_id
-    - title
-    - text
-  date_fields:
-    - date
-    - valid_from
-    - _fetched_at
+  name: Saxony State Law (REVOSAX)
+  url: https://www.revosax.sachsen.de

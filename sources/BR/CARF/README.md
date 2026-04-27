@@ -45,3 +45,7 @@ python bootstrap.py bootstrap          # Full pull (571K+ records)
 python bootstrap.py update             # Recent 90 days
 python bootstrap.py update --since 2025-01-01  # Since specific date
 ```
+
+## License
+
+[Open Government Data](https://carf.fazenda.gov.br/) — official tax tribunal decisions published by Brazil's Ministry of Finance.

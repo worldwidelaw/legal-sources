@@ -22,6 +22,10 @@ python bootstrap.py bootstrap --sample
 python bootstrap.py bootstrap --full
 ```
 
+## License
+
+[Public domain](https://www.law.cornell.edu/uscode/text/17/105) — US government works under 17 U.S.C. § 105.
+
 ## API Endpoints
 - SOAP services: https://wslwebservices.leg.wa.gov/
 - RCW file server: https://lawfilesext.leg.wa.gov/law/RCW/

@@ -1,0 +1,42 @@
+last_bootstrap: null
+last_error: 'HTTPSConnectionPool(host=''ronlaw.gov.nr'', port=443): Max retries exceeded
+  with url: /api/pdf/search (Caused by SSLError(SSLError(1, ''[SSL: SSLV3_ALERT_HANDSHAKE_FAILURE]
+  sslv3 alert handshake failure (_ssl.c:1129)'')))'
+last_run: '2026-04-24T07:41:41.656521+00:00'
+run_history:
+- error_message: common.http_client.HttpClient._request() got multiple values for
+    keyword argument 'json'
+  errors: 0
+  finished_at: '2026-04-24T06:25:19.473837+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-24T06:25:19.473581+00:00'
+- error_message: 'HTTPSConnectionPool(host=''ronlaw.gov.nr'', port=443): Max retries
+    exceeded with url: /api/pdf/search (Caused by SSLError(SSLError(1, ''[SSL: SSLV3_ALERT_HANDSHAKE_FAILURE]
+    sslv3 alert handshake failure (_ssl.c:1129)'')))'
+  errors: 0
+  finished_at: '2026-04-24T06:25:39.174140+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-24T06:25:32.703304+00:00'
+- errors: 0
+  finished_at: '2026-04-24T07:41:41.656521+00:00'
+  records_fetched: 10
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 10
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-24T07:41:35.986154+00:00'
+total_records: 0

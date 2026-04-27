@@ -49,3 +49,7 @@ python bootstrap.py test               # Connectivity test
 python bootstrap.py bootstrap --sample # Fetch 15 sample records
 python bootstrap.py bootstrap          # Full bootstrap (all records)
 ```
+
+## License
+
+[Open Government Data](https://jurisprudencia.tst.jus.br/) — official decisions published by the Superior Labor Court (TST) of Brazil.

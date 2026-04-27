@@ -1,40 +1,43 @@
-source:
-  id: US/CornellLII
-  name: Cornell Legal Information Institute (US Code)
-  country: US
-  url: https://www.law.cornell.edu/
-
 data:
-  types:
-    - legislation
   coverage:
+    estimated_size: ~60,000 sections across 54 USC titles
     temporal: Current codification (through latest Congress)
-    estimated_size: "~60,000 sections across 54 USC titles"
-  description: >
-    Full text of the United States Code (all 54 titles) from Cornell LII.
-    Public domain (US government works). LII provides clean HTML rendering
-    of the official US Code, sourced from the Office of Law Revision Counsel.
+  description: 'Full text of the United States Code (all 54 titles) from Cornell LII. Public domain (US government works). LII provides clean HTML rendering of the official US Code, sourced from the Office
+    of Law Revision Counsel.
 
+    '
+  types:
+  - legislation
 fetch:
-  method: HTML scraping
-  base_url: https://www.law.cornell.edu/uscode/text
   auth:
     type: none
-  response_format: HTML
+  base_url: https://www.law.cornell.edu/uscode/text
   full_text_format: HTML (cleaned to plain text)
+  method: HTML scraping
   rate_limit: 1 request per 2 seconds
-
+  response_format: HTML
 schema:
   key_fields:
-    - usc_citation
-    - title_number
-    - section_number
+  - name: usc_citation
+    required: false
+    type: string
+  - name: title_number
+    required: false
+    type: string
+  - name: section_number
+    required: false
+    type: string
   metadata:
-    - title
-    - text
-    - date
-    - url
-    - usc_citation
-    - title_number
-    - section_number
-    - chapter
+  - title
+  - text
+  - date
+  - url
+  - usc_citation
+  - title_number
+  - section_number
+  - chapter
+source:
+  country: US
+  id: US/CornellLII
+  name: Cornell Legal Information Institute (US Code)
+  url: https://www.law.cornell.edu/

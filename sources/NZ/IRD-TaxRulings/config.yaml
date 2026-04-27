@@ -1,0 +1,52 @@
+rate_limit:
+  burst: 3
+  requests_per_second: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _fetched_at
+    required: false
+    type: string
+  - name: category
+    required: false
+    type: string
+  - name: reference
+    required: false
+    type: string
+  - name: pdf_url
+    required: false
+    type: string
+source:
+  auth: none
+  country: NZ
+  data_types:
+  - doctrine
+  description: >
+    New Zealand Inland Revenue Tax Technical publications including interpretation
+    statements, commissioner's statements, operational statements, revenue alerts,
+    case summaries, and rulings. Full text extracted from official PDFs.
+  id: NZ/IRD-TaxRulings
+  language: en
+  license: New Zealand Government (Crown Copyright, open access)
+  name: New Zealand IRD Tax Technical Publications
+  url: https://www.taxtechnical.ird.govt.nz

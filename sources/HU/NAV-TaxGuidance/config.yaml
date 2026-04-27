@@ -1,0 +1,44 @@
+fetch:
+  base_url: https://nav.gov.hu
+  listing_path: /ado/adozasi_kerdes
+  print_prefix: /print
+  pagination_param: $rppid0x1484150x112_pageNumber
+  max_pages: 8
+  method: html_scraping
+  rate_limit:
+    delay_seconds: 1.5
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: year
+    required: false
+    type: string
+  - name: question_number
+    required: false
+    type: string
+  - name: section
+    required: true
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: HU
+  data_types:
+  - doctrine
+  id: HU/NAV-TaxGuidance
+  license: public_domain
+  name: Hungary NAV Tax Guidance (Adózási kérdés)
+  url: https://nav.gov.hu/ado/adozasi_kerdes

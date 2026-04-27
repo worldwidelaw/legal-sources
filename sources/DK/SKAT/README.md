@@ -48,3 +48,7 @@ python bootstrap.py update
 - Filters for documents from Skatteministeriet with AFG document type
 - Full text is extracted from XML structure
 - Rate limited to 1 request/second
+
+## License
+
+[Open Data](https://www.retsinformation.dk) — Danish tax rulings are freely available via Retsinformation.

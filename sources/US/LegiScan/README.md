@@ -49,6 +49,12 @@ python3 sources/US/LegiScan/bootstrap.py bootstrap
 python3 sources/US/LegiScan/bootstrap.py update
 ```
 
+## License
+
+> ⚠️ **Commercial use restricted.** Free tier is for non-commercial / public-benefit use only. Commercial use requires a paid GAITS subscription.
+
+[LegiScan Terms of Service](https://legiscan.com/legiscan-terms-of-service) — underlying bill text is US public domain, but API access terms apply.
+
 ## Status
 
 Scaffold is in place but **awaiting LEGISCAN_API_KEY registration** by the

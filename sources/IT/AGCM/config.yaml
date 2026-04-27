@@ -1,41 +1,41 @@
-# IT/AGCM - Italian Competition Authority (AGCM)
-# Source: https://www.agcm.it
-# Data: Competition law decisions, abuse of dominance, mergers, consumer protection
-
-name: Italian Competition Authority (AGCM)
-country: IT
-source_id: IT/AGCM
-url: https://www.agcm.it
-
-data_types:
-  - doctrine
-  - caselaw
-
-license: Open Data (Italian public data)
-
 auth:
   type: none
-
+country: IT
+data_model:
+  dedup_key:
+  - _id
+  update_strategy: append_only
+data_types:
+- doctrine
+- caselaw
+databases:
+  competition: 41256297003874BD
+  consumer: C12560D000291394
+license: Open Data (Italian public data)
+name: Italian Competition Authority (AGCM)
 rate_limit:
-  requests_per_second: 1
   burst: 3
   max_workers: 3
-
-data_model:
-  update_strategy: append_only
-  dedup_key:
-    - _id
-
+  requests_per_second: 1
 schema:
   key_fields:
-    - case_ref        # Case reference (e.g., A558, I850, C12659)
-    - decision_number # Decision number (provvedimento)
-    - date            # Decision date
-    - case_type       # Type of case (competition, consumer, merger)
-    - outcome         # Decision outcome
-    - text            # Full decision text (extracted from PDF)
-
-databases:
-  # Database IDs for different case types
-  competition: "41256297003874BD"   # dbconc - Competition cases
-  consumer: "C12560D000291394"      # dbcons - Consumer protection cases
+  - name: case_ref
+    required: false
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: case_type
+    required: false
+    type: string
+  - name: outcome
+    required: false
+    type: string
+  - name: text
+    required: true
+    type: string
+source_id: IT/AGCM
+url: https://www.agcm.it

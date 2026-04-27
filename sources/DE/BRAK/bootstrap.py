@@ -240,7 +240,7 @@ class BRAKFetcher:
                 logger.info(f"  Fetching: {path}")
                 article = self._extract_article(path)
                 if article:
-                    yield self.normalize(article)
+                    yield article
                 time.sleep(1.5)
 
             time.sleep(1.0)
@@ -258,7 +258,7 @@ class BRAKFetcher:
                     if article.get('date') and article['date'] < since:
                         found_old = True
                         break
-                    yield self.normalize(article)
+                    yield article
                 time.sleep(1.5)
 
             if found_old:

@@ -7,7 +7,7 @@ Chamber of Deputies (Chambre des Députés du Grand-Duché de Luxembourg).
 
 **Data type:** Parliamentary questions and government responses
 **Full text:** Yes - both questions and answers include complete text
-**License:** CC0 (Creative Commons Zero - Public Domain)
+**License:** [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) (Public Domain)
 **Languages:** French, German, Luxembourgish
 
 ## Data Source
@@ -55,6 +55,10 @@ python bootstrap.py bootstrap
 # Incremental update
 python bootstrap.py update
 ```
+
+## License
+
+[CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) — Public Domain, no restrictions on reuse.
 
 ## Notes
 

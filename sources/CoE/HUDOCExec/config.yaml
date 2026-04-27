@@ -1,46 +1,66 @@
-source_id: CoE/HUDOCExec
-name: HUDOC-EXEC (Execution Monitoring)
-country: CoE
-url: https://hudoc.exec.coe.int
-data_types:
-  - case_law
-
 auth:
   type: none
-
+country: CoE
+data_types:
+- case_law
 endpoints:
   search: https://hudoc.exec.coe.int/app/query/results
-
-rate_limit:
-  requests_per_second: 1
-  delay_between_requests: 1.0
-
-schema:
-  key_fields:
-    - _id
-    - exectitle
-    - execappno
-    - execdocumenttype
-    - execstate
-
 license: Open Access (Council of Europe)
+name: HUDOC-EXEC (Execution Monitoring)
+notes: 'HUDOC-EXEC monitors execution of ECHR judgments by member states.
 
-notes: |
-  HUDOC-EXEC monitors execution of ECHR judgments by member states.
   Contains ~93K documents: action plans, action reports, Committee of Ministers
+
   decisions/notes, government/NGO communications, and case entry cards.
 
+
   API Access:
+
   - Search: GET /app/query/results with Lucene-style query
+
   - Full text returned in contentbody field
+
   - contentsitename:EXEC for execution documents
 
+
   Key document types (execdocumenttype):
+
   - CMDEC: Committee of Ministers decisions (~3,500)
+
   - CMNOT: Committee of Ministers notes (~3,200)
+
   - apo: Action plans (~1,900)
+
   - acr: Action reports (~6,800)
+
   - obs: Observations (~6,600)
+
   - gvo: Government communications (~2,300)
+
   - ngo: NGO communications (~2,100)
+
   - CEC: Case entry cards (~69,000)
+
+  '
+rate_limit:
+  delay_between_requests: 1.0
+  requests_per_second: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: exectitle
+    required: false
+    type: string
+  - name: execappno
+    required: false
+    type: string
+  - name: execdocumenttype
+    required: false
+    type: string
+  - name: execstate
+    required: false
+    type: string
+source_id: CoE/HUDOCExec
+url: https://hudoc.exec.coe.int

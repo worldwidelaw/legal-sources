@@ -380,6 +380,7 @@ def main():
                         help="Command to run")
     parser.add_argument("--sample", action="store_true",
                         help="Sample mode: fetch only 10+ records")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = EBRDLegalTransitionScraper()

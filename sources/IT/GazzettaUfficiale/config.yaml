@@ -69,7 +69,7 @@ schema:
       description: "Document title in Italian"
       type: "string"
       role: "content"
-      required: true
+      required: false
     - name: "text"
       description: "Full text of the legislation"
       type: "string"

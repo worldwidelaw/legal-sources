@@ -1,35 +1,51 @@
-source:
-  id: VN/PhapLuatGov
-  name: "Vietnam National Legal Document Database (VBPL)"
-  country: VN
-  url: https://vbpl.vn/
-  data_types:
-    - legislation
-  auth: none
-  format: html
-  language: vi
-  description: >
-    46,273 central-level Vietnamese legal documents from the Ministry of Justice
-    National Legal Document Database (vbpl.vn). Includes constitutions, laws,
-    decrees, circulars, and other regulatory documents. Full text in Vietnamese.
-
+fetcher:
+  base_url: https://vbpl.vn
+  dvid: 13
+  fulltext_page: /TW/Pages/vbpq-toanvan.aspx
+  metadata_endpoint: /VBQPPL_UserControls/Publishing_22/pLoadAjaxVN.aspx
+  rate_limit: 1.5
+  rows_per_page: 50
+  search_endpoint: /VBQPPL_UserControls/Publishing/TimKiem/pKetQuaTimKiem.aspx
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - document_number
-    - document_type
-    - issuing_authority
-    - effective_date
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: document_number
+    required: false
+    type: string
+  - name: document_type
+    required: false
+    type: string
+  - name: issuing_authority
+    required: false
+    type: string
+  - name: effective_date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: VN
+  data_types:
+  - legislation
+  description: '46,273 central-level Vietnamese legal documents from the Ministry of Justice National Legal Document Database (vbpl.vn). Includes constitutions, laws, decrees, circulars, and other regulatory
+    documents. Full text in Vietnamese.
 
-fetcher:
-  base_url: "https://vbpl.vn"
-  search_endpoint: "/VBQPPL_UserControls/Publishing/TimKiem/pKetQuaTimKiem.aspx"
-  metadata_endpoint: "/VBQPPL_UserControls/Publishing_22/pLoadAjaxVN.aspx"
-  fulltext_page: "/TW/Pages/vbpq-toanvan.aspx"
-  dvid: 13
-  rows_per_page: 50
-  rate_limit: 1.5
+    '
+  format: html
+  id: VN/PhapLuatGov
+  language: vi
+  name: Vietnam National Legal Document Database (VBPL)
+  url: https://vbpl.vn/

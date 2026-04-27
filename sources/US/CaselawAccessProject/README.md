@@ -49,3 +49,7 @@ Records are normalized to the standard schema:
 - No full download required (78GB dataset)
 - Rate limiting not required (HuggingFace manages bandwidth)
 - Text is pre-cleaned (OCR corrections applied by Teraflop AI)
+
+## License
+
+[CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) — public domain dedication.

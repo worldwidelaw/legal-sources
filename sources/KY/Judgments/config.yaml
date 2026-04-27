@@ -1,0 +1,81 @@
+# ===================================================================
+# KY/Judgments -- Cayman Islands Court Judgments (judicial.ky)
+# ===================================================================
+# Free unreported judgments from Cayman Islands courts including
+# Grand Court (Civil, FSD, Criminal), Court of Appeal (Civil, Criminal),
+# and other divisions. ~4,300+ judgments from 1952+.
+#
+# Discovery: Paginated WordPress PDB list at /judgments/unreported-judgments-advanced-search/
+# Full text: PDF download from n0c-storage/judgments-repository3/
+# Format: PDF extracted via pdfplumber/pypdf
+# License: Free public access
+# ===================================================================
+
+source:
+  id: "KY/Judgments"
+  country: "KY"
+  name: "Cayman Islands Court Judgments (judicial.ky)"
+  url: "https://judicial.ky/judgments/"
+  description: |
+    Official unreported judgments from Cayman Islands courts. Covers Grand Court
+    (Civil, Financial Services Division, Criminal), Court of Appeal, and other
+    divisions. Full text downloaded as PDF. ~4,300+ judgments.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://judicial.ky"
+  listing_url: "/judgments/unreported-judgments-advanced-search/"
+  pagination: "?listpage={page}&instance=1"
+  total_pages: 430
+
+data_model:
+  type: "case_law"
+  primary_key: "neutral_citation"
+  update_strategy: "upsert"
+  dedup_key:
+    - "neutral_citation"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "neutral_citation"
+      description: "Neutral citation (e.g., [2026] CICA (Civ) 9)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Parties and case description"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the judgment"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Judgment date (ISO 8601)"
+      type: "string"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to PDF download"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - PDF full text from judicial.ky/n0c-storage/judgments-repository3/
+  - 430 pages of ~10 records each, paginated via WordPress PDB plugin
+  - Fields: neutral_citation, cause_number, judgment_date, parties, court, judge
+  - Courts: CICA (Court of Appeal), CIGC (Grand Court), FSD, Criminal, Civil

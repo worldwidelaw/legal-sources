@@ -321,6 +321,7 @@ if __name__ == '__main__':
                         help='Fetch updates since date (ISO format)')
     parser.add_argument('--output', type=str, default='output',
                         help='Output directory')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
     source_dir = Path(__file__).parent

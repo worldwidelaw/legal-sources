@@ -1,38 +1,55 @@
-source_id: US/LA-Legislation
-name: Louisiana Revised Statutes (legis.la.gov)
-country: US
-data_types:
-  - legislation
-url: https://legis.la.gov/legis/LawSearch.aspx
 auth:
   type: none
-
+country: US
+data_types:
+- legislation
 endpoints:
-  toc: https://legis.la.gov/legis/Laws_Toc.aspx?folder={folder_id}
-  print: https://legis.la.gov/legis/LawPrint.aspx?d={doc_id}
   law: https://legis.la.gov/legis/Law.aspx?d={doc_id}
+  print: https://legis.la.gov/legis/LawPrint.aspx?d={doc_id}
+  toc: https://legis.la.gov/legis/Laws_Toc.aspx?folder={folder_id}
+license: Public Domain (government works)
+name: Louisiana Revised Statutes (legis.la.gov)
+notes: 'Louisiana Revised Statutes from legis.la.gov.
 
+  54 titles (folders 77-130), ~46,000 sections.
+
+  Full text extracted from LawPrint.aspx HTML endpoint.
+
+  Also includes Civil Code (67), Code of Civil Procedure (68),
+
+  Code of Criminal Procedure (69), Code of Evidence (70),
+
+  Children''s Code (71), and Constitution Ancillaries (66).
+
+  '
 rate_limit:
-  requests_per_second: 1
   delay_between_requests: 1.0
-
+  requests_per_second: 1
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - section_num
-    - chapter
-    - rs_title
-    - rs_title_name
-
-license: Public Domain (government works)
-
-notes: |
-  Louisiana Revised Statutes from legis.la.gov.
-  54 titles (folders 77-130), ~46,000 sections.
-  Full text extracted from LawPrint.aspx HTML endpoint.
-  Also includes Civil Code (67), Code of Civil Procedure (68),
-  Code of Criminal Procedure (69), Code of Evidence (70),
-  Children's Code (71), and Constitution Ancillaries (66).
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: section_num
+    required: false
+    type: string
+  - name: chapter
+    required: false
+    type: string
+  - name: rs_title
+    required: false
+    type: string
+  - name: rs_title_name
+    required: false
+    type: string
+source_id: US/LA-Legislation
+url: https://legis.la.gov/legis/LawSearch.aspx

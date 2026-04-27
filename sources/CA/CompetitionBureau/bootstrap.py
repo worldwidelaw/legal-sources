@@ -14,50 +14,42 @@ License: Crown Copyright (Government of Canada Open Data)
 
 import json
 import re
-import subprocess
 import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Generator, Optional
 
+import requests as req
+
 BASE_URL = "https://competition-bureau.canada.ca"
 JSONAPI_PAGES = f"{BASE_URL}/en/jsonapi/node/page"
 PAGE_LIMIT = 50
 RATE_LIMIT_DELAY = 1.5
-CURL_TIMEOUT = 60
+REQUEST_TIMEOUT = 60
 
 SOURCE_DIR = Path(__file__).parent
 SAMPLE_DIR = SOURCE_DIR / "sample"
 
+_SESSION = req.Session()
+_SESSION.headers.update({
+    "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
+    "Accept": "application/vnd.api+json",
+})
+
 
 def fetch_json(url: str, retries: int = 2) -> Optional[dict]:
-    """Fetch a JSON:API URL using curl."""
+    """Fetch a JSON:API URL using requests."""
     for attempt in range(retries + 1):
         try:
-            result = subprocess.run(
-                ["curl", "-sL", "-m", str(CURL_TIMEOUT),
-                 "-H", "Accept: application/vnd.api+json",
-                 "-w", "\n%{http_code}", url],
-                capture_output=True, text=True, timeout=CURL_TIMEOUT + 10
-            )
-            parts = result.stdout.rsplit("\n", 1)
-            if len(parts) == 2:
-                body, status = parts[0], parts[1].strip()
-            else:
-                body, status = result.stdout, "000"
-
-            if not status.startswith("2"):
+            resp = _SESSION.get(url, timeout=REQUEST_TIMEOUT)
+            if resp.status_code >= 400:
                 if attempt == retries:
-                    print(f"HTTP {status} for {url}", file=sys.stderr)
+                    print(f"HTTP {resp.status_code} for {url}", file=sys.stderr)
                     return None
                 time.sleep(3)
                 continue
-            if body:
-                return json.loads(body)
-            if attempt == retries:
-                return None
-            time.sleep(3)
+            return resp.json()
         except Exception as e:
             if attempt == retries:
                 print(f"Failed to fetch {url}: {e}", file=sys.stderr)
@@ -213,7 +205,12 @@ def main():
 
     boot = sub.add_parser("bootstrap", help="Fetch documents")
     boot.add_argument("--sample", action="store_true", help="Fetch only ~15 sample records")
+    boot.add_argument("--sample-size", type=int, default=15, help="Number of sample records")
     boot.add_argument("--full", action="store_true", help="Fetch all records")
+
+    fast = sub.add_parser("bootstrap-fast", help="Fetch all documents (fast mode)")
+    fast.add_argument("--workers", type=int, default=5, help="Ignored (compat)")
+    fast.add_argument("--batch-size", type=int, default=100, help="Ignored (compat)")
 
     upd = sub.add_parser("update", help="Fetch updates since date")
     upd.add_argument("--since", required=True, help="ISO date (YYYY-MM-DD)")
@@ -223,10 +220,11 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    if args.command == "bootstrap":
+    if args.command in ("bootstrap", "bootstrap-fast"):
         SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
+        sample = getattr(args, "sample", False)
         count = 0
-        for record in fetch_all(sample=args.sample):
+        for record in fetch_all(sample=sample):
             out_path = SAMPLE_DIR / f"{count:04d}.json"
             out_path.write_text(json.dumps(record, ensure_ascii=False, indent=2))
             count += 1

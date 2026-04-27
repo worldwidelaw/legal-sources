@@ -1,0 +1,14 @@
+{
+  "_id": "warning-de-111",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:29.144458Z",
+  "title": "[Klonfirma] Warnung: EHI European Holding",
+  "text": "Die Finanzmarktaufsicht (FMA) Liechtenstein weist darauf hin, dass keine Verbindung zwischen der Webseite ehi-ag[dot]com mit der E-Mail-Adresse office&#64;ehi-ag[dot]com und der liechtensteinischen Gesellschaft EHI European Holding Investment AG, Städtle 31-33, 9490 Vaduz (FL-0002.586.508-0), besteht. Die Betreiber der Webseite ehi-ag[dot]com und der E-Mail-Adresse office&#64;ehi-ag[dot]com verfügen über keine aufsichtsrechtliche Bewilligung der FMA und sind damit nicht berechtigt bewilligungspflichtige Finanzdienstleistungen in Liechtenstein zu erbringen. Sie unterstehen nicht der Aufsicht durch die FMA.",
+  "date": "2023-08-21",
+  "url": "https://www.fma-li.li/de/warning/warnung-ehi-european-holding-111",
+  "language": "deu",
+  "category": "Klonfirma",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

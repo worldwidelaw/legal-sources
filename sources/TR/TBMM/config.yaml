@@ -1,19 +1,30 @@
-source:
-  id: TR/TBMM
-  name: Turkish Parliament (TBMM) Session Transcripts
-  country: TR
-  url: https://www.tbmm.gov.tr/Tutanaklar/TutanakMetinleri
-  data_types:
-    - doctrine
-  auth: none
-  license: Public domain
-  rate_limit: 2
-
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - term
-    - legislative_year
-    - session_date
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: term
+    required: false
+    type: string
+  - name: legislative_year
+    required: false
+    type: string
+  - name: session_date
+    required: false
+    type: string
+source:
+  auth: none
+  country: TR
+  data_types:
+  - doctrine
+  id: TR/TBMM
+  license: Public domain
+  name: Turkish Parliament (TBMM) Session Transcripts
+  rate_limit: 2
+  url: https://www.tbmm.gov.tr/Tutanaklar/TutanakMetinleri

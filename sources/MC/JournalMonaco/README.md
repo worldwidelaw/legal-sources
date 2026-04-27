@@ -87,3 +87,7 @@ python bootstrap.py update
 - Electronic official version since 2015
 - Historical archives available but earlier documents may be PDF-only
 - Excludes non-legislative content (job postings, legal notices, corporate announcements)
+
+## License
+
+[Open Government Data](https://journaldemonaco.gouv.mc) — official gazette of the Principality of Monaco.

@@ -59,6 +59,10 @@ python bootstrap.py update
 | chamber | string | Chamber/division name |
 | pdf_urls | array | URLs to PDF downloads |
 
+## License
+
+Public domain — official court decisions of the Hellenic Republic.
+
 ## Topics Covered
 
 - Public contract pre-audit control

@@ -233,6 +233,7 @@ def main():
         action="store_true",
         help="Only fetch a small sample (for validation)",
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = SupremeCourtScraper()
@@ -242,40 +243,13 @@ def main():
         sys.exit(0 if success else 1)
 
     elif args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        max_records = 15 if args.sample else None
-        count = 0
-
-        for record in scraper.fetch_all():
-            out_path = sample_dir / f"{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-
-            text_len = len(record.get("text", ""))
-            logger.info(
-                f"[{count + 1}] {record.get('title', '?')[:80]} "
-                f"({text_len:,} chars)"
-            )
-
-            count += 1
-            if max_records and count >= max_records:
-                break
-
-        logger.info(f"Bootstrap complete: {count} records saved to {sample_dir}")
-
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+        fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
+        logger.info(f"Bootstrap complete: {fetched} records — {stats}")
+        if fetched == 0:
+            sys.exit(1)
     elif args.command == "update":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-        count = 0
-        for record in scraper.fetch_updates():
-            out_path = sample_dir / f"update_{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-        logger.info(f"Update complete: {count} records")
-
-
+        stats = scraper.update()
+        logger.info(f"Update complete: {stats}")
 if __name__ == "__main__":
     main()

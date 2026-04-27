@@ -19,6 +19,7 @@ Data is public domain (amtliche Werke) under German law (§ 5 UrhG).
 import argparse
 import json
 import re
+import socket
 import sys
 import time
 import xml.etree.ElementTree as ET
@@ -29,6 +30,9 @@ from typing import Iterator, Optional, Dict, Any, List
 
 import requests
 from bs4 import BeautifulSoup
+
+# Issue #502: hard safety net against silent socket hangs
+socket.setdefaulttimeout(120)
 
 # Configuration
 BASE_URL = "https://recht.nrw.de"
@@ -63,7 +67,7 @@ class NRWFetcher:
                 if not url.endswith('/'):
                     url = url + '/'
 
-                response = self.session.get(url, timeout=30, allow_redirects=True)
+                response = self.session.get(url, timeout=(15, 45), allow_redirects=True)
 
                 if response.status_code == 200:
                     return response.text
@@ -91,7 +95,7 @@ class NRWFetcher:
         """Fetch the sitemap index to get list of sub-sitemaps."""
         print(f"Fetching sitemap index from {SITEMAP_INDEX_URL}")
         try:
-            response = self.session.get(SITEMAP_INDEX_URL, timeout=60)
+            response = self.session.get(SITEMAP_INDEX_URL, timeout=(15, 60))
             response.raise_for_status()
 
             root = ET.fromstring(response.content)
@@ -114,7 +118,7 @@ class NRWFetcher:
         """Fetch a single sitemap and extract legislation URLs."""
         try:
             time.sleep(0.5)  # Rate limit
-            response = self.session.get(sitemap_url, timeout=60)
+            response = self.session.get(sitemap_url, timeout=(15, 60))
             response.raise_for_status()
 
             root = ET.fromstring(response.content)
@@ -327,7 +331,7 @@ class NRWFetcher:
 
         count = 0
         for i, url in enumerate(urls):
-            print(f"[{i+1}/{len(urls)}] Fetching: {url}")
+            print(f"[{i+1}/{len(urls)}] Fetching: {url}", flush=True)
 
             html = self._fetch_page(url)
             if not html:
@@ -493,6 +497,7 @@ def main():
         default=15,
         help="Number of sample records to fetch"
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

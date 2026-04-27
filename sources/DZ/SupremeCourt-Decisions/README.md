@@ -26,3 +26,7 @@ Full text in `content.rendered` field. 13 pages total, ~1 minute to harvest.
 | decision_date | تاريخ القرار |
 | subject | الموضوع |
 | chamber_ids | Taxonomy term IDs for chamber classification |
+
+## License
+
+[Open Government Data](https://coursupreme.dz) — official decisions published by the Supreme Court of Algeria.

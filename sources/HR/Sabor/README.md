@@ -22,6 +22,10 @@ speaker-attributed text including party affiliation.
 - Speaker entries: `Surname, Name (PARTY)` with full speech text
 - Text ranges from ~500 to ~435,000 characters per debate
 
+## License
+
+[Open Government Data](https://data.gov.hr/en) — Croatian parliamentary documents are freely reusable under open government data terms.
+
 ## Usage
 
 ```bash

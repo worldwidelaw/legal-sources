@@ -1,0 +1,26 @@
+source:
+  id: AW/DIMP-TaxGuidance
+  name: Aruba Tax Authority Guidance (Departamento di Impuesto)
+  country: AW
+  url: https://www.impuesto.aw
+  data_types:
+    - doctrine
+  auth: none
+  description: >
+    Aruba Departamento di Impuesto tax guidance: profit tax, BBO turnover tax,
+    income tax, dividend tax, tourist levy, fiscal unity, international tax,
+    and free zone incentives. HTML pages + PDF brochures/toelichtingen.
+    Content in Dutch and Papiamento.
+
+schema:
+  key_fields:
+    - page_url
+    - content_type
+  record_type: doctrine
+
+fetcher:
+  method: scrape
+  rate_limit: 1.5
+  notes: >
+    WP REST API blocked (403). Uses sitemap.xml to enumerate pages, then
+    scrapes HTML content. Also collects PDFs from cuatro.sim-cdn.nl/impuesto/uploads/.

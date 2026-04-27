@@ -343,6 +343,7 @@ def main():
 
     boot = subparsers.add_parser("bootstrap", help="Run bootstrap")
     boot.add_argument("--sample", action="store_true", help="Fetch sample only")
+    boot.add_argument("--full", action="store_true", help="Fetch all records")
 
     subparsers.add_parser("test-api", help="Test API connectivity")
 

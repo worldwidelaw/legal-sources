@@ -245,7 +245,7 @@ class TXLegislationScraper(BaseScraper):
 
             sections = self.parse_chapter_sections(html, code, code_name, chapter)
             for sec in sections:
-                yield self.normalize(sec)
+                yield sec
                 total_sections += 1
 
         logger.info(f"  {code}: {total_sections} sections extracted")
@@ -291,6 +291,7 @@ def main():
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = TXLegislationScraper()

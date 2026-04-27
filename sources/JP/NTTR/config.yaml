@@ -1,0 +1,39 @@
+fetch:
+  max_retries: 3
+  rate_limit: 2.0
+  timeout: 30
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: string
+  - name: volume
+    required: false
+    type: integer
+  - name: case_number
+    required: false
+    type: integer
+  - name: tax_category
+    required: false
+    type: string
+source:
+  auth: none
+  country: JP
+  data_types:
+  - case_law
+  description: >-
+    Japan National Tax Tribunal (国税不服審判所) published rulings from
+    kfs.go.jp. Full-text HTML decisions covering tax disputes from 1992
+    to present. ~2000 rulings across volumes 43-140+. Shift-JIS encoding.
+  id: JP/NTTR
+  name: National Tax Tribunal Rulings (国税不服審判所 裁決事例)
+  url: https://www.kfs.go.jp/service/JP/index.html

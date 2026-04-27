@@ -42,3 +42,7 @@ python3 bootstrap.py stats
 - CADA opinions are non-binding but highly influential
 - Most opinions concern local government, ministries, and public institutions
 - Topics cover everything from public procurement to personal data access
+
+## License
+
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

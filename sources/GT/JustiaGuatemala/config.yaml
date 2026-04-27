@@ -1,0 +1,50 @@
+# ===================================================================
+# GT/JustiaGuatemala -- Guatemala National Legislation via Justia
+# ===================================================================
+# ~338 national decrees (1952-2009) with full text from PDFs.
+# HTML scraping of index page + PDF text extraction.
+# ===================================================================
+
+source:
+  id: "GT/JustiaGuatemala"
+  country: "GT"
+  name: "Guatemala Legislation (Justia)"
+  url: "https://guatemala.justia.com/nacionales/leyes/"
+  description: |
+    National decrees (Decretos del Congreso) of Guatemala from the Justia
+    legal information portal. ~338 laws spanning 1952-2009.
+    Full text extracted from PDF documents hosted on Justia's CDN.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "title"
+      description: "Decree title (Spanish)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "decree_number"
+      description: "Decree number (e.g., Decreto No 27-2009)"
+      type: "string"
+      role: "identifier"
+      required: false

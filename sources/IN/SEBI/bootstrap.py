@@ -207,13 +207,15 @@ class SEBIScraper(BaseScraper):
         logger.warning("No PDF found on detail page: %s", detail_url)
         return None
 
-    def _download_pdf_text(self, pdf_url: str) -> Optional[str]:
+    def _download_pdf_text(self, pdf_url: str, doc_id: str = "", data_type: str = "case_law") -> Optional[str]:
         """Extract text from PDF using centralized extractor."""
+        table = "doctrine" if data_type == "doctrine" else "case_law"
         return extract_pdf_markdown(
             source="IN/SEBI",
-            source_id="",
+            source_id=doc_id,
             pdf_url=pdf_url,
-            table="case_law",
+            table=table,
+            force=True,
         ) or ""
 
     def _parse_date(self, date_str: str) -> Optional[str]:
@@ -326,7 +328,7 @@ class SEBIScraper(BaseScraper):
             return None
 
         # Download and extract text
-        text = self._download_pdf_text(pdf_url)
+        text = self._download_pdf_text(pdf_url, doc_id=doc_id, data_type=data_type)
         if not text:
             logger.warning("No text extracted for: %s", title[:80])
             return None
@@ -356,54 +358,12 @@ class SEBIScraper(BaseScraper):
             logger.error("Connection test failed: %s", e)
             return False
 
-    def run_bootstrap(self, sample: bool = False):
-        """Run the bootstrap process."""
-        sample_dir = self.source_dir / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        if sample:
-            logger.info("Running in SAMPLE mode (15 records)")
-            count = 0
-            target = 15
-            for sid, ssid, smid, category, data_type in CATEGORIES:
-                if count >= target:
-                    break
-                self._init_session(sid, ssid, smid)
-                html_text = self._fetch_page(sid, ssid, smid, 0)
-                records, total = self._parse_listing(html_text)
-                logger.info("Category %s: %d total records", category, total)
-
-                for rec in records:
-                    if count >= target:
-                        break
-                    doc = self._process_record(rec, category, data_type)
-                    if doc:
-                        fname = f"{doc['_id'][:80]}.json"
-                        fname = re.sub(r'[^\w\-.]', '_', fname)
-                        with open(sample_dir / fname, "w", encoding="utf-8") as f:
-                            json.dump(doc, f, ensure_ascii=False, indent=2)
-                        count += 1
-                        logger.info("[%d/%d] Saved: %s (%d chars)",
-                                    count, target, doc["title"][:60], len(doc["text"]))
-
-            logger.info("Sample bootstrap complete: %d records saved", count)
-            return count
-        else:
-            count = 0
-            for doc in self.fetch_all():
-                self.storage.save(doc)
-                count += 1
-                if count % 100 == 0:
-                    logger.info("Progress: %d records saved", count)
-            logger.info("Full bootstrap complete: %d records saved", count)
-            return count
-
-
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="IN/SEBI Bootstrap")
     parser.add_argument("command", choices=["bootstrap", "update", "test"])
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = SEBIScraper()
@@ -412,13 +372,14 @@ def main():
         ok = scraper.test_connection()
         sys.exit(0 if ok else 1)
     elif args.command == "bootstrap":
-        scraper.run_bootstrap(sample=args.sample)
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+        fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
+        logger.info(f"Bootstrap complete: {fetched} records — {stats}")
+        if fetched == 0:
+            sys.exit(1)
     elif args.command == "update":
-        count = 0
-        for doc in scraper.fetch_updates():
-            scraper.storage.save(doc)
-            count += 1
-        logger.info("Update complete: %d records", count)
+        stats = scraper.update()
+        logger.info(f"Update complete: {stats}")
 
 
 if __name__ == "__main__":

@@ -386,12 +386,6 @@ def main():
         is_sample = '--sample' in sys.argv
         target_count = 15 if is_sample else 100
 
-        # Check for required libraries
-        if not HAS_PDFPLUMBER and not HAS_DOCX:
-            logger.error("Neither pdfplumber nor python-docx is installed.")
-            logger.error("Install with: pip install pdfplumber python-docx")
-            sys.exit(1)
-
         logger.info(f"Fetching {'sample' if is_sample else 'full'} data from EUIPO...")
         logger.info(f"Target count: {target_count}")
 

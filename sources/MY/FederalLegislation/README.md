@@ -25,3 +25,9 @@ python bootstrap.py test-api             # Connectivity test
 python bootstrap.py bootstrap --sample   # Fetch 15 sample records
 python bootstrap.py bootstrap            # Full fetch (878+ acts)
 ```
+
+## License
+
+[Open Government Data](https://lom.agc.gov.my/) — official federal legislation published by the Attorney General's Chambers of Malaysia.
+
+> **Note:** Re-use may be subject to Malaysian government copyright terms. See [AGC website](https://lom.agc.gov.my/) for details.

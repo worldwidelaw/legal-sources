@@ -1,0 +1,60 @@
+source_id: DE/ThueringenCaseLaw
+name: Thüringen State Court Decisions (Rechtsprechungsdatenbank)
+description: Thüringen court decisions via jPortal API (landesrecht.thueringen.de)
+url: https://landesrecht.thueringen.de/bsth/
+country: DE
+jurisdiction: Thüringen
+data_types:
+  - case_law
+
+access:
+  type: rest_api
+  rate_limit: 1/s
+  auth: none
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: doc_id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: court
+      type: string
+      required: false
+    - name: case_number
+      type: string
+      required: false
+    - name: ecli
+      type: string
+      required: false
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: false
+  text_field: text
+  date_field: date
+  title_field: title
+
+update:
+  frequency: weekly
+  method: fetch_updates
+
+license:
+  type: public_domain
+  notes: German official works (§ 5 UrhG) - public domain
+
+notes: |
+  Thüringen state court decisions from the official Landesrecht portal.
+  Uses the juris jPortal REST API (same platform as DE/BadenWürttemberg).
+  ~5K court decisions from all court branches (VG, OVG, LG, OLG, AG, LAG, etc.)
+  API flow: session init → CSRF token → search pagination → document fetch.

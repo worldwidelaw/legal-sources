@@ -372,6 +372,7 @@ def main():
     parser = argparse.ArgumentParser(description="US/MO-Legislation Data Fetcher")
     parser.add_argument("command", choices=["bootstrap", "test-api"])
     parser.add_argument("--sample", action="store_true")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 
@@ -393,6 +394,7 @@ def main():
                 with open(filepath, "w", encoding="utf-8") as f:
                     json.dump(record, f, ensure_ascii=False, indent=2)
             logger.info(f"Processed {count} records")
+            sys.exit(0 if count > 0 else 1)
 
 
 if __name__ == "__main__":

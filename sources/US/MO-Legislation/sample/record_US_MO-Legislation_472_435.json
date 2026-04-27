@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/472.435",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:34:53.631493+00:00",
+  "title": "Missouri Revised Statutes § 472.435 - Catalogue of electronic communications disclosed to personal representative, when",
+  "text": "472.435.  Catalogue of electronic communications disclosed to personal representative, when. — Unless the user prohibited disclosure of digital assets or the court directs otherwise, a custodian shall disclose to the personal representative of the estate of a deceased user a catalogue of electronic communications sent or received by the user and digital assets, other than the content of electronic communications, of the user, if the representative gives the custodian:\n  (1)  A written request for disclosure in physical or electronic form;\n  (2)  A certified copy of the death certificate of the user;\n  (3)  A certified copy of the letters testamentary or letters of administration of the representative or a certified copy of certificate of clerk in connection with a small-estate affidavit or court order; and\n  (4)  If requested by the custodian for the purpose of identifying the correct account of the correct user:\n  (a)  A number, username, address, or other unique subscriber or account identifier assigned by the custodian to identify the user's account;\n  (b)  Evidence linking the account to the user;\n  (c)  An affidavit stating that disclosure of the user's digital assets is reasonably necessary for administration of the estate; or\n  (d)  A finding by the court that:\n  a.  The user had a specific account with the custodian, identifiable by the information specified in paragraph (a) of this subdivision; or\n  b.  Disclosure of the user's digital assets is reasonably necessary for administration of the estate.\n(L. 2018 H.B. 1250)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=472.435",
+  "section_id": "472.435",
+  "chapter": "472",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

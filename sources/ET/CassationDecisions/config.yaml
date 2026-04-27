@@ -1,0 +1,80 @@
+# ===================================================================
+# ET/CassationDecisions -- Ethiopia Federal Supreme Court Cassation
+# ===================================================================
+# Cassation decisions from the Federal Supreme Court of Ethiopia,
+# published at lawethiopia.com. Volumes 1-26, ~1,700+ decisions.
+# Text in Amharic, available as PDFs (text-based, not scanned).
+# ===================================================================
+
+source:
+  id: "ET/CassationDecisions"
+  country: "ET"
+  name: "Ethiopia Federal Supreme Court Cassation Decisions"
+  url: "https://www.lawethiopia.com"
+  description: |
+    Federal Supreme Court of Ethiopia cassation decisions published on
+    lawethiopia.com. Covers Volumes 1-26 with ~1,700+ individual
+    decisions on property, criminal, civil, commercial, tax, and
+    constitutional law. Full text in Amharic with PDF downloads.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "scraping"
+  base_url: "https://www.lawethiopia.com"
+  endpoints:
+    volumes: "/index.php/separated-cassation-decisions"
+    volume_pdf: "/images/cassation/cassation%20decisions%20by%20volumes/volume%20{vol}.pdf"
+    decision_pdf: "/images/cassation/cassation%20decisions%20by%20number/volume%20{vol}/{case_num}.pdf"
+  response_format: "html"
+
+data_model:
+  type: "case_law"
+  primary_key: "decision_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "decision_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "_id"
+      description: "Unique decision identifier (ET-CASS-{case_number} or ET-CASS-VOL{n})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title with case number and subject"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the cassation decision (Amharic)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the decision on lawethiopia.com"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "volume"
+      description: "Volume number"
+    - name: "case_number"
+      description: "Case file number"
+    - name: "subjects"
+      description: "Legal subject classifications"

@@ -1,46 +1,50 @@
-source:
-  id: NO/KONKURR
-  name: Norwegian Competition Authority (Konkurransetilsynet)
-  country: 'NO'
-  url: https://konkurransetilsynet.no
-  type: doctrine
-
 api:
-  type: sitemap_crawl
-  base_url: https://konkurransetilsynet.no
   auth: none
-  sitemaps:
-    - decisions-sitemap.xml
-    - fusjoner-sitemap.xml
-    - publications-sitemap.xml
+  base_url: https://konkurransetilsynet.no
   rate_limit:
-    requests_per_minute: 30
     delay_seconds: 1.5
-
+    requests_per_minute: 30
+  sitemaps:
+  - decisions-sitemap.xml
+  - fusjoner-sitemap.xml
+  - publications-sitemap.xml
+  type: sitemap_crawl
 data:
-  format: html
-  language: nob
-  encoding: utf-8
-  license: NLOD 2.0 (Norwegian License for Open Government Data)
   coverage:
     estimated_records: 7800
     types:
-      - vedtak (formal decisions)
-      - avgjoerelser (rulings)
-      - horingsuttalelser (consultation responses)
-      - fusjoner (merger notifications)
-      - publications (reports, studies)
-  notes: |
-    WordPress site with custom post types. Sitemap provides full URL enumeration.
+    - vedtak (formal decisions)
+    - avgjoerelser (rulings)
+    - horingsuttalelser (consultation responses)
+    - fusjoner (merger notifications)
+    - publications (reports, studies)
+  encoding: utf-8
+  format: html
+  language: nob
+  license: NLOD 2.0 (Norwegian License for Open Government Data)
+  notes: 'WordPress site with custom post types. Sitemap provides full URL enumeration.
+
     WP REST API does not expose custom post types. Wordfence WAF active.
+
     Many decisions also have PDF attachments.
 
+    '
 schema:
   key_fields:
-    - _id
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: url
+    required: true
+    type: string
   required_fields:
-    - title
-    - text
-    - date
-    - url
+  - title
+  - text
+  - date
+  - url
+source:
+  country: 'NO'
+  id: NO/KONKURR
+  name: Norwegian Competition Authority (Konkurransetilsynet)
+  type: doctrine
+  url: https://konkurransetilsynet.no

@@ -8,7 +8,7 @@ This data source fetches Swedish legislation from the Riksdag (Swedish Parliamen
 **URL:** https://data.riksdagen.se  
 **Document Type:** Legislation  
 **Language:** Swedish (sv)  
-**License:** Public Domain (free use, cite source)
+**License:** [Public Domain](https://data.riksdagen.se) — Swedish official documents are not subject to copyright (Upphovsrattslag 1960:729, Section 9).
 
 ## Data Coverage
 
@@ -69,6 +69,10 @@ python3 bootstrap.py bootstrap
   "document_name": "Svensk författningssamling"
 }
 ```
+
+## License
+
+[Public Domain](https://data.riksdagen.se) — Swedish official documents are not subject to copyright (Upphovsrattslag 1960:729, Section 9).
 
 ## Notes
 

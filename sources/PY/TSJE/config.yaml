@@ -1,29 +1,40 @@
-source_id: PY/TSJE
-country: PY
-name: Paraguay Electoral Justice Tribunal (TSJE)
-description: >
-  Paraguayan Electoral Justice Tribunal decisions, resolutions, sentences,
-  and interlocutory orders. Covers 1991-present. Full text extracted from
-  PDF documents hosted on tsje.gov.py.
-url: https://www.tsje.gov.py/
-data_types:
-  - case_law
-auth: none
-license: Government of Paraguay - public domain
-
 api:
-  type: html_scraping
   base_url: https://www.tsje.gov.py
   endpoints:
-    search: /legislaciones/buscar/
     pdf_static: /static/ups/legislaciones/
+    search: /legislaciones/buscar/
+  type: html_scraping
+auth: none
+country: PY
+data_types:
+- case_law
+description: 'Paraguayan Electoral Justice Tribunal decisions, resolutions, sentences, and interlocutory orders. Covers 1991-present. Full text extracted from PDF documents hosted on tsje.gov.py.
 
+  '
+license: Government of Paraguay - public domain
+name: Paraguay Electoral Justice Tribunal (TSJE)
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - document_number
-    - document_type
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: document_number
+    required: false
+    type: string
+  - name: document_type
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source_id: PY/TSJE
+url: https://www.tsje.gov.py/

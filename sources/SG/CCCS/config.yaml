@@ -1,0 +1,25 @@
+source:
+  id: "SG/CCCS"
+  name: "Singapore Competition & Consumer Commission (CCCS)"
+  country: SG
+  url: "https://www.ccs.gov.sg/case-register/public-register/"
+  data_types:
+    - case_law
+    - doctrine
+  auth: none
+  description: >
+    Public register of CCCS decisions, including competition enforcement
+    (agreements, dominance, mergers), consumer protection, government
+    advisories, and market studies.
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - category
+    - text

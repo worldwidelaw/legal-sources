@@ -12,7 +12,7 @@ This source fetches case law from the Portuguese Supreme Court of Justice (Supre
 - **Backend**: ElasticSearch-based search with Next.js frontend
 - **Original data**: DGSI (dgsi.pt/jstj.nsf)
 - **Coverage**: ~71,500 decisions from 1900 to present
-- **License**: Public (open government data)
+- **License**: [Open Government Data](https://dados.gov.pt) (public, free for reuse)
 
 ## API Endpoints
 
@@ -90,6 +90,10 @@ Portuguese court decisions use the European Case Law Identifier (ECLI) format:
 ECLI:PT:STJ:YYYY:PROCESSO.UUID
 ```
 Example: `ECLI:PT:STJ:2024:210.24.5YRCBR.S1`
+
+## License
+
+[Open Government Data](https://dados.gov.pt) — Portuguese court decisions, public and free for reuse.
 
 ## Related Sources
 

@@ -237,6 +237,7 @@ if __name__ == '__main__':
                         help='Fetch only sample data (15 records)')
     parser.add_argument('--since', type=str, default=None,
                         help='Fetch updates since date (ISO format)')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     if args.command == 'bootstrap':

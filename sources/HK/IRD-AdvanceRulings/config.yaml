@@ -1,0 +1,38 @@
+# HK/IRD-AdvanceRulings - Hong Kong IRD Advance Rulings
+# Source configuration
+
+source_id: HK/IRD-AdvanceRulings
+name: Hong Kong IRD Advance Rulings
+country: HK
+url: https://www.ird.gov.hk/eng/ppr/arc.htm
+description: >
+  Anonymised advance ruling cases published by the Hong Kong Inland Revenue
+  Department covering profits tax, salaries tax, property tax, stamp duty,
+  source of profits, FSIE regime, tax treaty application, and ship leasing.
+
+# Data model
+data_model:
+  type: doctrine
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+# Authentication
+auth:
+  type: none
+
+# Rate limiting
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  max_workers: 1
+
+# Schema
+schema:
+  key_fields:
+    - doc_id
+    - title
+    - date
+    - category
+    - text
+    - url

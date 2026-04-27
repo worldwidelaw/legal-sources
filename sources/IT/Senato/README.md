@@ -17,7 +17,7 @@ Italian Senate legislative documents (Disegni di Legge).
 
 ## License
 
-CC BY 3.0 (Creative Commons Attribution)
+[CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) — attribution required.
 
 ## Technical Details
 

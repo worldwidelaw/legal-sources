@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/486.1170",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:57:08.089714+00:00",
+  "title": "Missouri Revised Statutes § 486.1170 - Registered electronic signature, seal, or single element required, when — employer restrictions — limitations on use of registered signature and seal",
+  "text": "486.1170.  Registered electronic signature, seal, or single element required, when — employer restrictions — limitations on use of registered signature and seal. — 1.  In notarizing an electronic document, the remote online notary shall attach to, or logically associate with, the remote online notarial certificate a registered electronic signature and a registered electronic notary seal, or a registered single element in conformity with subsection 2 of this section, in such a manner that the signature and the seal, or the single element, are attributed to the electronic notary as named on the commission.\n  2.  A registered electronic signature shall be:\n  (1)  Unique to the electronic notary;\n  (2)  Capable of independent verification;\n  (3)  Attached to or logically associated with an electronic notarial certificate in such a manner that any subsequent alteration of the certificate or underlying electronic document prominently displays evidence of the alteration; and\n  (4)  Attached or logically associated by a means under the electronic notary's sole control.\n  3.  At all times the means for producing registered electronic notary seals, or registered single elements as described in subsection 2 of this section, shall be kept under the sole control of the electronic notary.\n  4.  An employer of an electronic notary shall not use or control the means for producing registered electronic signatures and notary seals, or registered single elements combining the required features of both, nor upon termination of a notary's employment retain any software, coding, disk, certificate, card, token, or program that is intended exclusively to produce an electronic notary's registered electronic signature, notary seal, or combined single element, regardless of whether the employer financially supported the employee's activities as a notary.\n  5.  A registered electronic signature may be used by the electronic notary for lawful purposes other than performing electronic notarizations, provided that neither the title \"notary\" nor any other indication of status as a notarial officer is part of the signature.\n  6.  Neither a registered electronic notary seal nor a combined single element containing the seal shall be used by the electronic notary for any purpose other than performing lawful electronic notarizations.\n(L. 2020 H.B. 1655)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=486.1170",
+  "section_id": "486.1170",
+  "chapter": "486",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

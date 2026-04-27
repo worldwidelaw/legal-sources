@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/472.465",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:35:01.687809+00:00",
+  "title": "Missouri Revised Statutes § 472.465 - Conservator access, opportunity for hearing — disclosures to conservator, when",
+  "text": "472.465.  Conservator access, opportunity for hearing — disclosures to conservator, when. — 1.  After an opportunity for a hearing under Missouri conservatorship law, the court may grant a conservator access to the digital assets of a protected person.\n  2.  Unless otherwise ordered by the court or directed by the user, a custodian shall disclose to a conservator the catalogue of electronic communications sent or received by a protected person and any digital assets, other than the content of electronic communications, in which the protected person has a right or interest if the conservator gives the custodian:\n  (1)  A written request for disclosure in physical or electronic form;\n  (2)  A certified copy of the court order that gives the conservator authority over the digital assets of the protected person; and\n  (3)  If requested by the custodian for the purpose of identifying the correct account of the correct user:\n  (a)  A number, username, address, or other unique subscriber or account identifier assigned by the custodian to identify the account of the protected person; or\n  (b)  Evidence linking the account to the protected person.\n  3.  A conservator with general authority to manage the assets of a protected person may request a custodian of the digital assets of the protected person to suspend or terminate an account of the protected person for good cause.  A request made under this subsection shall be accompanied by a certified copy of the court order giving the conservator authority over the protected person's property.\n(L. 2018 H.B. 1250)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=472.465",
+  "section_id": "472.465",
+  "chapter": "472",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

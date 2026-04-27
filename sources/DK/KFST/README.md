@@ -76,3 +76,7 @@ pip install pypdf
   "language": "da"
 }
 ```
+
+## License
+
+Public domain — Danish government decisions are not subject to copyright under [Danish Copyright Act §9](https://www.retsinformation.dk/eli/lta/2023/164).

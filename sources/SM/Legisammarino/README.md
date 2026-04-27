@@ -82,3 +82,7 @@ pip install pdfplumber
 - Monthly bulletins organized by 12 document type categories
 - All documents served as PDF files; text extracted programmatically
 - Rate limited to 1 request/second to avoid overwhelming the server
+
+## License
+
+[Open Government Data](https://www.bollettinoufficiale.sm) — official bulletin of the Republic of San Marino, per Legge Qualificata n. 2/2010.

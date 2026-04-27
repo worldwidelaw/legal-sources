@@ -1,41 +1,47 @@
-# FR/ServicePublic configuration
-# Service-Public.fr - Fiches pratiques (Practical guides)
-# Administrative doctrine for Individuals, Enterprises, and Associations
-
-name: Service-Public.fr (Fiches pratiques)
-source_id: FR/ServicePublic
 country: FR
-language: fr
-
 data_types:
-  - doctrine
-
-# Data source URLs (updated daily)
+- doctrine
 endpoints:
-  particuliers_zip: https://lecomarquage.service-public.gouv.fr/vdd/3.4/part/zip/vosdroits-latest.zip
   entreprises_zip: https://lecomarquage.service-public.gouv.fr/vdd/3.4/pro/zip/vosdroits-latest.zip
+  particuliers_zip: https://lecomarquage.service-public.gouv.fr/vdd/3.4/part/zip/vosdroits-latest.zip
   schema_zip: https://echanges.dila.gouv.fr/OPENDATA/SERVICE-PUBLIC_DTD/schema_3.4.zip
-
-# Schema for normalized records
+language: fr
+license: Licence Ouverte v2.0 (Open License)
+name: Service-Public.fr (Fiches pratiques)
+publisher: Direction de l'information légale et administrative (DILA)
 schema:
   key_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: _fetched_at
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
   optional_fields:
-    - audience
-    - theme
-    - subject
-    - description
-    - doc_type
-    - coverage
-    - related_docs
-
-license: Licence Ouverte v2.0 (Open License)
-publisher: Direction de l'information légale et administrative (DILA)
+  - audience
+  - theme
+  - subject
+  - description
+  - doc_type
+  - coverage
+  - related_docs
+source_id: FR/ServicePublic
 update_frequency: daily

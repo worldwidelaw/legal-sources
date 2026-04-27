@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/469.417",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:32:20.108650+00:00",
+  "title": "Missouri Revised Statutes § 469.417 - Beneficiary entitled to net income, when — asset subject to trust, when — income interest",
+  "text": "469.417.  Beneficiary entitled to net income, when — asset subject to trust, when — income interest. — 1.  An income beneficiary is entitled to net income from the date on which the income interest begins.  An income interest begins on the date specified in the terms of the trust or, if no date is specified, on the date an asset becomes subject to a trust or successive income interest.\n  2.  An asset becomes subject to a trust:\n  (1)  On the date it is transferred to the trust in the case of an asset that is transferred to a trust during the transferor's life;\n  (2)  On the date of a testator's death in the case of an asset that becomes subject to a trust by reason of a will, even if there is an intervening period of administration of the testator's estate; or\n  (3)  On the date of an individual's death in the case of an asset that is transferred to a fiduciary by a third party because of the individual's death.\n  3.  An asset becomes subject to a successive income interest on the day after the preceding income interest ends, as determined pursuant to subsection 4 of this section, even if there is an intervening period of administration to wind up the preceding income interest.\n  4.  An income interest ends on the day before an income beneficiary dies or another terminating event occurs, or on the last day of a period during which there is no beneficiary to whom a trustee may distribute income.\n(L. 2001 H.B. 241)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=469.417",
+  "section_id": "469.417",
+  "chapter": "469",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

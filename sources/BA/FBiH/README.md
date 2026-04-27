@@ -41,6 +41,10 @@ python bootstrap.py bootstrap --sample --count 12
 - **BA/Brcko**: Brčko District legislation
 - **BA/RS**: Republika Srpska legislation (to be added)
 
+## License
+
+Open government data — publicly accessible legislation.
+
 ## Notes
 
 - FBiH is one of the two entities of Bosnia and Herzegovina

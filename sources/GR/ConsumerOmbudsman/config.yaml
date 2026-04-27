@@ -32,7 +32,7 @@ access:
 
 schema:
   key_fields:
-    - name: slug
+    - name: "_id"
       type: string
       required: true
     - name: date

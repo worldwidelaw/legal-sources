@@ -54,7 +54,7 @@ data_model:
 schema:
   total_fields: 14
   key_fields:
-    - name: "id"
+    - name: "_id"
       description: "Internal decision ID"
       type: "string"
       role: "primary_key"

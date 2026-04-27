@@ -10,6 +10,10 @@ Fetches case law from the Bosnia & Herzegovina Judicial Practice Portal (Sudska 
 - **Language:** Bosnian/Croatian/Serbian
 - **Auth:** None required
 
+## License
+
+Open government data — publicly accessible court decisions.
+
 ## Usage
 ```bash
 python bootstrap.py bootstrap --sample        # Fetch 12 sample records

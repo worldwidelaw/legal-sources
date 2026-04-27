@@ -1,0 +1,14 @@
+{
+  "_id": "warning-en-209",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:49.103908Z",
+  "title": "[Warning] Notice: ETR AG",
+  "text": "By order of 7 July 2020, the FMA prohibited ETR AG, Aeulestrasse 74, 9490 Vaduz, FL-0002.616.922-1 from issuing e-money or accepting deposits and other repayable funds by notification of the decision in question and and ordered the repayment of the funds received. ETR AG is the operator of the website https://blocktrade[dot]com/ (&#34;Blocktrade Platform&#34;). In this context, the company accepts funds for the purpose of issuing e-money or as deposits or other repayable funds. ETR AG is thereby conducting the business of issuing e-money or accepting deposits and other repayable funds without required authorisation from the FMA. This order is immediately enforceable, but not yet final.",
+  "date": "2020-07-09",
+  "url": "https://www.fma-li.li/en/warning/notice-etr-ag-209",
+  "language": "eng",
+  "category": "Warning",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/30.205",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T17:27:17.084270+00:00",
+  "title": "Missouri Revised Statutes § 30.205 - Signature of treasurer may be printed by data processing system on checks and drafts — security measures to be taken",
+  "text": "30.205.  Signature of treasurer may be printed by data processing system on checks and drafts — security measures to be taken. — 1.  The state treasurer may develop and implement an advanced function printing data processing system whereby the signature of the state treasurer is printed simultaneously with the production of drafts or checks.  Whenever the signature of the state treasurer is required or permitted by law to be placed upon checks or drafts, such advanced function printing data processing system may be used by the state treasurer in lieu of other procedures used to place such signature upon checks or drafts, including, but not limited to, the facsimile signature of public officials law, sections 105.273 to 105.278.\n  2.  Before implementing any advance function printing data processing system pursuant to subsection 1 of this section, the state treasurer shall take all necessary and reasonable precautions to assure that adequate physical and electronic security procedures are in place at any data processing center using such a data processing system and all necessary and reasonable measures are in place to preserve and protect the separation of duties of the state treasurer and commissioner of administration as provided by law.\n(L. 1993 H.B. 732)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=30.205",
+  "section_id": "30.205",
+  "chapter": "30",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

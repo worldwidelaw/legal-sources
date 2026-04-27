@@ -1,58 +1,53 @@
-# HK/HKLII - Hong Kong Legal Information Institute
-# Full text case law and legislation from Hong Kong courts
-
-source_id: HK/HKLII
-name: Hong Kong Legal Information Institute
-country: HK
-language: en
-data_types:
-  - case_law
-  - legislation
-
 api:
-  type: rest
-  base_url: https://www.hklii.hk/api
   auth_type: none
+  base_url: https://www.hklii.hk/api
   documentation:
-    - https://www.hklii.hk/
-
-format: json
-schema:
-  key_fields:
-    - _id
-    - neutral_citation
-  metadata_fields:
-    - court
-    - date
-    - title
-    - cap_number
-  text_field: text
-
-rate_limit:
-  requests_per_second: 1
-  delay_between_requests: 1.0
-
-license:
-  name: Free Access to Law
-  url: https://www.hklii.hk/
-  commercial_use: false
-
+  - https://www.hklii.hk/
+  type: rest
+country: HK
 coverage:
   courts:
-    - Court of Final Appeal (hkcfa)
-    - Court of Appeal (hkca)
-    - Court of First Instance (hkcfi)
-    - District Court (hkdc)
-    - Family Court (hkfc)
-    - Lands Tribunal (hkldt)
-    - Competition Tribunal (hkct)
+  - Court of Final Appeal (hkcfa)
+  - Court of Appeal (hkca)
+  - Court of First Instance (hkcfi)
+  - District Court (hkdc)
+  - Family Court (hkfc)
+  - Lands Tribunal (hkldt)
+  - Competition Tribunal (hkct)
   legislation:
-    - Ordinances (ord)
-    - Regulations (reg)
-    - Constitutional Instruments (instrument)
-  notes: >
-    HKLII provides access to Hong Kong legal materials via an internal
-    JSON API. ~115,000 court judgments and ~3,000 pieces of legislation.
-    Part of the Free Access to Law movement, hosted at University of Hong Kong.
+  - Ordinances (ord)
+  - Regulations (reg)
+  - Constitutional Instruments (instrument)
+  notes: 'HKLII provides access to Hong Kong legal materials via an internal JSON API. ~115,000 court judgments and ~3,000 pieces of legislation. Part of the Free Access to Law movement, hosted at University
+    of Hong Kong.
 
+    '
+data_types:
+- case_law
+- legislation
+format: json
+language: en
+license:
+  commercial_use: false
+  name: Free Access to Law
+  url: https://www.hklii.hk/
+name: Hong Kong Legal Information Institute
+rate_limit:
+  delay_between_requests: 1.0
+  requests_per_second: 1
 requires_auth: false
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: neutral_citation
+    required: false
+    type: string
+  metadata_fields:
+  - court
+  - date
+  - title
+  - cap_number
+  text_field: text
+source_id: HK/HKLII

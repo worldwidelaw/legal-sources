@@ -51,6 +51,10 @@ python3 bootstrap.py update --days 7
 - 0.5 second delay between requests
 - SPARQL queries may timeout for large result sets
 
+## License
+
+[OGD Switzerland](https://opendata.swiss/en/terms-of-use) — Open Government Data.
+
 ## Notes
 
 - Switzerland is not an EU member but is part of EFTA

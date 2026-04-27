@@ -1,25 +1,35 @@
-source:
-  id: INTL/UNIDROIT
-  name: UNIDROIT Instruments
-  country: INTL
-  url: https://www.unidroit.org/instruments/
-  data_types:
-    - legislation
-  description: >
-    International private law instruments from UNIDROIT (International Institute
-    for the Unification of Private Law). Includes conventions, model laws,
-    principles, and guides covering commercial contracts, secured transactions,
-    international sales, leasing, factoring, cultural property, and more.
-  method: WordPress REST API (/wp-json/wp/v2/pages)
-  license: Free access
-  language: en
-  auth: none
-
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - url
-    - instrument_type
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: instrument_type
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - legislation
+  description: 'International private law instruments from UNIDROIT (International Institute for the Unification of Private Law). Includes conventions, model laws, principles, and guides covering commercial
+    contracts, secured transactions, international sales, leasing, factoring, cultural property, and more.
+
+    '
+  id: INTL/UNIDROIT
+  language: en
+  license: Free access
+  method: WordPress REST API (/wp-json/wp/v2/pages)
+  name: UNIDROIT Instruments
+  url: https://www.unidroit.org/instruments/

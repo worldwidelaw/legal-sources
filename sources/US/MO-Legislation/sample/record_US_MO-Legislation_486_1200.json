@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/486.1200",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:57:15.528111+00:00",
+  "title": "Missouri Revised Statutes § 486.1200 - Safeguarding electronic documents, signature, and seal",
+  "text": "486.1200.  Safeguarding electronic documents, signature, and seal. — 1.  A remote online notary public shall keep the remote online notary public's electronic document, electronic signature, and electronic seal secure and under the remote online notary public's exclusive control, which requirement may be satisfied by password-controlled access.  The remote online notary public shall not allow another person to use the remote online notary public's electronic document, electronic signature, or electronic seal.\n  2.  A remote online notary public shall attach the remote online notary public's electronic signature and seal to the electronic notarial certificate of an electronic document in a manner that is capable of independent verification and renders any subsequent change or modification to the electronic document evident.\n(L. 2020 H.B. 1655)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=486.1200",
+  "section_id": "486.1200",
+  "chapter": "486",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

@@ -1,26 +1,30 @@
-source_id: CA/FederalLegislation
-name: Federal Laws and Regulations (Justice Laws Website)
-country: CA
-url: https://laws-lois.justice.gc.ca
-data_types:
-  - legislation
-
 auth:
   type: none
-
-rate_limit:
-  requests_per_second: 2
-  burst: 5
-
+country: CA
 data_model:
-  update_strategy: upsert
   dedup_key:
-    - unique_id
-    - language
-
+  - unique_id
+  - language
+  update_strategy: upsert
+data_types:
+- legislation
+name: Federal Laws and Regulations (Justice Laws Website)
+rate_limit:
+  burst: 5
+  requests_per_second: 2
 schema:
   key_fields:
-    - unique_id
-    - title
-    - language
-    - current_to_date
+  - name: unique_id
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: language
+    required: false
+    type: string
+  - name: current_to_date
+    required: false
+    type: string
+source_id: CA/FederalLegislation
+url: https://laws-lois.justice.gc.ca

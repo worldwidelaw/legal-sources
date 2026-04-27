@@ -1,44 +1,51 @@
-source:
-  id: PL/MF
-  name: Polish Finance Ministry Tax Interpretations (EUREKA)
-  country: 'PL'
-  url: https://eureka.mf.gov.pl
-  type: doctrine
-
 api:
-  type: rest_json
-  base_url: https://eureka.mf.gov.pl/api/public/v1
   auth: none
+  base_url: https://eureka.mf.gov.pl/api/public/v1
   endpoints:
+    dictionary: GET /pozycje-slownika/wyszukiwarka?sid={N}
     document: GET /informacje/{id}
     search_params: GET /parametry-wyszukiwarki
-    dictionary: GET /pozycje-slownika/wyszukiwarka?sid={N}
-  rate_limit:
-    requests_per_minute: 30
-    delay_seconds: 2.0
-  notes: |
-    Sequential ID enumeration from ~10000 to ~685000.
+  notes: 'Sequential ID enumeration from ~10000 to ~685000.
+
     IDs are sparse (60-85% return 200). Aggressive rate limiting.
 
+    '
+  rate_limit:
+    delay_seconds: 2.0
+    requests_per_minute: 30
+  type: rest_json
 data:
-  format: json
-  language: pol
-  encoding: utf-8
-  license: Public domain (official government data)
   coverage:
     estimated_records: 400000
-  notes: |
-    Tax interpretations (interpretacje indywidualne), general interpretations,
+  encoding: utf-8
+  format: json
+  language: pol
+  license: Public domain (official government data)
+  notes: 'Tax interpretations (interpretacje indywidualne), general interpretations,
+
     binding rulings, and other Ministry of Finance doctrinal documents.
+
     Full text available in TRESC_INTERESARIUSZ field as HTML.
+
     Replaced old SIP system (sip.mf.gov.pl) in October 2021.
 
+    '
 schema:
   key_fields:
-    - _id
-    - signature
+  - name: _id
+    required: true
+    type: string
+  - name: signature
+    required: false
+    type: string
   required_fields:
-    - title
-    - text
-    - date
-    - url
+  - title
+  - text
+  - date
+  - url
+source:
+  country: PL
+  id: PL/MF
+  name: Polish Finance Ministry Tax Interpretations (EUREKA)
+  type: doctrine
+  url: https://eureka.mf.gov.pl

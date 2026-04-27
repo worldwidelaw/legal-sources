@@ -1,36 +1,36 @@
-# BY/CIS-Legislation -- Belarus Codes via CIS Legislation Database
-# Fetches codified laws from cis-legislation.com (English translations)
-
-source_id: BY/CIS-Legislation
-country: BY
-name: Belarus Codified Laws (CIS Legislation)
-url: https://cis-legislation.com
-data_types:
-  - legislation
-
 auth:
   type: none
+country: BY
+data_types:
+- legislation
+name: Belarus Codified Laws (CIS Legislation)
+notes: 'Fetches Belarusian codified laws (codes) from cis-legislation.com.
 
+  This is an alternative to pravo.by which is geo-restricted.
+
+  Documents are in English translation.
+
+  Full text is available via /document.fwx?rgn={id}.
+
+  Related to issue #192 - admin confirmed codified laws are sufficient.
+
+  '
 rate_limit:
-  requests_per_second: 0.5
   burst: 2
-
+  requests_per_second: 0.5
 schema:
   key_fields:
-    - rgn
+  - name: rgn
+    required: false
+    type: string
   required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
-notes: |
-  Fetches Belarusian codified laws (codes) from cis-legislation.com.
-  This is an alternative to pravo.by which is geo-restricted.
-  Documents are in English translation.
-  Full text is available via /document.fwx?rgn={id}.
-  Related to issue #192 - admin confirmed codified laws are sufficient.
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source_id: BY/CIS-Legislation
+url: https://cis-legislation.com

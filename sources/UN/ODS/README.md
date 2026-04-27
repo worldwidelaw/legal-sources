@@ -27,6 +27,10 @@ python bootstrap.py bootstrap            # Full pull (~18K+ documents)
 python bootstrap.py test-api             # API connectivity test
 ```
 
+## License
+
+[UN Terms of Use](https://www.un.org/en/about-us/terms-of-use) — UN documents are generally public domain. Verify UN terms before bulk commercial redistribution.
+
 ## Notes
 
 - No authentication required

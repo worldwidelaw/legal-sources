@@ -1,0 +1,25 @@
+source_id: EU/CPCS
+name: EU Consumer Protection Cooperation Network
+country: EU
+url: https://commission.europa.eu/live-work-travel-eu/consumer-rights-and-complaints/enforcement-consumer-protection/coordinated-actions_en
+description: >-
+  Consumer Protection Cooperation (CPC) Network coordinated actions, common positions,
+  and biennial reports. Includes enforcement decisions against major platforms (Meta,
+  Apple, Amazon, Temu, SHEIN, Tinder, etc.), sector positions on air travel, accommodation,
+  digital services, and sustainability. Documents are published as PDFs and structured
+  HTML on the European Commission website.
+data_types:
+  - doctrine
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - category

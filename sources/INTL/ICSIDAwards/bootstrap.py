@@ -18,6 +18,7 @@ Usage:
   python bootstrap.py test               # Quick connectivity test
 """
 
+import gc
 import re
 import sys
 import json
@@ -91,9 +92,9 @@ class ICSIDAwardsScraper(BaseScraper):
             logger.warning(f"Failed to fetch case detail for {case_no}: {e}")
             return []
 
-        html = r.text
         from bs4 import BeautifulSoup
-        soup = BeautifulSoup(html, "html.parser")
+        soup = BeautifulSoup(r.text, "html.parser")
+        del r  # free response memory
 
         documents = []
         # Find all PDF links from icsidfiles
@@ -154,13 +155,20 @@ class ICSIDAwardsScraper(BaseScraper):
         return documents
 
     def _download_and_extract_pdf(self, pdf_url: str) -> Optional[str]:
-        """Extract text from PDF using centralized extractor."""
-        return extract_pdf_markdown(
+        """Extract text from PDF using centralized extractor.
+
+        Caps extracted text at 500K chars to prevent OOM on large awards.
+        """
+        text = extract_pdf_markdown(
             source="INTL/ICSIDAwards",
             source_id="",
             pdf_url=pdf_url,
             table="case_law",
         ) or ""
+        # Cap text to prevent OOM on 4GB VPS — ICSID awards can be 500+ pages
+        if text and len(text) > 500_000:
+            text = text[:500_000]
+        return text
 
     def normalize(self, raw: dict) -> Optional[dict]:
         """Transform raw record into standard schema."""
@@ -235,8 +243,13 @@ class ICSIDAwardsScraper(BaseScraper):
                         "case_type": case.get("casetype", ""),
                     }
                     total_docs += 1
+                    del text  # free large string immediately
                 else:
                     logger.warning(f"  No text extracted from: {doc['title'][:60]}")
+
+                # Force GC every 10 docs to prevent OOM on 4GB VPS
+                if total_docs % 10 == 0:
+                    gc.collect()
 
                 time.sleep(1)
 
@@ -282,6 +295,7 @@ def main():
     bp = subparsers.add_parser("bootstrap", help="Full initial fetch")
     bp.add_argument("--sample", action="store_true", help="Fetch sample records only")
     bp.add_argument("--sample-size", type=int, default=15, help="Number of sample records")
+    bp.add_argument("--full", action="store_true", help="Fetch all records")
 
     subparsers.add_parser("update", help="Incremental update")
     subparsers.add_parser("test", help="Quick connectivity test")

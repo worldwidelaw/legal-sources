@@ -242,6 +242,7 @@ def main():
     bootstrap_parser = subparsers.add_parser("bootstrap", help="Fetch sample documents")
     bootstrap_parser.add_argument("--sample", action="store_true", help="Fetch sample data")
     bootstrap_parser.add_argument("--count", type=int, default=15, help="Number of samples")
+    bootstrap_parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     # Status command
     status_parser = subparsers.add_parser("status", help="Show dataset statistics")

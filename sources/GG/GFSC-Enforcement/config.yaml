@@ -1,0 +1,39 @@
+fetch:
+  max_concurrent: 1
+  method: html_scrape
+  rate_limit: 1.5
+schema:
+  document_fields:
+  - text
+  - title
+  - date
+  - category
+  - action_type
+  - url
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+source:
+  country: GG
+  data_types:
+  - doctrine
+  description: 'Enforcement actions from the Guernsey Financial Services Commission (GFSC):
+
+    public statements, prohibition orders, judicial decisions, and
+
+    disqualified directors. ~100-150 actions from 2009-present.
+
+    Full text from HTML pages and PDF documents.
+
+    '
+  id: GG/GFSC-Enforcement
+  language: en
+  name: Guernsey Financial Services Commission Enforcement
+  url: https://www.gfsc.gg/enforcement

@@ -1,0 +1,41 @@
+fetch:
+  max_concurrent: 1
+  method: html_scrape_pdf
+  rate_limit: 1.5
+schema:
+  document_fields:
+  - text
+  - title
+  - case_reference
+  - sector
+  - open_date
+  - close_date
+  - status
+  - url
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: case_reference
+    required: false
+    type: string
+  - name: sector
+    required: false
+    type: string
+source:
+  country: GG
+  data_types:
+  - doctrine
+  description: 'Competition and regulatory decisions from the Guernsey Competition &
+
+    Regulatory Authority (GCRA), successor to CICRA (dissolved July 2020).
+
+    Covers competition, telecoms, electricity, and postal regulation.
+
+    ~322 cases from 2007-present. Full text extracted from PDF attachments.
+
+    '
+  id: GG/GCRA
+  language: en
+  name: Guernsey Competition & Regulatory Authority (GCRA)
+  url: https://www.gcra.gg

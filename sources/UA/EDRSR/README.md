@@ -38,6 +38,10 @@ subdomain (`od.reyestr.court.gov.ua`) does not.
 | justice_kind | Type of justice |
 | judgment_form | Form of judgment |
 
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — free reuse with attribution.
+
 ## Usage
 
 ```bash

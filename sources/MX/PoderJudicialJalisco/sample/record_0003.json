@@ -1,0 +1,18 @@
+{
+  "_id": "MX-JAL-78080",
+  "_source": "MX/PoderJudicialJalisco",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-23T13:20:32.389431+00:00",
+  "title": "Toca 59/2025 — SEXTA SALA ESPECIALIZADA EN MATERIA PENAL",
+  "text": "El documento resume una apelación (Juicio Oral 59/2025) a una sentencia absolutoria previa en un caso de robo calificado (carpeta administrativa 5760/2022, derivada de la 51048/2022). El Ministerio Público apeló la absolución de dos acusados por el Juez del Tribunal Unitario de Enjuiciamiento.  La Sexta Sala Penal del Supremo Tribunal de Justicia del Estado de Jalisco revisó la apelación y confirmó la sentencia absolutoria.\n\nEl Juez de primera instancia absolvió a los acusados basándose en inconsistencias en el testimonio de la víctima, quien se contradijo al identificar a los acusados y sus roles en el robo.  El Juez consideró que el testimonio de la víctima, aunque único, no era suficientemente confiable para establecer la culpabilidad más allá de toda duda razonable, especialmente dadas las discrepancias con otros testimonios y la falta de evidencia física.\n\nLa apelación del Ministerio Público argumentó que el Juez no valoró correctamente las pruebas y omitió considerar la prueba indiciaria o circunstancial. La Sexta Sala, sin embargo, encontró que los agravios del Ministerio Público eran infundados, contradictorios e insuficientes para revocar la absolución. La Sala destacó que la Fiscalía no presentó argumentos sólidos para refutar las conclusiones del Juez sobre las inconsistencias en el testimonio de la víctima y la falta de corroboración con otras pruebas.  La Sala determinó que el escrito de agravios era deficiente al no especificar cómo el Juez había infringido la ley en su valoración de la prueba.  Por lo tanto, la Sexta Sala confirmó la absolución de los acusados.",
+  "date": "2025-04-14",
+  "url": "https://publica-sentencias-backend.stjjalisco.gob.mx/toca/78080/file",
+  "court": "SEXTA SALA ESPECIALIZADA EN MATERIA PENAL",
+  "judge": "Mgdo. Jorge Arturo García Valencia",
+  "subject_area": "Penal",
+  "case_type": "PENAL EN LINEA",
+  "ruling": "CONFIRMAR",
+  "case_number": "59/2025",
+  "publication_date": "2025-04-22",
+  "crime_or_action": "ROBO CALIFICADO"
+}

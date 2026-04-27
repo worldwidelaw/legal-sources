@@ -52,3 +52,7 @@ Key fields in normalized records:
 - AT/RIS: Federal legislation and case law from all Austrian courts
 - AT/VfGH: Austrian Constitutional Court
 - AT/Bundesgesetzblatt: Federal Law Gazette
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Austrian Open Government Data.

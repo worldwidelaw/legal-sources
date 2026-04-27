@@ -30,7 +30,7 @@ Uses SPARQL queries to the LawSampo endpoint:
 
 ## License
 
-- CC BY 4.0 (LawSampo / Semantic Finlex)
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (LawSampo / Semantic Finlex)
 
 ## Notes
 

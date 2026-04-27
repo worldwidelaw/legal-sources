@@ -358,6 +358,7 @@ def main():
     parser.add_argument("--canton", type=str, help="Canton code (e.g., CH, ZH, GE)")
     parser.add_argument("--days", type=int, default=30, help="Number of days for recent fetch")
     parser.add_argument("--limit", type=int, default=100, help="Maximum records to fetch")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

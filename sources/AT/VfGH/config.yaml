@@ -49,7 +49,7 @@ data_model:
 
 schema:
   key_fields:
-    - name: "doc_id"
+    - name: "_id"
       description: "RIS document ID"
       type: "string"
       role: "primary_key"

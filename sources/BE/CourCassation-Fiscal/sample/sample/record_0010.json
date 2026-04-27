@@ -1,0 +1,24 @@
+{
+  "_id": "ECLI:BE:CASS:2026:CONC.20260130.1F.4",
+  "_source": "BE/CourCassation-Fiscal",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-16T19:03:49.596115+00:00",
+  "title": "COMMUNE D’IXELLES contra ORANGE BELGIUM s.a.",
+  "text": "L'autorité habilitée à arrêter le rôle ne peut se dispenser \n        de se conformer à la procédure de taxation d'office, qui assure \n        le respect des droits de la défense du redevable, que dans l'hypothèse \n        où elle se limite à établir l'imposition conformément à la déclaration, \n        même tardive (1). (1) Voir les concl. du MP.",
+  "date": "2026-01-30",
+  "url": "https://juportal.be/content/ECLI:BE:CASS:2026:CONC.20260130.1F.4",
+  "ecli": "ECLI:BE:CASS:2026:CONC.20260130.1F.4",
+  "court": "Cour de cassation",
+  "chamber": "1F",
+  "language": "fr",
+  "role_number": "F.23.0006.F",
+  "abstract": "L'autorité habilitée à arrêter le rôle ne peut se dispenser \n                                    de se conformer à la procédure de taxation d'office, qui assure \n                                    le respect des droits de la défense du redevable, que dans l'hypothèse \n                                    où elle se limite à établir l'imposition conformément à la déclaration, \n                                    même tardive (1). (1) Voir les concl. du MP.",
+  "subjects": [
+    "Droit fiscal",
+    "Belastingrecht"
+  ],
+  "keywords": [
+    "TAXES COMMUNALES, PROVINCIALES ET LOCALES - TAXES COMMUNALES",
+    "GEMEENTE-, PROVINCIE- EN PLAATSELIJKE BELASTINGEN - GEMEENTEBELASTINGEN"
+  ]
+}

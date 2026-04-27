@@ -66,6 +66,10 @@ python3 bootstrap.py
 - beautifulsoup4
 - pdfplumber (or PyPDF2 as fallback)
 
+## License
+
+[EUR-Lex legal notice](https://eur-lex.europa.eu/content/legal-notice/legal-notice.html) — EU agency publications, reuse authorised with attribution.
+
 ## Notes
 
 - Full text is extracted from PDF attachments

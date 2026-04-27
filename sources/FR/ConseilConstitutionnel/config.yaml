@@ -1,34 +1,37 @@
-source:
-  id: FR/ConseilConstitutionnel
-  name: French Constitutional Council (Conseil constitutionnel)
-  country: FR
-  data_types:
-    - caselaw
-  language: fr
-  url: https://www.conseil-constitutionnel.fr
-  license: Open Licence 2.0
-  notes: >
-    Constitutional Council decisions via DILA CONSTIT bulk open data.
-    Covers QPC (since 2010), DC (since 1958), electoral matters, and administrative decisions.
-    Full text in XML format with ECLI identifiers.
-
-schema:
-  key_fields:
-    - _id
-    - ecli
-    - numero
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
 api:
-  type: bulk_download
   base_url: https://echanges.dila.gouv.fr/OPENDATA/CONSTIT/
   format: xml
   rate_limit: 2
+  type: bulk_download
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: ecli
+    required: false
+    type: string
+  - name: numero
+    required: false
+    type: string
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  country: FR
+  data_types:
+  - caselaw
+  id: FR/ConseilConstitutionnel
+  language: fr
+  license: Open Licence 2.0
+  name: French Constitutional Council (Conseil constitutionnel)
+  notes: 'Constitutional Council decisions via DILA CONSTIT bulk open data. Covers QPC (since 2010), DC (since 1958), electoral matters, and administrative decisions. Full text in XML format with ECLI identifiers.
+
+    '
+  url: https://www.conseil-constitutionnel.fr

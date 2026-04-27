@@ -1,0 +1,14 @@
+{
+  "_id": "warning-de-218",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:33.002359Z",
+  "title": "[Missbrauch] Warnung: https://olzgroup(dot)com",
+  "text": "Die Finanzmarktaufsicht (FMA) Liechtenstein weist darauf hin, dass zwischen den Betreibern der Website https://olzgroup(dot)com und der OLZ Wealth Management AG, Bahnhofstrasse 7, 9494 Schaan, Handelsregisternummer FL-0002.215.531-7 keine Verbindung besteht. Die Betreiber der Website verfügen über keine spezialgesetzliche Bewilligung der FMA und dürfen keine spezialgesetzlich bewilligungspflichtige Finanzdienstleistungen anbieten.   Die FMA rät dringend davon ab, Investitionen über die Website https://olzgroup(dot)com zu tätigen respektive auf Angebote dieser Gesellschaft zu reagieren oder Gelder zu überweisen. Durch die Annahme der Identität einer real existierenden Gesellschaft wird versucht, Gelder entgegenzunehmen, wobei für die Investoren ein Totalverlust ihrer vermeintlichen Investitionen resultieren kann.    ",
+  "date": "2019-01-24",
+  "url": "https://www.fma-li.li/de/warning/warnung-https-olzgroup-dot-com-218",
+  "language": "deu",
+  "category": "Missbrauch",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

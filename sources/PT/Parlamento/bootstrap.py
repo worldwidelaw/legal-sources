@@ -55,10 +55,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger("legal-data-hunter.PT.Parlamento")
 
-# All legislatures available in the Open Data portal
+# All legislatures available in the Open Data portal (newest first for VPS throughput)
 LEGISLATURES = [
-    "II", "III", "IV", "V", "VI", "VII", "VIII", "IX",
-    "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII",
+    "XVII", "XVI", "XV", "XIV", "XIII", "XII", "XI", "X",
+    "IX", "VIII", "VII", "VI", "V", "IV", "III", "II",
 ]
 
 # For sample mode, only fetch from the most recent legislature
@@ -223,36 +223,44 @@ class ParlamentoScraper(BaseScraper):
             return text
         except Exception as e:
             logger.warning(f"PDF extraction failed for {doc_id}: {e}")
-            # Fallback: try direct download + pdfplumber
+            # Fallback: try direct download + pypdf (preferred) / pdfplumber
             try:
                 import io
-                resp = self.client.get(url, timeout=60)
-                if resp.status_code == 200 and resp.content[:4] == b"%PDF":
-                    try:
-                        import pdfplumber
-                        pdf = pdfplumber.open(io.BytesIO(resp.content))
-                        pages_text = []
-                        for page in pdf.pages:
-                            t = page.extract_text() or ""
-                            if t:
-                                pages_text.append(t)
-                        pdf.close()
-                        if pages_text:
-                            return "\n\n".join(pages_text)
-                    except ImportError:
-                        pass
-                    try:
-                        from pypdf import PdfReader
-                        reader = PdfReader(io.BytesIO(resp.content))
-                        pages_text = []
-                        for page in reader.pages:
-                            t = page.extract_text() or ""
-                            if t:
-                                pages_text.append(t)
-                        if pages_text:
-                            return "\n\n".join(pages_text)
-                    except ImportError:
-                        pass
+                resp = self.client.get(url, timeout=30)
+                if resp.status_code != 200:
+                    return None
+                # Skip PDFs larger than 5MB to avoid slow extraction
+                if len(resp.content) > 5 * 1024 * 1024:
+                    logger.info(f"Skipping oversized PDF for {doc_id}: {len(resp.content)} bytes")
+                    return None
+                if resp.content[:4] != b"%PDF":
+                    return None
+                # pypdf produces cleaner text for these Parliament PDFs
+                try:
+                    from pypdf import PdfReader
+                    reader = PdfReader(io.BytesIO(resp.content))
+                    pages_text = []
+                    for page in reader.pages:
+                        t = page.extract_text() or ""
+                        if t:
+                            pages_text.append(t)
+                    if pages_text:
+                        return "\n\n".join(pages_text)
+                except ImportError:
+                    pass
+                try:
+                    import pdfplumber
+                    pdf = pdfplumber.open(io.BytesIO(resp.content))
+                    pages_text = []
+                    for page in pdf.pages:
+                        t = page.extract_text() or ""
+                        if t:
+                            pages_text.append(t)
+                    pdf.close()
+                    if pages_text:
+                        return "\n\n".join(pages_text)
+                except ImportError:
+                    pass
             except Exception as e2:
                 logger.warning(f"Fallback PDF extraction also failed for {doc_id}: {e2}")
             return None
@@ -315,8 +323,8 @@ class ParlamentoScraper(BaseScraper):
                     continue
 
                 rec["text"] = text
-                yield self.normalize(rec)
-                time.sleep(2)
+                yield rec
+                time.sleep(1)
 
     def fetch_updates(self, since: Optional[str] = None) -> Generator[Dict[str, Any], None, None]:
         """Fetch recent initiatives (last 2 legislatures)."""
@@ -340,8 +348,8 @@ class ParlamentoScraper(BaseScraper):
                     continue
 
                 rec["text"] = text
-                yield self.normalize(rec)
-                time.sleep(2)
+                yield rec
+                time.sleep(1)
 
     def test(self) -> bool:
         """Quick connectivity test."""
@@ -365,6 +373,7 @@ def main():
                         help="Command to execute")
     parser.add_argument("--sample", action="store_true",
                         help="Only fetch sample records for testing")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = ParlamentoScraper()
@@ -374,49 +383,7 @@ def main():
         sys.exit(0 if success else 1)
 
     if args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-        count = 0
-        max_records = 15 if args.sample else 999999
-
-        if args.sample:
-            # In sample mode, only fetch from latest legislature
-            existing = set()
-            records = scraper._fetch_legislature_initiatives("XVII")
-            for rec in records:
-                if count >= max_records:
-                    break
-                doc_id = str(rec.get("IniId", ""))
-                if not doc_id:
-                    continue
-
-                pdf_url = rec.get("IniLinkTexto", "")
-                text = scraper._extract_pdf_text(pdf_url, doc_id)
-                if not text or len(text) < 50:
-                    continue
-
-                rec["text"] = text
-                normalized = scraper.normalize(rec)
-
-                # Save sample
-                safe_id = re.sub(r"[^\w\-]", "_", normalized["_id"])
-                sample_path = sample_dir / f"{safe_id}.json"
-                with open(sample_path, "w", encoding="utf-8") as f:
-                    json.dump(normalized, f, ensure_ascii=False, indent=2)
-
-                count += 1
-                logger.info(f"[{count}/{max_records}] Saved {normalized['_id']}: "
-                            f"{normalized['title'][:60]}... ({len(text)} chars)")
-                time.sleep(2)
-        else:
-            for record in scraper.fetch_all():
-                if count >= max_records:
-                    break
-                count += 1
-                if count % 50 == 0:
-                    logger.info(f"Progress: {count} records fetched")
-
-        logger.info(f"Bootstrap complete: {count} records")
+        scraper.bootstrap(sample_mode=args.sample)
 
     elif args.command == "update":
         count = 0

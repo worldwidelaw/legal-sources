@@ -1,0 +1,31 @@
+fetch:
+  max_retries: 3
+  rate_limit: 2.0
+  timeout: 30
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: string
+source:
+  auth: none
+  country: KE
+  data_types:
+  - doctrine
+  description: >-
+    Kenya Revenue Authority (KRA) public notices and tax guidance from
+    kra.go.ke. Official tax administration notices covering VAT, income
+    tax, customs, excise, PAYE, and other tax matters. ~280 HTML notices
+    spanning 2018-2026.
+  id: KE/KRA-TaxCirculars
+  name: KRA Public Notices & Tax Guidance
+  url: https://www.kra.go.ke/news-center/public-notices

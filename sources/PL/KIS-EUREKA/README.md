@@ -30,3 +30,7 @@ python bootstrap.py bootstrap --sample    # Fetch 15 sample records
 python bootstrap.py bootstrap             # Full fetch (541k documents)
 python bootstrap.py update                # Recent 30 days
 ```
+
+## License
+
+[Open Government Data](https://dane.gov.pl) — Polish Ministry of Finance public data, free for reuse.

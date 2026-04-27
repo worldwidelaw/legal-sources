@@ -436,11 +436,6 @@ def bootstrap_sample(output_dir: Path, sample_size: int = 12):
         output_dir: directory to save samples
         sample_size: number of samples to fetch
     """
-    if not HAS_PDF_SUPPORT:
-        print("Error: pypdf is required for PDF text extraction", file=sys.stderr)
-        print("Install with: pip install pypdf", file=sys.stderr)
-        sys.exit(1)
-
     output_dir.mkdir(parents=True, exist_ok=True)
     session = get_session()
 
@@ -555,6 +550,7 @@ def main():
         default=datetime.now().year,
         help="Year to list"
     )
+    list_parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

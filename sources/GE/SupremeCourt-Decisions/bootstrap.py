@@ -215,7 +215,11 @@ class SupremeCourtScraper(BaseScraper):
         }
 
     def fetch_all(self) -> Generator[dict, None, None]:
-        """Fetch all cases with full text."""
+        """Fetch all cases with full text.
+
+        Yields raw case dicts (not normalized). BaseScraper.bootstrap()
+        calls self.normalize() on each yielded record.
+        """
         total_fetched = 0
 
         for palata in [0, 1, 2]:
@@ -236,11 +240,8 @@ class SupremeCourtScraper(BaseScraper):
                     if full_text:
                         case["full_text"] = full_text
 
-                    normalized = self.normalize(case)
-                    if normalized.get("text"):
-                        yield normalized
-                        total_fetched += 1
-
+                    yield case
+                    total_fetched += 1
                     time.sleep(1)
 
                 logger.info(
@@ -252,8 +253,9 @@ class SupremeCourtScraper(BaseScraper):
 
         logger.info(f"Total fetched: {total_fetched} decisions")
 
-    def fetch_updates(self, since: str) -> Generator[dict, None, None]:
-        """Fetch recently added cases."""
+    def fetch_updates(self, since) -> Generator[dict, None, None]:
+        """Fetch recently added cases. Yields raw case dicts."""
+        since_str = str(since)[:10] if since else "2026-01-01"
         for palata in [0, 1, 2]:
             page = 1
             max_pages = 10
@@ -269,7 +271,7 @@ class SupremeCourtScraper(BaseScraper):
 
                 found_old = False
                 for case in cases:
-                    if case.get("date") and case["date"] < since:
+                    if case.get("date") and case["date"] < since_str:
                         found_old = True
                         continue
 
@@ -277,57 +279,13 @@ class SupremeCourtScraper(BaseScraper):
                     if full_text:
                         case["full_text"] = full_text
 
-                    normalized = self.normalize(case)
-                    if normalized.get("text"):
-                        yield normalized
-
+                    yield case
                     time.sleep(1)
 
                 if found_old:
                     break
                 page += 1
                 time.sleep(1)
-
-    def fetch_sample(self) -> list:
-        """Fetch sample records across different palatas and pages."""
-        samples = []
-        seen_ids = set()
-
-        # Sample from each palata
-        for palata in [0, 1, 2]:
-            for page in [1, 5, 50]:
-                if len(samples) >= 15:
-                    break
-
-                logger.info(
-                    f"Sampling palata {palata} ({PALATAS[palata]}), page {page}..."
-                )
-                html = self._get_cases_page(palata=palata, page=page)
-                if not html:
-                    continue
-
-                cases = parse_case_listing(html)
-
-                for case in cases[:2]:  # 2 per page
-                    if case["id"] in seen_ids:
-                        continue
-                    seen_ids.add(case["id"])
-
-                    logger.info(
-                        f"  Fetching full text for {case.get('case_number', case['id'])}..."
-                    )
-                    full_text = self._get_full_case(case["id"], case["palata"])
-                    if full_text:
-                        case["full_text"] = full_text
-                        logger.info(f"  Got {len(full_text)} chars")
-
-                    normalized = self.normalize(case)
-                    samples.append(normalized)
-                    time.sleep(1.5)
-
-                time.sleep(2)
-
-        return samples
 
     def test_api(self):
         """Quick API connectivity test."""
@@ -377,54 +335,17 @@ def main():
 
     elif command in ("bootstrap", "bootstrap-fast"):
         if sample:
-            logger.info("Fetching sample records...")
-            samples = scraper.fetch_sample()
-
-            sample_dir = Path(__file__).parent / "sample"
-            sample_dir.mkdir(exist_ok=True)
-
-            for i, record in enumerate(samples):
-                path = sample_dir / f"sample_{i:03d}.json"
-                with open(path, "w", encoding="utf-8") as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-
-            logger.info(f"Saved {len(samples)} sample records to {sample_dir}")
-
-            texts = [r for r in samples if r.get("text") and len(r["text"]) > 100]
-            print(f"\nValidation: {len(texts)}/{len(samples)} records have full text")
-            for r in samples:
-                text_len = len(r.get("text", ""))
-                print(f"  {r['_id']}: {r['title'][:60]} | text: {text_len} chars")
+            stats = scraper.bootstrap(sample_mode=True, sample_size=15)
+            count = stats.get("sample_records_saved", 0)
         else:
-            logger.info("Starting full bootstrap...")
-            count = 0
-            output_dir = Path(__file__).parent / "data"
-            output_dir.mkdir(exist_ok=True)
-
-            for record in scraper.fetch_all():
-                path = output_dir / f"{record['_id']}.json"
-                with open(path, "w", encoding="utf-8") as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-                count += 1
-                if count % 100 == 0:
-                    logger.info(f"  Saved {count} records...")
-
-            logger.info(f"Bootstrap complete: {count} records saved")
+            stats = scraper.bootstrap()
+            count = stats.get("records_new", 0)
+        logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2, default=str)}")
+        sys.exit(0 if count >= 10 else (1 if not sample else 0))
 
     elif command == "update":
-        since = sys.argv[2] if len(sys.argv) > 2 else "2026-01-01"
-        logger.info(f"Fetching updates since {since}...")
-        count = 0
-        output_dir = Path(__file__).parent / "data"
-        output_dir.mkdir(exist_ok=True)
-
-        for record in scraper.fetch_updates(since):
-            path = output_dir / f"{record['_id']}.json"
-            with open(path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-
-        logger.info(f"Update complete: {count} new/updated records")
+        stats = scraper.update()
+        logger.info(f"Update complete: {json.dumps(stats, indent=2, default=str)}")
 
     else:
         print(f"Unknown command: {command}")

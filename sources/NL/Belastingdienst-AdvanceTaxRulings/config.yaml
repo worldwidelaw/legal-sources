@@ -1,0 +1,20 @@
+name: "Dutch Advance Tax Rulings (ATR/APA) Policy"
+source_id: "NL/Belastingdienst-AdvanceTaxRulings"
+country: NL
+url: "https://www.belastingdienst.nl/wps/wcm/connect/bldcontentnl/standaard_functies/prive/contact/rechten_en_plichten_bij_de_belastingdienst/ruling/atr"
+data_types:
+  - doctrine
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+schema:
+  key_fields:
+    - _id
+    - title
+    - date
+    - url
+    - text
+    - ruling_type
+    - ruling_number

@@ -68,3 +68,7 @@ python3 bootstrap.py bootstrap
 The `text` field contains the scientific abstract which summarizes the EFSA's assessment, conclusions, and recommendations. For scientific doctrine, this abstract is the primary authoritative content.
 
 Full PDF text is available via Wiley but requires TDM authentication. The abstracts provided via CrossRef contain the essential scientific conclusions.
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — EFSA Journal is open access under Creative Commons Attribution 4.0.

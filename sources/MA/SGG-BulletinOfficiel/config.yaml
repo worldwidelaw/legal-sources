@@ -1,0 +1,84 @@
+# ===================================================================
+# MA/SGG-BulletinOfficiel -- Morocco Official Bulletin (Bulletin Officiel)
+# ===================================================================
+# Official gazette of Morocco published by the Secrétariat Général
+# du Gouvernement (SGG). Contains laws, decrees, and regulations.
+# Arabic edition (7,760 issues, 1913-present) + French translation
+# (4,883 issues, 1912-present). PDFs with extractable text.
+# ===================================================================
+
+source:
+  id: "MA/SGG-BulletinOfficiel"
+  country: "MA"
+  name: "Morocco Official Bulletin (Bulletin Officiel)"
+  url: "https://www.sgg.gov.ma/"
+  description: |
+    Morocco's Bulletin Officiel published by the Secrétariat Général du
+    Gouvernement. JSON API returns full catalog per module. Arabic general
+    edition (Module 3111, ~7,760 issues) and French official translation
+    (Module 2873, ~4,883 issues). PDF full text extraction via pdf_extract.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "json"
+  base_url: "https://www.sgg.gov.ma"
+  endpoints:
+    catalog: "/DesktopModules/MVC/TableListBO/BO/AjaxMethod"
+  response_format: "json"
+  modules:
+    arabic_general:
+      module_id: 3111
+      tab_id: 847
+    french_translation:
+      module_id: 2873
+      tab_id: 775
+
+data_model:
+  type: "legislation"
+  primary_key: "bulletin_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "bulletin_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "_id"
+      description: "Unique bulletin identifier (MA-BO-{lang}-{number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Bulletin issue title with number and date"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the gazette PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the PDF on sgg.gov.ma"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "bulletin_number"
+      description: "Official bulletin issue number"
+    - name: "language"
+      description: "Language edition (ar or fr)"

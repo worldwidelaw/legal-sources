@@ -1,0 +1,64 @@
+# ===================================================================
+# MH/RMICourts -- Republic of Marshall Islands Judiciary
+# ===================================================================
+# Court decisions from the official RMI Judiciary website.
+# Supreme Court (recent opinions), High Court (selected decisions),
+# and Traditional Rights Court decisions. All documents are PDF.
+# ===================================================================
+
+source:
+  id: "MH/RMICourts"
+  country: "MH"
+  name: "Republic of Marshall Islands Judiciary"
+  url: "https://rmicourts.org/"
+  description: |
+    Court decisions from the official judiciary website of the Republic
+    of the Marshall Islands. Covers recent Supreme Court opinions,
+    selected High Court decisions (2006-2026), and Traditional Rights
+    Court decisions (1986-2026). Approximately 195+ individual PDF
+    decisions across all three courts.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "2-second delay between requests to respect official judiciary server."
+
+api:
+  type: "html_scraping"
+  base_url: "https://rmicourts.org"
+  response_format: "html+pdf"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Document identifier derived from PDF filename"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (parties and case number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "court"
+      description: "Court name (Supreme Court, High Court, Traditional Rights Court)"
+      type: "string"
+      role: "metadata"
+      required: false

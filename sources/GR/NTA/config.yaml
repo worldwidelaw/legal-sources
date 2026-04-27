@@ -1,36 +1,42 @@
-source:
-  id: GR/NTA
-  country: GR
-  name: National Transparency Authority (AEAD)
-  name_native: Εθνική Αρχή Διαφάνειας
-  url: https://aead.gr
-  data_url: https://diavgeia.gov.gr/luminapi/opendata
-  description: >
-    Greek National Transparency Authority decisions. Fetches from the Diavgeia
-    transparency portal. Covers administrative acts, audit findings, ethics
-    committee decisions. ~2,925 decisions since 2020.
-  data_types:
-    - doctrine
-  auth: none
-  license: CC-BY
-  coverage:
-    start_date: "2020-01-01"
-    jurisdictions:
-      - GR
-  update_frequency: daily
-  notes: >
-    AEAD oversees transparency, anti-corruption, and public sector audits.
-    Data accessed via Diavgeia API using org NATIONAL_TRANSPARENCY_AUTHORITY.
-
 api:
   base_url: https://diavgeia.gov.gr/luminapi
   organization_uid: NATIONAL_TRANSPARENCY_AUTHORITY
-  rate_limit: 2.0
   page_size: 50
-
+  rate_limit: 2.0
 schema:
   key_fields:
-    - ada
-    - subject
-    - issue_date
-    - protocol_number
+  - name: ada
+    required: false
+    type: string
+  - name: subject
+    required: false
+    type: string
+  - name: issue_date
+    required: false
+    type: string
+  - name: protocol_number
+    required: false
+    type: string
+source:
+  auth: none
+  country: GR
+  coverage:
+    jurisdictions:
+    - GR
+    start_date: '2020-01-01'
+  data_types:
+  - doctrine
+  data_url: https://diavgeia.gov.gr/luminapi/opendata
+  description: 'Greek National Transparency Authority decisions. Fetches from the Diavgeia transparency portal. Covers administrative acts, audit findings, ethics committee decisions. ~2,925 decisions since
+    2020.
+
+    '
+  id: GR/NTA
+  license: CC-BY
+  name: National Transparency Authority (AEAD)
+  name_native: Εθνική Αρχή Διαφάνειας
+  notes: 'AEAD oversees transparency, anti-corruption, and public sector audits. Data accessed via Diavgeia API using org NATIONAL_TRANSPARENCY_AUTHORITY.
+
+    '
+  update_frequency: daily
+  url: https://aead.gr

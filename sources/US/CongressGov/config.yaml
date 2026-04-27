@@ -1,52 +1,53 @@
-source:
-  id: US/CongressGov
-  name: Congress.gov (Congressional Bills)
-  country: US
-  data_types:
-    - legislation
-  auth: api_key  # Uses DEMO_KEY from data.gov or custom CONGRESS_API_KEY
-  base_url: https://api.congress.gov/v3
-  rate_limit: 5000/hour
-
+fetch:
+  bill_types:
+  - hr
+  - s
+  - hjres
+  - sjres
+  - hconres
+  - sconres
+  - hres
+  - sres
+  default_congress: 118
+  pagination:
+    delay_seconds: 0.5
+    limit: 250
 schema:
   key_fields:
-    - congress
-    - bill_type
-    - bill_number
-
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
+  - name: congress
+    required: false
+    type: string
+  - name: bill_type
+    required: false
+    type: string
+  - name: bill_number
+    required: false
+    type: string
   optional_fields:
-    - congress
-    - bill_type
-    - bill_number
-    - sponsor
-    - cosponsors_count
-    - policy_area
-    - origin_chamber
-    - latest_action
-    - summary
-
-fetch:
-  default_congress: 118  # Current Congress (2023-2025)
-  bill_types:
-    - hr      # House Bills
-    - s       # Senate Bills
-    - hjres   # House Joint Resolutions
-    - sjres   # Senate Joint Resolutions
-    - hconres # House Concurrent Resolutions
-    - sconres # Senate Concurrent Resolutions
-    - hres    # House Simple Resolutions
-    - sres    # Senate Simple Resolutions
-
-  pagination:
-    limit: 250  # Max allowed by API
-    delay_seconds: 0.5  # Be nice to the API
+  - congress
+  - bill_type
+  - bill_number
+  - sponsor
+  - cosponsors_count
+  - policy_area
+  - origin_chamber
+  - latest_action
+  - summary
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  auth: api_key
+  base_url: https://api.congress.gov/v3
+  country: US
+  data_types:
+  - legislation
+  id: US/CongressGov
+  name: Congress.gov (Congressional Bills)
+  rate_limit: 5000/hour

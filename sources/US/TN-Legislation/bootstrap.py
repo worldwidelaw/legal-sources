@@ -224,7 +224,7 @@ class TNLegislationScraper(BaseScraper):
 
             title_count = 0
             for raw in self._parse_title(html, num):
-                yield self.normalize(raw)
+                yield raw
                 total += 1
                 title_count += 1
 
@@ -254,7 +254,7 @@ class TNLegislationScraper(BaseScraper):
             for raw in self._parse_title(html, num):
                 if count >= 15:
                     break
-                yield self.normalize(raw)
+                yield raw
                 count += 1
 
         logger.info(f"Sample complete: {count} sections fetched")
@@ -270,6 +270,7 @@ def main():
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = TNLegislationScraper()

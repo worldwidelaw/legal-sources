@@ -393,7 +393,7 @@ class CubaGacetaOficialScraper(BaseScraper):
             for stub in stubs:
                 doc = self._fetch_single_norm(stub)
                 if doc:
-                    yield self.normalize(doc)
+                    yield doc
 
             page += 1
 

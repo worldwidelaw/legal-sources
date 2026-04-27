@@ -1,18 +1,23 @@
-id: SZ/EswatiniLII
-name: EswatiniLII Legislation
 country: SZ
-url: https://eswatinilii.org/
 data_types:
-  - legislation
+- legislation
+description: 'Eswatini legislation from EswatiniLII (Laws.Africa PeachJam platform). ~325 acts, government notices, and subsidiary legislation. English full text in Akoma Ntoso format where available, PDF-only
+  documents skipped. Free access.
+
+  '
+id: SZ/EswatiniLII
 language: en
-strategy: html_scraping
-description: >
-  Eswatini legislation from EswatiniLII (Laws.Africa PeachJam platform).
-  ~325 acts, government notices, and subsidiary legislation. English full text
-  in Akoma Ntoso format where available, PDF-only documents skipped.
-  Free access.
+name: EswatiniLII Legislation
 schema:
   key_fields:
-    - doc_subtype
-    - number
-    - date
+  - name: doc_subtype
+    required: false
+    type: string
+  - name: number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+strategy: html_scraping
+url: https://eswatinilii.org/

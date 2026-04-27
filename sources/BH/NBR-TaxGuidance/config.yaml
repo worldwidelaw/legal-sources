@@ -1,0 +1,84 @@
+# ===================================================================
+# BH/NBR-TaxGuidance -- Bahrain National Bureau for Revenue
+# ===================================================================
+# Tax guidance from Bahrain's NBR: VAT guides, excise tax guidance,
+# DMTT (Domestic Minimum Top-up Tax) guides, and NBR decisions.
+#
+# Primary: HTML scraping of nbr.gov.bh/guidelines_and_publications
+# Format: PDFs hosted on Amazon S3
+# ===================================================================
+
+source:
+  id: "BH/NBR-TaxGuidance"
+  country: "BH"
+  name: "Bahrain National Bureau for Revenue Tax Guidance"
+  url: "https://www.nbr.gov.bh/guidelines_and_publications"
+  description: |
+    Bahrain NBR tax guidance documents: VAT sector guides, VAT procedural
+    manuals, excise tax guides, DMTT (Pillar Two) guides, and NBR decisions.
+    ~46 documents covering VAT (10%), excise, and domestic minimum top-up tax.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.nbr.gov.bh"
+  listing_page: "/guidelines_and_publications"
+  publication_page: "/publications/view/{slug}"
+  decisions_page: "/decisions"
+
+data_model:
+  type: "doctrine"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document identifier (slug from URL)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Publication page URL"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "category"
+      description: "Document category (VAT, Excise, DMTT, Decision)"
+      type: "string"
+      role: "category"
+      required: false
+
+notes: |
+  - ~37 publications + 9 decisions as of 2026-04
+  - PDFs on S3 (publicly accessible, no auth needed)
+  - English via /language/en session cookie
+  - PDF URLs embedded in Adobe DC View SDK JavaScript
+  - No API or sitemap; single listing page

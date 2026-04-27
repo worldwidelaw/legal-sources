@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/192.665",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T20:49:38.104701+00:00",
+  "title": "Missouri Revised Statutes § 192.665 - Definitions",
+  "text": "192.665.  Definitions. — As used in this section, section 192.667, and sections 197.150 to 197.165, the following terms mean:\n  (1)  \"Charge data\", information submitted by health care providers on current charges for leading procedures and diagnoses;\n  (2)  \"Charges by payer\", information submitted by hospitals on amount billed to Medicare, Medicaid, other government sources and all nongovernment sources combined as one data element;\n  (3)  \"Department\", the department of health and senior services;\n  (4)  \"Financial data\", information submitted by hospitals drawn from financial statements which includes the balance sheet, income statement, charity care and bad debt and charges by payer, prepared in accordance with generally accepted accounting principles;\n  (5)  \"Health care provider\", hospitals as defined in section 197.020 and ambulatory surgical centers and abortion facilities as defined in section 197.200;\n  (6)  \"Nosocomial infection\", as defined by the federal Centers for Disease Control and Prevention and applied to infections within hospitals, ambulatory surgical centers, abortion facilities, and other facilities;\n  (7)  \"Nosocomial infection incidence rate\", a risk-adjusted measurement of new cases of nosocomial infections by procedure or device within a population over a given period of time, with such measurements defined by rule of the department pursuant to subsection 3 of section 192.667 for use by all hospitals, ambulatory surgical centers, abortion facilities, and other facilities in complying with the requirements of the Missouri nosocomial infection control act of 2004;\n  (8)  \"Other facility\", a type of facility determined to be a source of infections and designated by rule of the department pursuant to subsection 11 of section 192.667;\n  (9)  \"Patient abstract data\", data submitted by hospitals which includes but is not limited to date of birth, sex, race, zip code, county of residence, admission date, discharge date, principal and other diagnoses, including external causes, principal and other procedures, procedure dates, total billed charges, disposition of the patient and expected source of payment with sources categorized according to Medicare, Medicaid, other government, workers' compensation, all commercial payors coded with a common code, self-pay, no charge and other.\n(L. 1992 H.B. 1574 § 5 merged with S.B. 721 § 1 merged with S.B. 796 § 14, A.L. 2004 S.B. 1279, A.L. 2017 2d Ex. Sess. S.B. 5)\nEffective 10-24-17",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=192.665",
+  "section_id": "192.665",
+  "chapter": "192",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

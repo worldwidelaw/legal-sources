@@ -1,21 +1,24 @@
-source_id: BR/TRF4
-name: "TRF-4 Federal Regional Court (4th Region - RS/PR/SC)"
-description: >
-  Court decisions from the Tribunal Regional Federal da 4ª Região via the
-  eproc2 jurisprudence portal at jurisprudencia.trf4.jus.br. TRF-4 covers
-  Rio Grande do Sul, Paraná and Santa Catarina. Full text fetched from the
-  download_inteiro_teor endpoint. Tens of thousands of decisions available.
-base_url: "https://jurisprudencia.trf4.jus.br/eproc2trf4/"
-data_types:
-  - case_law
-country: BR
-language: pt
 auth:
   type: none
+base_url: https://jurisprudencia.trf4.jus.br/eproc2trf4/
+country: BR
+data_types:
+- case_law
+description: 'Court decisions from the Tribunal Regional Federal da 4ª Região via the eproc2 jurisprudence portal at jurisprudencia.trf4.jus.br. TRF-4 covers Rio Grande do Sul, Paraná and Santa Catarina.
+  Full text fetched from the download_inteiro_teor endpoint. Tens of thousands of decisions available.
+
+  '
+language: pt
+name: TRF-4 Federal Regional Court (4th Region - RS/PR/SC)
 rate_limit:
-  requests_per_second: 0.5
   burst: 2
+  requests_per_second: 0.5
 schema:
   key_fields:
-    - _id
-    - process_number
+  - name: _id
+    required: true
+    type: string
+  - name: process_number
+    required: false
+    type: string
+source_id: BR/TRF4

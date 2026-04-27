@@ -18,7 +18,7 @@ source:
 
 schema:
   key_fields:
-    - name: productId
+    - name: "_id"
       type: integer
       required: true
     - name: text

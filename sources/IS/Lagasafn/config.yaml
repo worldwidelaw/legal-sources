@@ -1,33 +1,34 @@
-source:
-  id: IS/Lagasafn
-  name: Lagasafn - Icelandic Consolidated Legislation
-  country: 'IS'
-  url: https://www.althingi.is/lagasafn/
-
 api:
-  type: bulk_download
-  base_url: https://www.althingi.is/lagasafn
   auth: none
+  base_url: https://www.althingi.is/lagasafn
+  current_version: 156b
   endpoints:
-    zip_download: /zip/{version}/allt.zip
     versions_list: /zip-skra-af-lagasafni/
-  current_version: '156b'  # September 2025 compilation
+    zip_download: /zip/{version}/allt.zip
   rate_limit:
-    requests_per_minute: 30
     delay_seconds: 2
-
+    requests_per_minute: 30
+  type: bulk_download
 data:
-  format: html
-  language: isl  # Icelandic
   encoding: utf-8
-  license: Public Domain  # Icelandic government publications
-
+  format: html
+  language: isl
+  license: Public Domain
 schema:
   key_fields:
-    - law_number
-    - year
+  - name: law_number
+    required: false
+    type: string
+  - name: year
+    required: false
+    type: string
   required_fields:
-    - title
-    - text
-    - date
-    - url
+  - title
+  - text
+  - date
+  - url
+source:
+  country: IS
+  id: IS/Lagasafn
+  name: Lagasafn - Icelandic Consolidated Legislation
+  url: https://www.althingi.is/lagasafn/

@@ -39,7 +39,7 @@ data_model:
 schema:
   total_fields: 8
   key_fields:
-    - name: "doc_id"
+    - name: "_id"
       description: "Unique document ID from Solr"
       type: "string"
       role: "primary_key"

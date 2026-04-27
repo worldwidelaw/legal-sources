@@ -1,0 +1,14 @@
+{
+  "_id": "EE-EMTA-erisoodustus-2020",
+  "_source": "EE/EMTA-TaxRulings",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-30T20:38:46.318605+00:00",
+  "title": "Siduvad eelotsused",
+  "text": "2020 IV kvartal\n\nTaotleja palus vastust järgmistele küsimustele:\n\nKas olukorras, kus töötaja annab optsiooni realiseerimise käigus ning vahetult enne (100%-list) exit’it või exit’i käigus optsioonist tuleneva optsiooni aktsiate või exit’i tulemi saamise õiguse mitterahalise sissemaksena üle tema kontrolli all olevale ühingule, kohaldub TuMS § 48 lõikes 53 sätestatud maksuvabastus ning tehing on maksuneutraalne nii äriühingu kui töötaja seisukohast?\n\nOlukorras, kus töötaja annab optsiooni täitmisel (realiseerimisel) exit’i korral rahalise hüvitise enda 100%-lise osalusega äriühingule, kohaldub TuMS § 48 lõike 53 alusel maksuvabastus ulatuses, mis vastab optsiooni hoidmise ajale. Töötajal tekib rahalisest hüvitisest kasu aktsiate võõrandamisest ja tulumaksukohustus oma tuludeklaratsiooni alusel.\n\nKas TuMS § 48 lõikes 53 sätestatud maksuvabastus kohalduks ka siis, kui optsioonileping oleks kohe algusest peale sõlmitud töötaja kontrolli all oleva ühinguga või lubaks osaluse üle andmist otse töötaja kontrolli all olevale ühingule, kuid optsiooni välja teenimine oleks sõltuvusse seatud töötaja töötamisest äriühingus?\n\nOlukorras, kus optsioonileping sõlmitakse töötaja 100%-lise osalusega äriühinguga või lubatakse optsioonilepingu alusvara üleandmist otse töötaja 100%-lise osalusega äriühingule, kuid osaluse väljateenimine oleks sõltuvusse seatud töötaja töötamisega taotleja juures, ei kohaldu TuMS § 48 lõikes 53 toodud maksuvabastus.\n\nTuMS § 48 lõike 53 puhul on oluline, et säte kohaldub olukorras, kus osalusoptsioon antakse töötajale ning osalusoptsiooni alusvara on osalus tööandjas või tööandjaga samasse kontserni kuuluvas äriühingus. Samuti on sätte kohaldamisel oluline, et optsiooni täitmisel vähemalt kolm aastat pärast optsiooni andmist ei maksustata tekkivat hüve erisoodustusena, vaid tulevikus töötaja kasuna vara võõrandamisest.",
+  "date": "2020-01-01",
+  "url": "https://www.emta.ee/eraklient/maksud-ja-tasumine/tasumine-volad/siduvad-eelotsused/erisoodustus-2020",
+  "language": "et",
+  "topic": "Fringe benefits",
+  "tax_category": "Income Tax",
+  "year": "2020"
+}

@@ -7,7 +7,7 @@ This source fetches parliamentary debate transcripts from the Latvian Saeima (Pa
 **Source URL:** https://www.saeima.lv/lv/transcripts/
 **Data Type:** Parliamentary proceedings (stenogrammas)
 **Language:** Latvian
-**License:** Public domain (government documents)
+**License:** Public domain — official [Saeima](https://www.saeima.lv) government documents
 
 ## Coverage
 
@@ -58,6 +58,10 @@ python bootstrap.py bootstrap
 # Incremental update (recent transcripts only)
 python bootstrap.py update
 ```
+
+## License
+
+Public domain — official Latvian parliamentary proceedings.
 
 ## Notes
 

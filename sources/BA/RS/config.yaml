@@ -1,71 +1,69 @@
-source_id: BA/RS
-name: Republika Srpska Legislation
-description: |
-  Legislation from Republika Srpska (one of the two entities of Bosnia and Herzegovina).
+auth: none
+country: BA
+data_types:
+- legislation
+description: 'Legislation from Republika Srpska (one of the two entities of Bosnia and Herzegovina).
+
   Fetches consolidated legislation from Paragraf BA, which provides free public access
+
   to key RS laws, regulations, and decisions originally published in Službeni glasnik
+
   Republike Srpske (Official Gazette of Republika Srpska).
 
-country: BA
-region: Republika Srpska
-data_types:
-  - legislation
-
-url: https://www.paragraf.ba/besplatni-propisi-republike-srpske.html
+  '
+license: public
+name: Republika Srpska Legislation
+notes: "- Source provides ~160+ key legislation documents\n- All documents have full text in HTML format\n- Documents are consolidated/precisceni versions with amendments incorporated\n- Covers major laws\
+  \ (zakon/zakonik), regulations (uredba), rulebooks (pravilnik),\n  and decisions (odluka)\n- Complements BA/SluzbenGlasnik (state-level) and BA/FBiH (Federation of BiH)\n"
 official_gazette: Službeni glasnik Republike Srpske
-license: public  # Free public access via Paragraf BA
-
-auth: none
-
+region: Republika Srpska
 schedule:
   bootstrap: manual
   updates: weekly
-
 schema:
-  key_fields:
-    - _id
-    - gazette_number
-    - slug
-
   fields:
-    _id:
-      type: string
-      description: Unique document identifier
-    _source:
-      type: string
-      description: Source identifier (BA/RS)
-    _type:
-      type: string
-      description: Document type (legislation)
     _fetched_at:
-      type: datetime
       description: ISO 8601 timestamp of fetch
-    title:
+      type: datetime
+    _id:
+      description: Unique document identifier
       type: string
-      description: Document title
-    text:
+    _source:
+      description: Source identifier (BA/RS)
       type: string
-      description: Full text of the legislation
+    _type:
+      description: Document type (legislation)
+      type: string
     date:
-      type: date
       description: Publication date in gazette
-    url:
-      type: string
-      description: Link to original document
-    gazette_number:
-      type: string
-      description: Official gazette issue number (e.g., "64/2017")
+      type: date
     doc_type:
-      type: string
       description: Document type (zakon, uredba, pravilnik, odluka, etc.)
-    language:
       type: string
+    gazette_number:
+      description: Official gazette issue number (e.g., "64/2017")
+      type: string
+    language:
       description: Language code (sr - Serbian)
-
-notes: |
-  - Source provides ~160+ key legislation documents
-  - All documents have full text in HTML format
-  - Documents are consolidated/precisceni versions with amendments incorporated
-  - Covers major laws (zakon/zakonik), regulations (uredba), rulebooks (pravilnik),
-    and decisions (odluka)
-  - Complements BA/SluzbenGlasnik (state-level) and BA/FBiH (Federation of BiH)
+      type: string
+    text:
+      description: Full text of the legislation
+      type: string
+    title:
+      description: Document title
+      type: string
+    url:
+      description: Link to original document
+      type: string
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: gazette_number
+    required: false
+    type: string
+  - name: slug
+    required: false
+    type: string
+source_id: BA/RS
+url: https://www.paragraf.ba/besplatni-propisi-republike-srpske.html

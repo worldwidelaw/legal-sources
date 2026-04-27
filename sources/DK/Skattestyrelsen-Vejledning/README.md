@@ -21,3 +21,7 @@ python bootstrap.py test                # Connectivity test
 python bootstrap.py bootstrap --sample  # Fetch 15 sample records
 python bootstrap.py bootstrap           # Full crawl (~9,200 sections)
 ```
+
+## License
+
+[Open Data](https://info.skat.dk) — Danish tax guidance is publicly available from Skattestyrelsen.

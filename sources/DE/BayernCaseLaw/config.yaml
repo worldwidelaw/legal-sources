@@ -1,0 +1,61 @@
+source_id: DE/BayernCaseLaw
+name: Bayern State Court Decisions (BAYERN.RECHT)
+description: Bavarian court decisions via gesetze-bayern.de
+url: https://www.gesetze-bayern.de/
+country: DE
+jurisdiction: Bayern
+data_types:
+  - case_law
+
+access:
+  type: html_scraping
+  rate_limit: 0.5/s
+  auth: none
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: doc_id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: court
+      type: string
+      required: false
+    - name: case_number
+      type: string
+      required: false
+    - name: ecli
+      type: string
+      required: false
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: false
+  text_field: text
+  date_field: date
+  title_field: title
+
+update:
+  frequency: weekly
+  method: fetch_updates
+
+license:
+  type: public_domain
+  notes: German official works (§ 5 UrhG) - public domain.
+
+notes: |
+  Bayern (Bavaria) court decisions from BAYERN.RECHT portal.
+  Custom ASP.NET MVC application (NOT jPortal).
+  ~24,662 decisions across all Bavarian court branches.
+  Approach: session-based pagination through search results,
+  then HTML document fetch for full text.

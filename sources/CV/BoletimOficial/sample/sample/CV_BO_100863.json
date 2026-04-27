@@ -1,0 +1,27 @@
+{
+  "_id": "CV_BO_100863",
+  "_source": "CV/BoletimOficial",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-16T22:58:15.753684+00:00",
+  "title": "Deliberação n.º 11/AMRB/2025",
+  "text": "Submetida sob proposta da Câmara Municipal da Ribeira Brava, reunida na sua 3a. Sessão Extraordinária, do dia 09 de maio de 2025, para objeto de apreciação e aprovação, a Assembleia Municipal da Ribeira Brava, no uso das suas competências genéricas, artigo 4.o, alínea 2, reunida na sua II Sessão ordinária de 23 de maio, deliberou o seguinte: \n\nArtigo único\n\n(Aprovação)\n\nAprovar por unanimidade dos votos a deliberação que autoriza a Câmara Municipal da Ribeira Brava a aceder aos financiamentos do Plano de Acesso à Energia Sustentável e Ação Climática (SEACAP). \n\nAssembleia Municipal da Ribeira Brava, aos 23 de maio de 2025. — O Presidente da Assembleia Municipal, Januário Arlindo da Graça Gomes.",
+  "date": "2026-04-16",
+  "url": "https://boe.incv.cv/Bulletins/View/100863",
+  "ref_act": 39033,
+  "part": {
+    "id": 7,
+    "code": "G",
+    "description": "G - Autarquias locais",
+    "hide": false,
+    "refParent": 2,
+    "parent": {
+      "id": 2,
+      "description": "II Série",
+      "hide": false,
+      "order": 0
+    },
+    "order": 0
+  },
+  "entities": [],
+  "language": "pt"
+}

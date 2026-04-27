@@ -1,39 +1,43 @@
-source:
-  id: GR/ADAE
-  country: GR
-  name: Hellenic Authority for Communication Security and Privacy (ADAE)
-  name_native: Αρχή Διασφάλισης του Απορρήτου των Επικοινωνιών
-  url: https://adae.gov.gr
-  data_url: https://diavgeia.gov.gr/luminapi/opendata
-  description: >
-    Greek communication privacy authority decisions. Fetches from the Diavgeia
-    transparency portal. Covers regulatory acts (2.4.7.1) — inspection approvals,
-    policy decisions, audit group formations.
-  data_types:
-    - doctrine
-  auth: none
-  license: CC-BY
-  coverage:
-    start_date: "2010-01-01"
-    jurisdictions:
-      - GR
-  update_frequency: daily
-  notes: >
-    ADAE oversees communication privacy and security in Greece.
-    Data accessed via Diavgeia API using organization UID 22794.
-    ~10,000+ decisions available.
-
 api:
   base_url: https://diavgeia.gov.gr/luminapi
-  organization_uid: "22794"
   decision_types:
-    - "2.4.7.1"  # ΠΡΑΞΗ ΑΝΕΞΑΡΤΗΤΗΣ ΑΡΧΗΣ (Independent Authority Act)
-  rate_limit: 2.0
+  - 2.4.7.1
+  organization_uid: '22794'
   page_size: 50
-
+  rate_limit: 2.0
 schema:
   key_fields:
-    - ada
-    - subject
-    - issue_date
-    - protocol_number
+  - name: ada
+    required: false
+    type: string
+  - name: subject
+    required: false
+    type: string
+  - name: issue_date
+    required: false
+    type: string
+  - name: protocol_number
+    required: false
+    type: string
+source:
+  auth: none
+  country: GR
+  coverage:
+    jurisdictions:
+    - GR
+    start_date: '2010-01-01'
+  data_types:
+  - doctrine
+  data_url: https://diavgeia.gov.gr/luminapi/opendata
+  description: 'Greek communication privacy authority decisions. Fetches from the Diavgeia transparency portal. Covers regulatory acts (2.4.7.1) — inspection approvals, policy decisions, audit group formations.
+
+    '
+  id: GR/ADAE
+  license: CC-BY
+  name: Hellenic Authority for Communication Security and Privacy (ADAE)
+  name_native: Αρχή Διασφάλισης του Απορρήτου των Επικοινωνιών
+  notes: 'ADAE oversees communication privacy and security in Greece. Data accessed via Diavgeia API using organization UID 22794. ~10,000+ decisions available.
+
+    '
+  update_frequency: daily
+  url: https://adae.gov.gr

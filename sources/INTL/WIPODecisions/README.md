@@ -22,3 +22,7 @@ python bootstrap.py test                  # Test connectivity
 python bootstrap.py bootstrap --sample    # Fetch 15 sample records
 python bootstrap.py bootstrap             # Full bootstrap (44K+ records)
 ```
+
+## License
+
+[WIPO Terms of Use](https://www.wipo.int/tools/en/disclaimer.html) — UDRP decisions are publicly available. Verify WIPO terms before commercial redistribution.

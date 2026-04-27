@@ -1,0 +1,65 @@
+# ===================================================================
+# TT/TTSEC -- Trinidad & Tobago Securities Exchange Commission
+# ===================================================================
+# Enforcement orders, regulatory notices, guidelines, and circulars
+# from the TTSEC. Content accessed via WordPress REST API with
+# full text extracted from linked PDFs.
+# ===================================================================
+
+source:
+  id: "TT/TTSEC"
+  country: "TT"
+  name: "Trinidad & Tobago Securities Exchange Commission"
+  url: "https://www.ttsec.org.tt/"
+  description: |
+    Enforcement orders (contravention, administrative fines, settlement,
+    delisting/deregistration), notices, investor alerts, guidelines,
+    circulars, and regulatory rules from the TTSEC. Published on
+    WordPress, accessed via WP REST API with PDF full text extraction.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  notes: "WordPress site on Nginx/Plesk. No rate limiting observed."
+
+api:
+  type: "rest"
+  base_url: "https://www.ttsec.org.tt"
+  endpoints:
+    posts: "/wp-json/wp/v2/posts?per_page=100&categories={cats}&page={page}"
+  response_format: "json"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "_id"
+      description: "WordPress post ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF or HTML"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to original document"
+      type: "string"
+      role: "reference"
+      required: true

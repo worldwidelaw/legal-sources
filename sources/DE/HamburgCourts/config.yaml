@@ -1,0 +1,32 @@
+country: DE
+data_types:
+- caselaw
+endpoints:
+  ovg: https://justiz.hamburg.de/gerichte/oberverwaltungsgericht/entscheidungen
+  vg: https://justiz.hamburg.de/gerichte/verwaltungsgericht-hamburg/rechtsprechung
+fetcher:
+  max_retries: 3
+  rate_limit_ms: 2000
+  ssl_verify: true
+  timeout_s: 60
+language: de
+license:
+  name: Public Domain (Amtliche Werke)
+  notes: >
+    German court decisions are "amtliche Werke" (official works) which are
+    not protected by copyright under German law (§ 5 UrhG).
+  url: https://justiz.hamburg.de/impressum
+name: Hamburg State Court Decisions (OVG & VG)
+notes: >
+  Court decisions from Hamburg's administrative courts published as PDFs on
+  justiz.hamburg.de. Covers Oberverwaltungsgericht (OVG, Higher Administrative Court)
+  and Verwaltungsgericht (VG, Administrative Court) from ~2010 onward.
+  Decisions of general interest are published with full text as PDF downloads.
+schema:
+  date_format: ISO8601
+  key_fields:
+  - name: aktenzeichen
+    required: true
+    type: string
+  text_field: text
+source_id: DE/HamburgCourts

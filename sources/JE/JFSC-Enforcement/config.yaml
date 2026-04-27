@@ -1,0 +1,77 @@
+# ===================================================================
+# JE/JFSC-Enforcement -- Jersey Financial Services Commission
+# ===================================================================
+# Public statements covering enforcement actions, sanctions, restricted
+# persons, and regulatory warnings. Full text from inline HTML on
+# detail pages. ~303 public statements (1999-present).
+# No authentication required.
+# ===================================================================
+
+source:
+  id: "JE/JFSC-Enforcement"
+  country: "JE"
+  name: "Jersey Financial Services Commission Enforcement Actions"
+  url: "https://www.jerseyfsc.org/news-and-events/"
+  description: |
+    Enforcement actions and public statements from the JFSC.
+    Covers civil financial penalties, restricted persons, scam warnings,
+    and unauthorized entity notices. Full text from inline HTML.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://www.jerseyfsc.org"
+  endpoints:
+    news_search: "/umbraco/api/NewsSearch/GetResults"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "upsert"
+  dedup_key:
+    - "slug"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "slug"
+      description: "URL slug identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Public statement title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the enforcement action"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the public statement page"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "doc_type"
+      description: "Document type (Public statement)"
+    - name: "summary"
+      description: "Brief summary from the listing API"
+    - name: "categories"
+      description: "Categories (Restricted persons, Scams, etc.)"

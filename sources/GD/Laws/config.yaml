@@ -1,0 +1,50 @@
+source:
+  id: GD/Laws
+  name: Laws of Grenada
+  country: GD
+  url: https://laws.gov.gd/
+  description: >
+    Consolidated legislation of Grenada from the official Laws of Grenada portal
+    (Attorney General). ~345 chapters organized alphabetically plus Statutory Rules
+    and Orders (SROs). Full text extracted from PDFs.
+
+data_model:
+  types:
+    - legislation
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: chapter_number
+      type: string
+      required: false
+    - name: pdf_url
+      type: string
+      required: false
+    - name: category
+      type: string
+      required: false
+
+schedule:
+  full_refresh: quarterly
+  update_check: monthly

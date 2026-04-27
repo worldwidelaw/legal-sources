@@ -45,7 +45,7 @@ data_model:
 schema:
   total_fields: 15
   key_fields:
-    - name: "AnnotationId"
+    - name: "_id"
       description: "Unique UUID for each recommendation/observation"
       type: "string"
       role: "primary_key"
@@ -55,22 +55,22 @@ schema:
       type: "string"
       role: "content"
       required: true
-    - name: "Symbol"
+    - name: "symbol"
       description: "UN document symbol (e.g., E/C.12/AUS/CO/6)"
       type: "string"
       role: "reference"
       required: true
-    - name: "Body"
+    - name: "body"
       description: "UN mechanism body (CESCR, CCPR, UPR, etc.)"
       type: "string"
       role: "classification"
       required: true
-    - name: "Countries"
+    - name: "countries"
       description: "List of countries the recommendation applies to"
       type: "array"
       role: "classification"
       required: true
-    - name: "PublicationDate"
+    - name: "date"
       description: "Date of publication (ISO 8601)"
       type: "date"
       role: "temporal_key"

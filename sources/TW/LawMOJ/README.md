@@ -46,3 +46,7 @@ python bootstrap.py bootstrap --sample   # 15 sample records
 python bootstrap.py bootstrap            # Full pull (11,752+ laws)
 python bootstrap.py test-api             # Connectivity test
 ```
+
+## License
+
+[Government Open Data License (Taiwan)](https://data.gov.tw/license) — official legislation published by the Ministry of Justice, Republic of China (Taiwan).

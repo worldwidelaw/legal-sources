@@ -396,6 +396,7 @@ def main():
                        help="Number of sample records to fetch")
     parser.add_argument('--since', type=str,
                        help="Fetch updates since date (ISO format)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

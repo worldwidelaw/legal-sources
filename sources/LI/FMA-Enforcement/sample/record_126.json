@@ -1,0 +1,14 @@
+{
+  "_id": "warning-en-224",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:52.046081Z",
+  "title": "[Warning] Warning: DGS Marine Group / British European Overseas P&I",
+  "text": "DGS Marine Group SA/The British European &amp; Overseas P&amp;I Insurance have no licence of the FMA Liechtenstein to provide insurance business or insurance intermediary services.   The Liechtenstein Financial Market Authority (FMA) alerts that neither DGS Marine Group SA, with headquarters in Schaan, nor the British European Overseas P&amp;I (BE&amp;O) have a license to conduct insurance business or provide insurance intermediary services in or out of Liechtenstein. Activities pursuant to the Insurance Supervision Act and to the Insurance Mediation Act require a regulatory licence by the FMA. Via its homepage, the impression was given that DGS Marine Group SA provides insurance business as an “Agent to the Manager” of the BE&amp;O.",
+  "date": "2012-07-22",
+  "url": "https://www.fma-li.li/en/warning/warning-dgs-marine-group-british-european-overseas-p-i-224",
+  "language": "eng",
+  "category": "Warning",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

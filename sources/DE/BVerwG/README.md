@@ -5,7 +5,7 @@
 - **Court**: Bundesverwaltungsgericht (BVerwG)
 - **Type**: Case Law
 - **Language**: German
-- **License**: Public Domain (§ 5 UrhG - amtliche Werke)
+- **License**: Public Domain ([§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html))
 - **Estimated Records**: ~10,000+
 
 ## Data Access
@@ -49,3 +49,7 @@ python3 bootstrap.py
 # Bootstrap sample (100 decisions)
 python3 bootstrap.py bootstrap --sample
 ```
+
+## License
+
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).

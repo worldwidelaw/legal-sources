@@ -1,40 +1,44 @@
-source:
-  id: NO/DTIL
-  name: Norwegian Data Protection Authority (Datatilsynet)
-  country: 'NO'
-  url: https://www.datatilsynet.no
-  type: doctrine
-
 api:
-  type: html_crawl
-  base_url: https://www.datatilsynet.no
   auth: none
-  seed_paths:
-    - /rettigheter-og-plikter/
-    - /personvern-pa-ulike-omrader/
-    - /regelverk-og-verktoy/
+  base_url: https://www.datatilsynet.no
   rate_limit:
-    requests_per_minute: 30
     delay_seconds: 1.5
-
+    requests_per_minute: 30
+  seed_paths:
+  - /rettigheter-og-plikter/
+  - /personvern-pa-ulike-omrader/
+  - /regelverk-og-verktoy/
+  type: html_crawl
 data:
-  format: html
-  language: nob
-  encoding: utf-8
-  license: NLOD 2.0 (Norwegian License for Open Government Data)
   coverage:
     estimated_records: 600
-  notes: |
-    Data protection guidance, regulatory doctrine, and sector-specific
+  encoding: utf-8
+  format: html
+  language: nob
+  license: NLOD 2.0 (Norwegian License for Open Government Data)
+  notes: 'Data protection guidance, regulatory doctrine, and sector-specific
+
     privacy guidance from the Norwegian DPA. Episerver CMS with no API
+
     or sitemap — requires recursive HTML crawl from seed pages.
 
+    '
 schema:
   key_fields:
-    - _id
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: url
+    required: true
+    type: string
   required_fields:
-    - title
-    - text
-    - date
-    - url
+  - title
+  - text
+  - date
+  - url
+source:
+  country: 'NO'
+  id: NO/DTIL
+  name: Norwegian Data Protection Authority (Datatilsynet)
+  type: doctrine
+  url: https://www.datatilsynet.no

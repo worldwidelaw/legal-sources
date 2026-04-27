@@ -119,6 +119,21 @@ def _extract_text_docx(content: bytes) -> Optional[str]:
 
 def _extract_text_pdf(content: bytes) -> Optional[str]:
     """Extract text from a PDF file."""
+    if not content or content[:4] != b"%PDF":
+        return None
+    try:
+        text = extract_pdf_markdown(
+            source="AU/WA-Legislation",
+            source_id="",
+            pdf_bytes=content,
+            table="legislation",
+        )
+        return text if text and len(text) > 50 else None
+    except Exception as e:
+        logger.debug(f"PDF extraction failed: {e}")
+        return None
+
+
 def _parse_act_number(number_str: str) -> tuple:
     """Parse act number like '024 of 1972' into (number, year)."""
     match = re.search(r'(\d+)\s+of\s+(\d{4})', number_str)
@@ -267,6 +282,7 @@ def main():
     parser = argparse.ArgumentParser(description="AU/WA-Legislation data fetcher")
     parser.add_argument("command", choices=["bootstrap", "update", "test"])
     parser.add_argument("--sample", action="store_true", help="Sample mode (15 records)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = Scraper()

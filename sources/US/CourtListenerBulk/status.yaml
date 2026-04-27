@@ -1,0 +1,30 @@
+last_bootstrap: null
+last_error: null
+last_run: '2026-04-25T00:32:10.435267+00:00'
+run_history:
+- candidates_scanned: 0
+  clusters_in_pool: 200000
+  dockets_matched: 1969
+  dump_date: '2026-03-31'
+  finished_at: '2026-04-25T00:21:47.746975+00:00'
+  joined_cluster_ids: 2000
+  mode: sample
+  sample_records_saved: 0
+  started_at: '2026-04-25T00:19:36.351590+00:00'
+- clusters_matched: 360
+  dockets_matched: 89
+  dump_date: '2026-03-31'
+  finished_at: '2026-04-25T00:28:33.769494+00:00'
+  mode: sample
+  opinions_in_pool: 5000
+  sample_records_saved: 12
+  started_at: '2026-04-25T00:25:13.799126+00:00'
+- clusters_matched: 360
+  dockets_matched: 89
+  dump_date: '2026-03-31'
+  finished_at: '2026-04-25T00:32:10.435267+00:00'
+  mode: sample
+  opinions_in_pool: 5000
+  sample_records_saved: 12
+  started_at: '2026-04-25T00:29:31.486717+00:00'
+total_records: 0

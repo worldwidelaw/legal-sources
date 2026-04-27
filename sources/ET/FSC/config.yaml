@@ -1,0 +1,29 @@
+source_id: "ET/FSC"
+name: "Ethiopian Federal Supreme Court - Digital Law Library"
+country: ET
+url: "https://www.fsc.gov.et/Digital-Law-Library/Federal-Laws"
+description: >
+  Official digital law library of the Federal Supreme Court of Ethiopia.
+  Contains federal legislation (proclamations, regulations) and court
+  judgments (cassation decisions, supreme court decisions) in Amharic.
+
+data_types:
+  - legislation
+  - case_law
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url

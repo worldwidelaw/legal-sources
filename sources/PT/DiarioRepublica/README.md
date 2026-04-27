@@ -120,8 +120,7 @@ python bootstrap.py update
 
 ## License
 
-The official Diário da República is open government data. The dre.tretas.org
-mirror operates under GPL v3 with its source code available on GitLab.
+[Open Government Data](https://dados.gov.pt) — the official Diario da Republica is freely reusable. The dre.tretas.org mirror operates under GPL v3 with its source code available on GitLab.
 
 ## Notes
 

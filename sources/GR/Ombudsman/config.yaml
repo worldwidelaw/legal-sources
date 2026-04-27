@@ -1,42 +1,45 @@
-source:
-  id: GR/Ombudsman
-  country: GR
-  name: Greek Ombudsman (Synigoros tou Politi)
-  name_native: Συνήγορος του Πολίτη
-  url: https://www.synigoros.gr
-  data_url: https://www.synigoros.gr/api/posts
-  description: >
-    Greek Ombudsman investigation findings, mediation summaries, special reports,
-    and annual reports. Nuxt.js site with JSON API. ~2,154 posts across
-    multiple categories: porismata (findings), mediation summaries, special
-    reports, annual reports, press releases.
-  data_types:
-    - doctrine
-  auth: none
-  license: Public
-  coverage:
-    start_date: "1998-01-01"
-    jurisdictions:
-      - GR
-  update_frequency: weekly
-  notes: >
-    Nuxt.js site with REST API. /api/posts returns all 2154 posts.
-    /api/posts/{id} for individual post. /api/files/download/{fileId} for PDFs.
-    File IDs found in NUXT SSR state, not in API response directly.
-    Post descriptions contain HTML summaries. Full text in linked PDFs.
-    Category 113 = synopseis-porismata (investigation findings).
-
 api:
   base_url: https://www.synigoros.gr
-  posts_endpoint: /api/posts
-  post_endpoint: /api/posts/{id}
-  files_endpoint: /api/files/download/{fileId}
   categories_endpoint: /api/categories
+  files_endpoint: /api/files/download/{fileId}
+  post_endpoint: /api/posts/{id}
+  posts_endpoint: /api/posts
   rate_limit: 2.0
-
 schema:
   key_fields:
-    - id
-    - name
-    - slug
-    - date
+  - name: id
+    required: false
+    type: string
+  - name: name
+    required: false
+    type: string
+  - name: slug
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+source:
+  auth: none
+  country: GR
+  coverage:
+    jurisdictions:
+    - GR
+    start_date: '1998-01-01'
+  data_types:
+  - doctrine
+  data_url: https://www.synigoros.gr/api/posts
+  description: 'Greek Ombudsman investigation findings, mediation summaries, special reports, and annual reports. Nuxt.js site with JSON API. ~2,154 posts across multiple categories: porismata (findings),
+    mediation summaries, special reports, annual reports, press releases.
+
+    '
+  id: GR/Ombudsman
+  license: Public
+  name: Greek Ombudsman (Synigoros tou Politi)
+  name_native: Συνήγορος του Πολίτη
+  notes: 'Nuxt.js site with REST API. /api/posts returns all 2154 posts. /api/posts/{id} for individual post. /api/files/download/{fileId} for PDFs. File IDs found in NUXT SSR state, not in API response
+    directly. Post descriptions contain HTML summaries. Full text in linked PDFs. Category 113 = synopseis-porismata (investigation findings).
+
+    '
+  update_frequency: weekly
+  url: https://www.synigoros.gr

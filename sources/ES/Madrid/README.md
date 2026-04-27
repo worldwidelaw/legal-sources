@@ -7,7 +7,7 @@ Official gazette of the Community of Madrid containing regional legislation, reg
 - **URL**: https://www.bocm.es
 - **Type**: legislation
 - **Language**: Spanish
-- **License**: Open Data (free public access per Decree 2/2010)
+- **License**: Open Data (see [License](#license) below)
 - **Auth**: None required
 
 ## API Access
@@ -69,6 +69,10 @@ python bootstrap.py update
 - Published Monday through Saturday (excluding Sundays and holidays)
 - Multiple documents per bulletin (typically 10-100+ per day)
 - Document types include: Leyes, Decretos, Órdenes, Resoluciones, Correcciones, etc.
+
+## License
+
+Open government data under [Spanish Reuse of Public Sector Information regulations](https://datos.gob.es/en/terms). Free public access per Decree 2/2010.
 
 ## Notes
 - Full text is always available via XML endpoint

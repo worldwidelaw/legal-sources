@@ -1,27 +1,39 @@
-source:
-  id: IE/Revenue
-  name: Irish Revenue Commissioners
-  country: IE
-  url: https://www.revenue.ie
-  data_types:
-    - doctrine
-  auth: none
-  license: public_domain
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - category
-    - part
-    - url
-
 fetch:
-  method: html_scraping
   base_url: https://www.revenue.ie
-  tdm_root: /en/tax-professionals/tdm/index.aspx
   ebrief_root: /en/tax-professionals/ebrief/index.aspx
+  method: html_scraping
   rate_limit:
     delay_seconds: 1.0
+  tdm_root: /en/tax-professionals/tdm/index.aspx
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: category
+    required: false
+    type: string
+  - name: part
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: IE
+  data_types:
+  - doctrine
+  id: IE/Revenue
+  license: public_domain
+  name: Irish Revenue Commissioners
+  url: https://www.revenue.ie

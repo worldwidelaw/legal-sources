@@ -59,6 +59,30 @@ def get_session() -> requests.Session:
     return session
 
 
+def _retry_get(session: requests.Session, url: str, params: dict,
+               timeout: int = 60, max_retries: int = 3) -> requests.Response:
+    """GET with exponential backoff retry on 5xx / connection errors."""
+    for attempt in range(max_retries):
+        try:
+            resp = session.get(url, params=params, timeout=timeout)
+            if resp.status_code >= 500 and attempt < max_retries - 1:
+                wait = DELAY * (2 ** attempt)
+                logger.warning(f"  {resp.status_code} on attempt {attempt+1}, retrying in {wait:.0f}s")
+                time.sleep(wait)
+                continue
+            resp.raise_for_status()
+            return resp
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.Timeout) as e:
+            if attempt < max_retries - 1:
+                wait = DELAY * (2 ** attempt)
+                logger.warning(f"  Connection error on attempt {attempt+1}: {e}, retrying in {wait:.0f}s")
+                time.sleep(wait)
+            else:
+                raise
+    raise requests.exceptions.RetryError(f"Failed after {max_retries} attempts")
+
+
 def search_cases(session: requests.Session, state: str) -> Optional[str]:
     """Search for enforcement cases in a state, return QID."""
     url = f"{API_BASE}/case_rest_services.get_cases"
@@ -69,8 +93,7 @@ def search_cases(session: requests.Session, state: str) -> Optional[str]:
         "p_per_page": 1,
     }
     try:
-        resp = session.get(url, params=params, timeout=60)
-        resp.raise_for_status()
+        resp = _retry_get(session, url, params)
         data = resp.json()
         results = data.get("Results", {})
         if results.get("Message") == "Success":
@@ -97,8 +120,7 @@ def get_cases_page(session: requests.Session, qid: str, page: int) -> List[Dict]
         "pagesize": PAGE_SIZE,
     }
     try:
-        resp = session.get(url, params=params, timeout=60)
-        resp.raise_for_status()
+        resp = _retry_get(session, url, params)
         data = resp.json()
         cases = data.get("Results", {}).get("Cases", [])
         return cases if cases else []
@@ -112,8 +134,7 @@ def get_case_report(session: requests.Session, case_number: str) -> Optional[Dic
     url = f"{API_BASE}/case_rest_services.get_case_report"
     params = {"output": "JSON", "p_id": case_number}
     try:
-        resp = session.get(url, params=params, timeout=60)
-        resp.raise_for_status()
+        resp = _retry_get(session, url, params)
         data = resp.json()
         results = data.get("Results", {})
         if results.get("Message") == "Success":
@@ -439,12 +460,11 @@ def test_connectivity() -> bool:
     session = get_session()
     try:
         # Test case search
-        resp = session.get(
+        resp = _retry_get(session,
             f"{API_BASE}/case_rest_services.get_cases",
             params={"output": "JSON", "p_state": "NY", "p_per_page": 1},
             timeout=15,
         )
-        resp.raise_for_status()
         data = resp.json()
         qid = data.get("Results", {}).get("QueryID")
         total = data.get("Results", {}).get("QueryRows", "0")
@@ -452,12 +472,11 @@ def test_connectivity() -> bool:
 
         # Test case report
         time.sleep(1)
-        resp2 = session.get(
+        resp2 = _retry_get(session,
             f"{API_BASE}/case_rest_services.get_case_report",
             params={"output": "JSON", "p_id": "01-2003-0107"},
             timeout=15,
         )
-        resp2.raise_for_status()
         data2 = resp2.json()
         summary = data2.get("Results", {}).get("CaseInformation", {}).get("CaseSummary", "")
         logger.info(f"Report OK: CaseSummary length={len(summary)}")

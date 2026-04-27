@@ -1,0 +1,71 @@
+# ===================================================================
+# CN/CNIPA -- China National Intellectual Property Administration (国家知识产权局)
+# ===================================================================
+# IP regulations, patent/trademark laws, examination guidelines,
+# policy interpretations, announcements, and administrative decisions.
+# ~2,300+ documents with full text via XML dataproxy API + HTML pages.
+# ===================================================================
+
+source:
+  id: "CN/CNIPA"
+  country: "CN"
+  name: "China National Intellectual Property Administration (国家知识产权局)"
+  url: "https://www.cnipa.gov.cn/"
+  description: |
+    Official publications of the China National Intellectual Property
+    Administration. Includes patent laws, trademark regulations, department
+    rules, examination guidelines, policy interpretations, announcements,
+    notices, and pharmaceutical patent administrative decisions.
+    ~2,300+ documents. Chinese language. Free access via XML dataproxy API.
+
+data_types:
+  - legislation
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "Conservative rate limit for Chinese government servers."
+
+api:
+  type: "rest"
+  base_url: "https://www.cnipa.gov.cn"
+  endpoints:
+    dataproxy: "/module/web/jpage/dataproxy.jsp?page={page}&webid=1&columnid={col}&unitid={unit}&perpage={size}"
+    article: "/art/{YYYY}/{M}/{D}/art_{col}_{docid}.html"
+
+schema:
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document identifier from URL path (art_COL_DOCID)"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+    - name: "category"
+      description: "Document category (patent_law, trademark_regulation, announcement, etc.)"
+      type: "string"
+      role: "classification"
+
+notes: |
+  - XML dataproxy API at /module/web/jpage/dataproxy.jsp
+  - Multiple columns: patent laws (97), patent admin regs (98), patent dept rules (99),
+    trademark laws (95), trademark admin regs (96), trademark dept rules (3323),
+    GI laws (104), IC layout (106), announcements (74), notices (75),
+    policy interpretation (66), development planning (65), admin decisions (2432)
+  - Full text from HTML article pages (div.article-content)
+  - Admin decisions (2432) are PDF attachments
+  - Language: Chinese (Simplified)

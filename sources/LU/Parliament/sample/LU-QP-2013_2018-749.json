@@ -1,0 +1,20 @@
+{
+  "_id": "LU-QP-2013_2018-749",
+  "_source": "LU/Parliament",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-17T09:52:06.158294+00:00",
+  "title": "l’hébergement du site web www.budget.l",
+  "text": "QUESTION:\nSelon nos informations, le site Internet www.budget.public.lu n’est actuellement pas hébergé sur les serveurs du Centre des technologies de l’information de l’État, comme indiqué par Monsieur le Ministre des Finances dans sa réponse du 19 novembre à notre question parlementaire n°0646 (cf. compte rendu n° 4/2014-2015), mais sur les serveurs de la société anonyme Visual Online SA.\nDans ce contexte, nous aimerions poser les questions suivantes à Monsieur le Ministre des Finances:\n- Monsieur le Ministre peut-il confirmer ces informations?\n- Dans l’affirmative, pourquoi Monsieur le Ministre a-t-il indiqué des informations divergentes dans sa réponse à notre question parlementaire?\n- Quelles sont les raisons pour lesquelles le site web du budget public soit toujours hébergé sur les serveurs d’une société anonyme et pas rapatrié sur les serveurs de l’État?\n- Quels sont les coûts mensuels pour l’hébergement du site auprès de cette société anonyme?\n\nRÉPONSE:\nTel qu’il ressort de la réponse à la question parlementaire n°0522 (cf. compte rendu n°1/session extraordinaire 2013-2014), le développement du site Internet www.budget.public.lu a été confié à une société luxembourgeoise externe. En raison des délais, la société en question a également pris en charge l’hébergement, en attendant le transfert du site à une date ultérieure vers un des serveurs du CTIE. On peut préciser que le site est actuellement hébergé auprès de la société Visual Online SA, une filiale du groupe POST. Ce choix a été validé avec les responsables du CTIE. Deux raisons principales l’expliquent:\n- Les frais d’hébergement sont forfaitairement compris dans le prix total. Il n’y a pas de coûts mensuels de l’hébergement à charge de l’État. Un transfert vers les serveurs du CTIE aurait par contre généré des coûts supplémentaires.\n- Ce choix a été également motivé par le fait que le projet ne présente aucune donnée sensible. En effet, l’objectif du site est de rendre publiquement accessibles les données relatives au budget de l’État.",
+  "date": "2014-11-25",
+  "url": "https://www.chd.lu/fr/question/12894",
+  "legislature": "2013_2018",
+  "question_number": "749",
+  "author": "Mme Diane Adehm et M. Gilles Roth(CSV)",
+  "political_party": "CSV",
+  "languages": "FR",
+  "question_date": "2014-11-25",
+  "answer_date": "2014-12-22",
+  "answer_author": "M. Pierre Gramegna,Ministre des Finances",
+  "question_pdf_url": "https://wdocs-pub.chd.lu/docs/exped/172/359/137518.pdf",
+  "answer_pdf_url": "https://wdocs-pub.chd.lu/docs/exped/182/367/138616.pdf"
+}

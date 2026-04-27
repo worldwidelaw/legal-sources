@@ -34,3 +34,7 @@ python bootstrap.py bootstrap --sample   # Fetch sample data
 python bootstrap.py bootstrap            # Full data pull
 python bootstrap.py update 2026-01-01    # Incremental update
 ```
+
+## License
+
+[Public Government Data](https://www.supremecourt.ge) — official decisions published by the Supreme Court of Georgia.

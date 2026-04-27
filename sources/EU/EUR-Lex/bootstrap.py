@@ -18,6 +18,7 @@ import gc
 import json
 import logging
 import re
+import socket
 import time
 from datetime import datetime
 from pathlib import Path
@@ -27,6 +28,9 @@ from urllib.parse import urlencode, quote
 import requests
 from bs4 import BeautifulSoup
 import html2text
+
+# Issue #502: hard safety net against silent socket hangs
+socket.setdefaulttimeout(120)
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -70,7 +74,7 @@ class EurLexFetcher:
         max_retries = 3
         for attempt in range(max_retries):
             try:
-                response = self.session.get(url, params=params, headers=headers, timeout=60)
+                response = self.session.get(url, params=params, headers=headers, timeout=(15, 60))
                 response.raise_for_status()
                 return response
             except requests.exceptions.RequestException as e:

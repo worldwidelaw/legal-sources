@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/474.542",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:42:25.846830+00:00",
+  "title": "Missouri Revised Statutes § 474.542 - Definitions",
+  "text": "474.542.  Definitions. — As used in sections 474.540 to 474.564, the following terms mean:\n  (1)  \"Electronic\", technology having electrical, digital, magnetic, wireless, optical, electromagnetic, or similar capabilities;\n  (2)  \"Electronic presence\", the relationship of two or more individuals in different locations in real time using technology enabling live, interactive audio-visual communication that allows for observation, direct interaction, and communication between or among the individuals;\n  (3)  \"Electronic will\", a will executed electronically in compliance with subsection 1 of section 474.548;\n  (4)  \"Record\", information that is inscribed on a tangible medium or that is stored in an electronic or other medium and is retrievable in perceivable form;\n  (5)  \"Security procedure\", a procedure to verify that an electronic signature, record, or performance is that of a specific person or to detect a change or error in an electronic record, including a procedure that uses an algorithm, code, identifying word or number, encryption, or callback or other acknowledgment procedure;\n  (6)  \"Sign\", with present intent to authenticate or adopt a record to:\n  (a)  Execute or adopt a tangible symbol; or\n  (b)  Affix to or logically associate with the record an electronic symbol or process;\n  (7)  \"State\", a state of the United States, the District of Columbia, Puerto Rico, the United States Virgin Islands, a federally recognized Indian tribe, or any territory or insular possession subject to the jurisdiction of the United States;\n  (8)  \"Will\", a codicil and any testamentary instrument that appoints an executor, revokes or revises another will, nominates a guardian, or expressly excludes or limits the right of an individual or class to succeed to property of the decedent passing by intestate succession.\n(L. 2025 H.B. 754)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=474.542",
+  "section_id": "474.542",
+  "chapter": "474",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

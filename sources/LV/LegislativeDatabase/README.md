@@ -4,7 +4,7 @@
 **URL:** https://likumi.lv
 **Data Type:** Legislation
 **Auth:** None (public access)
-**License:** Open government data (Latvijas Vēstnesis)
+**License:** Open government data ([Latvijas Vestnesis](https://www.vestnesis.lv))
 
 ## Overview
 
@@ -101,6 +101,10 @@ Each normalized record contains:
 
 - 1 request per 2 seconds (0.5 req/sec)
 - Burst: 3 requests
+
+## License
+
+Open government data — Latvian legislation is published by [Latvijas Vestnesis](https://www.vestnesis.lv) and freely reusable.
 
 ## Notes
 

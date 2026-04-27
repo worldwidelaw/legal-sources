@@ -22,3 +22,7 @@ python bootstrap.py bootstrap          # All ~418 acts
 
 - 5-second crawl delay per robots.txt
 - Judgments and Official Gazette excluded (disallowed by robots.txt)
+
+## License
+
+[Laws.Africa Open Access](https://namiblii.org/) — Namibian legislation published by NamibLII / Laws.Africa under open access terms.

@@ -1,0 +1,82 @@
+# ===================================================================
+# BS/CourtOfAppeal -- Bahamas Court of Appeal Judgments
+# ===================================================================
+# PDF judgments from courtofappeal.org.bs. Paginated browse listings.
+# No authentication required. ~4,450 judgments (2000-present).
+# ===================================================================
+
+source:
+  id: "BS/CourtOfAppeal"
+  country: "BS"
+  name: "Bahamas Court of Appeal Judgments"
+  url: "https://www.courtofappeal.org.bs/judgments.php"
+  description: |
+    Bahamas Court of Appeal — highest resident court in The Bahamas.
+    Judgments from 2000-present. Browse listing with PDF downloads.
+    Categories: Written/Oral matters, Supreme Civil/Criminal, Tribunal.
+    ~4,450 judgments. Language: English.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 3
+
+api:
+  type: "html_ssr"
+  base_url: "https://www.courtofappeal.org.bs/judgments.php"
+  pagination:
+    type: "offset"
+    param: "skip"
+    per_page: 15
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "Unique ID from judgment ID number"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title / parties"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "url"
+      description: "URL to judgment detail page"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "file_number"
+      description: "Case file number (e.g. '64 of 2024')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "classification"
+      description: "Classification (e.g. Written / Supreme Civil / Property Matter)"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - ~4,450 judgments (2000-present)
+  - Full text in PDF, extracted via pdf_extract
+  - Highest resident court; ultimate appeal to Privy Council (London)
+  - Language: English

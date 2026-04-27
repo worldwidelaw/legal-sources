@@ -36,6 +36,10 @@ python bootstrap.py update                      # Fetch recent decisions
 | `decision_type` | judgment, advisory_opinion, or order |
 | `court` | International Court of Justice |
 
+## License
+
+[ICJ Terms](https://www.icj-cij.org/terms) — ICJ decisions are public international law documents. Verify terms before commercial redistribution.
+
 ## Notes
 
 - PDFs on `icj-cij.org` are behind Cloudflare JS challenges; the UN cloud CDN serves the same files without protection

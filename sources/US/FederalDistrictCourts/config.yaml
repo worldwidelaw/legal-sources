@@ -1,0 +1,44 @@
+source:
+  id: US/FederalDistrictCourts
+  name: US Federal District Courts
+  country: US
+  type: caselaw
+  url: https://www.courtlistener.com
+  description: >
+    Federal district court opinions via CourtListener public search API (no auth needed).
+    Covers all 94 federal judicial districts plus historical/territorial courts.
+    ~462K total opinions with full text from PDF extraction.
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 3
+
+fetch:
+  delay: 1.5
+  page_size: 20
+  sample_count: 15
+
+schema:
+  key_fields:
+    - name: _id
+      required: true
+      type: string
+    - name: cluster_id
+      required: false
+      type: string
+    - name: court_id
+      required: false
+      type: string
+  text_fields:
+    - text
+  date_fields:
+    - date
+    - _fetched_at
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id

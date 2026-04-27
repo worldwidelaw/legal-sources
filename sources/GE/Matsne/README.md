@@ -86,3 +86,7 @@ Each normalized record contains:
 - Primary legislation: ~5,000+ documents
 - Secondary legislation: ~50,000+ documents
 - Historical laws from independence (1991) onwards
+
+## License
+
+[Open Government Data](https://matsne.gov.ge) — official legislation published by the Legislative Herald of Georgia.

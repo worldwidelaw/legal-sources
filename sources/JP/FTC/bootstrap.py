@@ -25,8 +25,6 @@ import json
 import logging
 import re
 import html
-import tempfile
-import os
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Dict, Any, List
@@ -228,10 +226,6 @@ class JapanFTCScraper(BaseScraper):
 
     def _fetch_guideline_pdf(self, path: str, title: str) -> Dict:
         """Download and extract text from a guideline PDF."""
-        if not HAS_PDFPLUMBER:
-            logger.warning("pdfplumber not available, skipping PDF")
-            return {}
-
         try:
             self.rate_limiter.wait()
             resp = self.client.get(path)
@@ -246,30 +240,25 @@ class JapanFTCScraper(BaseScraper):
                 logger.warning(f"PDF too small ({len(resp.content)} bytes): {path}")
                 return {}
 
-            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-                tmp.write(resp.content)
-                tmp_path = tmp.name
+            slug = path.split("/")[-1].replace(".pdf", "")
+            doc_id = f"JP-FTC-GL-{slug}"
+            full_text = extract_pdf_markdown(
+                source="JP/FTC",
+                source_id=doc_id,
+                pdf_bytes=resp.content,
+                table="doctrine",
+            ) or ""
 
-            try:
-                text_parts = []
-                with pdfplumber.open(tmp_path) as pdf:
-                    for page in pdf.pages:
-                        page_text = page.extract_text()
-                        if page_text:
-                            text_parts.append(page_text)
-
-                full_text = "\n\n".join(text_parts)
+            if full_text:
                 logger.info(f"Extracted {len(full_text)} chars from {path}")
 
-                return {
-                    "path": path,
-                    "title": title,
-                    "full_text": full_text,
-                    "doc_type": "guideline",
-                    "date": "",
-                }
-            finally:
-                os.unlink(tmp_path)
+            return {
+                "path": path,
+                "title": title,
+                "full_text": full_text,
+                "doc_type": "guideline",
+                "date": "",
+            }
 
         except Exception as e:
             logger.warning(f"Failed to extract PDF {path}: {e}")
@@ -293,11 +282,10 @@ class JapanFTCScraper(BaseScraper):
                     yield result
 
         # 2. Guideline PDFs
-        if HAS_PDFPLUMBER:
-            for path, title in GUIDELINE_PDFS:
-                result = self._fetch_guideline_pdf(path, title)
-                if result.get("full_text"):
-                    yield result
+        for path, title in GUIDELINE_PDFS:
+            result = self._fetch_guideline_pdf(path, title)
+            if result.get("full_text"):
+                yield result
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """Fetch recent press releases."""
@@ -351,9 +339,9 @@ class JapanFTCScraper(BaseScraper):
         """Quick connectivity test."""
         print("Testing Japan FTC (JFTC) endpoints...")
         print(f"Base URL: {BASE_URL}")
-        print(f"pdfplumber available: {HAS_PDFPLUMBER}")
 
         print("\n1. Testing yearly index (2025)...")
+        items = []
         try:
             items = self._get_yearly_press_releases(2025)
             print(f"   Found {len(items)} press releases for 2025")
@@ -373,17 +361,16 @@ class JapanFTCScraper(BaseScraper):
             except Exception as e:
                 print(f"   ERROR: {e}")
 
-        if HAS_PDFPLUMBER:
-            print("\n3. Testing guideline PDF...")
-            try:
-                path, title = GUIDELINE_PDFS[0]
-                result = self._fetch_guideline_pdf(path, title)
-                text = result.get("full_text", "")
-                print(f"   Extracted {len(text)} chars from {title}")
-                if text:
-                    print(f"   Preview: {text[:200]}...")
-            except Exception as e:
-                print(f"   ERROR: {e}")
+        print("\n3. Testing guideline PDF...")
+        try:
+            path, title = GUIDELINE_PDFS[0]
+            result = self._fetch_guideline_pdf(path, title)
+            text = result.get("full_text", "")
+            print(f"   Extracted {len(text)} chars from {title}")
+            if text:
+                print(f"   Preview: {text[:200]}...")
+        except Exception as e:
+            print(f"   ERROR: {e}")
 
         print("\nTest complete!")
 

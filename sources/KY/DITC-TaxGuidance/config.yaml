@@ -1,0 +1,62 @@
+# ===================================================================
+# KY/DITC-TaxGuidance -- Cayman Islands DITC Tax Cooperation Guidance
+# ===================================================================
+# Guidance on Economic Substance, CRS, FATCA, CbCR, CARF, and EOIR
+# from the Department of International Tax Cooperation.
+# Sources: WP REST API posts, FAQ pages, and PDF documents.
+# No authentication required.
+# ===================================================================
+
+source:
+  id: "KY/DITC-TaxGuidance"
+  country: "KY"
+  name: "Cayman Islands Dept of International Tax Cooperation Guidance"
+  url: "https://www.ditc.ky"
+  description: |
+    Guidance published by the Cayman Islands Department of International
+    Tax Cooperation covering Economic Substance, Common Reporting Standard
+    (CRS), FATCA, Country-by-Country Reporting (CbCR), CARF, and Exchange
+    of Information on Request (EOIR). Includes industry advisories, FAQs,
+    and regulatory guidance PDFs.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "wp_rest_api"
+  base_url: "https://www.ditc.ky"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  key_fields:
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true
+    - name: "category"
+      type: "string"
+      required: false
+    - name: "framework"
+      type: "string"
+      required: false

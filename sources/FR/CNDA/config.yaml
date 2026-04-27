@@ -1,0 +1,33 @@
+source:
+  id: FR/CNDA
+  name: French National Asylum Court (CNDA)
+  country: FR
+  url: https://www.cnda.fr
+  data_types:
+    - case_law
+  auth: none
+  description: >
+    Cour nationale du droit d'asile — France's specialized asylum court.
+    Decisions published as PDFs on the CNDA website with summary pages.
+
+data_model:
+  update_strategy: upsert
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: decision_number
+      type: string
+      required: false
+    - name: date
+      type: string
+      required: false
+    - name: title
+      type: string
+      required: true
+
+rate_limit:
+  requests_per_second: 0.5
+  crawl_delay: 2

@@ -356,7 +356,7 @@ class PlanaltoScraper(BaseScraper):
         except (IndexError, ValueError):
             return date_br
 
-    def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
+    def normalize(self, raw: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         urn = raw.get("_urn", "")
         date_br = raw.get("dataassinatura", "")
         date_iso = self._date_br_to_iso(date_br)
@@ -364,6 +364,9 @@ class PlanaltoScraper(BaseScraper):
         text = raw.get("_full_text", "")
         ementa = raw.get("ementa", "")
         tipo = raw.get("tipo", "")
+
+        if not text or len(text) < 50:
+            return None
 
         return {
             "_id": urn or f"BR-PL-{raw.get('id', '')}",
@@ -414,9 +417,8 @@ class PlanaltoScraper(BaseScraper):
 
                 doc["_urn"] = urn
                 doc["_full_text"] = full_text
-                normalized = self.normalize(doc)
                 count += 1
-                yield normalized
+                yield doc
 
         logger.info(f"Completed: {count} documents")
 
@@ -446,9 +448,8 @@ class PlanaltoScraper(BaseScraper):
 
             doc["_urn"] = urn
             doc["_full_text"] = full_text
-            normalized = self.normalize(doc)
             count += 1
-            yield normalized
+            yield doc
 
         logger.info(f"Updates: {count} documents")
 
@@ -497,6 +498,7 @@ def main():
         action="store_true",
         help="Only fetch a small sample (for validation)",
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = PlanaltoScraper()
@@ -506,28 +508,8 @@ def main():
         sys.exit(0 if success else 1)
 
     elif args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        max_records = 15 if args.sample else None
-        count = 0
-
-        for record in scraper.fetch_all():
-            out_path = sample_dir / f"{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-
-            text_len = len(record.get("text", ""))
-            logger.info(
-                f"[{count + 1}] {record.get('title', '?')[:80]} "
-                f"({text_len:,} chars)"
-            )
-
-            count += 1
-            if max_records and count >= max_records:
-                break
-
-        logger.info(f"Bootstrap complete: {count} records saved to {sample_dir}")
+        stats = scraper.bootstrap(sample_mode=args.sample)
+        logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2)}")
 
     elif args.command == "update":
         sample_dir = Path(__file__).parent / "sample"

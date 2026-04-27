@@ -1,46 +1,52 @@
-source:
-  id: NO/Høyesterett
-  name: Norwegian Supreme Court (Høyesterett)
-  country: 'NO'
-  url: https://lovdata.no/register/avgjørelser
-  type: caselaw
-
 api:
-  type: html_paginated
+  auth: none
   base_url: https://lovdata.no
-  auth: none  # Free public access since 2008
   endpoints:
+    document: /dokument/{base}/avgjorelse/{case_id}
     registry: /register/avgjørelser?verdict=HRA&year={year}&offset={offset}
     rss_feed: /feed?data=newJudgements&type=RSS
-    document: /dokument/{base}/avgjorelse/{case_id}
   rate_limit:
-    requests_per_minute: 30
     delay_seconds: 1.5
-
+    requests_per_minute: 30
+  type: html_paginated
 data:
-  format: html
-  language: nob  # Norwegian Bokmål
-  encoding: utf-8
-  license: NLOD 2.0 (Norwegian License for Open Government Data)
   coverage:
-    from_year: 2008  # Reasoned judgments free from 2008
-    to_year: present
-    estimated_records: 7000  # ~350-450 per year from 2008-2026
     courts:
-      - Høyesterett (Supreme Court)
-  notes: |
-    Full archive access via registry pagination by year.
+    - Høyesterett (Supreme Court)
+    estimated_records: 7000
+    from_year: 2008
+    to_year: present
+  encoding: utf-8
+  format: html
+  language: nob
+  license: NLOD 2.0 (Norwegian License for Open Government Data)
+  notes: 'Full archive access via registry pagination by year.
+
     RSS feed provides ~9 recent items only.
+
     Checkpoint file enables resume across sessions.
 
+    '
 schema:
   key_fields:
-    - case_id
-    - year
-    - court
+  - name: case_id
+    required: false
+    type: string
+  - name: year
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
   required_fields:
-    - title
-    - text
-    - date
-    - url
-    - case_id
+  - title
+  - text
+  - date
+  - url
+  - case_id
+source:
+  country: 'NO'
+  id: NO/Høyesterett
+  name: Norwegian Supreme Court (Høyesterett)
+  type: caselaw
+  url: https://lovdata.no/register/avgjørelser

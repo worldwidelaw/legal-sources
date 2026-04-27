@@ -58,6 +58,7 @@ schema:
     - name: "neutral_citation"
       type: "string"
       role: "primary_key"
+      required: false
     - name: "title"
       type: "string"
       role: "content"

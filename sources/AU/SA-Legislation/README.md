@@ -34,3 +34,7 @@ python bootstrap.py update             # Latest 3 packages only
 - Each package contains only legislation changed in that fortnight
 - Full corpus requires processing all packages (dedup by doc_id keeps latest)
 - XML uses custom SAOPC Exchange DTD with `<exdoc>` root element
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — published by the Office of Parliamentary Counsel, South Australia via [data.sa.gov.au](https://data.sa.gov.au).

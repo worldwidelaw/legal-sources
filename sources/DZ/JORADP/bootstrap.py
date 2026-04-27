@@ -93,9 +93,6 @@ class JORADPScraper(BaseScraper):
     """
 
     def __init__(self):
-        if not HAS_PYPDF2:
-            raise ImportError("PyPDF2 is required for PDF text extraction. Install with: pip install PyPDF2")
-
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
 
@@ -164,12 +161,15 @@ class JORADPScraper(BaseScraper):
 
     def _extract_text_from_pdf(self, pdf_content: bytes) -> Tuple[str, int]:
         """Extract text from PDF using centralized extractor."""
-        return extract_pdf_markdown(
+        text = extract_pdf_markdown(
             source="DZ/JORADP",
             source_id="",
             pdf_bytes=pdf_content,
             table="legislation",
         ) or ""
+        # Estimate page count (~2000 chars/page for French legal text)
+        page_count = max(1, len(text) // 2000) if text else 0
+        return text, page_count
 
     def _parse_issue_date(self, text: str, year: int) -> str:
         """

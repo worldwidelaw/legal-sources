@@ -42,7 +42,7 @@ The fetcher uses:
 
 ## License
 
-German court decisions are **public domain** under German law (§ 5 UrhG - "amtliche Werke").
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).
 
 ## Usage
 

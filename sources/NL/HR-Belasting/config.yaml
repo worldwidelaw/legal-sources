@@ -1,28 +1,44 @@
-source:
-  id: NL/HR-Belasting
-  name: Dutch Supreme Court - Tax Chamber
-  country: NL
-  url: https://www.rechtspraak.nl
-  data_types:
-    - case_law
-  auth: none
-  license: Public Domain (Dutch court decisions)
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - url
-    - ecli
-    - court
-    - subject
-    - procedure
-
 fetch:
-  method: rechtspraak_api
   api_url: https://data.rechtspraak.nl/uitspraken/zoeken
   creator: http://standaarden.overheid.nl/owms/terms/Hoge_Raad_der_Nederlanden
-  subject: http://psi.rechtspraak.nl/rechtsgebied#bestuursrecht_belastingrecht
+  method: rechtspraak_api
   rate_limit_delay: 2.0
+  subject: http://psi.rechtspraak.nl/rechtsgebied#bestuursrecht_belastingrecht
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: url
+    required: true
+    type: string
+  - name: ecli
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: subject
+    required: false
+    type: string
+  - name: procedure
+    required: false
+    type: string
+source:
+  auth: none
+  country: NL
+  data_types:
+  - case_law
+  id: NL/HR-Belasting
+  license: Public Domain (Dutch court decisions)
+  name: Dutch Supreme Court - Tax Chamber
+  url: https://www.rechtspraak.nl

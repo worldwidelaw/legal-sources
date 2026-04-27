@@ -12,7 +12,7 @@ The portal is operated by the Ministry of Justice, Administration and Digital Tr
 
 - **Portal:** https://odluke.sudovi.hr
 - **Operator:** Ministry of Justice, Administration and Digital Transformation (Ministarstvo pravosuđa, uprave i digitalne transformacije)
-- **License:** Open Government Data
+- **License:** [Open Government Data](https://data.gov.hr/en)
 - **Language:** Croatian
 
 ## Access Method
@@ -86,6 +86,10 @@ python bootstrap.py bootstrap
 # Incremental update
 python bootstrap.py update
 ```
+
+## License
+
+[Open Government Data](https://data.gov.hr/en) — Croatian court decisions are freely reusable under open government data terms.
 
 ## Notes
 

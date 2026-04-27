@@ -1,37 +1,42 @@
-# AM/CourtOfCassation - Armenian Court of Cassation
-
-source:
-  id: AM/CourtOfCassation
-  name: Armenian Court of Cassation (Vchrabek)
-  country: AM
-  language: hy
-  url: https://cassationcourt.am
-  api_url: https://cassationcourt.am/api/precedent-single-decision
-  license: Public Domain
-  data_types:
-    - caselaw
-
-schema:
-  key_fields:
-    - _id
-    - case_number
-  date_fields:
-    - date
-    - _fetched_at
-  text_fields:
-    - text
-    - title
-
 fetcher:
-  type: html_scraping
   pagination: page_based
-  rate_limit: 1.5  # seconds between requests
+  rate_limit: 1.5
   requires_pdf_extraction: true
+  type: html_scraping
+notes: 'Armenian Court of Cassation decisions database.
 
-notes: |
-  Armenian Court of Cassation decisions database.
   - ~1,300+ decisions available
+
   - PDF documents extracted via pdfplumber
+
   - Covers civil, criminal, administrative, and anti-corruption cases
+
   - Full text in Armenian language
+
   - API endpoint: /api/precedent-single-decision/{chamber}/{id}
+
+  '
+schema:
+  date_fields:
+  - date
+  - _fetched_at
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  text_fields:
+  - text
+  - title
+source:
+  api_url: https://cassationcourt.am/api/precedent-single-decision
+  country: AM
+  data_types:
+  - caselaw
+  id: AM/CourtOfCassation
+  language: hy
+  license: Public Domain
+  name: Armenian Court of Cassation (Vchrabek)
+  url: https://cassationcourt.am

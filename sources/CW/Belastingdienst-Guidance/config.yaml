@@ -1,0 +1,27 @@
+source:
+  id: CW/Belastingdienst-Guidance
+  name: Curaçao Tax Administration Guidance
+  country: CW
+  url: https://www.belastingdienst.cw
+  data_types:
+    - doctrine
+  auth: none
+  description: >
+    Curaçao tax authority guidance: profit tax (winstbelasting), turnover tax
+    (omzetbelasting), income tax, payroll tax, stamp duty, rulingbeleid,
+    tax rate tables, and thematic guidance pages. ~50 PDFs + 70 posts + 180
+    thematic pages via WordPress REST API + sitemap.
+
+schema:
+  key_fields:
+    - wp_id
+    - content_type
+  record_type: doctrine
+
+fetcher:
+  method: api
+  rate_limit: 1.5
+  notes: >
+    WordPress REST API: /wp-json/wp/v2/media (PDFs), /posts, /pages.
+    Custom post types for thematic guidance fetched via sitemap.
+    PDFs hosted at belastingdienst.cw/wp-content/uploads/. No auth required.

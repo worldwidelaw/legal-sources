@@ -34,7 +34,7 @@ the highest court for civil and criminal matters in Lithuania.
 
 ## Authentication
 
-None required - public data under CC BY 4.0 license.
+None required — public data under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) license.
 
 ## Usage
 
@@ -51,6 +51,10 @@ python bootstrap.py bootstrap
 # Incremental update
 python bootstrap.py update
 ```
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Lithuanian open government data.
 
 ## Notes
 

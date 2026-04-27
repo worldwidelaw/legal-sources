@@ -1,0 +1,14 @@
+{
+  "_id": "warning-en-193",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:45.037426Z",
+  "title": "[Clone Firm] Warning: finance@fricksupport[dot]info",
+  "text": "The Financial Market Authority (FMA) points out that there is no connection between the e-mail address „finance&#64;fricksupport[dot]info” and the Liechtenstein Bank Frick and Co. AG, Landstrasse 14, 9496 Balzers (Registernummer: FL-0001.548.501-4), and the Liechtenstein VT-Service Provider Bitcoin Suisse (Liechtenstein) AG, Äulestrasse 74, 9490 Vaduz, (Registernummer: FL-0002.600.023-9).   The operators of the e-mail address &#34;finance&#64;fricksupport[dot]info&#34; unlawfully use the name and logo of Bank Frick and Co. AG and Bitcoin Suisse (Liechtenstein) AG.   The operators of the e-mail address do not have any regulatory licence or registration from the FMA and are therefore not entitled to provide services in Liechtenstein that require authorization or registration. They are not subject to supervision by the FMA.  ",
+  "date": "2023-02-14",
+  "url": "https://www.fma-li.li/en/warning/warning-finance-fricksupport-dot-info-193",
+  "language": "eng",
+  "category": "Clone Firm",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

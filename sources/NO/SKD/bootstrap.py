@@ -262,7 +262,7 @@ class SkatteetatenFetcher:
                 # Use index date as fallback
                 props = entry.get('properties', {})
                 doc['_index_date'] = props.get('startPublish') or props.get('metadataDate')
-                yield self.normalize(doc)
+                yield doc
 
             time.sleep(1.5)
 
@@ -291,7 +291,7 @@ class SkatteetatenFetcher:
             if doc:
                 doc['_category'] = entry.get('_category', '')
                 doc['_index_date'] = meta_date
-                yield self.normalize(doc)
+                yield doc
             time.sleep(1.5)
 
     def bootstrap_sample(self, n: int = 15) -> List[Dict[str, Any]]:
@@ -374,6 +374,7 @@ def main():
                         help='Fetch updates since date (ISO format)')
     parser.add_argument('--limit', type=int, default=15,
                         help='Max documents for sample')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     fetcher = SkatteetatenFetcher()

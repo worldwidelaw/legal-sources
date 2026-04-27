@@ -1,0 +1,44 @@
+id: MA/ConseilConcurrence
+name: Morocco Competition Council (Conseil de la Concurrence)
+country: MA
+url: https://conseil-concurrence.ma/
+description: >
+  Morocco Competition Council decisions, advisory opinions, and merger control
+  communiqués. Fetched via WordPress REST API (/wp-json/wp/v2/posts).
+  Full text in French. Covers competition enforcement decisions, advisory
+  opinions (avis consultatifs), and merger concentration reviews.
+data_types:
+  - case_law
+  - doctrine
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true

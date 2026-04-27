@@ -71,7 +71,7 @@ python bootstrap.py update
 
 ## License
 
-Italian public data - decisions are published as open data by AGCM.
+Open data — decisions published by AGCM as Italian public sector information. No formal open data license specified; reuse is generally permitted for public government information.
 
 ## Notes
 

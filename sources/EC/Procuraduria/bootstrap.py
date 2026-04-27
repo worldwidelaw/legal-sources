@@ -131,8 +131,9 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
 def parse_pronouncements(full_text: str) -> list:
     """Parse individual pronouncements from extract PDF text."""
     # Split on pattern: Oficio number + OF. PGE No.:
-    records = re.split(r'(?=\d{4,6}\s+OF\.\s*PGE\s*No\.\s*:)', full_text)
-    records = [r for r in records if re.match(r'\d{4,6}\s+OF\.\s*PGE', r.strip())]
+    # Note: PDF extraction may concatenate number with "OF." without whitespace
+    records = re.split(r'(?=\d{4,6}\s*OF\.\s*PGE\s*No\.\s*:)', full_text)
+    records = [r for r in records if re.match(r'\d{4,6}\s*OF\.\s*PGE', r.strip())]
 
     parsed = []
     for rec_text in records:
@@ -146,22 +147,26 @@ def parse_pronouncements(full_text: str) -> list:
 def parse_single_pronouncement(text: str) -> Optional[dict]:
     """Parse a single pronouncement from extract text."""
     # Oficio number and date
-    m = re.match(r'(\d{4,6})\s+OF\.\s*PGE\s*No\.\s*:\s*(\d{2}-\d{2}-\d{4})', text)
+    m = re.match(r'(\d{4,6})\s*OF\.\s*PGE\s*No\.\s*:\s*(\d{2}-\d{2}-\d{4})', text)
     if not m:
         return None
 
     oficio = m.group(1)
     date_raw = m.group(2)
 
-    # Consultante: entity name after date line, before CONSULTANTE:
-    cm = re.search(r'de\n(.+?)CONSULTANTE:', text, re.DOTALL)
+    # Consultante: entity name after date, before CONSULTANTE:
+    # PDF text may concatenate: "2025de\nENTITYCONSULTANTE:" or "2025de\nENTITY\nCONSULTANTE:"
+    cm = re.search(r'de\s*\n(.+?)CONSULTANTE:', text, re.DOTALL)
+    if not cm:
+        # Fallback: look for CONSULTANTE: directly and grab text between date line and it
+        cm = re.search(r'\d{2}-\d{2}-\d{4}\s*de\s*(.+?)CONSULTANTE:', text, re.DOTALL)
     consultante = cm.group(1).strip().replace('\n', ' ') if cm else ''
 
-    # Sector
+    # Sector - handle concatenated text like "ESTADOCONSULTANTE:\n...SECTOR:"
     sm = re.search(r'CONSULTANTE:\s*\n?(.*?)SECTOR:', text, re.DOTALL)
     sector = sm.group(1).strip().replace('\n', ' ') if sm else ''
 
-    # Materia
+    # Materia - handle concatenated text like "SOCIAL\nSECTOR:\nSERVICIO PUBLICOMATERIA:"
     mm = re.search(r'MATERIA:\s*\n?(.*?)(?:Submateria|Consulta)', text, re.DOTALL)
     materia = mm.group(1).strip().replace('\n', ' ') if mm else ''
 
@@ -373,6 +378,7 @@ def main():
                        help="Number of sample records to fetch")
     parser.add_argument('--year', type=int, default=None,
                        help="Specific year to fetch")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 
@@ -394,9 +400,20 @@ def main():
             print("Failed to download PDF")
 
     elif args.command == 'bootstrap':
-        if args.sample or True:
+        if args.sample:
             success = bootstrap_sample(args.count)
             sys.exit(0 if success else 1)
+        else:
+            SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
+            count = 0
+            for record in fetch_all(year=args.year):
+                count += 1
+                filename = SAMPLE_DIR / f"record_{count:04d}.json"
+                with open(filename, 'w', encoding='utf-8') as f:
+                    json.dump(record, f, ensure_ascii=False, indent=2)
+                if count % 50 == 0:
+                    print(f"Progress: {count} records saved")
+            print(f"Bootstrap complete: {count} records saved to {SAMPLE_DIR}")
 
     elif args.command == 'fetch':
         for record in fetch_all(year=args.year):

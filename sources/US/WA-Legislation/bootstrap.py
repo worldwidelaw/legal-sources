@@ -325,9 +325,9 @@ class WALegislationScraper(BaseScraper):
         """Yield all documents (RCW + Bills)."""
         logger.info("Starting full fetch: RCW + Bills")
         for raw in self.iter_rcw():
-            yield self.normalize(raw)
+            yield raw
         for raw in self.iter_bills():
-            yield self.normalize(raw)
+            yield raw
 
     def fetch_updates(self, since: str = None) -> Generator[dict, None, None]:
         """Yield documents updated since a date (full refresh for now)."""

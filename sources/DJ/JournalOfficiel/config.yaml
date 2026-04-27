@@ -1,0 +1,38 @@
+# DJ/JournalOfficiel -- Djibouti Journal Officiel (eJO)
+source:
+  id: "DJ/JournalOfficiel"
+  name: "Djibouti Journal Officiel"
+  url: "https://www.journalofficiel.dj/"
+  country: "DJ"
+  data_types:
+    - legislation
+  auth:
+    type: none
+  license: "Open Government Data"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+    - name: url
+      type: string
+      required: true
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id

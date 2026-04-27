@@ -8,7 +8,7 @@ Data source for Romanian legislation from the official Portal Legislativ operate
 - **Data type**: legislation
 - **Coverage**: 150,000+ laws from 1989 to present
 - **Full text**: Yes (returned directly in API response)
-- **License**: Public domain (not protected by copyright under Romanian law)
+- **License**: Public domain — not protected by copyright under Romanian law (Art. 9 of Law No. 8/1996 on Copyright)
 
 ## API
 
@@ -65,6 +65,10 @@ python bootstrap.py bootstrap
 # Incremental update (recent years)
 python bootstrap.py update
 ```
+
+## License
+
+Public domain — Romanian official legislative texts are not protected by copyright under Art. 9 of [Law No. 8/1996 on Copyright and Neighbouring Rights](https://legislatie.just.ro/Public/DetaliiDocument/7816).
 
 ## Notes
 

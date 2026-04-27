@@ -236,7 +236,7 @@ class UIBMScraper(BaseScraper):
                 continue
 
             dec["text"] = text
-            yield self.normalize(dec)
+            yield dec
             time.sleep(1.5)
 
     def test_api(self) -> bool:

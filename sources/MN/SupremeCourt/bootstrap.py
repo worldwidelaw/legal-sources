@@ -229,8 +229,7 @@ class SupremeCourtScraper(BaseScraper):
             for case_id in range(start_id, max_id + 1):
                 raw = self._fetch_decision(case_type, 3, case_id)
                 if raw:
-                    record = self.normalize(raw)
-                    yield record
+                    yield raw
                     total += 1
                     consecutive_misses = 0
                     logger.info(f"[{total}] {type_name} ID {case_id}: {raw['case_number']} ({len(raw['text'])} chars)")
@@ -262,8 +261,7 @@ class SupremeCourtScraper(BaseScraper):
             logger.info(f"Fetching sample: {type_name} ID {case_id}...")
             raw = self._fetch_decision(case_type, court_cat, case_id)
             if raw:
-                record = self.normalize(raw)
-                yield record
+                yield raw
                 count += 1
                 logger.info(f"  OK: {raw['case_number']} ({len(raw['text'])} chars)")
             else:
@@ -295,15 +293,7 @@ if __name__ == "__main__":
             sys.exit(1)
 
     elif command == "bootstrap":
-        SAMPLE_DIR.mkdir(exist_ok=True)
-        count = 0
-        for record in scraper.fetch_all(sample=sample):
-            if sample:
-                fname = SAMPLE_DIR / f"{record['_id']}.json"
-                with open(fname, 'w', encoding='utf-8') as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-        logger.info(f"Bootstrap complete: {count} records")
+        scraper.bootstrap(sample_mode=sample)
 
     elif command == "update":
         count = 0

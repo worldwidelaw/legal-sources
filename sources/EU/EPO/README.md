@@ -61,6 +61,10 @@ python bootstrap.py bootstrap
 python bootstrap.py update
 ```
 
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — EPO Boards of Appeal decisions are available as open data under Creative Commons Attribution 4.0.
+
 ## Notes
 
 - The bulk file is ~300MB compressed, ~1.1GB uncompressed

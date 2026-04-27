@@ -48,3 +48,7 @@ Records include:
 - The Constitutional Court has decisions from 1991 when it was established
 - Act IDs are sequential and can be enumerated
 - Search by year is the most reliable discovery method
+
+## License
+
+Public domain — Bulgarian government judicial decisions are publicly available without copyright restrictions.

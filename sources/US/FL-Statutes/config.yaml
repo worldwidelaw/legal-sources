@@ -45,7 +45,7 @@ data_model:
 schema:
   total_fields: 11
   key_fields:
-    - name: "section_id"
+    - name: "_id"
       description: "Unique section identifier (e.g., '775.082')"
       type: "string"
       role: "primary_key"

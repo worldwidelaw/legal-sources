@@ -51,15 +51,34 @@ def parse_case_metadata(text: str, raw_metadata: dict) -> dict:
             result["case_number"] = match.group(1)
             break
 
-    # Try to extract date from text
+    # Try to extract date from text — covers both modern and historical formats
     date_patterns = [
-        r"([A-Z][a-z]+\.?\s+\d{1,2},?\s+\d{4})",  # "Jan. 15, 1985" or "January 15, 1985"
-        r"(\d{1,2}/\d{1,2}/\d{4})",  # "1/15/1985"
+        # "Decided January 15, 1885" / "Filed: Jan. 3, 1920"
+        r"(?:Decided|Filed|Argued|Submitted|Dated)[:\s]+([A-Z][a-z]+\.?\s+\d{1,2},?\s+\d{4})",
+        # "January 15, 1885" / "Jan. 15, 1985"
+        r"([A-Z][a-z]+\.?\s+\d{1,2},?\s+\d{4})",
+        # "15 January 1885" (British-style, common in older cases)
+        r"(\d{1,2}\s+[A-Z][a-z]+\.?\s+\d{4})",
+        # "1/15/1985"
+        r"(\d{1,2}/\d{1,2}/\d{4})",
     ]
     for pattern in date_patterns:
-        match = re.search(pattern, text[:3000])
+        match = re.search(pattern, text[:5000])
         if match:
-            result["decision_date"] = match.group(1)
+            raw_date = match.group(1)
+            for fmt in (
+                "%B %d, %Y", "%B %d %Y", "%b. %d, %Y", "%b. %d %Y",
+                "%b %d, %Y", "%b %d %Y", "%m/%d/%Y",
+                "%d %B %Y", "%d %b %Y", "%d %b. %Y",
+            ):
+                try:
+                    dt = datetime.strptime(raw_date, fmt)
+                    result["decision_date"] = dt.strftime("%Y-%m-%d")
+                    break
+                except ValueError:
+                    continue
+            else:
+                result["decision_date"] = raw_date
             break
 
     # Get author from metadata if available
@@ -77,16 +96,6 @@ def normalize(raw: Dict[str, Any]) -> Dict[str, Any]:
     added = raw.get("added", "")
     metadata = raw.get("metadata", {}) or {}
     text = raw.get("text", "")
-
-    # Parse date from 'created' field
-    date_iso = None
-    if created:
-        try:
-            # Format: 2024-08-24T03:29:51.129683
-            dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
-            date_iso = dt.strftime("%Y-%m-%d")
-        except ValueError:
-            date_iso = created[:10] if len(created) >= 10 else None
 
     # Extract case metadata from text
     parsed = parse_case_metadata(text, metadata)
@@ -113,7 +122,7 @@ def normalize(raw: Dict[str, Any]) -> Dict[str, Any]:
         "_fetched_at": datetime.now(timezone.utc).isoformat(),
         "title": title,
         "text": text,
-        "date": parsed.get("decision_date") or date_iso,
+        "date": parsed.get("decision_date"),
         "url": url,
         "court": parsed.get("court"),
         "case_number": parsed.get("case_number"),
@@ -259,6 +268,7 @@ def main():
         type=str,
         help="Fetch records since date (YYYY-MM-DD)",
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

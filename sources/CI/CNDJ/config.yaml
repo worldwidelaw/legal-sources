@@ -41,7 +41,7 @@ data_model:
 schema:
   total_fields: 7
   key_fields:
-    - name: "doc_id"
+    - name: "_id"
       description: "Document ID derived from AKN path"
       type: "string"
       role: "primary_key"
@@ -66,7 +66,7 @@ schema:
       type: "string"
       role: "reference"
       required: true
-    - name: "doc_type"
+    - name: "_type"
       description: "legislation or case_law"
       type: "string"
       role: "category"

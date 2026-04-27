@@ -112,6 +112,18 @@ schema:
     # - name: "internal_field"
     #   description: "Probably not useful"
 
+# ── License ──────────────────────────────────────────────────────
+# Valid license_id values are defined in license_registry.yaml
+license:
+  id: ""                             # TODO: canonical ID from license_registry.yaml (e.g., "cc-by-4.0", "ogd", "pd-us")
+  name: ""                           # TODO: e.g., "CC BY 4.0", "Public Domain", "OGL v3.0"
+  url: ""                            # TODO: link to the license deed or terms-of-use page
+  commercial_use: true               # TODO: false if non-commercial clause (CC-NC, custom restriction)
+  attribution_required: false        # TODO: true if attribution is required (CC-BY, OGL, etc.)
+  share_alike: false                 # TODO: true if share-alike / copyleft (CC-SA)
+  no_derivatives: false              # TODO: true if no derivatives allowed (CC-ND)
+  notes: ""                          # TODO: any caveats (e.g., "consolidated legislation only is NC")
+
 # ── Notes ─────────────────────────────────────────────────────────
 notes: |
   TODO: Any important notes about this source.

@@ -59,7 +59,7 @@ schema:
       type: "string"
       role: "content"
       required: false
-    - name: "caratula"
+    - name: "title"
       description: "Case title / parties"
       type: "string"
       role: "content"

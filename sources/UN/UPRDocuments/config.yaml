@@ -1,29 +1,51 @@
-source:
-  id: "UN/UPRDocuments"
-  name: "OHCHR Universal Periodic Review Documents"
-  url: "https://www.ohchr.org/en/hr-bodies/upr/documentation"
-  country: "UN"
-  type: "doctrine"
-  description: >
-    Universal Periodic Review (UPR) documents from the UN Human Rights Council.
-    For each country review: national report, UN compilation, and stakeholder summary.
-    ~676 reviews across 4 cycles (2008-present), yielding ~2000 PDF documents.
-    Metadata from UPR Info Uwazi API; PDFs from UN ODS.
-  license: "UN public domain"
-  auth: none
-  method: "Uwazi API metadata + UN ODS PDF download + pdf_extract"
+source_id: UN/UPRDocuments
+name: OHCHR Universal Periodic Review Documents
+country: UN
+url: https://www.ohchr.org/en/hr-bodies/upr/documentation
+data_types:
+  - doctrine
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 3
 
 schema:
   key_fields:
-    - _id
-    - _source
-    - _type
-    - title
-    - text
-    - date
-    - url
-    - country_reviewed
-    - country_code
-    - session
-    - cycle
-    - doc_type
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: country_code
+      type: string
+      required: true
+    - name: session
+      type: integer
+      required: true
+    - name: cycle
+      type: integer
+      required: false
+    - name: doc_type
+      type: string
+      required: true
+    - name: symbol
+      type: string
+      required: true
+
+license: UN public domain
+
+notes: |
+  Universal Periodic Review (UPR) documents from the UN Human Rights Council.
+  For each country review: national report, UN compilation, and stakeholder summary.
+  ~676 reviews across 4 cycles (2008-present), yielding ~2000 PDF documents.
+  Metadata from UPR Info Uwazi API; PDFs from UN ODS.

@@ -1,0 +1,50 @@
+source:
+  id: IE/TaxAppealsCommission
+  country: IE
+  name: Irish Tax Appeals Commission Determinations
+  description: |
+    Anonymised determinations from the Irish Tax Appeals Commission covering
+    income tax, corporation tax, CGT, VAT, stamp duty, customs & excise, PAYE,
+    VRT, and other tax matters. Published since 2016 under Section 949AO TCA 1997.
+    ~1,270 determinations available as PDFs. Full text extracted via pdfplumber.
+
+  data_types:
+    - case_law
+
+  url: https://www.taxappeals.ie/en/determinations/
+  auth: none
+
+  languages:
+    - en
+
+schema:
+  key_fields:
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: reference
+      type: string
+      required: true
+    - name: tax_type
+      type: string
+      required: false
+    - name: year
+      type: integer
+      required: false
+
+data_model:
+  update_strategy: append
+  dedup_key:
+    - _id
+
+rate_limits:
+  requests_per_second: 0.5
+  delay_between_requests: 2.0
+
+license:
+  type: Open Government Data
+  attribution: Tax Appeals Commission (Ireland)
+  url: https://www.taxappeals.ie

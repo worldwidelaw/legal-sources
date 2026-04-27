@@ -1,47 +1,58 @@
-source:
-  id: FR/AMF_Sanctions
-  name: "AMF Enforcement Committee Decisions (Décisions de la Commission des sanctions)"
-  country: FR
-  data_types:
-    - caselaw
-    - enforcement
-  url: https://www.amf-france.org/fr/sanctions-transactions/decisions-de-la-commission-des-sanctions
-  auth: none
-  license: "Licence Ouverte Etalab 2.0"
-
 endpoints:
-  rest_api: "https://www.amf-france.org/fr/rest/listing_sanction/91,184,183,325,90,461,89,242,86,462,181/all/all"
-  base_url: "https://www.amf-france.org"
-  decisions_page: "https://www.amf-france.org/fr/sanction-transaction/Decisions-de-la-commission-des-sanctions"
+  base_url: https://www.amf-france.org
+  decisions_page: https://www.amf-france.org/fr/sanction-transaction/Decisions-de-la-commission-des-sanctions
+  rest_api: https://www.amf-france.org/fr/rest/listing_sanction/91,184,183,325,90,461,89,242,86,462,181/all/all
+notes: 'AMF Enforcement Committee (Commission des sanctions) decisions.
 
-schema:
-  key_fields:
-    - _id
-    - decision_number
-    - date
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
-rate_limit:
-  requests_per_second: 0.5
-  delay_between_requests: 2.0
-
-notes: |
-  AMF Enforcement Committee (Commission des sanctions) decisions.
 
   Covers sanctions for:
+
   - Market abuse (insider dealing, market manipulation)
+
   - Professional obligation breaches
+
   - Information disclosure violations
+
   - Investment services misconduct
 
+
   Uses official REST API to fetch all 449+ sanctions decisions from 2004-present.
+
   Full decision text extracted from official PDF documents.
+
   Updated 2026-02-28: Switched from limited RSS feed to REST API for complete coverage.
+
+  '
+rate_limit:
+  delay_between_requests: 2.0
+  requests_per_second: 0.5
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  auth: none
+  country: FR
+  data_types:
+  - caselaw
+  - enforcement
+  id: FR/AMF_Sanctions
+  license: Licence Ouverte Etalab 2.0
+  name: AMF Enforcement Committee Decisions (Décisions de la Commission des sanctions)
+  url: https://www.amf-france.org/fr/sanctions-transactions/decisions-de-la-commission-des-sanctions

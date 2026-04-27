@@ -1,0 +1,19 @@
+{
+  "_id": "EC-CC-7956",
+  "_source": "EC/CorteConstitucional",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-01T18:25:08.919653+00:00",
+  "title": "Sentencia 3194-19-EP/23",
+  "text": "Acción extraordinaria de protección presentada en contra de la sentencia de segunda instancia, dentro de un proceso de acción de protección. En el proceso de origen se declaró la vulneración del derecho a la defensa y se dispuso que el IESS proceda a informar o notificar al accionante con la justificación motivada de la falta de pago de su pensión jubilar patronal. La Corte desestimó la acción y señaló que, respecto del argumento relativo a la vulneración de la garantía de motivación por no haber realizado un análisis sobre la vulneración de los derechos alegados, no se evidenció una vulneración a la motivación. La Corte determinó que, la sentencia impugnada contiene una fundamentación fáctica y normativa suficiente, ya que enuncian los hechos del caso en concreto y enuncia las normas en las que se fundamenta la decisión, así también, consta el análisis sobre la ocurrencia de la vulneración de derechos constitucionales, concluyendo que no se verificaron las alegadas vulneraciones.",
+  "date": "2023-08-02",
+  "url": "https://esacc.corteconstitucional.gob.ec/storage/api/v1/10_DWL_FL/eyJjYXJwZXRhIjogInRyYW1pdGUiLCAidXVpZCI6ICIyZWM1NmUyNi01YjY4LTRjZjctYjVkYy00ZjM1M2IzMjllYjcucGRmIn0=",
+  "numero": "3194-19-EP/23",
+  "numero_causa": "3194-19-EP",
+  "tipo_accion": "ACCIÓN EXTRAORDINARIA DE PROTECCIÓN",
+  "materia": "Constitucional",
+  "juez": "CARMEN FAVIOLA CORRAL PONCE",
+  "decision": "DESESTIMAR",
+  "metadata_sentencia": "",
+  "es_novedad": false,
+  "es_relevante": false
+}

@@ -71,6 +71,10 @@ Each record includes:
 - `keywords`: Subject keywords
 - `emanating_body`: Issuing authority
 
+## License
+
+[CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) — attribution required.
+
 ## Coverage Statistics
 
 Estimated ~2,000+ documents across all legislatures:

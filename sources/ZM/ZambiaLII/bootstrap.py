@@ -32,6 +32,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
     level=logging.INFO,
@@ -103,8 +104,13 @@ class ZambiaLIIScraper(BaseScraper):
 
         return documents
 
-    def _extract_full_text(self, html: str) -> Dict[str, str]:
-        """Extract full text and metadata from a legislation page."""
+    def _extract_full_text(self, html: str, page_url: str = "") -> Dict[str, str]:
+        """Extract full text and metadata from a legislation page.
+
+        Handles two display modes:
+          - Akoma Ntoso HTML (data-display-type="akn"): text from <la-akoma-ntoso>
+          - PDF viewer (data-display-type="pdf"): download source.pdf and extract
+        """
         soup = BeautifulSoup(html, "html.parser")
         result = {"text": "", "date": "", "title": ""}
 
@@ -112,12 +118,42 @@ class ZambiaLIIScraper(BaseScraper):
         if h1:
             result["title"] = h1.get_text(strip=True)
 
+        # Try Akoma Ntoso HTML first
         akn = soup.find("la-akoma-ntoso")
         if akn:
             text = akn.get_text(separator="\n", strip=True)
             text = re.sub(r"\n{3,}", "\n\n", text)
             text = re.sub(r" {2,}", " ", text)
             result["text"] = text.strip()
+
+        # Fallback: PDF display type
+        if not result["text"] and page_url:
+            pdf_match = re.search(r'data-pdf-url="([^"]+\.pdf)"', html)
+            if pdf_match:
+                pdf_path = pdf_match.group(1)
+            else:
+                # Default convention: append /source.pdf to the act URL
+                pdf_path = page_url.rstrip("/") + "/source.pdf"
+                if not pdf_path.startswith("http"):
+                    pdf_path = BASE_URL + pdf_path
+
+            if not pdf_path.startswith("http"):
+                pdf_path = BASE_URL + pdf_path
+
+            try:
+                time.sleep(5)
+                resp = self.session.get(pdf_path, timeout=120)
+                if resp.status_code == 200 and resp.headers.get("Content-Type", "").startswith("application/pdf"):
+                    text = extract_pdf_markdown(
+                        source="ZM/ZambiaLII",
+                        source_id=page_url,
+                        pdf_bytes=resp.content,
+                        table="legislation",
+                    ) or ""
+                    result["text"] = text.strip()
+                    logger.info(f"PDF fallback: {len(result['text'])} chars from {pdf_path}")
+            except Exception as e:
+                logger.warning(f"PDF fallback failed for {pdf_path}: {e}")
 
         for attr in ["commencement-date", "assent-date", "publication-date"]:
             el = soup.find(attrs={"class": attr})
@@ -185,7 +221,7 @@ class ZambiaLIIScraper(BaseScraper):
                     logger.warning(f"Failed to fetch: {doc['title'][:60]}")
                     continue
 
-                extracted = self._extract_full_text(doc_resp.text)
+                extracted = self._extract_full_text(doc_resp.text, page_url=doc_url)
                 if not extracted["text"] or len(extracted["text"]) < 100:
                     logger.warning(f"Insufficient text: {doc['title'][:60]}")
                     continue
@@ -198,7 +234,7 @@ class ZambiaLIIScraper(BaseScraper):
                     "url": doc_url,
                 }
                 count += 1
-                yield self.normalize(raw)
+                yield raw
 
         logger.info(f"Completed: {count} acts fetched")
 
@@ -217,7 +253,7 @@ class ZambiaLIIScraper(BaseScraper):
                 if doc_resp is None:
                     continue
 
-                extracted = self._extract_full_text(doc_resp.text)
+                extracted = self._extract_full_text(doc_resp.text, page_url=doc["url"])
                 if not extracted["text"] or len(extracted["text"]) < 100:
                     continue
 
@@ -229,7 +265,7 @@ class ZambiaLIIScraper(BaseScraper):
                     "url": doc["url"],
                 }
                 count += 1
-                yield self.normalize(raw)
+                yield raw
 
         logger.info(f"Updates: {count} acts fetched")
 
@@ -249,7 +285,7 @@ class ZambiaLIIScraper(BaseScraper):
 
         doc_resp = self._request(docs[0]["url"])
         if doc_resp:
-            extracted = self._extract_full_text(doc_resp.text)
+            extracted = self._extract_full_text(doc_resp.text, page_url=docs[0]["url"])
             logger.info(f"Doc OK: {docs[0]['title'][:60]} ({len(extracted['text'])} chars)")
             return True
 
@@ -270,6 +306,7 @@ def main():
         action="store_true",
         help="Only fetch a small sample (for validation)",
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = ZambiaLIIScraper()
@@ -279,39 +316,15 @@ def main():
         sys.exit(0 if success else 1)
 
     elif args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        max_records = 15 if args.sample else None
-        count = 0
-
-        for record in scraper.fetch_all():
-            out_path = sample_dir / f"record_{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-
-            text_len = len(record.get("text", ""))
-            logger.info(
-                f"[{count + 1}] {record.get('title', '?')[:80]} "
-                f"({text_len:,} chars)"
-            )
-
-            count += 1
-            if max_records and count >= max_records:
-                break
-
-        logger.info(f"Bootstrap complete: {count} records saved to {sample_dir}")
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+        fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
+        logger.info(f"Bootstrap complete: {fetched} records — {stats}")
+        if fetched == 0:
+            sys.exit(1)
 
     elif args.command == "update":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-        count = 0
-        for record in scraper.fetch_updates():
-            out_path = sample_dir / f"update_{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-        logger.info(f"Update complete: {count} records")
+        stats = scraper.update()
+        logger.info(f"Update complete: {stats}")
 
 
 if __name__ == "__main__":

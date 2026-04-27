@@ -25,6 +25,10 @@ python bootstrap.py bootstrap            # All 2,798 resolutions
 python bootstrap.py test-api             # API connectivity test
 ```
 
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Fobbe corpus on Zenodo. Attribution required. Underlying UN resolutions are also subject to [UN Terms of Use](https://www.un.org/en/about-us/terms-of-use).
+
 ## Source
 
 Zenodo record: https://zenodo.org/records/15154519 (concept: 7319780)

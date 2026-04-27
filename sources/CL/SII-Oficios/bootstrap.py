@@ -201,6 +201,7 @@ def main():
                         help="Command to run")
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
     parser.add_argument("--sample-size", type=int, default=15, help="Sample size")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = SIIOficios(str(Path(__file__).parent))

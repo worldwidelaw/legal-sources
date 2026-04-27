@@ -1,0 +1,65 @@
+# ===================================================================
+# TV/PacLII -- Tuvalu Court Decisions & Legislation (PacLII)
+# ===================================================================
+# Court decisions and legislation from Tuvalu hosted on the Pacific
+# Islands Legal Information Institute (PacLII).
+# ===================================================================
+
+source:
+  id: "TV/PacLII"
+  country: "TV"
+  name: "Tuvalu Court Decisions & Legislation (PacLII)"
+  url: "https://www.paclii.org/tv/"
+  description: |
+    Court decisions from High Court, Court of Appeal, and Senior
+    Magistrates Court, plus consolidated and sessional legislation,
+    subsidiary legislation, and court rules. Full text HTML documents.
+
+data_types:
+  - case_law
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "PacLII requires browser-like User-Agent. 2s delay between requests."
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.paclii.org"
+  endpoints:
+    cases: "/tv/cases/{court_code}/{year}/"
+    legislation: "/tv/legis/{db_type}/"
+  response_format: "html"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "_id"
+      description: "Document ID derived from URL path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case name or legislation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision or enactment date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "PacLII URL"
+      type: "string"
+      role: "reference"
+      required: true

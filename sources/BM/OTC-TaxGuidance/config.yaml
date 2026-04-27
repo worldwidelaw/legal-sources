@@ -1,0 +1,82 @@
+# ===================================================================
+# BM/OTC-TaxGuidance -- Bermuda Office of Tax Commissioner
+# ===================================================================
+# Tax guidance from Bermuda's OTC: payroll tax, land tax, stamp duty,
+# corporate services tax, financial services tax, hotel occupancy tax,
+# betting duty, foreign currency tax, and timesharing taxes.
+#
+# Primary: HTML scraping of gov.bm tax content pages + PDF guidance notes
+# Format: HTML pages + PDFs on gov.bm/sites/default/files/
+# ===================================================================
+
+source:
+  id: "BM/OTC-TaxGuidance"
+  country: "BM"
+  name: "Bermuda Office of Tax Commissioner Guidance"
+  url: "https://www.gov.bm/department/office-tax-commissioner"
+  description: |
+    Bermuda OTC tax guidance: payroll tax (progressive rates), land tax,
+    stamp duty, corporate services tax, financial services tax, hotel
+    occupancy tax, betting duty, passenger departure tax, foreign currency
+    purchase tax, and timesharing taxes. Includes guidance notes PDFs.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.gov.bm"
+
+data_model:
+  type: "doctrine"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document identifier (page slug or PDF filename)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content (HTML page text or PDF extracted text)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Source page URL"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "category"
+      description: "Tax type category"
+      type: "string"
+      role: "category"
+      required: false
+
+notes: |
+  - ~20 HTML guidance pages + ~10 substantive PDF guidance notes
+  - No API available; Drupal JSON API returns 401
+  - HTML content extracted from main body of each tax page
+  - PDF guidance notes hosted at gov.bm/sites/default/files/

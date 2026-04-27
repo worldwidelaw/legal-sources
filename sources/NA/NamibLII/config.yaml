@@ -36,7 +36,7 @@ api:
 schema:
   total_fields: 8
   key_fields:
-    - name: "document_id"
+    - name: "_id"
       description: "Document ID from AKN path"
       type: "string"
       role: "primary_key"

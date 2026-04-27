@@ -201,11 +201,11 @@ class AGCOMScraper(BaseScraper):
             "title": full_title,
             "text": raw.get("text", ""),
             "date": date,
-            "url": BASE_URL + raw.get("path", ""),
+            "url": raw.get("pdf_url") or (BASE_URL + raw.get("path", "")),
             "delibera_number": title.split(maxsplit=1)[1] if " " in title else title,
             "category": raw.get("category"),
             "sector": raw.get("sector"),
-            "pdf_url": raw.get("pdf_url"),
+            "detail_url": BASE_URL + raw.get("path", ""),
         }
 
     def fetch_all(self, sample: bool = False) -> Generator[Dict, None, None]:

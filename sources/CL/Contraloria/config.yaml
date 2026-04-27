@@ -1,39 +1,43 @@
-source:
-  id: CL/Contraloria
-  name: Chile Contraloría General - Administrative Jurisprudence
-  country: 'CL'
-  url: https://www.contraloria.cl/web/cgr/buscar-jurisprudencia
-  type: doctrine
-
 api:
-  type: rest_json
-  base_url: https://www.contraloria.cl
   auth: none
+  base_url: https://www.contraloria.cl
   endpoints:
-    search: POST /apibusca/search/dictamenes
     count: POST /apibusca/count/dictamenes
+    search: POST /apibusca/search/dictamenes
   rate_limit:
-    requests_per_minute: 30
     delay_seconds: 2
-
+    requests_per_minute: 30
+  type: rest_json
 data:
-  format: json
-  language: spa
-  encoding: utf-8
-  license: Public domain (official government publications)
   coverage:
     estimated_records: 156947
-  notes: |
-    Administrative legal opinions (dictámenes) from Chile's Comptroller General
+  encoding: utf-8
+  format: json
+  language: spa
+  license: Public domain (official government publications)
+  notes: 'Administrative legal opinions (dictámenes) from Chile''s Comptroller General
+
     spanning 1950-2026. Full text returned directly by Elasticsearch-backed API.
+
     Paginated by year to stay under 10,000-result ES limit.
 
+    '
 schema:
   key_fields:
-    - _id
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: url
+    required: true
+    type: string
   required_fields:
-    - title
-    - text
-    - date
-    - url
+  - title
+  - text
+  - date
+  - url
+source:
+  country: CL
+  id: CL/Contraloria
+  name: Chile Contraloría General - Administrative Jurisprudence
+  type: doctrine
+  url: https://www.contraloria.cl/web/cgr/buscar-jurisprudencia

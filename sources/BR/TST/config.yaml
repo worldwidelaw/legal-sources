@@ -1,32 +1,47 @@
-source:
-  id: BR/TST
-  name: TST - Tribunal Superior do Trabalho (Labor Supreme Court)
-  country: BR
-  url: https://jurisprudencia.tst.jus.br/
-  data_types:
-    - case_law
-  auth: none
-  language: pt
-  description: >
-    Brazilian Superior Labor Court (TST) jurisprudence via the official
-    search backend API. Returns full-text court decisions (inteiro teor)
-    including ementa (headnote), dispositivo (holding), and full decision
-    body. Over 8 million records covering all TST judging bodies.
-
+fetch:
+  base_url: https://jurisprudencia-backend2.tst.jus.br
+  method: rest_api
+  rate_limit_seconds: 1.5
+  search_endpoint: /rest/pesquisa-textual/{start}/{size}
 schema:
   key_fields:
-    - _id
-    - process_number
-    - title
-    - text
-    - date
-    - judge_relator
-    - orgao_judicante
-    - decision_type
-    - dispositivo
+  - name: _id
+    required: true
+    type: string
+  - name: process_number
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: judge_relator
+    required: false
+    type: string
+  - name: orgao_judicante
+    required: false
+    type: string
+  - name: decision_type
+    required: false
+    type: string
+  - name: dispositivo
+    required: false
+    type: string
+source:
+  auth: none
+  country: BR
+  data_types:
+  - case_law
+  description: 'Brazilian Superior Labor Court (TST) jurisprudence via the official search backend API. Returns full-text court decisions (inteiro teor) including ementa (headnote), dispositivo (holding),
+    and full decision body. Over 8 million records covering all TST judging bodies.
 
-fetch:
-  method: rest_api
-  base_url: https://jurisprudencia-backend2.tst.jus.br
-  search_endpoint: /rest/pesquisa-textual/{start}/{size}
-  rate_limit_seconds: 1.5
+    '
+  id: BR/TST
+  language: pt
+  name: TST - Tribunal Superior do Trabalho (Labor Supreme Court)
+  url: https://jurisprudencia.tst.jus.br/

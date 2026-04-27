@@ -55,3 +55,7 @@ The `sample/` directory contains 12+ sample records demonstrating:
 - Full text extraction from PDFs
 - Metadata from decision list and detail pages
 - Various case types (civil, criminal, administrative)
+
+## License
+
+[Public Domain](https://cassationcourt.am) — official government decisions published by the Court of Cassation of the Republic of Armenia.

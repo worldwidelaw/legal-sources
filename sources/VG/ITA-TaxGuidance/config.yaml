@@ -1,0 +1,25 @@
+source:
+  id: VG/ITA-TaxGuidance
+  name: BVI International Tax Authority Guidance
+  country: VG
+  url: https://bviita.vg
+  data_types:
+    - doctrine
+  auth: none
+  description: >
+    BVI International Tax Authority guidance documents: CRS, FATCA, CbCR,
+    Economic Substance, beneficial ownership, TIEAs, legislation, and forms.
+    ~174 PDFs + 70 news posts via WordPress REST API.
+
+schema:
+  key_fields:
+    - wp_id
+    - content_type
+  record_type: doctrine
+
+fetcher:
+  method: api
+  rate_limit: 1.0
+  notes: >
+    WordPress REST API: /wp-json/wp/v2/media (PDFs), /posts, /pages.
+    PDFs hosted at bviita.vg/wp-content/uploads/. No auth required.

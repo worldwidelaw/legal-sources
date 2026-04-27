@@ -1,0 +1,74 @@
+# ===================================================================
+# GN/JournalOfficiel -- Guinea Official Journal (Journal Officiel)
+# ===================================================================
+# Published by the Secrétariat Général du Gouvernement de Guinée.
+# ~1,844 journal issues from independence to present, in PDF format.
+# Contains laws, decrees, orders, and official announcements.
+# ===================================================================
+
+source:
+  id: "GN/JournalOfficiel"
+  country: "GN"
+  name: "Guinea Journal Officiel"
+  url: "https://journal-officiel.sgg.gov.gn/"
+  description: |
+    Official Journal of the Republic of Guinea published by the
+    Secrétariat Général du Gouvernement. Contains legislation,
+    decrees, orders, and official announcements. ~1,844 issues
+    available as PDFs with text layers.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://journal-officiel.sgg.gov.gn"
+  endpoints:
+    archive: "/fr/journal-officiel/le-journal-officiel.html"
+  response_format: "html+pdf"
+
+data_model:
+  type: "legislation"
+  primary_key: "document_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "document_id"
+
+schema:
+  total_fields: 6
+  key_fields:
+    - name: "_id"
+      description: "Unique identifier (GN-JO-{filename})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Journal issue title and number"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to the PDF"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "issue_number"
+      description: "Journal issue number"

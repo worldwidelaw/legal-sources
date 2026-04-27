@@ -66,6 +66,12 @@ python3 bootstrap.py bootstrap --sample --count 12
 python3 bootstrap.py fetch --legislature 19 --start 1 --max 1000
 ```
 
+## License
+
+> ⚠️ **Commercial use unclear.** The Camera dei deputati claims "© Tutti i diritti riservati" (all rights reserved).
+
+Parliamentary documents are publicly accessible but formal reuse terms should be verified with the Camera dei deputati.
+
 ## Notes
 
 - Bill IDs are sequential within each legislature but may have gaps

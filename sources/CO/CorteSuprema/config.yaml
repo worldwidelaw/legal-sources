@@ -1,44 +1,63 @@
-source:
-  id: CO/CorteSuprema
-  name: Colombian Supreme Court Jurisprudence
-  country: CO
-  url: https://consultaprovidencias.cortesuprema.gov.co/
-  data_types:
-    - case_law
-  auth: none
-  license: open_access
-  description: >
-    Decisions from Colombia's Supreme Court of Justice (Corte Suprema de Justicia),
-    covering Civil, Labor, Criminal, and Tutela chambers. Full text extracted from
-    .docx files via GraphQL API at consultaprovidenciasbk.cortesuprema.gov.co.
-    Nearly 1 million documents dating back to 1886.
-
-schema:
-  key_fields:
-    - _id
-    - _source
-    - _type
-    - title
-    - text
-    - date
-    - url
-    - sala
-    - magistrate
-    - year
-    - auto_sentencia
-
 fetch:
-  strategy: graphql_api
   api_base: https://consultaprovidenciasbk.cortesuprema.gov.co
   endpoints:
-    search: /api (GraphQL getSearchResult)
     content: /api (GraphQL getContentSearch)
     download: /downloadFile (POST with JSON path)
     filters: /filters
-  rooms:
-    - Civil
-    - Laboral
-    - Penal
-    - Tutelas
+    search: /api (GraphQL getSearchResult)
   page_size: 10
   rate_limit: 1.5s between requests
+  rooms:
+  - Civil
+  - Laboral
+  - Penal
+  - Tutelas
+  strategy: graphql_api
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: sala
+    required: false
+    type: string
+  - name: magistrate
+    required: false
+    type: string
+  - name: year
+    required: false
+    type: string
+  - name: auto_sentencia
+    required: false
+    type: string
+source:
+  auth: none
+  country: CO
+  data_types:
+  - case_law
+  description: 'Decisions from Colombia''s Supreme Court of Justice (Corte Suprema de Justicia), covering Civil, Labor, Criminal, and Tutela chambers. Full text extracted from .docx files via GraphQL API
+    at consultaprovidenciasbk.cortesuprema.gov.co. Nearly 1 million documents dating back to 1886.
+
+    '
+  id: CO/CorteSuprema
+  license: open_access
+  name: Colombian Supreme Court Jurisprudence
+  url: https://consultaprovidencias.cortesuprema.gov.co/

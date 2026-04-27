@@ -15,6 +15,10 @@ Zurich Cantonal Law Collection (Gesetzessammlung) from 1803-1998.
 - **Download**: Single ZIP archive (~117 MB)
 - **Language**: German
 
+## License
+
+[CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) — hosted on [opendata.swiss](https://opendata.swiss/en/terms-of-use).
+
 ## Usage
 ```bash
 # Sample (20 records)

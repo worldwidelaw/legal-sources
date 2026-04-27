@@ -51,6 +51,10 @@ python bootstrap.py bootstrap
 python bootstrap.py update
 ```
 
+## License
+
+Public domain — official decisions of the Hellenic Competition Commission, published as open public access.
+
 ## Legal Framework
 
 Decisions primarily concern:

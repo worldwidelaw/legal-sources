@@ -419,6 +419,7 @@ def main():
         action="store_true",
         help="Fetch sample records only (for bootstrap)"
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

@@ -429,6 +429,7 @@ def main():
         action="store_true",
         help="Skip PDF download and text extraction"
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

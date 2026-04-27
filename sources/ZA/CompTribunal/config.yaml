@@ -1,0 +1,43 @@
+fetcher:
+  base_url: https://www.comptrib.co.za
+  rate_limit: 2.0
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: case_number
+    required: false
+    type: string
+  - name: case_type
+    required: false
+    type: string
+  - name: outcome
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: ZA
+  data_types:
+  - case_law
+  description: >
+    Decisions from the South Africa Competition Tribunal (comptrib.co.za).
+    Covers merger approvals, prohibited conduct, and interlocutory applications.
+    Full text extracted from PDF decision documents. ~3,400 decided cases.
+  format: pdf
+  id: ZA/CompTribunal
+  language: en
+  name: South Africa Competition Tribunal
+  url: https://www.comptrib.co.za/decided-cases

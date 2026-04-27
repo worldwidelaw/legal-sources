@@ -23,3 +23,7 @@ python bootstrap.py test               # Test connectivity
 python bootstrap.py bootstrap --sample # Fetch 15 samples
 python bootstrap.py bootstrap          # Full fetch
 ```
+
+## License
+
+[Open Government Data](https://huggingface.co/datasets/joelniklaus/brazilian_court_decisions) — HuggingFace dataset based on official court decisions from TJAL (Tribunal de Justica de Alagoas).

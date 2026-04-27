@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/376.1364",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T01:03:43.431304+00:00",
+  "title": "Missouri Revised Statutes § 376.1364 - Unique confirmation number required, prior authorization review — secure electronic transmission for prior authorizations — single cover page, contents",
+  "text": "376.1364.  Unique confirmation number required, prior authorization review — secure electronic transmission for prior authorizations — single cover page, contents. — 1.  Any utilization review entity performing prior authorization review shall provide a unique confirmation number to a provider upon receipt from that provider of a request for prior authorization.  Except as otherwise requested by the provider in writing, unique confirmation numbers shall be transmitted or otherwise communicated through the same medium through which the requests for prior authorization were made.\n  2.  No later than January 1, 2021, utilization review entities shall accept and respond to requests for prior authorization of drug benefits through a secure electronic transmission using the National Council for Prescription Drugs SCRIPT Standard Version 2017071 or a backwards-compatible successor adopted by the United States Department of Health and Human Services.  For purposes of this subsection, facsimile, proprietary payer portals, and electronic forms shall not be considered electronic transmission.\n  3.  No later than January 1, 2021, utilization review entities shall accept and respond to requests for prior authorization of health care services and mental health services electronically.  For purposes of this subsection, facsimile, proprietary payer portals, and electronic forms shall not be considered electronic transmission.\n  4.  No later than January 1, 2021, each health carrier utilizing prior authorization review shall develop a single secure electronic prior authorization cover page for all of its health benefit plans utilizing prior authorization review, which the carrier or its utilization review entity shall use to accept and respond to, and which providers shall use to submit, requests for prior authorization.  Such cover page shall include, but not be limited to, fields for patient or enrollee information, referring or requesting provider information, rendering or attending provider information, and required clinical information, and shall be supplemented by additional clinical information as required by the health carrier or utilization review entity.\n(L. 2019 S.B. 514)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=376.1364",
+  "section_id": "376.1364",
+  "chapter": "376",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

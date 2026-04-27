@@ -1,0 +1,65 @@
+# ===================================================================
+# MU/ICACDecisions -- Mauritius FCC (ex-ICAC) Court Decisions
+# ===================================================================
+# Court judgments, rulings, and sentences from anti-corruption cases
+# prosecuted by the Financial Crimes Commission (formerly ICAC).
+# PDFs hosted on WordPress site, enumerated via WP REST API.
+# ===================================================================
+
+source:
+  id: "MU/ICACDecisions"
+  country: "MU"
+  name: "Mauritius FCC Court Decisions"
+  url: "https://fcc.mu/"
+  description: |
+    Court decisions (judgments, rulings, sentences) from anti-corruption
+    cases prosecuted by the Financial Crimes Commission (formerly ICAC).
+    PDFs published on WordPress site, accessed via WP REST API media endpoint.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  notes: "Cloudflare-fronted WordPress site. Gentle crawling."
+
+api:
+  type: "rest"
+  base_url: "https://fcc.mu"
+  endpoints:
+    media: "/wp-json/wp/v2/media?per_page=100&mime_type=application/pdf&page={page}"
+    posts: "/wp-json/wp/v2/posts?per_page=100&page={page}"
+  response_format: "json"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "_id"
+      description: "Media item ID from WordPress"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case name / document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Upload/publication date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Direct URL to PDF"
+      type: "string"
+      role: "reference"
+      required: true

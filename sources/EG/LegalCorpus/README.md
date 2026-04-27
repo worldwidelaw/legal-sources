@@ -48,3 +48,7 @@ pip install datasets
 - All documents contain full text (not just metadata)
 - Categories provide hierarchical legal classification
 - No authentication required
+
+## License
+
+[MIT License](https://huggingface.co/datasets/dataflare/egypt-legal-corpus) — HuggingFace dataset of Egyptian legislation.

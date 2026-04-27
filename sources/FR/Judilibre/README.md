@@ -70,4 +70,4 @@ python bootstrap.py updates --since 2026-01-01
 
 ## License
 
-Licence Ouverte / Open Licence - https://www.etalab.gouv.fr/licence-ouverte-open-licence
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

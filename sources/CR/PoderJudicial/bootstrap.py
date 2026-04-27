@@ -34,6 +34,7 @@ except ImportError:
 SOURCE_ID = "CR/PoderJudicial"
 SOURCE_DIR = Path(__file__).parent
 SAMPLE_DIR = SOURCE_DIR / "sample"
+DATA_DIR = SOURCE_DIR / "data"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -369,12 +370,16 @@ def bootstrap(sample: bool = False):
             sys.exit(1)
     else:
         logger.info("Running FULL bootstrap")
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        output_file = DATA_DIR / "records.jsonl"
         count = 0
-        for record in fetch_all():
-            count += 1
-            if count % 100 == 0:
-                logger.info("Processed %d documents", count)
-        logger.info("Bootstrap complete: %d documents", count)
+        with open(output_file, "w", encoding="utf-8") as f:
+            for record in fetch_all():
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                count += 1
+                if count % 100 == 0:
+                    logger.info("Processed %d documents", count)
+        logger.info("Bootstrap complete: %d documents -> %s", count, output_file)
 
 
 if __name__ == "__main__":
@@ -383,6 +388,7 @@ if __name__ == "__main__":
                         help="Command to run")
     parser.add_argument("--sample", action="store_true",
                         help="Only fetch sample data")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     if args.command == "test-api":

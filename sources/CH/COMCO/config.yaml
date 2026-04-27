@@ -1,38 +1,49 @@
-source_id: CH/COMCO
-name: Swiss Competition Commission (COMCO/WEKO)
-country: CH
-url: https://www.weko.admin.ch
-description: |
-  Wettbewerbskommission (WEKO) / Competition Commission (COMCO)
-  Swiss competition authority decisions including:
-  - Competition cases (antitrust, cartels, abuse of dominance)
-  - Merger control decisions
-  - Market investigations
-  - Advisory opinions
-  Published in German, French, and Italian.
-
-data_types:
-  - doctrine
-
 auth:
   type: none
+country: CH
+data_types:
+- doctrine
+description: 'Wettbewerbskommission (WEKO) / Competition Commission (COMCO)
 
+  Swiss competition authority decisions including:
+
+  - Competition cases (antitrust, cartels, abuse of dominance)
+
+  - Merger control decisions
+
+  - Market investigations
+
+  - Advisory opinions
+
+  Published in German, French, and Italian.
+
+  '
+name: Swiss Competition Commission (COMCO/WEKO)
 rate_limit:
-  requests_per_second: 0.5
   burst: 2
-
+  requests_per_second: 0.5
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - decision_type
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: decision_type
+    required: false
+    type: string
   required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source_id: CH/COMCO
+url: https://www.weko.admin.ch

@@ -1,0 +1,91 @@
+# ===================================================================
+# MX/PoderJudicialJalisco -- Jalisco State Court Decisions
+# ===================================================================
+# The Supremo Tribunal de Justicia del Estado de Jalisco publishes
+# court decisions (sentencias) via a public REST API. ~82,000 decisions
+# across Civil, Mercantil, Familiar, Penal, and Laboral matters.
+# AI-generated plain-text summaries available for each decision.
+# ===================================================================
+
+source:
+  id: "MX/PoderJudicialJalisco"
+  country: "MX"
+  name: "Jalisco State Court Decisions"
+  url: "https://publicacionsentencias.stjjalisco.gob.mx/"
+  description: |
+    Court decisions from the Supremo Tribunal de Justicia del Estado de
+    Jalisco. ~82,000 decisions from 11 court chambers (Salas) covering
+    Civil, Mercantil, Familiar, Penal, and Laboral matters. Accessed
+    via public REST API with AI-generated plain-text summaries.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "rest"
+  base_url: "https://publica-sentencias-backend.stjjalisco.gob.mx"
+  endpoints:
+    listing: "/tocas?page={page}"
+    summary: "/toca/{id}/file_resumen"
+    pdf: "/toca/{id}/file"
+  response_format: "json"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Unique decision identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (toca number, court, subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (AI summary)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Emission date of the decision"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the PDF document"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "court"
+      description: "Court chamber (Sala) name"
+    - name: "judge"
+      description: "Presiding magistrate"
+    - name: "subject_area"
+      description: "Subject area (Civil, Penal, etc.)"
+    - name: "case_type"
+      description: "Type of proceeding"
+    - name: "ruling"
+      description: "Ruling direction (confirmar, modificar, etc.)"
+    - name: "case_number"
+      description: "Toca number and period"
+    - name: "publication_date"
+      description: "Date of publication"
+    - name: "crime_or_action"
+      description: "Crime or specific legal action"

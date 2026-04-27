@@ -623,6 +623,7 @@ def main():
                         help="Resume from checkpoint if available")
     parser.add_argument("--delay", type=float, default=1.5,
                         help="Seconds between requests (default: 1.5, use higher for VPS)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

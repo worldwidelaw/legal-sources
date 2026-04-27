@@ -1,16 +1,29 @@
-source_id: CN/SupremeCourt
-name: China Supreme People's Court Guiding Cases & Judicial Interpretations
-country: CN
-url: https://www.court.gov.cn/
-data_types:
-  - case_law
 auth: none
+country: CN
+data_types:
+- case_law
+- legislation
+name: China Supreme People's Court Guiding Cases & Judicial Interpretations
 schedule: weekly
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - case_number
-    - keywords
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: keywords
+    required: false
+    type: string
+source_id: CN/SupremeCourt
+url: https://www.court.gov.cn/

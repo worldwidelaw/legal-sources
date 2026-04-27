@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/59.565",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T18:03:50.177855+00:00",
+  "title": "Missouri Revised Statutes § 59.565 - Electronically transmitted signature valid, when",
+  "text": "59.565.  Electronically transmitted signature valid, when. — 1.  Any statutory requirement that a document be signed by any person shall be satisfied by an electronically transmitted signature that is:\n  (1)  Unique to the person signing;\n  (2)  Capable of verification;\n  (3)  Under the sole control of the person signing;\n  (4)  Linked to the document in such a manner that if data is changed, the signature is invalidated; and\n  (5)  Intended by the person signing to have the same force and effect as a manual signature; ­­­\n  2.  The execution of any document with a properly authenticated digital signature and acknowledgment pursuant to this section constitutes an affirmation, under penalty of perjury, that the facts stated in such document are true and that such person or persons are duly authorized to execute such document.\n(L. 1999 H.B. 795 § 2)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=59.565",
+  "section_id": "59.565",
+  "chapter": "59",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

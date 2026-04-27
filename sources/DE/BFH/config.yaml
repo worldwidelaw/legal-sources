@@ -1,73 +1,79 @@
-# German Federal Finance Court (BFH) Data Source Configuration
-# Official case law from rechtsprechung-im-internet.de
-
-source_id: "DE/BFH"
-name: "German Federal Finance Court (Bundesfinanzhof)"
-country: "DE"
-language: "de"
+country: DE
 data_types:
-  - caselaw
-
-# Data endpoints (no authentication required)
+- caselaw
 endpoints:
-  # RSS feed for recent decisions
-  rss_feed: "https://www.rechtsprechung-im-internet.de/jportal/docs/feed/bsjrs-bfh.xml"
-
-  # Table of Contents XML (full document discovery)
-  toc: "https://www.rechtsprechung-im-internet.de/rii-toc.xml"
-
-  # ZIP download pattern for full text XML:
-  # http://www.rechtsprechung-im-internet.de/jportal/docs/bsjrs/jb-{doc_id}.zip
-
-  # Portal base URL
-  portal: "https://www.rechtsprechung-im-internet.de"
-
-# Schema information
-schema:
-  key_fields:
-    - "doknr"           # Internal document ID (STRE...)
-    - "ecli"            # European Case Law Identifier
-    - "aktenzeichen"    # File number (case number)
-  date_format: "ISO8601"
-  text_field: "text"
-
-# License
-license:
-  name: "Public Domain (Amtliche Werke)"
-  url: "https://www.rechtsprechung-im-internet.de/jportal/portal/page/bsjrsprod.psml?cmsuri=/technik/de/impressum/bsjrsimpressum.jsp"
-  notes: |
-    German court decisions are "amtliche Werke" (official works) which are
-    not protected by copyright under German law (§ 5 UrhG).
-    Decisions are offered in all formats for free use and reuse.
-
-# Fetcher configuration
+  portal: https://www.rechtsprechung-im-internet.de
+  rss_feed: https://www.rechtsprechung-im-internet.de/jportal/docs/feed/bsjrs-bfh.xml
+  toc: https://www.rechtsprechung-im-internet.de/rii-toc.xml
 fetcher:
+  max_retries: 3
   rate_limit_ms: 1500
   ssl_verify: true
   timeout_s: 60
-  max_retries: 3
+language: de
+license:
+  name: Public Domain (Amtliche Werke)
+  notes: 'German court decisions are "amtliche Werke" (official works) which are
 
-# Notes
-notes: |
-  rechtsprechung-im-internet.de provides access to decisions from the
+    not protected by copyright under German law (§ 5 UrhG).
+
+    Decisions are offered in all formats for free use and reuse.
+
+    '
+  url: https://www.rechtsprechung-im-internet.de/jportal/portal/page/bsjrsprod.psml?cmsuri=/technik/de/impressum/bsjrsimpressum.jsp
+name: German Federal Finance Court (Bundesfinanzhof)
+notes: 'rechtsprechung-im-internet.de provides access to decisions from the
+
   Federal Finance Court (Bundesfinanzhof/BFH) and other supreme federal courts.
 
+
   Coverage:
+
   - 15,000+ decisions in the database
+
   - Full text available via ZIP XML downloads
+
   - ECLI identifiers included for case law interoperability
 
+
   The BFH is the supreme court for tax matters with senates covering:
+
   - Income tax and corporate tax
+
   - VAT and customs duties
+
   - Property tax and inheritance tax
+
   - Tax procedure and enforcement
+
   - Fiscal court organization
 
+
   Available formats:
+
   - HTML (web display)
+
   - PDF (print-ready)
+
   - XML (structured data via ZIP downloads)
 
+
   The RSS feed provides the most recent decisions (~200+).
+
   The TOC XML provides complete discovery of all 15,000+ decisions.
+
+  '
+schema:
+  date_format: ISO8601
+  key_fields:
+  - name: doknr
+    required: false
+    type: string
+  - name: ecli
+    required: false
+    type: string
+  - name: aktenzeichen
+    required: false
+    type: string
+  text_field: text
+source_id: DE/BFH

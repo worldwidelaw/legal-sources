@@ -250,6 +250,7 @@ def main():
     bootstrap_parser = subparsers.add_parser("bootstrap")
     bootstrap_parser.add_argument("--sample", action="store_true")
     bootstrap_parser.add_argument("--count", type=int, default=12)
+    bootstrap_parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

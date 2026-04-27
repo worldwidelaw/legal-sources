@@ -1,23 +1,27 @@
-source_id: BR/TRF1
-name: "TRF-1 Federal Regional Court (1st Region)"
-description: >
-  Court decisions (acórdãos, decisões, sentenças) from the Tribunal Regional
-  Federal da 1ª Região via the Pesquisa de Documentos portal. TRF-1 covers
-  13 states plus DF (Acre, Amapá, Amazonas, Bahia, DF, Goiás, Mato Grosso,
-  Maranhão, Minas Gerais, Pará, Piauí, Rondônia, Roraima, Tocantins).
-  Full text extracted from embedded clipboard text in PrimeFaces DataTable.
-base_url: "https://portal.trf1.jus.br/pesquisadocumentos/"
-data_types:
-  - case_law
-country: BR
-language: pt
 auth:
   type: none
+base_url: https://portal.trf1.jus.br/pesquisadocumentos/
+country: BR
+data_types:
+- case_law
+description: 'Court decisions (acórdãos, decisões, sentenças) from the Tribunal Regional Federal da 1ª Região via the Pesquisa de Documentos portal. TRF-1 covers 13 states plus DF (Acre, Amapá, Amazonas,
+  Bahia, DF, Goiás, Mato Grosso, Maranhão, Minas Gerais, Pará, Piauí, Rondônia, Roraima, Tocantins). Full text extracted from embedded clipboard text in PrimeFaces DataTable.
+
+  '
+language: pt
+name: TRF-1 Federal Regional Court (1st Region)
 rate_limit:
-  requests_per_second: 0.5
   burst: 2
+  requests_per_second: 0.5
 schema:
   key_fields:
-    - _id
-    - process_number
-    - document_type
+  - name: _id
+    required: true
+    type: string
+  - name: process_number
+    required: false
+    type: string
+  - name: document_type
+    required: false
+    type: string
+source_id: BR/TRF1

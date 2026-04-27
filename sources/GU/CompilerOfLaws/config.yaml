@@ -1,0 +1,25 @@
+auth: none
+country: GU
+data_types:
+- legislation
+name: Guam Compiler of Laws
+notes: 'Guam Code Annotated (22 titles + Organic Act) via PDF chapter downloads from guamcourts.gov. Updated through P.L. 38-058 (August 18, 2025).
+
+  '
+schedule: monthly
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title_number
+    required: false
+    type: string
+  - name: chapter_number
+    required: false
+    type: string
+  - name: title_name
+    required: false
+    type: string
+source_id: GU/CompilerOfLaws
+url: https://guamcourts.gov/CompilerofLaws/index.html

@@ -214,6 +214,7 @@ if __name__ == "__main__":
                         help="Fetch sample records only")
     parser.add_argument("--count", type=int, default=15,
                         help="Number of sample records")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = ECCCScraper()

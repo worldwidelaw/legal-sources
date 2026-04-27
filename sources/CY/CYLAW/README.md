@@ -45,7 +45,8 @@ python3 bootstrap.py updates --since 2024-01-01
 ```
 
 ## License
-Open Government Data - Cyprus legislation is publicly available through CyLaw.
+
+[Open Government Data](http://www.cylaw.org) — Cyprus legislation is publicly available through CyLaw, operated by the Cyprus Bar Association.
 
 ## References
 - [CyLaw Official Website](https://www.cylaw.org)

@@ -30,3 +30,7 @@ python bootstrap.py bootstrap --sample    # Fetch 15 sample records
 python bootstrap.py bootstrap             # Full bootstrap (all years)
 python bootstrap.py update 2026-01-01     # Incremental update
 ```
+
+## License
+
+[Open Government Data](https://www.sunat.gob.pe) — official tax doctrine published by Peru's National Tax Administration (SUNAT).

@@ -135,16 +135,22 @@ class TSJDecisionesScraper(BaseScraper):
             logger.warning(f"API {method} error: {e}")
             return None
 
+    @staticmethod
+    def _ensure_list_of_dicts(value) -> list:
+        """Coerce API response value to a list of dicts, skipping non-dict items."""
+        if isinstance(value, dict):
+            return [value]
+        if isinstance(value, list):
+            return [v for v in value if isinstance(v, dict)]
+        return []
+
     def _list_salas(self) -> list:
         """Get all salas (chambers)."""
         data = self._api_call("listSala")
         if not data:
             return []
         try:
-            salas = data["coleccion"]["SALA"]
-            if isinstance(salas, dict):
-                salas = [salas]
-            return salas
+            return self._ensure_list_of_dicts(data["coleccion"]["SALA"])
         except (KeyError, TypeError):
             return []
 
@@ -154,9 +160,7 @@ class TSJDecisionesScraper(BaseScraper):
         if not data:
             return []
         try:
-            years = data["coleccion"]["array"]
-            if isinstance(years, dict):
-                years = [years]
+            years = self._ensure_list_of_dicts(data["coleccion"]["array"])
             return [y["id"] for y in years if y.get("TIENE") == "1"]
         except (KeyError, TypeError):
             return []
@@ -167,10 +171,7 @@ class TSJDecisionesScraper(BaseScraper):
         if not data:
             return []
         try:
-            days = data["coleccion"]["DIA"]
-            if isinstance(days, dict):
-                days = [days]
-            return days
+            return self._ensure_list_of_dicts(data["coleccion"]["DIA"])
         except (KeyError, TypeError):
             return []
 
@@ -180,10 +181,7 @@ class TSJDecisionesScraper(BaseScraper):
         if not data:
             return []
         try:
-            decisions = data["coleccion"]["SENTENCIA"]
-            if isinstance(decisions, dict):
-                decisions = [decisions]
-            return decisions
+            return self._ensure_list_of_dicts(data["coleccion"]["SENTENCIA"])
         except (KeyError, TypeError):
             return []
 
@@ -357,15 +355,13 @@ class TSJDecisionesScraper(BaseScraper):
                         dec["SSALADIR"] = sala_dir
                         dec["NOMBREMES"] = nombre_mes
 
-                        record = self.normalize(dec)
-                        if record:
-                            count += 1
-                            logger.info(f"  [{count}] {record['decision_number']} ({fecha}) — {len(record['text'])} chars")
-                            yield record
+                        count += 1
+                        logger.info(f"  [{count}] {dec.get('SSENTNUMERO', '?')} ({fecha}) — {len(text)} chars")
+                        yield dec
 
-                            if sample_limit and count >= sample_limit:
-                                logger.info(f"Sample limit ({sample_limit}) reached")
-                                return
+                        if sample_limit and count >= sample_limit:
+                            logger.info(f"Sample limit ({sample_limit}) reached")
+                            return
 
         logger.info(f"Total decisions fetched: {count} (errors: {errors})")
 
@@ -373,29 +369,14 @@ class TSJDecisionesScraper(BaseScraper):
         """Fetch recent decisions."""
         yield from self.fetch_all(sample=False)
 
-    def bootstrap(self, sample: bool = False):
-        """Run the bootstrap process."""
-        sample_dir = Path(self.source_dir) / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        count = 0
-        for record in self.fetch_all(sample=sample):
-            safe_id = re.sub(r'[^\w\-]', '_', record['_id'])
-            out_file = sample_dir / f"{safe_id}.json"
-            with open(out_file, "w", encoding="utf-8") as f:
-                json.dump(record, f, indent=2, ensure_ascii=False)
-            count += 1
-            logger.info(f"Saved: {out_file.name}")
-
-        logger.info(f"Bootstrap complete: {count} records saved to {sample_dir}")
-        return count
-
-
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="VE/TSJDecisiones bootstrapper")
-    parser.add_argument("command", choices=["bootstrap", "test-api"])
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "test-api"])
     parser.add_argument("--sample", action="store_true", help="Fetch sample only (15 decisions)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
+    parser.add_argument("--workers", type=int, default=5, help="Concurrent workers for bootstrap-fast")
+    parser.add_argument("--batch-size", type=int, default=100, help="Batch size for bootstrap-fast")
     args = parser.parse_args()
 
     scraper = TSJDecisionesScraper()
@@ -404,8 +385,19 @@ def main():
         success = scraper.test_api()
         sys.exit(0 if success else 1)
     elif args.command == "bootstrap":
-        count = scraper.bootstrap(sample=args.sample)
-        if count == 0:
+        stats = scraper.bootstrap(sample_mode=args.sample)
+        logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2)}")
+        if stats.get("records_fetched", 0) == 0:
+            logger.error("No records fetched!")
+            sys.exit(1)
+        sys.exit(0)
+    elif args.command == "bootstrap-fast":
+        stats = scraper.bootstrap_fast(
+            max_workers=args.workers,
+            batch_size=args.batch_size,
+        )
+        logger.info(f"Bootstrap-fast complete: {json.dumps(stats, indent=2)}")
+        if stats.get("records_fetched", 0) == 0:
             logger.error("No records fetched!")
             sys.exit(1)
         sys.exit(0)

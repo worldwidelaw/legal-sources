@@ -1,21 +1,31 @@
-source_id: US/EEOC
-name: US Equal Employment Opportunity Commission Appellate Decisions
+auth: none
 country: US
 data_types:
-  - case_law
-url: https://www.eeoc.gov/federal-sector/appellate-decisions
-auth: none
-
+- case_law
+fetch:
+  delay: 2.0
+  results_per_page: 10
+  search_url: https://www.eeoc.gov/federal-sector/appellate-decisions
+name: US Equal Employment Opportunity Commission Appellate Decisions
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - appeal_number
-    - url
-
-fetch:
-  search_url: https://www.eeoc.gov/federal-sector/appellate-decisions
-  results_per_page: 10
-  delay: 2.0
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: appeal_number
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source_id: US/EEOC
+url: https://www.eeoc.gov/federal-sector/appellate-decisions

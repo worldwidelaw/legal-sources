@@ -59,6 +59,10 @@ python bootstrap.py update
 }
 ```
 
+## License
+
+Public domain — official court decisions of the Hellenic Republic.
+
 ## Notes
 
 - The website uses windows-1253 encoding (Greek Windows codepage)

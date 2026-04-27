@@ -1,14 +1,20 @@
-source_id: US/AK-Legislation
-name: Alaska Statutes
 country: US
-jurisdiction: US-AK
-url: https://www.akleg.gov/basis/statutes.asp
 data_types:
-  - legislation
+- legislation
+jurisdiction: US-AK
 language: en
+name: Alaska Statutes
 schedule: quarterly
 schema:
   key_fields:
-    - _id
-    - title_number
-    - chapter_number
+  - name: _id
+    required: true
+    type: string
+  - name: title_number
+    required: false
+    type: string
+  - name: chapter_number
+    required: false
+    type: string
+source_id: US/AK-Legislation
+url: https://www.akleg.gov/basis/statutes.asp

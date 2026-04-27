@@ -1,25 +1,42 @@
-source_id: "RW/Amategeko"
-country: RW
-name: "Rwanda Official Laws Portal (amategeko.gov.rw)"
-url: "https://www.amategeko.gov.rw/"
-data_types:
-  - legislation
 auth: none
+country: RW
+data_types:
+- legislation
 format: json_api
+name: Rwanda Official Laws Portal (amategeko.gov.rw)
+notes: 'Official portal of Rwandan laws operated by the Rwanda Law Reform Commission (RLRC). REST JSON API at apis.amategeko.gov.rw/v1/site/. Documents are PDF files; full text extracted via pdfplumber.
+  Trilingual: English, Kinyarwanda, French. Sections: 1.1 (legislation in force), 1.2 (historical legislation).
+
+  '
 schedule: weekly
-notes: >
-  Official portal of Rwandan laws operated by the Rwanda Law Reform Commission (RLRC).
-  REST JSON API at apis.amategeko.gov.rw/v1/site/. Documents are PDF files;
-  full text extracted via pdfplumber. Trilingual: English, Kinyarwanda, French.
-  Sections: 1.1 (legislation in force), 1.2 (historical legislation).
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - url
-    - document_code
-    - category
-    - sub_category
-    - language
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: document_code
+    required: false
+    type: string
+  - name: category
+    required: false
+    type: string
+  - name: sub_category
+    required: false
+    type: string
+  - name: language
+    required: false
+    type: string
+source_id: RW/Amategeko
+url: https://www.amategeko.gov.rw/

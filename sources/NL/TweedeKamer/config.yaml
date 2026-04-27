@@ -1,56 +1,61 @@
-id: NL/TweedeKamer
-name: Dutch House of Representatives (Tweede Kamer)
-country: NL
-description: >
-  Parliamentary proceedings from the Tweede Kamer der Staten-Generaal (Dutch House of Representatives).
-  Includes plenary debate transcripts, committee meetings, motions, amendments, and parliamentary questions.
-  Uses the OData v4 API at gegevensmagazijn.tweedekamer.nl.
-
-data_types:
-  - parliamentary_proceedings
-
-url: https://opendata.tweedekamer.nl
 api_base: https://gegevensmagazijn.tweedekamer.nl/OData/v4/2.0
 api_type: odata_v4
-
 auth:
-  type: none
   notes: Open data, no authentication required
+  type: none
+country: NL
+data_types:
+- parliamentary_proceedings
+description: 'Parliamentary proceedings from the Tweede Kamer der Staten-Generaal (Dutch House of Representatives). Includes plenary debate transcripts, committee meetings, motions, amendments, and parliamentary
+  questions. Uses the OData v4 API at gegevensmagazijn.tweedekamer.nl.
 
-rate_limit:
-  requests_per_minute: 60
-  delay_seconds: 1
-
-schema:
-  key_fields:
-    - _id
-    - vergadering_id
-    - vergaderjaar
-  standard_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-  source_fields:
-    - soort
-    - status
-    - vergadering_id
-    - vergadering_titel
-    - vergaderjaar
-    - vergaderingnummer
-    - kamer
-
+  '
+id: NL/TweedeKamer
 license: Public domain (Dutch Open Government Data)
 license_url: https://data.overheid.nl/ondersteuning/open-data/licenties
+name: Dutch House of Representatives (Tweede Kamer)
+notes: '- The Verslag (transcript) entity contains full XML transcripts of parliamentary debates
 
-notes: |
-  - The Verslag (transcript) entity contains full XML transcripts of parliamentary debates
   - Each Verslag is linked to a Vergadering (meeting/session) entity
+
   - Full text is fetched via the /resource endpoint for each Verslag
+
   - Content is in XML format with structured speech segments
+
   - NOTE: This is parliamentary proceedings, NOT enacted legislation
+
   - For Dutch enacted legislation, use NL/wetten.overheid.nl or NL/Staatsblad
+
+  '
+rate_limit:
+  delay_seconds: 1
+  requests_per_minute: 60
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: vergadering_id
+    required: false
+    type: string
+  - name: vergaderjaar
+    required: false
+    type: string
+  source_fields:
+  - soort
+  - status
+  - vergadering_id
+  - vergadering_titel
+  - vergaderjaar
+  - vergaderingnummer
+  - kamer
+  standard_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+url: https://opendata.tweedekamer.nl

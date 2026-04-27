@@ -9,7 +9,7 @@ This source fetches sanctions resolutions from the Spanish National Securities M
 - **Registry URL**: https://www.cnmv.es/Portal/Consultas/RegistroSanciones/verRegSanciones
 - **Data Type**: Regulatory decisions (sanctions)
 - **Language**: Spanish
-- **License**: Open Government License
+- **License**: Open Government License (see [License](#license) below)
 
 ## What's Included
 
@@ -73,3 +73,7 @@ python bootstrap.py update
 - Sanctions are retained in the registry for 5 years after publication
 - Full text is extracted from BOE PDFs
 - The registry is paginated, typically 10-20 pages
+
+## License
+
+Open government data under [Spanish Reuse of Public Sector Information regulations](https://datos.gob.es/en/terms).

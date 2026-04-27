@@ -44,7 +44,7 @@ data_model:
 schema:
   total_fields: 10
   key_fields:
-    - name: "id"
+    - name: "_id"
       description: "Joomla article ID"
       type: "integer"
       role: "primary_key"

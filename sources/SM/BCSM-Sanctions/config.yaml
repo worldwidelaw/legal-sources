@@ -1,0 +1,71 @@
+# ===================================================================
+# SM/BCSM-Sanctions -- San Marino Central Bank Sanctions
+# ===================================================================
+# Administrative pecuniary sanctions published by Banca Centrale
+# della Repubblica di San Marino (BCSM). Financial sector enforcement.
+# HTML listing + PDF downloads, no auth required. ~11 sanctions + L.132 table.
+# ===================================================================
+
+source:
+  id: "SM/BCSM-Sanctions"
+  country: "SM"
+  name: "San Marino Central Bank Sanctions (BCSM)"
+  url: "https://www.bcsm.sm/en/functions/sanctions/sanctioning-measures"
+  description: |
+    Administrative pecuniary sanctions issued by the Central Bank of
+    San Marino (BCSM) against financial sector entities. Published
+    for 5 years per law. Includes individual sanctioning measures (PDFs)
+    and a consolidated table of unpaid sanctions under L.132/2023.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+data_model:
+  type: "doctrine"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 7
+  key_fields:
+    - name: "_id"
+      description: "Unique document identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Sanction description / entity name"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the sanctioning measure"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the PDF document"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - ~11 individual sanction PDFs (2021-2024) + L.132 consolidated table
+  - HubSpot CMS hosted at bcsm.sm
+  - PDFs hosted on hubfs subdirectories
+  - Bilingual (Italian primary, English available)
+  - Updated as sanctions are finalized

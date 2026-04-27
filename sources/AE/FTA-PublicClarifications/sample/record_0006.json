@@ -1,0 +1,14 @@
+{
+  "_id": "FTA-VAT-maskan-supplier-web-portal",
+  "_source": "AE/FTA-PublicClarifications",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-25T05:29:52.110276+00:00",
+  "title": "Maskan supplier web portal",
+  "text": "",
+  "date": "2025-09-01",
+  "url": "https://tax.gov.ae/DownloadOpenTextFile?fileUrl=en/VAT_VAT_Guides/Maskan supplier web portal/Maskan supplier web portal -Manual guide - V2.0.pdf",
+  "tax_type": "vat",
+  "subcategory": "VAT Guides",
+  "country": "AE",
+  "language": "en"
+}

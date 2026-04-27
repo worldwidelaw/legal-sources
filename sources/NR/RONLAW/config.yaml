@@ -1,0 +1,58 @@
+source:
+  id: NR/RONLAW
+  name: "RONLAW - Nauru's Online Legal Database"
+  country: NR
+  url: https://ronlaw.gov.nr/
+  description: >
+    Republic of Nauru Law database containing Acts, subordinate legislation (laws),
+    court decisions (Supreme Court, District Court, Family Court, Refugee Tribunal),
+    bills, and gazettes. Backed by Elasticsearch API with full-text page content.
+    ~10,000 documents spanning 1905-2026.
+
+data_model:
+  types:
+    - legislation
+    - case_law
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: category
+      type: string
+      required: true
+    - name: subcategory
+      type: string
+      required: false
+    - name: year
+      type: integer
+      required: false
+    - name: month
+      type: integer
+      required: false
+    - name: file_path
+      type: string
+      required: false
+
+schedule:
+  full_refresh: monthly
+  update_check: weekly

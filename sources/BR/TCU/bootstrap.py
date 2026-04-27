@@ -282,50 +282,14 @@ if __name__ == "__main__":
             sys.exit(1)
 
     elif cmd == "bootstrap":
-        sample_dir = scraper.source_dir / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        count = 0
-        limit = 15 if sample else None
-        current_year = datetime.now().year
-
-        if full:
-            # All years
-            years = scraper._get_available_years()
-            logger.info(f"Full mode: downloading {len(years)} years")
-        else:
-            # Just current year
-            years = [current_year]
-
-        for year in years:
-            if limit and count >= limit:
-                break
-            remaining = (limit - count) if limit else None
-            for raw in scraper._stream_csv_year(year, limit=remaining):
-                normalized = scraper.normalize(raw)
-                if normalized is None:
-                    continue
-
-                count += 1
-                if sample or count <= 15:
-                    out_path = sample_dir / f"{count:04d}.json"
-                    with open(out_path, "w", encoding="utf-8") as f:
-                        json.dump(normalized, f, ensure_ascii=False, indent=2)
-
-                if count % 1000 == 0:
-                    logger.info(f"Processed {count} records")
-
-                if limit and count >= limit:
-                    break
-
-            if not full:
-                break
-
-        print(f"Saved {count} records to {sample_dir}/")
-
+        stats = scraper.bootstrap(sample_mode="--sample" in sys.argv, sample_size=15)
+        fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
+        logger.info(f"Bootstrap complete: {fetched} records — {stats}")
+        if fetched == 0:
+            sys.exit(1)
     elif cmd == "update":
-        print("Use bootstrap for full refresh. CSV data is updated regularly.")
-
+        stats = scraper.update()
+        logger.info(f"Update complete: {stats}")
     else:
         print(f"Unknown command: {cmd}")
         sys.exit(1)

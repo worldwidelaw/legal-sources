@@ -1,103 +1,96 @@
-# EU/ECJ-Tax Configuration
-# European Court of Justice - Tax Law Cases
-
-source:
-  id: EU/ECJ-Tax
-  name: ECJ Tax Cases
-  description: European Court of Justice case law related to taxation, VAT, fiscal matters, and excise duties
-  country: EU
-  url: https://curia.europa.eu
-  data_types:
-    - case_law
-  language: en
-  update_frequency: weekly
-  auth_required: false
-
 fetch:
-  method: sparql_cellar
   base_url: http://publications.europa.eu/webapi/rdf/sparql
   cellar_base: http://publications.europa.eu/resource
+  method: sparql_cellar
   rate_limit_seconds: 1.5
   timeout_seconds: 120
-  # Uses same SPARQL + CELLAR approach as EU/curia but filters by tax keywords
-
 filters:
-  # Tax-related keywords for filtering case law
-  keywords:
-    - vat
-    - value added tax
-    - taxation
-    - tax
-    - fiscal
-    - excise
-    - customs duty
-    - duty
-    - tariff
-    - income tax
-    - corporate tax
-    - withholding tax
-    - direct taxation
-    - indirect taxation
-    - tax exemption
-    - tax deduction
-    - tax base
-    - taxable person
-    - input tax
-    - output tax
-    - reverse charge
-    - intra-community
-    - state aid
-
-  # Key EU tax directives - cases referencing these are tax cases
   directive_references:
-    - "2006/112"    # VAT Directive
-    - "77/388"      # Sixth VAT Directive
-    - "2008/118"    # Excise Directive
-    - "92/12"       # Old Excise Directive
-    - "2011/96"     # Parent-Subsidiary Directive
-    - "2003/49"     # Interest and Royalties Directive
-    - "90/435"      # Old Parent-Subsidiary Directive
-    - "2011/16"     # Administrative Cooperation Directive
-    - "2016/1164"   # Anti-Tax Avoidance Directive
-    - "2009/133"    # Merger Directive
-    - "90/434"      # Old Merger Directive
-
+  - 2006/112
+  - 77/388
+  - 2008/118
+  - 92/12
+  - 2011/96
+  - 2003/49
+  - 90/435
+  - 2011/16
+  - 2016/1164
+  - 2009/133
+  - 90/434
+  keywords:
+  - vat
+  - value added tax
+  - taxation
+  - tax
+  - fiscal
+  - excise
+  - customs duty
+  - duty
+  - tariff
+  - income tax
+  - corporate tax
+  - withholding tax
+  - direct taxation
+  - indirect taxation
+  - tax exemption
+  - tax deduction
+  - tax base
+  - taxable person
+  - input tax
+  - output tax
+  - reverse charge
+  - intra-community
+  - state aid
 schema:
-  key_fields:
-    - celex_id
-    - ecli
-
   fields:
     celex_id:
-      type: string
       description: CELEX identifier
       required: true
-    ecli:
       type: string
+    court:
+      description: Court (Court of Justice, General Court)
+      type: string
+    date:
+      description: Date of decision
+      type: date
+    directive_references:
+      description: Tax directives referenced in the judgment
+      type: array
+    document_type:
+      description: Document type (judgment, order, opinion)
+      type: string
+    ecli:
       description: European Case Law Identifier
       required: false
-    court:
       type: string
-      description: Court (Court of Justice, General Court)
-    document_type:
-      type: string
-      description: Document type (judgment, order, opinion)
-    title:
-      type: string
-      description: Case title
+    tax_keywords:
+      description: Tax-related keywords found in the document
+      type: array
     text:
-      type: string
       description: Full text of the judgment
       required: true
-    date:
-      type: date
-      description: Date of decision
-    url:
       type: string
+    title:
+      description: Case title
+      type: string
+    url:
       description: EUR-Lex URL
-    tax_keywords:
-      type: array
-      description: Tax-related keywords found in the document
-    directive_references:
-      type: array
-      description: Tax directives referenced in the judgment
+      type: string
+  key_fields:
+  - name: celex_id
+    required: false
+    type: string
+  - name: ecli
+    required: false
+    type: string
+source:
+  auth_required: false
+  country: EU
+  data_types:
+  - case_law
+  description: European Court of Justice case law related to taxation, VAT, fiscal matters, and excise duties
+  id: EU/ECJ-Tax
+  language: en
+  name: ECJ Tax Cases
+  update_frequency: weekly
+  url: https://curia.europa.eu

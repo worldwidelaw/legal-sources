@@ -348,6 +348,7 @@ def main():
     updates_parser = subparsers.add_parser("updates", help="Fetch recent updates")
     updates_parser.add_argument("--since", type=str, required=True, help="ISO date to fetch updates since")
     updates_parser.add_argument("--output", type=str, help="Output directory")
+    updates_parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

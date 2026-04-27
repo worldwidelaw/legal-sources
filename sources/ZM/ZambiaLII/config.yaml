@@ -38,7 +38,7 @@ data_model:
 schema:
   total_fields: 6
   key_fields:
-    - name: "doc_id"
+    - name: "_id"
       description: "Document ID derived from AKN path"
       type: "string"
       role: "primary_key"

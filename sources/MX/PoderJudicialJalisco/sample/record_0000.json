@@ -1,0 +1,18 @@
+{
+  "_id": "MX-JAL-77056",
+  "_source": "MX/PoderJudicialJalisco",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-23T13:20:24.480488+00:00",
+  "title": "Toca 550/2016 — DÉCIMA SALA ESPECIALIZADA EN JUSTICIA INTEGRAL PARA ADOLESCENTES Y PENAL",
+  "text": "El documento trata sobre un caso judicial en la Décima Sala Especializada en Justicia Integral para Adolescentes de Jalisco. Se revisa la situación de un joven que fue sentenciado por robo calificado en 2016. Inicialmente, se le impusieron medidas como internamiento (un año), terapia psicológica (seis meses) y formación educativa (cuatro años o hasta terminar su educación).\n\nEl internamiento fue cumplido en diciembre de 2016, y la medida de terapia psicológica prescribió en mayo de 2019. La única medida que quedaba pendiente era la de formación educativa.\n\nEn agosto de 2021, la Sala recibió un documento que revelaba la fecha de nacimiento del joven. Al revisar esta información, el tribunal descubrió que el joven ya había alcanzado una edad en la que, según la Ley de Justicia Integral para Adolescentes del Estado de Jalisco, deja de ser sujeto del sistema de justicia para menores. La ley establece límites de edad para las personas a quienes se les aplica este sistema.\n\nPor lo tanto, la Sala ha decidido que todas las medidas que aún estaban pendientes de cumplir por el joven deben ser canceladas, ya que ha superado la edad máxima para estar bajo la jurisdicción de este sistema judicial especializado. Se enviará un oficio a la Comisaría de Justicia para Adolescentes para informarles de esta decisión y otro al Juez de lo Penal y Justicia Integral para Adolescentes para su conocimiento.",
+  "date": "2025-02-24",
+  "url": "https://publica-sentencias-backend.stjjalisco.gob.mx/toca/77056/file",
+  "court": "DÉCIMA SALA ESPECIALIZADA EN JUSTICIA INTEGRAL PARA ADOLESCENTES Y PENAL",
+  "judge": "Mgdo. José Luis Gutiérrez Miranda",
+  "subject_area": "Penal",
+  "case_type": "PENAL TRADICIONAL",
+  "ruling": "DEJA DE SER SUJETO AL SISTEMA INTEGRAL PARA ADOLESCENTES",
+  "case_number": "550/2016",
+  "publication_date": "2025-03-18",
+  "crime_or_action": "ROBO CALIFICADO"
+}

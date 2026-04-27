@@ -1,0 +1,48 @@
+source:
+  id: MO/DICJ
+  name: Macau Gaming Inspection & Coordination Bureau (DICJ)
+  country: MO
+  url: https://www.dicj.gov.mo/web/en/information/index.html
+  description: >
+    Regulatory documents from Macau's Gaming Inspection and Coordination Bureau
+    (博彩監察協調局). Gaming legislation, gaming rules, AML instructions,
+    EGM technical standards, concession contracts, and administrative instructions.
+    Documents in Chinese, Portuguese, and some English (technical standards).
+
+data_model:
+  types:
+    - doctrine
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: category
+      type: string
+      required: false
+    - name: date
+      type: string
+      required: false
+
+schedule:
+  full_refresh: monthly
+  update_check: weekly

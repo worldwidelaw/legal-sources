@@ -79,9 +79,9 @@ class RFBSolucoesConsulta(BaseScraper):
         )
 
     def fetch_listing_page(self, page: int, doc_type: str = DOC_TYPE_SC) -> List[int]:
-        """Fetch a listing page and extract document IDs."""
+        """Fetch a listing page and extract document IDs (only vigente/in-force rulings)."""
         resp = self.http.get(
-            f"{LISTING_URL}?tiposAtosSelecionados={doc_type}&p={page}"
+            f"{LISTING_URL}?tiposAtosSelecionados={doc_type}&somente_atos_vigentes=on&p={page}"
         )
         time.sleep(DELAY)
         if resp is None or resp.status_code != 200:
@@ -313,6 +313,7 @@ def main():
     parser.add_argument("command", choices=["bootstrap", "update", "test"])
     parser.add_argument("--sample", action="store_true", help="Fetch only 10-15 sample records")
     parser.add_argument("--since", type=str, help="Date for incremental update (YYYY-MM-DD)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = RFBSolucoesConsulta()

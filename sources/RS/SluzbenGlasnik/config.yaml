@@ -1,77 +1,84 @@
-# RS/SluzbenGlasnik — Serbian Legislation
-# Službeni glasnik RS (Official Gazette of Serbia)
-
-source_id: RS/SluzbenGlasnik
-name: Službeni glasnik RS
-name_en: Serbian Official Gazette
+auth: none
 country: RS
 country_name: Serbia
+data_types:
+- legislation
+description: 'Serbian consolidated legislation from paragraf.rs, which mirrors content from
 
-description: |
-  Serbian consolidated legislation from paragraf.rs, which mirrors content from
   the official Pravno-informacioni sistem (Legal Information System). Contains
+
   laws (zakon), decrees (uredba), regulations (pravilnik), decisions (odluka),
+
   and other legislative acts of the Republic of Serbia.
 
+
   The official source (pravno-informacioni-sistem.rs) implements ELI URIs but
+
   requires JavaScript execution. This source uses paragraf.rs which provides
+
   the same legislation in accessible static HTML format.
 
-data_types:
-  - legislation
-
-url: https://www.paragraf.rs/propisi.html
-official_url: https://www.pravno-informacioni-sistem.rs
-
-auth: none
-rate_limit: 2  # seconds between requests
-
+  '
 license:
   name: Public Domain
-  notes: |
-    Serbian legislation is public domain under Serbian law. Paragraf.rs provides
+  notes: 'Serbian legislation is public domain under Serbian law. Paragraf.rs provides
+
     free access to consolidated legislation text. The content is freely available
+
     for reuse.
 
-schema:
-  key_fields:
-    - url
-  fields:
-    - name: _id
-      type: string
-      description: URL slug (unique identifier)
-    - name: _source
-      type: string
-      description: Source identifier (RS/SluzbenGlasnik)
-    - name: _type
-      type: string
-      description: Document type (legislation)
-    - name: _fetched_at
-      type: datetime
-      description: ISO 8601 timestamp when fetched
-    - name: title
-      type: string
-      description: Law title in Serbian
-    - name: text
-      type: string
-      description: Full text of the law
-    - name: date
-      type: string
-      description: Publication/amendment date (from Official Gazette reference)
-    - name: url
-      type: string
-      description: URL on paragraf.rs
-    - name: official_gazette_ref
-      type: string
-      description: Official Gazette reference (Sl. glasnik RS br. XX/YYYY)
-    - name: document_type
-      type: string
-      description: Type of act (zakon, uredba, pravilnik, odluka, etc.)
+    '
+name: Službeni glasnik RS
+name_en: Serbian Official Gazette
+notes: 'Serbia is an EU candidate country. The official Legal Information System
 
-notes: |
-  Serbia is an EU candidate country. The official Legal Information System
   (pravno-informacioni-sistem.rs) implements ELI (European Legislation Identifier)
+
   but requires JavaScript execution for content access.
 
+
   The sitemap at paragraf.rs/sitemap-1.xml contains ~1,176 legislation URLs.
+
   Full text is available in HTML format with article-level anchors.
+
+  '
+official_url: https://www.pravno-informacioni-sistem.rs
+rate_limit: 2
+schema:
+  fields:
+  - description: URL slug (unique identifier)
+    name: _id
+    type: string
+  - description: Source identifier (RS/SluzbenGlasnik)
+    name: _source
+    type: string
+  - description: Document type (legislation)
+    name: _type
+    type: string
+  - description: ISO 8601 timestamp when fetched
+    name: _fetched_at
+    type: datetime
+  - description: Law title in Serbian
+    name: title
+    type: string
+  - description: Full text of the law
+    name: text
+    type: string
+  - description: Publication/amendment date (from Official Gazette reference)
+    name: date
+    type: string
+  - description: URL on paragraf.rs
+    name: url
+    type: string
+  - description: Official Gazette reference (Sl. glasnik RS br. XX/YYYY)
+    name: official_gazette_ref
+    type: string
+  - description: Type of act (zakon, uredba, pravilnik, odluka, etc.)
+    name: document_type
+    type: string
+  key_fields:
+  - name: url
+    required: true
+    type: string
+source_id: RS/SluzbenGlasnik
+url: https://www.paragraf.rs/propisi.html

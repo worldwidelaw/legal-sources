@@ -36,3 +36,7 @@ python bootstrap.py bootstrap --full
 | `actor` | Plaintiff |
 | `demandado` | Defendant |
 | `magistrados` | Judges |
+
+## License
+
+[Open Government Data](https://www.saij.gob.ar) — official court decisions published by the Argentine Judiciary via SAIJ.

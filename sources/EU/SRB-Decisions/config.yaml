@@ -1,0 +1,53 @@
+# EU/SRB-Decisions - Single Resolution Board Decisions
+# Appeal Panel decisions + Resolution case documents from srb.europa.eu
+
+name: "EU Single Resolution Board Decisions"
+country: EU
+source_type: doctrine
+
+base_url: "https://www.srb.europa.eu"
+official_url: "https://www.srb.europa.eu"
+
+data_types:
+  - doctrine
+
+languages:
+  - en
+
+coverage:
+  start_year: 2015
+  end_year: 2026
+  description: "Appeal Panel decisions on MREL, contributions, access to documents + resolution case decisions"
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.33
+  burst: 1
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "decision_type"
+      type: "string"
+      required: false
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url

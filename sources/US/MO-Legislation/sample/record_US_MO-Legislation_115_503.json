@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/115.503",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T19:27:01.419141+00:00",
+  "title": "Missouri Revised Statutes § 115.503 - Verification board to inspect or cause inspection of secured electronic voting machines",
+  "text": "115.503.  Verification board to inspect or cause inspection of secured electronic voting machines. — 1.  As soon as possible after an election in which electronic voting machines are used, the verification board, or a bipartisan committee appointed by the verification board, shall inspect each secured electronic voting machine and record the votes cast on the machine.  In precincts where electronic voting machines equipped with printed election returns mechanisms are used, the counter compartment shall not be opened and the original and duplicate originals of the printed return sheets of the votes cast on questions and for candidates regularly nominated, or who have duly filed, together with the tabulation and inclusion of any votes written in on the paper roll for those not regularly nominated, or who have not filed, shall constitute the official return sheet for the votes cast on that machine, when properly certified by the precinct election officers.  One copy of such printed return sheet shall be returned to the election authority and retained by it for not less than one year.  Any bipartisan committee appointed pursuant to this subsection shall consist of at least two people, one from each major political party, who shall be appointed in the same manner and possess the same qualifications as election judges.\n  2.  After the verification board or committee has completed its inspection and record, it shall compare the record with the returns made by the election judges on election day.  If there is a discrepancy between the returns of the election judges and the record of the verification board or committee, the verification board shall correct the returns made by the judges to conform to its record.  The corrected returns shall supersede the returns made by the election judges on election day.  Both the record and the returns shall be retained by the election authority as provided in section 115.493.\n(L. 1977 H.B. 101 § 12.315, A.L. 1978 S.B. 774, A.L. 2014 H.B. 1136)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=115.503",
+  "section_id": "115.503",
+  "chapter": "115",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

@@ -7,7 +7,7 @@ Bremen state legislation from the official Transparenzportal Bremen.
 - **URL**: https://www.transparenz.bremen.de
 - **Dataset**: [Gesetze und Rechtsverordnungen Bremen](https://www.transparenz.bremen.de/daten/gesetze-und-rechtsverordnungen-bremen-8261)
 - **Format**: XML feed (metadata) + HTML detail pages (full text)
-- **License**: CC-BY-3.0 (Creative Commons Attribution 3.0)
+- **License**: [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
 - **Attribution**: Senator für Finanzen, Bremen
 
 ## Data Types
@@ -36,6 +36,10 @@ python3 bootstrap.py bootstrap --sample
 # Full bootstrap (50 documents)
 python3 bootstrap.py bootstrap
 ```
+
+## License
+
+[CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) — attribution required.
 
 ## Notes
 

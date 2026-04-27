@@ -1,35 +1,46 @@
-name: CNIL - Commission Nationale de l'Informatique et des Libertés
-source_id: FR/CNIL
 country: FR
 data_types:
-  - doctrine
-  - caselaw  # sanctions are quasi-judicial
-
-url: https://echanges.dila.gouv.fr/OPENDATA/CNIL/
+- doctrine
+- caselaw
 license: Licence Ouverte 2.0
-update_frequency: monthly
+name: CNIL - Commission Nationale de l'Informatique et des Libertés
+notes: 'CNIL deliberations include:
 
-schema:
-  key_fields:
-    - _id
-    - numero
-    - date
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-
-notes: |
-  CNIL deliberations include:
   - Sanctions (SAN): enforcement decisions with fines
+
   - Research authorizations (DR): approvals for health data research
+
   - Other authorizations: transfer permits, derogations
+
   - Opinions and recommendations on data protection
 
+
   Data coverage: 1979-present (all deliberations since CNIL creation)
+
   Full archive: ~18MB compressed, updated monthly
+
   Incremental updates: Daily archives with new/modified decisions
+
+  '
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: numero
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+source_id: FR/CNIL
+update_frequency: monthly
+url: https://echanges.dila.gouv.fr/OPENDATA/CNIL/

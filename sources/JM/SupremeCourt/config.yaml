@@ -27,7 +27,7 @@ schema:
   key_fields:
     - name: neutral_citation
       type: string
-      required: true
+      required: false
     - name: case_number
       type: string
       required: true

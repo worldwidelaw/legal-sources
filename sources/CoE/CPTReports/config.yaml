@@ -22,7 +22,7 @@ schema:
       required: true
     - name: title
       type: string
-      required: true
+      required: false
     - name: text
       type: string
       required: true

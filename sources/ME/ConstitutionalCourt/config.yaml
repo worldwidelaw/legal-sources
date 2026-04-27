@@ -1,29 +1,33 @@
-source_id: ME/ConstitutionalCourt
-name: Montenegro Constitutional Court (Ustavni sud Crne Gore)
-country: ME
-url: http://www.ustavnisud.me
-data_types:
-  - caselaw
-license: public
-auth: none
-language: sr
-
 api:
   base_url: http://www.ustavnisud.me/ustavnisud
-  list_endpoint: /upit.php
   files_endpoint: /obrada_fajlovi.php
+  list_endpoint: /upit.php
   page_size: 100
   rate_limit_delay: 1.5
+auth: none
+country: ME
+data_types:
+- caselaw
+language: sr
+license: public
+name: Montenegro Constitutional Court (Ustavni sud Crne Gore)
+notes: 'Montenegro Constitutional Court database provides decisions from 1964 onwards.
 
-schema:
-  key_fields:
-    - djelovodni_broj  # Case number
-  date_field: datum
-  text_field: sadrzaj_fajlova
-
-notes: |
-  Montenegro Constitutional Court database provides decisions from 1964 onwards.
   Uses a DataTables server-side API (upit.php) returning JSON with pagination.
+
   Full text is available in the sadrzaj_fajlova field.
+
   ~18,000+ decisions as of February 2026.
+
   Text may have encoding issues (missing diacritics in some characters).
+
+  '
+schema:
+  date_field: datum
+  key_fields:
+  - name: djelovodni_broj
+    required: false
+    type: string
+  text_field: sadrzaj_fajlova
+source_id: ME/ConstitutionalCourt
+url: http://www.ustavnisud.me

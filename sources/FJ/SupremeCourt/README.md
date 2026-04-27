@@ -30,3 +30,7 @@ None required — public API.
 ## Rate Limits
 
 0.5 requests/second with 1-second delay between pages.
+
+## License
+
+[Open Government Data](https://judiciary.gov.fj) — official decisions published by the Judiciary of the Republic of Fiji.

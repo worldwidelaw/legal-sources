@@ -32,6 +32,7 @@ import json
 import logging
 import re
 import html
+import time
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Optional, List
@@ -78,8 +79,10 @@ class CATCCScraper(BaseScraper):
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
-                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
-                "Accept": "text/html, application/xhtml+xml",
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Referer": f"{BASE_URL}/tcc-cci/index.do",
             },
             timeout=60,
         )
@@ -99,50 +102,100 @@ class CATCCScraper(BaseScraper):
             return None
 
     def _get_year_cases(self, year: int) -> List[str]:
-        """Get all case item IDs for a given year, handling pagination."""
+        """Get all case item IDs for a given year, handling pagination.
+
+        Retries 403 responses (which the TCC site emits under throttling) with
+        exponential backoff before giving up on that page.
+        """
         all_ids = set()
         page = 1
         pattern = r'/tcc-cci/decisions/en/item/(\d+)/index\.do'
 
         while True:
             url = f"{PATH_PREFIX}/en/{year}/nav_date.do?page={page}&iframe=true"
-            self.rate_limiter.wait()
 
-            try:
-                resp = self.client.get(url)
-                resp.raise_for_status()
-                ids = set(re.findall(pattern, resp.text))
-                new_ids = ids - all_ids
-
-                if not new_ids:
+            resp = None
+            last_err = None
+            for attempt in range(4):  # up to 4 tries with backoff
+                self.rate_limiter.wait()
+                try:
+                    resp = self.client.get(url)
+                    if resp.status_code == 403:
+                        wait = 5 * (2 ** attempt)
+                        logger.warning(
+                            f"Year {year} page {page}: 403 (attempt {attempt + 1}/4); "
+                            f"backing off {wait}s"
+                        )
+                        time.sleep(wait)
+                        resp = None
+                        continue
+                    resp.raise_for_status()
                     break
+                except Exception as e:
+                    last_err = e
+                    resp = None
+                    if '404' in str(e):
+                        break
+                    wait = 5 * (2 ** attempt)
+                    logger.warning(
+                        f"Year {year} page {page}: {e} (attempt {attempt + 1}/4); "
+                        f"backing off {wait}s"
+                    )
+                    time.sleep(wait)
 
-                all_ids.update(new_ids)
-                page += 1
-
-            except Exception as e:
-                if '404' not in str(e):
-                    logger.error(f"Error fetching year {year} page {page}: {e}")
+            if resp is None:
+                if last_err and '404' not in str(last_err):
+                    logger.error(
+                        f"Error fetching year {year} page {page} after retries: {last_err}"
+                    )
                 break
+
+            ids = set(re.findall(pattern, resp.text))
+            new_ids = ids - all_ids
+
+            if not new_ids:
+                break
+
+            all_ids.update(new_ids)
+            page += 1
 
         logger.info(f"Year {year}: found {len(all_ids)} cases across {page - 1} page(s)")
         return list(all_ids)
 
     def _get_case_content(self, item_id: str) -> Optional[dict]:
-        """Fetch full case content for a given item ID."""
+        """Fetch full case content for a given item ID.
+
+        Retries 403 responses with backoff (TCC throttles under load).
+        """
         url = f"{PATH_PREFIX}/en/item/{item_id}/index.do?iframe=true"
-        self.rate_limiter.wait()
 
-        try:
-            resp = self.client.get(url)
-            resp.raise_for_status()
-            content = resp.text
+        for attempt in range(4):
+            self.rate_limiter.wait()
+            try:
+                resp = self.client.get(url)
+                if resp.status_code == 403:
+                    wait = 5 * (2 ** attempt)
+                    logger.warning(
+                        f"Case {item_id}: 403 (attempt {attempt + 1}/4); "
+                        f"backing off {wait}s"
+                    )
+                    time.sleep(wait)
+                    continue
+                resp.raise_for_status()
+                return self._parse_case_html(item_id, resp.text)
+            except Exception as e:
+                if '404' in str(e):
+                    logger.warning(f"Case {item_id}: 404 - skipping")
+                    return None
+                wait = 5 * (2 ** attempt)
+                logger.warning(
+                    f"Case {item_id}: {e} (attempt {attempt + 1}/4); "
+                    f"backing off {wait}s"
+                )
+                time.sleep(wait)
 
-            return self._parse_case_html(item_id, content)
-
-        except Exception as e:
-            logger.error(f"Error fetching case {item_id}: {e}")
-            return None
+        logger.error(f"Error fetching case {item_id}: gave up after retries")
+        return None
 
     def _parse_case_html(self, item_id: str, html_content: str) -> dict:
         """Parse case HTML and extract metadata and full text."""

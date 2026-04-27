@@ -257,7 +257,7 @@ class JordanConstitutionalCourtScraper(BaseScraper):
     def test_connection(self):
         """Quick connectivity test."""
         print("Testing Jordan Constitutional Court endpoints...")
-        print(f"pdfplumber available: {HAS_PDFPLUMBER}")
+        print("pdfplumber available: using extract_pdf_markdown")
 
         for listing in LISTING_PAGES:
             path = listing["path"]
@@ -272,7 +272,7 @@ class JordanConstitutionalCourtScraper(BaseScraper):
             except Exception as e:
                 print(f"   ERROR: {e}")
 
-            if items and HAS_PDFPLUMBER:
+            if items:
                 print(f"\n2. Testing PDF extraction for {dtype}...")
                 try:
                     text = self._download_and_extract_pdf(items[0]["pdf_url"])

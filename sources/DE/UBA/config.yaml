@@ -1,0 +1,49 @@
+source_id: DE/UBA
+name: German Federal Environment Agency (UBA) - Publications
+description: Environmental policy reports, guidance, and technical publications from the Umweltbundesamt
+url: https://www.umweltbundesamt.de
+country: DE
+data_types:
+  - doctrine
+
+access:
+  type: html_scraping
+  rate_limit: 0.5/s
+  auth: none
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: false
+    - name: category
+      type: string
+      required: false
+  text_field: text
+  date_field: date
+  title_field: title
+
+update:
+  frequency: monthly
+  method: fetch_updates
+
+license:
+  type: public_domain
+  notes: German official works (§ 5 UrhG) - public domain
+
+notes: |
+  6200+ publications from the UBA covering environmental policy, climate,
+  chemicals, air quality, water, waste, and more. PDFs extracted to text
+  via common/pdf_extract. Paginated listing at /publikationen.

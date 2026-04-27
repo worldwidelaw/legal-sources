@@ -65,9 +65,12 @@ python3 bootstrap.py updates --since 2026-01-01
 python3 bootstrap.py fetch --audience particuliers
 ```
 
+## License
+
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.
+
 ## Attribution
 
 When reusing this data, cite:
 - Source: Service-Public.gouv.fr / DILA
 - Download URL: lecomarquage.service-public.gouv.fr
-- License: Licence Ouverte v2.0

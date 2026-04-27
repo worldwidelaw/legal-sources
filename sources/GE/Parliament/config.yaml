@@ -1,0 +1,33 @@
+source:
+  id: GE/Parliament
+  name: Georgia Legislative Herald (matsne.gov.ge)
+  country: GE
+  url: https://matsne.gov.ge
+  data_types:
+    - legislation
+  auth: none
+  schedule: monthly
+
+schema:
+  key_fields:
+    - name: _id
+      required: true
+      type: string
+    - name: title
+      required: true
+      type: string
+    - name: date
+      required: false
+      type: string
+    - name: text
+      required: true
+      type: string
+    - name: document_number
+      required: false
+      type: string
+    - name: registration_code
+      required: false
+      type: string
+    - name: url
+      required: false
+      type: string

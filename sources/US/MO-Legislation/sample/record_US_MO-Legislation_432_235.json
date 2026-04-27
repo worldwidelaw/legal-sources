@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/432.235",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:01:34.607030+00:00",
+  "title": "Missouri Revised Statutes § 432.235 - Provision of information in writing — presentation of records",
+  "text": "432.235.  Provision of information in writing — presentation of records. — 1.  If parties have agreed to conduct a transaction by electronic means and a law requires a person to provide, send or deliver information in writing to another person, the requirement is satisfied if the information is provided, sent or delivered, as the case may be, in an electronic record capable of retention by the recipient at the time of receipt.  An electronic record is not capable of retention by the recipient if the sender or its information processing system inhibits the ability of the recipient to print or store the electronic record.\n  2.  If a law other than sections 432.200 to 432.295 requires a record to be posted or displayed in a certain manner, to be sent, communicated, or transmitted by a specified method, or to contain information that is formatted in a certain manner, the following rules apply:\n  (1)  The record shall be posted or displayed in the manner specified in the other law;\n  (2)  Except as otherwise provided in subdivision (2) of subsection 4 of this section, the record shall be sent, communicated, or transmitted by the method specified in the other law;\n  (3)  The record shall contain the information formatted in the manner specified in the other law.\n  3.  If a sender inhibits the ability of a recipient to store or print an electronic record, the electronic record is not enforceable against the recipient.\n  4.  The requirements of this section shall not be varied by agreement, but:\n  (1)  To the extent a law other than sections 432.200 to 432.295 requires information to be provided, sent, or delivered in writing but permits that requirement to be varied by agreement, the requirement under subsection 1 of this section that the information be in the form of an electronic record capable of retention may also be varied by agreement; and\n  (2)  A requirement under a law other than sections 432.200 to 432.295 to send, communicate, or transmit a record by first class mail, postage prepaid, may be varied by agreement to the extent permitted by the other law.\n(L. 2003 H.B. 254)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=432.235",
+  "section_id": "432.235",
+  "chapter": "432",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

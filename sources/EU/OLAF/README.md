@@ -60,6 +60,10 @@ python3 sources/EU/OLAF/bootstrap.py bootstrap
 - Maximum 30 seconds timeout per request
 - Retry logic with exponential backoff
 
+## License
+
+[EUR-Lex legal notice](https://eur-lex.europa.eu/content/legal-notice/legal-notice.html) — EU agency publications, reuse authorised with attribution.
+
 ## Notes
 
 - OLAF's internal databases (IMS, EDES) require authorization and are not publicly accessible

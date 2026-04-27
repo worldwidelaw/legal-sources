@@ -1,0 +1,45 @@
+source_id: FM/FSMLaw
+name: FSM Legal Information System
+country: FM
+url: https://www.fsmlaw.org/
+description: |
+  Legal Information System of the Federated States of Micronesia.
+  Covers FSM National Code (Titles 1-58), FSM Supreme Court decisions (Vols 1-22+),
+  and state codes and court decisions for Chuuk, Kosrae, Pohnpei, and Yap.
+
+data_types:
+  - legislation
+  - case_law
+
+license: "Public domain (FSM Government)"
+language: en
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+update_frequency: quarterly
+
+schema:
+  key_fields:
+    - name: title
+      required: true
+      type: string
+    - name: jurisdiction
+      required: true
+      type: string
+    - name: doc_type
+      required: true
+      type: string
+  date_field: date
+  text_field: text
+  title_field: title
+  url_field: url
+
+notes: |
+  Static HTML site. Scrapes index pages to discover all legislation chapters
+  and court decision pages, then fetches full text from each HTML page.
+  Covers FSM national + 4 states (Chuuk, Kosrae, Pohnpei, Yap).

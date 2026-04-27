@@ -29,30 +29,27 @@ api:
 
 schema:
   key_fields:
-    - _id
-    - ecli
-    - court_case_number
-  text_field: text
-  date_field: date
-  fields:
-    _id: Unique identifier (format: DK-DDB-{case_id})
-    _source: Source identifier (DK/CourtOfAppeal)
-    _type: Document type (caselaw)
-    _fetched_at: ISO 8601 timestamp when fetched
-    title: Case headline/description
-    text: Full text of the judgment (cleaned from HTML)
-    date: Verdict date (YYYY-MM-DD)
-    url: Link to case on domsdatabasen.dk
-    language: Language code (da)
-    ecli: European Case Law Identifier
-    court_case_number: Court's case number
-    court: Name of the court
-    case_type: Type of case procedure
-    profession: Case category (civil/criminal)
-    instance: Court instance level
-    verdict_status: Status of the verdict
-    subjects: List of case topics
-    participants: List of case participants with roles
+    - name: _id
+      type: string
+      required: true
+    - name: ecli
+      type: string
+      required: false
+    - name: court_case_number
+      type: string
+      required: false
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
 
 notes: |
   The Domsdatabasen web API is publicly accessible without authentication.

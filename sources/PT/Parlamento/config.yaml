@@ -1,59 +1,39 @@
-# PT/Parlamento Configuration
-# Portuguese Parliament Open Data (Assembleia da República)
+source_id: PT/Parlamento
+name: Assembleia da República - Dados Abertos
+country: PT
+url: https://www.parlamento.pt/Cidadania/Paginas/DadosAbertos.aspx
+description: |
+  Portuguese Parliament Open Data - legislative initiatives with full text PDFs.
+  Covers Legislatures II through XVII (1980-present).
+  Includes bills, resolutions, motions, and other parliamentary initiatives.
 
-source:
-  id: PT/Parlamento
-  name: Assembleia da República - Dados Abertos
-  country: PT
-  description: Portuguese Parliament Open Data - legislative initiatives with full text PDFs
-  url: https://www.parlamento.pt/Cidadania/Paginas/DadosAbertos.aspx
-  data_types:
-    - legislation
-  language: pt
-  license: Open Government Data
-  auth: none
+data_types:
+  - legislation
 
-endpoints:
-  base: https://app.parlamento.pt/webutils/docs
-  initiatives_pattern: "Iniciativas/{leg} Legislatura/Iniciativas{leg}_json.txt"
+license: Open Government Data
+language: pt
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.3
+  burst: 2
+
+update_frequency: weekly
 
 schema:
   key_fields:
-    - name: "_id"
-      type: "string"
-      required: true
-    - name: "title"
-      type: "string"
-      required: true
-    - name: "text"
-      type: "string"
-      required: true
-    - name: "date"
-      type: "date"
-      required: true
-    - name: "url"
-      type: "string"
-      required: true
-    - name: "initiative_type"
-      type: "string"
+    - name: initiative_type
       required: false
-    - name: "initiative_nr"
-      type: "string"
+      type: string
+    - name: initiative_nr
       required: false
-    - name: "legislature"
-      type: "string"
+      type: string
+    - name: legislature
       required: false
-    - name: "authors"
-      type: "string"
-      required: false
-
-rate_limits:
-  requests_per_minute: 20
-  delay_between_requests: 3.0
-
-notes: |
-  Uses the Assembleia da República Open Data JSON feeds. Each legislature
-  has a JSON file listing all initiatives (bills, resolutions, etc.) with
-  metadata and PDF links to the full text of each initiative.
-  Legislatures II through XVII are available (1980-present).
-  PDFs are extracted via common/pdf_extract for full text.
+      type: string
+  date_field: date
+  text_field: text
+  title_field: title
+  url_field: url

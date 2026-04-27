@@ -1,18 +1,26 @@
-id: RS/PravnoInformacioniSistem
-name: Serbia Legal Information System (Pravno-Informacioni Sistem)
 country: RS
-url: https://www.pravno-informacioni-sistem.rs/
 data_types:
-  - legislation
+- legislation
+description: 'Consolidated Serbian legislation from the official Pravno-Informacioni Sistem, operated by the Serbian government. Uses REST API with ~19,800 regulations. Full text available as HTML via viewAct
+  endpoint.
+
+  '
+id: RS/PravnoInformacioniSistem
 language: sr
-strategy: api_pagination
-description: >
-  Consolidated Serbian legislation from the official Pravno-Informacioni Sistem,
-  operated by the Serbian government. Uses REST API with ~19,800 regulations.
-  Full text available as HTML via viewAct endpoint.
+name: Serbia Legal Information System (Pravno-Informacioni Sistem)
 schema:
   key_fields:
-    - id
-    - uuid
-    - title
-    - doc_type
+  - name: id
+    required: false
+    type: string
+  - name: uuid
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: doc_type
+    required: false
+    type: string
+strategy: api_pagination
+url: https://www.pravno-informacioni-sistem.rs/

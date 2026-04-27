@@ -1,0 +1,81 @@
+# ===================================================================
+# SB/AGLegislation -- Solomon Islands Attorney General Legislation
+# ===================================================================
+# Official legislation from the Attorney General's Chambers.
+# The WordPress site hosts Acts Currently in Force (~224), Repealed Acts,
+# the Constitution, Revised Edition 1996, and Provincial Ordinances
+# as downloadable PDFs via the Download Manager plugin.
+#
+# Discovery: WordPress REST API (wp-json/wp/v2/dlm_download)
+# Full text: PDF download, extracted via pdf_extract
+# License: Free public access
+# ===================================================================
+
+source:
+  id: "SB/AGLegislation"
+  country: "SB"
+  name: "Solomon Islands Attorney General Legislation Portal"
+  url: "https://attorneygenerals.gov.sb/legislation/legislation-portal/"
+  description: |
+    Official legislation of the Solomon Islands maintained by the Attorney
+    General's Chambers. Includes Acts Currently in Force, the Constitution,
+    Repealed Acts, and the 1996 Revised Laws. Full text extracted from PDF
+    downloads served via WordPress Download Manager REST API.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+fetch:
+  delay: 2.0
+  page_size: 20
+  sample_count: 15
+
+api:
+  type: "wordpress_rest"
+  base_url: "https://attorneygenerals.gov.sb"
+  endpoints:
+    downloads: "/wp-json/wp/v2/dlm_download"
+    categories: "/wp-json/wp/v2/dlm_download_category"
+  categories:
+    acts_in_force: 27
+    constitution: 245
+    repealed_acts: 30
+    revised_1996: 137
+    provincial_ordinances: 151
+
+data_model:
+  type: "legislation"
+  primary_key: "legislation_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "legislation_id"
+
+schema:
+  key_fields:
+    - name: "legislation_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: true
+    - name: "url"
+      type: "string"
+      required: true
+  text_fields:
+    - text
+  date_fields:
+    - date
+    - _fetched_at

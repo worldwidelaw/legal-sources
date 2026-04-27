@@ -1,0 +1,19 @@
+{
+  "_id": "EC-CC-9891",
+  "_source": "EC/CorteConstitucional",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-01T18:25:08.919224+00:00",
+  "title": "Sentencia 2565-23-EP/26",
+  "text": "La Corte Constitucional acepta la acción extraordinaria de protección presentada en\ncontra de una sentencia de segunda instancia que aceptó una acción de protección cuya\ncontroversia versaba sobre la legalidad de dos ordenanzas emitidas por el Gobierno Autónomo\nDescentralizado Municipal del Cantón Samborondón, provincia de Guayas para establecer el uso\nde suelo de los predios de la “Lotización Huertos Familiares ‘Río Mar’”. La Corte declara la\nvulneración del derecho a la seguridad jurídica de la parte accionante de esta causa al constatar\nque la autoridad judicial aceptó una acción de protección manifiestamente improcedente.",
+  "date": "2026-03-12",
+  "url": "https://esacc.corteconstitucional.gob.ec/storage/api/v1/10_DWL_FL/eyJjYXJwZXRhIjogInRyYW1pdGUiLCAidXVpZCI6ICIzNTg2MGE2Zi1mY2Q1LTRhOGQtOTRmYi1hNjM1NzBiNGYyMDMucGRmIn0=",
+  "numero": "2565-23-EP/26",
+  "numero_causa": "2565-23-EP",
+  "tipo_accion": "ACCIÓN EXTRAORDINARIA DE PROTECCIÓN",
+  "materia": "Constitucional",
+  "juez": "KARLA ELIZABETH ANDRADE QUEVEDO",
+  "decision": "ACEPTAR",
+  "metadata_sentencia": "",
+  "es_novedad": false,
+  "es_relevante": false
+}

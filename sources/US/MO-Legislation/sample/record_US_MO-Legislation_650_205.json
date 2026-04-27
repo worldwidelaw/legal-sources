@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/650.205",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T04:23:50.148588+00:00",
+  "title": "Missouri Revised Statutes § 650.205 - Definitions",
+  "text": "650.205.  Definitions. — As used in sections 650.200 to 650.290, unless the context clearly requires otherwise, the following words and terms mean:\n  (1)  \"API-ASME\", American Petroleum Institute-American Society of Mechanical Engineers;\n  (2)  \"ASME\", American Society of Mechanical Engineers;\n  (3)  \"Board\", the board of boiler and pressure vessel rules;\n  (4)  \"Boiler\", a vessel intended for use in heating water or other liquids for generating steam or other vapors under pressure or vacuum by the application of heat resulting from the combustion of fuels, electricity, atomic energy, or waste gases;\n  (5)  \"Certificate inspection\", an inspection, the report of which is used by the chief inspector to decide whether or not a certificate as provided by subsection 3 of section 650.265 may be issued.  This certificate inspection shall be an internal inspection when construction permits; otherwise, it shall be as complete an inspection as possible;\n  (6)  \"Director\", the director of the inspection section of the department of public safety;\n  (7)  \"Heating boiler\", a steam boiler operating at pressures not exceeding fifteen psig, or a hot water heating boiler operating at pressures not exceeding one hundred sixty psig or temperatures not exceeding two hundred fifty degrees Fahrenheit at or near the boiler outlet, or both;\n  (8)  \"High pressure, high temperature water boiler\", a water boiler operating at pressures exceeding one hundred sixty psig or temperatures exceeding two hundred fifty degrees Fahrenheit at or near the boiler outlet, or both;\n  (9)  \"Power boiler\", a boiler in which steam or other vapor is generated at a pressure of more than fifteen psig including a high pressure, high temperature water boiler;\n  (10)  \"Pressure vessel\", a vessel in which the pressure is obtained from an external source or by the application of heat from an indirect source, other than those vessels defined in subdivisions (4), (7), (8), and (9) of this section;\n  (11)  \"Psig\", pounds per square inch gauge.\n(L. 1984 H.B. 1060 § 2)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=650.205",
+  "section_id": "650.205",
+  "chapter": "650",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

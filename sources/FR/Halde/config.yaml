@@ -1,33 +1,34 @@
-source:
-  id: FR/Halde
-  name: French Anti-Discrimination Authority (HALDE)
-  country: FR
-  data_types:
-    - doctrine
-  language: fr
-  url: https://juridique.defenseurdesdroits.fr
-  license: Open Data
-  notes: >
-    HALDE (Haute Autorité de Lutte contre les Discriminations et pour l'Égalité)
-    decisions from the PMB catalog. HALDE was merged into Défenseur des droits in 2011.
-    ~1,900 records with full text.
-
-schema:
-  key_fields:
-    - _id
-    - decision_number
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
 api:
-  type: html_scraping
   base_url: https://juridique.defenseurdesdroits.fr
   format: html
   rate_limit: 2
+  type: html_scraping
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  country: FR
+  data_types:
+  - doctrine
+  id: FR/Halde
+  language: fr
+  license: Open Data
+  name: French Anti-Discrimination Authority (HALDE)
+  notes: 'HALDE (Haute Autorité de Lutte contre les Discriminations et pour l''Égalité) decisions from the PMB catalog. HALDE was merged into Défenseur des droits in 2011. ~1,900 records with full text.
+
+    '
+  url: https://juridique.defenseurdesdroits.fr

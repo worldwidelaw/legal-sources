@@ -338,6 +338,7 @@ if __name__ == "__main__":
                         help="Only fetch a small sample (15 records)")
     parser.add_argument("--since", type=str,
                         help="Fetch updates since this date (ISO format)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

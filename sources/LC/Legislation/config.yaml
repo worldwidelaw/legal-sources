@@ -1,0 +1,47 @@
+source:
+  id: LC/Legislation
+  name: Saint Lucia Revised Laws (Attorney General)
+  country: LC
+  url: https://attorneygeneralchambers.com/laws-of-saint-lucia
+  description: >
+    Revised Laws of Saint Lucia (2023) from the AG Chambers Legislative Drafting Unit.
+    Covers all revised acts and subsidiary legislation. Full text extracted section by
+    section from the AG Chambers website.
+
+data_model:
+  types:
+    - legislation
+  update_strategy: upsert
+  dedup_key:
+    - act_slug
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: act_slug
+      type: string
+      required: true
+    - name: section_count
+      type: integer
+      required: false
+    - name: amendments
+      type: string
+      required: false
+
+schedule:
+  full_refresh: yearly
+  update_check: quarterly

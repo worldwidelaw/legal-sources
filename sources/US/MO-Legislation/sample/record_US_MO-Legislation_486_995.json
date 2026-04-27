@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/486.995",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:56:44.111956+00:00",
+  "title": "Missouri Revised Statutes § 486.995 - Notary representative's duties upon termination of electronic notary commission",
+  "text": "486.995.  Notary representative's duties upon termination of electronic notary commission. — 1.  Except as provided in subsection 2 of this section, if the commission of an electronic notary public expires or is resigned or revoked, if registration as an electronic notary terminates, or if an electronic notary dies, the notary or the notary's duly authorized representative shall, within thirty business days, permanently erase or expunge the software, coding, disk, certificate, card, token, or program that is intended exclusively to produce registered electronic notary seals, registered single elements combining the required features of an electronic signature and notary seal, or registered electronic signatures that indicate status as a notary.\n  2.  A former electronic notary public whose previous commission expired shall not be subject to subsection 1 of this section if such electronic notary public, within three months after expiration, is recommissioned and reregistered as an electronic notary public using the same registered means for producing electronic notary seals and signatures.\n(L. 2020 H.B. 1655)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=486.995",
+  "section_id": "486.995",
+  "chapter": "486",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

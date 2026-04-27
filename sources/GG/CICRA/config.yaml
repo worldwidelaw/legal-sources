@@ -1,0 +1,33 @@
+api:
+  auth: none
+  base_url: https://www.gcra.gg
+  endpoints:
+    gcra_cases: /cases
+    jcra_cases: https://www.jcra.je/cases-documents/cases/
+  rate_limit:
+    burst: 3
+    requests_per_second: 1
+  type: html_scraping
+data:
+  encoding: utf-8
+  format: html+pdf
+  language: eng
+  license: Open Government
+schema:
+  key_fields:
+  - name: source_authority
+    required: false
+    type: string
+  - name: case_title
+    required: false
+    type: string
+  required_fields:
+  - title
+  - text
+  - date
+  - url
+source:
+  country: GG
+  id: GG/CICRA
+  name: Channel Islands Competition Authorities (GCRA + JCRA)
+  url: https://www.gcra.gg/

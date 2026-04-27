@@ -1,0 +1,40 @@
+auth:
+  type: none
+country: VI
+data_types:
+- legislation
+name: USVI Legislature Acts & Code
+rate_limit:
+  burst: 3
+  requests_per_second: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: act_number
+    required: false
+    type: string
+  - name: bill_number
+    required: false
+    type: string
+  - name: legislature
+    required: false
+    type: string
+  - name: status
+    required: false
+    type: string
+source_id: VI/Legislature
+url: https://billtracking.legvi.org/

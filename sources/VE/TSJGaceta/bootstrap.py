@@ -313,6 +313,7 @@ def main():
                         help="Command to run")
     parser.add_argument("--sample", action="store_true",
                         help="Fetch only ~15 sample records")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     if args.command == "test":

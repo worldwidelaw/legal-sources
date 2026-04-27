@@ -1,0 +1,82 @@
+# ===================================================================
+# IM/FSA-Enforcement -- Isle of Man FSA Enforcement Actions
+# ===================================================================
+# Enforcement actions from the Isle of Man Financial Services Authority.
+# Covers civil penalties, prohibited persons, and disqualified directors.
+# Full text from press releases and public statements.
+# No authentication required. Umbraco CMS, server-rendered HTML.
+# ===================================================================
+
+source:
+  id: "IM/FSA-Enforcement"
+  country: "IM"
+  name: "Isle of Man FSA Enforcement Actions"
+  url: "https://www.iomfsa.im/enforcement/"
+  description: |
+    Isle of Man Financial Services Authority enforcement actions including
+    discretionary civil penalties, prohibited persons declarations, and
+    disqualified directors. Full text of decisions available via press
+    releases and public statements.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.iomfsa.im"
+  endpoints:
+    enforcement_actions: "/enforcement/enforcement-action/"
+    disqualified_directors: "/enforcement/disqualified-directors/"
+    news_base: "/fsa-news/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Title of the enforcement action"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the enforcement decision/public statement"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the enforcement action (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the enforcement action page"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "enforcement_type"
+      description: "Type: civil_penalty, prohibited_person, or disqualified_director"
+    - name: "subject_name"
+      description: "Name of the person or entity subject to enforcement"
+    - name: "penalty_amount"
+      description: "Civil penalty amount if applicable"
+    - name: "applicable_legislation"
+      description: "Referenced legislation"

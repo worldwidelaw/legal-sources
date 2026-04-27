@@ -1,0 +1,18 @@
+{
+  "_id": "MX-JAL-80640",
+  "_source": "MX/PoderJudicialJalisco",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-23T13:20:59.074698+00:00",
+  "title": "Toca 280/2025 — NOVENA SALA ESPECIALIZADA EN MATERIA CIVIL",
+  "text": "El documento es una sentencia interlocutoria del Toca 280/2025, expediente 878/2022, emitida por la Novena Sala del Supremo Tribunal de Justicia del Estado de Jalisco el 18 de agosto de 2025.  Se refiere a un recurso de apelación interpuesto por los abogados del actor contra una sentencia interlocutoria previa del 20 de marzo de 2025, emitida por el Juez Décimo Primero en Materia Civil.\n\nEl recurso se originó por la declaración de improcedencia de una reposición de escrito solicitada por el actor en un juicio civil ordinario sobre nulidad absoluta, cancelación y reinscripción de hipoteca.  El escrito extraviado, fechado el 28 de febrero de 2024, no fue localizado en el juzgado, a pesar de que el actor presentó un acuse de recibo. El juez de primera instancia argumentó que no se acreditaron los requisitos para la reposición y dudó de la autenticidad del acuse.\n\nLa Novena Sala, tras analizar los agravios del apelante, los consideró fundados.  Determinó que el acuse de recibo, junto con la certificación de la secretaria de acuerdos sobre la no localización del escrito, eran suficientes para presumir la existencia y posterior extravío del documento.  La Sala argumentó que en incidentes de reposición de autos, dada la dificultad para recopilar pruebas, es válido basarse en presunciones.  Además, se apoyó en jurisprudencia para respaldar la validez del acuse de recibo como prueba de la presentación del escrito.\n\nPor lo tanto, la Sala revocó la sentencia interlocutoria del juez de primera instancia y declaró procedente el incidente de reposición. Se ordenó la reposición del escrito extraviado con la copia y acuse de recibo presentados por el actor, y se instruyó al juez de origen a proveer dicho escrito.  Esto implicaba girar exhortos a diversas autoridades en la Ciudad de México para obtener información sobre el domicilio de la demandada y proceder con su emplazamiento. No se impusieron costas a la parte apelante.  La notificación de la sentencia se realizaría mediante Boletín Judicial.",
+  "date": "2025-08-18",
+  "url": "https://publica-sentencias-backend.stjjalisco.gob.mx/toca/80640/file",
+  "court": "NOVENA SALA ESPECIALIZADA EN MATERIA CIVIL",
+  "judge": "Mgda. Wuendy Alhelí García García",
+  "subject_area": "Civil",
+  "case_type": "CIVIL ORDINARIA",
+  "ruling": "REVOCAR",
+  "case_number": "280/2025",
+  "publication_date": "2025-08-29",
+  "crime_or_action": "NULIDAD ABSOLUTA "
+}

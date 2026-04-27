@@ -1,0 +1,37 @@
+source:
+  id: "GL/Lovgivning"
+  name: "Greenland Legislation (Nalunaarutit)"
+  country: "GL"
+  language: "da"
+  url: "https://nalunaarutit.gl/"
+  data_types:
+    - "legislation"
+  description: |
+    Greenlandic self-rule legislation database (Nalunaarutit).
+    ~3,076 items including Greenlandic legislation, Danish national legislation
+    applicable to Greenland, administrative regulations, circulars, and decrees.
+    Full text from HTML pages and PDF documents.
+    API: POST /api/ruleset/search returns paginated JSON results.
+    Individual pages at /{type}/{year}/{slug}?sc_lang=da have full text inline
+    or link to PDFs at /-/media/lovfiler/{year}/{type}/{slug}.pdf.
+
+fetch:
+  method: "api_json"
+  rate_limit: 1.5
+  max_concurrent: 1
+
+schema:
+  key_fields:
+    - name: _id
+      required: true
+      type: string
+    - name: title
+      required: false
+      type: string
+    - name: date
+      required: false
+      type: string
+  date_field: date
+  text_field: text
+  title_field: title
+  url_field: url

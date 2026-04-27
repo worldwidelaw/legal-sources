@@ -1,0 +1,25 @@
+auth: none
+country: GU
+data_types:
+- case_law
+name: Supreme Court of Guam Opinions
+notes: 'Supreme Court of Guam published opinions from 1990-present via PDF download. Year-filtered via POST form. ~18 opinions/year average.
+
+  '
+schedule: monthly
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: citation
+    required: false
+    type: string
+  - name: case_name
+    required: false
+    type: string
+  - name: year
+    required: false
+    type: string
+source_id: GU/SupremeCourt
+url: https://guamcourts.gov/Supreme-Court-Opinions/Supreme-Court-Opinions.asp

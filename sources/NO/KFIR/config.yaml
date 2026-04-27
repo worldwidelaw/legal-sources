@@ -1,0 +1,64 @@
+# ===================================================================
+# NO/KFIR -- Norwegian Board of Appeal for Industrial Property Rights
+# ===================================================================
+# Patent, trademark, design, and business name dispute decisions.
+# ~900 decisions. Norwegian language. Open access.
+# ===================================================================
+
+source:
+  id: "NO/KFIR"
+  country: "NO"
+  name: "KFIR (Norwegian Board of Appeal for Industrial Property Rights)"
+  url: "https://kfir.no/avgjørelser"
+  description: |
+    Klagenemnda for industrielle rettigheter (KFIR) decisions on
+    patent, trademark, design, and business name disputes.
+    ~900 decisions available as PDFs. Free public access.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "1-second delay between requests. Polite crawling."
+
+api:
+  type: "scraping"
+  base_url: "https://kfir.no"
+  endpoints:
+    sitemap: "/sitemap-pages-nb.xml"
+    decision: "/avgjørelser/{category}/{slug}"
+  response_format: "html+pdf"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "case_id"
+      description: "Case ID (e.g. PAT 25/00067, VM 16/00203)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (parties involved)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (extracted from PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of decision"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Decision page URL on kfir.no"
+      type: "string"
+      role: "reference"
+      required: true

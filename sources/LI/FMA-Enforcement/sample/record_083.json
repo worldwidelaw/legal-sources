@@ -1,0 +1,14 @@
+{
+  "_id": "warning-de-213",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:33.001923Z",
+  "title": "[Klonfirma] Warnung: www[dot]swisslife-assetgroup[dot]com",
+  "text": "Die Betreiber der Website www[dot]swisslife-assetgroup[dot]com geben sich als das an der Adresse Industriestrasse 56, 9491 Ruggell, Liechtenstein, ansässige Versicherungsunternehmen Swiss Life (Liechtenstein) AG (Registernummer: FL-0002.121.006-0) aus.   Die Finanzmarktaufsicht (FMA) Liechtenstein weist darauf hin, dass zwischen der Website www[dot]swisslife-assetgroup[dot]com und der Swiss Life (Liechtenstein) AG keine Verbindung besteht. Die Website www[dot]swisslife-assetgroup[dot]com bedient sich in unrechtmässiger Weise des Namens und der Identität der genannten liechtensteinischen Gesellschaft. Sowohl bei der „Swiss Life Asset Group“ bzw. „Swiss Life Asset Group Liechtenstein“ und der Webseite www[dot]swisslife-assetgroup[dot]com handelt es sich vermutlich um einen Klon zwecks Vermittlung betrügerischer Finanzanlagen oder Phishing.",
+  "date": "2020-02-27",
+  "url": "https://www.fma-li.li/de/warning/warnung-www-dot-swisslife-assetgroup-dot-com-213",
+  "language": "deu",
+  "category": "Klonfirma",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

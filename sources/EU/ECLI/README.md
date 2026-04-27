@@ -27,3 +27,7 @@ python3 bootstrap.py bootstrap --sample
 # Full fetch
 python3 bootstrap.py bootstrap --full
 ```
+
+## License
+
+[EUR-Lex legal notice](https://eur-lex.europa.eu/content/legal-notice/legal-notice.html) — reuse authorised provided the source is acknowledged.

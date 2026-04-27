@@ -171,6 +171,7 @@ class TRF1Scraper(BaseScraper):
         self.session = requests.Session()
         self.session.headers.update(HEADERS)
         self.viewstate = None
+        self._last_search_params = {}  # Preserve search context for pagination
 
     def _init_session(self) -> bool:
         """Get a session cookie and ViewState by visiting the search form."""
@@ -227,6 +228,12 @@ class TRF1Scraper(BaseScraper):
                 m = RE_VIEWSTATE.search(resp.text)
                 if m:
                     self.viewstate = m.group(1)
+                # Store search params so pagination can reuse them
+                self._last_search_params = {
+                    "formulario:j_idt8:texto": query,
+                    "formulario:j_idt8:tipoDocumento_input": doc_type,
+                    "formulario:j_idt8:secao_input": section,
+                }
                 return resp.text
             except (requests.exceptions.ConnectionError,
                     requests.exceptions.Timeout) as e:
@@ -257,11 +264,13 @@ class TRF1Scraper(BaseScraper):
             "formulario:tabela_pagination": "true",
             "formulario:tabela_first": str(first),
             "formulario:tabela_rows": str(PAGE_SIZE),
-            "formulario:tabela_skipChildren": "true",
+            "formulario:tabela_encodeFeature": "true",
             "formulario": "formulario",
             "formulario:j_idt8_active": "0",
             "javax.faces.ViewState": self.viewstate,
         }
+        # Include search form fields to maintain server-side search context
+        data.update(self._last_search_params)
 
         for attempt in range(3):
             try:
@@ -401,8 +410,7 @@ class TRF1Scraper(BaseScraper):
                 continue
             global_seen.add(proc)
             doc["section_name"] = section_name
-            record = self.normalize(doc)
-            yield record
+            yield doc
             count += 1
 
         # Paginate through remaining
@@ -429,8 +437,7 @@ class TRF1Scraper(BaseScraper):
                     continue
                 global_seen.add(proc)
                 doc["section_name"] = section_name
-                record = self.normalize(doc)
-                yield record
+                yield doc
                 count += 1
 
             if page_idx % 50 == 0:
@@ -495,17 +502,8 @@ def main():
         return
 
     if command == "bootstrap":
-        SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-        count = 0
-        for record in scraper.fetch_all(sample=sample):
-            count += 1
-            safe_id = record["_id"].replace("/", "_")[:100]
-            fname = SAMPLE_DIR / f"{safe_id}.json"
-            with open(fname, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            if count % 50 == 0:
-                logger.info("Saved %d records...", count)
-        logger.info("Bootstrap complete: %d records saved to %s", count, SAMPLE_DIR)
+        stats = scraper.bootstrap(sample_mode=sample)
+        logger.info("Bootstrap complete: %s", json.dumps(stats, indent=2))
 
     elif command == "update":
         since = (sys.argv[2] if len(sys.argv) > 2

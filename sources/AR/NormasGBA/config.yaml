@@ -1,0 +1,47 @@
+fetcher:
+  document_types:
+  - Law
+  - DecreeLaw
+  - Decree
+  - Resolution
+  - Disposition
+  - GeneralOrdinance
+  - JointResolution
+  max_results_per_query: 190
+  pagination: weekly_date_ranges
+  rate_limit_seconds: 1.5
+  strategy: html_scraping
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: document_type
+    required: false
+    type: string
+  - name: number
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: AR
+  data_types:
+  - legislation
+  description: 'Buenos Aires Province Sistema de Información Normativa y Documental. Laws, decrees, resolutions, dispositions, and ordinances of the province. Full text available as HTML documents.
+
+    '
+  id: AR/NormasGBA
+  name: Buenos Aires Province Normative System (SIND)
+  url: https://normas.gba.gob.ar/

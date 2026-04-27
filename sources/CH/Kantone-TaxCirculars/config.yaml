@@ -1,0 +1,107 @@
+# ===================================================================
+# CH/Kantone-TaxCirculars -- Swiss Cantonal Tax Circulars
+# ===================================================================
+# Tax directives (Weisungen), practice notes (Praxishinweise), and
+# guidelines (Richtlinien) from low-tax Swiss cantons Schwyz and
+# Nidwalden. These are official tax guidance documents.
+#
+# Schwyz: Schwyzer Steuerbuch - sz.ch (PDF downloads)
+# Nidwalden: steuern-nw.ch (PDF downloads)
+# Zug: wissen.zg.ch/steuerbuch (JavaScript SPA - not accessible)
+# ===================================================================
+
+source:
+  id: "CH/Kantone-TaxCirculars"
+  country: "CH"
+  name: "Swiss Cantonal Tax Circulars (Schwyz, Nidwalden)"
+  url: "https://www.sz.ch/finanzdepartement/steuerverwaltung/rechtliche-grundlagen/schwyzer-steuerbuch.html"
+  description: |
+    Tax directives and practice guidance from low-tax Swiss cantons:
+    - Schwyz (SZ): Schwyzer Steuerbuch Weisungen (tax directives on
+      holding companies, depreciation, property costs, etc.)
+    - Nidwalden (NW): Weisungen & Richtlinien for individuals and
+      companies (STAF step-up, property costs, deductions, etc.)
+    Note: Zug Steuerbuch is a JavaScript SPA not accessible via HTTP.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  sources:
+    - name: "Schwyz Steuerbuch"
+      base_url: "https://www.sz.ch"
+      pdf_pattern: "/public/upload/assets/{id}/{filename}.pdf"
+    - name: "Nidwalden Weisungen"
+      base_url: "https://www.steuern-nw.ch"
+      pdf_pattern: "/app/uploads/{year}/{month}/{filename}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document identifier (canton_ref)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication or effective date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct PDF URL"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "canton"
+      description: "Canton code (SZ or NW)"
+      type: "string"
+      role: "category"
+      required: true
+    - name: "reference"
+      description: "Official reference number (e.g., 70.10)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "category"
+      description: "Document category"
+      type: "string"
+      role: "category"
+      required: false
+
+jurisdictions:
+  - code: CH-SZ
+    scope: full
+  - code: CH-NW
+    scope: full
+
+notes: |
+  - Schwyz: Schwyzer Steuerbuch has multiple sections with PDF directives
+  - Nidwalden: WordPress site at steuern-nw.ch with direct PDF links
+  - Zug: Steuerbuch migrated to wissen.zg.ch (JavaScript SPA, not scrapeable)
+  - All documents are official cantonal tax guidance (Weisungen/Richtlinien)

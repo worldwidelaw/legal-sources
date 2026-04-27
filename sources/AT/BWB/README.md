@@ -75,3 +75,7 @@ python bootstrap.py update
 - Decisions are published in the **Ediktsdatei** (official gazette) under § 37 KartG
 - Full text is available via RIS in XML, HTML, RTF, and PDF formats
 - Most decisions are in German
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Austrian Open Government Data (RIS OGD API).

@@ -1,20 +1,25 @@
-source:
-  id: INTL/HCCHConventions
-  name: "HCCH Conventions Full Text"
-  country: INTL
-  url: https://www.hcch.net/en/instruments/conventions/full-text
-  data_types:
-    - legislation
-  auth: none
-  license: "Free access"
-  description: >
-    ~50 Hague Conference on Private International Law conventions and instruments.
-    Private international law covering child abduction, apostille, service of
-    documents, evidence, trusts, judgments recognition, and more.
-  method: "HTML scraping of hcch.net convention full-text pages"
-
 schema:
   key_fields:
-    - convention_number
-    - year
-    - pdf_url
+  - name: convention_number
+    required: false
+    type: string
+  - name: year
+    required: false
+    type: string
+  - name: pdf_url
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - legislation
+  description: '~50 Hague Conference on Private International Law conventions and instruments. Private international law covering child abduction, apostille, service of documents, evidence, trusts, judgments
+    recognition, and more.
+
+    '
+  id: INTL/HCCHConventions
+  license: Free access
+  method: HTML scraping of hcch.net convention full-text pages
+  name: HCCH Conventions Full Text
+  url: https://www.hcch.net/en/instruments/conventions/full-text

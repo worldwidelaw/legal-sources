@@ -1,36 +1,32 @@
-# IT/Camera - Italian Chamber of Deputies (Camera dei Deputati)
-# Parliamentary bills and legislative proposals
-
-source:
-  id: "IT/Camera"
-  name: "Italian Chamber of Deputies (Camera dei Deputati)"
-  country: "IT"
-  jurisdiction: "IT"
-  data_types:
-    - legislation  # Bills (proposte di legge / progetti di legge)
-  url: "https://www.camera.it"
-  auth: none
-  license: "All rights reserved (Camera dei deputati) - Public information"
-
 endpoints:
-  # Bill info page
-  bill_page: "https://www.camera.it/leg{legislature}/126?tab=1&leg={legislature}&idDocumento={bill_id}"
-  # Full text HTML endpoint
-  text_html: "https://documenti.camera.it/apps/commonServices/getDocumento.ashx?sezione=lavori&tipoDoc=testo_pdl&idlegislatura={legislature}&codice={doc_code}"
-  # PDF endpoint (fallback)
-  text_pdf: "https://documenti.camera.it/apps/commonServices/getDocumento.ashx?sezione=lavori&tipoDoc=testo_pdl_pdf&idlegislatura={legislature}&codice={doc_code}"
-  # RDF metadata (via dati.camera.it)
-  rdf: "http://dati.camera.it/ocd/attocamera.rdf/ac{legislature}_{bill_id}?output=text/turtle"
-
+  bill_page: https://www.camera.it/leg{legislature}/126?tab=1&leg={legislature}&idDocumento={bill_id}
+  rdf: http://dati.camera.it/ocd/attocamera.rdf/ac{legislature}_{bill_id}?output=text/turtle
+  text_html: https://documenti.camera.it/apps/commonServices/getDocumento.ashx?sezione=lavori&tipoDoc=testo_pdl&idlegislatura={legislature}&codice={doc_code}
+  text_pdf: https://documenti.camera.it/apps/commonServices/getDocumento.ashx?sezione=lavori&tipoDoc=testo_pdl_pdf&idlegislatura={legislature}&codice={doc_code}
 fetch:
-  legislature: 19  # Current legislature (XIX)
-  rate_limit: 2.0  # seconds between requests
+  legislature: 19
   max_bills_per_run: 1000
-
+  rate_limit: 2.0
 schema:
+  date_field: presentation_date
   key_fields:
-    - _id
-    - bill_number
-    - legislature
-  text_field: "text"
-  date_field: "presentation_date"
+  - name: _id
+    required: true
+    type: string
+  - name: bill_number
+    required: false
+    type: string
+  - name: legislature
+    required: false
+    type: string
+  text_field: text
+source:
+  auth: none
+  country: IT
+  data_types:
+  - legislation
+  id: IT/Camera
+  jurisdiction: IT
+  license: All rights reserved (Camera dei deputati) - Public information
+  name: Italian Chamber of Deputies (Camera dei Deputati)
+  url: https://www.camera.it

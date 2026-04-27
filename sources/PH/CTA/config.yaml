@@ -1,0 +1,34 @@
+fetch:
+  max_retries: 3
+  rate_limit: 1.0
+  timeout: 60
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: case_number
+    required: false
+    type: string
+source:
+  auth: none
+  country: PH
+  data_types:
+  - case_law
+  description: >
+    Court of Tax Appeals (CTA) decisions from the Philippines. CTA is an
+    appellate court that handles tax disputes. Decisions available as PDFs
+    via AJAX search endpoint. ~17,838 decisions covering assessment cases,
+    refund claims, and tax dispute resolutions.
+  id: PH/CTA
+  name: Philippines Court of Tax Appeals - Decisions
+  url: https://cta.judiciary.gov.ph/

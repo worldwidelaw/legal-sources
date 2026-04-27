@@ -1,31 +1,40 @@
-source:
-  id: "FI/TSV"
-  country: "FI"
-  name: "Finnish Data Protection Authority (TSV)"
-  description: "GDPR enforcement decisions from Tietosuojavaltuutetun toimisto via Finlex Open Data API"
-  url: "https://tietosuoja.fi"
-  data_types:
-    - doctrine
-
+api:
+  auth: none
+  endpoints:
+    detail: https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/judgment/data-protection-ombudsman-decision/{year}/{number}/fin@
+    list: https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/judgment/data-protection-ombudsman-decision/list
+  rate_limit:
+    delay_seconds: 1
+    requests_per_second: 2
+  type: rest
+pagination:
+  page_size: 10
+  type: page
 schema:
   key_fields:
-    - decision_id
-    - title
-    - date
-    - url
-    - diary_number
-    - text
-
-api:
-  type: "rest"
-  endpoints:
-    list: "https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/judgment/data-protection-ombudsman-decision/list"
-    detail: "https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/judgment/data-protection-ombudsman-decision/{year}/{number}/fin@"
-  auth: "none"
-  rate_limit:
-    requests_per_second: 2
-    delay_seconds: 1
-
-pagination:
-  type: "page"
-  page_size: 10
+  - name: decision_id
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: diary_number
+    required: false
+    type: string
+  - name: text
+    required: true
+    type: string
+source:
+  country: FI
+  data_types:
+  - doctrine
+  description: GDPR enforcement decisions from Tietosuojavaltuutetun toimisto via Finlex Open Data API
+  id: FI/TSV
+  name: Finnish Data Protection Authority (TSV)
+  url: https://tietosuoja.fi

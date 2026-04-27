@@ -188,11 +188,9 @@ class LexUzCaseLawScraper(BaseScraper):
                     continue
 
                 rec["text"] = text
-                record = self.normalize(rec)
-                if record:
-                    count += 1
-                    logger.info(f"  [{count}] {case_num} ({rec.get('dbName', '')[:40]}) — {len(text)} chars")
-                    yield record
+                count += 1
+                logger.info(f"  [{count}] {case_num} ({rec.get('dbName', '')[:40]}) — {len(text)} chars")
+                yield rec
 
                     if sample_limit and count >= sample_limit:
                         logger.info(f"Sample limit ({sample_limit}) reached")
@@ -230,6 +228,7 @@ def main():
     parser = argparse.ArgumentParser(description="UZ/LexUzCaseLaw bootstrapper")
     parser.add_argument("command", choices=["bootstrap", "test-api"])
     parser.add_argument("--sample", action="store_true", help="Fetch sample only (15 decisions)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = LexUzCaseLawScraper()

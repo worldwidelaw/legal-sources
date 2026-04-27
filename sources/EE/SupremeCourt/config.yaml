@@ -1,21 +1,27 @@
-source_id: EE/SupremeCourt
-name: Estonian Supreme Court (Riigikohus)
-country: EE
-url: https://www.riigikohus.ee
-data_types:
-  - caselaw
 auth:
   type: none
+country: EE
+data_types:
+- caselaw
 license: Public Domain (Estonian State)
-notes: |
-  Supreme Court (Riigikohus) case law and decisions.
+name: Estonian Supreme Court (Riigikohus)
+notes: 'Supreme Court (Riigikohus) case law and decisions.
+
   Fetches from RSS feed + rikos.rik.ee for full text.
+
   Covers Administrative, Civil, Criminal, and Constitutional Review chambers.
 
+  '
 schema:
-  key_fields:
-    - case_number
-    - document_id
   date_fields:
-    - date
-    - pub_date
+  - date
+  - pub_date
+  key_fields:
+  - name: case_number
+    required: false
+    type: string
+  - name: document_id
+    required: false
+    type: string
+source_id: EE/SupremeCourt
+url: https://www.riigikohus.ee

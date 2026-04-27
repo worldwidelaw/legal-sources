@@ -308,6 +308,8 @@ def main():
     parser.add_argument("command", choices=["bootstrap", "update", "test"])
     parser.add_argument("--sample", action="store_true",
                         help="Fetch sample only")
+    parser.add_argument("--full", action="store_true",
+                        help="Full bootstrap (default, accepted for VPS compat)")
     args = parser.parse_args()
 
     scraper = FSBPublicationsScraper()
@@ -316,13 +318,14 @@ def main():
         ok = scraper.test_connection()
         sys.exit(0 if ok else 1)
     elif args.command == "bootstrap":
-        scraper.run_bootstrap(sample=args.sample)
+        if args.sample:
+            stats = scraper.bootstrap(sample_mode=True, sample_size=15)
+        else:
+            stats = scraper.bootstrap()
+        print(json.dumps(stats, indent=2))
     elif args.command == "update":
-        count = 0
-        for doc in scraper.fetch_updates():
-            normalized = scraper.normalize(doc)
-            count += 1
-        logger.info("Update complete: %d records", count)
+        stats = scraper.update()
+        print(json.dumps(stats, indent=2))
 
 
 if __name__ == "__main__":

@@ -1,41 +1,55 @@
-source_id: CH/ESTV
-name: Swiss Federal Tax Administration (ESTV)
-country: CH
-url: https://www.estv.admin.ch
-description: |
-  Eidgenössische Steuerverwaltung (ESTV) / Administration fédérale des contributions (AFC)
-  Swiss Federal Tax Administration circulars and directives including:
-  - Kreisschreiben (Tax circulars) for direct federal tax
-  - Rundschreiben (Administrative notices) for direct federal tax
-  - Kreisschreiben for withholding tax (Verrechnungssteuer)
-  - Rundschreiben for withholding tax
-
-  These documents provide interpretive guidance on Swiss federal tax law.
-  Published primarily in German, French, and Italian.
-
-data_types:
-  - doctrine
-
 auth:
   type: none
+country: CH
+data_types:
+- doctrine
+description: 'Eidgenössische Steuerverwaltung (ESTV) / Administration fédérale des contributions (AFC)
 
+  Swiss Federal Tax Administration circulars and directives including:
+
+  - Kreisschreiben (Tax circulars) for direct federal tax
+
+  - Rundschreiben (Administrative notices) for direct federal tax
+
+  - Kreisschreiben for withholding tax (Verrechnungssteuer)
+
+  - Rundschreiben for withholding tax
+
+
+  These documents provide interpretive guidance on Swiss federal tax law.
+
+  Published primarily in German, French, and Italian.
+
+  '
+name: Swiss Federal Tax Administration (ESTV)
 rate_limit:
-  requests_per_second: 0.5
   burst: 2
-
+  requests_per_second: 0.5
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - circular_number
-    - circular_type
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: circular_number
+    required: false
+    type: string
+  - name: circular_type
+    required: false
+    type: string
   required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source_id: CH/ESTV
+url: https://www.estv.admin.ch

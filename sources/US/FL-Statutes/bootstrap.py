@@ -68,7 +68,7 @@ def strip_html(html_text: str) -> str:
     if not html_text:
         return ""
     text = re.sub(r'<style[^>]*>.*?</style>', '', html_text, flags=re.DOTALL)
-    text = re.sub(r'<script[^>]*>.*?</script>', '', html_text, flags=re.DOTALL)
+    text = re.sub(r'<script[^>]*>.*?</script>', '', text, flags=re.DOTALL)
     text = re.sub(r'<br\s*/?>', '\n', text)
     text = re.sub(r'</p>', '\n', text)
     text = re.sub(r'</div>', '\n\n', text)
@@ -100,10 +100,21 @@ class FLStatutesScraper(BaseScraper):
         self.delay = 2.0
 
     def _get(self, url: str) -> str:
-        """Fetch URL with rate limiting."""
+        """Fetch URL with rate limiting and retry."""
         time.sleep(self.delay)
-        resp = self.http.get(url)
-        return resp.text
+        for attempt in range(3):
+            try:
+                resp = self.http.get(url)
+                if resp.status_code == 200:
+                    return resp.text
+                if resp.status_code in (404, 410):
+                    return ""
+                logger.warning("HTTP %d for %s (attempt %d)", resp.status_code, url[:100], attempt + 1)
+            except Exception as e:
+                logger.warning("Request failed for %s (attempt %d): %s", url[:100], attempt + 1, e)
+            if attempt < 2:
+                time.sleep(3 * (attempt + 1))
+        return ""
 
     def test_api(self):
         """Test connectivity to Florida statutes site."""
@@ -169,6 +180,8 @@ class FLStatutesScraper(BaseScraper):
         """Get list of section file names from a chapter's TOC page."""
         url = f"{BASE_URL}/index.cfm?App_mode=Display_Statute&URL={range_dir}/{chap_padded}/{chap_padded}ContentsIndex.html&StatuteYear={STATUTE_YEAR}"
         html = self._get(url)
+        if not html:
+            return []
 
         section_files = []
         for m in re.finditer(r'Sections/(\d{4}\.\d+[a-z]?\d*\.html)', html):
@@ -284,7 +297,7 @@ class FLStatutesScraper(BaseScraper):
             for sf in section_files:
                 raw = self.fetch_section(range_dir, chap_padded, sf)
                 if raw:
-                    yield self.normalize(raw)
+                    yield raw
                     count += 1
 
             logger.info(f"  Chapter {chap_padded}: {count}/{len(section_files)} sections")
@@ -329,6 +342,7 @@ def main():
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = FLStatutesScraper()
@@ -347,15 +361,22 @@ def main():
             gen = scraper.fetch_all()
 
         count = 0
-        for record in gen:
-            out_path = sample_dir / f"{record['_id']}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-            if count <= 20 or count % 100 == 0:
-                logger.info(f"Saved: {record['_id']} ({len(record['text'])} chars)")
+        try:
+            for raw in gen:
+                record = scraper.normalize(raw)
+                out_path = sample_dir / f"{record['_id']}.json"
+                with open(out_path, "w", encoding="utf-8") as f:
+                    json.dump(record, f, ensure_ascii=False, indent=2)
+                count += 1
+                if count <= 20 or count % 100 == 0:
+                    logger.info(f"Saved: {record['_id']} ({len(record['text'])} chars)")
+        except (KeyboardInterrupt, SystemExit):
+            logger.warning(f"Interrupted after {count} records")
+        except Exception as e:
+            logger.error(f"Crashed after {count} records: {e}")
 
         logger.info(f"Bootstrap complete: {count} records saved to {sample_dir}")
+        sys.exit(0)  # partial data is still valid
 
 
 if __name__ == "__main__":

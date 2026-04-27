@@ -68,4 +68,4 @@ Each normalized record contains:
 
 ## License
 
-Open Government License (Spanish public data)
+Open government data under [Spanish Reuse of Public Sector Information regulations](https://datos.gob.es/en/terms).

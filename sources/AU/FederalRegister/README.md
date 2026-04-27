@@ -92,3 +92,7 @@ python bootstrap.py update
 - [Data Share and Reuse Policy](https://www.legislation.gov.au/help-and-resources/using-the-legislation-register/data-share-and-reuse)
 - [About the Register](https://www.legislation.gov.au/help-and-resources/using-the-legislation-register/about-the-federal-register-of-legislation)
 - [Office of Parliamentary Counsel](https://www.opc.gov.au/FRL)
+
+## License
+
+[Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/) — see the [Data Share and Reuse Policy](https://www.legislation.gov.au/help-and-resources/using-the-legislation-register/data-share-and-reuse) for details.

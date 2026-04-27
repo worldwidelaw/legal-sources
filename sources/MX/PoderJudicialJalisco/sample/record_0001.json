@@ -1,0 +1,18 @@
+{
+  "_id": "MX-JAL-77312",
+  "_source": "MX/PoderJudicialJalisco",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-23T13:20:27.110695+00:00",
+  "title": "Toca 52/2025 — SÉPTIMA SALA ESPECIALIZADA EN MATERIA CIVIL",
+  "text": "El documento es una decisión judicial del Supremo Tribunal de Justicia del Estado de Jalisco, emitida el 21 de marzo de 2025, relacionada con el caso TOCA 52/2025. Un ciudadano presentó una solicitud para aclarar una sentencia previa del 11 de marzo de 2025, argumentando que en dicha sentencia se habían escrito incorrectamente los apellidos maternos de varios herederos en las páginas 33 y 34.\n\nEl tribunal analizó la petición y determinó que la aclaración es válida, ya que los errores señalados son de tipo humano y no alteran el sentido ni el fondo de la decisión original. Por lo tanto, se decidió proceder con la aclaración. Se explica que, aunque la ley establece un plazo más corto para responder, hubo un retraso justificado porque el expediente se encontraba en otra dependencia. La resolución final establece que la corrección de los nombres de los herederos se realizará en la sentencia y que esta aclaración forma parte integral de la sentencia definitiva emitida el 11 de marzo de 2025.",
+  "date": "2025-03-21",
+  "url": "https://publica-sentencias-backend.stjjalisco.gob.mx/toca/77312/file",
+  "court": "SÉPTIMA SALA ESPECIALIZADA EN MATERIA CIVIL",
+  "judge": "Mgdo. Ricardo Suro Esteves",
+  "subject_area": "Familiar",
+  "case_type": "FAMILIAR TRAMITACIÓN ESPECIAL",
+  "ruling": "MODIFICAR",
+  "case_number": "52/2025",
+  "publication_date": "2025-03-27",
+  "crime_or_action": "SUCESORIO"
+}

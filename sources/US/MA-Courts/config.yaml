@@ -1,31 +1,45 @@
-source_id: US/MA-Courts
-name: Massachusetts Supreme Judicial Court & Appeals Court
-country: US
-data_types:
-  - case_law
-url: https://www.mass.gov/orgs/supreme-judicial-court
 auth:
   type: none
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - case_number
-    - court
-    - citation
-
+country: US
+data_types:
+- case_law
 fetch:
   base_url: https://www.courtlistener.com/api/rest/v4
   courts: mass,massappct
   delay: 1.5
-
 license: Public Domain (government works)
+name: Massachusetts Supreme Judicial Court & Appeals Court
+notes: 'Massachusetts appellate opinions via CourtListener search API.
 
-notes: |
-  Massachusetts appellate opinions via CourtListener search API.
   Supreme Judicial Court (mass): ~64K opinions from 1761.
+
   Appeals Court (massappct): ~15K opinions from 1972.
+
   Full text extracted from PDFs using pdfplumber, or from HTML when available.
+
+  '
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: citation
+    required: false
+    type: string
+source_id: US/MA-Courts
+url: https://www.mass.gov/orgs/supreme-judicial-court

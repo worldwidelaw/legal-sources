@@ -1,0 +1,15 @@
+{
+  "_id": "US/GA-Legislation/1-1-3",
+  "_source": "US/GA-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-20T23:45:47.430433+00:00",
+  "title": "O.C.G.A. § 1-1-3 - Severability.",
+  "text": "Except as otherwise specifically provided in this Code or in an Act or resolution of the General Assembly, in the event any title, chapter, article, part, subpart, Code section, subsection, paragraph, subparagraph, item, sentence, clause, phrase, or word of this Code or of any Act or resolution of the General Assembly is declared or adjudged to be invalid or unconstitutional, such declaration or adjudication shall not affect the remaining portions of this Code or of such Act or resolution, which shall remain of full force and effect as if such portion so declared or adjudged invalid or unconstitutional were not originally a part of this Code or of such Act or resolution. The General Assembly declares that it would have enacted the remaining parts of this Code if it had known that such portion hereof would be declared or adjudged invalid or unconstitutional. The General Assembly further declares that it would have enacted the remaining parts of any other Act or resolution if it had known that such portion thereof would be declared or adjudged invalid or unconstitutional unless such Act or resolution contains an express provision to the contrary.",
+  "date": "2022-11-01",
+  "url": "https://law.justia.com/codes/georgia/title-1/chapter-1/section-1-1-3/",
+  "section_id": "1-1-3",
+  "title_number": "1",
+  "jurisdiction": "US-GA",
+  "language": "en",
+  "annotations": "JUDICIAL DECISIONS\nSeverability clause creates presumption of separability. —\nThe presence of a severability clause in an Act reverses the usual presumption that the General Assembly intends the Act to be an entirety and creates an opposite presumption of separability. City Council v. Mangelly, 243 Ga. 358, 254 S.E.2d 315, 1979 Ga. LEXIS 908 (1979)."
+}

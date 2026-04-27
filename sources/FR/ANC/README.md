@@ -37,3 +37,7 @@ python bootstrap.py bootstrap --full
 - Regulations from 2022 onwards use the new website structure
 - Older regulations (2014-2021) are available on an archived page
 - The Plan Comptable Général (PCG) is the main accounting framework
+
+## License
+
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

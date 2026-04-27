@@ -91,3 +91,7 @@ python bootstrap.py update
 - File downloads are rate limited; use adequate delays between requests
 - Some drafts may only have introduction text if docx files are unavailable
 - Total of ~8,700+ drafts available (as of Feb 2026)
+
+## License
+
+[CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) — Estonian Parliament open data.

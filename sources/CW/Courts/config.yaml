@@ -1,0 +1,40 @@
+source_id: CW/Courts
+name: Curaçao Court Decisions (Gemeenschappelijk Hof)
+country: CW
+url: https://uitspraken.rechtspraak.nl/
+data_url: https://data.rechtspraak.nl/uitspraken/zoeken
+description: |
+  Court decisions from Curaçao via the Dutch Rechtspraak Open Data API.
+  Covers the Gemeenschappelijk Hof van Justitie (joint appellate court for
+  Aruba, Curaçao, Sint Maarten, and BES islands) and related Caribbean courts.
+  All decisions published on rechtspraak.nl with ECLI identifiers.
+
+data_types:
+  - case_law
+
+license: "Public domain (Dutch Open Data)"
+language: nl
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+update_frequency: daily
+
+schema:
+  key_fields:
+    - name: ecli
+      required: true
+      type: string
+  date_field: date
+  text_field: text
+  title_field: title
+  url_field: url
+
+notes: |
+  Uses the rechtspraak.nl Open Data API filtered by Caribbean court creator URIs.
+  Covers OGHACMB (appellate, ~4000 decisions), OGHNAA (pre-2010, ~1000),
+  and other Caribbean courts. Full text in XML with structured metadata.

@@ -1,26 +1,38 @@
-source:
-  id: UZ/LexUzCaseLaw
-  name: "Uzbekistan Court Decisions (publication.sud.uz)"
-  country: UZ
-  url: https://publication.sud.uz/
-  data_types:
-    - case_law
-  auth: none
-  description: >
-    Criminal court decisions from Uzbekistan's judiciary publication portal.
-    REST JSON API with PDF full text. ~441K criminal decisions across all
-    court instances (first, appeal, cassation, control).
-
-schema:
-  key_fields:
-    - _id
-    - case_number
-    - court
-    - title
-    - text
-    - date
-    - url
-
 fetch:
   rate_limit_delay: 2
   sample_size: 15
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: UZ
+  data_types:
+  - case_law
+  description: 'Criminal court decisions from Uzbekistan''s judiciary publication portal. REST JSON API with PDF full text. ~441K criminal decisions across all court instances (first, appeal, cassation,
+    control).
+
+    '
+  id: UZ/LexUzCaseLaw
+  name: Uzbekistan Court Decisions (publication.sud.uz)
+  url: https://publication.sud.uz/

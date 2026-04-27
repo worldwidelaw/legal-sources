@@ -1,0 +1,95 @@
+source:
+  id: "ID/BI"
+  country: "ID"
+  name: "Bank Indonesia Regulations"
+  url: "https://jdih.bi.go.id/Web/DaftarPeraturan"
+  description: |
+    Peraturan Bank Indonesia (PBI) and Peraturan Anggota Dewan Gubernur (PADG)
+    from JDIH Bank Indonesia (Legal Documentation and Information Network).
+    Covers monetary policy, banking regulation, payment systems, and financial
+    market regulation. Language: Indonesian (Bahasa Indonesia). Coverage: 1999 to present.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "2s delay between requests."
+
+api:
+  type: "rest_json"
+  base_url: "https://jdih.bi.go.id"
+  notes: |
+    JDIH BI provides a REST API:
+    - Listing: /Web/DaftarPeraturan (HTML with all regulation IDs)
+    - Detail: /api/WebJDIH/GetDataWebPeraturan?PeraturanID={id}
+    - PDF: /api/WebJDIH/DownloadFilePeraturan/{id}
+
+data_model:
+  type: "doctrine"
+  source_nature: "gazette"
+  primary_key: "regulation_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 18
+  key_fields:
+    - name: "_id"
+      description: "Unique identifier (ID-BI-{regulation_id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Regulation number and title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the regulation extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication/enactment date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "regulation_type"
+      description: "Type abbreviation: PBI, PADG, SE, etc."
+      type: "string"
+      role: "content"
+      required: true
+  secondary_fields:
+    - name: "url"
+      description: "URL to the JDIH regulation detail page"
+    - name: "regulation_number"
+      description: "Official regulation number"
+    - name: "status"
+      description: "Regulation status (Berlaku/Tidak Berlaku)"
+    - name: "subject"
+      description: "Subject area"
+    - name: "taxonomy"
+      description: "JDIH taxonomy classification"
+    - name: "language"
+      description: "Document language (always 'id' for Indonesian)"
+
+license:
+  name: "Indonesia Public Domain (Government Works)"
+  url: "https://www.bi.go.id/id/tentang-bi/profil/Pages/Visi-Misi-dan-Nilai-Strategis.aspx"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Indonesian government regulations are public domain under Indonesian copyright law."
+
+notes: |
+  - Bank Indonesia regulations include PBI (primary regulations) and PADG (implementation rules)
+  - Full text extracted from PDFs using pdfminer via JDIH BI REST API
+  - ~1000+ regulations from JDIH Bank Indonesia
+  - Uses subprocess curl due to TLS/LibreSSL incompatibility with Python 3.9

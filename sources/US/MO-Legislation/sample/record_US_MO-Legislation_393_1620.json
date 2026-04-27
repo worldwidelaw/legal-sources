@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/393.1620",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T01:32:58.422052+00:00",
+  "title": "Missouri Revised Statutes § 393.1620 - Average and excess method, allocation of costs — limitation on commission consideration for general rates — expiration date",
+  "text": "393.1620.  Average and excess method, allocation of costs — limitation on commission consideration for general rates — expiration date. — 1.  For the purposes of this section, the following terms shall mean:\n  (1)  \"Average and excess method\", a method for allocation of production plant costs using factors that consider the classes' average demands and excess demands, determined by subtracting the average demands from the noncoincident peak demands, for the four months with the highest system peak loads.  The production plant costs are allocated using the class average and excess demands proportionally based on the system load factor, where the system load factor determines the percentage of production plant costs allocated using the average demands, and the remainder of production plant costs are allocated using the excess demands;\n  (2)  \"Class cost of service study\", a study designed to allocate a utility's costs to each customer class on the basis of which customer class causes the costs;\n  (3)  \"Commission\", the Missouri public service commission;\n  (4)  \"Electrical corporation\", the same as defined in section 386.020, but shall not include an electrical corporation as described in subsection 2 of section 393.110;\n  (5)  \"Production plant costs\", fixed costs reflected on the electrical corporation's accounting books for the applicable test period, as updated or trued-up, associated with the production or purchase of electricity.\n  2.  In determining the allocation of an electrical corporation's total revenue requirement in a general rate case, the commission shall only consider class cost of service study results that allocate the electrical corporation's production plant costs from nuclear and fossil generating units using the average and excess method or one of the methods of assignment or allocation contained within the National Association of Regulatory Utility Commissioners 1992 manual or subsequent manual.\n  3.  This section shall expire on August 28, 2031.\n(L. 2021 H.B. 734) \nExpires 8-28-31",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=393.1620",
+  "section_id": "393.1620",
+  "chapter": "393",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

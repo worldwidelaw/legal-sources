@@ -31,16 +31,16 @@ from pathlib import Path
 from typing import Generator, Optional
 from urllib.parse import quote
 
-try:
-    import requests
-except ImportError:
-    print("ERROR: requests not installed. Run: pip3 install requests")
-    sys.exit(1)
+import requests
+
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.base_scraper import BaseScraper
 
 # Setup
 SOURCE_ID = "PY/BACN"
 SOURCE_DIR = Path(__file__).parent
-SAMPLE_DIR = SOURCE_DIR / "sample"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -207,129 +207,92 @@ def parse_date(date_str: str) -> Optional[str]:
     return None
 
 
-def normalize(law_id: str, title: str, page_data: dict) -> dict:
-    """Transform raw law data to standard schema."""
-    date = parse_date(page_data.get("date_promulgation")) or \
-           parse_date(page_data.get("date_publication"))
+class BACNScraper(BaseScraper):
+    """Scraper for PY/BACN - Paraguay Congressional Law Library."""
 
-    return {
-        "_id": f"PY_BACN_{law_id}",
-        "_source": SOURCE_ID,
-        "_type": "legislation",
-        "_fetched_at": datetime.now(timezone.utc).isoformat(),
-        "title": title,
-        "text": page_data.get("text", ""),
-        "date": date,
-        "url": page_data.get("url", f"{BASE_URL}/leyes-paraguayas/{law_id}"),
-        "date_promulgation": parse_date(page_data.get("date_promulgation")),
-        "date_publication": parse_date(page_data.get("date_publication")),
-        "pdf_urls": [u for u, _ in page_data.get("pdf_urls", [])],
-    }
+    def __init__(self):
+        source_dir = Path(__file__).parent
+        super().__init__(source_dir)
 
+    def normalize(self, raw: dict) -> Optional[dict]:
+        """Transform raw law data to standard schema."""
+        law_id = raw.get("law_id", "")
+        title = raw.get("title", "")
+        text = raw.get("text", "")
 
-def fetch_all(sample: bool = False) -> Generator[dict, None, None]:
-    """Yield all normalized law records."""
-    laws = fetch_law_index()
-    limit = 15 if sample else len(laws)
+        if not text or len(text) < 50:
+            return None
 
-    logger.info(f"Fetching {'sample of ' + str(limit) if sample else 'all ' + str(len(laws))} laws...")
+        date = parse_date(raw.get("date_promulgation")) or \
+               parse_date(raw.get("date_publication"))
 
-    fetched = 0
-    skipped = 0
-    for i, law in enumerate(laws[:limit * 2] if sample else laws):
-        if fetched >= limit:
-            break
+        return {
+            "_id": f"PY_BACN_{law_id}",
+            "_source": SOURCE_ID,
+            "_type": "legislation",
+            "_fetched_at": datetime.now(timezone.utc).isoformat(),
+            "title": title,
+            "text": text,
+            "date": date,
+            "url": raw.get("url", f"{BASE_URL}/leyes-paraguayas/{law_id}"),
+            "date_promulgation": parse_date(raw.get("date_promulgation")),
+            "date_publication": parse_date(raw.get("date_publication")),
+            "pdf_urls": [u for u, _ in raw.get("pdf_urls", [])],
+        }
 
-        law_id = law["id_documento"]
-        title = law["titulo_documento"]
+    def fetch_all(self) -> Generator[dict, None, None]:
+        """Yield all raw law records."""
+        laws = fetch_law_index()
+        logger.info(f"Fetching all {len(laws)} laws...")
 
-        logger.info(f"[{fetched + 1}/{limit}] Fetching law {law_id}: {title[:60]}...")
-        page_data = fetch_law_page(law_id, title)
+        for i, law in enumerate(laws):
+            law_id = law["id_documento"]
+            title = law["titulo_documento"]
 
-        if not page_data or not page_data.get("text"):
-            logger.warning(f"  No text content for law {law_id}, skipping")
-            skipped += 1
-            time.sleep(RATE_LIMIT)
-            continue
+            logger.info(f"[{i + 1}/{len(laws)}] Fetching law {law_id}: {title[:60]}...")
+            self.rate_limiter.wait()
+            page_data = fetch_law_page(law_id, title)
 
-        record = normalize(law_id, title, page_data)
+            if not page_data or not page_data.get("text"):
+                continue
 
-        if len(record["text"]) < 50:
-            logger.warning(f"  Text too short ({len(record['text'])} chars) for law {law_id}, skipping")
-            skipped += 1
-            time.sleep(RATE_LIMIT)
-            continue
+            page_data["law_id"] = law_id
+            page_data["title"] = title
+            yield page_data
 
-        fetched += 1
-        yield record
-        time.sleep(RATE_LIMIT)
-
-    logger.info(f"Done: {fetched} fetched, {skipped} skipped (no text)")
-
-
-def test_api():
-    """Quick connectivity test."""
-    print("Testing BACN search endpoint...")
-    try:
-        response = requests.get(SEARCH_URL, headers=HEADERS, timeout=15)
-        response.raise_for_status()
-        data = response.json()
-        laws = [d for d in data if d.get("nombre_categoria") == "Leyes Paraguayas"]
-        print(f"  OK: {len(laws)} laws in index")
-    except Exception as e:
-        print(f"  FAIL: {e}")
-        return False
-
-    print("Testing individual law page...")
-    if laws:
-        law = laws[0]
-        page = fetch_law_page(law["id_documento"], law["titulo_documento"])
-        if page and page.get("text"):
-            print(f"  OK: Got {len(page['text'])} chars of text")
-            print(f"  Dates: prom={page.get('date_promulgation')}, pub={page.get('date_publication')}")
-            print(f"  PDFs: {len(page.get('pdf_urls', []))}")
-        else:
-            print("  WARN: No text extracted from first law, trying another...")
-            for law2 in laws[1:5]:
-                page2 = fetch_law_page(law2["id_documento"], law2["titulo_documento"])
-                time.sleep(1)
-                if page2 and page2.get("text"):
-                    print(f"  OK: Got {len(page2['text'])} chars from law {law2['id_documento']}")
-                    break
-            else:
-                print("  FAIL: Could not extract text from any law")
-                return False
-
-    return True
-
-
-def bootstrap(sample: bool = False):
-    """Run the bootstrap process."""
-    SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-
-    count = 0
-    for record in fetch_all(sample=sample):
-        filename = SAMPLE_DIR / f"{record['_id'].replace('/', '_')}.json"
-        with open(filename, "w", encoding="utf-8") as f:
-            json.dump(record, f, ensure_ascii=False, indent=2)
-        count += 1
-        logger.info(f"  Saved: {filename.name} ({len(record['text'])} chars)")
-
-    logger.info(f"Bootstrap complete: {count} records saved to {SAMPLE_DIR}")
-    return count
+    def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        yield from self.fetch_all()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="PY/BACN Data Fetcher")
-    parser.add_argument("command", choices=["bootstrap", "test-api"])
-    parser.add_argument("--sample", action="store_true", help="Fetch sample only")
-    args = parser.parse_args()
+    scraper = BACNScraper()
 
-    if args.command == "test-api":
-        success = test_api()
-        sys.exit(0 if success else 1)
-    elif args.command == "bootstrap":
-        count = bootstrap(sample=args.sample)
-        if count == 0:
-            logger.error("No records fetched!")
+    if len(sys.argv) < 2:
+        print("Usage: python bootstrap.py [bootstrap|test] [--sample]")
+        sys.exit(1)
+
+    command = sys.argv[1]
+    sample_mode = "--sample" in sys.argv
+
+    if command in ("test", "test-api"):
+        print("Testing BACN search endpoint...")
+        try:
+            laws = fetch_law_index()
+            print(f"  OK: {len(laws)} laws in index")
+            if laws:
+                law = laws[0]
+                page = fetch_law_page(law["id_documento"], law["titulo_documento"])
+                if page and page.get("text"):
+                    print(f"  OK: Got {len(page['text'])} chars of text")
+                else:
+                    print("  WARN: No text from first law")
+            print("Test PASSED")
+        except Exception as e:
+            print(f"  FAIL: {e}")
             sys.exit(1)
+
+    elif command == "bootstrap":
+        scraper.bootstrap(sample_mode=sample_mode)
+    else:
+        print(f"Unknown command: {command}")
+        sys.exit(1)

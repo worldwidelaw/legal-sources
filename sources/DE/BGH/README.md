@@ -54,7 +54,7 @@ The BGH has the following senates:
 
 ## License
 
-German court decisions are "amtliche Werke" (official works) not protected by copyright under § 5 UrhG. They are free for any use and redistribution.
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).
 
 ## Usage
 

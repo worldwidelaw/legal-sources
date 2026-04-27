@@ -1,0 +1,51 @@
+source:
+  id: BS/Legislation
+  name: Bahamas Consolidated Legislation
+  country: BS
+  url: https://laws.bahamas.gov.bs/
+  description: >
+    Consolidated legislation of the Bahamas from laws.bahamas.gov.bs.
+    Covers principal acts, subordinate legislation, and amending acts from
+    1799-present. Published by the Office of the Attorney General via the
+    Regional Law Revision Centre platform (Joomla + PDF directory tree).
+
+data_model:
+  types:
+    - legislation
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: legislation_type
+      type: string
+      required: false
+    - name: year
+      type: string
+      required: false
+    - name: file_url
+      type: string
+      required: false
+
+schedule:
+  full_refresh: monthly
+  update_check: weekly

@@ -1,0 +1,15 @@
+{
+  "_id": "CN-CLT-22000",
+  "_source": "CN/ChinaLawTranslate",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-26T13:10:30.703628+00:00",
+  "title": "Quicktake: Types and Levels of Cybersecurity Incidents",
+  "text": "On September 11, China’s Cybersecurity Administration released more d etailed procedures for reporting cybersecurity incidents,  building on the reporting requirements in Article 25 of the  Cybersecurity Law .\nThe new Measures call for differentiated responses based on the incident’s severity level, and were accompanied by  Guidelines  for grading incidents as ordinary, relatively major, major, or especially major.\nIn addition to these general requirements, the Guidelines include several typical scenarios that will ordinarily constitute each incident level that requires reporting. Ordinary cybersecurity incidents that do not reach these standards are exempt from reporting.\nInterestingly, the hacking attacks on certain key types of websites addressed in lines 1 and 6 above are separated into distinct categories based on their differing harms. 1, above, is related to blocking access while 6 involves spreading illegal and harmful information. For both types of attack, the nature of the targeted site is relevant to determining the severity, and blocking attacks are measured by its duration, but the spread of illegal information is evaluated by the range of persons with access to it.\nWhile the Guidelines only require reporting of illegal and harmful content as a “cybersecurity incident” when it results from an attack on key sites (an intuitive cybersecurity concern), earlier national standards on which the Guidelines were based actually classified the spread of illegal content as a type of cybersecurity incident in itself.\nInformation Content Security Incidents are one of 10 types of cybersecurity incident contained in the  Information Security Technology—Guidelines for the Classification and Grading of Cybersecurity Incidents (GB/T 20986-2023)  The categories of content included are typical of other  content restrictions  and include advocacy of terrorism or extremism, opposing the state and party leadership, pornography, etc. Interenstingly, the severity of the offenses in the standards were not determined by the range it spread- but focused more on the seriousness of the content itself.\nThose standards were recommendations only and not binding, but they hint at a more holistic understanding of cybersecurity that includes content regulation as well as technical attacks on operations. Whether the new Guidelines intentionally abandoned this approach to distinguish content regulation for cybsercurity concerns remains to be seen.\nClick to rate this post!\n[Total:  0   Average:  0 ]",
+  "date": "2025-09-22",
+  "url": "https://www.chinalawtranslate.com/quicktake-cybersecurity-incidents/",
+  "jurisdiction": "CN",
+  "language": "en",
+  "wp_categories": [
+    422
+  ]
+}

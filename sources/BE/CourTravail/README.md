@@ -56,3 +56,7 @@ Belgian Labour Courts handle:
 Labour court decisions are indexed via the JUPORTAL ECLI sitemap system.
 The court codes starting with "CT" are appellate courts (Cour du Travail),
 while codes starting with "TT" are first instance tribunals (Tribunal du Travail).
+
+## License
+
+[Belgian Open Government Data](https://data.gov.be/en/licence-conditions) — free reuse of Belgian public sector information.

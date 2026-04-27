@@ -1,44 +1,38 @@
-# ME/SluzbenList — Montenegrin Official Gazette Data Source
-# Službeni list Crne Gore
-
-source:
-  id: ME/SluzbenList
-  country: ME
-  name: Službeni list Crne Gore (Official Gazette of Montenegro)
-  data_types:
-    - legislation
-  auth: none
-  status: complete
-  priority: 1
-  url: https://www.sluzbenilist.me
-
-endpoints:
-  base_url: https://www.sluzbenilist.me
-  # Propisi listing with pagination
-  # /propisi?type=0&page=1 - National legislation
-  # /propisi?type=1&page=1 - Municipal legislation
-  propisi_list: /propisi?type=0&page={page}
-  # Individual propis page
-  propis_detail: /propisi/{uuid}
-  # PDF download
-  propis_download: /propisi/{uuid}/download
-  # Search endpoint
-  search: /propisi?searchTerm={query}&type=0
-
 data:
-  format: PDF (with text extraction)
-  language: me (Montenegrin - Cyrillic and Latin)
   coverage: 1991-present
   estimated_records: ~5000
+  format: PDF (with text extraction)
+  language: me (Montenegrin - Cyrillic and Latin)
   rate_limit: 1 request/second
-
+endpoints:
+  base_url: https://www.sluzbenilist.me
+  propis_detail: /propisi/{uuid}
+  propis_download: /propisi/{uuid}/download
+  propisi_list: /propisi?type=0&page={page}
+  search: /propisi?searchTerm={query}&type=0
 schema:
   key_fields:
-    - uuid
-    - year
-    - issue_number
+  - name: uuid
+    required: false
+    type: string
+  - name: year
+    required: false
+    type: string
+  - name: issue_number
+    required: false
+    type: string
   required_fields:
-    - title
-    - text
-    - date
-    - url
+  - title
+  - text
+  - date
+  - url
+source:
+  auth: none
+  country: ME
+  data_types:
+  - legislation
+  id: ME/SluzbenList
+  name: Službeni list Crne Gore (Official Gazette of Montenegro)
+  priority: 1
+  status: complete
+  url: https://www.sluzbenilist.me

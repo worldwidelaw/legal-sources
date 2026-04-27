@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/59.568",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T18:03:52.832899+00:00",
+  "title": "Missouri Revised Statutes § 59.568 - Electronic records, requirements for certain documents",
+  "text": "59.568.  Electronic records, requirements for certain documents. — 1.  If a statute, regulation, or ordinance requires, as a condition for recording, that a document be an original, be on paper or another tangible medium, or be in writing, the requirement is satisfied by an electronic record that otherwise complies with the requirements of this chapter.\n  2.  A requirement that a document or a signature associated with a document be notarized, acknowledged, verified, witnessed, or made under oath is satisfied if the electronic signature of the person authorized to perform that act, and all other information required to be included, is attached to or logically associated with the document or signature.  A physical or electronic image of a stamp, impression, or seal need not accompany an electronic signature if the notary public has attached an electronic notarial certificate that meets the requirements of this chapter.\n  3.  This section shall only apply to documents presented to a recorder of deeds for recordings pursuant to chapter 442 or 443.\n(L. 2020 H.B. 1655)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=59.568",
+  "section_id": "59.568",
+  "chapter": "59",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

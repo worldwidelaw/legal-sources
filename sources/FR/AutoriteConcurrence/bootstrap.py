@@ -272,6 +272,7 @@ def main():
     bootstrap_parser = subparsers.add_parser('bootstrap', help='Fetch sample data')
     bootstrap_parser.add_argument('--sample', action='store_true', help='Fetch sample records')
     bootstrap_parser.add_argument('--limit', type=int, default=15, help='Number of records to fetch')
+    bootstrap_parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     # Stats command
     stats_parser = subparsers.add_parser('stats', help='Show dataset statistics')

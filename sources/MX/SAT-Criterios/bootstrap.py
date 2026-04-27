@@ -175,7 +175,10 @@ def parse_criteria_from_html(html: str) -> List[Dict[str, str]]:
 class SATCriterios(BaseScraper):
     SOURCE_ID = "MX/SAT-Criterios"
 
-    def __init__(self):
+    def __init__(self, source_dir: str = None):
+        if source_dir is None:
+            source_dir = str(Path(__file__).parent)
+        super().__init__(source_dir)
         self.http = HttpClient(
             base_url=SIDOF_BASE,
             headers={
@@ -205,23 +208,29 @@ class SATCriterios(BaseScraper):
         logger.info("Parsed %d criteria from year %s (SIDOF %s)", len(criteria), year, codigo)
         return criteria
 
-    def normalize(self, criterion: Dict[str, str], year: str, pub_date: str) -> Dict[str, Any]:
-        """Normalize a parsed criterion into the standard schema."""
-        cid = criterion["criterion_id"]
+    def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize a parsed criterion into the standard schema.
+
+        Expects raw dict with criterion fields plus `_year` and `_pub_date`
+        embedded by fetch_all().
+        """
+        cid = raw["criterion_id"]
+        year = raw.get("_year") or raw.get("rmf_year", "")
+        pub_date = raw.get("_pub_date") or raw.get("date", "")
         return {
             "_id": f"MX-SAT-{year}-{cid.replace('/', '-')}",
             "_source": self.SOURCE_ID,
-            "_type": "doctrine",
+            "_type": "legislation",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
-            "title": f"{cid} {criterion['title']}",
-            "text": criterion["text"],
+            "title": f"{cid} {raw['title']}",
+            "text": raw["text"],
             "date": pub_date,
             "url": f"{SIDOF_BASE}/notas/docFuente/{ANEXO_CODES.get(year, {}).get('codigo', '')}",
             "language": "es",
             "criterion_id": cid,
-            "criterion_type": criterion["criterion_type"],
-            "law_code": criterion["law_code"],
-            "law_name": criterion["law_name"],
+            "criterion_type": raw["criterion_type"],
+            "law_code": raw["law_code"],
+            "law_name": raw["law_name"],
             "rmf_year": year,
         }
 
@@ -246,8 +255,10 @@ class SATCriterios(BaseScraper):
                 if sample_limit and total >= sample_limit:
                     break
 
-                record = self.normalize(criterion, year, info["date"])
-                yield record
+                # Embed year and pub_date; BaseScraper will call normalize(raw)
+                criterion["_year"] = year
+                criterion["_pub_date"] = info["date"]
+                yield criterion
                 total += 1
 
                 if total % 50 == 0:
@@ -266,7 +277,9 @@ class SATCriterios(BaseScraper):
 
         criteria = self.fetch_anexo(latest_year, info["codigo"])
         for criterion in criteria:
-            yield self.normalize(criterion, latest_year, info["date"])
+            criterion["_year"] = latest_year
+            criterion["_pub_date"] = info["date"]
+            yield criterion
 
     def test(self) -> bool:
         """Quick connectivity test."""
@@ -301,6 +314,7 @@ def main():
     parser.add_argument("command", choices=["bootstrap", "update", "test"])
     parser.add_argument("--sample", action="store_true", help="Fetch only 10-15 sample records")
     parser.add_argument("--since", type=str, help="Date for incremental update (YYYY-MM-DD)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = SATCriterios()
@@ -310,31 +324,14 @@ def main():
         sys.exit(0 if success else 1)
 
     if args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        count = 0
-        for record in scraper.fetch_all(sample=args.sample):
-            safe_name = re.sub(r'[^\w\-.]', '_', record['_id'])
-            out_file = sample_dir / f"{safe_name}.json"
-            out_file.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
-            count += 1
-            text_len = len(record.get("text", ""))
-            logger.info(
-                "  [%d] %s | %s | text=%d chars",
-                count, record["criterion_id"], record["title"][:60], text_len
-            )
-
-        logger.info("Bootstrap complete: %d records saved to sample/", count)
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+        logger.info("Bootstrap complete: %s", json.dumps(stats, indent=2))
+        count = stats.get("sample_records_saved") or stats.get("records_fetched", 0)
         sys.exit(0 if count >= 10 else 1)
 
     if args.command == "update":
-        since = args.since or "2026-01-01"
-        count = 0
-        for record in scraper.fetch_updates(since):
-            count += 1
-            logger.info("  [%d] %s: %s", count, record["criterion_id"], record["title"][:60])
-        logger.info("Update complete: %d criteria since %s", count, since)
+        stats = scraper.update()
+        logger.info("Update complete: %s", json.dumps(stats, indent=2))
 
 
 if __name__ == "__main__":

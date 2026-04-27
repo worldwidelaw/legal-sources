@@ -35,3 +35,7 @@ python bootstrap.py test               # Connectivity test
 python bootstrap.py bootstrap --sample # ~15 sample records
 python bootstrap.py bootstrap          # Full crawl
 ```
+
+## License
+
+[Open Government Data](https://www.nta.go.jp) — official administrative circulars published by the Japanese National Tax Agency. Government works in Japan are not subject to copyright per Article 13 of the Copyright Act.

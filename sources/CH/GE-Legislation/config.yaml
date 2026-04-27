@@ -1,31 +1,31 @@
-source:
-  id: CH/GE-Legislation
-  name: "République et Canton de Genève - Recueil systématique (rs/GE)"
-  country: CH
-  jurisdiction: CH-GE
-  url: https://silgeneve.ch/legis/
-  data_types:
-    - legislation
-  language: fr
-  license: Public domain (Swiss cantonal legislation)
-  auth: none
-
-schema:
-  key_fields:
-    - systematic_number
-  fields:
-    _id: string
-    _source: string
-    _type: string
-    _fetched_at: string
-    title: string
-    text: string
-    date: string
-    url: string
-    systematic_number: string
-    abbreviation: string
-    jurisdiction: string
-
 fetcher:
   rate_limit_delay: 1.5
   timeout: 120
+schema:
+  fields:
+    _fetched_at: string
+    _id: string
+    _source: string
+    _type: string
+    abbreviation: string
+    date: string
+    jurisdiction: string
+    systematic_number: string
+    text: string
+    title: string
+    url: string
+  key_fields:
+  - name: systematic_number
+    required: false
+    type: string
+source:
+  auth: none
+  country: CH
+  data_types:
+  - legislation
+  id: CH/GE-Legislation
+  jurisdiction: CH-GE
+  language: fr
+  license: Public domain (Swiss cantonal legislation)
+  name: République et Canton de Genève - Recueil systématique (rs/GE)
+  url: https://silgeneve.ch/legis/

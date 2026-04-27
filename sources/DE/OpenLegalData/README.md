@@ -81,7 +81,7 @@ python bootstrap.py bootstrap --state 4 --sample
 
 ## License
 
-German court decisions are public domain under § 5 UrhG (amtliche Werke).
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke). Aggregated court decisions and legislation from all 16 German states plus federal courts.
 
 ## Links
 

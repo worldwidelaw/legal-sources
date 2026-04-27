@@ -46,6 +46,10 @@ python3 bootstrap.py list --year 2025
 - beautifulsoup4
 - pdfplumber (for PDF text extraction)
 
+## License
+
+Open government data — official gazette freely accessible.
+
 ## Notes
 
 - Documents are in Montenegrin (Latin script)

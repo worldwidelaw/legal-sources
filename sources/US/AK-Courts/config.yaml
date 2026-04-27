@@ -1,0 +1,45 @@
+auth:
+  type: none
+country: US
+data_types:
+- case_law
+fetch:
+  base_url: https://www.courtlistener.com/api/rest/v4
+  courts: alaska,alaskactapp
+  delay: 1.5
+license: Public Domain (government works)
+name: Alaska Supreme Court & Court of Appeals
+notes: 'Alaska appellate opinions via CourtListener search API.
+
+  Supreme Court (alaska): opinions from 1960.
+
+  Court of Appeals (alaskactapp): opinions from 1980.
+
+  Full text extracted from PDFs or HTML when available.
+
+  '
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: citation
+    required: false
+    type: string
+source_id: US/AK-Courts
+url: https://courts.alaska.gov/

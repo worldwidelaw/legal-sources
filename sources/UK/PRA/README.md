@@ -26,6 +26,10 @@ prudential regulation.
 - Discussion papers
 - Regulatory digests
 
+## License
+
+[Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) — free reuse with attribution.
+
 ## Usage
 ```bash
 python bootstrap.py test                  # Test connectivity

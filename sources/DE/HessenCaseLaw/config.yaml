@@ -1,0 +1,61 @@
+source_id: DE/HessenCaseLaw
+name: Hessen State Court Decisions (LaReDa)
+description: Hessen court decisions via jPortal API (lareda.hessenrecht.hessen.de)
+url: https://www.lareda.hessenrecht.hessen.de/bshe/
+country: DE
+jurisdiction: Hessen
+data_types:
+  - case_law
+
+access:
+  type: rest_api
+  rate_limit: 0.5/s
+  auth: none
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: doc_id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: court
+      type: string
+      required: false
+    - name: case_number
+      type: string
+      required: false
+    - name: ecli
+      type: string
+      required: false
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: false
+  text_field: text
+  date_field: date
+  title_field: title
+
+update:
+  frequency: weekly
+  method: fetch_updates
+
+license:
+  type: public_domain
+  notes: German official works (§ 5 UrhG) - public domain. Non-commercial use free; commercial use requires registration with OLG Frankfurt.
+
+notes: |
+  Hessen LaReDa (Landesrechtsprechungsdatenbank) court decisions.
+  Uses the juris jPortal REST API (same platform as DE/BadenWürttemberg).
+  11K+ court decisions from all Hessen court branches.
+  API flow: session init → CSRF token → search pagination → document fetch.
+  Requires r3autologin cookie set to portal ID.

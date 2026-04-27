@@ -385,7 +385,7 @@ class NYAdminCodeScraper(BaseScraper):
             for sec_path in sections:
                 raw = self.fetch_section(sec_path)
                 if raw and raw.get("text"):
-                    yield self.normalize(raw)
+                    yield raw
                     total += 1
                     if total % 50 == 0:
                         logger.info(f"  Progress: {total} sections fetched")

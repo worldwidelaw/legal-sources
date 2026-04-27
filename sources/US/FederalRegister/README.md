@@ -59,3 +59,7 @@ Each record contains:
 - **Proposed Rule**: Proposed rulemaking for public comment
 - **Notice**: Agency announcements and informational documents
 - **Presidential Document**: Executive orders, proclamations, memoranda
+
+## License
+
+[Public domain](https://www.law.cornell.edu/uscode/text/17/105) — US government works under 17 U.S.C. § 105.

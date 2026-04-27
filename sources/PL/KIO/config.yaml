@@ -1,0 +1,38 @@
+# PL/KIO -- Polish Public Procurement Tribunal (KIO) Rulings
+source:
+  id: "PL/KIO"
+  name: "KIO Rulings (Krajowa Izba Odwoławcza)"
+  url: "https://orzeczenia.uzp.gov.pl/"
+  country: "PL"
+  data_types:
+    - case_law
+  auth:
+    type: none
+  license: "Open Government Data"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+    - name: url
+      type: string
+      required: true
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id

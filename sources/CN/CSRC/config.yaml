@@ -1,0 +1,65 @@
+# ===================================================================
+# CN/CSRC -- China Securities Regulatory Commission (中国证监会)
+# ===================================================================
+# Enforcement decisions, announcements, market bans, and orders.
+# ~3,300+ documents with full text via JSON API.
+# ===================================================================
+
+source:
+  id: "CN/CSRC"
+  country: "CN"
+  name: "China Securities Regulatory Commission (中国证监会)"
+  url: "https://www.csrc.gov.cn/"
+  description: |
+    Official publications of the China Securities Regulatory Commission.
+    Includes administrative penalty decisions, market prohibition decisions,
+    CSRC orders, and announcements. ~3,300+ documents. Chinese language.
+    Free access via JSON search API.
+
+data_types:
+  - case_law
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "Conservative rate limit for Chinese government servers."
+
+api:
+  type: "rest"
+  base_url: "https://www.csrc.gov.cn"
+  endpoints:
+    search: "/searchList/{channelid}?_isAgg=true&_isJson=true&_pageSize={size}&_template=index&_pageNo={page}"
+
+schema:
+  key_fields:
+    - name: "manuscriptId"
+      description: "Unique document identifier"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Decision/announcement title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+    - name: "category"
+      description: "Document category (penalty/ban/order/announcement)"
+      type: "string"
+      role: "classification"
+
+notes: |
+  - JSON API discovered via searchList endpoint
+  - 4 channels: penalties (2009), announcements (759), market bans (366), orders (232)
+  - Full text returned in 'content' field of JSON response
+  - Penalty/ban decisions are case_law, orders/announcements are doctrine
+  - Language: Chinese (Simplified)

@@ -1,0 +1,44 @@
+source_id: MP/CNMILRC
+name: CNMI Law Revision Commission
+country: MP
+url: https://www.cnmilaw.org/
+description: |
+  Commonwealth of the Northern Mariana Islands Law Revision Commission.
+  Covers the Commonwealth Code (CMC, 10 titles, ~7,174 sections),
+  CNMI Administrative Code (NMIAC, ~289 chapters), Public Laws (1,673+),
+  Supreme Court slip opinions (757+), Superior Court decisions (1,446+),
+  and Commonwealth Reporter (282 decisions).
+
+data_types:
+  - legislation
+  - case_law
+
+license: "Public domain (CNMI Government)"
+language: en
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+update_frequency: quarterly
+
+schema:
+  key_fields:
+    - name: title
+      required: true
+      type: string
+    - name: doc_type
+      required: true
+      type: string
+  date_field: date
+  text_field: text
+  title_field: title
+  url_field: url
+
+notes: |
+  Static PHP/HTML site with all documents as downloadable PDFs.
+  Index pages (cmc.php, admin.php, spm{YY}.php, sup{YY}.php, pl{NN}.php)
+  provide structured metadata. PDFs are extracted via pdfplumber.

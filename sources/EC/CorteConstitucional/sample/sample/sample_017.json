@@ -1,0 +1,19 @@
+{
+  "_id": "EC-CC-9878",
+  "_source": "EC/CorteConstitucional",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-01T18:25:08.919957+00:00",
+  "title": "Sentencia 3327-22-EP/26",
+  "text": "La Corte Constitucional acepta la acción extraordinaria de protección presentada en\ncontra de una sentencia de apelación dictada en el contexto de una acción de protección. Este\nOrganismo concluye que la sentencia impugnada vulneró el derecho a la seguridad jurídica, al\nhaber aceptado una acción de protección manifiestamente improcedente, que recayó en un\nescenario de terminación unilateral y anticipada de un contrato público.",
+  "date": "2026-03-19",
+  "url": "https://esacc.corteconstitucional.gob.ec/storage/api/v1/10_DWL_FL/eyJjYXJwZXRhIjogInRyYW1pdGUiLCAidXVpZCI6ICI5OGY2NGEwMS02OWQyLTRiMTYtOTcwNy0xNDc4YjU5NzVkNzIucGRmIn0=",
+  "numero": "3327-22-EP/26",
+  "numero_causa": "3327-22-EP",
+  "tipo_accion": "ACCIÓN EXTRAORDINARIA DE PROTECCIÓN",
+  "materia": "Constitucional",
+  "juez": "RAÚL LLASAG FERNÁNDEZ",
+  "decision": "ACEPTAR",
+  "metadata_sentencia": "",
+  "es_novedad": true,
+  "es_relevante": false
+}

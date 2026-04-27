@@ -35,3 +35,7 @@ python bootstrap.py bootstrap            # Full bootstrap (all norms)
 - Rate limit: 1 request/second for full text retrieval
 - datos.bcn.cl SPARQL endpoint has metadata only, not full text
 - Full text is returned as HTML sections; cleaned to plain text
+
+## License
+
+[Open Government Data](https://www.bcn.cl/leychile/) — official legislation published by the Biblioteca del Congreso Nacional de Chile.

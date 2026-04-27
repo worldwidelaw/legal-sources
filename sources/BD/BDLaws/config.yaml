@@ -1,30 +1,39 @@
-source:
-  id: BD/BdLaws
-  name: "Laws of Bangladesh (bdlaws.minlaw.gov.bd)"
-  country: BD
-  url: http://bdlaws.minlaw.gov.bd/
-  data_types:
-    - legislation
-  auth: none
-  format: html
-  language: en
-  description: >
-    1,571 Bangladesh Acts of Parliament, Ordinances, and President's Orders
-    from the Ministry of Law, Justice and Parliamentary Affairs.
-    Codified Bangladesh Code with full text in English.
-    Each act has sections fetched individually and concatenated.
-
+fetcher:
+  base_url: http://bdlaws.minlaw.gov.bd
+  encoding: utf-16
+  index_url: /laws-of-bangladesh-chronological-index.html
+  rate_limit: 1.0
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - act_number
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: act_number
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: BD
+  data_types:
+  - legislation
+  description: '1,571 Bangladesh Acts of Parliament, Ordinances, and President''s Orders from the Ministry of Law, Justice and Parliamentary Affairs. Codified Bangladesh Code with full text in English.
+    Each act has sections fetched individually and concatenated.
 
-fetcher:
-  base_url: "http://bdlaws.minlaw.gov.bd"
-  index_url: "/laws-of-bangladesh-chronological-index.html"
-  encoding: "utf-16"
-  rate_limit: 1.0
+    '
+  format: html
+  id: BD/BdLaws
+  language: en
+  name: Laws of Bangladesh (bdlaws.minlaw.gov.bd)
+  url: http://bdlaws.minlaw.gov.bd/

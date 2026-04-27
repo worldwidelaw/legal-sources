@@ -63,3 +63,7 @@ python bootstrap.py update
   "enactment_organ": " delays"
 }
 ```
+
+## License
+
+[Public Government Data](https://www.arlis.am) — official legislation published by the Armenian Legal Information System.

@@ -1,42 +1,52 @@
-source:
-  id: IE/BAILII
-  name: BAILII Irish Courts
-  country: IE
-  data_types:
-    - caselaw
-  url: https://www.bailii.org
-  auth: none
-  license: BAILII Terms (free-of-charge access, attribution required)
-  notes: |
-    British and Irish Legal Information Institute (BAILII) provides free access to Irish case law.
-    Courts covered:
-    - Supreme Court (IESC) - 1998 onwards
-    - Court of Appeal (IECA) - 2014 onwards
-    - Court of Criminal Appeal (IECCA) - 2004 onwards
-    - High Court (IEHC) - 1997 onwards
-    - Competition Authority (IECompA) - 1991 onwards
-    - Information Commissioner (IEIC) - 1998 onwards
-    - Data Protection Commission (IEDPC) - 2005 onwards
-    Full text in HTML format with ECLI-style citation numbers.
-
 fetcher:
-  type: html_scraping
   base_url: https://www.bailii.org
-  rate_limit: 2  # seconds between requests
-  user_agent: "Mozilla/5.0 (compatible; LegalDataHunter/1.0)"
-
+  rate_limit: 2
+  type: html_scraping
+  user_agent: Mozilla/5.0 (compatible; LegalDataHunter/1.0)
 schema:
   key_fields:
-    - citation
+  - name: citation
+    required: false
+    type: string
   normalized_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-    - citation
-    - court
-    - court_code
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+  - citation
+  - court
+  - court_code
+source:
+  auth: none
+  country: IE
+  data_types:
+  - caselaw
+  id: IE/BAILII
+  license: BAILII Terms (free-of-charge access, attribution required)
+  name: BAILII Irish Courts
+  notes: 'British and Irish Legal Information Institute (BAILII) provides free access to Irish case law.
+
+    Courts covered:
+
+    - Supreme Court (IESC) - 1998 onwards
+
+    - Court of Appeal (IECA) - 2014 onwards
+
+    - Court of Criminal Appeal (IECCA) - 2004 onwards
+
+    - High Court (IEHC) - 1997 onwards
+
+    - Competition Authority (IECompA) - 1991 onwards
+
+    - Information Commissioner (IEIC) - 1998 onwards
+
+    - Data Protection Commission (IEDPC) - 2005 onwards
+
+    Full text in HTML format with ECLI-style citation numbers.
+
+    '
+  url: https://www.bailii.org

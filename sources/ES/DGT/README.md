@@ -53,4 +53,4 @@ python bootstrap.py update
 
 ## License
 
-Open Government Data - publicly available tax doctrine from the Spanish Ministry of Finance.
+Open government data under [Spanish Reuse of Public Sector Information regulations](https://datos.gob.es/en/terms).

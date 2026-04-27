@@ -22,3 +22,7 @@ Fetches case law from DGSI sub-databases not covered by PT/STA or PT/SupremeCour
 - Full document: `/{db}.nsf/0/{unid}?OpenDocument&ExpandSection=1`
 - No auth required, no anti-bot protection
 - Lotus Notes/Domino backend, ISO-8859-1 encoding
+
+## License
+
+[Open Government Data](https://dados.gov.pt) — Portuguese court decisions published by DGSI, free for reuse.

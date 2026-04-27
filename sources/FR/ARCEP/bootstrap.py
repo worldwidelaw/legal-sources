@@ -24,6 +24,7 @@ import io
 import json
 import os
 import re
+import socket
 import sys
 import time
 from datetime import datetime, timezone
@@ -31,6 +32,9 @@ from pathlib import Path
 from typing import Any, Generator, Optional
 
 import requests
+
+# Issue #502: hard safety net against silent socket hangs
+socket.setdefaulttimeout(120)
 
 # Add project root to path for common imports
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -56,7 +60,7 @@ def safe_get(row: dict, key: str, default: str = '') -> str:
 
 def fetch_csv(session: requests.Session) -> list[dict]:
     """Fetch the CSV export with all decision metadata."""
-    response = session.get(CSV_URL, timeout=60)
+    response = session.get(CSV_URL, timeout=(15, 60))
     response.raise_for_status()
 
     # CSV is in ISO-8859-1 (latin-1) encoding
@@ -252,6 +256,7 @@ def main():
                        help='Number of samples to generate')
     parser.add_argument('--since', type=str,
                        help='Fetch updates since date (YYYY-MM-DD)')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

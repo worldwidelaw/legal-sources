@@ -1,0 +1,14 @@
+{
+  "_id": "UY/DGI-ConsultasTributarias/tramite-arrendamiento-servicios-seguro-garantia",
+  "_source": "UY/DGI-ConsultasTributarias",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-26T19:57:59.118930+00:00",
+  "title": "Trámite de arrendamiento con servicios de seguro o garantía",
+  "text": "A continuación se enumeran los pasos a seguir:\n\nPara efectuar el trámite de forma electrónica, debe estar previamente autenticado en Servicios en línea.\n\nIngresar en  Servicios en línea/Trámites/ Solicitud de inicio y seleccionar:\n\nTrámite: Envío Declaración Jurada no habilitadas para ingreso Web ni Redes\n\nSubtrámite: Arrendamientos con servicios de seguro o garantía\n\n## Requisitos: \n\nComentarios: para validar dicho campo debe ingresar como mínimo alguna letra o número.\n\nSe deberá adjuntar la siguiente documentación:\n\nArchivo digital según formato que se adjunta, con las siguientes características:\n- Tipo de archivo: TXT o ZIP (en caso que supere 20 MB)\n- Separador de campos: punto y coma (;)\n- Sin encabezados\n- Un registro por línea\n- Nombre del archivo: ARREND_ENTIDAD_AÑO.txt     Ejemplo: ARREND_EMPRESAXX_2025.txt\n\n## Periodicidad y Plazo: \n\n- Periodicidad: Anual\n- Plazo de presentación: hasta abril del año siguiente\n- La información presentada deberá corresponder: al año calendario inmediato anterior \n\n## Reliquidación o Nueva Presentación: \n\nEn caso de necesitar corregir la información presentada:\n- El contribuyente deberá realizar un nuevo envío para el mismo período.\n- La nueva presentación reemplazará completamente la anterior.\n- No se admitirán presentaciones parciales.\n\n## Enlaces relacionados\n\n- Formato de información de arrendamientos\n\n## Etiquetas\n\nTrámites disponibles Trámites varios Otros trámites Empresas",
+  "date": "2026-04-21",
+  "url": "https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones/tramite-arrendamiento-servicios-seguro-garantia",
+  "doc_type": "Guías",
+  "description": "A continuación se enumeran los pasos a seguir:",
+  "language": "es",
+  "jurisdiction": "UY"
+}

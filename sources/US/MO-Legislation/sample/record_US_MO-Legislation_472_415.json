@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/472.415",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:34:48.219473+00:00",
+  "title": "Missouri Revised Statutes § 472.415 - Disclosure of digital assets, use of online tool to direct custodian — use of will, trust, power of attorney to give direction",
+  "text": "472.415.  Disclosure of digital assets, use of online tool to direct custodian — use of will, trust, power of attorney to give direction. — 1.  A user may use an online tool to direct the custodian to disclose to a designated recipient or not to disclose some or all of the user's digital assets, including the content of electronic communications.  If the online tool allows the user to modify or delete a direction at all times, a direction regarding disclosure using an online tool overrides a contrary direction by the user in a will, trust, power of attorney, or other record.\n  2.  If a user has not used an online tool to give direction under subsection 1 of this section or if the custodian has not provided an online tool, the user may allow or prohibit in a will, trust, power of attorney, or other record, disclosure to a fiduciary of some or all of the user's digital assets, including the content of electronic communications sent or received by the user.\n  3.  A user's direction under subsection 1 or 2 of this section overrides a contrary provision in a terms-of-service agreement that does not require the user to act affirmatively and distinctly from the user's assent to the terms-of-service.\n(L. 2018 H.B. 1250)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=472.415",
+  "section_id": "472.415",
+  "chapter": "472",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

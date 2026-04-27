@@ -1,0 +1,62 @@
+source:
+  id: "EE/EMTA-TaxGuidance"
+  country: "EE"
+  name: "Estonia Tax and Customs Board (EMTA) Guidance"
+  url: "https://www.emta.ee/en"
+  description: |
+    Official tax guidance from the Estonian Tax and Customs Board (Maksu- ja Tolliamet).
+    Covers Estonia's unique CIT system (0% retained/20% distributions), VAT (24%),
+    social tax, excise duties, customs procedures, non-resident taxation, and
+    e-residency implications. Substantive interpretive guidance with references
+    to court decisions and legislative provisions.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.emta.ee"
+  sitemap: "/en/sitemap"
+
+data_model:
+  type: "doctrine"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 6
+  key_fields:
+    - name: "doc_id"
+      description: "Stable ID derived from URL path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Page title (guidance topic)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of guidance page"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Fetch date (pages lack publication dates)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Source URL on emta.ee"
+      type: "string"
+      role: "reference"
+      required: true

@@ -8,7 +8,7 @@ This source fetches legislation from the **Basque Autonomous Community** (País 
 
 - **Portal**: [Open Data Euskadi](https://opendata.euskadi.eus)
 - **SPARQL Endpoint**: https://api.euskadi.eus/sparql/
-- **License**: CC BY 4.0
+- **License**: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 - **Coverage**: 1936 to present
 - **Languages**: Spanish (es) and Basque (eu)
 
@@ -88,6 +88,10 @@ python3 bootstrap.py validate
 - Spanish language versions are fetched by default (more standardized)
 - XML content includes HTML markup which is cleaned to plain text
 - PDF versions are also available and tracked in metadata
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — attribution required.
 
 ## Related Sources
 

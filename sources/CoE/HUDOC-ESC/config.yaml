@@ -1,41 +1,56 @@
-source_id: CoE/HUDOC-ESC
-name: HUDOC-ESC (European Social Charter Decisions)
-country: CoE
-url: https://hudoc.esc.coe.int
-data_types:
-  - case_law
-
 auth:
   type: none
-
+country: CoE
+data_types:
+- case_law
 endpoints:
   search: https://hudoc.esc.coe.int/app/query/results
-
-rate_limit:
-  requests_per_second: 1
-  delay_between_requests: 1.0
-
-schema:
-  key_fields:
-    - _id
-    - esctitle
-    - escdatedec
-    - escrawdctype
-    - escstateparty
-
 license: Open Access (Council of Europe)
+name: HUDOC-ESC (European Social Charter Decisions)
+notes: 'HUDOC-ESC is the official database of the European Committee of Social Rights.
 
-notes: |
-  HUDOC-ESC is the official database of the European Committee of Social Rights.
   Contains decisions on merits, admissibility, opinions, and follow-up assessments
+
   under the European Social Charter collective complaints procedure.
 
+
   API Access:
+
   - Search: GET /app/query/results with Lucene-style query
+
   - Full text returned directly in contentbody field (no separate endpoint needed)
 
+
   Document types (escrawdctype):
+
   - FOND: Decisions on the merits (~395)
+
   - ADMIS: Decisions on admissibility (~800)
+
   - OPCC: Separate opinions (~170)
+
   - CCASST: Follow-up conclusions/assessments (~3000+)
+
+  '
+rate_limit:
+  delay_between_requests: 1.0
+  requests_per_second: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: esctitle
+    required: false
+    type: string
+  - name: escdatedec
+    required: false
+    type: string
+  - name: escrawdctype
+    required: false
+    type: string
+  - name: escstateparty
+    required: false
+    type: string
+source_id: CoE/HUDOC-ESC
+url: https://hudoc.esc.coe.int

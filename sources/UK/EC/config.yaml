@@ -46,6 +46,7 @@ schema:
     - name: "date"
       type: "date"
       role: "metadata"
+      required: false
     - name: "url"
       type: "string"
       role: "reference"

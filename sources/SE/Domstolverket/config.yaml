@@ -1,112 +1,103 @@
-source_id: SE/Domstolverket
-name: Swedish Courts (Domstolsverket)
-description: >
-  Case law from all Swedish courts via Domstolsverket's Open Data API.
-  Covers courts of appeal (hovrätter), administrative courts of appeal
-  (kammarrätter), and specialized courts. Complements SE/SupremeCourt (HDO)
-  and SE/SupremeAdministrativeCourt (HFD).
-
-data_type: caselaw
-jurisdiction: Sweden
-country: SE
-language: swe
-
-# Data access
-base_url: https://rattspraxis.etjanst.domstol.se
 access_method: rest_api
 api_docs: https://rattspraxis.etjanst.domstol.se/openapi/puh-openapi.yaml
-
-# Authentication
 auth_required: false
-
-# Rate limiting
-rate_limit_delay: 1.0  # seconds between requests
-
-# License
-license: Public Domain
-license_notes: >
-  Swedish court decisions are public documents (allmänna handlingar)
-  under the Swedish Freedom of the Press Act (Tryckfrihetsförordningen).
-
-# Courts covered (excluding supreme courts)
+base_url: https://rattspraxis.etjanst.domstol.se
+country: SE
 courts_covered:
-  # Courts of Appeal
-  - code: HSV
-    name: Svea hovrätt
-  - code: HGO
-    name: Göta hovrätt
-  - code: HVS
-    name: Hovrätten för Västra Sverige
-  - code: HON
-    name: Hovrätten för Övre Norrland
-  - code: HNN
-    name: Hovrätten för Nedre Norrland
-  - code: HSB
-    name: Hovrätten över Skåne och Blekinge
-  # Administrative Courts of Appeal
-  - code: KST
-    name: Kammarrätten i Stockholm
-  - code: KGG
-    name: Kammarrätten i Göteborg
-  - code: KJO
-    name: Kammarrätten i Jönköping
-  - code: KSU
-    name: Kammarrätten i Sundsvall
-  # Specialized Courts
-  - code: ADO
-    name: Arbetsdomstolen
-  - code: MMOD
-    name: Mark- och miljööverdomstolen
-  - code: MIOD
-    name: Migrationsöverdomstolen
-  - code: PMOD
-    name: Patent- och marknadsöverdomstolen
-
+- code: HSV
+  name: Svea hovrätt
+- code: HGO
+  name: Göta hovrätt
+- code: HVS
+  name: Hovrätten för Västra Sverige
+- code: HON
+  name: Hovrätten för Övre Norrland
+- code: HNN
+  name: Hovrätten för Nedre Norrland
+- code: HSB
+  name: Hovrätten över Skåne och Blekinge
+- code: KST
+  name: Kammarrätten i Stockholm
+- code: KGG
+  name: Kammarrätten i Göteborg
+- code: KJO
+  name: Kammarrätten i Jönköping
+- code: KSU
+  name: Kammarrätten i Sundsvall
+- code: ADO
+  name: Arbetsdomstolen
+- code: MMOD
+  name: Mark- och miljööverdomstolen
+- code: MIOD
+  name: Migrationsöverdomstolen
+- code: PMOD
+  name: Patent- och marknadsöverdomstolen
 courts_excluded:
-  - code: HDO
-    name: Högsta domstolen
-    reason: Covered by SE/SupremeCourt
-  - code: HFD
-    name: Högsta förvaltningsdomstolen
-    reason: Covered by SE/SupremeAdministrativeCourt
-
-# Schema
-schema:
-  key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - url
-    - court
-    - court_code
-    - case_numbers
-  metadata_fields:
-    - publication_type
-    - is_precedent
-    - reference_numbers
-    - legal_provisions
-    - keywords
-    - summary
-
-# Coverage
+- code: HDO
+  name: Högsta domstolen
+  reason: Covered by SE/SupremeCourt
+- code: HFD
+  name: Högsta förvaltningsdomstolen
+  reason: Covered by SE/SupremeAdministrativeCourt
 coverage:
-  start_date: null  # Various start dates per court
-  end_date: null  # Ongoing
-  notes: >
-    Coverage varies by court. Most courts publish recent decisions only.
-    Historical archive depth depends on court and case type.
+  end_date: null
+  notes: 'Coverage varies by court. Most courts publish recent decisions only. Historical archive depth depends on court and case type.
 
-# Update frequency
-update_frequency: daily
-update_method: api_pagination
-
-# Data quality
+    '
+  start_date: null
 data_quality:
   full_text: true
-  structured: true
+  notes: 'Full text extracted from PDF attachments. Some decisions have only summaries available. Metadata includes case numbers, keywords, legal provisions (SFS references), and precedent status.
+
+    '
   pdf_extraction: true
-  notes: >
-    Full text extracted from PDF attachments. Some decisions have
-    only summaries available. Metadata includes case numbers, keywords,
-    legal provisions (SFS references), and precedent status.
+  structured: true
+data_type: caselaw
+description: 'Case law from all Swedish courts via Domstolsverket''s Open Data API. Covers courts of appeal (hovrätter), administrative courts of appeal (kammarrätter), and specialized courts. Complements
+  SE/SupremeCourt (HDO) and SE/SupremeAdministrativeCourt (HFD).
+
+  '
+jurisdiction: Sweden
+language: swe
+license: Public Domain
+license_notes: 'Swedish court decisions are public documents (allmänna handlingar) under the Swedish Freedom of the Press Act (Tryckfrihetsförordningen).
+
+  '
+name: Swedish Courts (Domstolsverket)
+rate_limit_delay: 1.0
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: court_code
+    required: false
+    type: string
+  - name: case_numbers
+    required: false
+    type: string
+  metadata_fields:
+  - publication_type
+  - is_precedent
+  - reference_numbers
+  - legal_provisions
+  - keywords
+  - summary
+source_id: SE/Domstolverket
+update_frequency: daily
+update_method: api_pagination

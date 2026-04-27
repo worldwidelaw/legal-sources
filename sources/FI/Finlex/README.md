@@ -32,9 +32,11 @@
 
 ## License
 
-- Original statutes: CC BY 4.0
-- Consolidated legislation: CC BY-NC 4.0 (non-commercial)
-- Translations: CC BY 4.0
+- Original statutes: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+- Translations: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+- Consolidated legislation: [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)
+
+> ⚠️ **Consolidated legislation restricts commercial use** (CC BY-NC 4.0). Original statutes and translations are freely reusable.
 
 ## Usage
 

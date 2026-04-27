@@ -51,6 +51,10 @@ python bootstrap.py bootstrap
 python bootstrap.py update
 ```
 
+## License
+
+Open government data — Italian Revenue Agency official publications. No formal open data license specified; reuse is generally permitted for public government information.
+
 ## Coverage
 
 - Interpelli: 2018-present

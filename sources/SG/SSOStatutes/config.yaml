@@ -1,19 +1,30 @@
-source:
-  id: SG/SSOStatutes
-  name: Singapore Statutes Online (SSO)
-  country: SG
-  url: https://sso.agc.gov.sg/
-  data_types:
-    - legislation
-  auth: none
-  license: "Copyright Government of Singapore. Reproduced with permission of the Attorney-General's Chambers."
-  rate_limit: 6  # seconds between requests (per robots.txt crawl-delay)
-
 schema:
   key_fields:
-    - _id
-    - title
-    - act_type
-    - date
-    - text
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: act_type
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: SG
+  data_types:
+  - legislation
+  id: SG/SSOStatutes
+  license: Copyright Government of Singapore. Reproduced with permission of the Attorney-General's Chambers.
+  name: Singapore Statutes Online (SSO)
+  rate_limit: 6
+  url: https://sso.agc.gov.sg/

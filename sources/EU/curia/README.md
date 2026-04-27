@@ -92,7 +92,7 @@ python3 bootstrap.py
 
 ## License
 
-EUR-Lex content is available for reuse under the [EUR-Lex legal notice](https://eur-lex.europa.eu/content/legal-notice/legal-notice.html). Attribution is required.
+[EUR-Lex legal notice](https://eur-lex.europa.eu/content/legal-notice/legal-notice.html) — reuse authorised provided the source is acknowledged.
 
 ## Related Sources
 

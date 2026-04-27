@@ -1,0 +1,67 @@
+# ===================================================================
+# VC/FSA -- St Vincent & Grenadines Financial Services Authority
+# ===================================================================
+# Legislation, regulatory guidelines, warning notices, and publications
+# from the FSA. Legislation & guidelines served as PDFs; warning notices
+# via WordPress REST API with HTML content.
+# ===================================================================
+
+source:
+  id: "VC/FSA"
+  country: "VC"
+  name: "St Vincent & Grenadines Financial Services Authority"
+  url: "https://fsasvg.com/"
+  description: |
+    Financial services legislation (34 acts/regulations), regulatory
+    guidelines (28 guidance notes), warning notices (16 investor alerts),
+    and publications from the SVG FSA. Legislation and guidelines are
+    PDFs; warning notices are WordPress posts accessed via WP REST API.
+
+data_types:
+  - legislation
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  notes: "WordPress site. Polite 1-2s delay between requests."
+
+api:
+  type: "rest"
+  base_url: "https://fsasvg.com"
+  endpoints:
+    posts: "/wp-json/wp/v2/posts?per_page=100&page={page}"
+    forms_page: "/forms-and-applications/"
+  response_format: "json"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "_id"
+      description: "Document identifier (slug or post ID)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF or HTML"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to original document"
+      type: "string"
+      role: "reference"
+      required: true

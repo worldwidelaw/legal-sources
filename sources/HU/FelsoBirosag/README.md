@@ -2,7 +2,7 @@
 
 ## Data Source
 - **URL**: https://kuria-birosag.hu
-- **License**: Public Domain
+- **License**: Public domain
 - **Language**: Hungarian (hu)
 - **Type**: Case Law
 
@@ -70,6 +70,10 @@ Install with:
 ```bash
 pip install beautifulsoup4
 ```
+
+## License
+
+Public domain — official decisions of the Hungarian Supreme Court (Kuria).
 
 ## Sample Statistics (Feb 2026)
 - Records fetched: 12

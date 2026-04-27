@@ -247,27 +247,14 @@ if __name__ == "__main__":
         sys.exit(0 if ok else 1)
 
     elif cmd == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        import json
-        count = 0
-        for record in scraper.fetch_all(sample=sample):
-            out_file = sample_dir / f"{count:04d}.json"
-            with open(out_file, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-            if count <= 3:
-                logger.info("Sample %d: %s (%d chars)",
-                            count, record["title"][:60], len(record["text"]))
-
-        logger.info("Saved %d records to %s", count, sample_dir)
-
+        stats = scraper.bootstrap(sample_mode="--sample" in sys.argv, sample_size=15)
+        fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
+        logger.info(f"Bootstrap complete: {fetched} records — {stats}")
+        if fetched == 0:
+            sys.exit(1)
     elif cmd == "update":
-        import json
-        for record in scraper.fetch_updates("2020-01-01"):
-            print(json.dumps(record, ensure_ascii=False))
-
+        stats = scraper.update()
+        logger.info(f"Update complete: {stats}")
     else:
         print(f"Unknown command: {cmd}")
         sys.exit(1)

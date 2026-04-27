@@ -1,31 +1,44 @@
-source:
-  id: SV/Jurisprudencia
-  name: El Salvador Judicial Documentation Center
-  country: SV
-  url: https://www.jurisprudencia.gob.sv/busqueda/busquedalibre.php
-  data_types:
-    - case_law
-  auth: none
-  language: es
-  description: >
-    Court decisions from El Salvador's Centro de Documentacion Judicial.
-    Covers Sala Constitucional, Sala Civil, Sala Penal, Sala Contencioso
-    Administrativo, appellate chambers, tribunals, and specialized courts.
-    Full text extracted from PDFs stored in DocumentosBoveda.
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - court
-    - case_number
-    - resolution_type
-    - subject_area
-
 fetch:
   method: php_ajax_post
-  search_url: https://www.jurisprudencia.gob.sv/busqueda/result.php
   pdf_base: https://www.jurisprudencia.gob.sv/busqueda/
   rate_limit_seconds: 2
+  search_url: https://www.jurisprudencia.gob.sv/busqueda/result.php
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: court
+    required: false
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: resolution_type
+    required: false
+    type: string
+  - name: subject_area
+    required: false
+    type: string
+source:
+  auth: none
+  country: SV
+  data_types:
+  - case_law
+  description: 'Court decisions from El Salvador''s Centro de Documentacion Judicial. Covers Sala Constitucional, Sala Civil, Sala Penal, Sala Contencioso Administrativo, appellate chambers, tribunals,
+    and specialized courts. Full text extracted from PDFs stored in DocumentosBoveda.
+
+    '
+  id: SV/Jurisprudencia
+  language: es
+  name: El Salvador Judicial Documentation Center
+  url: https://www.jurisprudencia.gob.sv/busqueda/busquedalibre.php

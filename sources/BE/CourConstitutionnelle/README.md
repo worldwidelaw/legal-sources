@@ -71,3 +71,7 @@ python3 bootstrap.py bootstrap --start-year 2026 --end-year 1985
 - Full text extracted from PDF using pdfplumber
 - Decisions available in both French and Dutch (separate documents)
 - Some decisions can exceed 300,000 characters (major constitutional reviews)
+
+## License
+
+[Belgian Open Government Data](https://data.gov.be/en/licence-conditions) — free reuse of Belgian public sector information.

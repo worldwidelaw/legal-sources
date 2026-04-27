@@ -1,44 +1,41 @@
-# DE/BVerwG — German Federal Administrative Court
-# Bundesverwaltungsgericht (BVerwG)
-#
-# Official case law from rechtsprechung-im-internet.de
-# Data is public domain under German law (§ 5 UrhG)
-
-source:
-  id: DE/BVerwG
-  name: Bundesverwaltungsgericht (BVerwG)
-  name_en: German Federal Administrative Court
-  country: DE
-  type: caselaw
-  url: https://www.rechtsprechung-im-internet.de
-  language: de
-  license: Public Domain (§ 5 UrhG - amtliche Werke)
-
-schema:
-  key_fields:
-    - _id
-    - ecli
-    - aktenzeichen
-  date_fields:
-    - date
-    - _fetched_at
-  text_fields:
-    - text
-    - headnote
-    - tenor
-
 fetcher:
-  module: bootstrap
   class: BVerwGFetcher
   methods:
     fetch_all: true
     fetch_updates: true
+  module: bootstrap
   rate_limit:
-    requests_per_second: 0.7
     delay_seconds: 1.5
-
+    requests_per_second: 0.7
 notes:
-  - "Uses TOC-based discovery from rii-toc.xml for ~10,000+ decisions"
-  - "ZIP files contain structured XML with full decision text"
-  - "Supports incremental updates via RSS feed"
-  - "Same infrastructure as DE/BGH, DE/BSG, DE/BVerfG"
+- Uses TOC-based discovery from rii-toc.xml for ~10,000+ decisions
+- ZIP files contain structured XML with full decision text
+- Supports incremental updates via RSS feed
+- Same infrastructure as DE/BGH, DE/BSG, DE/BVerfG
+schema:
+  date_fields:
+  - date
+  - _fetched_at
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: ecli
+    required: false
+    type: string
+  - name: aktenzeichen
+    required: false
+    type: string
+  text_fields:
+  - text
+  - headnote
+  - tenor
+source:
+  country: DE
+  id: DE/BVerwG
+  language: de
+  license: Public Domain (§ 5 UrhG - amtliche Werke)
+  name: Bundesverwaltungsgericht (BVerwG)
+  name_en: German Federal Administrative Court
+  type: caselaw
+  url: https://www.rechtsprechung-im-internet.de

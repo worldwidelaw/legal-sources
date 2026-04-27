@@ -38,3 +38,13 @@ datasets>=2.18.0
 # Browser automation (for JavaScript SPAs and Cloudflare-protected sites)
 # After install, run: playwright install chromium
 playwright>=1.40.0
+
+# RTF text extraction (US/IA-Legislation)
+striprtf>=0.0.26
+
+# Excel file parsing (LU/Parliament and similar XLSX data sources)
+openpyxl>=3.1.0
+
+# AWS S3 client (used by US/CourtListenerBulk for the public CourtListener
+# bulk-data bucket — anonymous access, no credentials needed)
+boto3>=1.34.0

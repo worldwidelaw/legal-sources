@@ -1,0 +1,96 @@
+# ===================================================================
+# EC/SRI-Tax -- Ecuador SRI Tax Guidance (Doctrine)
+# ===================================================================
+# Direct PDF downloads from SRI's Alfresco document repository.
+# Covers formal tax consultation extracts (2014-2024) and current
+# institutional tax regulations. Full text extracted via pdf_extract.
+# ===================================================================
+
+source:
+  id: "EC/SRI-Tax"
+  country: "EC"
+  name: "Servicio de Rentas Internas - Tax Guidance"
+  url: "https://www.sri.gob.ec/"
+  description: |
+    Ecuador's Internal Revenue Service (SRI) tax doctrine and guidance.
+    Includes formal tax consultation extracts (Extractos de Consultas
+    Tributarias Formales) from 2014-2024 and current institutional
+    regulations. Documents are PDF compilations hosted on SRI's
+    Alfresco-backed document portal.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "direct_download"
+  base_url: "https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar"
+  sources:
+    - path: "/extractos-de-consultas"
+      description: "Formal tax consultation extracts (2014-2024)"
+    - path: "/normativa-tributaria-legislacion-nacional"
+      description: "Current institutional tax regulations"
+
+data_model:
+  type: "doctrine"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Unique document identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication year (YYYY-01-01 format)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Direct download URL for the PDF"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "institution"
+      description: "Issuing institution (SRI)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "document_type"
+      description: "Type of doctrine document"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "year"
+      description: "Publication year"
+      type: "integer"
+      role: "temporal_key"
+      required: false
+
+notes: |
+  - 12 PDF documents: 11 annual consultation extracts + 1 normativa vigente
+  - PDFs are annual compilations of formal tax advisory responses
+  - Language: Spanish
+  - No authentication required
+  - Alfresco document management backend

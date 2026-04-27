@@ -1,0 +1,79 @@
+# ===================================================================
+# MM/OpenDevMyanmar -- Open Development Myanmar Laws Database
+# ===================================================================
+# Myanmar laws and regulations via the Open Development Myanmar CKAN
+# data portal. ~112 Myanmar-specific laws with PDF full text in
+# English and Burmese.
+# ===================================================================
+
+source:
+  id: "MM/OpenDevMyanmar"
+  country: "MM"
+  name: "Open Development Myanmar Laws"
+  url: "https://data.opendevelopmentmyanmar.net"
+  description: |
+    Open Development Myanmar (ODM) CKAN data portal containing
+    Myanmar-specific legislation including Companies Law, Mining Law,
+    Investment Law, and other statutes. PDFs available in English
+    and Burmese. ~112 laws_record type datasets.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest"
+  base_url: "https://data.opendevelopmentmyanmar.net"
+  endpoints:
+    search: "/api/3/action/package_search"
+    show: "/api/3/action/package_show"
+  response_format: "json"
+
+data_model:
+  type: "legislation"
+  primary_key: "document_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "document_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "_id"
+      description: "Unique document identifier (MM-ODM-{package_id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Law title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of publication or metadata creation (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the dataset on ODM"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "license"
+      description: "Data license"
+    - name: "language"
+      description: "Language of the extracted text (en or my)"
+    - name: "spatial"
+      description: "Spatial coverage code"

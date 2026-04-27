@@ -51,6 +51,6 @@ python bootstrap.py bootstrap
 | `outcome` | Decision outcome |
 | `legal_norms` | Applicable legal articles |
 
-## Legal
+## License
 
-EUIPO decisions are public documents available through the eSearch Case Law database.
+[EUR-Lex legal notice](https://eur-lex.europa.eu/content/legal-notice/legal-notice.html) — EUIPO decisions are public documents, reuse authorised with attribution.

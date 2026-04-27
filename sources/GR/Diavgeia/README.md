@@ -2,7 +2,7 @@
 
 **Source:** Diavgeia (Διαύγεια) - Greek Transparency Program
 **URL:** https://diavgeia.gov.gr
-**License:** CC-BY (Creative Commons Attribution)
+**License:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 ## Overview
 
@@ -74,6 +74,10 @@ python bootstrap.py update
 - Use incremental updates for production
 - PDF extraction requires pdfplumber: `pip install pdfplumber`
 - Greek text is preserved with proper Unicode encoding
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — see [Diavgeia terms](https://diavgeia.gov.gr/terms).
 
 ## References
 

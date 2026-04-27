@@ -56,3 +56,7 @@ python bootstrap.py update
 - Rate limited to 1 request per 2 seconds
 - Full text is HTML extracted from PDF documents
 - Star ratings indicate legal significance (4 stars = precedent-setting)
+
+## License
+
+[Public Government Data](https://sc.supremecourt.gov.az) — official decisions published by the Supreme Court of the Republic of Azerbaijan.

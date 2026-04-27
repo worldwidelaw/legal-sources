@@ -1,0 +1,44 @@
+source:
+  id: US/FederalCourts
+  name: US Federal Courts (SCOTUS + Circuits)
+  country: US
+  type: caselaw
+  url: https://www.courtlistener.com
+  description: >
+    Federal court opinions via CourtListener public search API (no auth needed).
+    Covers US Supreme Court (SCOTUS) and all 13 federal circuit courts of appeals.
+    ~1.4M total opinions with full text from PDF extraction.
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 3
+
+fetch:
+  delay: 1.5
+  page_size: 20
+  sample_count: 15
+
+schema:
+  key_fields:
+    - name: _id
+      required: true
+      type: string
+    - name: cluster_id
+      required: false
+      type: string
+    - name: court_id
+      required: false
+      type: string
+  text_fields:
+    - text
+  date_fields:
+    - date
+    - _fetched_at
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id

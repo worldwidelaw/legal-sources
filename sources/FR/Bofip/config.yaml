@@ -1,36 +1,48 @@
-name: BOFiP - Bulletin Officiel des Finances Publiques
-source_id: FR/BOFiP
 country: FR
 data_types:
-  - doctrine
-
-url: https://data.economie.gouv.fr/explore/dataset/bofip-vigueur/
+- doctrine
 license: Licence Ouverte v2.0 (Etalab)
-update_frequency: weekly
+name: BOFiP - Bulletin Officiel des Finances Publiques
+notes: 'BOFiP-Impots contains the official French tax doctrine:
 
-schema:
-  key_fields:
-    - _id
-    - identifiant_juridique
-    - date
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
-notes: |
-  BOFiP-Impots contains the official French tax doctrine:
   - Administrative comments on tax legislation and regulations
+
   - Rescrit decisions of general scope
+
   - Ministerial responses of doctrinal interest
+
   - Comments on court decisions affecting tax interpretation
 
+
   Data source: data.economie.gouv.fr OpenDataSoft API (v1.0)
+
   Dataset: bofip-vigueur (publications en vigueur)
+
   Total records: ~8,998 active publications
+
   Series: TVA, IR, IS, CTX, BIC, BNC, RPPM, IF, ENR, etc.
+
+  '
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: identifiant_juridique
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source_id: FR/BOFiP
+update_frequency: weekly
+url: https://data.economie.gouv.fr/explore/dataset/bofip-vigueur/

@@ -57,4 +57,4 @@ python3 bootstrap.py bootstrap --limit 50
 
 ## License
 
-Open Data - European Parliament (CC BY 4.0)
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — European Parliament open data.

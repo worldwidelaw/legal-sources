@@ -84,3 +84,7 @@ This fetcher:
 2. Parses the XML structure to extract clean text
 3. Falls back to HTML stripping if needed
 4. Removes markup while preserving content
+
+## License
+
+[Public domain](https://www.law.cornell.edu/uscode/text/17/105) — US government works under 17 U.S.C. § 105.

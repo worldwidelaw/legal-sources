@@ -248,49 +248,11 @@ if __name__ == "__main__":
             sys.exit(1)
 
     elif cmd == "bootstrap":
-        sample_dir = scraper.source_dir / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        count = 0
-        limit = 15 if sample else None
-
-        # For sample, spread across the range
-        if sample:
-            # Pick 15 judgments spread across the full range
-            import random
-            sample_nos = sorted(random.sample(range(1, MAX_JUDGMENT_NO + 1), 30))
-            judgment_iter = iter(sample_nos)
-        else:
-            judgment_iter = range(1, MAX_JUDGMENT_NO + 1)
-
-        for no in judgment_iter:
-            try:
-                raw = scraper._fetch_judgment(no)
-                if raw is None:
-                    continue
-
-                normalized = scraper.normalize(raw)
-                if normalized is None:
-                    continue
-
-                count += 1
-                out_path = sample_dir / f"{count:04d}.json"
-                with open(out_path, "w", encoding="utf-8") as f:
-                    json.dump(normalized, f, ensure_ascii=False, indent=2)
-
-                logger.info(f"Saved judgment #{no} ({count} total, {len(normalized['text'])} chars)")
-
-                if limit and count >= limit:
-                    break
-
-                time.sleep(RATE_LIMIT)
-
-            except Exception as e:
-                logger.error(f"Error on judgment #{no}: {e}")
-                continue
-
-        print(f"Saved {count} records to {sample_dir}/")
-
+        stats = scraper.bootstrap(sample_mode="--sample" in sys.argv, sample_size=15)
+        fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
+        logger.info(f"Bootstrap complete: {fetched} records — {stats}")
+        if fetched == 0:
+            sys.exit(1)
     else:
         print(f"Unknown command: {cmd}")
         sys.exit(1)

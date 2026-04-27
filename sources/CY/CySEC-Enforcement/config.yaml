@@ -1,0 +1,43 @@
+source_id: CY/CySEC-Enforcement
+name: Cyprus Securities & Exchange Commission Enforcement
+country: CY
+url: https://www.cysec.gov.cy/en-GB/public-info/decisions/
+data_url: https://www.cysec.gov.cy/en-GB/public-info/decisions/
+description: |
+  Board decisions and enforcement actions from the Cyprus Securities and
+  Exchange Commission (CySEC). Includes licence withdrawals, administrative
+  sanctions, suspensions, and other regulatory actions. Each decision has
+  a PDF attachment with the full text of the board decision.
+
+data_types:
+  - doctrine
+
+license: "© CySEC (public information)"
+language: en
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+update_frequency: weekly
+
+schema:
+  key_fields:
+    - name: entity
+      required: true
+      type: string
+    - name: decision_date
+      required: true
+      type: string
+  date_field: date
+  text_field: text
+  title_field: title
+  url_field: url
+
+notes: |
+  HTML scraping of CySEC board decisions pages with PDF download.
+  ~46 pages of decisions, ~25 per page (~1100 total).
+  Server sends malformed headers - needs http1.1 or custom handling.

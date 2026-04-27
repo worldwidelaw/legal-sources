@@ -95,6 +95,10 @@ Install with:
 pip install requests pdfplumber
 ```
 
+## License
+
+Open government data — publicly accessible court decisions.
+
 ## Notes
 
 1. The court website is at `ustavnisud.ba` (not `ccbh.ba` which shows a parking page)

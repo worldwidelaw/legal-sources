@@ -255,7 +255,7 @@ class MYFederalLegislationScraper(BaseScraper):
                     logger.warning("Act %s: no PDF URL found", parsed["act_no"])
 
                 if parsed.get("text"):
-                    yield self.normalize(parsed)
+                    yield parsed
                     fetched += 1
 
             start += PAGE_SIZE

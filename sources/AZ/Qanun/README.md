@@ -44,3 +44,7 @@ python bootstrap.py update
 - Full text HTML requires Referer header set to https://e-qanun.az/
 - HTML files are Microsoft Word exports, text extraction handles Word-specific markup
 - Document IDs are sequential; higher IDs are more recent
+
+## License
+
+[Public Government Data](https://e-qanun.az) — official legislation published by the Ministry of Justice of the Republic of Azerbaijan.

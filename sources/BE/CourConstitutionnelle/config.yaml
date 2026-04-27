@@ -1,28 +1,37 @@
-source:
-  id: BE/CourConstitutionnelle
-  name: Belgian Constitutional Court (Cour constitutionnelle / Grondwettelijk Hof)
-  country: BE
-  url: https://www.const-court.be
-  data_types:
-    - caselaw
-  auth: none
-  license: Open Government Data
-
-schema:
-  key_fields:
-    - _id
-    - ecli
-    - arret_nr
-
 endpoints:
   pdf_fr: https://fr.const-court.be/public/f/{year}/{year}-{nr:03d}f.pdf
   pdf_nl: https://nl.const-court.be/public/n/{year}/{year}-{nr:03d}n.pdf
   search: https://fr.const-court.be/search/judgment
+notes: 'Belgian Constitutional Court (Cour constitutionnelle / Grondwettelijk Hof)
 
-notes: |
-  Belgian Constitutional Court (Cour constitutionnelle / Grondwettelijk Hof)
   - Handles constitutional review (lois, decrets, ordonnances)
+
   - Decisions published in French and Dutch
+
   - ~100-150 decisions per year since 1985
+
   - PDF direct access via predictable URL pattern
+
   - ECLI format: ECLI:BE:GHCC:{YEAR}:{NR}
+
+  '
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: ecli
+    required: false
+    type: string
+  - name: arret_nr
+    required: false
+    type: string
+source:
+  auth: none
+  country: BE
+  data_types:
+  - caselaw
+  id: BE/CourConstitutionnelle
+  license: Open Government Data
+  name: Belgian Constitutional Court (Cour constitutionnelle / Grondwettelijk Hof)
+  url: https://www.const-court.be

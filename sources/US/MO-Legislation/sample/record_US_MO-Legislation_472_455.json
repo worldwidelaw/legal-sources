@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/472.455",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:34:58.984179+00:00",
+  "title": "Missouri Revised Statutes § 472.455 - Content of electronic communication, disclosure to trustee, when",
+  "text": "472.455.  Content of electronic communication, disclosure to trustee, when. — Unless otherwise ordered by the court, directed by the user, or provided in a trust, a custodian shall disclose to a trustee that is not an original user of an account the content of an electronic communication sent or received by an original or successor user and carried, maintained, processed, received, or stored by the custodian in the account of the trust if the trustee gives the custodian:\n  (1)  A written request for disclosure in physical or electronic form;\n  (2)  A certified copy of the trust instrument or a certification of the trust under section 456.10-1013 that includes consent to disclosure of the content of electronic communications to the trustee;\n  (3)  A certification by the trustee, under penalty of perjury, that the trust exists and the trustee is a currently acting trustee of the trust; and\n  (4)  If requested by the custodian for the purpose of identifying the correct account of the correct user:\n  (a)  A number, username, address, or other unique subscriber or account identifier assigned by the custodian to identify the trust's account; or\n  (b)  Evidence linking the account to the trust.\n(L. 2018 H.B. 1250)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=472.455",
+  "section_id": "472.455",
+  "chapter": "472",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

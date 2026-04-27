@@ -65,6 +65,10 @@ Each record includes:
 | tax_keywords | array | Tax keywords found in text |
 | directive_references | array | Tax directives referenced |
 
+## License
+
+[EUR-Lex legal notice](https://eur-lex.europa.eu/content/legal-notice/legal-notice.html) — reuse authorised provided the source is acknowledged.
+
 ## Notes
 
 - Uses the same underlying SPARQL + CELLAR API as EU/curia

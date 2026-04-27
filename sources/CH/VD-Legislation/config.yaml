@@ -1,31 +1,31 @@
-source:
-  id: CH/VD-Legislation
-  name: "Canton de Vaud - Recueil systématique (BLV)"
-  country: CH
-  jurisdiction: CH-VD
-  url: https://prestations.vd.ch/pub/blv-publication/
-  data_types:
-    - legislation
-  language: fr
-  license: Public domain (Swiss cantonal legislation)
-  auth: none
-
+fetcher:
+  api_base: https://prestations.vd.ch/pub/blv-publication/api
+  rate_limit_delay: 1.5
+  timeout: 120
 schema:
-  key_fields:
-    - systematic_number
   fields:
+    _fetched_at: string
     _id: string
     _source: string
     _type: string
-    _fetched_at: string
-    title: string
-    text: string
     date: string
-    url: string
-    systematic_number: string
     jurisdiction: string
-
-fetcher:
-  rate_limit_delay: 1.5
-  timeout: 120
-  api_base: https://prestations.vd.ch/pub/blv-publication/api
+    systematic_number: string
+    text: string
+    title: string
+    url: string
+  key_fields:
+  - name: systematic_number
+    required: false
+    type: string
+source:
+  auth: none
+  country: CH
+  data_types:
+  - legislation
+  id: CH/VD-Legislation
+  jurisdiction: CH-VD
+  language: fr
+  license: Public domain (Swiss cantonal legislation)
+  name: Canton de Vaud - Recueil systématique (BLV)
+  url: https://prestations.vd.ch/pub/blv-publication/

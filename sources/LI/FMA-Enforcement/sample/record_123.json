@@ -1,0 +1,14 @@
+{
+  "_id": "warning-en-221",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:49.105013Z",
+  "title": "[Abuse] Warning: www(dot)launtonwealth(dot)com",
+  "text": "The operators of the website www(dot)launtonwealth(dot)com (or a similar form) are purporting to be a brand of an authorized insurance intermediary company in Liechtenstein, Finanz-Control Anstalt, Heiligkreuz 52, 9490 Vaduz, Commercial Register No. FL-0001.536.585-0. The operators of www(dot)launtonwealth(dot)com do not have an authorization of the Financial Market Authority (FMA) Liechtenstein or a domicile in Liechtenstein. The FMA points out that there is no connection between www.(dot)launtonwealth(dot)com and Finanz-Control Anstalt. The FMA points out that the operators of www(dot)launtonwealth(dot)com are not allowed to provide any financial services that are subject to authorization.",
+  "date": "2016-02-23",
+  "url": "https://www.fma-li.li/en/warning/warning-www-dot-launtonwealth-dot-com-221",
+  "language": "eng",
+  "category": "Abuse",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

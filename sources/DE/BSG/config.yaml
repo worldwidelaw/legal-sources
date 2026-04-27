@@ -1,70 +1,67 @@
-# German Federal Social Court (BSG) Data Source Configuration
-# Official case law from rechtsprechung-im-internet.de
-
-source_id: "DE/BSG"
-name: "German Federal Social Court (Bundessozialgericht)"
-country: "DE"
-language: "de"
+country: DE
 data_types:
-  - caselaw
-
-# Data endpoints (no authentication required)
+- caselaw
 endpoints:
-  # RSS feed for recent decisions
-  rss_feed: "https://www.rechtsprechung-im-internet.de/jportal/docs/feed/bsjrs-bsg.xml"
-
-  # Table of Contents XML (daily updated, all documents with download links)
-  toc_xml: "https://www.rechtsprechung-im-internet.de/rii-toc.xml"
-
-  # ZIP download pattern:
-  # https://www.rechtsprechung-im-internet.de/jportal/docs/bsjrs/{doc_id}.zip
-  # Each ZIP contains a single XML file with full decision text
-
-  # Portal base URL
-  portal: "https://www.rechtsprechung-im-internet.de"
-
-  # DTD for XML validation
-  dtd: "https://www.rechtsprechung-im-internet.de/dtd/v1/rii-dok.dtd"
-
-# Schema information
-schema:
-  key_fields:
-    - "doknr"           # Internal document ID (KSRE...)
-    - "ecli"            # European Case Law Identifier
-    - "aktenzeichen"    # File number (case number)
-  date_format: "ISO8601"
-  text_field: "text"
-
-# License
-license:
-  name: "Public Domain (Amtliche Werke)"
-  url: "https://www.rechtsprechung-im-internet.de/jportal/portal/page/bsjrsprod.psml?cmsuri=/technik/de/impressum/bsjrsimpressum.jsp"
-  notes: |
-    German court decisions are "amtliche Werke" (official works) which are
-    not protected by copyright under German law (§ 5 UrhG).
-    Decisions are offered in all formats for free use and reuse.
-
-# Fetcher configuration
+  dtd: https://www.rechtsprechung-im-internet.de/dtd/v1/rii-dok.dtd
+  portal: https://www.rechtsprechung-im-internet.de
+  rss_feed: https://www.rechtsprechung-im-internet.de/jportal/docs/feed/bsjrs-bsg.xml
+  toc_xml: https://www.rechtsprechung-im-internet.de/rii-toc.xml
 fetcher:
+  max_retries: 3
   rate_limit_ms: 1500
   ssl_verify: true
   timeout_s: 60
-  max_retries: 3
+language: de
+license:
+  name: Public Domain (Amtliche Werke)
+  notes: 'German court decisions are "amtliche Werke" (official works) which are
 
-# Notes
-notes: |
-  rechtsprechung-im-internet.de provides access to decisions from the
+    not protected by copyright under German law (§ 5 UrhG).
+
+    Decisions are offered in all formats for free use and reuse.
+
+    '
+  url: https://www.rechtsprechung-im-internet.de/jportal/portal/page/bsjrsprod.psml?cmsuri=/technik/de/impressum/bsjrsimpressum.jsp
+name: German Federal Social Court (Bundessozialgericht)
+notes: 'rechtsprechung-im-internet.de provides access to decisions from the
+
   Federal Social Court (BSG) and other supreme federal courts.
 
+
   Coverage:
+
   - ~6,270 BSG decisions from 2010 onwards
+
   - Full text available in XML format via ZIP downloads
+
   - ECLI identifiers included for case law interoperability
 
+
   Available formats:
+
   - HTML (web display)
+
   - PDF (print-ready)
+
   - XML (structured data via ZIP downloads)
 
+
   The rii-toc.xml provides a daily-updated table of contents with
+
   links to all available decision ZIPs.
+
+  '
+schema:
+  date_format: ISO8601
+  key_fields:
+  - name: doknr
+    required: false
+    type: string
+  - name: ecli
+    required: false
+    type: string
+  - name: aktenzeichen
+    required: false
+    type: string
+  text_field: text
+source_id: DE/BSG

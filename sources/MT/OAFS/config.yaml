@@ -1,0 +1,71 @@
+# MT/OAFS Configuration
+# Malta Office of the Arbiter for Financial Services — Decisions
+
+source_id: MT/OAFS
+country: MT
+name: Malta Office of the Arbiter for Financial Services
+description: >
+  Decisions by the Malta Arbiter for Financial Services (OAFS) on consumer
+  complaints against financial service providers. Each decision is a PDF
+  scraped from the OAFS Drupal site at financialarbiter.org.mt.
+
+# Base URL
+base_url: https://www.financialarbiter.org.mt
+
+# Data types available
+data_types:
+  - case_law
+
+# Authentication (none required - public data)
+auth:
+  type: none
+
+# Rate limiting configuration
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# Data schema
+schema:
+  key_fields:
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: true
+    - name: url
+      type: string
+      required: true
+  secondary_fields:
+    - name: case_reference
+      type: string
+      required: false
+    - name: provider
+      type: string
+      required: false
+    - name: outcome
+      type: string
+      required: false
+    - name: appeal_status
+      type: string
+      required: false
+    - name: language
+      type: string
+      required: false
+
+# Data model
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+# License information
+license:
+  name: Public Regulatory Data
+  url: https://www.financialarbiter.org.mt
+  commercial_use: true
+  attribution_required: false

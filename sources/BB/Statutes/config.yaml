@@ -1,0 +1,47 @@
+source:
+  id: BB/Statutes
+  name: Statutes of Barbados (Attorney General)
+  country: BB
+  url: https://oag.gov.bb/Laws/Consolidated-Laws/Statutes-of-Barbados/
+  description: >
+    Consolidated statutes of Barbados from the Office of the Attorney General
+    & Legal Affairs. ~69 acts available as PDF downloads, organized by chapter
+    number (CAP). Full text extracted from PDFs.
+
+data_model:
+  types:
+    - legislation
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: cap_number
+      type: string
+      required: false
+    - name: pdf_url
+      type: string
+      required: false
+
+schedule:
+  full_refresh: quarterly
+  update_check: monthly

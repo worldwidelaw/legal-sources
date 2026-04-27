@@ -1,71 +1,68 @@
-# Swedish Parliament (Riksdag) Parliamentary Documents
-# Official open data from the Riksdag
-
-source_id: "SE/RiksdagenDB"
-name: "Swedish Parliament (Riksdagen) - Parliamentary Documents"
-country: "SE"
-language: "sv"
+country: SE
 data_types:
-  - legislation  # Government bills (propositioner), motions, committee reports
-
-# Data endpoints (no authentication required)
-endpoints:
-  # Document list API with filtering by document type
-  list: "https://data.riksdagen.se/dokumentlista/"
-
-  # Individual document endpoints
-  # Full text: https://data.riksdagen.se/dokument/{dok_id}.text
-  # JSON with metadata and HTML: https://data.riksdagen.se/dokument/{dok_id}.json
-
-  # Portal
-  portal: "https://www.riksdagen.se/sv/dokument-och-lagar/"
-
-# Document types covered (doktyp parameter)
+- legislation
 document_types:
-  - prop    # Propositions (government bills) - 31K+ with full text
-  - mot     # Motions (member motions) - 257K+ with full text
-  - bet     # Betänkanden (committee reports) - 74K+
-  - rskr    # Riksdagsskrivelser (parliamentary decisions)
-  - prot    # Protokoll (plenary protocols)
-  - ip      # Interpellations
-  - fr      # Skriftliga frågor (written questions)
-
-# Schema information
-schema:
-  key_fields:
-    - "dok_id"       # Document ID (e.g., "HD03124" for prop 2025/26:124)
-    - "beteckning"   # Document number (e.g., "124" for propositions)
-    - "rm"           # Parliamentary session (e.g., "2025/26")
-  date_format: "ISO8601"
-  text_field: "text"
-
-# License
-license:
-  name: "Public Domain"
-  url: "https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/"
-  notes: |
-    Data from the Riksdag may be used freely without fees or licenses.
-    The Swedish Parliament must be cited as the source.
-
-# Fetcher configuration
+- prop
+- mot
+- bet
+- rskr
+- prot
+- ip
+- fr
+endpoints:
+  list: https://data.riksdagen.se/dokumentlista/
+  portal: https://www.riksdagen.se/sv/dokument-och-lagar/
 fetcher:
+  max_retries: 3
   rate_limit_ms: 2000
   ssl_verify: true
   timeout_s: 60
-  max_retries: 3
+language: sv
+license:
+  name: Public Domain
+  notes: 'Data from the Riksdag may be used freely without fees or licenses.
 
-# Notes
-notes: |
-  This source covers parliamentary documents from the Swedish Parliament (Riksdag):
+    The Swedish Parliament must be cited as the source.
+
+    '
+  url: https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/
+name: Swedish Parliament (Riksdagen) - Parliamentary Documents
+notes: 'This source covers parliamentary documents from the Swedish Parliament (Riksdag):
+
   - Propositioner (prop): Government bills submitted to parliament
+
   - Motioner (mot): Motions from individual MPs or parties
+
   - Betänkanden (bet): Committee reports and recommendations
+
   - Riksdagsskrivelser (rskr): Parliamentary decisions/communications
+
   - Protokoll (prot): Plenary session transcripts
 
+
   Note: For enacted legislation (SFS - Swedish Code of Statutes), use
+
   SE/SvenskaForfattningssamlingen which covers laws after they are enacted.
+
   This source covers the parliamentary process (pre-enactment).
 
+
   Total documents: 500K+ across all types
+
   Full text available via HTML field in JSON response.
+
+  '
+schema:
+  date_format: ISO8601
+  key_fields:
+  - name: dok_id
+    required: false
+    type: string
+  - name: beteckning
+    required: false
+    type: string
+  - name: rm
+    required: false
+    type: string
+  text_field: text
+source_id: SE/RiksdagenDB

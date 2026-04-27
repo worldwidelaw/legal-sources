@@ -80,6 +80,10 @@ python bootstrap.py bootstrap
 python bootstrap.py update
 ```
 
+## License
+
+[CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) — attribution required, share-alike.
+
 ## Notes
 
 - Full text is available in the `testo` field (average ~15K characters)

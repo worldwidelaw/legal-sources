@@ -17,6 +17,10 @@ HuggingFace dataset: [voilaj/swiss-caselaw](https://huggingface.co/datasets/voil
 
 No authentication required. Uses HuggingFace datasets-server rows API.
 
+## License
+
+Data sourced from HuggingFace; original court decisions are public domain under Swiss law.
+
 ## Usage
 
 ```bash

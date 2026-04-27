@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/486.935",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:56:26.389241+00:00",
+  "title": "Missouri Revised Statutes § 486.935 - Electronic notarial certificate, contents, wording",
+  "text": "486.935.  Electronic notarial certificate, contents, wording. — 1.  In performing an electronic notarial act, the electronic notary shall properly complete an electronic notarial certificate.\n  2.  A proper electronic notarial certificate shall contain:\n  (1)  Completed wording appropriate to the particular electronic notarial act, as prescribed in subsection 3 of this section;\n  (2)  A registered electronic signature; and\n  (3)  A registered electronic notary seal, which shall include:\n  (a)  The name of the electronic notary fully and exactly as it is spelled on the notary's commissioning document;\n  (b)  The jurisdiction that commissioned and registered the electronic notary;\n  (c)  The title \"Electronic Notary Public\";\n  (d)  The commission or registration number of the electronic notary; and\n  (e)  The commission expiration date of the electronic notary.\n  3.  The wording of an electronic notarial certificate shall be in a form that:\n  (1)  Is set forth in sections 486.740 to 486.750;\n  (2)  Is otherwise prescribed by the law of this state;\n  (3)  Is prescribed by a law, regulation, or custom of another jurisdiction, provided it does not require actions by the electronic notary that are unauthorized by this state; or\n  (4)  Describes the actions of the electronic notary in such a manner as to meet the requirements of the particular notarial act, as defined in section 486.600 or 486.900.\n  4.  An electronic notarial certificate shall be worded and completed using only letters, characters, and a language that are read, written, and understood by the electronic notary.\n(L. 2020 H.B. 1655)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=486.935",
+  "section_id": "486.935",
+  "chapter": "486",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

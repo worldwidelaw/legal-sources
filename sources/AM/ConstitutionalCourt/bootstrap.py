@@ -356,6 +356,7 @@ def main():
     # Updates command
     updates_parser = subparsers.add_parser("updates", help="Fetch updates since date")
     updates_parser.add_argument("--since", required=True, help="ISO date (e.g., 2024-01-01)")
+    updates_parser.add_argument("--full", action="store_true", help="Fetch all records")
     
     args = parser.parse_args()
     

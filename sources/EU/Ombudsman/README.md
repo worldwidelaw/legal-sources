@@ -34,3 +34,7 @@ python bootstrap.py test               # Test API connectivity
 python bootstrap.py bootstrap --sample # Fetch 15 sample records
 python bootstrap.py bootstrap          # Full dataset (~5,640 decisions)
 ```
+
+## License
+
+[EUR-Lex legal notice](https://eur-lex.europa.eu/content/legal-notice/legal-notice.html) — EU institution publications, reuse authorised with attribution.

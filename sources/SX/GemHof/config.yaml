@@ -1,0 +1,28 @@
+source:
+  id: SX/GemHof
+  name: "Joint Court of Justice (Gemeenschappelijk Hof) - Sint Maarten"
+  country: SX
+  url: https://uitspraken.rechtspraak.nl/
+  data_types:
+    - case_law
+  auth: none
+  description: >
+    Sint Maarten court decisions from the Gemeenschappelijk Hof van Justitie,
+    published via the Dutch Rechtspraak Open Data API. Filtered by SXM case
+    number prefix to extract Sint Maarten-specific cases.
+
+api:
+  base_url: https://data.rechtspraak.nl/uitspraken
+  search_endpoint: /zoeken
+  content_endpoint: /content
+  creator_filter: http://psi.rechtspraak.nl/GHACSMBES
+  case_prefix: SXM
+
+schema:
+  key_fields:
+    - _id
+    - ecli
+    - case_number
+    - date
+    - court
+    - subject_area

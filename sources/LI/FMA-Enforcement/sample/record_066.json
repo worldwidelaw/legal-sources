@@ -1,0 +1,14 @@
+{
+  "_id": "warning-de-189",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:29.145015Z",
+  "title": "[Klonfirma] Warnung: https:/artex[dot]app/",
+  "text": "Die Finanzmarktaufsicht (FMA) Liechtenstein weist darauf hin, dass zwischen der Artex MTF AG, in Aeulestrasse 24, 9495 Triesen (FL-0002.682.571-2) (Website: https://www.artex-stockexchange.com/) (vormals https://artex.io) und der https://artex[dot]app/ keine Verbindung besteht. Die Betreiber der Webseite https://artex[dot]app/ verfügt über keine spezialgesetzliche Bewilligung der FMA.",
+  "date": "2023-06-12",
+  "url": "https://www.fma-li.li/de/warning/warnung-https-artex-dot-app-189",
+  "language": "deu",
+  "category": "Klonfirma",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

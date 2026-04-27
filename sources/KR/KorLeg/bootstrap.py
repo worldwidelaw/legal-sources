@@ -40,24 +40,47 @@ SAMPLE_DIR = SCRIPT_DIR / "sample"
 DATA_DIR = SCRIPT_DIR / "data"
 
 
-def download_dataset(dest_path: str) -> str:
-    """Download the KorLeg Excel file from Zenodo."""
-    print(f"Downloading KorLeg dataset from Zenodo...")
-    resp = requests.get(ZENODO_URL, stream=True, timeout=300)
-    resp.raise_for_status()
+EXPECTED_MIN_SIZE = 200_000_000  # ~237MB expected
 
-    total = int(resp.headers.get("content-length", 0))
-    downloaded = 0
-    with open(dest_path, "wb") as f:
-        for chunk in resp.iter_content(chunk_size=8192):
-            f.write(chunk)
-            downloaded += len(chunk)
-            if total and downloaded % (10 * 1024 * 1024) < 8192:
-                pct = downloaded * 100 // total
-                print(f"  Downloaded {downloaded // (1024*1024)}MB / {total // (1024*1024)}MB ({pct}%)")
 
-    print(f"  Download complete: {os.path.getsize(dest_path) // (1024*1024)}MB")
-    return dest_path
+def download_dataset(dest_path: str, retries: int = 3) -> str:
+    """Download the KorLeg Excel file from Zenodo with retries."""
+    for attempt in range(retries):
+        try:
+            print(f"Downloading KorLeg dataset from Zenodo (attempt {attempt+1}/{retries})...")
+            resp = requests.get(ZENODO_URL, stream=True, timeout=(30, 600))
+            resp.raise_for_status()
+
+            total = int(resp.headers.get("content-length", 0))
+            downloaded = 0
+            tmp_dest = dest_path + ".tmp"
+            with open(tmp_dest, "wb") as f:
+                for chunk in resp.iter_content(chunk_size=65536):
+                    f.write(chunk)
+                    downloaded += len(chunk)
+                    if total and downloaded % (10 * 1024 * 1024) < 65536:
+                        pct = downloaded * 100 // total
+                        print(f"  Downloaded {downloaded // (1024*1024)}MB / {total // (1024*1024)}MB ({pct}%)")
+
+            file_size = os.path.getsize(tmp_dest)
+            if file_size < EXPECTED_MIN_SIZE:
+                print(f"  ERROR: Downloaded file too small ({file_size // (1024*1024)}MB), expected >{EXPECTED_MIN_SIZE // (1024*1024)}MB")
+                os.remove(tmp_dest)
+                continue
+
+            os.rename(tmp_dest, dest_path)
+            print(f"  Download complete: {file_size // (1024*1024)}MB")
+            return dest_path
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            print(f"  Download failed: {e}")
+            if os.path.exists(dest_path + ".tmp"):
+                os.remove(dest_path + ".tmp")
+            if attempt < retries - 1:
+                wait = 30 * (attempt + 1)
+                print(f"  Retrying in {wait}s...")
+                time.sleep(wait)
+
+    raise RuntimeError(f"Failed to download KorLeg dataset after {retries} attempts")
 
 
 def make_id(text: str, index: int) -> str:
@@ -137,11 +160,11 @@ def _get_xlsx_path():
     cached_path = DATA_DIR / "KorLeg.xlsx"
     tmp_path = "/tmp/KorLeg.xlsx"
 
-    if cached_path.exists():
-        print(f"Using cached dataset: {cached_path}")
+    if cached_path.exists() and os.path.getsize(str(cached_path)) >= EXPECTED_MIN_SIZE:
+        print(f"Using cached dataset: {cached_path} ({os.path.getsize(str(cached_path)) // (1024*1024)}MB)")
         return str(cached_path)
-    elif os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 200_000_000:
-        print(f"Using tmp dataset: {tmp_path}")
+    elif os.path.exists(tmp_path) and os.path.getsize(tmp_path) >= EXPECTED_MIN_SIZE:
+        print(f"Using tmp dataset: {tmp_path} ({os.path.getsize(tmp_path) // (1024*1024)}MB)")
         return tmp_path
     else:
         DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -155,7 +178,11 @@ def bootstrap(sample: bool = False):
         print("ERROR: openpyxl is required. Install with: pip install openpyxl")
         sys.exit(1)
 
-    xlsx_path = _get_xlsx_path()
+    try:
+        xlsx_path = _get_xlsx_path()
+    except RuntimeError as e:
+        print(f"ERROR: {e}")
+        sys.exit(1)
 
     if sample:
         SAMPLE_DIR.mkdir(parents=True, exist_ok=True)

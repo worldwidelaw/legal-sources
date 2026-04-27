@@ -1,0 +1,37 @@
+fetch:
+  delay: 2
+  sample_size: 15
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: doc_type
+    required: false
+    type: string
+source:
+  auth: none
+  country: UY
+  data_types:
+  - doctrine
+  description: >
+    Uruguay DGI (Dirección General Impositiva) tax publications and written
+    consultations from gub.uy. Includes tax guidance, guides, instructions,
+    technical documents, and binding/non-binding written consultations.
+    ~1,452 publications. Spanish language. Scraped from Drupal-based
+    government portal with paginated HTML listings and full-text document pages.
+  id: UY/DGI-ConsultasTributarias
+  name: DGI Written Tax Consultations and Publications
+  url: https://www.gub.uy/direccion-general-impositiva/comunicacion/publicaciones

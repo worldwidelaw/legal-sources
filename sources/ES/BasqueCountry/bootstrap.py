@@ -425,6 +425,7 @@ def main():
         default=12,
         help="Number of records to fetch"
     )
+    bootstrap_parser.add_argument("--full", action="store_true", help="Fetch all records")
     
     # validate command
     validate_parser = subparsers.add_parser(

@@ -250,7 +250,7 @@ class SupremeCourtScraper(BaseScraper):
         for nkp_id in range(start_id, MAX_ID + 100):
             raw = self._fetch_decision(nkp_id)
             if raw:
-                yield self.normalize(raw)
+                yield raw
 
     def test(self):
         """Quick connectivity test."""
@@ -275,6 +275,7 @@ def main():
     parser = argparse.ArgumentParser(description='NP/SupremeCourt fetcher')
     parser.add_argument('command', choices=['bootstrap', 'update', 'test'])
     parser.add_argument('--sample', action='store_true', help='Fetch 15 sample records')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = SupremeCourtScraper()

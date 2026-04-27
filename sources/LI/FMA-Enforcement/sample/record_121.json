@@ -1,0 +1,14 @@
+{
+  "_id": "warning-en-218",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:49.104735Z",
+  "title": "[Abuse] Warning: https://olzgroup(dot)com",
+  "text": "The Financial Market Authority (FMA) Liechtenstein points out that there is no connection between the operators of the website https://olzgroup(dot)com and OLZ Wealth Management AG, Bahnhofstrasse 7, 9494 Schaan, Commercial Register No. FL-0002.215.531-7. The operators of the website do not have a FMA authorisation and are therefore not allowed to provide any financial services that are subject to authorisation under Liechtenstein law.   The FMA urgently advises not to make any investments via the website https://olzgroup(dot)com nor responding to any investment offers made by this company or against transferring money to any account number they might mention. Wrongful claiming the identity of an actually existing company is an attempt to obtain assets that may result in the investor&#039;s total loss of the supposed investment.  ",
+  "date": "2019-01-24",
+  "url": "https://www.fma-li.li/en/warning/warning-https-olzgroup-dot-com-218",
+  "language": "eng",
+  "category": "Abuse",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

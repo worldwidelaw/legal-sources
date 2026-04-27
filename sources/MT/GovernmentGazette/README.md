@@ -67,6 +67,10 @@ python bootstrap.py update
 }
 ```
 
+## License
+
+[Open Government Data](https://data.gov.mt) — freely reusable under Malta's open data policy.
+
 ## Notes
 
 - Chapters are numbered 1-600+ (with gaps for repealed legislation)

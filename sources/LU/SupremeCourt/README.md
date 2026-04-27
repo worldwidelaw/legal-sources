@@ -42,7 +42,7 @@ API endpoint: `https://data.public.lu/api/1/datasets/cour-de-cassation/`
 
 ## License
 
-Creative Commons Attribution - No Derivatives (CC BY-ND 4.0)
+[CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/) (Creative Commons Attribution — No Derivatives). Commercial use is permitted, but derivative works are not allowed.
 
 ## Usage
 

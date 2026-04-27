@@ -1,41 +1,53 @@
-id: BE/CREG
-name: Belgian Energy Regulator (CREG)
+auth: none
 country: BE
-url: https://www.creg.be
-description: |
-  Commission de Régulation de l'Électricité et du Gaz (CREG) - Belgian Federal Energy Regulator.
+data_types:
+- doctrine
+- studies
+- notes
+- reports
+description: 'Commission de Régulation de l''Électricité et du Gaz (CREG) - Belgian Federal Energy Regulator.
+
   Publishes regulatory decisions on electricity and natural gas markets, network tariffs,
+
   transmission system operation, and energy market oversight.
 
-data_types:
-  - doctrine
-  - studies
-  - notes
-  - reports
-
+  '
+endpoints:
+  decisions_filter: https://www.creg.be/fr/publications?f[0]=type_de_publication:15
+  publications_page: https://www.creg.be/fr/publications
+id: BE/CREG
 languages:
-  - fr
-  - nl
-  - en
-
-auth: none
+- fr
+- nl
+- en
 license: Belgian Federal Government Open Data
+name: Belgian Energy Regulator (CREG)
+notes: '- HTML scraping of Drupal-based website (no API available)
 
+  - PDFs contain full text of decisions
+
+  - Publications available in FR, NL, and EN (partial)
+
+  - Decisions are categorized by type: Décision, Étude, Note, Rapport, etc.
+
+  - Reference numbers follow pattern: (B)XXXX for decisions, (F)XXXX for studies
+
+  '
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - reference_number
-    - publication_type
-
-endpoints:
-  publications_page: https://www.creg.be/fr/publications
-  decisions_filter: https://www.creg.be/fr/publications?f[0]=type_de_publication:15
-
-notes: |
-  - HTML scraping of Drupal-based website (no API available)
-  - PDFs contain full text of decisions
-  - Publications available in FR, NL, and EN (partial)
-  - Decisions are categorized by type: Décision, Étude, Note, Rapport, etc.
-  - Reference numbers follow pattern: (B)XXXX for decisions, (F)XXXX for studies
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: reference_number
+    required: false
+    type: string
+  - name: publication_type
+    required: false
+    type: string
+url: https://www.creg.be

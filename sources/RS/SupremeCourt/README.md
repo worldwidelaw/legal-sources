@@ -83,6 +83,10 @@ python bootstrap.py update
 | `matter` | string | Legal matter (criminal, civil, etc.) |
 | `published_at` | datetime | Publication timestamp |
 
+## License
+
+Open government data — publicly accessible court decisions.
+
 ## Notes
 
 - Full text is extracted from the decision body, removing PDF download prompts

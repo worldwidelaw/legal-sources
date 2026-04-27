@@ -247,6 +247,7 @@ def main():
         "--since",
         help="ISO date for incremental updates (YYYY-MM-DD)",
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = NVCourtsScraper()

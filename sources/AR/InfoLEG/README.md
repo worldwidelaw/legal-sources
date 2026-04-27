@@ -54,3 +54,7 @@ Key fields:
 - ~37% of records in the sample have direct full text URLs
 - Full text pages are simple HTML with Latin-1 encoding
 - Rate limiting: 1 request/second to avoid overloading the server
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — published by the Argentine Ministry of Justice via [datos.jus.gob.ar](https://datos.jus.gob.ar/dataset/base-de-datos-legislativos-infoleg).

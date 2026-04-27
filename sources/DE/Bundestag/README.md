@@ -66,4 +66,4 @@ Each normalized document contains:
 
 ## License
 
-Open Data - Parliamentary documents are publicly available through the DIP API.
+Open Data — [Data licence Germany – attribution – Version 2.0](https://www.govdata.de/dl-de/by-2-0).

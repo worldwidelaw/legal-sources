@@ -1,30 +1,29 @@
-source_id: EU/EMA
-name: European Medicines Agency (EMA)
+auth_required: false
 country: EU
-url: https://www.ema.europa.eu
-description: |
-  European Medicines Agency medicines authorization data.
+data_types:
+- doctrine
+description: 'European Medicines Agency medicines authorization data.
+
   Includes EPARs (European Public Assessment Reports) with scientific summaries
+
   for medicines authorized via the centralized EU procedure.
 
-data_types:
-  - doctrine
-
-# JSON data endpoints (updated twice daily at 06:00 and 18:00 CET)
-endpoints:
-  medicines: /en/documents/report/medicines-output-medicines_json-report_en.json
-  epar_documents: /en/documents/report/documents-output-epar_documents_json-report_en.json
-
-# Focus on "overview" type documents which are public summaries
-# These are the "EPAR - Summary for the public" PDFs
+  '
 document_types_of_interest:
-  - overview           # Summary for the public
-  - scientific-discussion  # Full scientific assessment
-
-auth_required: false
+- overview
+- scientific-discussion
+endpoints:
+  epar_documents: /en/documents/report/documents-output-epar_documents_json-report_en.json
+  medicines: /en/documents/report/medicines-output-medicines_json-report_en.json
+name: European Medicines Agency (EMA)
 rate_limit_seconds: 2
-
 schema:
   key_fields:
-    - ema_product_number
-    - name_of_medicine
+  - name: ema_product_number
+    required: false
+    type: string
+  - name: name_of_medicine
+    required: false
+    type: string
+source_id: EU/EMA
+url: https://www.ema.europa.eu

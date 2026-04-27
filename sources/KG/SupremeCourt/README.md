@@ -29,3 +29,7 @@ python3 bootstrap.py bootstrap
 # Fetch updates since a date
 python3 bootstrap.py updates --since 2025-01-01
 ```
+
+## License
+
+[Open Government Data](https://portal.sot.kg) — official decisions published by the Supreme Court of the Kyrgyz Republic via the Digital Justice Portal.

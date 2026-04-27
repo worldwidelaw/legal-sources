@@ -7,7 +7,7 @@ Parliamentary proceedings from the Tweede Kamer der Staten-Generaal (Dutch House
 **Data Type:** Parliamentary Proceedings (NOT legislation)
 **Content:** Plenary debate transcripts, committee meetings, motions, amendments, parliamentary questions
 **API:** OData v4 at gegevensmagazijn.tweedekamer.nl
-**License:** Public domain (Dutch Open Government Data)
+**License:** [Public Domain](https://data.overheid.nl/licenties) (Dutch Open Government Data)
 **Auth:** None required
 
 ## Important Note
@@ -74,6 +74,10 @@ python bootstrap.py update
 | vergaderjaar | Parliamentary year (e.g., "2024-2025") |
 | vergaderingnummer | Session number |
 | soort | Type (Tussenpublicatie, Voorpublicatie, etc.) |
+
+## License
+
+[Public Domain](https://data.overheid.nl/licenties) — Dutch Open Government Data, free for reuse.
 
 ## Documentation
 

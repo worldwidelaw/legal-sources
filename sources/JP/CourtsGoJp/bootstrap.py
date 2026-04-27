@@ -331,6 +331,7 @@ def main():
 
     update_parser = subparsers.add_parser("update", help="Incremental update")
     update_parser.add_argument("--since", required=True, help="ISO date (e.g. 2024-01-01)")
+    update_parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     subparsers.add_parser("test", help="Quick connectivity test")
 

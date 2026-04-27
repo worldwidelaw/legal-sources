@@ -35,6 +35,10 @@ python bootstrap.py bootstrap
 python bootstrap.py update
 ```
 
+## License
+
+Open government data — publicly accessible court decisions.
+
 ## Notes
 
 - Language: Albanian (sq)

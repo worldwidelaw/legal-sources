@@ -1,0 +1,72 @@
+# ===================================================================
+# JE/TaxCommissioners -- Jersey Commissioners of Appeal for Taxes
+# ===================================================================
+# Tax appeal determinations published on gov.je as PDFs.
+# ~10 anonymised decisions (2021-2022). Full text via PDF extraction.
+# No authentication required.
+# ===================================================================
+
+source:
+  id: "JE/TaxCommissioners"
+  country: "JE"
+  name: "Jersey Commissioners of Appeal for Taxes Decisions"
+  url: "https://www.gov.je/TaxesMoney/IncomeTax/Technical/CommissionerOfAppealTaxes/pages/aboutcommissionerofappealfortaxes.aspx"
+  description: |
+    Anonymised tax appeal determinations from the Jersey Commissioners
+    of Appeal for Taxes. Published under Article 8(9A) of the Revenue
+    Administration (Jersey) Law 2019. Full text from PDFs.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.gov.je"
+
+data_model:
+  type: "case_law"
+  primary_key: "decision_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "decision_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "decision_id"
+      description: "Synthetic ID from date and subject"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision subject"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the tax determination"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Hearing date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the PDF document"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "articles"
+      description: "Jersey tax law articles cited"
+    - name: "pdf_filename"
+      description: "Original PDF filename"

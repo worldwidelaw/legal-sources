@@ -223,11 +223,12 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Oklahoma Statutes Fetcher")
-    parser.add_argument("command", choices=["bootstrap", "test-api"],
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "test-api"],
                         help="Command to execute")
     parser.add_argument("--sample", action="store_true",
                         help="Fetch sample data only")
     parser.add_argument("--limit", type=int, help="Max records to fetch")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 
@@ -242,7 +243,7 @@ def main():
             except Exception as e:
                 print(f"  Title {t}: ERROR {e}")
 
-    elif args.command == "bootstrap":
+    elif args.command in ("bootstrap", "bootstrap-fast"):
         sample_dir = Path(__file__).parent / "sample"
         if args.sample:
             success = bootstrap_sample(sample_dir, limit=args.limit or 12)

@@ -1,0 +1,80 @@
+# ===================================================================
+# JE/PlanningInspectorate -- Jersey Planning & Environment Tribunal
+# ===================================================================
+# Planning appeal decisions published as Ministerial Decisions on
+# gov.je under the Environment department. Includes minister's
+# decision text (HTML) and inspector's report (PDF).
+# ~700-800 appeal decisions (2005-present). No auth required.
+# ===================================================================
+
+source:
+  id: "JE/PlanningInspectorate"
+  country: "JE"
+  name: "Jersey Planning & Environment Tribunal"
+  url: "https://www.gov.je/Government/PlanningPerformance/Pages/MinisterialDecisions.aspx"
+  description: |
+    Planning appeal decisions from the Jersey Minister for the
+    Environment, published as Ministerial Decisions. Each record
+    includes the minister's formal decision and the independent
+    planning inspector's detailed report (when available as PDF).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.gov.je"
+
+data_model:
+  type: "case_law"
+  primary_key: "decision_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "decision_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "decision_id"
+      description: "Ministerial decision reference (MD-ENV-YYYY-NNN)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title including property and planning ref"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text: minister's decision + inspector's report"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the decision page on gov.je"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "planning_ref"
+      description: "Planning application reference (P/YYYY/NNNN)"
+    - name: "location"
+      description: "Property address"
+    - name: "outcome"
+      description: "Appeal outcome (dismissed/allowed)"
+    - name: "inspector_report_url"
+      description: "URL to inspector's report PDF"
+    - name: "language"
+      description: "Language code (eng)"

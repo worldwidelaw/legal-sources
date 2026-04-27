@@ -1,69 +1,72 @@
-source:
-  id: DE/OpenLegalData
-  name: Open Legal Data (openlegaldata.io)
-  country: DE
-  url: https://de.openlegaldata.io
-  description: |
-    Comprehensive German legal data platform providing court decisions and
-    legislation from all 16 German states (Länder) plus federal courts.
-    Free REST API with no authentication required.
-
 api:
-  type: rest
   base_url: https://de.openlegaldata.io/api
   endpoints:
     cases: /cases/
-    laws: /laws/
     courts: /courts/
+    laws: /laws/
     states: /states/
   format: json
   pagination:
-    type: url_based
     page_size: 100
+    type: url_based
   rate_limit:
     requests_per_second: 2
-
+  type: rest
 data:
-  types:
-    - caselaw
-    - legislation
   coverage:
     caselaw: 251000+
     legislation: 57000+
   states:
-    - Baden-Württemberg
-    - Bayern
-    - Berlin
-    - Brandenburg
-    - Bremen
-    - Hamburg
-    - Hessen
-    - Mecklenburg-Vorpommern
-    - Niedersachsen
-    - Nordrhein-Westfalen
-    - Rheinland-Pfalz
-    - Saarland
-    - Sachsen
-    - Sachsen-Anhalt
-    - Schleswig-Holstein
-    - Thüringen
-
-schema:
-  key_fields:
-    - id
-    - ecli
-  required_fields:
-    - id
-    - content
-    - court
-    - date
-  optional_fields:
-    - slug
-    - file_number
-    - type
-    - created_date
-    - updated_date
-
+  - Baden-Württemberg
+  - Bayern
+  - Berlin
+  - Brandenburg
+  - Bremen
+  - Hamburg
+  - Hessen
+  - Mecklenburg-Vorpommern
+  - Niedersachsen
+  - Nordrhein-Westfalen
+  - Rheinland-Pfalz
+  - Saarland
+  - Sachsen
+  - Sachsen-Anhalt
+  - Schleswig-Holstein
+  - Thüringen
+  types:
+  - caselaw
+  - legislation
 license:
   name: Public Domain / CC0
   notes: German court decisions are public domain (amtliche Werke) under § 5 UrhG
+schema:
+  key_fields:
+  - name: id
+    required: false
+    type: string
+  - name: ecli
+    required: false
+    type: string
+  optional_fields:
+  - slug
+  - file_number
+  - type
+  - created_date
+  - updated_date
+  required_fields:
+  - id
+  - content
+  - court
+  - date
+source:
+  country: DE
+  description: 'Comprehensive German legal data platform providing court decisions and
+
+    legislation from all 16 German states (Länder) plus federal courts.
+
+    Free REST API with no authentication required.
+
+    '
+  id: DE/OpenLegalData
+  name: Open Legal Data (openlegaldata.io)
+  url: https://de.openlegaldata.io

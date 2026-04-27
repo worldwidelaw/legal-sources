@@ -49,3 +49,7 @@ python bootstrap.py bootstrap
 | topics | Related topics/themes |
 | summary | Brief description |
 | pdf_url | Direct link to PDF file |
+
+## License
+
+[Open Government Data](https://data.overheid.nl/licenties) — Dutch government publications, free for reuse.

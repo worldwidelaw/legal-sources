@@ -80,3 +80,7 @@ python3 bootstrap.py bootstrap --sample
 ```
 
 Sample data will be saved to `sample/` directory.
+
+## License
+
+Public domain — Bulgarian official gazette publications are not subject to copyright.

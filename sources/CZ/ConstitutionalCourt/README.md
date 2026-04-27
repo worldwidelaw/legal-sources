@@ -76,3 +76,7 @@ Each normalized record contains:
 - Direct GET requests to GetText.aspx work without session cookies
 - Rate limiting is set to 1 request per second to be respectful
 - Very short responses (<1000 chars) usually indicate errors or missing cases
+
+## License
+
+Open access — Czech Constitutional Court decisions are public government data, freely available via [NALUS](https://nalus.usoud.cz).

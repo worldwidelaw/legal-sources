@@ -1,43 +1,45 @@
-source:
-  id: GE/ConstitutionalCourt
-  name: Georgian Constitutional Court
-  url: https://www.constcourt.ge
-  country: GE
-  language: ka
-  data_types:
-    - caselaw
-  license: public
-  update_frequency: daily
-
 api:
-  type: html_scraping
   base_url: https://www.constcourt.ge
-  list_endpoint: /ka/judicial-acts
   detail_endpoint: /ka/judicial-acts?legal={legal_id}
+  list_endpoint: /ka/judicial-acts
   pagination:
-    type: page_number
-    param: page
     items_per_page: 100
+    param: page
     quantity_param: quantity
+    type: page_number
   rate_limit:
-    requests_per_second: 0.5
     delay_between_requests: 2
-
+    requests_per_second: 0.5
+  type: html_scraping
 schema:
   key_fields:
-    - legal_id
-    - case_number
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
+  - name: legal_id
+    required: false
+    type: string
+  - name: case_number
+    required: false
+    type: string
   optional_fields:
-    - document_type
-    - chamber
-    - author
-    - publication_date
+  - document_type
+  - chamber
+  - author
+  - publication_date
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  country: GE
+  data_types:
+  - caselaw
+  id: GE/ConstitutionalCourt
+  language: ka
+  license: public
+  name: Georgian Constitutional Court
+  update_frequency: daily
+  url: https://www.constcourt.ge

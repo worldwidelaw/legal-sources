@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/569.095",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T03:51:24.043723+00:00",
+  "title": "Missouri Revised Statutes § 569.095 - Tampering with computer data — penalties",
+  "text": "569.095.  Tampering with computer data — penalties. — 1.  A person commits the offense of tampering with computer data if he or she knowingly and without authorization or without reasonable grounds to believe that he has such authorization:\n  (1)  Modifies or destroys data or programs residing or existing internal to a computer, computer system, or computer network; or\n  (2)  Modifies or destroys data or programs or supporting documentation residing or existing external to a computer, computer system, or computer network; or\n  (3)  Discloses or takes data, programs, or supporting documentation, residing or existing internal or external to a computer, computer system, or computer network; or\n  (4)  Discloses or takes a password, identifying code, personal identification number, or other confidential information about a computer system or network that is intended to or does control access to the computer system or network;\n  (5)  Accesses a computer, a computer system, or a computer network, and intentionally examines information about another person;\n  (6)  Receives, retains, uses, or discloses any data he knows or believes was obtained in violation of this subsection.\n  2.  The offense of tampering with computer data is a class A misdemeanor, unless the offense is committed for the purpose of devising or executing any scheme or artifice to defraud or to obtain any property, the value of which is seven hundred fifty dollars or more, in which case it is a class E felony.\n(L. 1982 H.B. 1454, et al. § 2, A.L. 1987 H.B. 208, A.L. 2002 H.B. 1888, A.L. 2014 S.B. 491) \nEffective 1-01-17 \nCivil action for tampering with computer data, expenses, attorney fees, 537.525",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=569.095",
+  "section_id": "569.095",
+  "chapter": "569",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

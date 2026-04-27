@@ -62,7 +62,7 @@ HEADERS = {
                   "Chrome/120.0.0.0 Safari/537.36",
 }
 
-SEARCH_YEARS = list(range(2021, 1994, -1))  # 2021 down to 1995
+SEARCH_YEARS = list(range(2026, 1994, -1))  # 2026 down to 1995
 
 # Decision types available in the search form
 DECISION_TYPES = ["SENTENCIA", "AUTO", "CONCEPTO"]
@@ -322,6 +322,7 @@ def main():
     )
     parser.add_argument("--sample", action="store_true")
     parser.add_argument("--since", type=str, help="ISO date for updates")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     if args.command == "test-api":

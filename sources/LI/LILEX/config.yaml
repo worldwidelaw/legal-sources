@@ -1,44 +1,43 @@
-source:
-  id: LI/LILEX
-  name: LILEX - Liechtenstein Consolidated Legislation
-  country: LI
-  url: https://www.gesetze.li
-
-data:
-  types:
-    - legislation
-  format: html
-  api_type: scraping
-  update_frequency: daily
-
-schema:
-  key_fields:
-    - lgbl_id
-    - lr_nr
-    - title
-    - date
-    - version
-    - text
-
 auth:
   type: none
-
-rate_limit:
-  requests_per_second: 1
-  delay_between_requests: 1.0
-
+data:
+  api_type: scraping
+  format: html
+  types:
+  - legislation
+  update_frequency: daily
 license:
   name: Public Domain
-  url: https://www.gesetze.li/impressum
   notes: Official government publication, free access
-
-notes: |
-  Liechtenstein national legislation database (Landesgesetzblatt).
-  Contains consolidated legislation (konso) and chronological gazette entries (chrono).
-  Full text available via HTML iframe endpoint.
-  URL patterns:
-    - Overview: /konso/{lgblId} or /konso/{year}.{number}
-    - Full text: /konso/html/{lgblId}?version={version}
-    - PDF: /konso/pdf/{lgblId}?version={version}
-  Language: German only.
-  Historical versions available from 1921 onwards.
+  url: https://www.gesetze.li/impressum
+notes: "Liechtenstein national legislation database (Landesgesetzblatt).\nContains consolidated legislation (konso) and chronological gazette entries (chrono).\nFull text available via HTML iframe endpoint.\n\
+  URL patterns:\n  - Overview: /konso/{lgblId} or /konso/{year}.{number}\n  - Full text: /konso/html/{lgblId}?version={version}\n  - PDF: /konso/pdf/{lgblId}?version={version}\nLanguage: German only.\n\
+  Historical versions available from 1921 onwards.\n"
+rate_limit:
+  delay_between_requests: 1.0
+  requests_per_second: 1
+schema:
+  key_fields:
+  - name: lgbl_id
+    required: false
+    type: string
+  - name: lr_nr
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: version
+    required: false
+    type: string
+  - name: text
+    required: true
+    type: string
+source:
+  country: LI
+  id: LI/LILEX
+  name: LILEX - Liechtenstein Consolidated Legislation
+  url: https://www.gesetze.li

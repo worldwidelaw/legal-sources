@@ -63,7 +63,7 @@ Documents are normalized to the standard schema with:
 
 ## License
 
-Open data, public domain (Polish government open data)
+[Public Domain](https://dane.gov.pl) — Polish government open data.
 
 ## References
 

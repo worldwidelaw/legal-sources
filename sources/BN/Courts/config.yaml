@@ -1,0 +1,50 @@
+source:
+  id: BN/Courts
+  name: Brunei Court Decisions
+  country: BN
+  url: https://www.judiciary.gov.bn/
+  description: >
+    Court decisions from the Judiciary of Brunei Darussalam.
+    ~500+ judgments from the Court of Appeal, High Court, Intermediate Court,
+    and Magistrate's Court. Full text extracted from PDFs via WordPress REST API.
+
+data_model:
+  types:
+    - case_law
+  update_strategy: upsert
+  dedup_key:
+    - post_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: post_id
+      type: integer
+      required: true
+    - name: court
+      type: string
+      required: false
+    - name: case_number
+      type: string
+      required: false
+    - name: pdf_url
+      type: string
+      required: false
+
+schedule:
+  full_refresh: quarterly
+  update_check: monthly

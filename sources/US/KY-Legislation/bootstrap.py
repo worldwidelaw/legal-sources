@@ -248,7 +248,7 @@ class KYLegislationScraper(BaseScraper):
             for sid, sec_display, caption in sections:
                 raw = self.fetch_section(sid, ch_num, sec_display, caption, ch_title)
                 if raw:
-                    yield self.normalize(raw)
+                    yield raw
                     total += 1
                     if total % 100 == 0:
                         logger.info(f"  Progress: {total} sections fetched")
@@ -285,7 +285,7 @@ class KYLegislationScraper(BaseScraper):
                     continue
                 raw = self.fetch_section(sid, ch_num, sec_display, caption, ch_title)
                 if raw:
-                    yield self.normalize(raw)
+                    yield raw
                     count += 1
                     picked += 1
         logger.info(f"Sample complete: {count} sections fetched")
@@ -301,6 +301,7 @@ def main():
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = KYLegislationScraper()
@@ -319,7 +320,8 @@ def main():
             gen = scraper.fetch_all()
 
         count = 0
-        for record in gen:
+        for raw in gen:
+            record = scraper.normalize(raw)
             out_path = sample_dir / f"{record['_id']}.json"
             with open(out_path, "w", encoding="utf-8") as f:
                 json.dump(record, f, ensure_ascii=False, indent=2)

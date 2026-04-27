@@ -1,0 +1,19 @@
+{
+  "_id": "EC-CC-7938",
+  "_source": "EC/CorteConstitucional",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-01T18:25:08.918963+00:00",
+  "title": "Sentencia 2352-18-EP/23",
+  "text": "Acción extraordinaria de protección presentada en contra de las sentencias de primera y segunda instancia y el auto de inadmisión de casación dentro de un proceso penal en el que se aplicó procedimiento directo y se impuso al accionante una pena privativa de libertad de 8 años y 4 meses por el delito de robo. La Corte analizó como cuestión previa si la demanda se subsume en los presupuestos de la sentencia 8-19-IN/21 y concluyó que la CNJ vulneró el derecho a la defensa en la garantía de recurrir del accionante por haber inadmitido su recurso de casación con base en la Resolución 10-2015, sin haber convocado previamente a la audiencia de fundamentación. Además, la Corte verificó que la presente acción se encontraba pendiente de resolución al momento de la publicación de la sentencia 8-19-IN/21 en el RO. Como medidas de reparación se dispuso dejar sin efecto el auto de inadmisión de casación y que otra Sala de la CNJ resuelva el recurso de casación. En su voto salvado, el juez Enrique Herrería Bonnet señaló que de los argumentos contenidos en la demanda no se desprendía una alegación dirigida a una presunta vulneración a la garantía de recurrir por la falta de convocatoria a la audiencia de fundamentación del recurso de casación, por lo cual existiría arbitrariedad al momento de analizar y resolver los cargos de una demanda de EP, al punto de vaciar de contenido disposiciones constitucionales y legales que regulan esta garantía.",
+  "date": "2023-07-19",
+  "url": "https://esacc.corteconstitucional.gob.ec/storage/api/v1/10_DWL_FL/eyJjYXJwZXRhIjogInRyYW1pdGUiLCAidXVpZCI6ICI4YTEzNTVlNy04YWJlLTQ2MDMtYjE4OC1kMWIwNWRmOTUwMTYucGRmIn0=",
+  "numero": "2352-18-EP/23",
+  "numero_causa": "2352-18-EP",
+  "tipo_accion": "ACCIÓN EXTRAORDINARIA DE PROTECCIÓN",
+  "materia": "Penal",
+  "juez": "JHOEL MARLIN ESCUDERO SOLIZ",
+  "decision": "ACEPTAR PARCIALMENTE",
+  "metadata_sentencia": "",
+  "es_novedad": false,
+  "es_relevante": false
+}

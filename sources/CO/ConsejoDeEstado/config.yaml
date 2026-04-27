@@ -1,27 +1,29 @@
-source:
-  id: CO/ConsejoDeEstado
-  name: "Colombia Consejo de Estado - Jurisprudencia"
-  country: CO
-  data_types:
-    - case_law
-  url: https://relatoria.consejodeestado.gov.co/
-  auth: none
-  license: "Government of Colombia (Public Domain)"
-
+rate_limit:
+  delay_between_requests: 1.5
+  requests_per_second: 1
 schema:
   key_fields:
-    - _id
-    - date
+  - name: _id
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
   required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
-rate_limit:
-  requests_per_second: 1
-  delay_between_requests: 1.5
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  auth: none
+  country: CO
+  data_types:
+  - case_law
+  id: CO/ConsejoDeEstado
+  license: Government of Colombia (Public Domain)
+  name: Colombia Consejo de Estado - Jurisprudencia
+  url: https://relatoria.consejodeestado.gov.co/

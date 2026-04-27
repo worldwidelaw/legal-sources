@@ -1,0 +1,12 @@
+{
+  "_id": "KE-KRA-2368",
+  "_source": "KE/KRA-TaxCirculars",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-26T03:04:31.515353+00:00",
+  "title": "Integration of the Export Process in iCMS with the VAT Return in iTax - KRA",
+  "text": "Kenya Revenue Authority notifies taxpayers and the public that, effective May 2026, the VAT return export data in ICMS will be integrated with the declaration of zero-rated supplies in the VAT return in iTax.\nThis means that validated export values will be automatically prefilled in the VAT return upon issuance of the relevant export documents by Customs. The change applies to exports to the Single Customs Territory, other foreign countries, Export Processing Zones (EPZs) and Special Economic Zones (SEZs).\nTo support accurate prefilling, exporters and their clearing and forwarding agents must capture the exporter’s PIN and valid TIMS/eTIMS zero-rated invoice number when lodging export documents in iCMS. Only export values validated in iCMS and linked to the exporter’s PIN and invoice will be allowed in the VAT return.\nExports of taxable services will also be prefilled in iTax based on generated and transmitted TIMS/eTIMS invoices for the relevant tax period. For further information, contact the KRA Contact Centre on (020) 4 999 999 or 0711 099 999, or email\ncallcentre@kra.go.ke\n.\nCommissioner for Micro and Small Taxpayers\nPUBLIC NOTICES 23/04/2026",
+  "date": "2026-04-23",
+  "url": "https://www.kra.go.ke/news-center/public-notices/2368-integration-of-the-export-process-in-icms-with-the-vat-return-in-itax",
+  "language": "en",
+  "authority": "Kenya Revenue Authority (KRA)"
+}

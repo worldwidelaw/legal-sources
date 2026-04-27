@@ -502,6 +502,7 @@ if __name__ == '__main__':
                         help='Fetch sample data only')
     parser.add_argument('--slow', action='store_true',
                         help='Use slower rate limiting')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     if args.command == 'bootstrap':

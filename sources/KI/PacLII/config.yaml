@@ -1,0 +1,65 @@
+# ===================================================================
+# KI/PacLII -- Kiribati Legal Information (PacLII)
+# ===================================================================
+# HTML scraping of PacLII Kiribati databases.
+# Full text in HTML pages for both case law and legislation.
+# ===================================================================
+
+source:
+  id: "KI/PacLII"
+  country: "KI"
+  name: "Kiribati (PacLII)"
+  url: "https://www.paclii.org/ki/"
+  description: |
+    Kiribati case law and legislation via PacLII. Covers 5 court databases
+    (Court of Appeal, High Court, Magistrates Court, Kiribati Law Reports,
+    Gilbert Islands Law Reports) and 5 legislation databases. Full text in HTML.
+
+data_types:
+  - case_law
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "2-second delay between requests. Browser User-Agent required."
+
+api:
+  type: "scraping"
+  base_url: "https://www.paclii.org"
+  endpoints:
+    cases: "/ki/cases/{court}/{year}/"
+    legislation: "/ki/legis/{type}/toc-{letter}.html"
+  response_format: "html"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Unique document ID from URL path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision/enactment date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Document URL on PacLII"
+      type: "string"
+      role: "reference"
+      required: true

@@ -94,7 +94,7 @@ Full text is extracted from PDF attachments:
 
 ## License
 
-Open data - Swedish court decisions are public domain.
+[Public Domain](https://www.domstol.se/om-webbplatsen-och-digitala-kanaler/oppna-data/) — Swedish court decisions are public records not subject to copyright (Upphovsrattslag 1960:729, Section 9).
 
 ## Notes
 

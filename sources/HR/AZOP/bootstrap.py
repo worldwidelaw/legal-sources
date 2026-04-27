@@ -350,7 +350,7 @@ class CroatianDPAScraper(BaseScraper):
                 "date": date,
                 "category": "rjesenje",
             }
-            yield self.normalize(raw)
+            yield raw
             count += 1
             logger.info(f"[{count}] Decision PDF: {pdf_info['title'][:60]}... ({len(text)} chars)")
 
@@ -385,7 +385,7 @@ class CroatianDPAScraper(BaseScraper):
                 "date": post_data.get("date", ""),
                 "category": post_info.get("category", "misljenje"),
             }
-            yield self.normalize(raw)
+            yield raw
             count += 1
             logger.info(f"[{count}] Opinion: {post_info['title'][:60]}... ({len(text)} chars)")
 
@@ -426,7 +426,7 @@ class CroatianDPAScraper(BaseScraper):
                 "date": date,
                 "category": "preporuka",
             }
-            yield self.normalize(raw)
+            yield raw
             count += 1
             logger.info(f"[{count}] Recommendation: {rec_info['title'][:60]}... ({len(text)} chars)")
 

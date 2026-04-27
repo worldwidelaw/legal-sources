@@ -1,0 +1,81 @@
+# ===================================================================
+# FJ/Laws -- Laws of Fiji (laws.gov.fj)
+# ===================================================================
+# Official consolidated legislation for Fiji, maintained by the
+# Office of the Attorney-General. Contains principal acts and
+# subsidiary legislation organised alphabetically.
+#
+# Discovery: Alphabetical listing at /acts/actlist/{letter} (A-Z)
+# Act TOC: /Acts/DisplayAct/{act_id} with section data-id attributes
+# Section text: /Acts/ViewSection/{section_id} returns full HTML text
+# License: Free public access
+# ===================================================================
+
+source:
+  id: "FJ/Laws"
+  country: "FJ"
+  name: "Laws of Fiji (laws.gov.fj)"
+  url: "https://www.laws.gov.fj/"
+  description: |
+    Official consolidated legislation for Fiji. Covers all principal
+    acts and subsidiary legislation since the 2016 consolidation.
+    Full text extracted from per-section HTML pages.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.laws.gov.fj"
+  listing_pattern: "/acts/actlist/{letter}"
+  act_page_pattern: "/Acts/DisplayAct/{act_id}"
+  section_pattern: "/Acts/ViewSection/{section_id}"
+
+data_model:
+  type: "legislation"
+  primary_key: "act_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "act_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "act_id"
+      description: "Numeric act ID from laws.gov.fj URL"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation (all sections concatenated)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Last updated date (if available)"
+      type: "string"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to original act page on laws.gov.fj"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - Full text via /Acts/ViewSection/{section_id} for each section
+  - Alphabetical listing at /acts/actlist/{letter}
+  - No API — HTML scraping of listing + section pages
+  - Free public access, Office of the Attorney-General

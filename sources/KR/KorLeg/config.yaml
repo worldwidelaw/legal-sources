@@ -1,27 +1,31 @@
-source:
-  id: KR/KorLeg
-  name: KorLeg South Korean Legal Judgments Dataset
-  country: KR
-  url: https://zenodo.org/records/14542443
-  description: >
-    Academic dataset of 85,887 South Korean legal judgments across 5 legal domains
-    (Civil, Criminal, IP, Tax, Administrative). From Korea Ministry of Government
-    Legislation via Zenodo. Full text in Korean.
-  data_types:
-    - case_law
-  auth: none
-  license: CC-BY-4.0
-
-schema:
-  key_fields:
-    - _id
-    - text
-    - category
-
 fetch:
-  method: bulk_download
   download_url: https://zenodo.org/api/records/14542443/files/KorLeg.xlsx/content
   format: xlsx
+  method: bulk_download
   rate_limit:
-    requests_per_second: 1
     burst: 1
+    requests_per_second: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: category
+    required: false
+    type: string
+source:
+  auth: none
+  country: KR
+  data_types:
+  - case_law
+  description: 'Academic dataset of 85,887 South Korean legal judgments across 5 legal domains (Civil, Criminal, IP, Tax, Administrative). From Korea Ministry of Government Legislation via Zenodo. Full
+    text in Korean.
+
+    '
+  id: KR/KorLeg
+  license: CC-BY-4.0
+  name: KorLeg South Korean Legal Judgments Dataset
+  url: https://zenodo.org/records/14542443

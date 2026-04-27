@@ -1,67 +1,73 @@
-# German Federal Ministry of Finance Tax Circulars (BMF-Schreiben)
-# Official doctrine/guidance from bundesfinanzministerium.de
-
-source_id: "DE/BMF"
-name: "BMF-Schreiben (German Federal Ministry of Finance Tax Circulars)"
-country: "DE"
-language: "de"
+country: DE
 data_types:
-  - doctrine
-
-# Data endpoints (no authentication required)
+- doctrine
 endpoints:
-  # Main listing page with pagination
-  listing: "https://www.bundesfinanzministerium.de/Web/DE/Service/Publikationen/BMF_Schreiben/bmf_schreiben.html"
-
-  # RSS feed for taxes (includes BMF-Schreiben)
-  rss_feed: "https://www.bundesfinanzministerium.de/SiteGlobals/Functions/RSSFeed/DE/Steuern/RSSSteuern.xml"
-
-  # PDF download URL pattern:
-  # https://www.bundesfinanzministerium.de/Content/DE/Downloads/BMF_Schreiben/{category}/{filename}.pdf?__blob=publicationFile&v={version}
-
-# Schema information
-schema:
-  key_fields:
-    - "geschaeftszeichen"    # GZ - official reference number
-    - "dok_id"               # DOK - document ID
-    - "title"                # Document title
-  date_format: "ISO8601"
-  text_field: "text"
-
-# License
-license:
-  name: "Public Domain (Amtliche Werke)"
-  url: "https://www.bundesfinanzministerium.de/Web/DE/Meta/Impressum/impressum.html"
-  notes: |
-    German government publications like BMF-Schreiben are "amtliche Werke"
-    (official works) which are not protected by copyright under German law
-    (§ 5 UrhG).
-
-# Fetcher configuration
+  listing: https://www.bundesfinanzministerium.de/Web/DE/Service/Publikationen/BMF_Schreiben/bmf_schreiben.html
+  rss_feed: https://www.bundesfinanzministerium.de/SiteGlobals/Functions/RSSFeed/DE/Steuern/RSSSteuern.xml
 fetcher:
+  max_retries: 3
   rate_limit_ms: 1500
   ssl_verify: true
   timeout_s: 60
-  max_retries: 3
+language: de
+license:
+  name: Public Domain (Amtliche Werke)
+  notes: 'German government publications like BMF-Schreiben are "amtliche Werke"
 
-# Notes
-notes: |
-  BMF-Schreiben are administrative instructions (Verwaltungsanweisungen) issued
+    (official works) which are not protected by copyright under German law
+
+    (§ 5 UrhG).
+
+    '
+  url: https://www.bundesfinanzministerium.de/Web/DE/Meta/Impressum/impressum.html
+name: BMF-Schreiben (German Federal Ministry of Finance Tax Circulars)
+notes: 'BMF-Schreiben are administrative instructions (Verwaltungsanweisungen) issued
+
   by the German Federal Ministry of Finance. They provide binding guidance to
+
   tax authorities on how to interpret and apply tax law.
 
+
   Coverage:
+
   - 500+ BMF-Schreiben in the archive
+
   - Full text available via PDF downloads
+
   - Published in the Bundessteuerblatt (BStBl)
 
+
   Tax areas covered:
+
   - Income tax (Einkommensteuer)
+
   - Corporate tax (Körperschaftsteuer)
+
   - VAT (Umsatzsteuer)
+
   - International tax law
+
   - Tax procedure (Abgabenordnung)
+
   - Inheritance and gift tax
 
+
   Data is extracted from PDFs using pypdf for text extraction.
+
   Each document includes GZ (Geschäftszeichen) and DOK reference numbers.
+
+  '
+schema:
+  date_format: ISO8601
+  key_fields:
+  - name: geschaeftszeichen
+    required: false
+    type: string
+  - name: dok_id
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  text_field: text
+source_id: DE/BMF

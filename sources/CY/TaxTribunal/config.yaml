@@ -1,0 +1,87 @@
+# ===================================================================
+# CY/TaxTribunal -- Cyprus Administrative Court Tax Decisions
+# ===================================================================
+# Tax-related decisions from the Cyprus Administrative Court
+# (formerly Supreme Court Revisional Jurisdiction), accessible via
+# CyLaw (cylaw.org), the Cyprus Bar Association legal database.
+#
+# Approach: Fetch AAD meros_3 decisions (administrative jurisdiction)
+# and filter for tax-related content using Greek keywords.
+# ===================================================================
+
+source:
+  id: "CY/TaxTribunal"
+  country: "CY"
+  name: "Cyprus Administrative Court Tax Decisions"
+  url: "https://www.cylaw.org/apofaseis/aad/"
+  description: |
+    Tax-related decisions from the Cyprus Administrative Court
+    (Revisional Jurisdiction) on CyLaw. Covers appeals against Tax
+    Department assessments on corporate tax, IP box, non-dom regime,
+    VAT, and DTT interpretation. Greek-language decisions with full text.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.cylaw.org"
+  index_pattern: "/apofaseis/aad/index_{year}.html"
+  decision_pattern: "/cgi-bin/open.pl?file=/apofaseis/aad/meros_3/{year}/{filename}.htm"
+  encoding: "iso-8859-7"
+
+data_model:
+  type: "case_law"
+  primary_key: "case_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "case_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "case_id"
+      description: "Case identifier from filename"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case name (parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (Greek)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "CyLaw URL for the decision"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "case_number"
+      description: "Official case number"
+      type: "string"
+      role: "identifier"
+      required: false
+
+notes: |
+  - CyLaw uses iso-8859-7 encoding (Greek)
+  - Decisions are in Greek language
+  - AAD meros_3 = administrative jurisdiction (includes tax, planning, etc.)
+  - Tax filtering via keywords: φορολ, εισόδημα, ΦΠΑ, Φόρ
+  - ~50 admin decisions per year, subset are tax-related
+  - 35,485 total decisions in database (all divisions)

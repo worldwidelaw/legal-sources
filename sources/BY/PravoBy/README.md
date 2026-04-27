@@ -54,3 +54,7 @@ Key fields:
 - `text`: Full text content
 - `date`: Publication/enactment date
 - `url`: Direct link to source
+
+## License
+
+[Open Government Data](https://pravo.by) — official legislation published by the National Legal Internet Portal of the Republic of Belarus.

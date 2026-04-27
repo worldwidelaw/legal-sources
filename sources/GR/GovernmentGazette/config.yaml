@@ -1,47 +1,53 @@
-source:
-  id: GR/GovernmentGazette
-  country: GR
-  name: Greek Government Gazette (FEK)
-  description: |
-    Official Gazette of the Hellenic Republic (Εφημερίς της Κυβερνήσεως - FEK).
-    All Greek laws, presidential decrees, and regulatory acts must be published
-    in the FEK before they enter into force. This is Greece's primary legislation
-    publication channel.
-  url: https://www.et.gr
-
-data:
-  types:
-    - legislation
-  format: PDF
-  language: el
-  license: Public Domain (Official Government Acts)
-
 access:
-  method: REST API
   auth: none
-  rate_limit: 2 requests/second
   base_url: https://20.95.103.179
   endpoints:
     download: /api/DownloadFeksApi/?fek_pdf={fek_code}
-  notes: |
-    Uses direct IP address (20.95.103.179) with Host header set to et.gr.
-    FEK code format: YYYYSSNNNN where YYYY=year, SS=series, NNNN=issue number.
-    Series codes:
-      01 = ΤΕΥΧΟΣ ΠΡΩΤΟ (First Volume - Laws, Decrees)
-      02 = ΤΕΥΧΟΣ ΔΕΥΤΕΡΟ (Second Volume - Regulatory Acts)
-      03 = ΤΕΥΧΟΣ ΤΡΙΤΟ (Third Volume - Appointments)
-      04 = ΤΕΥΧΟΣ ΤΕΤΑΡΤΟ (Fourth Volume - Announcements)
-      10 = ΤΕΥΧΟΣ Α.Σ.Ε.Π. (ASEP - Civil Service Exams)
+  method: REST API
+  notes: "Uses direct IP address (20.95.103.179) with Host header set to et.gr.\nFEK code format: YYYYSSNNNN where YYYY=year, SS=series, NNNN=issue number.\nSeries codes:\n  01 = ΤΕΥΧΟΣ ΠΡΩΤΟ (First Volume\
+    \ - Laws, Decrees)\n  02 = ΤΕΥΧΟΣ ΔΕΥΤΕΡΟ (Second Volume - Regulatory Acts)\n  03 = ΤΕΥΧΟΣ ΤΡΙΤΟ (Third Volume - Appointments)\n  04 = ΤΕΥΧΟΣ ΤΕΤΑΡΤΟ (Fourth Volume - Announcements)\n  10 = ΤΕΥΧΟΣ Α.Σ.Ε.Π.\
+    \ (ASEP - Civil Service Exams)\n"
+  rate_limit: 2 requests/second
+data:
+  format: PDF
+  language: el
+  license: Public Domain (Official Government Acts)
+  types:
+  - legislation
+notes: 'Full text extracted from PDFs using pdfplumber.
 
+  Primary legislation (laws, decrees) is in series 01 (ΤΕΥΧΟΣ ΠΡΩΤΟ).
+
+  Greece does NOT have a consolidated legislation database - this gazette
+
+  contains the original enacted versions of all laws.
+
+  '
 schema:
   key_fields:
-    - fek_code
-    - fek_series
-    - fek_issue
-    - fek_year
+  - name: fek_code
+    required: false
+    type: string
+  - name: fek_series
+    required: false
+    type: string
+  - name: fek_issue
+    required: false
+    type: string
+  - name: fek_year
+    required: false
+    type: string
+source:
+  country: GR
+  description: 'Official Gazette of the Hellenic Republic (Εφημερίς της Κυβερνήσεως - FEK).
 
-notes: |
-  Full text extracted from PDFs using pdfplumber.
-  Primary legislation (laws, decrees) is in series 01 (ΤΕΥΧΟΣ ΠΡΩΤΟ).
-  Greece does NOT have a consolidated legislation database - this gazette
-  contains the original enacted versions of all laws.
+    All Greek laws, presidential decrees, and regulatory acts must be published
+
+    in the FEK before they enter into force. This is Greece''s primary legislation
+
+    publication channel.
+
+    '
+  id: GR/GovernmentGazette
+  name: Greek Government Gazette (FEK)
+  url: https://www.et.gr

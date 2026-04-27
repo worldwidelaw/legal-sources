@@ -1,0 +1,30 @@
+source:
+  id: "INTL/IAEASafetyStandards"
+  country: "INTL"
+  name: "IAEA Safety Standards Database"
+  url: "https://www.iaea.org/resources/safety-standards"
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+schema:
+  key_fields:
+    - name: "text"
+      description: "Full text of the safety standard (from NSS-OUI HTML or PDF extraction)"
+      role: "content"
+      required: true
+    - name: "standard_id"
+      description: "Standard identifier (e.g. SF-1, GSR Part 3, SSG-14)"
+      role: "identifier"
+      required: true
+    - name: "publication_type"
+      description: "Safety Fundamentals, Safety Requirements, or Safety Guide"
+      role: "category"
+      required: false

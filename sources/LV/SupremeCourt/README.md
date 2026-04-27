@@ -72,6 +72,10 @@ python bootstrap.py update
 - `requests`: HTTP client
 - `PyPDF2` or `pypdf`: PDF text extraction
 
+## License
+
+Open government data — Latvian court decisions are published via the [National Courts Portal](https://manas.tiesas.lv) and freely reusable.
+
 ## Notes
 
 - Decisions are anonymized (personal data redacted)

@@ -257,6 +257,7 @@ def main():
     parser.add_argument("--limit", type=int, default=100, help="Maximum records to fetch")
     parser.add_argument("--start-nr", type=int, help="Start decision number")
     parser.add_argument("--end-nr", type=int, help="End decision number")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     
     args = parser.parse_args()
     

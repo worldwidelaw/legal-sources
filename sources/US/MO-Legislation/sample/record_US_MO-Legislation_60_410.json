@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/60.410",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T18:04:55.108973+00:00",
+  "title": "Missouri Revised Statutes § 60.410 - Projection zone layers",
+  "text": "60.410.  Projection zone layers. — The Missouri state plane coordinate system may have one or more projection zone layers.  Each layer of zones shall be covered by geodetically referenced mapping projections adopted and supported by the National Geodetic Survey as a component of the National Spatial Reference System.  Each layer of zones shall be identified by the geodetic datum upon which they are defined, and each zone shall remain uniquely and consistently defined throughout its implementation within a particular layer.\n(L. 1965 p. 173 § 2, A.L. 2023 H.B. 202 merged with S.B. 138 §§ 60.410, 60.411)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=60.410",
+  "section_id": "60.410",
+  "chapter": "60",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

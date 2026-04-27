@@ -1,8 +1,18 @@
-source_id: US/NM-Legislation
-name: New Mexico Statutes Annotated (NMSA 1978)
+data_types:
+- legislation
 jurisdiction: US-NM
-url: https://nmonesource.com/nmos/nmsa-unanno/en/nav.do
-data_types: [legislation]
 language: en
+name: New Mexico Statutes Annotated (NMSA 1978)
 schema:
-  key_fields: [_id, section_number, chapter]
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: section_number
+    required: false
+    type: string
+  - name: chapter
+    required: false
+    type: string
+source_id: US/NM-Legislation
+url: https://nmonesource.com/nmos/nmsa-unanno/en/nav.do

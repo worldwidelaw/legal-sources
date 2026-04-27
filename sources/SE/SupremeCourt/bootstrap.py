@@ -494,6 +494,7 @@ def main():
                        help="Court code filter (e.g., HDO, HFD). Use '' for all courts")
     parser.add_argument('--all-types', action='store_true',
                        help="Include all publication types")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

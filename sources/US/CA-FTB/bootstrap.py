@@ -301,7 +301,7 @@ class CAFTBScraper(BaseScraper):
             for doc in docs:
                 raw = self.fetch_document(doc)
                 if raw and raw.get("text"):
-                    yield self.normalize(raw)
+                    yield raw
                     total += 1
         logger.info(f"Total documents fetched: {total}")
 

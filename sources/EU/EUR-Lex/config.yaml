@@ -1,38 +1,46 @@
-source:
-  id: "EU/EUR-Lex"
-  country: "EU"
-  name: "EUR-Lex Portal"
-  description: "Official EU legislation, treaties, and CJEU case law database"
-  url: "https://eur-lex.europa.eu"
-  data_types:
-    - legislation
-    - caselaw
-
+api:
+  auth: none
+  endpoints:
+    cellar_base: http://publications.europa.eu/resource/cellar/
+    eurlex_api: https://eur-lex.europa.eu/eurlex-ws
+    sparql: http://publications.europa.eu/webapi/rdf/sparql
+  rate_limit:
+    delay_seconds: 1
+    requests_per_second: 2
+  type: multiple
+documentation:
+- https://eur-lex.europa.eu/content/help/data-reuse/reuse-contents-eurlex-details.html
+- https://op.europa.eu/en/web/cellar/cellar-data
+- https://eur-lex.europa.eu/content/tools/webservices/DataExtractionUsingWebServices.pdf
+pagination:
+  page_size: 100
+  type: offset
 schema:
   key_fields:
-    - celex_id
-    - document_type
-    - title
-    - date
-    - url
-    - full_text
-
-api:
-  type: "multiple"
-  endpoints:
-    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
-    cellar_base: "http://publications.europa.eu/resource/cellar/"
-    eurlex_api: "https://eur-lex.europa.eu/eurlex-ws"
-  auth: "none"
-  rate_limit:
-    requests_per_second: 2
-    delay_seconds: 1
-
-pagination:
-  type: "offset"
-  page_size: 100
-
-documentation:
-  - "https://eur-lex.europa.eu/content/help/data-reuse/reuse-contents-eurlex-details.html"
-  - "https://op.europa.eu/en/web/cellar/cellar-data"
-  - "https://eur-lex.europa.eu/content/tools/webservices/DataExtractionUsingWebServices.pdf"
+  - name: celex_id
+    required: false
+    type: string
+  - name: document_type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: full_text
+    required: false
+    type: string
+source:
+  country: EU
+  data_types:
+  - legislation
+  - caselaw
+  description: Official EU legislation, treaties, and CJEU case law database
+  id: EU/EUR-Lex
+  name: EUR-Lex Portal
+  url: https://eur-lex.europa.eu

@@ -147,21 +147,23 @@ def normalize(raw: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def search_court(session: requests.Session, court: str, page: int = 1) -> Optional[Dict]:
-    params = {
-        "format": "json",
-        "type": "o",
-        "court": court,
-        "page_size": PAGE_SIZE,
-        "page": page,
-        "order_by": "dateFiled desc",
-    }
+def search_court(session: requests.Session, court: str, cursor_url: Optional[str] = None) -> Optional[Dict]:
     try:
-        resp = session.get(SEARCH_URL, params=params, timeout=30)
+        if cursor_url:
+            resp = session.get(cursor_url, timeout=30)
+        else:
+            params = {
+                "format": "json",
+                "type": "o",
+                "court": court,
+                "page_size": PAGE_SIZE,
+                "order_by": "dateFiled desc",
+            }
+            resp = session.get(SEARCH_URL, params=params, timeout=30)
         resp.raise_for_status()
         return resp.json()
     except requests.RequestException as e:
-        logger.warning(f"Search failed for {court} page {page}: {e}")
+        logger.warning(f"Search failed for {court}: {e}")
         return None
 
 
@@ -173,10 +175,13 @@ def fetch_all(sample: bool = False) -> Generator[Dict[str, Any], None, None]:
 
     for court in COURTS:
         logger.info(f"Fetching opinions for court: {court}")
+        cursor_url = None
+        page = 0
 
-        for page in range(1, max_pages_per_court + 1):
+        while page < max_pages_per_court:
+            page += 1
             time.sleep(DELAY)
-            data = search_court(session, court, page)
+            data = search_court(session, court, cursor_url=cursor_url)
             if not data or not data.get("results"):
                 logger.info(f"No more results for {court} at page {page}")
                 break
@@ -219,7 +224,8 @@ def fetch_all(sample: bool = False) -> Generator[Dict[str, Any], None, None]:
                     logger.info(f"Target reached: {total_yielded} records")
                     return
 
-            if not data.get("next"):
+            cursor_url = data.get("next")
+            if not cursor_url:
                 break
 
     logger.info(f"Total records: {total_yielded}")
@@ -241,7 +247,7 @@ def fetch_updates(since: str) -> Generator[Dict[str, Any], None, None]:
 def test_connectivity() -> bool:
     session = get_session()
     try:
-        data = search_court(session, "ohio", 1)
+        data = search_court(session, "ohio")
         if not data:
             return False
         count = data.get("count", 0)

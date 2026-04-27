@@ -1,0 +1,41 @@
+source_id: DM/Legislation
+name: Laws of Dominica
+country: DM
+url: https://dominica.gov.dm/laws-of-dominica
+data_url: https://dominica.gov.dm/laws-of-dominica
+description: |
+  Revised Laws of Dominica 1990 (chapters) and Acts/SROs from 1991 onwards.
+  ~2400 PDF documents from the official government portal. Searchable Joomla site
+  with direct PDF downloads.
+
+data_types:
+  - legislation
+
+license: "© Government of Dominica (public information)"
+language: en
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+update_frequency: monthly
+
+schema:
+  key_fields:
+    - name: title
+      required: true
+      type: string
+    - name: pdf_filename
+      required: true
+      type: string
+  date_field: date
+  text_field: text
+  title_field: title
+  url_field: url
+
+notes: |
+  HTML scraping of Joomla search + PDF download/extraction.
+  ~2400 laws (chapters, acts, SROs) from 1990-2025.

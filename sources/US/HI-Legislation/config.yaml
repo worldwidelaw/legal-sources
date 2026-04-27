@@ -1,22 +1,37 @@
-source:
-  id: "US/HI-Legislation"
-  name: "Hawaii Revised Statutes (HRS)"
-  country: US
-  jurisdiction: US-HI
-  url: "https://github.com/OpenHRS/openhrs-data"
-  data_types:
-    - legislation
-  language: en
-  auth: none
-  schedule: monthly
-
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - url
-    - section_id
-    - chapter
-    - jurisdiction
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: section_id
+    required: false
+    type: string
+  - name: chapter
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string
+source:
+  auth: none
+  country: US
+  data_types:
+  - legislation
+  id: US/HI-Legislation
+  jurisdiction: US-HI
+  language: en
+  name: Hawaii Revised Statutes (HRS)
+  schedule: monthly
+  url: https://github.com/OpenHRS/openhrs-data

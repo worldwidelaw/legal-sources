@@ -105,20 +105,63 @@ def _fetch_json_api(endpoint: str, params: dict) -> Optional[dict]:
 
 
 def _extract_text_docx(content: bytes) -> Optional[str]:
-    """Extract text from a DOCX file."""
+    """Extract text from a DOCX file.
+
+    Tries python-docx first, falls back to manual XML parsing (no deps).
+    """
+    # Try python-docx first (better formatting)
     try:
         import docx
         doc = docx.Document(io.BytesIO(content))
         paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
         text = "\n".join(paragraphs)
-        return text if len(text) > 50 else None
+        if text and len(text) > 50:
+            return text
+    except ImportError:
+        logger.debug("python-docx not installed, using zipfile fallback")
     except Exception as e:
-        logger.debug(f"DOCX extraction failed: {e}")
+        logger.debug(f"python-docx extraction failed: {e}")
+
+    # Fallback: parse DOCX as ZIP and extract text from document.xml
+    import zipfile
+    import xml.etree.ElementTree as ET
+    try:
+        with zipfile.ZipFile(io.BytesIO(content)) as zf:
+            if "word/document.xml" not in zf.namelist():
+                return None
+            xml_content = zf.read("word/document.xml")
+            tree = ET.fromstring(xml_content)
+            ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+            paragraphs = []
+            for p in tree.iter("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}p"):
+                runs = p.findall(".//w:t", ns)
+                para_text = "".join(r.text or "" for r in runs)
+                if para_text.strip():
+                    paragraphs.append(para_text)
+            text = "\n".join(paragraphs)
+            return text if len(text) > 50 else None
+    except Exception as e:
+        logger.debug(f"DOCX zipfile fallback failed: {e}")
         return None
 
 
 def _extract_text_pdf(content: bytes) -> Optional[str]:
     """Extract text from a PDF file."""
+    if not content or content[:4] != b"%PDF":
+        return None
+    try:
+        text = extract_pdf_markdown(
+            source="AU/VIC-Legislation",
+            source_id="",
+            pdf_bytes=content,
+            table="legislation",
+        )
+        return text if text and len(text) > 50 else None
+    except Exception as e:
+        logger.debug(f"PDF extraction failed: {e}")
+        return None
+
+
 def _resolve_files(node: Dict, included: List[Dict]) -> List[Dict]:
     """Resolve the include chain from node → paragraph → media → file.
 
@@ -484,6 +527,7 @@ def main():
     parser = argparse.ArgumentParser(description="AU/VIC-Legislation data fetcher")
     parser.add_argument("command", choices=["bootstrap", "update", "test"])
     parser.add_argument("--sample", action="store_true", help="Sample mode (15 records)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = Scraper()

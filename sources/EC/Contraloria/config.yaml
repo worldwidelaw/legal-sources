@@ -1,100 +1,105 @@
-source_id: EC/Contraloria
-name: Ecuador Contraloria General del Estado - Informes Aprobados
+api_base: https://www.contraloria.gob.ec
 country: EC
-language: spa
+data_types:
+- doctrine
+description: 'Approved audit reports (Informes Aprobados) from Ecuador''s Comptroller General.
 
-description: |
-  Approved audit reports (Informes Aprobados) from Ecuador's Comptroller General.
   ~29,000 reports from 2003 to present, covering government audits, special
+
   examinations, financial audits, and public works audits across all public entities.
+
   Full text extracted from official PDF attachments.
 
+
   Exam types: EE (Special Examination), AG (Government Audit), AF (Financial Audit),
+
   AOP (Public Works Audit), EEI (Internal Special Examination), ACOO (Coordinated Audit).
 
-api_base: https://www.contraloria.gob.ec
-website: https://www.contraloria.gob.ec/Consultas/InformesAprobados
-
-data_types:
-  - doctrine
-
-license: Open data (public government audit reports)
-
-update_frequency: weekly
-historical_coverage: 2003-present
-
-schema:
-  key_fields:
-    - _id
-    - report_number
-    - year
-    - date
-
-  fields:
-    _id:
-      type: string
-      description: Unique file ID from the system
-    _source:
-      type: string
-      description: Source identifier (EC/Contraloria)
-    _type:
-      type: string
-      description: Document type (doctrine)
-    _fetched_at:
-      type: datetime
-      description: ISO 8601 timestamp when record was fetched
-    title:
-      type: string
-      description: Report description
-    text:
-      type: string
-      description: Full text of the audit report (extracted from PDF)
-    date:
-      type: date
-      description: Approval date (YYYY-MM-DD)
-    url:
-      type: url
-      description: Link to download the report PDF
-    report_number:
-      type: string
-      description: Official report number (e.g., DNA2-0001-2024)
-    control_unit:
-      type: string
-      description: CGE control unit that produced the report
-    exam_type:
-      type: string
-      description: Type of examination (EE, AG, AF, etc.)
-    audited_entity:
-      type: string
-      description: Name of the audited public entity
-    year:
-      type: integer
-      description: Report year
-    period_from:
-      type: date
-      description: Start of audit period
-    period_to:
-      type: date
-      description: End of audit period
-
+  '
 endpoints:
-  listing:
-    method: GET
-    path: /WFResultados.aspx
-    params:
-      tipo: Data type (ia = informes aprobados)
-      an: Year filter
-      start: Pagination offset
-      length: Page size
-      draw: DataTables counter
-    headers:
-      X-Requested-With: XMLHttpRequest
-
   download:
+    headers:
+      Referer: https://www.contraloria.gob.ec/Consultas/InformesAprobados
     method: GET
-    path: /WFDescarga.aspx
     params:
       id: File ID
       tipo: inf (for reports)
+    path: /WFDescarga.aspx
+  listing:
     headers:
-      Referer: https://www.contraloria.gob.ec/Consultas/InformesAprobados
+      X-Requested-With: XMLHttpRequest
+    method: GET
+    params:
+      an: Year filter
+      draw: DataTables counter
+      length: Page size
+      start: Pagination offset
+      tipo: Data type (ia = informes aprobados)
+    path: /WFResultados.aspx
+historical_coverage: 2003-present
+language: spa
+license: Open data (public government audit reports)
+name: Ecuador Contraloria General del Estado - Informes Aprobados
+schema:
+  fields:
+    _fetched_at:
+      description: ISO 8601 timestamp when record was fetched
+      type: datetime
+    _id:
+      description: Unique file ID from the system
+      type: string
+    _source:
+      description: Source identifier (EC/Contraloria)
+      type: string
+    _type:
+      description: Document type (doctrine)
+      type: string
+    audited_entity:
+      description: Name of the audited public entity
+      type: string
+    control_unit:
+      description: CGE control unit that produced the report
+      type: string
+    date:
+      description: Approval date (YYYY-MM-DD)
+      type: date
+    exam_type:
+      description: Type of examination (EE, AG, AF, etc.)
+      type: string
+    period_from:
+      description: Start of audit period
+      type: date
+    period_to:
+      description: End of audit period
+      type: date
+    report_number:
+      description: Official report number (e.g., DNA2-0001-2024)
+      type: string
+    text:
+      description: Full text of the audit report (extracted from PDF)
+      type: string
+    title:
+      description: Report description
+      type: string
+    url:
+      description: Link to download the report PDF
+      type: url
+    year:
+      description: Report year
+      type: integer
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: report_number
+    required: false
+    type: string
+  - name: year
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+source_id: EC/Contraloria
+update_frequency: weekly
+website: https://www.contraloria.gob.ec/Consultas/InformesAprobados

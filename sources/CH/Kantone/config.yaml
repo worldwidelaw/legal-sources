@@ -1,42 +1,56 @@
-source:
-  id: CH/Kantone
-  name: Swiss Cantonal Legislation (All 26 Cantons)
-  country: CH
-  url: https://huggingface.co/datasets/rcds/swiss_legislation
-
-data:
-  types:
-    - legislation
-  format: parquet
-  api_type: huggingface_datasets
-  update_frequency: periodic
-
-schema:
-  key_fields:
-    - uuid
-    - canton
-    - title
-    - sr_number
-    - language
-    - text
-
 auth:
   type: none
-
-rate_limit:
-  requests_per_second: 10
-  delay_between_requests: 0.1
-
+data:
+  api_type: huggingface_datasets
+  format: parquet
+  types:
+  - legislation
+  update_frequency: periodic
 license:
   name: CC-BY-SA-4.0
   url: https://choosealicense.com/licenses/cc-by-sa-4.0/
+notes: 'Swiss cantonal legislation from all 26 cantons via HuggingFace Datasets.
 
-notes: |
-  Swiss cantonal legislation from all 26 cantons via HuggingFace Datasets.
   Dataset: rcds/swiss_legislation (compiled from lexfind.ch)
+
   35,698 laws with full text in PDF and HTML formats.
+
   Languages: German (de), French (fr), Italian (it), Romansh (rm).
+
   Includes version history and active/inactive status.
+
   Coverage: All 26 Swiss cantons (AG, AI, AR, BE, BL, BS, FR, GE, GL, GR,
+
   JU, LU, NE, NW, OW, SG, SH, SO, SZ, TG, TI, UR, VD, VS, ZG, ZH).
+
   Complements CH/Fedlex (federal legislation) and CH/Entscheidsuche (case law).
+
+  '
+rate_limit:
+  delay_between_requests: 0.1
+  requests_per_second: 10
+schema:
+  key_fields:
+  - name: uuid
+    required: false
+    type: string
+  - name: canton
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: sr_number
+    required: false
+    type: string
+  - name: language
+    required: false
+    type: string
+  - name: text
+    required: true
+    type: string
+source:
+  country: CH
+  id: CH/Kantone
+  name: Swiss Cantonal Legislation (All 26 Cantons)
+  url: https://huggingface.co/datasets/rcds/swiss_legislation

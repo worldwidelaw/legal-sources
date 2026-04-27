@@ -1,0 +1,100 @@
+# ===================================================================
+# NF/Legislation -- Norfolk Island Continued Laws
+# ===================================================================
+# Norfolk Island legislation via Australia's Federal Register of
+# Legislation REST API.  Norfolk Island is an Australian external
+# territory; its laws are stored as "ContinuedLaw" collection.
+#
+# API Base: https://api.prod.legislation.gov.au/v1/
+# Data Portal: https://www.legislation.gov.au/norfolk-island-legislation
+# ===================================================================
+
+source:
+  id: "NF/Legislation"
+  country: "NF"
+  name: "Norfolk Island Legislation (Federal Register)"
+  url: "https://www.legislation.gov.au/norfolk-island-legislation"
+  description: |
+    Norfolk Island continued laws from Australia's Federal Register of
+    Legislation.  After the Norfolk Island Legislation Amendment Act 2015
+    abolished the Legislative Assembly, existing NI laws became
+    "continued laws" maintained by the Commonwealth.  274 acts covering
+    administration, probate, criminal law, employment, land titles,
+    planning, taxation, and more.  Full text available via EPUB/Word
+    download from the OData REST API.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://api.prod.legislation.gov.au"
+  endpoints:
+    titles: "/v1/titles"
+    titles_count: "/v1/titles/$count"
+    versions: "/v1/versions"
+    documents: "/v1/documents"
+  pagination:
+    type: "odata"
+    default_page_size: 100
+    max_page_size: 1000
+
+data_model:
+  type: "legislation"
+  primary_key: "register_id"
+  update_strategy: "upsert"
+  versioning: "versioned"
+  dedup_key:
+    - "register_id"
+
+schema:
+  total_fields: 16
+  key_fields:
+    - name: "register_id"
+      description: "Register ID (e.g., C2018Q00043)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Full title of the act"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from EPUB/Word document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Start date of this version (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL on legislation.gov.au"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "title_id"
+      description: "Title ID (e.g., C2015Q00069)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "status"
+      description: "InForce, Repealed, Ceased, or NeverEffective"
+      type: "string"
+      role: "classification"
+      required: true
+
+notes: |
+  - Filters on collection eq 'ContinuedLaw' (Norfolk Island only)
+  - 274 titles as of April 2026
+  - Full text via EPUB download (fallback to Word/docx)
+  - Same API as AU/FederalRegister, different collection filter

@@ -1,0 +1,80 @@
+# ===================================================================
+# IM/JudgmentsOnline -- Isle of Man Court Judgments
+# ===================================================================
+# ~3,400+ judgments from Isle of Man Courts of Justice (2000 onwards).
+# Full text available via HTML document reference search at judgments.im.
+# Enumerate J1-J3500 to discover all judgments.
+# WAF requires proper User-Agent header.
+# ===================================================================
+
+source:
+  id: "IM/JudgmentsOnline"
+  country: "IM"
+  name: "Isle of Man Judgments Online"
+  url: "https://www.judgments.im/content/home.mth"
+  description: |
+    Free searchable database of judgments from Isle of Man Courts of Justice.
+    Covers High Court (Chancery, Civil, Criminal), Appeal Division, Staff of
+    Government Division, and other jurisdictions from 2000 onwards.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.judgments.im"
+  endpoints:
+    doc_search: "/content/search.mth?searchtype=2&filename=J{number}&pagesize=50&searchaction=Search&doctype-1=1&doctype-2=2"
+    print_view: "/content/print.mth?contentdocumentversionid={id}"
+
+data_model:
+  type: "case_law"
+  primary_key: "judgment_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "judgment_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "judgment_id"
+      description: "Judgment reference number (e.g., J1234)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full judgment text"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Judgment date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the judgment page"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "court"
+      description: "Court name"
+    - name: "division"
+      description: "Court division"
+    - name: "judge"
+      description: "Judge name"
+    - name: "case_reference"
+      description: "Case reference (division/year/number)"

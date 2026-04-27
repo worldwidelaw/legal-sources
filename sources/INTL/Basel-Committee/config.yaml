@@ -1,24 +1,30 @@
-source:
-  id: INTL/Basel-Committee
-  name: Basel Committee on Banking Supervision Standards
-  country: INTL
-  url: https://www.bis.org/bcbs/
-  data_types:
-    - doctrine
-  auth: none
-  description: >
-    Basel III/IV standards, guidelines, and publications from the Basel Committee
-    on Banking Supervision (BCBS), published by the Bank for International
-    Settlements (BIS). ~795 publications with JSON API and PDF downloads.
-
+fetch:
+  max_retries: 3
+  rate_limit: 1.5
+  timeout: 60
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - publication_type
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: publication_type
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - doctrine
+  description: 'Basel III/IV standards, guidelines, and publications from the Basel Committee on Banking Supervision (BCBS), published by the Bank for International Settlements (BIS). ~795 publications
+    with JSON API and PDF downloads.
 
-fetch:
-  rate_limit: 1.5
-  max_retries: 3
-  timeout: 60
+    '
+  id: INTL/Basel-Committee
+  name: Basel Committee on Banking Supervision Standards
+  url: https://www.bis.org/bcbs/

@@ -1,20 +1,31 @@
-source_id: US/MO-Legislation
-name: Missouri Revised Statutes (Office of Revisor)
-country: US
-jurisdiction: US-MO
-url: https://revisor.mo.gov/main/Home.aspx
-data_types:
-  - legislation
 auth: none
+country: US
+data_types:
+- legislation
 format: html
+jurisdiction: US-MO
 language: en
+name: Missouri Revised Statutes (Office of Revisor)
 schedule: monthly
-
 schema:
   key_fields:
-    - section_id
-    - chapter
-    - title
-    - text
-    - date
-    - url
+  - name: section_id
+    required: false
+    type: string
+  - name: chapter
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+source_id: US/MO-Legislation
+url: https://revisor.mo.gov/main/Home.aspx

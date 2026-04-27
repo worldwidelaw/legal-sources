@@ -226,7 +226,7 @@ class KEKFetcher:
             logger.info(f"[{i+1}/{len(urls)}] Fetching: {path}")
             article = self._extract_article(path)
             if article:
-                yield self.normalize(article)
+                yield article
             time.sleep(1.5)
 
     def fetch_updates(self, since: str) -> Iterator[Dict[str, Any]]:
@@ -236,7 +236,7 @@ class KEKFetcher:
             if article:
                 if article.get('date') and article['date'] < since:
                     break
-                yield self.normalize(article)
+                yield article
             time.sleep(1.5)
 
     def bootstrap_sample(self, count: int = 15) -> List[Dict[str, Any]]:

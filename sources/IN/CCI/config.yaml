@@ -1,24 +1,30 @@
-source:
-  id: IN/CCI
-  name: Competition Commission of India Orders
-  country: IN
-  url: https://www.cci.gov.in/
-  data_types:
-    - case_law
-  auth: none
-  description: >
-    Antitrust and combination orders from the Competition Commission of India.
-    Uses DataTables JSON endpoints for order listing and PDF download for full text.
-    ~1,300 antitrust orders + ~1,400 combination orders.
-
+fetch:
+  max_retries: 3
+  rate_limit: 2.0
+  timeout: 60
 schema:
   key_fields:
-    - _id
-    - case_no
-    - order_date
-    - order_type
+  - name: _id
+    required: true
+    type: string
+  - name: case_no
+    required: false
+    type: string
+  - name: order_date
+    required: false
+    type: string
+  - name: order_type
+    required: false
+    type: string
+source:
+  auth: none
+  country: IN
+  data_types:
+  - case_law
+  description: 'Antitrust and combination orders from the Competition Commission of India. Uses DataTables JSON endpoints for order listing and PDF download for full text. ~1,300 antitrust orders + ~1,400
+    combination orders.
 
-fetch:
-  rate_limit: 2.0
-  max_retries: 3
-  timeout: 60
+    '
+  id: IN/CCI
+  name: Competition Commission of India Orders
+  url: https://www.cci.gov.in/

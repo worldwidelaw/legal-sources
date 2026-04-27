@@ -1,31 +1,47 @@
-source:
-  id: AR/CABA-Legislation
-  name: "Ciudad Autónoma de Buenos Aires Legislation (CEDOM)"
-  country: AR
-  url: https://boletinoficial.buenosaires.gob.ar/normativa
-  data_types:
-    - legislation
-  auth: none
-  format: json+pdf
-  language: es
-  description: >
-    Legislation from Buenos Aires City (CABA) via the Boletín Oficial REST API.
-    Covers laws (Leyes) and decrees (Decretos) from 1996 to present.
-    Full text extracted from PDF documents served by the API.
-
+fetcher:
+  api_type: rest_json
+  base_url: https://api-restboletinoficial.buenosaires.gob.ar
+  rate_limit: 2.0
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - norm_type
-    - norm_number
-    - year
-    - issuing_body
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: norm_type
+    required: false
+    type: string
+  - name: norm_number
+    required: false
+    type: string
+  - name: year
+    required: false
+    type: string
+  - name: issuing_body
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: AR
+  data_types:
+  - legislation
+  description: 'Legislation from Buenos Aires City (CABA) via the Boletín Oficial REST API. Covers laws (Leyes) and decrees (Decretos) from 1996 to present. Full text extracted from PDF documents served
+    by the API.
 
-fetcher:
-  base_url: "https://api-restboletinoficial.buenosaires.gob.ar"
-  rate_limit: 2.0
-  api_type: rest_json
+    '
+  format: json+pdf
+  id: AR/CABA-Legislation
+  language: es
+  name: Ciudad Autónoma de Buenos Aires Legislation (CEDOM)
+  url: https://boletinoficial.buenosaires.gob.ar/normativa

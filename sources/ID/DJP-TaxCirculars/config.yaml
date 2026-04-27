@@ -1,0 +1,41 @@
+fetch:
+  max_retries: 3
+  rate_limit: 1.0
+  timeout: 60
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: doc_number
+    required: false
+    type: string
+  - name: categories
+    required: false
+    type: string
+  - name: status
+    required: false
+    type: string
+source:
+  auth: none
+  country: ID
+  data_types:
+  - doctrine
+  description: >
+    Tax regulations, circulars, and ministerial decrees from Indonesia's
+    Directorate General of Taxes (DJP / Direktorat Jenderal Pajak).
+    Scraped from pajak.go.id/id/peraturan listing pages. ~6,260 regulations
+    with full text available inline as HTML. Covers income tax (PPh),
+    VAT (PPN), stamp duty, transfer pricing, and administrative sanctions.
+  id: ID/DJP-TaxCirculars
+  name: Indonesia Directorate General of Taxes - Regulations & Circulars
+  url: https://www.pajak.go.id/id/peraturan

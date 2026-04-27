@@ -69,3 +69,7 @@ python3 bootstrap.py updates --since 2026-01-01
 - Incremental archives are published quarterly
 - Full text includes the complete decision with reasoning (considérants)
 - Personal names are anonymized in some decisions
+
+## License
+
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

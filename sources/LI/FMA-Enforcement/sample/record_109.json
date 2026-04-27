@@ -1,0 +1,14 @@
+{
+  "_id": "warning-en-197",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:45.037555Z",
+  "title": "[Abuse] Warning: metabank[dot]li",
+  "text": "The Liechtenstein Financial Market Authority (FMA) points out that Metabank Ltd. as the operator of the website https://www[dot]metabank[dot]li is not licensed by the FMA and is therefore not allowed to provide any financial services that are subject to authorisation under Liechtenstein Law.",
+  "date": "2022-06-14",
+  "url": "https://www.fma-li.li/en/warning/warning-metabank-dot-li-197",
+  "language": "eng",
+  "category": "Abuse",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

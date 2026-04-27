@@ -1,0 +1,27 @@
+auth:
+  type: none
+base_url: https://portal.tjpr.jus.br/jurisprudencia/publico/pesquisa.do
+country: BR
+data_types:
+- case_law
+description: >
+  Court decisions (acordãos, monocratic decisions, turma recursal) from the
+  Tribunal de Justiça do Estado do Paraná via the portal jurisprudence search.
+  Returns full text of decisions plus metadata (relator, orgão julgador, etc.).
+language: pt
+name: Paraná State Court (TJPR) Jurisprudence
+rate_limit:
+  burst: 2
+  requests_per_second: 0.5
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: process_number
+    required: false
+    type: string
+  - name: id_processo
+    required: true
+    type: string
+source_id: BR/TJPR

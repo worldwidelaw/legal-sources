@@ -92,3 +92,7 @@ python3 bootstrap.py bootstrap
 - Decisions are organized by year and issue (sešit)
 - Full text includes the main decision text without procedural headers
 - The "právní věta" (legal principle) is extracted separately
+
+## License
+
+[Open Government Data](https://data.gov.cz/english/) — Czech Supreme Court decisions are freely available for reuse.

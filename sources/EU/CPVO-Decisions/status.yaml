@@ -1,0 +1,27 @@
+last_bootstrap: null
+last_error: '404 Client Error: Not Found for url: https://online.plantvarieties.eu/api/caselaw/casesSearchPublic'
+last_run: '2026-04-16T23:18:27.559503+00:00'
+run_history:
+- error_message: '404 Client Error: Not Found for url: https://online.plantvarieties.eu/api/caselaw/casesSearchPublic'
+  errors: 0
+  finished_at: '2026-04-15T19:36:41.759856+00:00'
+  records_fetched: 6
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 6
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-15T19:34:03.019316+00:00'
+- error_message: '404 Client Error: Not Found for url: https://online.plantvarieties.eu/api/caselaw/casesSearchPublic'
+  errors: 0
+  finished_at: '2026-04-16T23:18:27.559503+00:00'
+  records_fetched: 4
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 4
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-04-16T23:15:40.898425+00:00'
+total_records: 0

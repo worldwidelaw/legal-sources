@@ -381,6 +381,7 @@ def main():
                         help='Fetch sample data only (for testing)')
     parser.add_argument('--since', type=str,
                         help='ISO date for incremental updates')
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

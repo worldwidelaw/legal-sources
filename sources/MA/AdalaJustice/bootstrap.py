@@ -222,7 +222,7 @@ def test_connectivity():
         print(f"  Sample title: {title}")
         print(f"  Sample file path: {file_path[:80]}")
 
-        if file_path and HAS_PYMUPDF:
+        if file_path:
             text = download_and_extract_text(file_path)
             print(f"  PDF text extraction: {len(text)} chars")
             if text:
@@ -237,10 +237,6 @@ def test_connectivity():
 
 def bootstrap(sample: bool = False):
     """Run the bootstrap process."""
-    if not HAS_PYMUPDF:
-        print("ERROR: PyMuPDF required for PDF text extraction. Install with: pip install pymupdf")
-        sys.exit(1)
-
     SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -272,6 +268,7 @@ def main():
     parser = argparse.ArgumentParser(description="MA/AdalaJustice Morocco Legal Data Fetcher")
     parser.add_argument("command", choices=["bootstrap", "test"], help="Command to run")
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     if args.command == "test":

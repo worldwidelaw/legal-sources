@@ -14,14 +14,30 @@ source:
 
 schema:
   key_fields:
-    - _id
-    - decision_number
-    - case_number
-    - sala
-    - title
-    - text
-    - date
-    - url
+    - name: _id
+      type: string
+      required: true
+    - name: decision_number
+      type: string
+      required: true
+    - name: case_number
+      type: string
+      required: false
+    - name: sala
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
 
 fetch:
   rate_limit_delay: 2

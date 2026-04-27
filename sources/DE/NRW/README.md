@@ -57,7 +57,7 @@ python3 bootstrap.py bootstrap
 
 ## License
 
-Public Domain under German Copyright Act (§ 5 UrhG). German government works (amtliche Werke) including laws, ordinances, and official announcements are not protected by copyright.
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).
 
 ## Notes
 

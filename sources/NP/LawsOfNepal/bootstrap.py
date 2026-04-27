@@ -410,44 +410,11 @@ if __name__ == "__main__":
 
     elif command == "bootstrap":
         sample_mode = "--sample" in sys.argv
-        count = 15
-        for i, arg in enumerate(sys.argv):
-            if arg == "--count" and i + 1 < len(sys.argv):
-                count = int(sys.argv[i + 1])
-
-        if sample_mode:
-            gen = scraper.fetch_sample(count=count)
-        else:
-            gen = scraper.fetch_all()
-
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        saved = 0
-        for record in gen:
-            normalized = scraper.normalize(record)
-            out_path = sample_dir / f"{normalized['_id']}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(normalized, f, ensure_ascii=False, indent=2)
-            saved += 1
-            logger.info(f"Saved: {out_path.name}")
-
-        logger.info(f"Bootstrap complete: {saved} records saved to {sample_dir}")
+        scraper.bootstrap(sample_mode=sample_mode)
 
     elif command == "update":
         logger.info("No incremental update; running full bootstrap")
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        saved = 0
-        for record in scraper.fetch_all():
-            normalized = scraper.normalize(record)
-            out_path = sample_dir / f"{normalized['_id']}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(normalized, f, ensure_ascii=False, indent=2)
-            saved += 1
-
-        logger.info(f"Update complete: {saved} records saved")
+        scraper.bootstrap(sample_mode=False)
 
     else:
         print(f"Unknown command: {command}")

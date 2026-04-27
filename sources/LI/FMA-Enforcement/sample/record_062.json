@@ -1,0 +1,14 @@
+{
+  "_id": "warning-de-67",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:24.986133Z",
+  "title": "[Klonfirma] Warnung: wecounion(dot)com",
+  "text": "Die Finanzmarktaufsicht (FMA) Liechtenstein weist darauf hin, dass keine Verbindung zwischen der Webseite https://wecounion(dot)com und der liechtensteinischen Gesellschaft INTERNATIONALE KNOPF-UNION TRUST reg., c/o JWT Treuhand AG, Heiligkreuz 44, 9490 Vaduz (FL-0001.007.356-5), besteht.   Die Betreiber der Webseite https://wecounion(dot)com verfügen über keine aufsichtsrechtliche Bewilligung der FMA und sind damit nicht berechtigt bewilligungspflichtige Finanzdienstleistungen in Liechtenstein zu erbringen. Sie unterstehen nicht der Aufsicht durch die FMA.",
+  "date": "2023-08-29",
+  "url": "https://www.fma-li.li/de/warning/warnung-wecounion-dot-com-67",
+  "language": "deu",
+  "category": "Klonfirma",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

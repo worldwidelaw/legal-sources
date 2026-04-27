@@ -1,20 +1,20 @@
 # ===================================================================
-# US/TX-AdminCode -- Texas Administrative Code (eLaws mirror)
+# US/TX-AdminCode -- Texas Administrative Code (via Cornell LII)
 # ===================================================================
 # Full text of all Texas Administrative Code rules scraped from
-# txrules.elaws.us. 16 titles, ~thousands of individual rule sections.
+# Cornell LII (law.cornell.edu). 17 titles, thousands of sections.
 # No authentication required. Public domain government data.
 # ===================================================================
 
 source:
   id: "US/TX-AdminCode"
   country: "US"
-  name: "Texas Administrative Code (eLaws)"
-  url: "https://txrules.elaws.us/rule"
+  name: "Texas Administrative Code (Cornell LII)"
+  url: "https://www.law.cornell.edu/regulations/texas"
   description: |
     Texas Administrative Code with full text of every rule section,
-    fetched from the eLaws mirror (txrules.elaws.us). Covers all 16
-    active titles of the TAC. Public domain government data.
+    fetched from Cornell LII (law.cornell.edu/regulations/texas).
+    Covers all active titles of the TAC. Public domain government data.
 
 data_types:
   - legislation
@@ -28,12 +28,10 @@ rate_limit:
 
 api:
   type: "html_scraping"
-  base_url: "https://txrules.elaws.us"
+  base_url: "https://www.law.cornell.edu"
   endpoints:
-    title_list: "/rule"
-    title_page: "/rule/title{N}"
-    chapter_page: "/rule/title{N}_chapter{M}"
-    section_page: "/rule/title{N}_chapter{M}_sec.{X.Y}"
+    title_list: "/regulations/texas"
+    section_page: "/regulations/texas/{title}-Tex-Admin-Code-SS-{section}"
 
 data_model:
   type: "legislation"
@@ -77,7 +75,8 @@ schema:
       required: true
 
 notes: |
-  - 16 active titles, thousands of chapters and sections
-  - HTML scraping from txrules.elaws.us (eLaws mirror)
+  - 17 active titles, thousands of chapters and sections
+  - HTML scraping from Cornell LII (law.cornell.edu)
   - Public domain (Texas government administrative rules)
+  - Previous source (txrules.elaws.us) defunct as of April 2026
   - Official SOS site migrated to Appian SPA, not scrapeable

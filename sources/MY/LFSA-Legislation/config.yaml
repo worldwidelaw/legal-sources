@@ -1,0 +1,23 @@
+source:
+  id: MY/LFSA-Legislation
+  name: Labuan FSA Legislation & Guidelines
+  country: MY
+  url: https://www.labuanfsa.gov.my
+  data_types:
+    - legislation
+    - doctrine
+  auth: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url

@@ -64,3 +64,7 @@ python bootstrap.py updates --since 2024-01-01
 - Akoma Ntoso is the international standard for legislative documents (OASIS LegalDocumentML)
 - Full text is extracted from `body/article/alinea/content/p` elements
 - Documents include FRBR (Functional Requirements for Bibliographic Records) identifiers
+
+## License
+
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

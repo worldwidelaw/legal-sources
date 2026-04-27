@@ -1,37 +1,59 @@
-source:
-  id: CR/PoderJudicial
-  name: Costa Rica Poder Judicial - Jurisprudencia
-  country: CR
-  url: https://nexuspj.poder-judicial.go.cr/
-  data_types:
-    - case_law
-  auth: none
-  license: open_access
-  description: >
-    Decisions from Costa Rica's judiciary (Poder Judicial) via the Nexus PJ REST API.
-    Covers all courts including Sala Constitucional, Sala Segunda, and 67 courts total.
-    ~1.17 million sentencias from 1979 to present, with full HTML text.
-
-schema:
-  key_fields:
-    - _id
-    - _source
-    - _type
-    - title
-    - text
-    - date
-    - url
-    - despacho
-    - expediente
-    - redactor
-    - tipo_documento
-    - descriptores
-
 fetch:
-  strategy: rest_api
   api_base: https://nexuspj.poder-judicial.go.cr
   endpoints:
-    search: POST /api/search (Lucene query + facets)
     document: POST /api/document (full HTML by ID)
+    search: POST /api/search (Lucene query + facets)
   page_size: 200
   rate_limit: 1.5s between requests
+  strategy: rest_api
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: despacho
+    required: false
+    type: string
+  - name: expediente
+    required: false
+    type: string
+  - name: redactor
+    required: false
+    type: string
+  - name: tipo_documento
+    required: false
+    type: string
+  - name: descriptores
+    required: false
+    type: string
+source:
+  auth: none
+  country: CR
+  data_types:
+  - case_law
+  description: 'Decisions from Costa Rica''s judiciary (Poder Judicial) via the Nexus PJ REST API. Covers all courts including Sala Constitucional, Sala Segunda, and 67 courts total. ~1.17 million sentencias
+    from 1979 to present, with full HTML text.
+
+    '
+  id: CR/PoderJudicial
+  license: open_access
+  name: Costa Rica Poder Judicial - Jurisprudencia
+  url: https://nexuspj.poder-judicial.go.cr/

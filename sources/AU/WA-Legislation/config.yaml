@@ -65,7 +65,7 @@ schema:
       description: "Year of the act"
       type: "date"
       role: "temporal_key"
-      required: true
+      required: false
     - name: "url"
       description: "URL to original document"
       type: "string"

@@ -1,30 +1,38 @@
+notes: 'Uses the Findok JSON API discovered via SPA analysis.
+
+  - /api/neuInFindok/sync for document listing
+
+  - /api/volltext for full text content
+
+  Document types: RICHTLINIEN, AMTLICHE_VEROEFFENTLICHUNGEN, BFG, UFS, EAS, ERLAESSE
+
+  '
+rate_limit:
+  delay_seconds: 2
+  requests_per_second: 0.5
+schema:
+  content_field: text
+  date_field: gueltigAbString
+  key_fields:
+  - name: dokumentId
+    required: false
+    type: string
+  - name: segmentId
+    required: false
+    type: string
 source:
+  api_docs: https://findok.bmf.gv.at/findok/hilfe/EFSZ/BMF/FINDOK-INT-2/BENUTZERUNTERST-TZUNG/Dokumentenweitergabe.html
+  auth: none
+  country: AT
+  data_types:
+  - doctrine
+  description: 'BMF tax doctrine database containing directives, decrees, information,
+
+    EAS (Express Reply Service on international tax), and BFG rulings.
+
+    Data from the Austrian Federal Ministry of Finance.
+
+    '
   id: AT/Findok
   name: Findok - Austrian Tax Doctrine (Finanzdokumentation)
-  country: AT
   url: https://findok.bmf.gv.at/findok
-  data_types:
-    - doctrine
-  auth: none
-  description: |
-    BMF tax doctrine database containing directives, decrees, information,
-    EAS (Express Reply Service on international tax), and BFG rulings.
-    Data from the Austrian Federal Ministry of Finance.
-  api_docs: https://findok.bmf.gv.at/findok/hilfe/EFSZ/BMF/FINDOK-INT-2/BENUTZERUNTERST-TZUNG/Dokumentenweitergabe.html
-
-schema:
-  key_fields:
-    - dokumentId
-    - segmentId
-  date_field: gueltigAbString
-  content_field: text
-
-rate_limit:
-  requests_per_second: 0.5
-  delay_seconds: 2
-
-notes: |
-  Uses the Findok JSON API discovered via SPA analysis.
-  - /api/neuInFindok/sync for document listing
-  - /api/volltext for full text content
-  Document types: RICHTLINIEN, AMTLICHE_VEROEFFENTLICHUNGEN, BFG, UFS, EAS, ERLAESSE

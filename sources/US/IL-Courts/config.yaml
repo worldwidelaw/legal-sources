@@ -1,23 +1,35 @@
-source_id: US/IL-Courts
-name: Illinois Supreme Court & Appellate Court
-country: US
-data_types:
-  - case_law
-url: https://www.illinoiscourts.gov/top-level-opinions/
 auth:
   type: none
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - case_number
-    - court
-    - citation
-
+country: US
+data_types:
+- case_law
 fetch:
   base_url: https://www.courtlistener.com/api/rest/v4
   courts: ill,illappct
   delay: 1.5
+name: Illinois Supreme Court & Appellate Court
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: citation
+    required: false
+    type: string
+source_id: US/IL-Courts
+url: https://www.illinoiscourts.gov/top-level-opinions/

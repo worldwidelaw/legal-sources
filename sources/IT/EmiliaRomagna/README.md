@@ -86,6 +86,10 @@ Documents use the NIR (Norme in Rete) XML schema, same as national legislation:
 </NIR>
 ```
 
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — attribution required.
+
 ## Notes
 
 - Update frequency: Weekly

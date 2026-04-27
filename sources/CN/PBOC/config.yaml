@@ -1,0 +1,75 @@
+# ===================================================================
+# CN/PBOC -- People's Bank of China Regulations (中国人民银行法规)
+# ===================================================================
+# Central bank regulations, rules, and normative documents.
+# ~570 documents with full text via HTML scraping of pbc.gov.cn.
+# ===================================================================
+
+source:
+  id: "CN/PBOC"
+  country: "CN"
+  name: "People's Bank of China (中国人民银行)"
+  url: "https://www.pbc.gov.cn/tiaofasi/144941/index.html"
+  description: |
+    Official regulations from China's central bank. Covers national financial laws,
+    State Council regulations, PBC rules/orders, and regulatory announcements
+    (normative documents). ~570 documents. Chinese language. Free HTML access.
+
+data_types:
+  - legislation
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "Conservative rate limit for Chinese government servers."
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.pbc.gov.cn"
+  sections:
+    - id: 144951
+      name: "National Laws (国家法律)"
+      pages: 2
+    - id: 144953
+      name: "State Council Regulations (国务院条例)"
+      pages: 1
+    - id: 144957
+      name: "PBC Rules/Orders (人民银行令)"
+      pages: 6
+    - id: 3581332
+      name: "Announcements/Normative Docs (公告/规范性文件)"
+      pages: 22
+
+schema:
+  key_fields:
+    - name: "doc_id"
+      description: "Numeric document identifier from URL"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+    - name: "category"
+      description: "Section category (national_law/state_council_regulation/pbc_rule/announcement)"
+      type: "string"
+      role: "classification"
+
+notes: |
+  - Server-rendered HTML pages, no JSON API available
+  - Full text in <td class="content"> on detail pages
+  - Dates from <meta name="PubDate"> tags
+  - Pagination: page 1 = index.html, page N = {hash}-{N}.html
+  - Language: Chinese (Simplified)

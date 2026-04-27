@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/319.309",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T23:34:19.279607+00:00",
+  "title": "Missouri Revised Statutes § 319.309 - Explosives, use of, calculation of scaled distance to nearest uncontrolled structure required",
+  "text": "319.309.  Explosives, use of, calculation of scaled distance to nearest uncontrolled structure required. — 1.  Any person using explosives in the state of Missouri shall calculate the scaled distance to the nearest uncontrolled structure.  If more than one uncontrolled structure is the same approximate distance from the blast site, then the person using explosives may select one representative structure for calculation of scaled distance.\n  2.  For the purposes of this section, the term \"uncontrolled structure\" shall not apply to the following:\n  (1)  Buildings in a state of disrepair or neglect which are not being used as a permanent residence;\n  (2)  Noncommercial storage sheds;\n  (3)  Temporary structures;\n  (4)  Any unoccupied mobile recreational vehicle, trailer, or camper;\n  (5)  Agricultural barns, storage sheds, and animal shelters;\n  (6)  Any building on mine property that is owned by the mine operator or contained on property leased by the mine operator.\n  3.  In any instance when the scaled distance value is fifty-five or less, any person using explosives, except as provided in section 319.321, shall use at least one seismograph calibrated to the manufacturer's standard for use to record the ground vibration and acoustic levels that occur from the use of such explosives or explosive materials.  When measuring ground vibration and acoustic levels, the seismograph shall be placed in the proximity of the nearest uncontrolled structure or, at the option of the person using explosives, closer to the blast site.  If more than one uncontrolled structure is the same approximate distance from the blast site, then the person using explosives may select one representative structure for placement of the seismograph.\n  4.  Any person using explosives who is voluntarily using a seismograph calibrated to the manufacturer's standard for use for all blasting is exempt from the requirements of this section.\n(L. 2007 H.B. 298)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=319.309",
+  "section_id": "319.309",
+  "chapter": "319",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

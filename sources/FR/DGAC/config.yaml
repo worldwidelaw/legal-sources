@@ -1,0 +1,34 @@
+source:
+  id: FR/DGAC
+  name: French Civil Aviation Authority (DGAC)
+  country: FR
+  url: https://www.bulletin-officiel.developpement-durable.gouv.fr
+  data_types:
+    - doctrine
+  auth: none
+  description: >
+    Direction Générale de l'Aviation Civile official publications from the
+    Bulletin Officiel du développement durable. Includes instructions,
+    circulars, decisions, and arrêtés related to civil aviation.
+
+data_model:
+  update_strategy: upsert
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: reference
+      type: string
+      required: false
+    - name: date
+      type: string
+      required: false
+    - name: title
+      type: string
+      required: true
+
+rate_limit:
+  requests_per_second: 0.5
+  crawl_delay: 2

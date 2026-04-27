@@ -1,34 +1,47 @@
-source_id: US/IN-Courts
-name: Indiana Supreme Court & Court of Appeals
-country: US
-data_types:
-  - case_law
-url: https://static.case.law/ind/
 auth:
   type: none
-
+country: US
+data_types:
+- case_law
 endpoints:
-  supreme_court: https://static.case.law/ind/
   court_of_appeals: https://static.case.law/ind-app/
+  supreme_court: https://static.case.law/ind/
+license: CC0 1.0 (Public Domain)
+name: Indiana Supreme Court & Court of Appeals
+notes: 'Indiana appellate case law from the Harvard Caselaw Access Project (CAP).
 
+  Uses static.case.law bulk JSON endpoint (no API key required).
+
+  Full text in casebody.opinions[].text — no PDF extraction needed.
+
+  Coverage: Indiana Supreme Court (275 vols) + Court of Appeals (182 vols).
+
+  '
 rate_limit:
-  requests_per_second: 2
   delay_between_requests: 0.5
-
+  requests_per_second: 2
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - case_number
-    - court
-    - citation
-
-license: CC0 1.0 (Public Domain)
-
-notes: |
-  Indiana appellate case law from the Harvard Caselaw Access Project (CAP).
-  Uses static.case.law bulk JSON endpoint (no API key required).
-  Full text in casebody.opinions[].text — no PDF extraction needed.
-  Coverage: Indiana Supreme Court (275 vols) + Court of Appeals (182 vols).
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: citation
+    required: false
+    type: string
+source_id: US/IN-Courts
+url: https://static.case.law/ind/

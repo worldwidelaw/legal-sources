@@ -1,21 +1,36 @@
-source:
-  id: TH/OpenLawData
-  name: Open Law Data Thailand (OCS Krisdika)
-  country: TH
-  url: https://www.openlawdatathailand.org/
-  data_types:
-    - legislation
-  auth: none
-  license: CC-BY 4.0
-  rate_limit: 0  # Hugging Face bulk download, no per-request rate limit
-
 schema:
   key_fields:
-    - _id
-    - title
-    - law_code
-    - publish_date
-    - sections
-    - text
-    - reference_url
-    - is_latest
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: law_code
+    required: false
+    type: string
+  - name: publish_date
+    required: false
+    type: string
+  - name: sections
+    required: false
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: reference_url
+    required: false
+    type: string
+  - name: is_latest
+    required: false
+    type: string
+source:
+  auth: none
+  country: TH
+  data_types:
+  - legislation
+  id: TH/OpenLawData
+  license: CC-BY 4.0
+  name: Open Law Data Thailand (OCS Krisdika)
+  rate_limit: 0
+  url: https://www.openlawdatathailand.org/

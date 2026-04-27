@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/469.449",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:32:43.597332+00:00",
+  "title": "Missouri Revised Statutes § 469.449 - Allocation of collateral financial assets and asset-backed securities",
+  "text": "469.449.  Allocation of collateral financial assets and asset-backed securities. — 1.  As used in this section, the phrase \"asset-backed security\" means an asset whose value is based upon the right it gives the owner to receive distributions from the proceeds of financial assets that provide collateral for the security.  The phrase includes an asset that gives the owner the right to receive from the collateral financial assets only the interest or other current return or only the proceeds other than interest or current return.  The phrase does not include an asset to which section 469.423 or 469.437 applies.\n  2.  If a trust receives a payment from interest or other current return and from other proceeds of the collateral financial assets, the trustee shall allocate to income the portion of the payment which the payer identifies as being from interest or other current return and shall allocate the balance of the payment to principal.\n  3.  If a trust receives one or more payments in exchange for the trust's entire interest in an asset-backed security in one accounting period, the trustee shall allocate the payments to principal.  If a payment is one of a series of payments that will result in the liquidation of the trust's interest in the security over more than one accounting period, the trustee shall allocate ten percent of the payment to income and the balance to principal.\n(L. 2001 H.B. 241, A.L. 2004 H.B. 1511)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=469.449",
+  "section_id": "469.449",
+  "chapter": "469",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

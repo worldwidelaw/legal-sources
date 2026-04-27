@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/115.483",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T19:26:51.739136+00:00",
+  "title": "Missouri Revised Statutes § 115.483 - Duties of judge after polls close (voting machines)",
+  "text": "115.483.  Duties of judge after polls close (voting machines). — 1.  As soon as the polls close in each polling place using electronic voting machines, the election judges shall secure each voting machine against further voting and proceed to count the votes.  Once begun, the count shall not be adjourned or postponed until all proper votes have been counted.\n  2.  The election judges shall open the counting compartment on each voting machine or, if a machine is equipped with a device for printing, embossing or photographing the registering counters, the judges shall operate the machine to produce a record of the counters.  One counting judge shall read the total vote cast for each candidate and for and against each question on each machine.  The other counting judge shall watch and verify each total as it is being read from the recording counters or from the record of the counters.  The two recording judges shall each record the votes cast for each candidate and for and against each question as they are called out and verified by the counting judges.\n  3.  All proper write-in votes shall be read, recorded and counted as provided in sections 115.449 and 115.453.  No write-in vote shall be counted for any candidate for any office whose name appears on the ballot label as a candidate for the office, except when more than one person is to be nominated or elected to an office.  When more than one person is to be nominated or elected to an office, the voter may write in the names of one or more persons whose names do not appear on the ballot label with or without the names of one or more persons whose names do appear.  No write-in vote shall be counted unless it is cast in the appropriate place on the machine.\n  4.  If more than one voting machine is used in a polling place, the election judges shall read, verify and record all the totals from the first machine before proceeding to the second, and so on, until all of the totals on each machine in the polling place have been read, verified and recorded.  The total number of votes from each machine shall be added to the write-in votes to determine the total vote for each candidate and for and against each question.\n(L. 1977 H.B. 101 § 12.085, A.L. 2014 H.B. 1136)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=115.483",
+  "section_id": "115.483",
+  "chapter": "115",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

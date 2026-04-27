@@ -1,14 +1,20 @@
-source_id: US/NE-Legislation
-name: Nebraska Revised Statutes
 country: US
-jurisdiction: US-NE
-url: https://nebraskalegislature.gov/laws/browse-statutes.php
 data_types:
-  - legislation
+- legislation
+jurisdiction: US-NE
 language: en
+name: Nebraska Revised Statutes
 schedule: quarterly
 schema:
   key_fields:
-    - _id
-    - statute_number
-    - chapter
+  - name: _id
+    required: true
+    type: string
+  - name: statute_number
+    required: false
+    type: string
+  - name: chapter
+    required: false
+    type: string
+source_id: US/NE-Legislation
+url: https://nebraskalegislature.gov/laws/browse-statutes.php

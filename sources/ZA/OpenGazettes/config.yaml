@@ -1,30 +1,36 @@
-source:
-  id: ZA/OpenGazettes
-  name: "South Africa Open Gazettes"
-  country: ZA
-  url: https://opengazettes.org.za/
-  data_types:
-    - legislation
-  auth: none
-  format: pdf
-  language: en
-  description: >
-    42,254 South African government gazette PDFs (national + 9 provinces)
-    from opengazettes.org.za. JSONL index with metadata, PDFs with extractable
-    text via PyMuPDF. Covers legislation, regulations, notices, and proclamations.
+source_id: ZA/OpenGazettes
+name: South Africa Open Gazettes
+country: ZA
+url: https://opengazettes.org.za/
+description: |
+  42,254 South African government gazette PDFs (national + 9 provinces)
+  from opengazettes.org.za. JSONL index with metadata, PDFs with extractable
+  text. Covers legislation, regulations, notices, and proclamations.
+
+data_types:
+  - legislation
+
+license: Open Data
+language: en
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 0.7
+  burst: 2
+
+update_frequency: weekly
 
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - jurisdiction
-    - issue_number
-    - volume_number
-    - url
-
-fetcher:
-  index_url: "https://archive.opengazettes.org.za/index/gazette-index-latest.jsonlines"
-  rate_limit: 1.5
-  max_pdf_pages: 500
+    - name: jurisdiction
+      required: true
+      type: string
+    - name: issue_number
+      required: false
+      type: string
+  date_field: date
+  text_field: text
+  title_field: title
+  url_field: url

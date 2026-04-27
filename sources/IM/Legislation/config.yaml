@@ -1,0 +1,79 @@
+# ===================================================================
+# IM/Legislation -- Isle of Man Legislation (Acts of Tynwald)
+# ===================================================================
+# Consolidated texts of Acts of Tynwald from legislation.gov.im.
+# Principal (primary) and Subordinate (secondary) legislation.
+# All documents are PDFs in open directory listings.
+# No authentication required. No API — directory crawl approach.
+# ===================================================================
+
+source:
+  id: "IM/Legislation"
+  country: "IM"
+  name: "Isle of Man Legislation (Acts of Tynwald)"
+  url: "https://legislation.gov.im/"
+  description: |
+    Consolidated legislation of the Isle of Man, including Acts of Tynwald
+    (principal legislation) and statutory documents (subordinate legislation).
+    Published by the Attorney General's Chambers. PDF files served from open
+    directory listings at /cms/images/LEGISLATION/.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "directory_listing"
+  base_url: "https://legislation.gov.im"
+  endpoints:
+    principal: "/cms/images/LEGISLATION/PRINCIPAL/"
+    subordinate: "/cms/images/LEGISLATION/SUBORDINATE/"
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "doc_id"
+      description: "Unique document identifier (e.g., PRINCIPAL/2019/2019-0003)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Title of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year of enactment"
+      type: "string"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the PDF document"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "leg_type"
+      description: "Type: principal or subordinate"
+    - name: "year"
+      description: "Enactment year"
+    - name: "reference"
+      description: "Legislative reference number"

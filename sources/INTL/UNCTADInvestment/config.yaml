@@ -1,28 +1,44 @@
-source:
-  id: INTL/UNCTADInvestment
-  name: UNCTAD International Investment Agreements
-  country: INTL
-  url: https://investmentpolicy.unctad.org/international-investment-agreements
-  data_types:
-    - legislation
-  auth: none
-  license: UN public domain (personal non-commercial use)
-
 api:
   base_url: https://investmentpolicy.unctad.org
-  type: html_scraping
   country_page: /international-investment-agreements/countries/{id}/{name}
-  treaty_files: /international-investment-agreements/treaty-files/{fileId}/download
   rate_limit_delay: 2.0
-
+  treaty_files: /international-investment-agreements/treaty-files/{fileId}/download
+  type: html_scraping
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - url
-    - treaty_type
-    - status
-    - parties
-    - country
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: treaty_type
+    required: false
+    type: string
+  - name: status
+    required: false
+    type: string
+  - name: parties
+    required: false
+    type: string
+  - name: country
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - legislation
+  id: INTL/UNCTADInvestment
+  license: UN public domain (personal non-commercial use)
+  name: UNCTAD International Investment Agreements
+  url: https://investmentpolicy.unctad.org/international-investment-agreements

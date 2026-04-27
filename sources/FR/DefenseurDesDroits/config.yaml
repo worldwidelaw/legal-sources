@@ -1,54 +1,63 @@
-source_id: FR/DefenseurDesDroits
-name: Défenseur des Droits (French Ombudsman)
-country: FR
-data_types:
-  - caselaw
-  - doctrine
-url: https://juridique.defenseurdesdroits.fr
-license: Licence Ouverte 2.0
-
-description: |
-  French Ombudsman decisions database. Contains recommendations, formal notices,
-  amicable settlements, and observations submitted to courts. Covers all decisions
-  since 2011 (when the Défenseur des droits was created, merging the Médiateur de
-  la République, CNDS, Défenseur des enfants, and HALDE).
-
 api_type: html_scraping
 auth: none
-rate_limit:
-  requests_per_second: 0.5
-  delay_between_requests: 2.0
+country: FR
+data_types:
+- caselaw
+- doctrine
+description: 'French Ombudsman decisions database. Contains recommendations, formal notices,
 
+  amicable settlements, and observations submitted to courts. Covers all decisions
+
+  since 2011 (when the Défenseur des droits was created, merging the Médiateur de
+
+  la République, CNDS, Défenseur des enfants, and HALDE).
+
+  '
 endpoints:
   base_url: https://juridique.defenseurdesdroits.fr
   decisions_listing: /index.php?lvl=etagere_see&id=33
   document_detail: /index.php?lvl=notice_display&id={doc_id}
   pdf_download: /doc_num.php?explnum_id={explnum_id}
+estimated_records: 2928
+license: Licence Ouverte 2.0
+name: Défenseur des Droits (French Ombudsman)
+notes: 'PMB (PhpMyBibli) library system. Decisions listed on "shelf" (étagère) ID 33.
 
+  Each document page contains Z3988 metadata with title, date, and authors.
+
+  PDF downloads available via explnum_id parameter. Full text extracted via pdfplumber.
+
+  '
+pagination:
+  items_per_page: 10
+  param: page
+  total_pages: ~293
+  type: page_number
+rate_limit:
+  delay_between_requests: 2.0
+  requests_per_second: 0.5
 schema:
   key_fields:
-    - _id
-    - decision_number
-    - date
-    - title
+  - name: _id
+    required: true
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: title
+    required: true
+    type: string
   required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
-pagination:
-  type: page_number
-  param: page
-  items_per_page: 10
-  total_pages: ~293
-
-estimated_records: 2928
-notes: |
-  PMB (PhpMyBibli) library system. Decisions listed on "shelf" (étagère) ID 33.
-  Each document page contains Z3988 metadata with title, date, and authors.
-  PDF downloads available via explnum_id parameter. Full text extracted via pdfplumber.
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source_id: FR/DefenseurDesDroits
+url: https://juridique.defenseurdesdroits.fr

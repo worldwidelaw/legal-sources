@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/486.950",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:56:31.977604+00:00",
+  "title": "Missouri Revised Statutes § 486.950 - Additional requirements for electronic journal of electronic notarial acts and electronic notaries",
+  "text": "486.950.  Additional requirements for electronic journal of electronic notarial acts and electronic notaries. — 1.  An electronic journal of electronic notarial acts shall:\n  (1)  Allow journal entries to be made, viewed, printed, and copied only after access is obtained by a procedure that uses two factors of authentication;\n  (2)  Not allow a journal entry to be deleted or altered in content or sequence by the electronic notary or any other person after a record of the electronic notarization is entered and stored, except that an entry may be deleted if the retention period set forth in subsection 4 of this section has passed;\n  (3)  Have a backup system in place to provide a duplicate record of electronic notarial acts as a precaution in the event of loss of the original record;\n  (4)  Be capable of capturing and storing the image of a handwritten or electronic signature and the data related to one other type of recognized biometric identifier; and\n  (5)  Be capable of printing and providing electronic copies of any entry, including images of handwritten signatures and the data related to the other selected type of recognized biometric identifier.\n  2.  In maintaining an electronic journal of electronic notarial acts, an electronic notary public shall comply with the applicable prescriptions and prohibitions regarding the copying, security, surrender, and disposition of a journal as set forth in sections 486.710 to 486.715 and sections 486.795 to 486.800.\n  3.  Every electronic notary public maintaining an electronic journal of electronic notarial acts pursuant to section 486.945 shall:\n  (1)  Provide to the secretary authorization on the registration form described in section 486.920 and the access instructions that allow journal entries to be viewed, printed, and copied in read-only access; and\n  (2)  Notify the secretary of any subsequent change to the access instructions.\n  4.  An electronic notary public maintaining an electronic journal of electronic notarial acts shall keep the entry for a period of no less than ten years from the date of the entry and shall also keep a record of electronic notarial acts in a permanently bound journal as set forth in sections 486.700 and 486.705.\n(L. 2020 H.B. 1655)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=486.950",
+  "section_id": "486.950",
+  "chapter": "486",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

@@ -423,6 +423,7 @@ if __name__ == "__main__":
                         help="Command to run")
     parser.add_argument("--sample", action="store_true",
                         help="Fetch sample records only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     if args.command == "test":

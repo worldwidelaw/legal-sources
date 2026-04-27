@@ -1,0 +1,52 @@
+source_id: DE/BadenWürttemberg
+name: Baden-Württemberg State Law (Landesrecht BW)
+description: Baden-Württemberg state legislation via jPortal API (landesrecht-bw.de)
+url: https://www.landesrecht-bw.de
+country: DE
+jurisdiction: Baden-Württemberg
+data_types:
+  - legislation
+
+access:
+  type: rest_api
+  rate_limit: 1/s
+  auth: none
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: doc_id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: false
+  text_field: text
+  date_field: date
+  title_field: title
+
+update:
+  frequency: weekly
+  method: fetch_updates
+
+license:
+  type: public_domain
+  notes: German official works (§ 5 UrhG) - public domain
+
+notes: |
+  Baden-Württemberg state legislation from the official Landesrecht portal.
+  Uses the juris jPortal REST API (reverse-engineered from the React SPA).
+  ~63K individual norms across ~1000+ laws. Fetches full Gesamtausgabe (complete edition)
+  for each law, yielding one record per law with full text.
+  API flow: session init → CSRF token → search pagination → document fetch.

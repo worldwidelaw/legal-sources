@@ -20,3 +20,7 @@ python bootstrap.py test              # Test connectivity
 python bootstrap.py bootstrap --sample # Fetch 15 sample records
 python bootstrap.py bootstrap          # Full bootstrap (42,755 records)
 ```
+
+## License
+
+[CC0 1.0 (Public Domain)](https://creativecommons.org/publicdomain/zero/1.0/) — HuggingFace dataset. Underlying legislation from the Office of the Council of State of Thailand (Krisdika).

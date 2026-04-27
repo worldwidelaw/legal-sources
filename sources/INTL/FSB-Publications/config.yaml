@@ -1,24 +1,29 @@
-source:
-  id: INTL/FSB-Publications
-  name: Financial Stability Board Standards and Reports
-  country: INTL
-  url: https://www.fsb.org/publications/
-  data_types:
-    - doctrine
-  auth: none
-  description: >
-    Policy documents, standards, reports, and consultations from the Financial
-    Stability Board (FSB). ~930 publications fetched via sitemap discovery and
-    HTML scraping with PDF full-text extraction.
-
+fetch:
+  max_retries: 3
+  rate_limit: 2.0
+  timeout: 90
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - content_type
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: content_type
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - doctrine
+  description: 'Policy documents, standards, reports, and consultations from the Financial Stability Board (FSB). ~930 publications fetched via sitemap discovery and HTML scraping with PDF full-text extraction.
 
-fetch:
-  rate_limit: 2.0
-  max_retries: 3
-  timeout: 90
+    '
+  id: INTL/FSB-Publications
+  name: Financial Stability Board Standards and Reports
+  url: https://www.fsb.org/publications/

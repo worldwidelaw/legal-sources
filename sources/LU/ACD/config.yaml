@@ -1,33 +1,31 @@
-# LU/ACD - Luxembourg Tax Administration (Administration des Contributions Directes)
-# Source: https://impotsdirects.public.lu
-# Data: Tax circulars (circulaires fiscales) - doctrine
-
-name: Luxembourg Tax Administration (ACD)
-country: LU
-source_id: LU/ACD
-url: https://impotsdirects.public.lu
-
-data_types:
-  - doctrine
-
-license: Open Data (Luxembourg public data)
-
 auth:
   type: none
-
+country: LU
+data_model:
+  dedup_key:
+  - _id
+  update_strategy: append_only
+data_types:
+- doctrine
+license: Open Data (Luxembourg public data)
+name: Luxembourg Tax Administration (ACD)
 rate_limit:
-  requests_per_second: 1
   burst: 3
   max_workers: 3
-
-data_model:
-  update_strategy: append_only
-  dedup_key:
-    - _id
-
+  requests_per_second: 1
 schema:
   key_fields:
-    - circular_number
-    - category
-    - date
-    - text
+  - name: circular_number
+    required: false
+    type: string
+  - name: category
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+source_id: LU/ACD
+url: https://impotsdirects.public.lu

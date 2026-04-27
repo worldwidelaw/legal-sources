@@ -42,6 +42,10 @@ python3 bootstrap.py bootstrap --sample
 python3 bootstrap.py fetch
 ```
 
+## License
+
+Open government data, public domain — official court decisions under Icelandic law.
+
 ## Notes
 
 - The Supreme Court sits in Reykjavík

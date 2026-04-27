@@ -27,3 +27,7 @@ python bootstrap.py bootstrap --sample   # 15 sample records
 python bootstrap.py bootstrap            # Full pull (~625 acts, slow)
 python bootstrap.py test                 # Connectivity test
 ```
+
+## License
+
+[Laws.Africa Open Access](https://ulii.org/) — Ugandan legislation published by ULII / Laws.Africa under open access terms.

@@ -1,0 +1,81 @@
+# ===================================================================
+# KY/Legislation -- Cayman Islands Legislation (legislation.gov.ky)
+# ===================================================================
+# Official consolidated laws from the Cayman Islands Law Revision
+# Commissioner. Browse principal acts and subordinate legislation
+# from the OLRC CMS directory structure. PDF documents organized
+# by year (1961-present).
+#
+# Discovery: Directory listing at /cms/images/LEGISLATION/PRINCIPAL/
+# Full text: PDF download, extracted via pdfplumber/pypdf
+# License: Free public access
+# ===================================================================
+
+source:
+  id: "KY/Legislation"
+  country: "KY"
+  name: "Cayman Islands Legislation"
+  url: "https://legislation.gov.ky/cms/"
+  description: |
+    Official consolidated laws of the Cayman Islands, maintained by the
+    Office of the Law Revision Commissioner. Includes principal acts and
+    subordinate legislation (regulations, orders). Full text extracted
+    from PDF. Covers 1961-present.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "directory_crawl"
+  base_url: "https://legislation.gov.ky"
+  principal_dir: "/cms/images/LEGISLATION/PRINCIPAL/"
+  subordinate_dir: "/cms/images/LEGISLATION/SUBORDINATE/"
+
+data_model:
+  type: "legislation"
+  primary_key: "legislation_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "legislation_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "legislation_id"
+      description: "Legislation identifier (e.g., 2020-0001)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act or regulation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year of enactment"
+      type: "string"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to PDF download"
+      type: "string"
+      role: "reference"
+      required: true
+
+notes: |
+  - PDFs organized in /cms/images/LEGISLATION/PRINCIPAL/{year}/{id}/
+  - Multiple revisions per act; latest revision preferred
+  - Subordinate legislation in /cms/images/LEGISLATION/SUBORDINATE/
+  - ~67 years of legislation (1961-2026)

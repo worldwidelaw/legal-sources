@@ -1,40 +1,54 @@
-source:
-  id: BR/STJDadosAbertos
-  name: STJ Open Data Portal (Superior Court of Justice)
-  country: BR
-  url: https://dadosabertos.web.stj.jus.br/dataset/
-  data_types:
-    - case_law
-  auth: none
-  language: pt
-  description: >
-    Brazilian Superior Court of Justice (STJ) open data. Uses "espelhos de acórdãos"
-    (decision summaries) JSON datasets from CKAN API. 10 judging bodies, ~46 monthly
-    JSON snapshots each. Each record has ementa (headnote) and decisão (decision text).
-
-schema:
-  key_fields:
-    - _id
-    - process_number
-    - orgao_julgador
-    - title
-    - text
-    - date
-    - judge_relator
-    - decision_type
-
 fetch:
-  method: ckan_json
   base_url: https://dadosabertos.web.stj.jus.br/api/3/action
   datasets:
-    - espelhos-de-acordaos-corte-especial
-    - espelhos-de-acordaos-primeira-secao
-    - espelhos-de-acordaos-primeira-turma
-    - espelhos-de-acordaos-quarta-turma
-    - espelhos-de-acordaos-quinta-turma
-    - espelhos-de-acordaos-segunda-secao
-    - espelhos-de-acordaos-segunda-turma
-    - espelhos-de-acordaos-sexta-turma
-    - espelhos-de-acordaos-terceira-secao
-    - espelhos-de-acordaos-terceira-turma
+  - espelhos-de-acordaos-corte-especial
+  - espelhos-de-acordaos-primeira-secao
+  - espelhos-de-acordaos-primeira-turma
+  - espelhos-de-acordaos-quarta-turma
+  - espelhos-de-acordaos-quinta-turma
+  - espelhos-de-acordaos-segunda-secao
+  - espelhos-de-acordaos-segunda-turma
+  - espelhos-de-acordaos-sexta-turma
+  - espelhos-de-acordaos-terceira-secao
+  - espelhos-de-acordaos-terceira-turma
+  method: ckan_json
   rate_limit_seconds: 2
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: process_number
+    required: false
+    type: string
+  - name: orgao_julgador
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: judge_relator
+    required: false
+    type: string
+  - name: decision_type
+    required: false
+    type: string
+source:
+  auth: none
+  country: BR
+  data_types:
+  - case_law
+  description: 'Brazilian Superior Court of Justice (STJ) open data. Uses "espelhos de acórdãos" (decision summaries) JSON datasets from CKAN API. 10 judging bodies, ~46 monthly JSON snapshots each. Each
+    record has ementa (headnote) and decisão (decision text).
+
+    '
+  id: BR/STJDadosAbertos
+  language: pt
+  name: STJ Open Data Portal (Superior Court of Justice)
+  url: https://dadosabertos.web.stj.jus.br/dataset/

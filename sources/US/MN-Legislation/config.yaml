@@ -1,20 +1,31 @@
-source_id: US/MN-Legislation
-name: Minnesota Revisor of Statutes
-country: US
-jurisdiction: US-MN
-url: https://www.revisor.mn.gov/statutes/
-data_types:
-  - legislation
 auth: none
+country: US
+data_types:
+- legislation
 format: html
+jurisdiction: US-MN
 language: en
+name: Minnesota Revisor of Statutes
 schedule: monthly
-
 schema:
   key_fields:
-    - section_id
-    - chapter
-    - title
-    - text
-    - date
-    - url
+  - name: section_id
+    required: false
+    type: string
+  - name: chapter
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+source_id: US/MN-Legislation
+url: https://www.revisor.mn.gov/statutes/

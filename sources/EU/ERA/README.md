@@ -55,3 +55,7 @@ python3 bootstrap.py bootstrap
 ## Rate Limiting
 
 1 request per 2 seconds to respect ERA server capacity.
+
+## License
+
+[EUR-Lex legal notice](https://eur-lex.europa.eu/content/legal-notice/legal-notice.html) — EU agency publications, reuse authorised with attribution.

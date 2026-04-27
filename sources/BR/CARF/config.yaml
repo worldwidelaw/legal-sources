@@ -22,15 +22,15 @@ endpoints:
 
 schema:
   key_fields:
-    - name: id
+    - name: "_id"
       type: string
       required: true
     - name: text
       type: string
       required: true
-    - name: ementa_s
+    - name: "ementa"
       type: string
-      required: true
+      required: false
   metadata:
     - numero_processo_s
     - numero_decisao_s

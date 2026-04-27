@@ -1,26 +1,40 @@
-source_id: US/OH-Courts
-name: Ohio Supreme Court & Appellate Decisions
+auth: none
 country: US
 data_types:
-  - case_law
-url: https://www.supremecourt.ohio.gov/rod/docs/
-auth: none
-
+- case_law
+fetch:
+  courts:
+  - ohio
+  - ohioctapp
+  delay: 2.0
+  pdf_base_url: https://storage.courtlistener.com/
+  search_url: https://www.courtlistener.com/api/rest/v4/search/
+name: Ohio Supreme Court & Appellate Decisions
 schema:
   key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - docket_number
-    - citation
-    - court
-    - url
-
-fetch:
-  search_url: https://www.courtlistener.com/api/rest/v4/search/
-  pdf_base_url: https://storage.courtlistener.com/
-  courts:
-    - ohio
-    - ohioctapp
-  delay: 2.0
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: docket_number
+    required: false
+    type: string
+  - name: citation
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source_id: US/OH-Courts
+url: https://www.supremecourt.ohio.gov/rod/docs/

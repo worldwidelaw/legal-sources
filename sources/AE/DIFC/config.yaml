@@ -1,0 +1,83 @@
+# ===================================================================
+# AE/DIFC -- DIFC Courts Judgments & Orders
+# ===================================================================
+# HTML full text from difccourts.ae. Concrete5 CMS, paginated listings.
+# No authentication required. ~5,000 judgments (2007-present).
+# ===================================================================
+
+source:
+  id: "AE/DIFC"
+  country: "AE"
+  name: "DIFC Courts Judgments and Orders"
+  url: "https://www.difccourts.ae/rules-decisions/judgments-orders"
+  description: |
+    Dubai International Financial Centre (DIFC) Courts — judgments and orders
+    from Court of First Instance, Court of Appeal, Small Claims Tribunal,
+    Arbitration, Technology and Construction Division, Digital Economy Court,
+    and Enforcement. Full text in HTML (English). ~5,000 documents (2007+).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 3
+
+api:
+  type: "html_ssr"
+  base_url: "https://www.difccourts.ae/rules-decisions/judgments-orders"
+  pagination:
+    type: "page_number"
+    param: "ccm_paging_p"
+    per_page: 12
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "Unique ID from URL slug"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of judgment/order"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "url"
+      description: "URL to judgment page"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "court"
+      description: "Court division (e.g. court-first-instance, court-appeal)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "doc_type"
+      description: "Document type (Judgments, Orders)"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - ~5,000 judgments and orders (2007-present)
+  - Full text in HTML, no PDF extraction needed
+  - Concrete5 CMS with standard pagination
+  - Courts: CFI, Court of Appeal, SCT, Arbitration, T&C, DEC, Enforcement
+  - Language: English (common-law jurisdiction)

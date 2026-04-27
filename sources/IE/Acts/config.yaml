@@ -77,7 +77,7 @@ schema:
       description: "Enactment/signing date (ISO 8601 format)"
       type: "date"
       role: "temporal_key"
-      required: true
+      required: false
     - name: "url"
       description: "ELI URL to the document on irishstatutebook.ie"
       type: "string"

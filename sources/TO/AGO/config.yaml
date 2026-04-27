@@ -1,0 +1,77 @@
+# ===================================================================
+# TO/AGO -- Tonga Attorney General Legislation & Judgments
+# ===================================================================
+# Official Tongan legislation and court judgments from the Attorney
+# General's Office portal (ago.gov.to). Legislation stored as PDFs in
+# browsable directory structure. Judgments organized by court type
+# and year with PDF downloads.
+#
+# Discovery: Directory listing + HTML scrape of court year pages
+# Full text: PDF download, extracted via pdfplumber/pypdf
+# License: Free public access
+# ===================================================================
+
+source:
+  id: "TO/AGO"
+  country: "TO"
+  name: "Tonga Attorney General Legislation & Judgments"
+  url: "https://ago.gov.to/"
+  description: |
+    Official legislation and court judgments of the Kingdom of Tonga,
+    from the Attorney General's Office. Legislation includes principal
+    acts (1903-2025) and subordinate legislation. Judgments from Court
+    of Appeal, Supreme Court (Criminal, Civil, Family, Probate,
+    Admiralty, Appellate), Land Court, Magistrates Court, and others.
+
+data_types:
+  - legislation
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "directory_crawl"
+  base_url: "https://ago.gov.to"
+  principal_dir: "/cms/images/LEGISLATION/PRINCIPAL/"
+  subordinate_dir: "/cms/images/LEGISLATION/SUBORDINATE/"
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "doc_id"
+      description: "Document identifier (legislation ID or judgment download ID)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act/regulation title or case name"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year of enactment or decision"
+      type: "string"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to document"
+      type: "string"
+      role: "reference"
+      required: true

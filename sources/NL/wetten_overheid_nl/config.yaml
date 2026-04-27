@@ -1,71 +1,58 @@
-# NL/wetten.overheid.nl - Dutch Consolidated Legislation
-# Source: Basis Wetten Bestand (BWB) via SRU API
-
-source:
-  id: NL/wetten.overheid.nl
-  country: NL
-  name: Dutch Legislation Portal (wetten.overheid.nl)
-  description: >
-    Consolidated Dutch legislation from the Basis Wetten Bestand (BWB).
-    Contains ~45,000 regulations with 100,000+ versions. Provides
-    integrated/current text of laws, unlike Staatsblad which publishes
-    original amendments. Data since May 2002.
-  url: https://wetten.overheid.nl
-  data_types:
-    - legislation
-  language: nl
-  license: CC0 1.0 Universal
-
-# Authentication - none required for open data
-auth:
-  type: none
-
-# Rate limiting - respectful querying
-rate_limit:
-  requests_per_second: 1.5
-  burst: 3
-
-# API endpoints
 api:
-  sru_endpoint: https://zoekservice.overheid.nl/sru/Search
-  sru_version: "1.2"
   connection: BWB
   repository: https://repository.officiele-overheidspublicaties.nl/bwb
-
-# Schema definition for normalized records
+  sru_endpoint: https://zoekservice.overheid.nl/sru/Search
+  sru_version: '1.2'
+auth:
+  type: none
+bootstrap:
+  query: dcterms.type any wet amvb ministerieleregeling
+  records_per_page: 100
+rate_limit:
+  burst: 3
+  requests_per_second: 1.5
 schema:
   key_fields:
-    - _id          # BWB identifier (e.g., BWBR0001826)
-    - _source      # NL/wetten.overheid.nl
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text         # FULL TEXT - mandatory
-    - date
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
   optional_fields:
-    - doc_id
-    - doc_type
-    - language
-    - authority
-    - creator
-    - date_modified
-    - rechtsgebied
-    - overheidsdomein
-    - geldig_start
-    - geldig_end
-    - xml_url
+  - doc_id
+  - doc_type
+  - language
+  - authority
+  - creator
+  - date_modified
+  - rechtsgebied
+  - overheidsdomein
+  - geldig_start
+  - geldig_end
+  - xml_url
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  country: NL
+  data_types:
+  - legislation
+  description: 'Consolidated Dutch legislation from the Basis Wetten Bestand (BWB). Contains ~45,000 regulations with 100,000+ versions. Provides integrated/current text of laws, unlike Staatsblad which
+    publishes original amendments. Data since May 2002.
 
-# Bootstrap configuration
-bootstrap:
-  query: "dcterms.type any wet amvb ministerieleregeling"
-  records_per_page: 100
-
-# Update configuration
+    '
+  id: NL/wetten.overheid.nl
+  language: nl
+  license: CC0 1.0 Universal
+  name: Dutch Legislation Portal (wetten.overheid.nl)
+  url: https://wetten.overheid.nl
 update:
-  # Use dcterms.modified filter for incremental updates
-  filter_field: dcterms.modified
   default_lookback_days: 30
+  filter_field: dcterms.modified

@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/115.495",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T19:26:55.650979+00:00",
+  "title": "Missouri Revised Statutes § 115.495 - Electronic voting machine to be kept secured — machine unlocked, when — election contest, initial election data to be removed and secured before subsequent election",
+  "text": "115.495.  Electronic voting machine to be kept secured — machine unlocked, when — election contest, initial election data to be removed and secured before subsequent election. — 1.  After being secured against further voting by the election judges, electronic voting machines shall remain secured for the period provided by law for filing an election contest and as much longer as may be necessary or advisable because of any threatened or pending contest, grand jury investigation, or civil or criminal case relating to the election.  During this time, the electronic voting machines shall not be unsecured, except upon order of a court, grand jury or legislative body trying an election contest.\n  2.  Notwithstanding the provisions of subsection 1 of this section to the contrary, when an election is required by law to be held after an election during any period of time described in subsection 1 of this section, the data of the electronic voting machine relating to the initial election shall be removed and secured and such machine shall be made available for use in the subsequent election.\n(L. 1977 H.B. 101 § 12.115, A.L. 1988 H.B. 1216, A.L. 1997 S.B. 132, A.L. 2014 H.B. 1136)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=115.495",
+  "section_id": "115.495",
+  "chapter": "115",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

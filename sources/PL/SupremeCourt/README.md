@@ -57,7 +57,7 @@ python bootstrap.py update
 
 ## License
 
-Polish court decisions are public domain. SAOS is operated by ICM (Interdisciplinary Centre for Mathematical and Computational Modelling, University of Warsaw) in partnership with the Ministry of Justice.
+[Public Domain](https://dane.gov.pl) — Polish court decisions are public domain. SAOS is operated by ICM (University of Warsaw) in partnership with the Ministry of Justice.
 
 ## Notes
 

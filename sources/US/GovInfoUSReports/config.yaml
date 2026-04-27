@@ -1,38 +1,43 @@
-source:
-  id: US/GovInfoUSReports
-  name: GovInfo Supreme Court Opinions (US Reports)
-  country: US
-  url: https://www.govinfo.gov/app/collection/usreports
-
 data:
-  types:
-    - case_law
   coverage:
-    temporal: 1754 to present (Volumes 1-582+)
-    estimated_size: 37,000+ opinions
     courts: United States Supreme Court
-
+    estimated_size: 37,000+ opinions
+    temporal: 1754 to present (Volumes 1-582+)
+  types:
+  - case_law
 fetch:
-  method: GovInfo wssearch API + PDF download
-  search_url: https://www.govinfo.gov/wssearch/search
-  detail_url: https://www.govinfo.gov/wssearch/getContentDetail
-  content_url: https://www.govinfo.gov/content/pkg
   auth:
-    type: none
     note: No API key required for wssearch and direct content
-  response_format: JSON (search), PDF (opinions)
+    type: none
+  content_url: https://www.govinfo.gov/content/pkg
+  detail_url: https://www.govinfo.gov/wssearch/getContentDetail
   full_text_format: PDF extracted to markdown
-
+  method: GovInfo wssearch API + PDF download
+  response_format: JSON (search), PDF (opinions)
+  search_url: https://www.govinfo.gov/wssearch/search
 schema:
   key_fields:
-    - granule_id
-    - package_id
-    - volume
-    - page
+  - name: granule_id
+    required: false
+    type: string
+  - name: package_id
+    required: false
+    type: string
+  - name: volume
+    required: false
+    type: string
+  - name: page
+    required: false
+    type: string
   metadata:
-    - title
-    - date
-    - volume
-    - page
-    - citation
-    - term
+  - title
+  - date
+  - volume
+  - page
+  - citation
+  - term
+source:
+  country: US
+  id: US/GovInfoUSReports
+  name: GovInfo Supreme Court Opinions (US Reports)
+  url: https://www.govinfo.gov/app/collection/usreports

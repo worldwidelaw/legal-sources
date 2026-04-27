@@ -53,3 +53,7 @@ python3 bootstrap.py updates --since 2025-01-01
 | `division` | Document division within series |
 | `type` | Document type (Contenu, Actualité, etc.) |
 | `url` | Permalink to official source |
+
+## License
+
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

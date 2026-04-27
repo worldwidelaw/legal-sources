@@ -1,0 +1,32 @@
+auth: none
+country: LI
+data_types:
+- doctrine
+language: deu
+name: Liechtenstein Financial Market Authority (FMA) Enforcement
+schedule: weekly
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+source_id: LI/FMA-Enforcement
+url: https://www.fma-li.li/en/supervision-regulation/enforcement

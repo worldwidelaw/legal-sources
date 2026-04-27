@@ -1,0 +1,81 @@
+# ===================================================================
+# TL/JornalRepublica -- Timor-Leste Jornal da Republica
+# ===================================================================
+# Official Journal of Timor-Leste published by the Ministry of Justice.
+# Contains laws, decree-laws, presidential decrees, government
+# resolutions, and other legislative acts. Portuguese language.
+# PDFs organized by category on a Drupal 7 CMS.
+# ===================================================================
+
+source:
+  id: "TL/JornalRepublica"
+  country: "TL"
+  name: "Timor-Leste Jornal da Republica"
+  url: "https://www.mj.gov.tl/jornal/"
+  description: |
+    Official gazette of Timor-Leste (Jornal da República). Published by the
+    Ministry of Justice's National Directorate of Technology and Information.
+    Serie I contains primary legislation (laws, decree-laws, presidential
+    decrees, government resolutions). PDFs from 2002 to present.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.mj.gov.tl/jornal/"
+  endpoints:
+    category_page: "?q=node/{node_id}"
+  response_format: "html"
+
+data_model:
+  type: "legislation"
+  primary_key: "act_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "act_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Unique act identifier (TL-JR-{category}-{number}-{year})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act title with number and description"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the gazette PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the PDF on mj.gov.tl"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "act_number"
+      description: "Official act number (e.g., N.º 1/2026)"
+    - name: "category"
+      description: "Legislative category (e.g., Leis, Decretos-Leis)"
+    - name: "language"
+      description: "Document language (pt)"
+    - name: "serie"
+      description: "Journal series (I or II)"

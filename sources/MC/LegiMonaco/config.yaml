@@ -1,37 +1,39 @@
-source:
-  id: MC/LegiMonaco
-  name: LegiMonaco Legal Database
-  country: MC
-  data_types:
-    - legislation
-    - case_law
-  language: fr
-  url: https://legimonaco.mc
-  license: Open Data
-  notes: >
-    Comprehensive Monaco legal database with 20,000+ documents.
-    Legislation (lois, ordonnances, arrêtés): ~12,500 texts from 1920+.
-    Case law: ~6,700 decisions from Tribunal Suprême, Cour de Révision,
-    Cour d'Appel, Tribunal de Première Instance, Tribunal Criminel, etc.
-    Full text available via open Elasticsearch API. French language.
-
-schema:
-  key_fields:
-    - _id
-    - number
-    - path
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
 api:
-  type: elasticsearch
   base_url: https://legimonaco.mc/~~search/depot/_search
   format: json
   rate_limit: 1
+  type: elasticsearch
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: number
+    required: false
+    type: string
+  - name: path
+    required: false
+    type: string
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source:
+  country: MC
+  data_types:
+  - legislation
+  - case_law
+  id: MC/LegiMonaco
+  language: fr
+  license: Open Data
+  name: LegiMonaco Legal Database
+  notes: 'Comprehensive Monaco legal database with 20,000+ documents. Legislation (lois, ordonnances, arrêtés): ~12,500 texts from 1920+. Case law: ~6,700 decisions from Tribunal Suprême, Cour de Révision,
+    Cour d''Appel, Tribunal de Première Instance, Tribunal Criminel, etc. Full text available via open Elasticsearch API. French language.
+
+    '
+  url: https://legimonaco.mc

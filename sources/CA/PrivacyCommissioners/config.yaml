@@ -1,0 +1,96 @@
+# ===================================================================
+# CA/PrivacyCommissioners -- Office of the Privacy Commissioner of Canada
+# ===================================================================
+# Investigation findings (PIPEDA + Privacy Act) from the federal OPC.
+# Full text decisions published on priv.gc.ca, covering businesses
+# (PIPEDA) and federal institutions (Privacy Act).
+# Source: https://www.priv.gc.ca/en/opc-actions-and-decisions/investigations/
+# ===================================================================
+
+source:
+  id: "CA/PrivacyCommissioners"
+  country: "CA"
+  name: "Office of the Privacy Commissioner of Canada — Investigation Findings"
+  url: "https://www.priv.gc.ca/en/opc-actions-and-decisions/investigations/"
+  description: |
+    Canada's federal Privacy Commissioner publishes investigation findings
+    under PIPEDA (businesses) and the Privacy Act (federal institutions).
+    ~300 investigation reports (2001-present) with full text.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.priv.gc.ca"
+  endpoints:
+    pipeda_list: "/en/opc-actions-and-decisions/investigations/investigations-into-businesses/"
+    privacy_act_list: "/en/opc-actions-and-decisions/investigations/investigations-into-federal-institutions/"
+  pagination:
+    type: "page_number"
+    param: "Page"
+
+data_model:
+  type: "doctrine"
+  primary_key: "finding_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "finding_id"
+
+schema:
+  key_fields:
+    - name: "_id"
+      description: "Unique record ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "finding_id"
+      description: "Finding identifier (e.g., pipeda-2025-004)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Title of the investigation finding"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the investigation finding"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (YYYY-MM-DD)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the finding on priv.gc.ca"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "category"
+      description: "PIPEDA or Privacy Act"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "respondent"
+      description: "Organization investigated"
+      type: "string"
+      role: "metadata"
+      required: false
+
+notes: |
+  - HTML scraping from official OPC website (priv.gc.ca)
+  - ~164 PIPEDA findings + ~132 Privacy Act findings
+  - Full text investigation reports with background, findings, recommendations
+  - Public domain / Crown copyright
+  - Language: English (primary), French also available

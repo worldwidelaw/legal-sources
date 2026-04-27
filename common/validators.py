@@ -71,6 +71,9 @@ class SchemaValidator:
         """
         errors = []
 
+        if not isinstance(record, dict):
+            return False, [f"Record is {type(record).__name__}, expected dict"]
+
         # Check base required fields
         for field_name, expected_type in REQUIRED_BASE_FIELDS.items():
             if field_name not in record:

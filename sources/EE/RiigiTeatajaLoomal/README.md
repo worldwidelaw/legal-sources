@@ -71,3 +71,7 @@ python bootstrap.py update
 - The database covers legislation from 1990 to present
 - Full text is extracted from `<sisu>` (content) elements
 - Rate limiting is applied to respect server resources
+
+## License
+
+[CC0 1.0 Universal — Public Domain](https://creativecommons.org/publicdomain/zero/1.0/) — Estonian legislation is free to use.

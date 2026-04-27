@@ -33,3 +33,7 @@ python bootstrap.py bootstrap            # Full pull
 python bootstrap.py bootstrap --sample   # 15 sample records
 python bootstrap.py test-api             # Connectivity test
 ```
+
+## License
+
+[Open Government Data](https://decree.om/) — English translations of Omani legislation published by decree.om.

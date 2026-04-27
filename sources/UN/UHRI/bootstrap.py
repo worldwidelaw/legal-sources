@@ -264,6 +264,7 @@ def main():
     parser = argparse.ArgumentParser(description="UN/UHRI data fetcher")
     parser.add_argument("command", choices=["bootstrap", "test-api"])
     parser.add_argument("--sample", action="store_true", help="Fetch sample only (15 records)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = UHRIScraper()

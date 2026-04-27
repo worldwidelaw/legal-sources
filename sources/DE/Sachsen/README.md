@@ -11,7 +11,7 @@ the official legal database of the Free State of Saxony.
 - **Sitemap**: https://www.revosax.sachsen.de/sitemap.xml
 - **Coverage**: 6,232+ laws, ordinances, and administrative regulations
 - **Format**: HTML full text
-- **License**: Public Domain (amtliche Werke § 5 UrhG)
+- **License**: Public Domain ([§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html))
 
 ## Document Types
 
@@ -35,6 +35,10 @@ Run bootstrap to fetch sample records:
 ```bash
 python3 bootstrap.py bootstrap --sample
 ```
+
+## License
+
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).
 
 ## Notes
 

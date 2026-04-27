@@ -1,22 +1,32 @@
-source_id: US/CFTC
-name: US Commodity Futures Trading Commission Orders
+auth: none
 country: US
 data_types:
-  - case_law
-  - doctrine
-url: https://www.cftc.gov/LawRegulation/EnforcementActions/index.htm
-auth: none
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - press_release_url
-    - pdf_urls
-
+- case_law
+- doctrine
 fetch:
+  delay: 2.0
   listing_url: https://www.cftc.gov/LawRegulation/EnforcementActions/index.htm
   max_pages: 260
-  delay: 2.0
+name: US Commodity Futures Trading Commission Orders
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: press_release_url
+    required: false
+    type: string
+  - name: pdf_urls
+    required: false
+    type: string
+source_id: US/CFTC
+url: https://www.cftc.gov/LawRegulation/EnforcementActions/index.htm

@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/208.670",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T21:19:02.596162+00:00",
+  "title": "Missouri Revised Statutes § 208.670 - Practice of telehealth, definitions — reimbursement of providers",
+  "text": "208.670.  Practice of telehealth, definitions — reimbursement of providers. — 1.  As used in this section, these terms shall have the following meaning:\n  (1)  \"Consultation\", a type of evaluation and management service as defined by the most recent edition of the Current Procedural Terminology published annually by the American Medical Association;\n  (2)  \"Distant site\", the same meaning as such term is defined in section 191.1145;\n  (3)  \"Originating site\", the same meaning as such term is defined in section 191.1145;\n  (4)  \"Provider\", the same meaning as the term \"health care provider\" is defined in section 191.1145, and such provider meets all other MO HealthNet eligibility requirements;\n  (5)  \"Telehealth\", the same meaning as such term is defined in section 191.1145.\n  2.  The department of social services shall reimburse providers for services provided through telehealth if such providers can ensure services are rendered meeting the standard of care that would otherwise be expected should such services be provided in person.  The department shall not restrict the originating site through rule or payment so long as the provider can ensure services are rendered meeting the standard of care that would otherwise be expected should such services be provided in person.  Payment for services rendered via telehealth shall not depend on any minimum distance requirement between the originating and distant site.  Reimbursement for telehealth services shall be made in the same way as reimbursement for in-person contact; however, consideration shall also be made for reimbursement to the originating site.  Reimbursement for asynchronous store-and-forward may be capped at the reimbursement rate had the service been provided in person.\n(L. 2007 S.B. 577, A.L. 2016 S.B. 579, A.L. 2018 H.B. 1617 merged with S.B. 951)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=208.670",
+  "section_id": "208.670",
+  "chapter": "208",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

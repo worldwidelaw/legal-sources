@@ -228,7 +228,7 @@ class WVLegislationScraper(BaseScraper):
             try:
                 raw = self.parse_section(sid)
                 if raw:
-                    yield self.normalize(raw)
+                    yield raw
                     total += 1
                     if total <= 20 or total % 200 == 0:
                         logger.info(f"  {sid}: OK ({len(raw['text'])} chars, total: {total})")
@@ -249,7 +249,7 @@ class WVLegislationScraper(BaseScraper):
             try:
                 raw = self.parse_section(sid)
                 if raw:
-                    yield self.normalize(raw)
+                    yield raw
                     count += 1
                     logger.info(f"  {sid}: OK ({len(raw['text'])} chars)")
             except Exception as e:
@@ -267,6 +267,7 @@ def main():
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = WVLegislationScraper()

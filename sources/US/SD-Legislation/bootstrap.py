@@ -295,6 +295,7 @@ def main():
     )
     parser.add_argument("--sample", action="store_true", help="Fetch small sample")
     parser.add_argument("--since", help="ISO date for incremental updates")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = SDLegislationScraper()

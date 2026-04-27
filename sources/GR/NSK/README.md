@@ -73,4 +73,4 @@ The NSK website uses a Liferay portal and may have session timeouts.
 
 ## License
 
-Public domain - official government acts.
+Public domain — official government legal opinions of the Hellenic Republic.

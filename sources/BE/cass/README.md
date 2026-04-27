@@ -80,3 +80,7 @@ python bootstrap.py update
 - Part of Belgian judiciary's open data initiative
 - Sitemaps are published for EU ECLI search engine indexing
 - Full text available in original language only
+
+## License
+
+[Belgian Open Government Data](https://data.gov.be/en/licence-conditions) — free reuse of Belgian public sector information.

@@ -49,3 +49,7 @@ python bootstrap.py update
 - SSL certificate has issues - verify is disabled
 - Content is in HTML format, cleaned to plain text
 - Documents are categorized by year
+
+## License
+
+Public domain — Bulgarian government regulatory decisions are publicly available without copyright restrictions.

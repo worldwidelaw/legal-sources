@@ -36,3 +36,7 @@ python bootstrap.py bootstrap            # Full fetch (all norms with text)
 | `norm_type` | Type (LEY, DECRETO EJECUTIVO, RESOLUCION, etc.) |
 | `authority` | Issuing authority |
 | `keywords` | Subject keywords |
+
+## License
+
+[Open Government Data](https://legispan.asamblea.gob.pa) — official legislation published by the National Assembly of Panama.

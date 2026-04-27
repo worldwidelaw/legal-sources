@@ -31,3 +31,7 @@ Full text files are UTF-16 encoded HTML.
 | act_type | Type of act (Решение, Определение) |
 | judges | Panel members |
 | plaintiff/defendant | Parties |
+
+## License
+
+[Open Government Data](https://data.egov.bg/) — Bulgarian judicial decisions are publicly available for reuse.

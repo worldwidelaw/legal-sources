@@ -49,3 +49,7 @@ python3 bootstrap.py updates --since 2025-01-01
 - ~5,000+ deliberations total (1979-present)
 - Average text length: ~3,500 characters
 - Monthly updates via incremental archives
+
+## License
+
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

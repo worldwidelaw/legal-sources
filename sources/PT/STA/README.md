@@ -8,7 +8,7 @@ court in Portugal for administrative and tax matters.
 - **URL**: https://www.dgsi.pt/jsta.nsf
 - **Database**: DGSI (Direção-Geral dos Serviços de Informática do Ministério da Justiça)
 - **Platform**: Lotus Notes/Domino
-- **License**: Public (open government data)
+- **License**: [Open Government Data](https://dados.gov.pt) (public, free for reuse)
 - **Language**: Portuguese
 
 ## Coverage
@@ -71,6 +71,10 @@ python bootstrap.py update
 - Full text requires `?OpenDocument&ExpandSection=1`
 - Character encoding is ISO-8859-1 (Latin-1)
 - Rate limiting: 1.5 seconds between requests
+
+## License
+
+[Open Government Data](https://dados.gov.pt) — Portuguese court decisions, public and free for reuse.
 
 ## Related Sources
 

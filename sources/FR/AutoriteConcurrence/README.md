@@ -51,3 +51,7 @@ Each decision includes:
 - The French version of the dataset is authoritative; only a portion of decisions have been translated to English
 - The dataset is published and maintained by the Autorité de la Concurrence itself
 - Data is refreshed monthly on data.gouv.fr
+
+## License
+
+[Licence Ouverte 2.0 / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) — free reuse with attribution.

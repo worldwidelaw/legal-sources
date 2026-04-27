@@ -61,6 +61,10 @@ python3 bootstrap.py info
 python3 bootstrap.py fetch
 ```
 
+## License
+
+Open government data, public domain — official government publications under Icelandic law.
+
 ## Technical Notes
 
 - HTML files use ISO-8859-1 encoding

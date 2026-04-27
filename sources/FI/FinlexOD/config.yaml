@@ -45,7 +45,7 @@ data_model:
 schema:
   total_fields: 10
   key_fields:
-    - name: "document_id"
+    - name: "_id"
       description: "Unique ID (ELI URI or ECLI)"
       type: "string"
       role: "primary_key"

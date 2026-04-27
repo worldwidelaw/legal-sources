@@ -1,0 +1,50 @@
+source:
+  id: CW/Legislation
+  name: Curacao Government Legislation (Regelingen)
+  country: CW
+  url: https://lokaleregelgeving.overheid.nl/
+  description: >
+    Curacao legislation (landsverordeningen, ministerial regulations, landsbesluiten)
+    from the Dutch CVDR (Centraal Voorziening Decentrale Regelgeving) via SRU 1.2 API.
+    ~1,620 regulations with full text from XML.
+
+data_model:
+  types:
+    - legislation
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: doc_type
+      type: string
+      required: false
+    - name: subject
+      type: string
+      required: false
+    - name: date_issued
+      type: string
+      required: false
+
+schedule:
+  full_refresh: quarterly
+  update_check: monthly

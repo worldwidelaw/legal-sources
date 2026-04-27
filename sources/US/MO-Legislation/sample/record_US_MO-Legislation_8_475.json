@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/8.475",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T17:14:39.516927+00:00",
+  "title": "Missouri Revised Statutes § 8.475 - Citation of law — definitions — vertical real estate or towers, political subdivisions may be constructed",
+  "text": "8.475.  Citation of law — definitions — vertical real estate or towers, political subdivisions may be constructed. — 1.  This section shall be known and may be cited as the \"Vertical Real Estate Act\".\n  2.  As used in this section, the following terms mean:\n  (1)  \"Ground facilities\", any shed, building, server room, or other ancillary structure providing an essential service to a tower including, but not limited to, distributing power or providing communications backhaul;\n  (2)  \"Tower\", a structure that hosts an antenna or other equipment used for the purpose of transmitting cellular or wireless signals for communications purposes, including telephonically, or for computing purposes, including all associated equipment;\n  (3)  \"Vertical real estate\", any communication or broadcast tower or other structure or installation mounted on a rooftop or other prominent place, along with any facilities associated with that structure, that is suitable for mounting communications equipment upon and any associated ground facilities necessary to accommodate the communications purpose or any real estate suitable for the installation of a telecommunications vertical asset.  Nothing in this definition shall prohibit terrestrial, middle-mile, or last-mile broadband or high-speed internet wiring or facilities installation under section 67.1847.  Classification as vertical real estate shall not prevent any utility installation including, but not limited to, water, electric, or sewer services.\n  3.  Any political subdivision of the state of Missouri is hereby authorized to erect vertical real estate or towers on its property unless otherwise proscribed by law.  Any such political subdivision is hereby authorized to enter into public-private partnerships in order to effectuate construction of vertical real estate or towers.\n(L. 2022 S.B.  820)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=8.475",
+  "section_id": "8.475",
+  "chapter": "8",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

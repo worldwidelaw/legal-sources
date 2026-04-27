@@ -1,68 +1,84 @@
-source:
-  id: IT/ConsiglioDiStato
-  name: Italian Council of State & Regional Administrative Courts
-  country: IT
-  url: https://www.giustizia-amministrativa.it
-  data_types:
-    - caselaw
-  auth: none
-  license: CC BY 4.0
-
-data_portal:
-  openga: https://openga.giustizia-amministrativa.it
-  ckan_api: https://openga.giustizia-amministrativa.it/api/3/action
-  full_text_endpoint: https://mdp.giustizia-amministrativa.it/visualizza/
-
 coverage:
   courts:
-    - Consiglio di Stato (CdS) - Supreme administrative court
-    - CGA Sicilia - Sicily Administrative Justice Council
-    - TAR (Tribunali Amministrativi Regionali) - 29 Regional Administrative Courts
+  - Consiglio di Stato (CdS) - Supreme administrative court
+  - CGA Sicilia - Sicily Administrative Justice Council
+  - TAR (Tribunali Amministrativi Regionali) - 29 Regional Administrative Courts
   decision_types:
-    - Sentenze (judgments)
-    - Ordinanze (orders)
-    - Decreti (decrees)
-    - Pareri (opinions)
-  years: 2023-present (OpenGA dataset coverage, all available years)
+  - Sentenze (judgments)
+  - Ordinanze (orders)
+  - Decreti (decrees)
+  - Pareri (opinions)
   estimated_records: 100,000+
+  years: 2023-present (OpenGA dataset coverage, all available years)
+data_portal:
+  ckan_api: https://openga.giustizia-amministrativa.it/api/3/action
+  full_text_endpoint: https://mdp.giustizia-amministrativa.it/visualizza/
+  openga: https://openga.giustizia-amministrativa.it
+implementation:
+  notes: '- OpenGA provides metadata only (no full text in CKAN datasets)
 
+    - Full text available via mdp endpoint in XML format
+
+    - XML contains structured decision with epigrafe, premessa, motivazione, dispositivo
+
+    - Some decisions may have redacted personal data (omissis)
+
+    - URL pattern: {nomeFile}_11.html where 11 is a fixed suffix
+
+    '
+  rate_limit: 1 request/second
+  strategy: '1. Query OpenGA CKAN API for sentenze metadata
+
+    2. For each record, extract NUMERO_RICORSO (nrg) and NUMERO_PROVVEDIMENTO
+
+    3. Construct URL: mdp.giustizia-amministrativa.it/visualizza/?schema={court}&nrg={nrg}&nomeFile={num}_11.html&subDir=Provvedimenti
+
+    4. Fetch XML and extract full text
+
+    5. Normalize to standard schema
+
+    '
 schema:
   key_fields:
-    - _id
-    - court
-    - decision_number
-    - case_number
-    - year
+  - name: _id
+    required: true
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: year
+    required: false
+    type: string
   normalized_fields:
-    - _id: "IT:GA:{court}:{year}:{decision_number}"
-    - _source: IT/ConsiglioDiStato
-    - _type: caselaw
-    - title: "{decision_type} n. {decision_number}/{year} - {section}"
-    - text: Full decision text extracted from XML
-    - date: Publication date (ISO 8601)
-    - url: Link to full text on mdp endpoint
-    - ecli: "ECLI:IT:{court_code}:{year}:{decision_number}SENT"
-    - court: Court name (NOME_SEDE)
-    - section: Court section (NOME_SEZIONE)
-    - decision_type: Type of decision (TIPO_PROVVEDIMENTO)
-    - outcome: Decision outcome (ESITO_PROVVEDIMENTO)
-    - case_number: Registration number (NUMERO_RICORSO)
-    - decision_number: Decision number (NUMERO_PROVVEDIMENTO)
-    - year: Publication year
-    - subject: Case subject (OGGETTO_RICORSO)
-    - language: "it"
-
-implementation:
-  strategy: |
-    1. Query OpenGA CKAN API for sentenze metadata
-    2. For each record, extract NUMERO_RICORSO (nrg) and NUMERO_PROVVEDIMENTO
-    3. Construct URL: mdp.giustizia-amministrativa.it/visualizza/?schema={court}&nrg={nrg}&nomeFile={num}_11.html&subDir=Provvedimenti
-    4. Fetch XML and extract full text
-    5. Normalize to standard schema
-  rate_limit: 1 request/second
-  notes: |
-    - OpenGA provides metadata only (no full text in CKAN datasets)
-    - Full text available via mdp endpoint in XML format
-    - XML contains structured decision with epigrafe, premessa, motivazione, dispositivo
-    - Some decisions may have redacted personal data (omissis)
-    - URL pattern: {nomeFile}_11.html where 11 is a fixed suffix
+  - _id: IT:GA:{court}:{year}:{decision_number}
+  - _source: IT/ConsiglioDiStato
+  - _type: caselaw
+  - title: '{decision_type} n. {decision_number}/{year} - {section}'
+  - text: Full decision text extracted from XML
+  - date: Publication date (ISO 8601)
+  - url: Link to full text on mdp endpoint
+  - ecli: ECLI:IT:{court_code}:{year}:{decision_number}SENT
+  - court: Court name (NOME_SEDE)
+  - section: Court section (NOME_SEZIONE)
+  - decision_type: Type of decision (TIPO_PROVVEDIMENTO)
+  - outcome: Decision outcome (ESITO_PROVVEDIMENTO)
+  - case_number: Registration number (NUMERO_RICORSO)
+  - decision_number: Decision number (NUMERO_PROVVEDIMENTO)
+  - year: Publication year
+  - subject: Case subject (OGGETTO_RICORSO)
+  - language: it
+source:
+  auth: none
+  country: IT
+  data_types:
+  - caselaw
+  id: IT/ConsiglioDiStato
+  license: CC BY 4.0
+  name: Italian Council of State & Regional Administrative Courts
+  url: https://www.giustizia-amministrativa.it

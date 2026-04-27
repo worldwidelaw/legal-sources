@@ -1,21 +1,26 @@
-source_id: BR/TJAM
-name: "Amazonas State Court (TJAM) Jurisprudence"
-description: >
-  Court decisions (acordãos) from the Tribunal de Justiça do Estado do Amazonas
-  via the eSAJ jurisprudence search system. Returns ementas (legal summaries with
-  holdings and reasoning) plus metadata.
-base_url: "https://consultasaj.tjam.jus.br/cjsg/resultadoCompleta.do"
-data_types:
-  - case_law
-country: BR
-language: pt
 auth:
   type: none
+base_url: https://consultasaj.tjam.jus.br/cjsg/resultadoCompleta.do
+country: BR
+data_types:
+- case_law
+description: 'Court decisions (acordãos) from the Tribunal de Justiça do Estado do Amazonas via the eSAJ jurisprudence search system. Returns ementas (legal summaries with holdings and reasoning) plus metadata.
+
+  '
+language: pt
+name: Amazonas State Court (TJAM) Jurisprudence
 rate_limit:
-  requests_per_second: 0.5
   burst: 2
+  requests_per_second: 0.5
 schema:
   key_fields:
-    - _id
-    - process_number
-    - cd_acordao
+  - name: _id
+    required: true
+    type: string
+  - name: process_number
+    required: false
+    type: string
+  - name: cd_acordao
+    required: false
+    type: string
+source_id: BR/TJAM

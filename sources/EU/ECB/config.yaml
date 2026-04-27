@@ -1,38 +1,36 @@
+auth:
+  required: false
+fetch:
+  ecb_author_uri: http://publications.europa.eu/resource/authority/corporate-body/ECB
+  eurlex_base: https://eur-lex.europa.eu
+  rate_limit_seconds: 1.5
+  sparql_endpoint: https://publications.europa.eu/webapi/rdf/sparql
+  timeout_seconds: 120
+  user_agent: Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)
+license:
+  notes: EUR-Lex content is open data. ECB documents reusable under standard EU terms.
+  type: reuse
+  url: https://eur-lex.europa.eu/content/legal-notice/legal-notice.html
+schema:
+  date_fields:
+  - date
+  key_fields:
+  - name: celex
+    required: false
+    type: string
+  required_fields:
+  - celex
+  - title
+  - date
+  - text
 source:
+  country: EU
+  data_types:
+  - doctrine
+  description: 'ECB legal acts from EUR-Lex including decisions, regulations, guidelines, opinions and recommendations. Covers monetary policy, banking supervision (SSM), payment systems, statistics, and
+    institutional provisions.
+
+    '
   id: EU/ECB
   name: European Central Bank (ECB)
   url: https://eur-lex.europa.eu/browse/institutions/bank.html
-  country: EU
-  data_types:
-    - doctrine
-  description: >
-    ECB legal acts from EUR-Lex including decisions, regulations, guidelines,
-    opinions and recommendations. Covers monetary policy, banking supervision (SSM),
-    payment systems, statistics, and institutional provisions.
-
-schema:
-  key_fields:
-    - celex
-  date_fields:
-    - date
-  required_fields:
-    - celex
-    - title
-    - date
-    - text
-
-fetch:
-  sparql_endpoint: https://publications.europa.eu/webapi/rdf/sparql
-  eurlex_base: https://eur-lex.europa.eu
-  ecb_author_uri: http://publications.europa.eu/resource/authority/corporate-body/ECB
-  rate_limit_seconds: 1.5
-  timeout_seconds: 120
-  user_agent: Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)
-
-auth:
-  required: false
-
-license:
-  type: reuse
-  url: https://eur-lex.europa.eu/content/legal-notice/legal-notice.html
-  notes: EUR-Lex content is open data. ECB documents reusable under standard EU terms.

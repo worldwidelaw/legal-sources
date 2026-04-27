@@ -73,7 +73,7 @@ python3 bootstrap.py bootstrap --sample --include-supreme
 
 ## License
 
-Public Domain - Swedish court decisions are public documents (allmänna handlingar) under the Swedish Freedom of the Press Act (Tryckfrihetsförordningen).
+[Public Domain](https://www.domstol.se/om-webbplatsen-och-digitala-kanaler/oppna-data/) — Swedish court decisions are public documents (allmanna handlingar) not subject to copyright (Upphovsrattslag 1960:729, Section 9).
 
 ## Notes
 

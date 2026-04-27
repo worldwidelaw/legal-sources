@@ -1,0 +1,41 @@
+# GE/RS-TaxAppeals - Georgia Revenue Service Tax Dispute Decisions
+# Source configuration
+
+source_id: GE/RS-TaxAppeals
+name: Georgia Revenue Service Tax Dispute Decisions
+country: GE
+url: https://infohub.rs.ge
+description: >
+  Tax dispute decisions from the Georgian Revenue Service (RS) and Ministry of Finance
+  dispute resolution boards. Published via the RS Information and Methodological Hub
+  (infohub.rs.ge). Includes internal RS dispute decisions, Ministry of Finance dispute
+  resolution decisions, and related court rulings on tax matters.
+
+# Data model
+data_model:
+  type: doctrine
+  update_strategy: upsert
+  dedup_key:
+    - unique_key
+
+# Authentication
+auth:
+  type: none
+
+# Rate limiting
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  max_workers: 1
+
+# Schema
+schema:
+  key_fields:
+    - unique_key
+    - document_number
+    - title
+    - date
+    - text
+    - decision_outcome
+    - document_type
+    - tags

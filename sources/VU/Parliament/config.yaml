@@ -1,0 +1,31 @@
+fetch:
+  max_retries: 3
+  rate_limit: 2.0
+  timeout: 60
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: string
+source:
+  auth: none
+  country: VU
+  data_types:
+  - legislation
+  description: >-
+    Bills from the Parliament of Vanuatu (parliament.gov.vu). Self-hosted PDFs
+    covering 2024-2025 parliamentary sessions in English and French. Topics
+    include finance, taxation, data protection, cybercrime, land reform,
+    electoral law, and more.
+  id: VU/Parliament
+  name: Vanuatu Parliament Bills
+  url: https://parliament.gov.vu/index.php/parliamentary-business/bills

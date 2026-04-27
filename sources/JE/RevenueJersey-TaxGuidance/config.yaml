@@ -1,0 +1,75 @@
+# ===================================================================
+# JE/RevenueJersey-TaxGuidance -- Revenue Jersey Tax Technical Guidance
+# ===================================================================
+# Tax concessions, practice notes, general tax rulings, leasing guidance,
+# company guidelines, and Pillar Two guidance published on gov.je.
+# ~60+ guidance documents with full text. No authentication required.
+# ===================================================================
+
+source:
+  id: "JE/RevenueJersey-TaxGuidance"
+  country: "JE"
+  name: "Revenue Jersey Tax Technical Guidance"
+  url: "https://www.gov.je/TaxesMoney/IncomeTax/TechnicalInformation/"
+  description: |
+    Technical tax guidance published by Revenue Jersey covering the 0%/10%/20%
+    corporate tax regime, GST, personal income tax, substance requirements,
+    Pillar Two MCIT, leasing, and general tax rulings. Includes concessions,
+    practice statements, and company guidelines.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.gov.je"
+
+data_model:
+  type: "doctrine"
+  primary_key: "guidance_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "guidance_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "guidance_id"
+      description: "Unique identifier derived from URL path or concession code"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Guidance title or concession heading"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the guidance document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication or last-modified date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the guidance page"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "category"
+      description: "Guidance category (concession, practice_note, ruling, leasing, company, pillar_two)"
+    - name: "code"
+      description: "Concession/practice code (e.g., P1, B5, GTR 1)"
+    - name: "language"
+      description: "Language code (always eng)"

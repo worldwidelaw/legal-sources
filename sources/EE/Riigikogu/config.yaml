@@ -1,42 +1,32 @@
-source:
-  id: "EE/Riigikogu"
-  country: "EE"
-  name: "Estonian Parliament (Riigikogu)"
-  url: "https://api.riigikogu.ee"
-  data_types: [legislation]
-  license: "CC BY-SA 3.0"
-  update_frequency: daily
-  language: "et"
-
 fetch:
-  base_url: "https://api.riigikogu.ee"
-  rate_limit: 1.5  # seconds between requests
-  timeout: 60
+  base_url: https://api.riigikogu.ee
+  rate_limit: 1.5
   retry_attempts: 3
-
-  # Draft bills endpoint
-  # /api/volumes/drafts - lists all legislative drafts
-  # /api/volumes/drafts/{uuid} - draft details with files
-  # /api/files/{uuid}/download - download docx/pdf files
-
-  # Draft types:
-  # SE - Seaduseelnõu (Law draft/bill)
-  # OE - Otsuse eelnõu (Resolution draft)
-
+  timeout: 60
 schema:
   key_fields:
-    - "_id"
-    - "title"
-    - "text"
-    - "date"
-    - "url"
-
-  # Additional fields from Riigikogu API:
-  # - mark (bill number, e.g., 758)
-  # - draft_type (SE, OE, etc.)
-  # - status (VASTU_VOETUD, TAGASI_LYKATUD, etc.)
-  # - initiators (who proposed the bill)
-  # - leading_committee
-  # - introduction (summary text)
-  # - initiated_date
-  # - membership (parliamentary session)
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+source:
+  country: EE
+  data_types:
+  - legislation
+  id: EE/Riigikogu
+  language: et
+  license: CC BY-SA 3.0
+  name: Estonian Parliament (Riigikogu)
+  update_frequency: daily
+  url: https://api.riigikogu.ee

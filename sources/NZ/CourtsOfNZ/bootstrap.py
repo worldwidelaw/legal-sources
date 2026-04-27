@@ -221,17 +221,17 @@ class CourtsOfNZScraper(BaseScraper):
 
         pdf_url = entry.get('pdf_url')
         if not pdf_url:
-            # Fall back to description as text
-            if entry.get('description') and len(entry['description']) > 100:
+            # Fall back to description as text (any length)
+            if entry.get('description'):
                 entry['text'] = entry['description']
                 return entry
-            logger.debug(f"No PDF for {entry.get('slug')}")
+            logger.debug(f"No PDF and no description for {entry.get('slug')}")
             return None
 
         text = self._download_and_extract_pdf(pdf_url)
         if not text or len(text) < 50:
-            # Fall back to description
-            if entry.get('description') and len(entry['description']) > 100:
+            # Fall back to description (any length)
+            if entry.get('description'):
                 entry['text'] = entry['description']
                 return entry
             return None

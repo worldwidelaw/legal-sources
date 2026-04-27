@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/475.529",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:45:45.761651+00:00",
+  "title": "Missouri Revised Statutes § 475.529 - Proceedings in more than one state",
+  "text": "475.529.  Proceedings in more than one state. — Except for a petition for the appointment of a guardian in an emergency or issuance of a protective order limited to property located in this state as provided in subdivision (1) or (2) of subsection 1 of section 475.524, if a petition for the appointment of a guardian or issuance of a protective order is filed in this and in another state and neither petition has been dismissed or withdrawn, the following rules apply:\n  (1)  If the court in this state has jurisdiction under section 475.523, it may proceed with the case unless a court in another state acquires jurisdiction under provisions similar to section 475.523 before the appointment or issuance of the order.\n  (2)  If the court in this state does not have jurisdiction under section 475.523, whether at the time the petition is filed or at any time before the appointment or issuance of the order, the court shall stay the proceeding and communicate with the court in the other state.  If the court in the other state has jurisdiction, the court in this state shall dismiss the petition unless the court in the other state determines that the court in this state is a more appropriate forum.\n(L. 2011 H.B. 111 merged with S.B. 59 merged with S.B. 213)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=475.529",
+  "section_id": "475.529",
+  "chapter": "475",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

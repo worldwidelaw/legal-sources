@@ -22,3 +22,7 @@ python bootstrap.py bootstrap --sample   # Fetch sample records
 python bootstrap.py bootstrap            # Full fetch
 python bootstrap.py update               # Recent updates only
 ```
+
+## License
+
+[Open Government Data](https://www.supremecourt.gov.bd) — official judgments published by the Supreme Court of Bangladesh.

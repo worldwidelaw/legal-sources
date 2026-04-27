@@ -65,3 +65,7 @@ python bootstrap.py update
 - Arabic edition is available as fallback
 - Pre-1994 data exists in a different format (page-by-page PDFs) but is not currently supported
 - Each issue is treated as a single document containing all legal acts published that day
+
+## License
+
+[Open Government Data](https://www.joradp.dz) — official gazette of the People's Democratic Republic of Algeria.

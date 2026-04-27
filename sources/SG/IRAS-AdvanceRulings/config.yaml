@@ -1,0 +1,27 @@
+source:
+  id: SG/IRAS-AdvanceRulings
+  name: Singapore IRAS Advance Rulings (Summaries)
+  country: SG
+  url: https://www.iras.gov.sg/taxes/corporate-tax/specific-topics/advance-ruling-system
+  data_types:
+    - doctrine
+  auth: none
+  description: >
+    Published summaries of advance rulings issued by IRAS on income tax
+    (corporate and individual), GST, and stamp duty. Covers IP holding,
+    regional HQ incentives, fund management exemptions, and more.
+
+schema:
+  key_fields:
+    - ruling_number
+    - year
+    - series
+  record_type: doctrine
+
+fetcher:
+  method: pdf_enumeration
+  rate_limit: 1.5
+  notes: >
+    PDFs are enumerated by constructing URLs from known patterns per year.
+    URL naming conventions vary across years (dash vs underscore vs dot).
+    IRAS removes rulings older than 5 years each December.

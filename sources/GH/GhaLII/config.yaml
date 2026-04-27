@@ -42,7 +42,7 @@ data_model:
 schema:
   total_fields: 8
   key_fields:
-    - name: "document_id"
+    - name: "_id"
       description: "AKN URI path"
       type: "string"
       role: "primary_key"

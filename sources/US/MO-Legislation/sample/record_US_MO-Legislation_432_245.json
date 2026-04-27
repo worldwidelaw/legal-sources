@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/432.245",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:01:37.276828+00:00",
+  "title": "Missouri Revised Statutes § 432.245 - Effect of change or error",
+  "text": "432.245.  Effect of change or error. — If a change or error in an electronic record occurs in a transmission between parties to a transaction, the following rules apply:\n  (1)  If the parties have agreed to use a security procedure to detect changes or errors and one party has conformed to the procedure, but the other party has not, and the nonconforming party would have detected the change or error had that party also conformed, the conforming party may avoid the effect of the changed or erroneous electronic record;\n  (2)  In an automated transaction involving an individual, the individual may avoid the effect of an electronic record that resulted from an error made by the individual in dealing with the electronic agent of another person if the electronic agent did not provide an opportunity for the prevention or correction of the error and, at the time the individual learns of the error, the individual:\n  (a)  Promptly notifies the other person of the error and that the individual did not intend to be bound by the electronic record received by the other person;\n  (b)  Takes reasonable steps, including steps that conform to the other person's reasonable instructions, to return to the other person or, if instructed by the other person, to destroy the consideration received, if any, as a result of the erroneous electronic record; and\n  (c)  Has not used or received any benefit or value from the consideration, if any, received from the other person;\n  (3)  If neither subdivision (1) nor subdivision (2) of this section applies, the change or error has the effect provided by other law, including the law of mistake, and the parties' contract, if any; and\n  (4)  Subdivisions (2) and (3) of this section shall not be varied by agreement.\n(L. 2003 H.B. 254)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=432.245",
+  "section_id": "432.245",
+  "chapter": "432",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

@@ -1,0 +1,38 @@
+# GG/RevenueService-Guidance - Guernsey Revenue Service Tax Guidance
+# Source configuration
+
+source_id: GG/RevenueService-Guidance
+name: Guernsey Revenue Service Tax Guidance
+country: GG
+url: https://www.gov.gg/taxationstatementsofpractice
+description: >
+  Tax guidance from the Guernsey Revenue Service including Statements of Practice,
+  Codes of Practice, Extra-Statutory Concessions, and Circulars covering corporate
+  tax (0%/10%/20%), personal income tax (20% flat), and substance requirements.
+
+# Data model
+data_model:
+  type: doctrine
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+# Authentication
+auth:
+  type: none
+
+# Rate limiting
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  max_workers: 1
+
+# Schema
+schema:
+  key_fields:
+    - doc_id
+    - title
+    - category
+    - date
+    - text
+    - url

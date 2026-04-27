@@ -301,7 +301,7 @@ class DELegislationScraper(BaseScraper):
                 try:
                     sections = self.fetch_chapter_sections(title_dir, chap_dir)
                     for raw in sections:
-                        yield self.normalize(raw)
+                        yield raw
                         total += 1
                     if sections:
                         logger.info(f"    {title_dir}/{chap_dir}: {len(sections)} sections (total: {total})")
@@ -323,7 +323,7 @@ class DELegislationScraper(BaseScraper):
                 try:
                     sections = self.fetch_chapter_sections(title_dir, chap_dir)
                     for raw in sections:
-                        yield self.normalize(raw)
+                        yield raw
                         count += 1
                     logger.info(f"  {title_dir}/{chap_dir}: {len(sections)} sections")
                 except Exception as e:
@@ -341,6 +341,7 @@ def main():
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = DELegislationScraper()

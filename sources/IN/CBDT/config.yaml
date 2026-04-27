@@ -1,0 +1,30 @@
+fetch:
+  max_retries: 3
+  rate_limit: 1.0
+  timeout: 60
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: circular_number
+    required: false
+    type: string
+source:
+  auth: none
+  country: IN
+  data_types:
+  - doctrine
+  description: >-
+    CBDT (Central Board of Direct Taxes) circulars from incometaxindia.gov.in.
+    Uses Liferay DXP Search API with CIRCULAR_BP_ERC blueprint. 1,385 circulars
+    spanning 1960s-2026. ~70% have inline HTML full text, ~30% are PDF downloads.
+  id: IN/CBDT
+  name: Central Board of Direct Taxes - Circulars
+  url: https://www.incometaxindia.gov.in/

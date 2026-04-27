@@ -63,6 +63,10 @@ python bootstrap.py update
 - Documents are paginated at 100 per page
 - Rate limiting: 0.5 requests/second
 
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Austrian Open Government Data.
+
 ## Links
 
 - [Findok Main Site](https://findok.bmf.gv.at/findok)

@@ -1,41 +1,48 @@
+api:
+  rate_limit_delay: 1.0
+  sparql_endpoint: https://api.euskadi.eus/sparql/
+  type: sparql
+  xml_content_base: https://www.legegunea.euskadi.eus/contenidos/
+schema:
+  document_types:
+  - decreto (decree)
+  - orden (order)
+  - resolucion (resolution)
+  - ley (law)
+  - acuerdo (agreement)
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: eli_uri
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date_published
+    required: false
+    type: date
+  - name: document_type
+    required: false
+    type: string
 source:
-  id: ES/BasqueCountry
-  name: Basque Country Regional Legislation (BOPV/EHAA)
   country: ES
-  region: Basque Country (Euskadi)
-  url: https://opendata.euskadi.eus
-  description: >
-    Official Gazette of the Basque Country (Boletín Oficial del País Vasco /
-    Euskal Herriko Agintaritzaren Aldizkaria). Contains regional legislation
-    from the Basque Autonomous Community including laws, decrees, orders,
-    and resolutions from 1936 to present. Available in both Spanish (es)
-    and Basque (eu). Includes the Basque Civil Law Code (Ley de Derecho
-    Civil Vasco).
   data_types:
-    - legislation
+  - legislation
+  description: 'Official Gazette of the Basque Country (Boletín Oficial del País Vasco / Euskal Herriko Agintaritzaren Aldizkaria). Contains regional legislation from the Basque Autonomous Community including
+    laws, decrees, orders, and resolutions from 1936 to present. Available in both Spanish (es) and Basque (eu). Includes the Basque Civil Law Code (Ley de Derecho Civil Vasco).
+
+    '
+  id: ES/BasqueCountry
   language:
-    - es
-    - eu
+  - es
+  - eu
   license: CC BY 4.0
   license_url: https://creativecommons.org/licenses/by/4.0/
-
-api:
-  type: sparql
-  sparql_endpoint: https://api.euskadi.eus/sparql/
-  xml_content_base: https://www.legegunea.euskadi.eus/contenidos/
-  rate_limit_delay: 1.0
-
-schema:
-  key_fields:
-    - _id
-    - eli_uri
-    - title
-    - text
-    - date_published
-    - document_type
-  document_types:
-    - decreto (decree)
-    - orden (order)
-    - resolucion (resolution)
-    - ley (law)
-    - acuerdo (agreement)
+  name: Basque Country Regional Legislation (BOPV/EHAA)
+  region: Basque Country (Euskadi)
+  url: https://opendata.euskadi.eus

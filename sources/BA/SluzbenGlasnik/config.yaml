@@ -1,59 +1,68 @@
+fetch:
+  endpoints:
+    document: /page/akt/{doc_id}
+    search: /search/searchresult
+  method: html_scraping
+  rate_limit:
+    delay_ms: 2000
+    requests_per_second: 0.5
+schema:
+  fields:
+    date:
+      description: Publication date (ISO 8601)
+      type: string
+    doc_id:
+      description: Base64-encoded document identifier
+      type: string
+    gazette_number:
+      description: Issue number (e.g., "28/21")
+      type: string
+    gazette_type:
+      description: Type of gazette (BiH, MU)
+      type: string
+    gazette_year:
+      description: Year of publication
+      type: integer
+    issuer:
+      description: Issuing authority
+      type: string
+    text:
+      description: Full text of the document
+      type: string
+    title:
+      description: Document title
+      type: string
+  key_fields:
+  - name: doc_id
+    required: false
+    type: string
+  - name: gazette_number
+    required: false
+    type: string
+  - name: gazette_year
+    required: false
+    type: string
 source:
-  id: BA/SluzbenGlasnik
-  country: BA
-  name: Službeni glasnik BiH - Bosnia Official Gazette
-  url: http://www.sluzbenilist.ba
-  data_types:
-    - legislation
   auth: none
+  country: BA
+  data_types:
+  - legislation
+  id: BA/SluzbenGlasnik
   license: Open Government Data
-  notes: |
-    State-level Official Gazette of Bosnia and Herzegovina.
+  name: Službeni glasnik BiH - Bosnia Official Gazette
+  notes: 'State-level Official Gazette of Bosnia and Herzegovina.
+
     Covers: Službeni glasnik BiH (state level) and Međunarodni ugovori (international treaties).
+
     Federation and Canton level documents require subscription.
+
 
     Document discovery via search endpoint, full text via HTML scraping.
 
+
     Coverage: 1997 to present
+
     Languages: Bosnian, Croatian, Serbian
 
-schema:
-  key_fields:
-    - doc_id
-    - gazette_number
-    - gazette_year
-
-  fields:
-    doc_id:
-      type: string
-      description: Base64-encoded document identifier
-    gazette_number:
-      type: string
-      description: Issue number (e.g., "28/21")
-    gazette_year:
-      type: integer
-      description: Year of publication
-    gazette_type:
-      type: string
-      description: Type of gazette (BiH, MU)
-    title:
-      type: string
-      description: Document title
-    issuer:
-      type: string
-      description: Issuing authority
-    text:
-      type: string
-      description: Full text of the document
-    date:
-      type: string
-      description: Publication date (ISO 8601)
-
-fetch:
-  method: html_scraping
-  endpoints:
-    search: /search/searchresult
-    document: /page/akt/{doc_id}
-  rate_limit:
-    requests_per_second: 0.5
-    delay_ms: 2000
+    '
+  url: http://www.sluzbenilist.ba

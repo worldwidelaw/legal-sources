@@ -1,0 +1,83 @@
+# ===================================================================
+# KY/CIMA-Enforcement -- Cayman Islands Monetary Authority
+# ===================================================================
+# Enforcement actions including warning notices, decision notices,
+# administrative fines, and general notices. Full text from HTML
+# detail pages or PDF documents. ~150 notices (2017-present).
+# No authentication required.
+# ===================================================================
+
+source:
+  id: "KY/CIMA-Enforcement"
+  country: "KY"
+  name: "Cayman Islands Monetary Authority Enforcement Actions"
+  url: "https://www.cima.ky/enforcement-notices"
+  description: |
+    Enforcement notices from the Cayman Islands Monetary Authority (CIMA).
+    Covers warning notices, decision notices, administrative fines, and
+    general notices. Full text from HTML detail pages and PDF documents.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.cima.ky"
+  endpoints:
+    enforcement_notices: "/enforcement-notices"
+    warning_notices: "/warning-notices"
+    decision_notices: "/decision-notices"
+    administrative_fines: "/administrative-fines"
+    general_notices: "/general-notices"
+
+data_model:
+  type: "doctrine"
+  primary_key: "notice_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "notice_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "notice_id"
+      description: "Unique identifier derived from category and slug"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Notice title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the enforcement notice"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the notice page or PDF"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "category"
+      description: "Notice category (warning, decision, administrative_fine, general)"
+    - name: "summary"
+      description: "Brief excerpt from listing page"
+    - name: "pdf_url"
+      description: "URL to the PDF version if available"
+    - name: "language"
+      description: "Language code (eng)"

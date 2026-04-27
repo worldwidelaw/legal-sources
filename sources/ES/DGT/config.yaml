@@ -1,49 +1,57 @@
-source:
-  id: ES/DGT
-  name: Spanish General Tax Directorate (Dirección General de Tributos)
-  country: ES
-  jurisdiction: ES
-  data_types:
-    - doctrine
-  url: https://petete.tributos.hacienda.gob.es/consultas/
-  description: |
-    Binding tax rulings (consultas vinculantes) from the Spanish General Tax
-    Directorate (DGT). Contains interpretive doctrine on Spanish tax law from
-    1997 to present, with approximately 68,000+ rulings.
-
-auth:
-  type: none
-  notes: Session-based with browser-like headers, no credentials required
-
 api:
   base_url: https://petete.tributos.hacienda.gob.es
   endpoints:
-    search: /consultas/do/search
     document: /consultas/do/document
+    search: /consultas/do/search
   format: HTML
   rate_limit: 30 requests/minute
+auth:
+  notes: Session-based with browser-like headers, no credentials required
+  type: none
+notes: '- PETETE is the official DGT doctrine database
 
-schema:
-  key_fields:
-    - num_consulta
-    - fecha_salida
-  full_text_field: text
-  date_field: date
-  optional_fields:
-    - organo
-    - normativa
-    - descripcion_hechos
-    - cuestion_planteada
+  - Rulings are binding on the Tax Administration
 
+  - Database covers 1997-present with ~68,000+ binding rulings
+
+  - Full text includes: facts description, question posed, and complete answer
+
+  - Requires browser-like headers for authentication
+
+  - SSL certificate has issues, verification disabled
+
+  '
 schedule:
   bootstrap: manual
-  update: weekly
   last_updated: null
+  update: weekly
+schema:
+  date_field: date
+  full_text_field: text
+  key_fields:
+  - name: num_consulta
+    required: false
+    type: string
+  - name: fecha_salida
+    required: false
+    type: string
+  optional_fields:
+  - organo
+  - normativa
+  - descripcion_hechos
+  - cuestion_planteada
+source:
+  country: ES
+  data_types:
+  - doctrine
+  description: 'Binding tax rulings (consultas vinculantes) from the Spanish General Tax
 
-notes: |
-  - PETETE is the official DGT doctrine database
-  - Rulings are binding on the Tax Administration
-  - Database covers 1997-present with ~68,000+ binding rulings
-  - Full text includes: facts description, question posed, and complete answer
-  - Requires browser-like headers for authentication
-  - SSL certificate has issues, verification disabled
+    Directorate (DGT). Contains interpretive doctrine on Spanish tax law from
+
+    1997 to present, with approximately 68,000+ rulings.
+
+    '
+  id: ES/DGT
+  jurisdiction: ES
+  name: Spanish General Tax Directorate (Dirección General de Tributos)
+  url: https://petete.tributos.hacienda.gob.es/consultas/

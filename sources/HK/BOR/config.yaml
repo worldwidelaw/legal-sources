@@ -1,0 +1,34 @@
+source:
+  id: HK/BOR
+  name: Hong Kong Board of Review (Inland Revenue)
+  country: HK
+  url: https://www.info.gov.hk/bor/en/
+  data_types:
+    - case_law
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: case_number
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: true
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - case_number

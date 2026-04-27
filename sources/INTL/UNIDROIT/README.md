@@ -21,3 +21,7 @@ python bootstrap.py test                  # Test API connectivity
 python bootstrap.py bootstrap --sample    # Fetch 15 sample records
 python bootstrap.py bootstrap             # Full bootstrap (160 records)
 ```
+
+## License
+
+[UNIDROIT Terms](https://www.unidroit.org/terms-of-use/) — instruments are publicly available for informational/research purposes. Verify terms before commercial redistribution.

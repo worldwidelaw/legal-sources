@@ -325,6 +325,7 @@ def main():
     parser.add_argument("--sample", action="store_true", help="Fetch sample records")
     parser.add_argument("--count", type=int, default=15, help="Number of records to fetch")
     parser.add_argument("--since", type=str, help="Fetch records since date (YYYY-MM-DD)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

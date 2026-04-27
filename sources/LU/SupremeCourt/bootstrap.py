@@ -307,6 +307,7 @@ def main():
         default=15,
         help="Number of records to fetch (default: 15)"
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

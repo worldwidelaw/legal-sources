@@ -108,7 +108,7 @@ def clean_html(html_text: str) -> str:
     if not html_text:
         return ""
     text = re.sub(r'<script[^>]*>.*?</script>', '', html_text, flags=re.DOTALL | re.IGNORECASE)
-    text = re.sub(r'<style[^>]*>.*?</style>', '', html_text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL | re.IGNORECASE)
     text = re.sub(r'<br\s*/?>', '\n', text, flags=re.IGNORECASE)
     text = re.sub(r'</p>', '\n', text, flags=re.IGNORECASE)
     text = re.sub(r'</div>', '\n', text, flags=re.IGNORECASE)
@@ -362,6 +362,7 @@ if __name__ == "__main__":
     bp = sub.add_parser("bootstrap", help="Run bootstrap")
     bp.add_argument("--sample", action="store_true", help="Fetch sample only")
     bp.add_argument("--count", type=int, default=15, help="Sample count")
+    bp.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

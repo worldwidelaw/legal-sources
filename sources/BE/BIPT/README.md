@@ -54,4 +54,4 @@ Key fields in normalized records:
 
 ## License
 
-Open Data - Belgian Federal Government
+[Belgian Open Government Data](https://data.gov.be/en/licence-conditions) — free reuse of Belgian public sector information.

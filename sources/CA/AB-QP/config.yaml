@@ -1,19 +1,23 @@
-source_id: CA/AB-QP
-name: "Alberta Kings Printer Legislation"
-description: >
-  Alberta statutes and regulations from the Kings Printer website.
-  Full text fetched via HTML display endpoint. ~1,800 acts and regulations.
-base_url: "https://kings-printer.alberta.ca/"
-data_types:
-  - legislation
-country: CA
-language: en
 auth:
   type: none
+base_url: https://kings-printer.alberta.ca/
+country: CA
+data_types:
+- legislation
+description: 'Alberta statutes and regulations from the Kings Printer website. Full text fetched via HTML display endpoint. ~1,800 acts and regulations.
+
+  '
+language: en
+name: Alberta Kings Printer Legislation
 rate_limit:
-  requests_per_second: 0.5
   burst: 2
+  requests_per_second: 0.5
 schema:
   key_fields:
-    - _id
-    - isbn
+  - name: _id
+    required: true
+    type: string
+  - name: isbn
+    required: false
+    type: string
+source_id: CA/AB-QP

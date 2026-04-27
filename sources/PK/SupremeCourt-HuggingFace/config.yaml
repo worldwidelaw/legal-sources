@@ -1,29 +1,37 @@
-source:
-  id: PK/SupremeCourt-HuggingFace
-  name: Pakistan Supreme Court Judgments (HuggingFace)
-  country: PK
-  url: https://huggingface.co/datasets/Ibtehaj10/supreme-court-of-pak-judgments
-  data_types:
-    - case_law
-  auth: none
-  language: en
-  description: >
-    1,414 Supreme Court of Pakistan judgments with full text from the
-    Ibtehaj10/supreme-court-of-pak-judgments dataset on HuggingFace.
-
+fetch:
+  batch_size: 100
+  config: default
+  dataset: Ibtehaj10/supreme-court-of-pak-judgments
+  method: huggingface_rows_api
+  rate_limit_seconds: 1
+  split: train
+  total_rows: 1414
 schema:
   key_fields:
-    - _id
-    - title
-    - text
-    - date
-    - citation_number
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: citation_number
+    required: false
+    type: string
+source:
+  auth: none
+  country: PK
+  data_types:
+  - case_law
+  description: '1,414 Supreme Court of Pakistan judgments with full text from the Ibtehaj10/supreme-court-of-pak-judgments dataset on HuggingFace.
 
-fetch:
-  method: huggingface_rows_api
-  dataset: Ibtehaj10/supreme-court-of-pak-judgments
-  config: default
-  split: train
-  batch_size: 100
-  total_rows: 1414
-  rate_limit_seconds: 1
+    '
+  id: PK/SupremeCourt-HuggingFace
+  language: en
+  name: Pakistan Supreme Court Judgments (HuggingFace)
+  url: https://huggingface.co/datasets/Ibtehaj10/supreme-court-of-pak-judgments

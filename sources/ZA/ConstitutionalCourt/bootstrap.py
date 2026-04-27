@@ -188,8 +188,14 @@ class ConCourtFetcher:
                 meta["uri"] = val
         return meta
 
-    def normalize(self, item: Dict[str, Any], text: str) -> Dict[str, Any]:
-        """Normalize a DSpace item into the standard schema."""
+    def normalize(self, item: Dict[str, Any], text: Optional[str] = None) -> Dict[str, Any]:
+        """Normalize a DSpace item into the standard schema.
+
+        Accepts either (item, text) or a single dict with `_text` key embedded
+        (the yield-raw pattern for BaseScraper compatibility).
+        """
+        if text is None:
+            text = item.get("_text", "") or ""
         meta = self.extract_metadata(item)
         title = meta.get("title", item.get("name", "Unknown"))
         case_number = meta.get("case_number", "")
@@ -288,9 +294,10 @@ class ConCourtFetcher:
                         logger.debug("  No text found for: %s", name[:60])
                         continue
 
-                    record = self.normalize(item, text)
-                    yield record
+                    raw = dict(item)
+                    raw["_text"] = text
                     total += 1
+                    yield raw
 
                     if total % 25 == 0:
                         logger.info("  Progress: %d documents fetched", total)
@@ -330,7 +337,9 @@ class ConCourtFetcher:
                         continue
                     text = self.find_judgment_text(item)
                     if text:
-                        yield self.normalize(item, text)
+                        raw = dict(item)
+                        raw["_text"] = text
+                        yield raw
                 offset += len(items)
                 if len(items) < 50:
                     break
@@ -368,6 +377,7 @@ def main():
     parser.add_argument("command", choices=["bootstrap", "update", "test"])
     parser.add_argument("--sample", action="store_true", help="Fetch only 10-15 sample records")
     parser.add_argument("--since", type=str, help="Date for incremental update (YYYY-MM-DD)")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     fetcher = ConCourtFetcher()
@@ -381,7 +391,8 @@ def main():
         sample_dir.mkdir(exist_ok=True)
 
         count = 0
-        for record in fetcher.fetch_all(sample=args.sample):
+        for raw in fetcher.fetch_all(sample=args.sample):
+            record = fetcher.normalize(raw)
             safe_name = re.sub(r"[^\w\-.]", "_", str(record["_id"]))[:100]
             out_file = sample_dir / f"{safe_name}.json"
             out_file.write_text(
@@ -400,7 +411,8 @@ def main():
     if args.command == "update":
         since = args.since or "2026-01-01"
         count = 0
-        for record in fetcher.fetch_updates(since):
+        for raw in fetcher.fetch_updates(since):
+            record = fetcher.normalize(raw)
             count += 1
             logger.info("  [%d] %s: %s", count, record.get("date", "?"),
                         record["title"][:60])

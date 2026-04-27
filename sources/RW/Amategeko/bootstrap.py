@@ -298,6 +298,7 @@ if __name__ == "__main__":
 
     boot = sub.add_parser("bootstrap", help="Run bootstrap")
     boot.add_argument("--sample", action="store_true", help="Fetch sample only")
+    boot.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

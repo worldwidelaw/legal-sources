@@ -429,11 +429,6 @@ def main():
     """Main entry point for testing and bootstrap"""
 
     if len(sys.argv) > 1 and sys.argv[1] == 'bootstrap':
-        if not HAS_PYPDF:
-            print("ERROR: pypdf is required for PDF text extraction.")
-            print("Install with: pip install pypdf")
-            sys.exit(1)
-
         fetcher = BNetzAFetcher()
         sample_dir = Path(__file__).parent / 'sample'
         sample_dir.mkdir(exist_ok=True)
@@ -495,11 +490,6 @@ def main():
 
     else:
         # Test mode
-        if not HAS_PYPDF:
-            print("ERROR: pypdf is required for PDF text extraction.")
-            print("Install with: pip install pypdf")
-            sys.exit(1)
-
         fetcher = BNetzAFetcher()
         print("Testing BNetzA fetcher...")
 

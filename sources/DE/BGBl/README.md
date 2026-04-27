@@ -11,7 +11,7 @@ This data source fetches German federal legislation from [gesetze-im-internet.de
 - **Coverage**: ~6,000+ federal laws and regulations
 - **Full Text**: Yes - complete consolidated text of all laws
 - **Language**: German
-- **License**: Public Domain (Amtliche Werke, § 5 UrhG)
+- **License**: Public Domain ([§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html))
 
 ## API Access
 
@@ -57,6 +57,10 @@ python bootstrap.py bootstrap --sample
   "url": "https://www.gesetze-im-internet.de/gg/"
 }
 ```
+
+## License
+
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).
 
 ## Notes
 

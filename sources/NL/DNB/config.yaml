@@ -1,26 +1,36 @@
-source:
-  id: NL/DNB
-  name: Dutch Central Bank - Supervision (DNB)
-  country: NL
-  url: https://www.dnb.nl
-  data_types:
-    - doctrine
-  auth: none
-  license: Public Domain (Dutch government publications)
-
-schema:
-  key_fields:
-    - _id
-    - title
-    - date
-    - text
-    - url
-    - doc_type
-
 fetch:
   method: sitemap_plus_html
+  rate_limit_delay: 2.0
   sitemap_url: https://www.dnb.nl/sitemap.xml
   url_patterns:
-    - "/voor-de-sector/open-boek-toezicht/"
-    - "/algemeen-nieuws/handhavingsmaatregel-"
-  rate_limit_delay: 2.0
+  - /voor-de-sector/open-boek-toezicht/
+  - /algemeen-nieuws/handhavingsmaatregel-
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: url
+    required: true
+    type: string
+  - name: doc_type
+    required: false
+    type: string
+source:
+  auth: none
+  country: NL
+  data_types:
+  - doctrine
+  id: NL/DNB
+  license: Public Domain (Dutch government publications)
+  name: Dutch Central Bank - Supervision (DNB)
+  url: https://www.dnb.nl

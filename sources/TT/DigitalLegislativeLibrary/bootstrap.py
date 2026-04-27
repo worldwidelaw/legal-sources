@@ -183,10 +183,6 @@ def normalize(act_id: str, text: str, info: dict) -> dict:
 
 def fetch_all(sample: bool = False) -> Generator[dict, None, None]:
     """Fetch all acts from the Digital Legislative Library."""
-    if not HAS_PYPDF2:
-        print("ERROR: PyPDF2 is required. Install with: pip install PyPDF2")
-        return
-
     total_yielded = 0
     offset = 0
     max_offset = 20 if sample else 600  # ~545 acts total
@@ -249,10 +245,6 @@ def test_connection():
     """Test connectivity to laws.gov.tt."""
     print("Testing TT/DigitalLegislativeLibrary connectivity...")
 
-    if not HAS_PYPDF2:
-        print("  FAIL: PyPDF2 not installed")
-        return False
-
     print("\n1. Checking listing page...")
     try:
         acts = get_act_ids_from_listing(0)
@@ -301,6 +293,7 @@ def main():
     parser = argparse.ArgumentParser(description="TT Digital Legislative Library Fetcher")
     parser.add_argument("command", choices=["bootstrap", "test"], help="Command to run")
     parser.add_argument("--sample", action="store_true", help="Fetch only sample records")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     if args.command == "test":

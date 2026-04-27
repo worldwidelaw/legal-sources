@@ -1,39 +1,47 @@
-id: LI/StGH
-name: Liechtenstein Constitutional Court (Staatsgerichtshof)
-country: LI
-language: deu
-data_types:
-  - caselaw
-license: Open Government Data
-url: https://www.stgh.li/urteile
-fetch_method: html_scrape
 auth: none
-rate_limit: 1.5s
+country: LI
+data_types:
+- caselaw
+fetch_method: html_scrape
+id: LI/StGH
+language: deu
+license: Open Government Data
+name: Liechtenstein Constitutional Court (Staatsgerichtshof)
+notes: 'The Liechtenstein Constitutional Court (Staatsgerichtshof) publishes its
 
-schema:
-  key_fields:
-    - _id
-    - case_number
-    - date
-  required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-  optional_fields:
-    - court
-    - case_number
-    - decision_type
-    - country
-    - language
-
-notes: |
-  The Liechtenstein Constitutional Court (Staatsgerichtshof) publishes its
   decisions on stgh.li with full text available via gerichtsentscheidungen.li.
 
+
   Decisions are published in German and include judgments (Urteile),
+
   orders (Beschlüsse), and other decisions.
+
+  '
+rate_limit: 1.5s
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  optional_fields:
+  - court
+  - case_number
+  - decision_type
+  - country
+  - language
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+url: https://www.stgh.li/urteile

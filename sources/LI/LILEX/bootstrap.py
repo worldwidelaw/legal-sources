@@ -379,6 +379,7 @@ def main():
     # List command
     list_parser = subparsers.add_parser("list", help="List available laws")
     list_parser.add_argument("--limit", type=int, default=20, help="Number of laws to list")
+    list_parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

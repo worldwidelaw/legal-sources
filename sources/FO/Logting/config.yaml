@@ -1,0 +1,38 @@
+api:
+  auth: none
+  base_url: https://logir.fo
+  endpoints:
+    content: /Content/{type}/{slug}
+    grid: /Grid.aspx
+  rate_limit:
+    delay_seconds: 2
+    requests_per_minute: 30
+  type: html_scraping
+data:
+  encoding: utf-8
+  format: html
+  language:
+  - fao
+  - dan
+  license: Public Domain
+schema:
+  key_fields:
+  - name: law_type
+    required: false
+    type: string
+  - name: law_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  required_fields:
+  - title
+  - text
+  - date
+  - url
+source:
+  country: FO
+  id: FO/Logting
+  name: Logir.fo - Faroe Islands Legislation Collection
+  url: https://logir.fo/

@@ -9,7 +9,7 @@ This source fetches Lithuanian legislation from the official Register of Legal A
 - **API Endpoint**: `https://get.data.gov.lt/datasets/gov/lrsk/teises_aktai/Dokumentas`
 - **Dataset Page**: https://data.gov.lt/datasets/2613/
 - **Official Portal**: https://e-tar.lt
-- **License**: CC BY 4.0 (Creative Commons Attribution)
+- **License**: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 ## Data Coverage
 
@@ -55,6 +55,10 @@ Key fields:
 - `rusis`: Document type
 - `priimtas`: Adoption date
 - `nuoroda`: URL to e-tar.lt
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Lithuanian open government data.
 
 ## Notes
 

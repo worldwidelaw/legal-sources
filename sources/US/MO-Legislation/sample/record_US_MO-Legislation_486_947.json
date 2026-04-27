@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/486.947",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T02:56:30.492306+00:00",
+  "title": "Missouri Revised Statutes § 486.947 - Journal recordings",
+  "text": "486.947.  Journal recordings. — 1.  For every electronic notarial act, the electronic notary shall record in the electronic journal at the time of notarization the following:\n  (1)  The date and time of day of the electronic notarial act;\n  (2)  The type of electronic notarial act;\n  (3)  The type, title, or a description of the document or proceeding;\n  (4)  The signature, printed name, and address of each principal;\n  (5)  The printed name and address of each requester of fact;\n  (6)  The evidence of identity of each principal in the form of either:\n  (a)  A statement that the person is personally known to the notary;\n  (b)  A notation of the type of identification document, the issuing agency, the serial or identification number, and the date of issuance or expiration;\n  (c)  The handwritten signature and the name and address of each credible witness swearing or affirming to the principal's identity, and for credible witnesses who are not personally known to the notary, a description of the identification documents relied on by the notary; or\n  (d)  In the case of an electronic journal, a recognized biometric identifier, in accordance with subdivision (4) of subsection 1 of section 486.950;\n  (7)  The fee, if any, charged for the electronic notarial act;\n  (8)  The address where the electronic notarial act was performed, if not the address of the notary's regular place of work or business; and\n  (9)  The name of any authority issuing or registering the means used to create the electronic signature that was notarized, the source of this authority's license, if any, and the expiration date of the electronic process.\n  2.  An electronic notary shall not record a Social Security number or credit card number in the journal.\n  3.  An electronic notary may record in the journal the circumstances for not performing or completing any requested electronic notarial act.\n  4.  As required in subdivision (4) of subsection 2 of section 486.745, a notary shall append to the pertinent entry in the journal a notation of the nature and date of the notary's correction of a completed notarial certificate corresponding to the entry.\n(L. 2020 H.B. 1655)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=486.947",
+  "section_id": "486.947",
+  "chapter": "486",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

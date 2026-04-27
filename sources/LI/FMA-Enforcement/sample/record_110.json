@@ -1,0 +1,14 @@
+{
+  "_id": "warning-en-200",
+  "_source": "LI/FMA-Enforcement",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-16T05:14:45.037681Z",
+  "title": "[Warning] Warning: False FMA website",
+  "text": "The FMA would like to point out that a person at www(dot)finanzmarktaufsicht(dot)net is falsely claiming to be the Financial Market Authority using the logos of the FMA Liechtenstein and the FMA Austria. This website is not associated with the FMA.  ",
+  "date": "2022-04-06",
+  "url": "https://www.fma-li.li/en/warning/warning-false-fma-website-200",
+  "language": "eng",
+  "category": "Warning",
+  "country": "LI",
+  "institution": "Financial Market Authority (FMA)"
+}

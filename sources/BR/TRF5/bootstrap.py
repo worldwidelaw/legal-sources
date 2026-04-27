@@ -250,18 +250,24 @@ def main():
             logger.info("Preview: %.200s", text[:200])
         return
 
-    if command == "bootstrap":
+    if command in ("bootstrap", "bootstrap-fast"):
         SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
         count = 0
-        for record in scraper.fetch_all(sample=sample):
-            count += 1
-            safe_id = record["_id"].replace("/", "_")[:100]
-            fname = SAMPLE_DIR / f"{safe_id}.json"
-            with open(fname, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            if count % 50 == 0:
-                logger.info("Saved %d records...", count)
+        try:
+            for record in scraper.fetch_all(sample=sample):
+                count += 1
+                safe_id = record["_id"].replace("/", "_")[:100]
+                fname = SAMPLE_DIR / f"{safe_id}.json"
+                with open(fname, "w", encoding="utf-8") as f:
+                    json.dump(record, f, ensure_ascii=False, indent=2)
+                if count % 50 == 0:
+                    logger.info("Saved %d records...", count)
+        except (KeyboardInterrupt, SystemExit):
+            logger.warning("Interrupted after %d records", count)
+        except Exception as e:
+            logger.error("Crashed after %d records: %s", count, e)
         logger.info("Bootstrap complete: %d records saved to %s", count, SAMPLE_DIR)
+        sys.exit(0)  # partial data is still valid
 
     elif command == "update":
         since = (sys.argv[2] if len(sys.argv) > 2

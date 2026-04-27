@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/407.1120",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-19T01:43:11.043891+00:00",
+  "title": "Missouri Revised Statutes § 407.1120 - Definitions",
+  "text": "407.1120.  Definitions. — As used in sections 407.1120 to 407.1132, the following terms mean:\n  (1)  \"Assist the transmission\", actions taken by a person to provide substantial assistance or support which enables any person to formulate, compose, send, originate, initiate or transmit a commercial electronic mail message;\n  (2)  \"Commercial electronic mail message\", an electronic mail message sent for the purpose of promoting real property, goods or services for sale or lease.  Commercial electronic mail message does not include:\n  (a)  An electronic mail message to which an interactive computer service provider has attached an advertisement in exchange for free use of an electronic mail account, when the user has agreed to such an arrangement;\n  (b)  An electronic mail message between persons with a prior business relationship; or\n  (c)  An electronic mail message between persons with a personal relationship;\n  (3)  \"Electronic mail address\", a destination, commonly expressed as a string of characters, to which electronic mail may be sent or delivered;\n  (4)  \"Initiate the transmission\", the action by the original sender of an electronic mail message, but not the action by any intervening interactive computer service that may handle or retransmit the message, unless such intervening interactive computer service assists in the transmission of an electronic mail message when it knows, or consciously avoids knowing, that the person initiating the transmission is engaged, or intends to engage, in any act or practice that violates sections 407.1120 to 407.1132;\n  (5)  \"Interactive computer service\", any information service, system or access software provider that provides or enables computer access by multiple users to a computer server, including specifically a service or system that provides access to the internet and such systems operated or services offered by libraries or educational institutions;\n  (6)  \"Internet domain name\", a globally unique, hierarchical reference to an internet host or service, assigned through centralized internet naming authorities, comprising a series of character strings separated by periods, with the right-most string specifying the top of the hierarchy.\n(L. 2000 S.B. 763 § 407.1300) \nContingent expiration date, see § 407.1132",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=407.1120",
+  "section_id": "407.1120",
+  "chapter": "407",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

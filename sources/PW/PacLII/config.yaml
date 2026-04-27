@@ -1,0 +1,65 @@
+# ===================================================================
+# PW/PacLII -- Palau Court Decisions & Legislation (PacLII)
+# ===================================================================
+# HTML scraping of PacLII Palau databases.
+# Full text in HTML pages for both case law and legislation.
+# ===================================================================
+
+source:
+  id: "PW/PacLII"
+  country: "PW"
+  name: "Palau Court Decisions & Legislation (PacLII)"
+  url: "https://www.paclii.org/pw/"
+  description: |
+    Palau case law and legislation via PacLII. Covers Supreme Court (PWSC)
+    with ~444 decisions, 2 legislation databases with ~239 documents, and
+    2 court rules databases with ~19 rules. Full text in HTML.
+
+data_types:
+  - case_law
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "2-second delay between requests. Browser User-Agent required."
+
+api:
+  type: "scraping"
+  base_url: "https://www.paclii.org"
+  endpoints:
+    cases: "/pw/cases/{court}/{year}/"
+    legislation: "/pw/legis/{type}/toc-{letter}.html"
+  response_format: "html"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "_id"
+      description: "Unique document ID from URL path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision/enactment date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Document URL on PacLII"
+      type: "string"
+      role: "reference"
+      required: true

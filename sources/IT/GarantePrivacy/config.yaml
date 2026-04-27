@@ -1,58 +1,69 @@
-source:
-  id: IT/GarantePrivacy
-  name: Italian Data Protection Authority (Garante Privacy)
-  country: IT
-  url: https://www.garanteprivacy.it
-  data_types:
-    - caselaw
-    - doctrine
-  auth:
-    type: none
-  license: public
-
-data_portal:
-  base_url: https://www.garanteprivacy.it
-  search_url: https://www.garanteprivacy.it/home/ricerca/-/search/tipologia/Provvedimenti
-  docweb_url: https://www.garanteprivacy.it/home/docweb/-/docweb-display/docweb
-
 coverage:
   document_types:
-    - Provvedimenti (decisions/orders)
-    - Sanzioni (sanctions/fines)
-    - Ammonimenti (warnings)
-    - Autorizzazioni (authorizations)
-    - Pareri (opinions)
-    - Linee guida (guidelines)
-  years: 2012-present
+  - Provvedimenti (decisions/orders)
+  - Sanzioni (sanctions/fines)
+  - Ammonimenti (warnings)
+  - Autorizzazioni (authorizations)
+  - Pareri (opinions)
+  - Linee guida (guidelines)
   estimated_records: 13000+
+  years: 2012-present
+data_portal:
+  base_url: https://www.garanteprivacy.it
+  docweb_url: https://www.garanteprivacy.it/home/docweb/-/docweb-display/docweb
+  search_url: https://www.garanteprivacy.it/home/ricerca/-/search/tipologia/Provvedimenti
+implementation:
+  notes: '- Documents are in Italian
 
+    - Full text available in HTML format
+
+    - Major GDPR enforcer - Italy''s DPA
+
+    '
+  rate_limit: 0.5 requests/second
+  strategy: '1. Paginate through search results at /home/ricerca/-/search/tipologia/Provvedimenti
+
+    2. Extract docweb IDs from search result links
+
+    3. Fetch individual document pages at /home/docweb/-/docweb-display/docweb/{id}
+
+    4. Extract full text from <div id="interna-webcontent">
+
+    5. Parse metadata (date, registro number) from text
+
+    6. Normalize to standard schema
+
+    '
 schema:
   key_fields:
-    - _id
-    - docweb_id
-    - date
+  - name: _id
+    required: true
+    type: string
+  - name: docweb_id
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
   normalized_fields:
-    - _id: "IT:GPDP:{docweb_id}"
-    - _source: IT/GarantePrivacy
-    - _type: caselaw or doctrine
-    - title: Provvedimento title
-    - text: Full decision text
-    - date: Decision date (ISO 8601)
-    - url: Link to docweb page
-    - docweb_id: Document web ID
-    - decision_type: Type of decision
-    - language: "it"
-
-implementation:
-  strategy: |
-    1. Paginate through search results at /home/ricerca/-/search/tipologia/Provvedimenti
-    2. Extract docweb IDs from search result links
-    3. Fetch individual document pages at /home/docweb/-/docweb-display/docweb/{id}
-    4. Extract full text from <div id="interna-webcontent">
-    5. Parse metadata (date, registro number) from text
-    6. Normalize to standard schema
-  rate_limit: 0.5 requests/second
-  notes: |
-    - Documents are in Italian
-    - Full text available in HTML format
-    - Major GDPR enforcer - Italy's DPA
+  - _id: IT:GPDP:{docweb_id}
+  - _source: IT/GarantePrivacy
+  - _type: caselaw or doctrine
+  - title: Provvedimento title
+  - text: Full decision text
+  - date: Decision date (ISO 8601)
+  - url: Link to docweb page
+  - docweb_id: Document web ID
+  - decision_type: Type of decision
+  - language: it
+source:
+  auth:
+    type: none
+  country: IT
+  data_types:
+  - caselaw
+  - doctrine
+  id: IT/GarantePrivacy
+  license: public
+  name: Italian Data Protection Authority (Garante Privacy)
+  url: https://www.garanteprivacy.it

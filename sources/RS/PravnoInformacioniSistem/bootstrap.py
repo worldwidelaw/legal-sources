@@ -215,9 +215,8 @@ class SerbiaLegislationFetcher:
                     'text': text,
                     'area_path': area['path'],
                 }
-                record = self.normalize(raw)
                 count += 1
-                yield record
+                yield raw
 
             time.sleep(REQUEST_DELAY)
 
@@ -265,30 +264,6 @@ def test_api():
     return True
 
 
-def bootstrap(sample: bool = False):
-    """Run the bootstrap process."""
-    fetcher = SerbiaLegislationFetcher()
-    limit = 15 if sample else 0
-    output_dir = SAMPLE_DIR if sample else SCRIPT_DIR / "data"
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    count = 0
-    for record in fetcher.fetch_all(limit=limit):
-        if not record.get('text'):
-            continue
-
-        filename = re.sub(r'[^\w\-]', '_', record['_id'])[:100] + '.json'
-        filepath = output_dir / filename
-        with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(record, f, ensure_ascii=False, indent=2)
-
-        count += 1
-        logger.info(f"  [{count}] Saved: {record['title'][:60]}")
-
-    logger.info(f"Bootstrap complete: {count} records saved to {output_dir}")
-    return count
-
-
 def main():
     parser = argparse.ArgumentParser(description='RS/PravnoInformacioniSistem fetcher')
     parser.add_argument('command', choices=['test-api', 'bootstrap'])
@@ -300,8 +275,11 @@ def main():
         success = test_api()
         sys.exit(0 if success else 1)
     elif args.command == 'bootstrap':
-        count = bootstrap(sample=args.sample and not args.full)
-        if count == 0:
+        fetcher = SerbiaLegislationFetcher()
+        sample = args.sample and not args.full
+        stats = fetcher.bootstrap(sample_mode=sample)
+        logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2)}")
+        if stats.get("records_fetched", 0) == 0:
             logger.error("No records fetched!")
             sys.exit(1)
         sys.exit(0)

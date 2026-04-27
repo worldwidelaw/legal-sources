@@ -419,6 +419,7 @@ def main():
         default=None,
         help='Date to fetch updates from (YYYY-MM-DD)',
     )
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

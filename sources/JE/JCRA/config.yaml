@@ -1,0 +1,77 @@
+# ===================================================================
+# JE/JCRA -- Jersey Competition Regulatory Authority Decisions
+# ===================================================================
+# Regulatory decisions from the JCRA covering competition, telecoms,
+# and ports regulation. Case listing via Umbraco AJAX endpoint;
+# full text from HTML summaries + attached PDFs.
+# No authentication required.
+# ===================================================================
+
+source:
+  id: "JE/JCRA"
+  country: "JE"
+  name: "Jersey Competition Regulatory Authority Decisions"
+  url: "https://www.jcra.je/cases-documents/"
+  description: |
+    Competition and telecommunications regulatory decisions from JCRA.
+    Covers mergers, market investigations, licensing, and enforcement.
+    Full text from case page summaries and attached PDF documents.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.jcra.je"
+  endpoints:
+    case_search: "/umbraco/surface/SearchSurface/CaseSearch"
+
+data_model:
+  type: "doctrine"
+  primary_key: "case_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "case_number"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "case_number"
+      description: "Case reference number (e.g., C-086, T-120)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the regulatory decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the case page"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "sector"
+      description: "Regulatory sector (competition, telecoms, etc.)"
+    - name: "status"
+      description: "Case status (open, closed, etc.)"
+    - name: "parties"
+      description: "Parties involved in the case"

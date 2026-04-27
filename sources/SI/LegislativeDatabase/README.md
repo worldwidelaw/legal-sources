@@ -48,6 +48,10 @@ python bootstrap.py bootstrap --full
   Official Gazette server.
 - Some older laws may not have full text available online.
 
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Parliament open data licensed under Creative Commons Attribution 4.0.
+
 ## References
 
 - [PISRS Portal](https://www.pisrs.si) - Legal Information System of Slovenia

@@ -7,7 +7,7 @@ Decisions are fetched from the official website and full text is extracted from 
 
 **Website:** https://alkotmanybirosag.hu  
 **English site:** https://www.hunconcourt.hu  
-**License:** Public Domain
+**License:** Public domain
 
 ## Data Access
 
@@ -61,6 +61,10 @@ Install with:
 ```bash
 pip install requests pdfplumber
 ```
+
+## License
+
+Public domain — official decisions of the Hungarian Constitutional Court.
 
 ## Notes
 

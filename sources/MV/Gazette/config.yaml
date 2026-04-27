@@ -1,0 +1,81 @@
+# ===================================================================
+# MV/Gazette -- Maldives Government Gazette
+# ===================================================================
+# Official gazette of the Republic of Maldives, publishing laws,
+# regulations, decisions, principles/procedures, tax rulings, and
+# other legal instruments. ~7,450 entries dating back to 1960s.
+#
+# Discovery: HTML listing pages at gazette.gov.mv/gazette?type=...
+# Full text: PDF on Google Cloud Storage
+# License: Free public access (government gazette)
+# ===================================================================
+
+source:
+  id: "MV/Gazette"
+  country: "MV"
+  name: "Maldives Government Gazette"
+  url: "https://www.gazette.gov.mv/"
+  description: |
+    Official gazette of the Republic of Maldives. Publishes all laws
+    (gaanoonu), regulations (gavaaidhu), decisions (garaaru),
+    principles/procedures (usoolu), tax rulings, and other legal
+    instruments. Full text in Dhivehi (Thaana script) extracted from
+    PDF. PDFs hosted on Google Cloud Storage.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.gazette.gov.mv"
+  pdf_base: "https://storage.googleapis.com/gazette.gov.mv/docs/gazette"
+  gazette_types:
+    - gaanoonu
+    - gavaaidhu
+    - garaaru
+    - usoolu
+    - other
+    - tax-ruling
+
+data_model:
+  type: "legislation"
+  primary_key: "gazette_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "gazette_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "gazette_id"
+      description: "Unique gazette entry ID from gazette.gov.mv"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Title of the gazette entry (in Dhivehi)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "string"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the gazette entry page"
+      type: "string"
+      role: "reference"
+      required: true

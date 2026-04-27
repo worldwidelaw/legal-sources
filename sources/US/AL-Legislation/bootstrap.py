@@ -55,9 +55,15 @@ HEADERS = {
 
 SESSION = requests.Session()
 SESSION.headers.update(HEADERS)
+# Increase connection pool to avoid exhaustion on long crawls
+adapter = requests.adapters.HTTPAdapter(
+    pool_connections=5, pool_maxsize=10, max_retries=0  # we handle retries ourselves
+)
+SESSION.mount("https://", adapter)
+SESSION.mount("http://", adapter)
 
-CRAWL_DELAY = 1  # seconds between requests
-PAGE_SIZE = 10000
+CRAWL_DELAY = 1.5  # seconds between requests
+PAGE_SIZE = 2000  # reduced from 10000 to avoid VPS OOM/timeout crashes
 
 
 def clean_html(html_text: str) -> str:
@@ -65,7 +71,7 @@ def clean_html(html_text: str) -> str:
     if not html_text:
         return ""
     text = re.sub(r'<script[^>]*>.*?</script>', '', html_text, flags=re.DOTALL | re.IGNORECASE)
-    text = re.sub(r'<style[^>]*>.*?</style>', '', html_text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL | re.IGNORECASE)
     text = re.sub(r'<br\s*/?>', '\n', text, flags=re.IGNORECASE)
     text = re.sub(r'</p>', '\n', text, flags=re.IGNORECASE)
     text = re.sub(r'</div>', '\n', text, flags=re.IGNORECASE)
@@ -79,34 +85,67 @@ def clean_html(html_text: str) -> str:
     return text.strip()
 
 
-def graphql_query(query: str, variables: dict = None) -> Optional[dict]:
-    """Execute a GraphQL query with retry logic."""
+# Sentinel to distinguish "server error / transient failure" from "valid empty response"
+_QUERY_FAILED = object()
+
+MAX_RETRIES = 5
+
+
+def graphql_query(query: str, variables: dict = None):
+    """Execute a GraphQL query with retry logic.
+
+    Returns:
+        dict  -- the ``data`` payload on success
+        None  -- if the server returned a valid response with GraphQL-level errors
+        _QUERY_FAILED -- on transport / HTTP / decode failures after all retries
+    """
     payload = {"query": query}
     if variables:
         payload["variables"] = variables
 
-    for attempt in range(3):
+    for attempt in range(MAX_RETRIES):
         try:
-            resp = SESSION.post(GRAPHQL_URL, json=payload, timeout=60)
+            resp = SESSION.post(GRAPHQL_URL, json=payload, timeout=90)
             resp.raise_for_status()
             data = resp.json()
             if "errors" in data:
                 logger.warning(f"GraphQL errors: {data['errors']}")
                 return None
             return data.get("data")
-        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            if attempt < 2:
+        except (
+            requests.exceptions.ConnectionError,
+            requests.exceptions.Timeout,
+            requests.exceptions.HTTPError,
+            requests.exceptions.ChunkedEncodingError,
+            requests.exceptions.ContentDecodingError,
+        ) as e:
+            wait = min(10 * (attempt + 1), 60)
+            logger.warning(f"Request error (attempt {attempt + 1}/{MAX_RETRIES}): {e}")
+            if attempt < MAX_RETRIES - 1:
+                time.sleep(wait)
+            else:
+                logger.error(f"GraphQL request failed after {MAX_RETRIES} attempts: {e}")
+                return _QUERY_FAILED
+        except (ValueError, KeyError) as e:
+            # JSON decode errors, unexpected structure
+            logger.warning(f"Response parse error (attempt {attempt + 1}/{MAX_RETRIES}): {e}")
+            if attempt < MAX_RETRIES - 1:
                 time.sleep(5 * (attempt + 1))
             else:
-                logger.warning(f"GraphQL request failed: {e}")
-                return None
+                logger.error(f"Response parse failed after {MAX_RETRIES} attempts: {e}")
+                return _QUERY_FAILED
         except Exception as e:
-            logger.warning(f"GraphQL error: {e}")
-            return None
+            logger.error(f"Unexpected error in graphql_query: {e}")
+            return _QUERY_FAILED
 
 
-def fetch_page(limit: int, offset: int) -> list:
-    """Fetch a page of Code of Alabama items."""
+def fetch_page(limit: int, offset: int):
+    """Fetch a page of Code of Alabama items.
+
+    Returns:
+        list            -- items on success (may be empty for last page)
+        _QUERY_FAILED   -- on transport failure (caller should retry / skip)
+    """
     query = """
     {
       codesOfAlabama(limit: %d, offset: %d) {
@@ -125,6 +164,8 @@ def fetch_page(limit: int, offset: int) -> list:
     """ % (limit, offset)
 
     data = graphql_query(query)
+    if data is _QUERY_FAILED:
+        return _QUERY_FAILED
     if not data or "codesOfAlabama" not in data:
         return []
     return data["codesOfAlabama"].get("data", [])
@@ -180,49 +221,84 @@ def normalize(item: dict) -> dict:
     }
 
 
+MAX_CONSECUTIVE_FAILURES = 5   # give up only after 5 back-to-back transport errors
+
+
 def fetch_all() -> Generator[dict, None, None]:
     """Yield all section records with full text."""
     offset = 0
     total = 0
+    errors = 0
     empty_pages = 0
+    consecutive_failures = 0
 
     while True:
         logger.info(f"Fetching page at offset {offset}...")
         items = fetch_page(PAGE_SIZE, offset)
         time.sleep(CRAWL_DELAY)
 
+        # ---- transport / HTTP failure (distinct from empty data) ----
+        if items is _QUERY_FAILED:
+            consecutive_failures += 1
+            errors += 1
+            logger.warning(
+                f"Page at offset {offset} failed "
+                f"({consecutive_failures}/{MAX_CONSECUTIVE_FAILURES} consecutive)"
+            )
+            if consecutive_failures >= MAX_CONSECUTIVE_FAILURES:
+                logger.error(
+                    f"Aborting: {MAX_CONSECUTIVE_FAILURES} consecutive page failures. "
+                    f"Total records so far: {total}, total errors: {errors}"
+                )
+                break
+            # Skip this page and try the next one
+            offset += PAGE_SIZE
+            continue
+
+        # ---- valid but empty page (end-of-data detection) ----
         if not items:
             empty_pages += 1
+            consecutive_failures = 0  # server responded OK, just no data
             if empty_pages >= 2:
                 break
             offset += PAGE_SIZE
             continue
 
         empty_pages = 0
+        consecutive_failures = 0
         page_sections = 0
 
         for item in items:
-            # Only yield leaf sections with actual content
-            if item.get("numChildren", 0) > 0:
-                continue
-            if not item.get("content"):
+            try:
+                # Only yield leaf sections with actual content
+                if item.get("numChildren", 0) > 0:
+                    continue
+                if not item.get("content"):
+                    continue
+
+                record = normalize(item)
+                if len(record["text"]) < 20:
+                    continue
+
+                total += 1
+                page_sections += 1
+                yield record
+            except Exception as e:
+                errors += 1
+                item_id = item.get("displayId", item.get("id", "?"))
+                logger.warning(f"Skipping item {item_id}: {e}")
                 continue
 
-            record = normalize(item)
-            if len(record["text"]) < 20:
-                continue
-
-            total += 1
-            page_sections += 1
-            yield record
-
-        logger.info(f"  Page returned {len(items)} items, {page_sections} sections with text (total: {total})")
+        logger.info(
+            f"  Page returned {len(items)} items, {page_sections} sections "
+            f"with text (total: {total}, errors: {errors})"
+        )
 
         if len(items) < PAGE_SIZE:
             break
         offset += PAGE_SIZE
 
-    logger.info(f"Total sections with full text: {total}")
+    logger.info(f"Total sections with full text: {total} (errors skipped: {errors})")
 
 
 def fetch_sample(count: int = 15) -> list:
@@ -332,6 +408,7 @@ def main():
     parser = argparse.ArgumentParser(description="US/AL-Legislation Data Fetcher")
     parser.add_argument("command", choices=["bootstrap", "test-api"])
     parser.add_argument("--sample", action="store_true")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 
@@ -345,14 +422,25 @@ def main():
         else:
             logger.info("Full bootstrap mode")
             count = 0
+            write_errors = 0
             SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-            for record in fetch_all():
-                count += 1
-                safe_id = re.sub(r'[^\w\-]', '_', record["_id"])[:80]
-                filepath = SAMPLE_DIR / f"record_{safe_id}.json"
-                with open(filepath, "w", encoding="utf-8") as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-            logger.info(f"Processed {count} records")
+            try:
+                for record in fetch_all():
+                    count += 1
+                    try:
+                        safe_id = re.sub(r'[^\w\-]', '_', record["_id"])[:80]
+                        filepath = SAMPLE_DIR / f"record_{safe_id}.json"
+                        with open(filepath, "w", encoding="utf-8") as f:
+                            json.dump(record, f, ensure_ascii=False, indent=2)
+                    except Exception as e:
+                        write_errors += 1
+                        logger.warning(f"Failed to write record #{count}: {e}")
+            except (KeyboardInterrupt, SystemExit):
+                logger.warning(f"Interrupted after {count} records")
+            except Exception as e:
+                logger.error(f"Generator crashed after {count} records: {e}")
+            logger.info(f"Processed {count} records ({write_errors} write errors)")
+            sys.exit(0)  # partial data is still valid
 
 
 if __name__ == "__main__":

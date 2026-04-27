@@ -66,3 +66,7 @@ python bootstrap.py update
 - `ImRisSeit` filter supports: EinerWoche, ZweiWochen, EinemMonat, DreiMonaten, SechsMonaten, EinemJahr
 - Full document text available via content URLs in XML, HTML, RTF, and PDF formats
 - Response structure: `OgdSearchResult.OgdDocumentResults.OgdDocumentReference[]`
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Austrian Open Government Data.

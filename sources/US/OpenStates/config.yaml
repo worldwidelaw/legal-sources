@@ -1,36 +1,40 @@
-source_id: US/OpenStates
-name: Open States (State Legislation)
-type: legislation
-country: US
-language: en
-base_url: https://v3.openstates.org/
-
 auth:
-  type: api_key
   env_var: OPENSTATES_API_KEY
   header: X-API-KEY
-  required: true
   registration_url: https://open.pluralpolicy.com/accounts/profile/
-
-schema:
-  key_fields:
-    - id
-    - jurisdiction
-    - session
-    - identifier
-  date_field: latest_action_date
-  text_field: text
-
-rate_limits:
-  requests_per_second: 1
-  delay_between_requests: 1.0
-
+  required: true
+  type: api_key
+base_url: https://v3.openstates.org/
+country: US
 coverage:
-  jurisdictions: 52
-  description: All 50 US states plus DC and Puerto Rico
   data_includes:
-    - bills
-    - bill versions (full text links)
-    - votes
-    - legislators
-    - committees
+  - bills
+  - bill versions (full text links)
+  - votes
+  - legislators
+  - committees
+  description: All 50 US states plus DC and Puerto Rico
+  jurisdictions: 52
+language: en
+name: Open States (State Legislation)
+rate_limits:
+  delay_between_requests: 1.0
+  requests_per_second: 1
+schema:
+  date_field: latest_action_date
+  key_fields:
+  - name: id
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string
+  - name: session
+    required: false
+    type: string
+  - name: identifier
+    required: false
+    type: string
+  text_field: text
+source_id: US/OpenStates
+type: legislation

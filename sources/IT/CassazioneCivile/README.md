@@ -62,7 +62,7 @@ python bootstrap.py update
 
 ## License
 
-Italian Open Data License (IODL) 2.0 - Commercial use permitted with attribution.
+[Italian Open Data License v2.0 (IODL 2.0)](https://www.dati.gov.it/content/italian-open-data-license-v20) — commercial use permitted with attribution.
 
 ## Notes
 

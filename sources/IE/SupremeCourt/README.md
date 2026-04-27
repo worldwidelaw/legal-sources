@@ -47,4 +47,4 @@ python bootstrap.py bootstrap
 
 ## License
 
-Irish Public Service Data License - open access for research purposes.
+[Irish Public Service Data Licence](https://data.gov.ie/pages/licence) — open access for reuse.

@@ -82,7 +82,7 @@ schema:
       description: "Full text of the document"
       type: "string"
       role: "content"
-      required: true
+      required: false
     - name: "language"
       description: "Language code (LT, EN, DE, FR, RU)"
       type: "string"

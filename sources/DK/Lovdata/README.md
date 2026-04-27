@@ -84,3 +84,7 @@ Denmark has full ELI (European Legislation Identifier) implementation:
 - XML format provides cleanest text extraction
 - Documents are numbered sequentially within each year
 - Some document numbers may be skipped (repealed or never published)
+
+## License
+
+[Open Data](https://www.retsinformation.dk) — Danish legislation is freely available via Retsinformation.

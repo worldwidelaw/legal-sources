@@ -56,8 +56,6 @@ python3 bootstrap.py bootstrap --sample
 python3 bootstrap.py bootstrap
 ```
 
-## Legal Notes
+## License
 
-- Data is public domain (official government documents)
-- LBA website states content is for information purposes
-- Legally binding versions are published in official Notices to Airmen (NfL)
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).

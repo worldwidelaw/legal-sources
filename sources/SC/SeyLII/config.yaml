@@ -1,0 +1,23 @@
+country: SC
+data_types:
+- case_law
+description: 'Seychelles court decisions from SeyLII (Lexum/Norma platform). ~5,090 judgments from Supreme Court (~3,810), Court of Appeal (~1,140), and Constitutional Court (~140). Full text in HTML. Free
+  access.
+
+  '
+id: SC/SeyLII
+language: en
+name: Seychelles Legal Information Institute (SeyLII)
+schema:
+  key_fields:
+  - name: court
+    required: false
+    type: string
+  - name: citation
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+strategy: html_scraping
+url: https://seylii.org/

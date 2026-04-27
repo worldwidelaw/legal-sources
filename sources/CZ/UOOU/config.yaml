@@ -1,43 +1,45 @@
-source:
-  id: CZ/UOOU
-  name: Czech Data Protection Authority (ÚOOÚ)
-  name_local: "Úřad pro ochranu osobních údajů"
-  country: CZ
-  url: https://uoou.gov.cz
-  data_types:
-    - doctrine
-  description: >
-    Data protection enforcement decisions from the Czech Office for Personal
-    Data Protection (ÚOOÚ). Includes completed inspection summaries covering
-    personal data protection violations, GDPR enforcement, and unsolicited
-    commercial communications.
-  language: cs
-  auth: none
-
 fetch:
   base_url: https://uoou.gov.cz
+  end_year: 2001
   inspections_root: /cinnost/ochrana-osobnich-udaju/ukoncene-kontroly
   rate_limit_seconds: 1.5
-  timeout_seconds: 30
-  # Available years: 2001-2024
   start_year: 2024
-  end_year: 2001
-
+  timeout_seconds: 30
 schema:
   key_fields:
-    - _id
-    - case_number
-    - url
+  - name: _id
+    required: true
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
   normalized_fields:
-    _id: Unique identifier based on case number and URL slug
-    _source: "CZ/UOOU"
-    _type: "doctrine"
     _fetched_at: ISO 8601 timestamp
-    title: Title of the inspection (usually "Obchodní společnost" + case number)
+    _id: Unique identifier based on case number and URL slug
+    _source: CZ/UOOU
+    _type: doctrine
     case_number: Case reference number (e.g., "00037/24")
-    text: Full text of the inspection summary
-    date: Date when inspection content was modified
-    year: Inspection year
-    url: Original URL to decision page
     category: Category of inspection (e.g., personal_data, commercial_communications, schengen)
+    date: Date when inspection content was modified
     language: cs
+    text: Full text of the inspection summary
+    title: Title of the inspection (usually "Obchodní společnost" + case number)
+    url: Original URL to decision page
+    year: Inspection year
+source:
+  auth: none
+  country: CZ
+  data_types:
+  - doctrine
+  description: 'Data protection enforcement decisions from the Czech Office for Personal Data Protection (ÚOOÚ). Includes completed inspection summaries covering personal data protection violations, GDPR
+    enforcement, and unsolicited commercial communications.
+
+    '
+  id: CZ/UOOU
+  language: cs
+  name: Czech Data Protection Authority (ÚOOÚ)
+  name_local: Úřad pro ochranu osobních údajů
+  url: https://uoou.gov.cz

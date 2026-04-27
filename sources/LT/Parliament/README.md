@@ -7,7 +7,7 @@ Official publications from the Lithuanian Parliament (Seimas) website, including
 - **Portal**: [data.gov.lt](https://data.gov.lt/datasets/2609/)
 - **API**: `https://get.data.gov.lt/datasets/gov/lrsk/interneto_tekstai/Straipsnis`
 - **Provider**: Lietuvos Respublikos Seimo kanceliarija (Parliament Chancellery)
-- **License**: CC BY 4.0
+- **License**: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 ## Coverage
 
@@ -59,6 +59,10 @@ python bootstrap.py bootstrap
 # Incremental update
 python bootstrap.py update
 ```
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Lithuanian open government data.
 
 ## API Notes
 

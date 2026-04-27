@@ -62,6 +62,10 @@ python bootstrap.py update
 
 Conservative rate limiting at 1 request/second to respect server resources.
 
+## License
+
+[Italian Open Data License v2.0 (IODL 2.0)](https://www.dati.gov.it/content/italian-open-data-license-v20) — commercial use permitted with attribution.
+
 ## Notes
 
 - Serie Generale available from 1986 to present

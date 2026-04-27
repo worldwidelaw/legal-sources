@@ -1,0 +1,27 @@
+{
+  "_id": "CV_BO_100866",
+  "_source": "CV/BoletimOficial",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-16T22:58:15.753966+00:00",
+  "title": "Convocatória n.º 16/2026",
+  "text": "Em conformidade com as disposições legais aplicáveis e os estatutos da Associação, convoco todos os sócios para se reunirem em Assembleia sita na Residencial Beleza, localidade Monte em São Vicente pelas 18h00 do dia 6 de maio de 2026 com a seguinte ordem de trabalhos: \n\nPonto 1: Informações da Direção\n\nPonto 2: Interpretação de clausula 8 do estatuto.\n\nPonto 3: Alienação do prédio do estabelecimento comercial Residencial Beleza Laginha\n\nSe à hora indicada não houver quórum, a Assembleia funcionará meia hora depois no mesmo local, com qualquer número de sócios, e a mesma ordem de trabalhos.\n\nMindelo, aos 13 de abril 2026. ― O Presidente da Mesa da Assembleia Geral, T. Inocencio.",
+  "date": "2026-04-16",
+  "url": "https://boe.incv.cv/Bulletins/View/100866",
+  "ref_act": 38990,
+  "part": {
+    "id": 11,
+    "code": "J",
+    "description": "J - Contratos públicos",
+    "hide": false,
+    "refParent": 2,
+    "parent": {
+      "id": 2,
+      "description": "II Série",
+      "hide": false,
+      "order": 0
+    },
+    "order": 0
+  },
+  "entities": [],
+  "language": "pt"
+}

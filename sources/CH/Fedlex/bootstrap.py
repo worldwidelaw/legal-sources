@@ -354,6 +354,7 @@ def main():
     # Update command
     update_parser = subparsers.add_parser("update", help="Fetch recent updates")
     update_parser.add_argument("--days", type=int, default=7, help="Days to look back")
+    update_parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

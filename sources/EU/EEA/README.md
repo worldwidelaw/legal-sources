@@ -87,3 +87,7 @@ As of 2026-03, there are approximately:
 - ~950 web reports
 
 Total: ~1,100 publications with full text content.
+
+## License
+
+[CC BY 2.5 DK](https://creativecommons.org/licenses/by/2.5/dk/) — EEA content is generally available under Creative Commons Attribution.

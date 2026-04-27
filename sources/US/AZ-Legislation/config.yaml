@@ -1,14 +1,20 @@
-source_id: US/AZ-Legislation
-name: Arizona Revised Statutes
 country: US
-jurisdiction: US-AZ
-url: https://www.azleg.gov/arstitle/
 data_types:
-  - legislation
+- legislation
+jurisdiction: US-AZ
 language: en
+name: Arizona Revised Statutes
 schedule: quarterly
 schema:
   key_fields:
-    - _id
-    - title_number
-    - section_number
+  - name: _id
+    required: true
+    type: string
+  - name: title_number
+    required: false
+    type: string
+  - name: section_number
+    required: false
+    type: string
+source_id: US/AZ-Legislation
+url: https://www.azleg.gov/arstitle/

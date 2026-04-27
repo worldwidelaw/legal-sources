@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 """
-US/TX-AdminCode -- Texas Administrative Code (eLaws mirror)
+US/TX-AdminCode -- Texas Administrative Code (via Cornell LII)
 
-Fetches all Texas Administrative Code rules with full text from the
-eLaws mirror at txrules.elaws.us.
+Fetches all Texas Administrative Code rules with full text from
+Cornell Law's Legal Information Institute (law.cornell.edu).
 
 Strategy:
-  1. Fetch title list page to discover all 16 title URLs
-  2. For each title, fetch its page to discover all chapter URLs
-  3. For each chapter, fetch its page to discover all section URLs
-  4. For each section, fetch the page and extract full rule text
+  1. Fetch title list from /regulations/texas
+  2. Recursively discover parts → chapters → subchapters → sections
+  3. For each section, extract full rule text from statereg-text div
 
 Data: Public domain (Texas government works). No auth required.
 
@@ -29,7 +28,6 @@ from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator
 
-# Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -42,13 +40,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger("legal-data-hunter.US.TX-AdminCode")
 
-BASE_URL = "https://txrules.elaws.us"
+BASE_URL = "https://www.law.cornell.edu"
 
-# Sample: a few sections from Title 1 Ch 3, Title 22 Ch 1, Title 30 Ch 101
-SAMPLE_CHAPTERS = [
-    "title1_chapter3",
-    "title22_chapter1",
-    "title30_chapter101",
+# Sample subchapters for --sample mode
+SAMPLE_PATHS = [
+    "/regulations/texas/title-1/part-1/chapter-3/subchapter-A",
+    "/regulations/texas/title-22/part-1/chapter-1",
+    "/regulations/texas/title-30/part-1/chapter-101/subchapter-A",
 ]
 
 
@@ -79,64 +77,49 @@ class TXAdminCodeScraper(BaseScraper):
         self.http = HttpClient(
             base_url="",
             headers={
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "User-Agent": "LegalDataHunter/1.0 (legal research; https://github.com/worldwidelaw/legal-sources)",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             },
             timeout=60,
         )
-        self.delay = 3.0
+        self.delay = 2.0
 
-    def _get(self, url: str, retries: int = 2) -> str:
-        """Fetch URL with rate limiting and retry on generic page."""
+    def _get(self, url: str, retries: int = 3) -> str:
+        """Fetch URL with rate limiting and retries."""
         for attempt in range(retries + 1):
             time.sleep(self.delay)
-            resp = self.http.get(url)
-            html = resp.text
-            # Check if we got a real page with content
-            # Section pages should have CiteTitle or rulehome_rightdetail
-            # Chapter pages should have section links (_sec.)
-            # Title pages should have chapter links (_chapter)
-            if self._is_real_page(url, html):
-                return html
-            if attempt < retries:
-                logger.warning(f"Got generic page for {url}, retry {attempt+1}/{retries}")
-                time.sleep(5)
-        return html
-
-    def _is_real_page(self, url: str, html: str) -> bool:
-        """Check if we got real content vs a rate-limited generic page."""
-        # The main title list page - check for title links
-        if url.endswith('/rule'):
-            return 'title1' in html
-        # Section pages should have rule content
-        if '_sec.' in url:
-            return 'CiteTitle' in html or 'rulehome_rightdetail' in html
-        # Chapter pages should have section links
-        if '_chapter' in url:
-            return '_sec.' in html or 'Sec.' in html
-        # Title pages should have chapter links
-        return '_chapter' in html or 'CHAPTER' in html
+            try:
+                resp = self.http.get(url)
+                if resp.status_code == 200:
+                    return resp.text
+                if resp.status_code == 404:
+                    return ""
+                if resp.status_code >= 500 and attempt < retries:
+                    logger.warning(f"HTTP {resp.status_code} for {url}, retry {attempt+1}/{retries}")
+                    time.sleep(5 * (attempt + 1))
+                    continue
+                return resp.text
+            except Exception as e:
+                if attempt < retries:
+                    logger.warning(f"Error fetching {url}: {e}, retry {attempt+1}/{retries}")
+                    time.sleep(5 * (attempt + 1))
+                else:
+                    raise
+        return ""
 
     def test_api(self):
-        """Test connectivity to txrules.elaws.us."""
-        logger.info("Testing txrules.elaws.us...")
+        """Test connectivity to Cornell LII."""
+        logger.info("Testing law.cornell.edu/regulations/texas...")
         try:
-            html = self._get(f"{BASE_URL}/rule")
-            if "title1" in html.lower() or "TITLE 1" in html:
+            html = self._get(f"{BASE_URL}/regulations/texas")
+            if "title-1" in html:
                 logger.info("  Title list: OK")
             else:
                 logger.error("  Title list: unexpected content")
                 return False
 
-            html = self._get(f"{BASE_URL}/rule/title1_chapter3")
-            if "sec.3." in html or "SECTION 3." in html:
-                logger.info("  Chapter page: OK (Title 1, Ch 3)")
-            else:
-                logger.error("  Chapter page: unexpected content")
-                return False
-
-            html = self._get(f"{BASE_URL}/rule/title1_chapter3_sec.3.1")
-            if "Applicability" in html or "3.1" in html:
+            html = self._get(f"{BASE_URL}/regulations/texas/1-Tex-Admin-Code-SS-3-1")
+            if "Applicability" in html and "statereg-text" in html:
                 logger.info("  Section page: OK (§3.1)")
                 logger.info("API test PASSED")
                 return True
@@ -147,51 +130,50 @@ class TXAdminCodeScraper(BaseScraper):
             logger.error(f"API test FAILED: {e}")
             return False
 
-    def discover_titles(self) -> list:
-        """Discover all title URLs from the main page."""
-        html = self._get(f"{BASE_URL}/rule")
-        titles = []
-        for m in re.finditer(r'href="(/rule/title(\d+))"', html):
-            path = m.group(1)
-            num = m.group(2)
-            titles.append({"path": path, "num": num})
-        # Deduplicate
+    def _find_links(self, html: str, pattern: str) -> list:
+        """Extract unique href links matching a pattern."""
+        matches = re.findall(pattern, html)
         seen = set()
-        unique = []
-        for t in titles:
-            if t["num"] not in seen:
-                seen.add(t["num"])
-                unique.append(t)
-        logger.info(f"Discovered {len(unique)} titles")
-        return unique
+        result = []
+        for m in matches:
+            if m not in seen:
+                seen.add(m)
+                result.append(m)
+        return result
 
-    def discover_chapters(self, title_path: str) -> list:
-        """Discover all chapter URLs from a title page."""
-        html = self._get(f"{BASE_URL}{title_path}")
-        chapters = []
-        # Links can be absolute or relative
-        pat = re.compile(r'href="(?:https://txrules\.elaws\.us)?(/rule/title\d+_chapter\d+)"')
-        seen = set()
-        for m in pat.finditer(html):
-            path = m.group(1)
-            if path not in seen:
-                seen.add(path)
-                chapters.append(path)
-        return chapters
+    def discover_section_urls(self, page_url: str, depth: int = 0) -> list:
+        """Recursively discover section URLs from a hierarchy page.
 
-    def discover_sections(self, chapter_path: str) -> list:
-        """Discover all section URLs from a chapter page."""
-        html = self._get(f"{BASE_URL}{chapter_path}")
-        sections = []
-        # Links are absolute URLs on this site
-        pat = re.compile(r'href="(?:https://txrules\.elaws\.us)?(/rule/title\d+_chapter\d+_sec\.[^"]+)"')
-        seen = set()
-        for m in pat.finditer(html):
-            path = m.group(1)
-            if path not in seen:
-                seen.add(path)
-                sections.append(path)
-        return sections
+        Section URLs look like: /regulations/texas/1-Tex-Admin-Code-SS-3-1
+        Navigation URLs look like: /regulations/texas/title-N/part-M/...
+        """
+        if depth > 6:
+            return []
+
+        html = self._get(f"{BASE_URL}{page_url}")
+        if not html:
+            return []
+
+        # Find section links (actual regulation section pages)
+        section_pat = r'href="(/regulations/texas/\d+-Tex-Admin-Code-SS-[^"]+)"'
+        sections = self._find_links(html, section_pat)
+
+        if sections:
+            return sections
+
+        # No section links found — look for deeper navigation links
+        nav_pat = r'href="(/regulations/texas/title-\d+/[^"]+)"'
+        nav_links = self._find_links(html, nav_pat)
+
+        # Filter: only follow links deeper than current page
+        deeper = [l for l in nav_links if len(l) > len(page_url)]
+
+        all_sections = []
+        for link in deeper:
+            child_sections = self.discover_section_urls(link, depth + 1)
+            all_sections.extend(child_sections)
+
+        return all_sections
 
     def fetch_section(self, section_path: str):
         """Fetch a single section page and extract text."""
@@ -202,49 +184,53 @@ class TXAdminCodeScraper(BaseScraper):
             logger.warning(f"Failed to fetch {section_path}: {e}")
             return None
 
-        if not html or "cannot be found" in html.lower() or "404" in html[:500]:
+        if not html:
             return None
 
-        # Extract section heading from CiteTitle span
-        cite_match = re.search(r'<span id="CiteTitle">(.*?)</span>', html, re.DOTALL)
-        heading = strip_html(cite_match.group(1)) if cite_match else ""
+        # Extract title from h1
+        h1_match = re.search(r'<h1[^>]*id="page_title"[^>]*>(.*?)</h1>', html, re.DOTALL)
+        heading = strip_html(h1_match.group(1)).strip() if h1_match else ""
 
-        # Extract breadcrumb from <title> tag
-        # Format: "SECTION 3.1. ..., SUBCHAPTER A. ..., CHAPTER 3. ..., PART 1. ..., TITLE 1. ..."
-        tac_title = ""
-        chapter = ""
-        title_match = re.search(r'<title>(.*?)</title>', html, re.DOTALL)
-        if title_match:
-            title_text = strip_html(title_match.group(1))
-            parts = [p.strip() for p in title_text.split(",")]
-            for p in parts:
-                if p.startswith("TITLE "):
-                    tac_title = p
-                elif p.startswith("CHAPTER "):
-                    chapter = p
-
-        # Extract the main rule text content
-        # The rule text is typically in a div after the h1, before source note
-        # Try to find the content between the heading and source note
+        # Extract full text from statereg-text div
         text = self._extract_rule_text(html)
 
-        # Extract source note
+        # Extract source note from statereg-notes
         source_note = ""
-        sn_match = re.search(r'Source Note:?\s*(.*?)(?:</p>|</div>|$)', html, re.DOTALL)
-        if sn_match:
-            source_note = strip_html(sn_match.group(1)).strip()
+        notes_match = re.search(
+            r'<div class="statereg-notes">(.*?)</div>\s*</div>',
+            html, re.DOTALL
+        )
+        if notes_match:
+            source_note = strip_html(notes_match.group(1)).strip()
+            # Clean up the "Notes" heading
+            source_note = re.sub(r'^Notes\s*', '', source_note).strip()
 
         if not text:
             return None
 
-        # Parse section number from path
-        sec_match = re.search(r'_sec\.(.+)$', section_path)
-        sec_num = sec_match.group(1) if sec_match else ""
+        # Parse section id from path: /regulations/texas/1-Tex-Admin-Code-SS-3-1
+        # Format: {title}-Tex-Admin-Code-SS-{section}
+        path_match = re.search(r'/(\d+)-Tex-Admin-Code-SS-(.+)$', section_path)
+        if path_match:
+            title_num = path_match.group(1)
+            sec_num = path_match.group(2)
+        else:
+            title_num = ""
+            sec_num = section_path.split("/")[-1]
 
-        # Parse title and chapter numbers from path
-        path_match = re.search(r'title(\d+)_chapter(\d+)', section_path)
-        title_num = path_match.group(1) if path_match else ""
-        chap_num = path_match.group(2) if path_match else ""
+        # Parse chapter from section number (e.g., "3-1" → chapter 3)
+        chap_match = re.match(r'(\d+)', sec_num)
+        chap_num = chap_match.group(1) if chap_match else ""
+
+        # Extract TAC title info from breadcrumb or page context
+        tac_title = ""
+        bc_match = re.search(r'class="breadcrumb">(.*?)</[ou]l>', html, re.DOTALL)
+        if bc_match:
+            bc_text = strip_html(bc_match.group(1))
+            # Look for "Title N" in breadcrumb
+            t_match = re.search(r'(Title \d+)', bc_text)
+            if t_match:
+                tac_title = t_match.group(1)
 
         return {
             "section_id": f"TAC-{title_num}-{chap_num}-{sec_num}",
@@ -253,38 +239,27 @@ class TXAdminCodeScraper(BaseScraper):
             "text": text,
             "tac_title": tac_title,
             "tac_title_num": title_num,
-            "chapter": chapter,
+            "chapter": f"Chapter {chap_num}" if chap_num else "",
             "chapter_num": chap_num,
             "source_note": source_note,
             "url": url,
         }
 
     def _extract_rule_text(self, html: str) -> str:
-        """Extract the main rule text from a section page.
-
-        The rule text lives inside <div class="rulehome_rightdetail">,
-        before the <div class="rule_historical"> (source note).
-        """
-        # Find the rulehome_rightdetail div
-        start_marker = 'class="rulehome_rightdetail">'
+        """Extract the main rule text from a Cornell LII section page."""
+        # Find the statereg-text div
+        start_marker = 'class="statereg-text">'
         start_idx = html.find(start_marker)
         if start_idx == -1:
             return ""
         content = html[start_idx + len(start_marker):]
 
-        # Cut before rule_historical (source note) or end-content marker
-        for marker in ['class="rule_historical"', '<!-- End content -->',
-                       'class="sharepart"']:
-            idx = content.find(marker)
-            if idx > 0:
-                content = content[:idx]
-                break
+        # Cut at the closing </div> for this div
+        end_idx = content.find('</div>')
+        if end_idx > 0:
+            content = content[:end_idx]
 
         text = strip_html(content)
-
-        # Remove XML processing instructions that leak through
-        text = re.sub(r'<\?[^>]*\?>', '', text)
-
         text = re.sub(r'\n{3,}', '\n\n', text).strip()
         return text
 
@@ -310,20 +285,21 @@ class TXAdminCodeScraper(BaseScraper):
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Fetch all TAC sections with full text."""
-        titles = self.discover_titles()
+        html = self._get(f"{BASE_URL}/regulations/texas")
+        title_paths = self._find_links(html, r'href="(/regulations/texas/title-\d+)"')
+        logger.info(f"Discovered {len(title_paths)} titles")
+
         total_sections = 0
-        for title in titles:
-            logger.info(f"Processing Title {title['num']}...")
-            chapters = self.discover_chapters(title["path"])
-            logger.info(f"  Found {len(chapters)} chapters")
-            for chap_path in chapters:
-                sections = self.discover_sections(chap_path)
-                logger.info(f"  {chap_path}: {len(sections)} sections")
-                for sec_path in sections:
-                    raw = self.fetch_section(sec_path)
-                    if raw and raw.get("text"):
-                        yield self.normalize(raw)
-                        total_sections += 1
+        for title_path in title_paths:
+            title_num = title_path.split("-")[-1]
+            logger.info(f"Processing Title {title_num}...")
+            section_urls = self.discover_section_urls(title_path)
+            logger.info(f"  Found {len(section_urls)} sections")
+            for sec_path in section_urls:
+                raw = self.fetch_section(sec_path)
+                if raw and raw.get("text"):
+                    yield raw
+                    total_sections += 1
         logger.info(f"Total sections fetched: {total_sections}")
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
@@ -336,14 +312,12 @@ class TXAdminCodeScraper(BaseScraper):
         sample_dir.mkdir(exist_ok=True)
 
         if sample:
-            logger.info("Running in SAMPLE mode — fetching from 3 chapters")
+            logger.info("Running in SAMPLE mode — fetching from sample paths")
             count = 0
-            for chap_path_suffix in SAMPLE_CHAPTERS:
-                chap_path = f"/rule/{chap_path_suffix}"
-                sections = self.discover_sections(chap_path)
-                logger.info(f"  {chap_path}: {len(sections)} sections")
-                # Take up to 5 sections per chapter
-                for sec_path in sections[:5]:
+            for page_path in SAMPLE_PATHS:
+                section_urls = self.discover_section_urls(page_path)
+                logger.info(f"  {page_path}: {len(section_urls)} sections")
+                for sec_path in section_urls[:5]:
                     raw = self.fetch_section(sec_path)
                     if raw and raw.get("text"):
                         record = self.normalize(raw)

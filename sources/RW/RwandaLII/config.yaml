@@ -1,17 +1,22 @@
-id: RW/RwandaLII
-name: RwandaLII Legislation
 country: RW
-url: https://rwandalii.org/
 data_types:
-  - legislation
+- legislation
+description: 'Rwandan legislation from RwandaLII (Laws.Africa platform). ~500 laws, regulations, codes, guidelines, and agreements. English full text in Akoma Ntoso format. Free access.
+
+  '
+id: RW/RwandaLII
 language: en
-strategy: html_scraping
-description: >
-  Rwandan legislation from RwandaLII (Laws.Africa platform). ~500 laws,
-  regulations, codes, guidelines, and agreements. English full text in
-  Akoma Ntoso format. Free access.
+name: RwandaLII Legislation
 schema:
   key_fields:
-    - doc_subtype
-    - number
-    - date
+  - name: doc_subtype
+    required: false
+    type: string
+  - name: number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+strategy: html_scraping
+url: https://rwandalii.org/

@@ -1,28 +1,32 @@
-name: Manitoba Laws (King's Printer)
-source_id: CA/MB-Legislation
 country: CA
 data_types:
-  - legislation
-
-url: https://web2.gov.mb.ca/laws/
+- legislation
 license: Crown Copyright (Manitoba King's Printer)
-update_frequency: monthly
+name: Manitoba Laws (King's Printer)
+notes: 'Manitoba consolidated statutes (C.C.S.M.) and regulations from web2.gov.mb.ca.
 
+  ~513 consolidated acts + ~1,089 regulations, all bilingual HTML full text.
+
+  Scraped from King''s Printer PHP pages via HTML index parsing.
+
+  '
 schema:
   key_fields:
-    - _id
-    - doc_type
+  - name: _id
+    required: true
+    type: string
+  - name: doc_type
+    required: false
+    type: string
   required_fields:
-    - _id
-    - _source
-    - _type
-    - _fetched_at
-    - title
-    - text
-    - date
-    - url
-
-notes: |
-  Manitoba consolidated statutes (C.C.S.M.) and regulations from web2.gov.mb.ca.
-  ~513 consolidated acts + ~1,089 regulations, all bilingual HTML full text.
-  Scraped from King's Printer PHP pages via HTML index parsing.
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+source_id: CA/MB-Legislation
+update_frequency: monthly
+url: https://web2.gov.mb.ca/laws/

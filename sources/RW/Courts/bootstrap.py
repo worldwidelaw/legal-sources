@@ -70,15 +70,24 @@ PAGE_SIZE = 200
 
 
 def list_documents(section: str, start: int = 0, length: int = PAGE_SIZE) -> dict:
-    """List documents from a section via the search API."""
+    """List documents from a section via the search API with retry."""
     url = f"{API_BASE}/documents/search"
-    resp = SESSION.get(url, params={
-        "start": start,
-        "length": length,
-        "section": section,
-    }, timeout=60)
-    resp.raise_for_status()
-    return resp.json()
+    for attempt in range(3):
+        try:
+            resp = SESSION.get(url, params={
+                "start": start,
+                "length": length,
+                "section": section,
+            }, timeout=60)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            logger.warning(f"list_documents attempt {attempt+1}/3 failed "
+                           f"(section={section}, start={start}): {e}")
+            if attempt < 2:
+                time.sleep(5 * (attempt + 1))
+            else:
+                raise
 
 
 def download_pdf(file_path: str) -> Optional[bytes]:
@@ -189,21 +198,34 @@ def fetch_document(record: dict) -> Optional[dict]:
 
 
 def fetch_all() -> Generator[dict, None, None]:
-    """Yield all case law documents with full text."""
+    """Yield all case law documents with full text.
+
+    Paginates through every section, advancing by the actual number of
+    records the API returned (not by PAGE_SIZE) so that a server-side cap
+    smaller than PAGE_SIZE cannot cause pages to be silently skipped.
+    Pagination stops only when the API returns an empty page.
+    """
     for section in CASE_LAW_SECTIONS:
         logger.info(f"Fetching section {section}...")
         offset = 0
-        total = None
+        page_num = 0
         while True:
             data = list_documents(section, start=offset, length=PAGE_SIZE)
             inner = data.get("data", {})
-            if total is None:
-                total = inner.get("recordsFiltered", 0)
-                logger.info(f"Section {section}: {total} documents")
+
+            if page_num == 0:
+                total = inner.get("recordsFiltered", "?")
+                logger.info(f"Section {section}: {total} documents reported by API")
 
             records = inner.get("data", [])
             if not records:
+                logger.info(f"Section {section}: empty page at offset {offset}, done.")
                 break
+
+            page_num += 1
+            got = len(records)
+            logger.info(f"Section {section} page {page_num}: "
+                         f"got {got} records (offset {offset})")
 
             for record in records:
                 doc = fetch_document(record)
@@ -211,8 +233,13 @@ def fetch_all() -> Generator[dict, None, None]:
                     yield doc
                 time.sleep(1.5)
 
-            offset += PAGE_SIZE
-            if offset >= total:
+            # Advance by actual records received, not PAGE_SIZE, so a
+            # server-side cap (e.g. max 100) doesn't skip records.
+            offset += got
+
+            # If we got fewer records than requested, we've reached the end.
+            if got < PAGE_SIZE:
+                logger.info(f"Section {section}: last page ({got} < {PAGE_SIZE}), done.")
                 break
             time.sleep(1)
 

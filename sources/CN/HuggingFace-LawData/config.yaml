@@ -1,0 +1,62 @@
+# ===================================================================
+# CN/HuggingFace-LawData -- Chinese Law and Regulations Dataset
+# ===================================================================
+# 22,552 Chinese laws and regulations with full text via HuggingFace
+# datasets API. Apache 2.0 license. Dataset by twang2218.
+# ===================================================================
+
+source:
+  id: "CN/HuggingFace-LawData"
+  country: "CN"
+  name: "Chinese Law and Regulations HuggingFace Dataset"
+  url: "https://huggingface.co/datasets/twang2218/chinese-law-and-regulations"
+  description: |
+    Comprehensive open dataset of Chinese laws and regulations scraped from
+    official sources. Contains full text of 22,552 documents including
+    constitution, laws, regulations, and departmental rules. Structured
+    metadata includes office, type, status, and effective dates.
+    Apache 2.0 license.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  notes: "HuggingFace API rate limits are generous."
+
+api:
+  type: "rest"
+  base_url: "https://datasets-server.huggingface.co"
+  endpoints:
+    rows: "/rows?dataset=twang2218/chinese-law-and-regulations&config=default&split=train&offset={offset}&length={length}"
+
+schema:
+  key_fields:
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+    - name: "content"
+      description: "Full text of the law/regulation"
+      type: "string"
+      role: "content"
+    - name: "publish_date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+    - name: "type"
+      description: "Document type (宪法/法律/行政法规/部门规章 etc.)"
+      type: "string"
+      role: "classification"
+    - name: "status"
+      description: "Current status (有效/失效/已修改)"
+      type: "string"
+      role: "metadata"
+    - name: "office"
+      description: "Issuing office/authority"
+      type: "string"
+      role: "metadata"

@@ -1,0 +1,14 @@
+{
+  "_id": "US/MO-Legislation/115.230",
+  "_source": "US/MO-Legislation",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-18T19:23:53.256638+00:00",
+  "title": "Missouri Revised Statutes § 115.230 - Voter verification, electronic system or pad authorized",
+  "text": "115.230.  Voter verification, electronic system or pad authorized. — Notwithstanding any other provision of law to the contrary, any election authority may use an electronic voter identification system or an electronic signature pad to verify a voter's address, registration status, and signature information at any polling place.  Any such system or pad shall be able to read identifying information from an official Missouri driver's license or nondriver's license issued by the department of revenue, and shall be capable of allowing an election authority to manually enter the voter's information from a valid form of personal identification containing the voter's signature.\n(L. 2011 H.B. 217)",
+  "date": "2025-01-01",
+  "url": "https://revisor.mo.gov/main/OneSection.aspx?section=115.230",
+  "section_id": "115.230",
+  "chapter": "115",
+  "jurisdiction": "US-MO",
+  "language": "en"
+}

@@ -428,6 +428,7 @@ def main():
     parser.add_argument("command", choices=["bootstrap", "test"], help="Command to run")
     parser.add_argument("--sample", action="store_true", help="Fetch sample only (15 docs)")
     parser.add_argument("--limit", type=int, default=100, help="Maximum documents to fetch")
+    parser.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 

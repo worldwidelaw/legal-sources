@@ -88,3 +88,7 @@ python3 bootstrap.py bootstrap
   to current requirements.
 - Company names are typically anonymized as "Obchodní společnost" (Commercial company)
 - Fine amounts are included in the inspection text
+
+## License
+
+Open access — Czech government regulatory decisions are publicly available via [UOOU](https://uoou.gov.cz).

@@ -21,3 +21,7 @@ National Assembly (Državni zbor) from 1992 to present.
 python bootstrap.py bootstrap --sample   # 15 sample records
 python bootstrap.py bootstrap --full     # All records (~2,340)
 ```
+
+## License
+
+[Open Government Data](https://podatki.gov.si) — Parliament open data, freely reusable.

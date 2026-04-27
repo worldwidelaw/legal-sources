@@ -1,0 +1,65 @@
+# MT/MFSA-Enforcement Configuration
+# Malta Financial Services Authority — Enforcement Actions
+
+source_id: MT/MFSA-Enforcement
+country: MT
+name: Malta Financial Services Authority Enforcement
+description: >
+  Administrative penalties, settlement notices, and enforcement actions
+  published by the Malta Financial Services Authority (MFSA).
+  Uses WordPress RSS feed for full-text extraction.
+
+# Base URL
+base_url: https://www.mfsa.mt
+
+# Data types available
+data_types:
+  - doctrine
+
+# Authentication (none required - public regulatory data)
+auth:
+  type: none
+
+# Rate limiting configuration
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# Data schema
+schema:
+  key_fields:
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: true
+    - name: url
+      type: string
+      required: true
+  secondary_fields:
+    - name: category
+      type: string
+      required: false
+    - name: description
+      type: string
+      required: false
+    - name: language
+      type: string
+      required: false
+
+# Data model
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+# License information
+license:
+  name: Public Regulatory Data
+  url: https://www.mfsa.mt
+  commercial_use: true
+  attribution_required: false

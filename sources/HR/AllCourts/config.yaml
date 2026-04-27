@@ -1,44 +1,67 @@
-id: HR/AllCourts
-name: Croatian Court Decisions (All Courts - odluke.sudovi.hr)
+api_type: html
+auth: none
 country: HR
 data_types:
-  - caselaw
-url: https://odluke.sudovi.hr
-auth: none
+- caselaw
+id: HR/AllCourts
 license: Open Government Data
-api_type: html
-rate_limit: 1.0  # 1 request per second to be conservative
+name: Croatian Court Decisions (All Courts - odluke.sudovi.hr)
+notes: 'Official Croatian court decisions database covering 900K+ decisions from all courts:
 
-schema:
-  key_fields:
-    - id
-    - decision_number
-    - court
-    - date
-  optional_fields:
-    - ecli
-    - decision_type
-    - publication_date
-    - legal_field
-    - registry_type
-
-notes: |
-  Official Croatian court decisions database covering 900K+ decisions from all courts:
   - Vrhovni sud (Supreme Court)
+
   - Visoki kazneni sud (High Criminal Court)
+
   - Visoki prekršajni sud (High Misdemeanor Court)
+
   - Visoki trgovački sud (High Commercial Court)
+
   - Visoki upravni sud (High Administrative Court)
+
   - Županijski sud (County Courts)
+
   - Općinski sud (Municipal Courts)
+
   - Trgovački sud (Commercial Courts)
+
   - Upravni sud (Administrative Courts)
 
+
   NOTE: Does NOT include Constitutional Court (Ustavni sud) decisions.
+
   Those are at sljeme.usud.hr using Lotus Notes/Domino (separate source needed).
 
+
   Discovery:
+
   - Paginated search results at /Document/DisplayList?page=N
+
   - Each result links to /Document/View?id={uuid}
+
   - Full text HTML rendered server-side (no JavaScript required)
+
   - Metadata includes EuroVoc, legal index, law references
+
+  '
+rate_limit: 1.0
+schema:
+  key_fields:
+  - name: id
+    required: false
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  optional_fields:
+  - ecli
+  - decision_type
+  - publication_date
+  - legal_field
+  - registry_type
+url: https://odluke.sudovi.hr

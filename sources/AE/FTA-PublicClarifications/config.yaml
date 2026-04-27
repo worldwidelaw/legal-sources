@@ -1,0 +1,82 @@
+# ===================================================================
+# AE/FTA-PublicClarifications -- UAE Federal Tax Authority Guides
+# ===================================================================
+# VAT, Corporate Tax, and Excise Tax guides, public clarifications,
+# and related tax doctrine from tax.gov.ae. ~400 PDF documents with
+# direct download links. No authentication required.
+# ===================================================================
+
+source:
+  id: "AE/FTA-PublicClarifications"
+  country: "AE"
+  name: "UAE Federal Tax Authority Guides & Public Clarifications"
+  url: "https://tax.gov.ae"
+  description: |
+    Federal Tax Authority (FTA) tax guidance covering VAT, Corporate Tax,
+    and Excise Tax. Includes guides, public clarifications, business
+    bulletins, user manuals, and circulars. ~400 English PDF documents.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 3
+
+api:
+  type: "html_ssr"
+  pages:
+    - "https://tax.gov.ae/en/taxes/Vat/guides.references.aspx"
+    - "https://tax.gov.ae/en/taxes/corporate.tax/corporate.tax.guides.references.aspx"
+    - "https://tax.gov.ae/en/taxes/excise.tax/guides.listing.aspx"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Unique ID from document code or filename slug"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "url"
+      description: "PDF download URL"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "category"
+      description: "Tax category (vat, corporate_tax, excise_tax)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "subcategory"
+      description: "Document subcategory (guides, public_clarifications, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+
+notes: |
+  - ~196 VAT + ~62 Corporate Tax + ~150 Excise Tax documents
+  - ASP.NET pages with ViewState-based pagination (10 per page)
+  - PDF links are direct downloads from tax.gov.ae/Datafolder/
+  - Some documents use DownloadOpenTextFile endpoint
+  - English language, official government tax doctrine

@@ -79,3 +79,7 @@ python bootstrap.py update
   "guid": "https://www.fma.gv.at/?p=31242865"
 }
 ```
+
+## License
+
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Austrian Open Government Data.

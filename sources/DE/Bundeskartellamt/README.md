@@ -27,7 +27,7 @@ Case numbers follow pattern: `B{division}-{number}-{year}` (e.g., B6-27-21)
 
 ## License
 
-Official German government publication under § 5 UrhG (public domain).
+Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).
 
 ## Usage
 

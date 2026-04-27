@@ -24,3 +24,7 @@ python bootstrap.py update             # Last 3 months only
 - Rate limited to 1 request per 2 seconds
 - Full text includes majority opinions, dissents, and footnotes
 - GR numbers follow patterns: G.R. No., A.M. No., A.C. No., UDK-XXXXX
+
+## License
+
+[Open Government Data](https://elibrary.judiciary.gov.ph) — official decisions published by the Supreme Court of the Philippines.

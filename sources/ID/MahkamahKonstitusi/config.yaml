@@ -14,7 +14,7 @@ source:
 
 schema:
   key_fields:
-    - name: judul
+    - name: "title"
       type: string
       required: true
     - name: text
