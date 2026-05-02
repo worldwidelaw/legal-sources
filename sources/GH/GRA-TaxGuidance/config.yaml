@@ -1,0 +1,45 @@
+fetcher:
+  base_url: https://gra.gov.gh
+  rate_limit: 2.0
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: doc_type
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: GH
+  data_types:
+  - doctrine
+  description: >
+    Practice notes, tax guidelines, advance ruling guidance, legislation texts,
+    and compliance materials from the Ghana Revenue Authority (GRA). ~182 PDF
+    documents discovered via WordPress REST API. English language.
+  format: pdf
+  id: GH/GRA-TaxGuidance
+  language: en
+  name: Ghana Revenue Authority Practice Notes and Guidelines
+  url: https://gra.gov.gh/practice-notes/
+license:
+  name: "GRA Terms of Use"
+  url: "https://gra.gov.gh/condition-of-use/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official tax guidance published by Ghana Revenue Authority for public access."

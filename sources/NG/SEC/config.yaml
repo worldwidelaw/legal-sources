@@ -1,0 +1,44 @@
+fetcher:
+  base_url: https://sec.gov.ng
+  listing_url: /for-investors/keep-track-of-circulars/
+  rate_limit:
+    requests_per_second: 1
+  type: html_scraper
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: category
+    required: false
+    type: string
+  - name: pdf_url
+    required: false
+    type: string
+source:
+  auth: none
+  country: NG
+  data_types:
+  - doctrine
+  domain: sec.gov.ng
+  id: NG/SEC
+  language: en
+  name: Nigeria Securities and Exchange Commission Circulars
+  url: https://sec.gov.ng/for-investors/keep-track-of-circulars/
+license:
+  name: Open Government Data
+  url: https://sec.gov.ng/
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: Publicly published regulatory circulars from the Nigerian SEC.

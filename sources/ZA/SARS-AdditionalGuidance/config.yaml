@@ -1,0 +1,46 @@
+fetcher:
+  base_url: https://www.sars.gov.za
+  rate_limit: 2.0
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: doc_type
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: ZA
+  data_types:
+  - doctrine
+  description: >
+    Practice Notes, Comprehensive Guides, and External Guides from the South African
+    Revenue Service (SARS). Complements ZA/SARS-Interpretations which covers
+    Interpretation Notes and Binding Rulings. ~280 PDF documents discovered via
+    WordPress REST API. English language.
+  format: pdf
+  id: ZA/SARS-AdditionalGuidance
+  language: en
+  name: South Africa SARS Practice Notes and Comprehensive Guides
+  url: https://www.sars.gov.za/legal-counsel/
+license:
+  name: "SARS Terms and Conditions"
+  url: "https://www.sars.gov.za/legal-counsel/legal-policy/disclaimer/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official tax guidance published by SARS for public access."

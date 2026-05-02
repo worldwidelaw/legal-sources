@@ -220,7 +220,7 @@ class SATCriterios(BaseScraper):
         return {
             "_id": f"MX-SAT-{year}-{cid.replace('/', '-')}",
             "_source": self.SOURCE_ID,
-            "_type": "legislation",
+            "_type": "doctrine",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             "title": f"{cid} {raw['title']}",
             "text": raw["text"],

@@ -1,0 +1,74 @@
+source:
+  id: ES/CastillaLaMancha
+  name: Castilla-La Mancha Regional Legislation (DOCM)
+  url: https://docm.jccm.es/docm/eli/es-cm
+  country: ES
+  region: Castilla-La Mancha
+  data_types:
+    - legislation
+  auth:
+    type: none
+
+api:
+  type: eli_html
+  base_url: https://docm.jccm.es/docm
+  endpoints:
+    eli_types: "/eli/es-cm"
+    eli_years: "/eli/es-cm/{type}"
+    eli_months: "/eli/es-cm/{type}/{year}"
+    eli_days: "/eli/es-cm/{type}/{year}/{month}"
+    eli_docs: "/eli/es-cm/{type}/{year}/{month}/{day}"
+    eli_html: "/eli/es-cm/{type}/{year}/{month}/{day}/{number}/dof/spa/html"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 1983-01-01
+    end: present
+  document_types:
+    - Leyes
+    - Decretos
+    - Decretos Legislativos
+    - Ordenes
+    - Resoluciones
+    - Acuerdos
+    - Instrucciones
+    - Reglamentos
+  estimated_count: 10000+
+
+license:
+  name: "CC BY-SA 3.0 ES"
+  url: "https://creativecommons.org/licenses/by-sa/3.0/es/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: true
+  no_derivatives: false
+  notes: "Per datos.gob.es catalog entry for Codigo legislativo de Castilla-La Mancha"
+
+notes: |
+  Diario Oficial de Castilla-La Mancha (DOCM).
+  Uses ELI (European Legislation Identifier) hierarchy for navigation.
+  Types: l (ley), d (decreto), dlg (decreto legislativo), o (orden),
+  res (resolucion), a (acuerdo), i (instruccion), reg (reglamento),
+  not (notificacion), alia (otros).
+  Full text available as structured HTML via ELI endpoints.
+  Coverage from 1983 to present.
+  Language: Spanish (es).

@@ -1,0 +1,77 @@
+source:
+  id: "TH/OTCC"
+  country: "TH"
+  name: "Thailand Trade Competition Commission Verdicts"
+  url: "https://www.tcct.or.th/view/1/Verdict/TH-TH"
+  description: |
+    Competition enforcement verdicts from the Trade Competition Commission of
+    Thailand (TCCT, formerly OTCC). Covers unfair trade practices, price-fixing,
+    cartel agreements, market abuse, franchise disputes, and exclusive dealing.
+    Full text extracted from PDF decisions published on the TCCT website.
+    Content is in Thai.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.tcct.or.th"
+  endpoints:
+    - path: "/view/1/Verdict/TH-TH"
+      method: "GET"
+      format: "html"
+      notes: "Lists all verdict PDFs with titles and dates"
+
+data_model:
+  type: "case_law"
+  source_nature: "enforcement"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "none"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "_id"
+      description: "Unique verdict identifier derived from PDF filename"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Thai title of the verdict"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the verdict extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Verdict date in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: false
+  secondary_fields:
+    - name: "url"
+      description: "Direct URL to the verdict PDF"
+    - name: "pdf_filename"
+      description: "Original PDF filename"
+    - name: "violation_type"
+      description: "Type of competition violation"
+
+license:
+  name: "Thai Government Publication"
+  url: "https://www.tcct.or.th/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Competition enforcement verdicts published by TCCT for public transparency."

@@ -1,0 +1,81 @@
+source:
+  id: "INTL/NATOTribunal"
+  country: "INTL"
+  name: "NATO Administrative Tribunal"
+  url: "https://www.nato.int/cps/en/natohq/topics_114072.htm"
+  description: |
+    Judgments and orders of the NATO Administrative Tribunal, the judicial body
+    that resolves employment disputes between NATO and its staff. Published as
+    annual PDF compilations from 2013 to present. ~150+ judgments and orders total.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "pdf_download"
+  base_url: "https://www.nato.int"
+
+data_model:
+  type: "case_law"
+  source_nature: "gazette"
+  primary_key: "judgment_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "judgment_id"
+
+schema:
+  total_fields: null
+  key_fields:
+    - name: "_id"
+      description: "Unique judgment/order identifier (e.g., AT-J(2025)0001)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title with parties"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the judgment/order"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the judgment/order"
+      type: "date"
+      role: "temporal_key"
+      required: false
+  secondary_fields:
+    - name: "case_number"
+      description: "Case reference number"
+    - name: "keywords"
+      description: "Keywords from the judgment"
+    - name: "doc_type"
+      description: "Judgment or Order"
+  probably_ignorable: []
+
+license:
+  id: "custom-terms"
+  name: "NATO Public Information"
+  url: "https://www.nato.int/cps/en/natohq/68encyclopaedia.htm"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Published publicly by NATO Administrative Tribunal. Judgments are public administrative tribunal decisions."
+
+notes: |
+  - 13 annual PDF compilations (2013-2025), each containing all judgments and orders for the year
+  - Judgment IDs: AT-J(YYYY)NNNN, Order IDs: AT(PRE-O)(YYYY)NNNN or AT(TRI-O)(YYYY)NNNN
+  - English language primarily
+  - ~10-15 judgments + 5-10 orders per year
+  - PDFs hosted at /content/dam/nato/webready/documents/Administrative-Tribunal/

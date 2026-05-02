@@ -1,0 +1,56 @@
+source:
+  id: "INTL/UNDT"
+  name: "UN Dispute Tribunal Judgments"
+  description: |
+    Judgments from the United Nations Dispute Tribunal (UNDT).
+    First-instance tribunal for UN staff employment disputes.
+    ~2769 judgments from 2009 to present, organized by year.
+    Full text extracted from official PDF documents.
+  url: "https://www.un.org/en/internaljustice/undt/judgments-orders.shtml"
+  country: "INTL"
+  language: "EN"
+  data_types:
+    - case_law
+  auth:
+    type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.un.org"
+
+schema:
+  key_fields:
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "url"
+      type: "string"
+      required: true
+    - name: "judgment_number"
+      type: "string"
+      required: false
+    - name: "year"
+      type: "integer"
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+license:
+  id: "custom-terms"
+  name: "UN Terms of Use"
+  url: "https://www.un.org/en/about-us/terms-of-use"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Public tribunal judgments. UN terms allow non-commercial scholarly use; commercial use may require permission."

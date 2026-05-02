@@ -1,0 +1,45 @@
+fetcher:
+  base_url: https://ura.go.ug
+  rate_limit: 2.0
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: doc_type
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: UG
+  data_types:
+  - doctrine
+  description: >
+    Tax guidance documents, case digests, practice notes, sector guides, and
+    compliance materials from the Uganda Revenue Authority (URA). ~603 English-language
+    PDF documents discovered via WordPress REST API. English language.
+  format: pdf
+  id: UG/URA-TaxGuidance
+  language: en
+  name: Uganda Revenue Authority Tax Guidance
+  url: https://ura.go.ug/en/
+license:
+  name: "URA Public Information"
+  url: "https://ura.go.ug/en/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official tax guidance published by Uganda Revenue Authority for public access."

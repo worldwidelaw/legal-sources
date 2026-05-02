@@ -1,0 +1,51 @@
+source:
+  id: ZA/SARB-Notices
+  country: ZA
+  name: South African Reserve Bank - Notices and Directives
+  description: |
+    SARB Prudential Authority regulatory publications: Banks Directives,
+    Banks Circulars, Guidance Notes, PA Communications, Insurance Act Notices,
+    and Consultation Documents. ~950+ PDF documents with full text extraction.
+    URLs harvested from resbank.co.za sitemap; PDFs from /content/dam/.
+
+  data_types:
+    - doctrine
+
+  url: https://www.resbank.co.za/en/home/publications/prudential-authority
+  auth: none
+
+  languages:
+    - en
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: doc_category
+      type: string
+      required: true
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - url
+
+rate_limits:
+  requests_per_second: 0.5
+  delay_between_requests: 2.0
+
+license:
+  name: "Custom Terms"
+  url: "https://www.resbank.co.za/en/home/quick-links/disclaimer"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Official government regulatory publications; open access."

@@ -1,0 +1,16 @@
+{
+  "_id": "TW-MOF-TaxInterp-132682",
+  "_source": "TW/MOF-TaxInterpretations",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-28T04:38:35.668396+00:00",
+  "title": "一2金融機構兼營證券業務繳存交割結算基金所生利息應課稅",
+  "text": "銀行及信託投資公司係屬金融機構，其因兼營證券業務而繳存於臺灣證券交易所之交割結算基金所孳生之利息收入，參照本部48台財稅發第8363號令規定，仍應依法課徵營業稅；至非金融機構之證券公司取得上項利息收入，應免徵營業稅。（財政部81/11/20台財稅第811676144號函）",
+  "date": null,
+  "url": "https://ttc.mof.gov.tw/?TaxSN=132682",
+  "tax_act": "營業稅法",
+  "tax_version": "一一四年版",
+  "chapter": "第一章　總　則",
+  "article": "第一條（課稅範圍）",
+  "category": "釋示函令",
+  "language": "zh-TW"
+}

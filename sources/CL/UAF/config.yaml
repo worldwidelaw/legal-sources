@@ -1,0 +1,86 @@
+source:
+  id: "CL/UAF"
+  country: "CL"
+  name: "UAF - Unidad de Análisis Financiero"
+  url: "https://www.uaf.cl/es-cl/normativa/circulares-uaf"
+  description: |
+    Chile's Financial Analysis Unit (Unidad de Análisis Financiero).
+    Publishes anti-money laundering (AML) and counter-terrorism financing
+    (CFT) circulars, the enabling law (Ley 19.913), and related policy
+    documents. Circulars are issued under Ley 19.913, art. 2 letra f).
+    Includes both active and derogated circulars. Language: Spanish.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.uaf.cl"
+  endpoints:
+    circulares: "/es-cl/normativa/circulares-uaf"
+    derogadas: "/es-cl/normativa/normativa-derogada-el-01062025"
+    ley: "/es-cl/normativa/nuestra-ley"
+    delitos: "/es-cl/normativa/delitos-base-o-precedentes-de-lavado-de-activos"
+
+data_model:
+  type: "legislation"
+  primary_key: "circular_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "circular_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "circular_id"
+      description: "Unique document identifier (e.g. circular-62, ley-19913)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication or issuance date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "category"
+      description: "Document category (circular, ley, policy, catalog)"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "status"
+      description: "Vigente (active) or Derogada (repealed)"
+      type: "string"
+      role: "status"
+      required: false
+
+license:
+  name: "Public Domain (Government)"
+  url: "https://www.leychile.cl/navegar?idNorma=276363"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official AML/CFT regulations published under Chile's Transparency Law (Ley 20.285)"
+
+notes: |
+  - ~35 documents total: 4 active circulars, ~24 derogated circulars, law texts, policy docs
+  - All content is PDF; text extracted via common/pdf_extract
+  - Derogated circulars paginated with ?page_40812=N parameter
+  - Circular numbers range from 6 to 62

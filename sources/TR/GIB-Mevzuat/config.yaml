@@ -1,0 +1,78 @@
+source:
+  id: "TR/GIB-Mevzuat"
+  country: "TR"
+  name: "Turkish Revenue Administration Legislation (GİB Mevzuat)"
+  url: "https://gib.gov.tr/mevzuat"
+  description: |
+    Tax circulars (sirküler), communiques (tebliğ), general letters,
+    internal circulars, presidential decrees, council decisions,
+    regulations, and justifications from Turkey's Revenue Administration
+    (Gelir İdaresi Başkanlığı). Excludes özelge (tax rulings) which are
+    covered by TR/GIB-Ozelgeler.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest"
+  base_url: "https://gib.gov.tr/api/gibportal/mevzuat"
+
+data_model:
+  type: "legislation"
+  source_nature: "consolidated"
+  primary_key: "id"
+  update_strategy: "upsert"
+  versioning: "none"
+  dedup_key:
+    - "id"
+    - "doc_type"
+
+schema:
+  total_fields: null
+  key_fields:
+    - name: "id"
+      description: "GIB internal document ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content (HTML stripped)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+  secondary_fields: []
+  probably_ignorable: []
+
+license:
+  id: "pd-gov"
+  name: "Turkish Government Public Domain"
+  url: "https://gib.gov.tr"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official Turkish government tax legislation and guidance. Public domain under Turkish law."
+
+notes: |
+  Uses GIB Spring Boot REST API (reverse-engineered from Next.js frontend).
+  Covers: sirküler (578), tebliğ (2478), genel yazılar (91), iç genelge (323),
+  CBK (231), BKK (588), yönetmelik (66), gerekçe (93) = ~4,448 documents.
+  Özelge (18K+) excluded — covered by TR/GIB-Ozelgeler source.
+  Language: Turkish.

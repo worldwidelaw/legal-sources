@@ -1,0 +1,83 @@
+# ===================================================================
+# NP/IRD-TaxGuidance -- Nepal Inland Revenue Department Tax Guidance
+# ===================================================================
+# Tax acts, rules, directives, procedures, and notices from ird.gov.np.
+# ~100+ documents. Nepali language with some English content.
+# PDF full text extracted via common/pdf_extract.
+# ===================================================================
+
+source_id: NP/IRD-TaxGuidance
+name: Nepal Inland Revenue Department Tax Guidance
+country: NP
+url: https://ird.gov.np/
+description: |
+  Nepal Inland Revenue Department publishes tax acts, rules & regulations,
+  directives, procedures, and notices/circulars. Covers income tax, VAT,
+  excise, digital service tax, transfer pricing, and anti-money laundering.
+  ~100+ documents with full text extracted from embedded PDFs.
+
+data_types:
+  - doctrine
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "scraping"
+  base_url: "https://ird.gov.np"
+  endpoints:
+    acts: "/category/acts/?page={page}"
+    rules: "/category/rules-and-regulation/?page={page}"
+    directives: "/category/directives/?page={page}"
+    procedures: "/category/procedure/?page={page}"
+    notices: "/category/notice/?page={page}"
+  pdf_cdn: "https://giwmscdnone.gov.np"
+  response_format: "html"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Unique document ID (NP-IRD-{content_id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title (Nepali or English)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Document page URL on ird.gov.np"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "category"
+      description: "Document category (act, rule, directive, procedure, notice)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  id: "pd-gov"
+  name: "Public Domain (Government of Nepal)"
+  url: "https://ird.gov.np/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Government of Nepal public documents"

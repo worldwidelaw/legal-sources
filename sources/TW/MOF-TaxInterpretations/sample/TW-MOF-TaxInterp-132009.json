@@ -1,0 +1,16 @@
+{
+  "_id": "TW-MOF-TaxInterp-132009",
+  "_source": "TW/MOF-TaxInterpretations",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-28T04:38:57.902796+00:00",
+  "title": "1應稅貨物不論出售、贈與或無償貸與均應課稅",
+  "text": "應稅貨物不論在國內出廠或由國外進口，如不合法定免稅規定，不問「出售」、「贈與」或「無償貸與」，均應依法課稅。（財政部54/12/24台財稅發第10350號通知）",
+  "date": null,
+  "url": "https://ttc.mof.gov.tw/?TaxSN=132009",
+  "tax_act": "貨物稅條例",
+  "tax_version": "一一三年版",
+  "chapter": "第一章　總　則",
+  "article": "第一條（課徵範圍）",
+  "category": "釋示函令",
+  "language": "zh-TW"
+}

@@ -1,0 +1,46 @@
+fetch:
+  base_url: https://legal.un.org/riaa/
+  method: html_index_pdf
+  rate_limit_seconds: 2
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: volume
+    required: false
+    type: integer
+  - name: case_number
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: >
+    UN Reports of International Arbitral Awards (RIAA). 34 volumes covering
+    international arbitral awards between states from the 18th century to
+    present, published by the UN Codification Division. Full text extracted
+    from PDF.
+  id: INTL/RIAA
+  language: en,fr
+  name: UN Reports of International Arbitral Awards (RIAA)
+  url: https://legal.un.org/riaa/
+license:
+  name: "United Nations Terms of Use"
+  url: "https://www.un.org/en/about-us/terms-of-use"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "UN materials may be reproduced with attribution. RIAA is published for public use."

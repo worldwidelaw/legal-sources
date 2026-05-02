@@ -1,0 +1,66 @@
+source:
+  id: ES/Asturias
+  name: Asturias Regional Legislation (BOPA)
+  url: https://sede.asturias.es/bopa
+  country: ES
+  region: Asturias
+  data_types:
+    - legislation
+  auth:
+    type: none
+
+api:
+  type: open_data_json
+  base_url: https://descargas.asturias.es/asturias/opendata/LegislacionyJusticia
+  endpoints:
+    index_2019_2023: "/BOPA2019-28/dataset-sum_bopa_{year}.json"
+    index_2024: "/BOPA2019-28/dataset-sum-bopa-2024.json"
+    detail: "https://miprincipado.asturias.es/bopa/disposiciones?p_p_id=pa_sede_bopa_web_portlet_SedeBopaDispositionWeb&p_p_lifecycle=0&_pa_sede_bopa_web_portlet_SedeBopaDispositionWeb_mvcRenderCommandName=/disposition/detail&p_r_p_dispositionReference={codigo}&p_r_p_dispositionDate={date}"
+    sumario: "https://miprincipado.asturias.es/bopa-sumario?p_p_id=pa_sede_bopa_web_portlet_SedeBopaSummaryWeb&p_p_lifecycle=0&p_r_p_summaryDate={date}&p_r_p_summaryIsSearch=false"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 2019-01-01
+    end: present
+  document_types:
+    - Leyes
+    - Decretos
+    - Órdenes
+    - Resoluciones
+    - Acuerdos
+  estimated_count: 500+
+
+license:
+  name: "CC BY 4.0"
+  url: "https://creativecommons.org/licenses/by/4.0/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Attribution to Administración del Principado de Asturias"
+
+notes: |
+  Boletín Oficial del Principado de Asturias (BOPA).
+  Open Data JSON index files for discovery (2019-2024).
+  Full text via Liferay portal detail endpoint (id=bopa-articulo div).
+  Sumario endpoint for incremental updates (2025+).
+  Filters for DISPOSICIONES GENERALES section (core legislation).

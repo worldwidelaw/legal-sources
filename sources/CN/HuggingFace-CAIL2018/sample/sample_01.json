@@ -1,0 +1,25 @@
+{
+  "_id": "CAIL2018-first_stage_train-73821933bad3f8fc",
+  "_source": "CN/HuggingFace-CAIL2018",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-28T00:29:10.603171+00:00",
+  "title": "颜某盗窃案",
+  "text": "公诉机关指控：2016年3月28日20时许，被告人颜某在本市洪山区马湖新村足球场马路边捡拾到被害人谢某的VIVOX5手机一部，并在同年3月28日21时起，分多次通过支付宝小额免密支付功能，秘密盗走被害人谢某支付宝内人民币3723元。案发后，被告人颜某家属已赔偿被害人全部损失，并取得谅解。公诉机关认为被告人颜某具有退赃、取得谅解、自愿认罪等处罚情节，建议判处被告人颜某一年以下××、××或者××，并处罚金。",
+  "date": "2018-01-01",
+  "url": "https://huggingface.co/datasets/china-ai-law-challenge/cail2018",
+  "split": "first_stage_train",
+  "relevant_articles": [
+    264
+  ],
+  "accusation": [
+    "盗窃"
+  ],
+  "criminals": [
+    "颜某"
+  ],
+  "imprisonment_months": 4.0,
+  "punish_of_money": 1000.0,
+  "death_penalty": false,
+  "life_imprisonment": false,
+  "sentence_summary": "有期徒刑4.0个月；罚金1000.0元"
+}

@@ -1,0 +1,25 @@
+{
+  "_id": "CAIL2018-first_stage_train-3379934544a6271e",
+  "_source": "CN/HuggingFace-CAIL2018",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-28T00:29:10.603749+00:00",
+  "title": "李某盗窃案",
+  "text": "公诉机关指控被告人李某于2012年12月1日19时许，到广州市南沙区新垦十四涌西面机耕路附近的薯丛中，用随身携带的摩托车钥匙将被害人赵某的两轮摩托车（发动机号：GP100104121，车架号：LCS5BPKH458762310，价值人民币3318元）的车头锁打开后盗走，当被告人李某将该摩托车推到路边准备打火启动时被公安人员人赃并获，被告人李某归案后向公安机关如实供述自己的犯罪事实。案发后，公安机关将涉案摩托车发还被害人赵某。公诉机关建议本院对被告人李某在××至一年的幅度内量刑，并处罚金，若对被告人李某落实监管措施，可适用××。",
+  "date": "2018-01-01",
+  "url": "https://huggingface.co/datasets/china-ai-law-challenge/cail2018",
+  "split": "first_stage_train",
+  "relevant_articles": [
+    264
+  ],
+  "accusation": [
+    "盗窃"
+  ],
+  "criminals": [
+    "李某"
+  ],
+  "imprisonment_months": 7.0,
+  "punish_of_money": 1000.0,
+  "death_penalty": false,
+  "life_imprisonment": false,
+  "sentence_summary": "有期徒刑7.0个月；罚金1000.0元"
+}

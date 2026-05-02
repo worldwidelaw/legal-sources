@@ -1,0 +1,53 @@
+fetcher:
+  base_url: https://www.sc.com.my
+  rate_limit: 2.0
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: string
+  - name: category
+    required: false
+    type: string
+  - name: offender
+    required: false
+    type: string
+  - name: nature_of_offence
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: MY
+  data_types:
+  - case_law
+  - doctrine
+  description: >
+    Enforcement actions from the Securities Commission Malaysia (sc.com.my).
+    Covers criminal prosecution (1993-present), civil actions & regulatory
+    settlements (2005-present), cases compounded (1996-present), and
+    administrative actions (2002-present). Full text from HTML tables.
+  format: html
+  id: MY/SC
+  language: en
+  name: Securities Commission Malaysia Enforcement
+  url: https://www.sc.com.my/regulation/enforcement/actions
+license:
+  name: "Government open access"
+  url: "https://www.sc.com.my/disclaimer"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official enforcement actions published by Securities Commission Malaysia."

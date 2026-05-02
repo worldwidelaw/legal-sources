@@ -1,0 +1,73 @@
+source:
+  id: "AR/SantaFe-Province"
+  country: "AR"
+  name: "Santa Fe Province Legislation (SIN)"
+  url: "https://www.santafe.gov.ar/normativa/"
+  description: |
+    Provincial legislation from Santa Fe, Argentina via the
+    Sistema de Información de Normativa (SIN). Covers laws, decrees,
+    dispositions, resolutions, and dictámenes from 1978 to present.
+    Spanish language. Full text extracted from attached PDFs.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.santafe.gov.ar/normativa/"
+
+data_model:
+  type: "legislation"
+  source_nature: "gazette"
+  primary_key: "norm_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "norm_id"
+
+schema:
+  total_fields: null
+  key_fields:
+    - name: "_id"
+      description: "Unique identifier (type-number)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Law/decree title or description"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the norm (from PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  id: "pd-gov"
+  name: "Public Domain (Government Work)"
+  url: "https://www.santafe.gov.ar/normativa/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Argentine government legislation is public domain under national law."
+
+notes: |
+  - Full text is in attached PDFs, extracted via pdfplumber
+  - 5,176 laws + 11,022 decrees + 4,091 dispositions + 20,659 resolutions + 41 dictámenes (~41K total)
+  - Session cookie required (NORMATIVApwwwmigra)
+  - 10 results per page in search
+  - Detail page requires visiting item.php then getFile.php for PDF

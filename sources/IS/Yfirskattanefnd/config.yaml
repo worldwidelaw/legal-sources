@@ -1,0 +1,51 @@
+auth: none
+country: IS
+data_types:
+- case_law
+fetch_method: html_scrape
+id: IS/Yfirskattanefnd
+language: isl
+license:
+  name: "Public Domain (official government decisions)"
+  url: null
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official administrative decisions of the Icelandic Tax Appeals Board"
+name: Yfirskattanefnd (Tax Appeals Board)
+notes: >
+  The Yfirskattanefnd (Internal Revenue Board / Tax Appeals Board) is Iceland's
+  supreme administrative appeals authority for tax matters. It reviews decisions
+  by the Directorate of Internal Revenue (Ríkisskattstjóri) and Customs.
+  Rulings are published at yskn.is spanning 1973-present (~7000+ decisions).
+  Year-by-year listing pages provide ruling IDs, and individual rulings are
+  fetched via AJAX endpoint with full text content.
+rate_limit: 2s
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: ruling_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  optional_fields:
+  - internal_id
+  - year
+  - tax_years
+  - keywords
+  - language
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+url: https://yskn.is/urskurdir/

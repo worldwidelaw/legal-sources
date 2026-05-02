@@ -1,0 +1,84 @@
+source:
+  id: "KE/CBK-PrudentialGuidelines"
+  country: "KE"
+  name: "Central Bank of Kenya - Prudential Guidelines and Circulars"
+  url: "https://www.centralbank.go.ke/policy-procedures/legislation-and-guidelines/"
+  description: |
+    Prudential guidelines, risk management guidelines, AML/CFT guidance notes,
+    banking regulations, and regulatory circulars issued by the Central Bank of Kenya.
+    Covers monetary policy, banking supervision, payment systems, microfinance,
+    and digital credit regulation. Language: English. Coverage: 2006 to present.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "2s delay between requests to be respectful."
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.centralbank.go.ke"
+  notes: |
+    - Main listing page: /policy-procedures/legislation-and-guidelines/
+    - All documents are PDFs linked from the listing page
+    - Text extracted from PDFs via pdfminer
+    - ~70 regulatory documents
+
+data_model:
+  type: "doctrine"
+  source_nature: "gazette"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Unique identifier (KE-CBK-{slugified-filename})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title from the link text"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date if extractable from filename/URL"
+      type: "date"
+      role: "temporal_key"
+      required: false
+  secondary_fields:
+    - name: "url"
+      description: "URL to the original PDF"
+    - name: "category"
+      description: "Document category (legislation, guideline, circular, etc.)"
+    - name: "language"
+      description: "Document language (always 'en')"
+
+license:
+  name: "Kenya Open Government Data"
+  url: "https://www.centralbank.go.ke/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Kenyan government regulatory documents are public information."
+
+notes: |
+  - ~70 regulatory PDF documents from CBK
+  - Full text extracted via pdfminer; some older scanned PDFs may yield no text
+  - Documents include primary legislation, prudential guidelines, guidance notes, and regulations
+  - All documents in English

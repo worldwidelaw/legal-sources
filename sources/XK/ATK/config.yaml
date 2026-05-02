@@ -1,0 +1,46 @@
+fetcher:
+  base_url: https://www.atk-ks.org
+  rate_limit: 2.0
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: doc_type
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: XK
+  data_types:
+  - doctrine
+  description: >
+    Tax guidelines, administrative instructions, regulations, laws, and
+    informative materials from the Kosovo Tax Administration (ATK).
+    English-language PDFs covering VAT, CIT, PIT, tax procedures, and
+    fiscal compliance. ~28 documents across three sections.
+  format: pdf
+  id: XK/ATK
+  language: en
+  name: Kosovo Tax Administration Public Rulings and Administrative Instructions
+  url: https://www.atk-ks.org/en/
+license:
+  name: "Government open access"
+  url: "https://www.atk-ks.org/en/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official tax guidance and laws published by Kosovo Tax Administration for public access."

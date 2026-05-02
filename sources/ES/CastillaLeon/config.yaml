@@ -1,0 +1,67 @@
+source:
+  id: ES/CastillaLeon
+  name: Castilla y León Regional Legislation (BOCYL)
+  url: https://bocyl.jcyl.es/
+  country: ES
+  region: Castilla y León
+  data_types:
+    - legislation
+  auth:
+    type: none
+
+api:
+  type: opendatasoft_json
+  base_url: https://jcyl.opendatasoft.com/api/explore/v2.1/catalog/datasets/bocyl
+  endpoints:
+    records: "/records?limit={limit}&offset={offset}&where={where}"
+  xml_base: https://bocyl.jcyl.es
+  notes: "OpenDataSoft API for metadata; XML endpoints for full text"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 1983-01-01
+    end: present
+  document_types:
+    - Leyes
+    - Decretos
+    - Decretos Legislativos
+    - Decretos-ley
+    - Ordenes
+    - Resoluciones
+    - Acuerdos
+  estimated_count: 15000+
+
+license:
+  name: "CC BY 4.0"
+  url: "https://creativecommons.org/licenses/by/4.0/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Per OpenDataSoft dataset metadata for BOCYL"
+
+notes: |
+  Boletín Oficial de Castilla y León (BOCYL).
+  Uses OpenDataSoft API for structured metadata with pagination.
+  Full text fetched from XML endpoints (ISO-8859-15 encoded).
+  Covers Disposiciones Generales, Disposiciones y Actos, and Otras Disposiciones.
+  Language: Spanish (es).

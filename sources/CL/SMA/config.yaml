@@ -1,0 +1,95 @@
+source:
+  id: "CL/SMA"
+  country: "CL"
+  name: "SMA/SNIFA - Superintendencia del Medio Ambiente"
+  url: "https://snifa.sma.gob.cl/Sancionatorio"
+  description: |
+    Chile's environmental enforcement agency (SMA). Publishes sanction
+    procedures (procedimientos sancionatorios) for environmental violations.
+    Each case includes formal charges, infraction details, and resolution
+    documents. Cases cover violations of Environmental Qualification
+    Resolutions (RCA), emission standards, and environmental management plans.
+    Language: Spanish.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://snifa.sma.gob.cl"
+  endpoints:
+    ficha: "/Sancionatorio/Ficha/{id}"
+    download: "/General/Descargar/{doc_id}"
+
+data_model:
+  type: "case_law"
+  primary_key: "expediente"
+  update_strategy: "upsert"
+  dedup_key:
+    - "expediente"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "expediente"
+      description: "Expedition/case number (e.g. A-002-2013, D-180-2022)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (entity + unit + expedition)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the sanction resolution (extracted from PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the sanction resolution"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "status"
+      description: "Procedure status (Terminado, En curso, etc.)"
+      type: "string"
+      role: "status"
+      required: false
+    - name: "entity"
+      description: "Regulated entity (titular)"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "unit_name"
+      description: "Name of the fiscalizable unit"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "location"
+      description: "Location (commune - region)"
+      type: "string"
+      role: "content"
+      required: false
+
+license:
+  name: "Public Domain (Government)"
+  url: "https://www.leychile.cl/navegar?idNorma=276363"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official environmental enforcement decisions published under Chile's Transparency Law (Ley 20.285)"
+
+notes: |
+  - ~4000+ sanction procedures (2013-present)
+  - Each case has resolution PDFs downloaded via /General/Descargar/{doc_id}
+  - Resolution text extracted from PDF via common/pdf_extract
+  - Iterates through Ficha IDs sequentially; skips non-existent IDs

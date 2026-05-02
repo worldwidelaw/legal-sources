@@ -1,0 +1,97 @@
+# ===================================================================
+# RO/ICCJ -- Înalta Curte de Casație și Justiție (Romanian High Court)
+# ===================================================================
+# Romania's supreme court — publishes case law and judgments via a
+# public digital library on scj.ro. Full text available in HTML.
+# ===================================================================
+
+source:
+  id: "RO/ICCJ"
+  country: "RO"
+  name: "Înalta Curte de Casație și Justiție (ICCJ)"
+  url: "https://www.scj.ro"
+  description: |
+    Romania's High Court of Cassation and Justice — the supreme court.
+    Publishes decisions, RIL (recurs în interesul legii), and preliminary
+    rulings. Full text accessible via sequential detail pages on scj.ro.
+    ~235,000 decisions available. Data is public domain under Romanian law.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.scj.ro"
+  endpoints:
+    detail: "/1093/Detalii-jurisprudenta?customQuery[0].Key=id&customQuery[0].Value={id}"
+
+data_model:
+  type: "case_law"
+  primary_key: "decision_id"
+  update_strategy: "append_only"
+  dedup_key:
+    - "decision_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Unique decision ID from scj.ro"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (e.g., Decizia nr. 122/2025)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (extracted from text)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the decision on scj.ro"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "section"
+      description: "Court section (Secția I civilă, Secția Penală, etc.)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "decision_number"
+      description: "Decision number"
+      type: "string"
+      role: "identifier"
+      required: false
+
+license:
+  id: "pd-gov"
+  name: "Public Domain (Romanian Government)"
+  url: "https://www.scj.ro"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Romanian court decisions are public domain under Romanian law"
+
+notes: |
+  - ~235,000 decisions with sequential IDs on scj.ro
+  - Full text embedded in HTML detail pages
+  - Covers all sections: civil, criminal, administrative/fiscal, panels of 5/9 judges
+  - Includes RIL (appeals in the interest of the law) and preliminary rulings
+  - Language: Romanian
+  - No authentication required

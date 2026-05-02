@@ -1,0 +1,74 @@
+source:
+  id: "US/DOJ-Antitrust"
+  country: "US"
+  name: "US DOJ Antitrust Division - Case Filings"
+  url: "https://www.justice.gov/atr"
+  description: |
+    Antitrust case filings from the U.S. Department of Justice Antitrust Division.
+    Includes civil and criminal antitrust cases — complaints, final judgments,
+    competitive impact statements, plea agreements, and consent decrees.
+    Covers price fixing, market allocation, monopolization, and merger challenges.
+    Language: English.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.justice.gov"
+
+data_model:
+  type: "case_law"
+  source_nature: "gazette"
+  primary_key: "case_slug"
+  update_strategy: "append_only"
+  dedup_key:
+    - "case_slug"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "case_slug"
+      description: "URL slug (e.g., us-v-activision-blizzard-inc)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (e.g., U.S. v. Activision Blizzard, Inc.)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of primary case document (complaint or judgment)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Case open date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  id: "pd-us"
+  name: "U.S. Public Domain"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "U.S. federal government works are in the public domain"
+
+notes: |
+  - Alphabetical listing at /atr/antitrust-case-filings-alpha (~923 cases)
+  - Case detail pages at /atr/case/{slug}
+  - Documents as PDFs or /media/{id}/dl?inline
+  - Case types: Civil Merger, Civil Non Merger, Criminal
+  - Violations: Price Fixing, Market Allocation, Monopolization, etc.

@@ -1,0 +1,88 @@
+# ===================================================================
+# CN/SAMR-Penalties -- China SAMR Administrative Penalty Decisions
+# ===================================================================
+# ~709K+ publicly disclosed administrative penalty decisions from
+# the State Administration for Market Regulation (SAMR).
+# Full text extracted from base64-encoded PDFs via API.
+# ===================================================================
+
+source:
+  id: "CN/SAMR-Penalties"
+  country: "CN"
+  name: "China State Administration for Market Regulation (SAMR) - Penalties"
+  url: "https://cfws.samr.gov.cn/"
+  description: |
+    Administrative penalty decisions from China's SAMR and its local bureaus.
+    ~709K+ publicly disclosed penalty documents covering food safety, antitrust,
+    consumer protection, and market regulation. Full text extracted from
+    base64-encoded PDFs embedded in API responses. Chinese language.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "Conservative rate limit; CAPTCHA may trigger under heavy load."
+
+api:
+  type: "rest"
+  base_url: "https://cfws.samr.gov.cn"
+  endpoints:
+    search: "/queryDoc"
+    detail: "/getDoc"
+    stats: "/getTj"
+  notes: "POST endpoints with DES3 cipher for anti-bot protection. 200-record hard cap per query; pagination by monthly date ranges."
+
+schema:
+  key_fields:
+    - name: "_id"
+      description: "Unique document hash (SAMR-{docid})"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Entity name and decision number"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the penalty decision (PDF-extracted)"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Penalty date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+    - name: "agency"
+      description: "Issuing SAMR bureau"
+      type: "string"
+      role: "classification"
+    - name: "penalty_type"
+      description: "Type of penalty (fine, warning, confiscation, etc.)"
+      type: "string"
+      role: "classification"
+    - name: "legal_basis"
+      description: "Legal basis cited for the penalty"
+      type: "string"
+      role: "reference"
+
+license:
+  id: "custom-nc"
+  name: "SAMR Public Disclosure (Non-Commercial)"
+  url: "https://cfws.samr.gov.cn/"
+  commercial_use: false
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Site footer states non-commercial use. Government penalty decisions publicly disclosed per PRC administrative transparency requirements."
+
+notes: |
+  - POST API with DES3 cipher anti-bot protection (currently optional)
+  - 200-record hard cap per query; workaround: iterate monthly date ranges
+  - Full text from base64-encoded PDFs in /getDoc response field i7
+  - Requires pycryptodome for DES3 cipher generation
+  - Requires pdfplumber or pypdf for PDF text extraction
+  - Language: Chinese (Simplified)
+  - Coverage: 2018-present, ~709K+ documents

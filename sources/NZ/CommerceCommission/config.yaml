@@ -1,0 +1,81 @@
+source:
+  id: "NZ/CommerceCommission"
+  country: "NZ"
+  name: "New Zealand Commerce Commission Case Register"
+  url: "https://comcom.govt.nz/case-register"
+  description: |
+    Competition, consumer protection, and regulatory enforcement decisions
+    from the New Zealand Commerce Commission. Covers mergers, anti-competitive
+    conduct, Fair Trading Act, Credit Contracts, and regulated industries.
+    ~1,866 cases from 2000s to present. English.
+  language: en
+  auth: none
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://comcom.govt.nz"
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: false
+    - name: _source
+      type: string
+      required: false
+    - name: _fetched_at
+      type: string
+      required: false
+    - name: case_number
+      type: string
+      required: false
+    - name: category
+      type: string
+      required: false
+    - name: status
+      type: string
+      required: false
+    - name: outcome
+      type: string
+      required: false
+    - name: industry
+      type: string
+      required: false
+    - name: pdf_url
+      type: string
+      required: false
+
+license:
+  id: "cc-by-4.0"
+  name: "CC BY 4.0"
+  url: "https://creativecommons.org/licenses/by/4.0/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Crown copyright, licensed under CC BY 4.0 International by the Commerce Commission."

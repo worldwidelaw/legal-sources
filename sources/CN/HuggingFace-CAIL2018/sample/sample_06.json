@@ -1,0 +1,27 @@
+{
+  "_id": "CAIL2018-first_stage_train-aed5e07b85dd8cf0",
+  "_source": "CN/HuggingFace-CAIL2018",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-28T00:29:10.603472+00:00",
+  "title": "赵2某故意伤害、盗窃案",
+  "text": "经审理查明：原判认定上诉人赵3某犯××和××的事实清楚，证据确实、充分，所列证据已在一审开庭时当庭宣读、出示并质证。二审期间，赵3某未提交新的证据，本院对原判认定的事实和所列证据予以确认。",
+  "date": "2018-01-01",
+  "url": "https://huggingface.co/datasets/china-ai-law-challenge/cail2018",
+  "split": "first_stage_train",
+  "relevant_articles": [
+    264,
+    234
+  ],
+  "accusation": [
+    "故意伤害",
+    "盗窃"
+  ],
+  "criminals": [
+    "赵2某"
+  ],
+  "imprisonment_months": 60.0,
+  "punish_of_money": 30000.0,
+  "death_penalty": false,
+  "life_imprisonment": false,
+  "sentence_summary": "有期徒刑60.0个月；罚金30000.0元"
+}

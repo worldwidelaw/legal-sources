@@ -1,0 +1,67 @@
+# ===================================================================
+# US/DC-Code -- District of Columbia Code
+# ===================================================================
+# Full DC Code in XML from DCCouncil GitHub (law-xml repository).
+# 21,163 sections across 53 titles, open source, public domain.
+# ===================================================================
+
+source:
+  id: "US/DC-Code"
+  country: "US"
+  name: "District of Columbia Code"
+  url: "https://code.dccouncil.gov"
+  description: |
+    The official District of Columbia Code maintained by the DC Council.
+    Published as structured XML on GitHub (DCCouncil/law-xml).
+    Contains all 53 titles of the DC Code with full text, annotations,
+    and legislative history. Approximately 21,163 sections.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 5
+  burst: 10
+
+api:
+  type: "github_raw"
+  repo: "DCCouncil/law-xml"
+  branch: "main"
+  base_path: "us/dc/council/code/titles"
+  format: "xml"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "section_number"
+      type: "string"
+      required: true
+    - name: "title_number"
+      type: "string"
+      required: false
+    - name: "date"
+      type: "string"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "DC Code is a work of the DC government, in the public domain under 17 USC 105."

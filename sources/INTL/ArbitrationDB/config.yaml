@@ -1,0 +1,87 @@
+source:
+  id: "INTL/ArbitrationDB"
+  country: "INTL"
+  name: "International Arbitration Database"
+  url: "https://arbitration.org/"
+  description: |
+    Free database of international arbitration awards published by
+    The International Arbitration Society since 2008. Covers ICSID,
+    UNCITRAL, ICC, PCA, and other investment/commercial arbitration
+    proceedings. ~8,500 arbitral awards with PDF documents.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://arbitration.org"
+
+data_model:
+  type: "case_law"
+  source_nature: "gazette"
+  primary_key: "award_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "award_id"
+
+schema:
+  total_fields: null
+  key_fields:
+    - name: "_id"
+      description: "Unique award identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case name / parties"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the award (extracted from PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Award date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+  secondary_fields:
+    - name: "case_id"
+      description: "Case reference number"
+    - name: "country"
+      description: "Respondent state"
+    - name: "sector"
+      description: "Economic sector"
+    - name: "treaty"
+      description: "Applicable treaty"
+    - name: "rules"
+      description: "Procedural rules"
+  probably_ignorable: []
+
+license:
+  id: "custom-terms"
+  name: "Custom Terms (The International Arbitration Society)"
+  url: "https://arbitration.org/node/32"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Free public database; TOS page is placeholder. Awards are public arbitral decisions."
+
+notes: |
+  - Drupal site with paginated listings at /award/recent?page=N (943+ pages, 9 per page)
+  - Individual award pages at /award/{ID} with metadata and PDF links
+  - PDFs hosted at /sites/default/files/awards/arb{NUMBER}.pdf
+  - Covers investment arbitration (ICSID, UNCITRAL, ICC, PCA, etc.)
+  - English language primarily, some awards in French/Spanish
+  - No API; requires HTML scraping + PDF text extraction

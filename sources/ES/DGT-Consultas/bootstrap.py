@@ -70,7 +70,7 @@ class PETETEClient:
         )
 
     def _request(self, url: str, data: dict = None, extra_headers: dict = None,
-                 retries: int = 3) -> str:
+                 retries: int = 5) -> str:
         """Make an HTTP request with retry logic, return response text."""
         headers = {
             "Accept": "*/*",
@@ -469,8 +469,12 @@ def main():
                         help="Full bootstrap (default behavior, accepted for VPS compat)")
     parser.add_argument("--max-pages", type=int, default=None,
                         help="Maximum pages to fetch (bootstrap)")
-    parser.add_argument("--tab", type=int, default=2, choices=[1, 2],
-                        help="1=general, 2=vinculantes")
+    parser.add_argument("--tab", type=int, default=None, choices=[1, 2],
+                        help="1=general, 2=vinculantes (default: both)")
+    parser.add_argument("--from-year", type=int, default=1997,
+                        help="Start year for year-by-year fetch (default: 1997)")
+    parser.add_argument("--to-year", type=int, default=None,
+                        help="End year for year-by-year fetch (default: current year)")
 
     args = parser.parse_args()
     script_dir = Path(__file__).parent
@@ -552,7 +556,7 @@ def main():
             print(f"\nSamples saved to: {sample_dir}")
 
         else:
-            # Full bootstrap
+            # Full bootstrap — year-by-year to ensure complete historical coverage
             if not client.init_session():
                 logger.error("Cannot init session")
                 sys.exit(1)
@@ -560,13 +564,35 @@ def main():
             data_dir = script_dir / "data"
             data_dir.mkdir(exist_ok=True)
             output_file = data_dir / "records.jsonl"
-            count = 0
 
-            with open(output_file, "w", encoding="utf-8") as f:
-                for record in fetch_all(client, tab=args.tab,
-                                        max_pages=args.max_pages):
-                    f.write(json.dumps(record, ensure_ascii=False) + "\n")
-                    count += 1
+            current_year = datetime.now().year
+            from_year = args.from_year
+            to_year = args.to_year or current_year
+            tabs = [args.tab] if args.tab else [2, 1]  # binding first, then general
+
+            count = 0
+            with open(output_file, "a", encoding="utf-8") as f:
+                for tab in tabs:
+                    tab_name = "vinculantes" if tab == 2 else "general"
+                    logger.info(f"=== Fetching tab={tab} ({tab_name}) years {from_year}-{to_year} ===")
+
+                    for year in range(from_year, to_year + 1):
+                        from_date = f"01/01/{year}"
+                        to_date = f"31/12/{year}"
+                        year_count = 0
+                        logger.info(f"--- Tab {tab}, year {year} ---")
+
+                        try:
+                            for record in fetch_all(client, tab=tab,
+                                                    from_date=from_date, to_date=to_date,
+                                                    max_pages=args.max_pages):
+                                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                                count += 1
+                                year_count += 1
+                        except Exception as e:
+                            logger.error(f"Error in tab={tab} year={year}: {e}")
+
+                        logger.info(f"Tab {tab}, year {year}: {year_count} records")
 
             print(f"\nBootstrap complete: {count} records -> {output_file}")
 

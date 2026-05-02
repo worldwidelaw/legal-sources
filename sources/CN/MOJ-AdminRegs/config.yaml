@@ -1,0 +1,51 @@
+id: CN/MOJ-AdminRegs
+name: China Ministry of Justice Administrative Regulations Database (国家行政法规库)
+country: CN
+url: http://xzfg.moj.gov.cn/
+description: >
+  State Council administrative regulations from the Ministry of Justice database.
+  611 currently effective regulations with full text. Distinct from flk.npc.gov.cn
+  (CN/StateCouncil) — this is the MOJ's authoritative database with versioned
+  historical texts and revision tracking. Chinese language.
+data_types:
+  - legislation
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+license:
+  name: "Government open access — PRC Copyright Law Art. 5"
+  url: null
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Chinese legislation and administrative regulations are not copyrightable under PRC Copyright Law Article 5."

@@ -1,0 +1,25 @@
+{
+  "_id": "CAIL2018-first_stage_train-8d8abc26196be85a",
+  "_source": "CN/HuggingFace-CAIL2018",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-28T00:29:10.603889+00:00",
+  "title": "陈某盗窃案",
+  "text": "白河林业检察机关指控，被告人陈某，以非法占有为目的，多次进入工地窃取电线，以废品的方式出售获取不当利益，数额较大，其行为应当以××追究其刑事责任。被告人陈某刑满释放后不满五年又重新犯罪，系累犯，应从重处罚。",
+  "date": "2018-01-01",
+  "url": "https://huggingface.co/datasets/china-ai-law-challenge/cail2018",
+  "split": "first_stage_train",
+  "relevant_articles": [
+    264
+  ],
+  "accusation": [
+    "盗窃"
+  ],
+  "criminals": [
+    "陈某"
+  ],
+  "imprisonment_months": 30.0,
+  "punish_of_money": 0.0,
+  "death_penalty": false,
+  "life_imprisonment": false,
+  "sentence_summary": "有期徒刑30.0个月"
+}

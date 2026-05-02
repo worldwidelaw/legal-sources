@@ -9,7 +9,7 @@ description: >
   Anexo 3 contains non-binding criteria identifying improper tax practices (NV).
   Covers CFF, ISR, IVA, IEPS, LFD, LISH, LIF, LIGIE. Full text via SIDOF.
 data_types:
-  - legislation
+  - doctrine
 auth:
   type: none
 rate_limit:

@@ -1,0 +1,88 @@
+source:
+  id: "CL/FNE"
+  country: "CL"
+  name: "FNE - Fiscalía Nacional Económica"
+  url: "https://www.fne.gob.cl/biblioteca/jurisprudencia/"
+  description: |
+    Chile's national competition enforcement authority. Publishes competition
+    case law including TDLC (Tribunal de Defensa de la Libre Competencia)
+    decisions, Supreme Court competition sentencias, and historical
+    Antimonopoly Commission decisions (1974-2004).
+    Covers antitrust investigations, merger reviews, cartel prosecution.
+    Language: Spanish.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.fne.gob.cl"
+  endpoints:
+    tdlc_decisions: "/search/decisiones_resultados_single.php?palabra="
+    corte_suprema: "/search/sentencias_resultados_single.php?palabra="
+    comisiones: "/search/deccomisiones_resultados_single.php?palabra="
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "doc_id"
+      description: "Unique identifier (section-filename, e.g. tdlc-Sentencia_N_189_2023)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Title of the decision or sentencia"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the decision"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "section"
+      description: "Section (TDLC, Corte Suprema, Comisiones Antimonopolio)"
+      type: "string"
+      role: "status"
+      required: true
+    - name: "conducta"
+      description: "Type of anticompetitive conduct"
+      type: "string"
+      role: "content"
+      required: false
+
+license:
+  id: "pd-gov"
+  name: "Chilean Government Public Domain"
+  url: "https://www.leychile.cl/navegar?idNorma=276363"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official competition enforcement decisions published under Chile's Transparency Law (Ley 20.285)"
+
+notes: |
+  - ~238 TDLC decisions (sentencias, resoluciones, informes) 2004-present
+  - ~105 Corte Suprema competition sentencias
+  - ~2038 historical Antimonopoly Commission decisions (1974-2004)
+  - All documents served as PDFs via wp-content/uploads
+  - PHP search endpoints return all records when palabra= (empty)

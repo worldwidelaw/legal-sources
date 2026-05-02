@@ -1,0 +1,43 @@
+fetcher:
+  base_url: https://www.hacienda.go.cr
+  document_index: /DocumentosInteres.html
+  pagination:
+    type: none
+  rate_limit:
+    requests_per_second: 1
+  type: html_scraper
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: CR
+  data_types:
+  - doctrine
+  domain: hacienda.go.cr
+  id: CR/MH-TaxGuidance
+  language: es
+  name: Costa Rica Ministry of Finance Tax Guidance
+  url: https://www.hacienda.go.cr/DocumentosInteres.html
+license:
+  name: Open Government Data
+  url: https://www.hacienda.go.cr/DocumentosInteres.html
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: Official government documents published by Costa Rica Ministry of Finance.

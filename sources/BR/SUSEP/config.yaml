@@ -1,0 +1,77 @@
+source:
+  id: "BR/SUSEP"
+  country: "BR"
+  name: "SUSEP - Brazilian Insurance Regulator"
+  url: "https://www2.susep.gov.br/safe/bnportal/internet/pt-br/"
+  description: |
+    Normative acts from SUSEP (Superintendência de Seguros Privados),
+    Brazil's insurance regulator. Covers circulares, resoluções CNSP,
+    resoluções SUSEP, portarias, despachos, and other regulatory acts.
+    ~52K norms total. Portuguese language. Full text from PDFs.
+
+data_types:
+  - legislation
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.7
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://www2.susep.gov.br/safe/scripts/bnweb/bnmapi.exe"
+  endpoints:
+    search: "?router=search&exp={exp}&page={page}&limit={limit}"
+    upload: "?router=upload/{cod_anexo}"
+
+data_model:
+  type: "legislation"
+  source_nature: "gazette"
+  primary_key: "codigo"
+  update_strategy: "upsert"
+  dedup_key:
+    - "codigo"
+
+schema:
+  total_fields: null
+  key_fields:
+    - name: "_id"
+      description: "Unique identifier (br-susep-{codigo})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Norm title with ementa"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the norm (from PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  id: "pd-gov"
+  name: "Public Domain (Government Work)"
+  url: "https://www2.susep.gov.br/safe/bnportal/internet/pt-br/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Brazilian federal regulatory acts are public domain."
+
+notes: |
+  - ~52K norms via BNWeb search API (JSON)
+  - PDFs downloaded via upload/{cod_anexo} endpoint
+  - Types: circulares, resoluções CNSP, resoluções SUSEP, portarias, despachos
+  - BNWeb platform by Contempory (commercial library system)
+  - Some older records lack PDF attachments

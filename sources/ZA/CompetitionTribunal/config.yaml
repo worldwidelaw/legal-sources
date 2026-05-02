@@ -1,0 +1,73 @@
+source:
+  id: "ZA/CompetitionTribunal"
+  country: "ZA"
+  name: "Competition Tribunal of South Africa"
+  url: "https://www.comptrib.co.za"
+  description: |
+    Decided cases from the Competition Tribunal of South Africa.
+    Includes merger approvals, prohibited practice cases, consent orders,
+    exemption applications, and procedural matters.
+    Full text extracted from PDF orders and reasons documents.
+    Language: English.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.comptrib.co.za"
+
+data_model:
+  type: "case_law"
+  source_nature: "gazette"
+  primary_key: "case_number"
+  update_strategy: "append_only"
+  dedup_key:
+    - "case_number"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "case_number"
+      description: "Case number (e.g., LM188Feb26)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF order/reasons"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  id: "ogd"
+  name: "Open Government Data (South Africa)"
+  url: "https://www.comptrib.co.za"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Public court decisions — open access per South African law"
+
+notes: |
+  - Pagination: ?page=N (168+ pages as of 2026-05)
+  - PDFs: Order and Reasons documents at uploads/topics/CompTrib_Case_Files/
+  - Status values: Order Issued, Reasons Issued, Hearing Dates Set, Reasons Pending
+  - Case types: Large Merger, Intermediate Merger, Prohibited Practice, Consent Order, etc.

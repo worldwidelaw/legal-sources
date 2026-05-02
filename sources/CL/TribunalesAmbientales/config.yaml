@@ -1,0 +1,48 @@
+api:
+  auth: none
+  base_url: https://3ta.cl
+  endpoints:
+    3ta_sentencias: GET https://3ta.cl/sentencias/ (HTML table with PDF links)
+    2ta_news_api: GET https://www.tribunalambiental.cl/wp-json/wp/v2/posts?categories=5&search=sentencia
+    pdf_download: GET {pdf_url}
+  rate_limit:
+    delay_seconds: 2
+    requests_per_minute: 30
+  type: html_scrape+rest_json+pdf
+data:
+  coverage:
+    estimated_records: 260
+  encoding: utf-8
+  format: json+pdf
+  language: spa
+  notes: >
+    Environmental court rulings from Chile's three tribunals (1TA Antofagasta,
+    2TA Santiago, 3TA Valdivia). Covers 2013-2026. Full text extracted from PDFs.
+    1TA currently inaccessible due to SSL version mismatch.
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: rol
+    required: true
+    type: string
+  required_fields:
+  - title
+  - text
+  - date
+  - url
+source:
+  country: CL
+  id: CL/TribunalesAmbientales
+  name: Tribunales Ambientales - Environmental Court Rulings
+  type: case_law
+  url: https://snifa.sma.gob.cl/SentenciaTribunal/Tribunal
+license:
+  name: "Public Domain"
+  url: "https://www.bcn.cl/leychile/navegar?idNorma=1078309"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official tribunal decisions are public domain under Chilean law (Art. 7 CPR)"

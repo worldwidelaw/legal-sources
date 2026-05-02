@@ -1,0 +1,85 @@
+source:
+  id: "CL/CMF"
+  country: "CL"
+  name: "CMF - Comisión para el Mercado Financiero"
+  url: "https://www.cmfchile.cl/portal/principal/613/w3-propertyname-592.html"
+  description: |
+    Chile's financial market regulator. Publishes binding regulations
+    (Normas de Carácter General, Circulares, Oficios Circulares) and
+    enforcement sanction resolutions.  Covers banking, insurance,
+    securities, and pension regulation from 1981 to present.
+    Language: Spanish.
+
+data_types:
+  - legislation
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.cmfchile.cl"
+  endpoints:
+    normativa_search: "/institucional/legislacion_normativa/normativa2.php"
+    sanctions_list: "/institucional/sanciones/sanciones_mercados_entidad.php"
+    document: "/sitio/aplic/serdoc/ver_sgd.php"
+
+data_model:
+  type: "mixed"
+  source_nature: "gazette"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  versioning: "none"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "doc_id"
+      description: "Unique identifier (type-number, e.g. NCG-529)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Title of the regulation or sanction"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication/emission date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "doc_type"
+      description: "Document type (NCG, CIR, OFC, SANCION)"
+      type: "string"
+      role: "status"
+      required: true
+
+license:
+  id: "pd-gov"
+  name: "Chilean Government Public Domain"
+  url: "https://www.leychile.cl/navegar?idNorma=276363"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official regulatory and enforcement documents published under Chile's Transparency Law (Ley 20.285)"
+
+notes: |
+  - ~600 normativa documents (NCGs, Circulares, Oficios Circulares) from 1981-present
+  - ~1,450 sanction resolutions from 2002-present
+  - All documents served as PDFs via ver_sgd.php endpoint
+  - Search normativa via GET to normativa2.php with date range parameters
+  - Sanctions listed in single HTML table at sanciones_mercados_entidad.php

@@ -1,0 +1,68 @@
+source:
+  id: ES/Cantabria
+  name: Cantabria Regional Legislation (BOC)
+  url: https://boc.cantabria.es/boces/
+  country: ES
+  region: Cantabria
+  data_types:
+    - legislation
+  auth:
+    type: none
+
+api:
+  type: html_scrape_pdf
+  base_url: https://boc.cantabria.es/boces
+  endpoints:
+    bulletin_list: "/busquedaBoletines.do?mes={month}&year={year}"
+    bulletin_index: "/verBoletin.do?idBolOrd={id}"
+    document_pdf: "/verAnuncioAction.do?idAnuBlob={id}"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 1999-01-01
+    end: present
+  document_types:
+    - Leyes
+    - Decretos
+    - Órdenes
+    - Resoluciones
+    - Ordenanzas
+  estimated_count: 5000+
+
+license:
+  name: "CC BY 4.0"
+  url: "https://creativecommons.org/licenses/by/4.0/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: ""
+
+notes: |
+  Boletín Oficial de Cantabria (BOC) - Official Gazette of Cantabria.
+  JSON API provides bulletin listing per month/year.
+  Bulletin index pages list documents by section.
+  Section 1 (Disposiciones Generales) contains core legislation.
+  Documents served as PDFs, text extracted via pdfplumber.
+  Digital archive available from 1999 to present.
+  ~250 bulletins/year, ~20 Section 1 documents/month.
+  Language: Spanish (es).

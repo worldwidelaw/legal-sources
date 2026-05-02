@@ -1,0 +1,47 @@
+fetcher:
+  base_url: https://www.cbe.org.eg
+  api_endpoint: /api/listing/circulars
+  pagination:
+    page_size: 10
+    type: page_number
+  rate_limit:
+    requests_per_second: 1
+  type: api
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: category
+    required: false
+    type: string
+  - name: pdf_url
+    required: false
+    type: string
+source:
+  auth: none
+  country: EG
+  data_types:
+  - doctrine
+  domain: cbe.org.eg
+  id: EG/CBE
+  language: ar
+  name: Central Bank of Egypt Circulars
+  url: https://www.cbe.org.eg/en/laws-regulations/regulations/circulars
+license:
+  name: Open Government Data
+  url: https://www.cbe.org.eg/en/laws-regulations/regulations/circulars
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: Published regulatory circulars from the Central Bank of Egypt.

@@ -1,0 +1,46 @@
+auth: none
+country: IS
+data_types:
+- doctrine
+fetch_method: html_scrape
+id: IS/RSK-TaxGuidance
+language: isl
+license:
+  name: "Public Domain (official government guidance)"
+  url: null
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official tax guidance from the Icelandic Director of Internal Revenue"
+name: Skatturinn Binding Opinions (Bindandi Álit)
+notes: >
+  Binding tax opinions (bindandi álit) issued by the Icelandic Director of
+  Internal Revenue (Ríkisskattstjóri) at skatturinn.is. These are formal
+  interpretations of tax law requested by taxpayers. Coverage 1999-present,
+  ~100-150 opinions with full text.
+rate_limit: 2s
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: opinion_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  optional_fields:
+  - subject
+  - language
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+url: https://www.skatturinn.is/fagadilar/bindandi-alit/

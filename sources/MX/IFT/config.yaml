@@ -1,0 +1,93 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — MX/IFT Source Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "MX/IFT"
+  country: "MX"
+  name: "Instituto Federal de Telecomunicaciones (IFT) - Resoluciones del Pleno"
+  url: "https://www.ift.org.mx/conocenos/pleno/sesiones-del-pleno"
+  description: |
+    Resolutions (acuerdos) adopted by the Plenary of Mexico's Federal
+    Telecommunications Institute (IFT, now Comisión Reguladora de
+    Telecomunicaciones). Covers telecom regulation, competition,
+    spectrum, broadcasting, and infrastructure sharing decisions.
+    Full text extracted from official PDF versions published per session.
+    Coverage: 2013–2025 (~6000+ resolutions).
+
+data_types:
+  - case_law
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.ift.org.mx"
+
+data_model:
+  type: "case_law"
+  source_nature: "gazette"
+  primary_key: "resolution_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "resolution_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "id"
+      description: "Unique resolution identifier (P/IFT/...)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Resolution number and session info"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the resolution extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Session date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "URL to the resolution PDF"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "session_title"
+      description: "Title of the plenary session"
+    - name: "pdf_url"
+      description: "Direct URL to the PDF document"
+  probably_ignorable: []
+
+license:
+  id: "ogd"
+  name: "Mexican Open Government Data"
+  url: "https://www.ift.org.mx/conocenos/transparencia"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Official government resolutions published under Mexican transparency law (LGTAIP)"
+
+notes: |
+  - IFT was dissolved in Oct 2025, replaced by Comisión Reguladora de Telecomunicaciones
+  - Historical resolutions remain available on ift.org.mx
+  - Resolutions cover telecom, broadcasting, competition, spectrum allocation
+  - PDF URL patterns differ between older (2013-2021) and newer (2022+) sessions
+  - Some resolutions are "Acuerdo en Acta" (in minutes only, no standalone PDF)
+  - Language: Spanish

@@ -1,0 +1,88 @@
+source:
+  id: "PL/SAOS"
+  country: "PL"
+  name: "SAOS - System Analizy Orzeczeń Sądowych"
+  url: "https://www.saos.org.pl"
+  description: |
+    Aggregated Polish court judgments from SAOS (System Analizy Orzeczeń Sądowych).
+    Covers Supreme Court, common courts (appeal, regional, district),
+    Supreme Administrative Court, Constitutional Tribunal, and National Appeal Chamber.
+    Full text via REST JSON dump API.
+
+data_types:
+  - case_law
+
+auth:
+  type: none
+
+api:
+  type: rest
+  base_url: https://www.saos.org.pl/api
+  endpoints:
+    dump: /dump/judgments
+    detail: /judgments/{id}
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+data_model:
+  type: case_law
+  source_nature: bulk_archive
+  primary_key: _id
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "text"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "court_type"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "judgment_type"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "judges"
+      type: "list"
+      role: "reference"
+      required: false
+    - name: "url"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  id: "pd-gov"
+  name: "Public Domain (Polish court decisions)"
+  url: "https://dane.gov.pl"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Polish court decisions are public domain. SAOS operated by ICM UW with Ministry of Justice."
+
+notes: |
+  - Covers ALL Polish court types: Supreme, common, administrative, constitutional, NKC
+  - Dump API returns full textContent as HTML — no need for detail fetch
+  - sinceModificationDate param for incremental updates
+  - Page size 10-100, 0-indexed pages
+  - ~500K+ total judgments across all court types
+  - Language: Polish

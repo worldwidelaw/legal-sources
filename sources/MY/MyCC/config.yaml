@@ -1,0 +1,71 @@
+# ===================================================================
+# MY/MyCC -- Malaysia Competition Commission
+# ===================================================================
+# Enforcement decisions, media releases, and guidelines from mycc.gov.my
+# HTML scraping of paginated media releases + case PDF downloads.
+# ===================================================================
+
+source:
+  id: "MY/MyCC"
+  country: "MY"
+  name: "Malaysia Competition Commission (MyCC)"
+  url: "https://www.mycc.gov.my/"
+  description: |
+    Malaysia Competition Commission enforcement decisions and media releases.
+    Competition Act 2010 enforcement actions, proposed decisions, tribunal
+    appeals, market reviews, and guidelines.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.mycc.gov.my"
+  endpoints:
+    - "/media-release?page={page}"
+    - "/case"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of media release or decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "doc_type"
+      description: "media_release, case_decision, guideline"
+      type: "string"
+      role: "category"
+      required: true
+
+license:
+  name: "Public Domain (Government of Malaysia)"
+  url: null
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official government enforcement publications"

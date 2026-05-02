@@ -1,0 +1,63 @@
+source:
+  id: "MC/CCAF"
+  country: "MC"
+  name: "Monaco Commission for Financial Activities Control (CCAF)"
+  url: "https://ccaf.mc/en/"
+  description: |
+    Sanction decisions, warnings about unauthorized entities, cooperation
+    agreements, and regulatory communications from Monaco's financial
+    regulator (CCAF / Commission de Contrôle des Activités Financières).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "wordpress_rest_api"
+  base_url: "https://ccaf.mc"
+  endpoints:
+    - "/wp-json/wp/v2/posts?per_page=100&lang=en"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "_id"
+      description: "WordPress post ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of announcement or decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Monaco Government Publication"
+  url: "https://ccaf.mc/en/legal-notice/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official government financial regulatory publications."

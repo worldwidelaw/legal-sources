@@ -1,0 +1,72 @@
+source:
+  id: "NG/FCCPC"
+  country: "NG"
+  name: "Nigeria Federal Competition and Consumer Protection Commission"
+  url: "https://fccpc.gov.ng"
+  description: |
+    Official publications from Nigeria's competition and consumer protection authority.
+    Press releases, enforcement actions, rulings, and policy announcements.
+    English language. ~221 posts via WordPress REST API.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+api:
+  type: "rest"
+  base_url: "https://fccpc.gov.ng/wp-json/wp/v2"
+
+data_model:
+  type: "legislation"
+  source_nature: "gazette"
+  primary_key: "post_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "post_id"
+
+schema:
+  total_fields: null
+  key_fields:
+    - name: "post_id"
+      description: "WordPress post ID"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Post title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+  secondary_fields: []
+  probably_ignorable: []
+
+license:
+  id: "custom-terms"
+  name: "Nigerian Government Publication"
+  url: "https://fccpc.gov.ng"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official government publications. No explicit license stated."
+
+notes: |
+  WordPress site with REST API (wp-json/wp/v2). ~221 posts across categories:
+  Releases (122), Alerts/Announcements (37), News (22), Testimonials (30).
+  English language. Content is press releases and enforcement action reports.

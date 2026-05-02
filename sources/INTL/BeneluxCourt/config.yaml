@@ -1,0 +1,45 @@
+fetch:
+  list_url: https://www.courbeneluxhof.int/fr/arrets-conclusions/
+  method: html_index_pdf
+  rate_limit_seconds: 2
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: case_number
+    required: false
+    type: string
+  - name: subject_code
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: >
+    Benelux Court of Justice judgments — preliminary rulings, BOIP IP appeals,
+    and civil service disputes. ~370 judgments from 1974 to present in French
+    and Dutch. Full text extracted from PDF.
+  id: INTL/BeneluxCourt
+  language: fr,nl
+  name: Benelux Court of Justice (Cour de Justice Benelux)
+  url: https://www.courbeneluxhof.int/fr/arrets-conclusions/
+license:
+  name: "Benelux Court Terms"
+  url: "https://www.courbeneluxhof.int/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Court judgments are public documents; no explicit license but publicly accessible"

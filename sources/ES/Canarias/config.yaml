@@ -1,0 +1,67 @@
+source:
+  id: ES/Canarias
+  name: Canary Islands Regional Legislation (BOC)
+  url: https://www.gobiernodecanarias.org/boc/
+  country: ES
+  region: Canarias
+  data_types:
+    - legislation
+  auth:
+    type: none
+
+api:
+  type: html_scrape
+  base_url: https://www.gobiernodecanarias.org/boc
+  endpoints:
+    yearly_index: "/boc/{year}/index.html"
+    bulletin_index: "/boc/{year}/{bulletin}/index.html"
+    document: "/boc/{year}/{bulletin}/{doc}.html"
+  rss_feeds:
+    disposiciones_generales: "/boc/feeds/capitulo/disposiciones_generales.rss"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 2012-01-01
+    end: present
+  document_types:
+    - Leyes
+    - Decretos
+    - Órdenes
+    - Resoluciones
+  estimated_count: 10000+
+
+license:
+  name: "CC BY 4.0"
+  url: "https://creativecommons.org/licenses/by/4.0/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: ""
+
+notes: |
+  Boletín Oficial de Canarias (BOC) - Official Gazette of the Canary Islands.
+  Full text available via HTML scraping of document pages.
+  Section I (Disposiciones Generales) contains core legislation.
+  META tags provide structured metadata (title, date, entity, document type).
+  Documents from 1980 to present. ~250 bulletins/year.
+  Language: Spanish (es).

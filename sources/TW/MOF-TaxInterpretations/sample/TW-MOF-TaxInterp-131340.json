@@ -1,0 +1,16 @@
+{
+  "_id": "TW-MOF-TaxInterp-131340",
+  "_source": "TW/MOF-TaxInterpretations",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-28T04:37:27.564082+00:00",
+  "title": "1強制執行費用優先於土地增值稅受清償",
+  "text": "法院拍賣之土地，拍賣價款不足支付執行費用，其執行費用依照強制執行法第29條第2項規定，得就強制執行之財產，優先於土地增值稅受清償。（財政部71/08/07台財稅第35903號函）",
+  "date": null,
+  "url": "https://ttc.mof.gov.tw/?TaxSN=131340",
+  "tax_act": "稅捐稽徵法",
+  "tax_version": "一一三年版",
+  "chapter": "第一章　總　則",
+  "article": "第六條（稅捐優先受償權）",
+  "category": "釋示函令",
+  "language": "zh-TW"
+}

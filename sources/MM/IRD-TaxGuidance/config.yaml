@@ -1,0 +1,72 @@
+source:
+  id: "MM/IRD-TaxGuidance"
+  country: "MM"
+  name: "Myanmar IRD Digital Library"
+  url: "https://digitallibrary.ird.gov.mm/"
+  description: |
+    Myanmar Internal Revenue Department (IRD) Digital Library.
+    Tax laws, interpretations & rulings, directives, public notices,
+    and pamphlets. ~200 PDF documents in Burmese and English.
+    Covers income tax, commercial tax, stamp duty, special goods tax.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.67
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://digitallibrary.ird.gov.mm"
+
+data_model:
+  type: "doctrine"
+  source_nature: "gazette"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  versioning: "none"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Unique identifier (MM-IRD-{prefix}-{id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title (Burmese or English)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year of publication"
+      type: "string"
+      role: "temporal_key"
+      required: false
+    - name: "category"
+      description: "Document category (tax_law, interpretation, pamphlet)"
+      type: "string"
+      role: "content"
+      required: true
+
+license:
+  id: "pd-gov"
+  name: "Public Domain (Government)"
+  url: "https://digitallibrary.ird.gov.mm/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official Myanmar government tax documents published for public use"

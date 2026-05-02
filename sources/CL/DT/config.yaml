@@ -1,0 +1,87 @@
+# ===================================================================
+# CL/DT -- Dirección del Trabajo - Jurisprudencia Administrativa
+# ===================================================================
+# Chilean Labor Authority's administrative jurisprudence: binding
+# dictámenes (rulings) and ordinarios on employment law interpretation.
+# ~6,500 documents from 1919 to present, with full text in HTML.
+# Free access, no authentication required.
+# ===================================================================
+
+source:
+  id: "CL/DT"
+  country: "CL"
+  name: "Dirección del Trabajo - Jurisprudencia Administrativa"
+  url: "https://www.dt.gob.cl/legislacion/1624/w3-channel.html"
+  description: |
+    Administrative jurisprudence from Chile's Labor Authority (Dirección
+    del Trabajo). Includes Dictámenes (binding interpretive rulings) and
+    Ordinarios (administrative opinions) on employment law, labor code
+    interpretation, collective bargaining, and workers' rights.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "Be respectful to the DT servers."
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.dt.gob.cl/legislacion/1624"
+  endpoints:
+    dictamenes_by_year: "/w3-propertyvalue-{year_pv_id}.html"
+    article: "/w3-article-{article_id}.html"
+
+data_model:
+  type: "case_law"
+  primary_key: "article_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "article_id"
+      description: "DT CMS article identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "numero"
+      description: "Official ruling number (e.g., ORD. N°906/41)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Subject matter of the ruling"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the ruling"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Ruling date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Open Government Data (Chile)"
+  url: "https://datos.gob.cl/dataset/about"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Official government administrative rulings, publicly available."
+
+notes: |
+  - Year-based listing pages enumerate article IDs
+  - Full text in HTML on each article page (div#article_i__w3_ar_ArticuloCompleto_cuerpo_1)
+  - Also available as downloadable PDFs (articles-{id}_recurso_pdf.pdf)
+  - ~4,490 dictámenes + ~1,996 ordinarios
+  - Language: Spanish

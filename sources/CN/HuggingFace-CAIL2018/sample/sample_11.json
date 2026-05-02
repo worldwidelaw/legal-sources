@@ -1,0 +1,25 @@
+{
+  "_id": "CAIL2018-first_stage_train-3998f976f5650700",
+  "_source": "CN/HuggingFace-CAIL2018",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-28T00:29:10.603704+00:00",
+  "title": "杨某盗窃案",
+  "text": "公诉机关指控，2015年4月2日17时30分左右，被告人杨某伙同邓某（已判决）至本市锦屏街道惠政西路39-7号致纯牛仔店内，由邓某引开黄某的注意力，被告人杨某乘机盗得黄某放在店内柜台上的一只苹果6PLUS手机，价值人民币5850元。",
+  "date": "2018-01-01",
+  "url": "https://huggingface.co/datasets/china-ai-law-challenge/cail2018",
+  "split": "first_stage_train",
+  "relevant_articles": [
+    264
+  ],
+  "accusation": [
+    "盗窃"
+  ],
+  "criminals": [
+    "杨某"
+  ],
+  "imprisonment_months": 9.0,
+  "punish_of_money": 0.0,
+  "death_penalty": false,
+  "life_imprisonment": false,
+  "sentence_summary": "有期徒刑9.0个月"
+}

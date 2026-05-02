@@ -1,0 +1,16 @@
+{
+  "_id": "TW-MOF-TaxInterp-143293",
+  "_source": "TW/MOF-TaxInterpretations",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-28T04:37:51.515086+00:00",
+  "title": "２個人向外國繳納之所得稅款不得抵繳我國之綜合所得稅",
+  "text": "我國現行綜合所得稅僅對我國來源所得課稅，我國有優先課稅權，納稅義務人如依其他國家法律規定，須再向其他國家報繳所得稅款，依我國現行所得稅法規定，不得抵繳我國之綜合所得稅。（財政部61/11/20台財稅第39819號令）",
+  "date": null,
+  "url": "https://ttc.mof.gov.tw/?TaxSN=143293",
+  "tax_act": "所得稅法",
+  "tax_version": "一一四年版",
+  "chapter": "第一章　總　則",
+  "article": "第二條（綜合所得稅課稅範圍）",
+  "category": "釋示函令",
+  "language": "zh-TW"
+}

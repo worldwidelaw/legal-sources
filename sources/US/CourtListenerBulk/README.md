@@ -111,17 +111,21 @@ output, which can then be committed back to the repo.
 ### Full bootstrap (production — Hetzner)
 
 ```
-python runner.py fast US/CourtListenerBulk --workers 1
+python bootstrap.py bootstrap                   # default: chunked gzip JSONL
+python bootstrap.py bootstrap --chunk-size 500000  # custom chunk size
 ```
 
-Sequential streaming (workers=1) because the join requires courts/dockets/
-clusters fully resident in memory before opinion iteration begins. Memory
-budget on Hetzner: ~4–6 GB peak (clusters + dockets in dicts).
+Default mode writes gzip-compressed chunked JSONL files to `data/`:
+`chunk_0000.jsonl.gz`, `chunk_0001.jsonl.gz`, etc. Each chunk holds up to
+500K records. At ~11 KB/record and ~6× gzip ratio, each chunk is ~900 MB
+and the full ~10M opinions produce ~15-20 GB total — fits on a 38 GB CX23.
 
-The opinions file is ~54 GB compressed in the 2026-Q1 dump. End-to-end
-runtime is ~6–10 hours depending on disk and bandwidth. Output JSONL
-sits in `data/records.jsonl`; the existing `sync-to-public.sh` already
-excludes `data/` so size is not a git concern.
+The join still requires courts/dockets/clusters in SQLite before opinion
+iteration begins. Memory budget: ~4–6 GB peak.
+
+The old single-file mode (`bootstrap-legacy`) wrote a monolithic
+`data/records.jsonl` that reached ~110 GB for 10M records, which filled
+the VPS disk at 2.2M records (see issue #559).
 
 ### Incremental updates
 

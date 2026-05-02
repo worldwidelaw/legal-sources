@@ -1,0 +1,90 @@
+# ===================================================================
+# CN/STA-TaxPolicy -- State Taxation Administration Tax Policy Database
+# ===================================================================
+# Chinese tax laws, regulations, normative documents, and policy notices
+# from fgk.chinatax.gov.cn. ~4977 full-text documents.
+# JSON listing API + HTML content pages.
+# ===================================================================
+
+source:
+  id: "CN/STA-TaxPolicy"
+  country: "CN"
+  name: "State Taxation Administration Tax Policy Database"
+  url: "https://fgk.chinatax.gov.cn/zcfgk/c100006/listflfg.html"
+  description: |
+    Chinese tax policy documents from the State Taxation Administration (STA).
+    Covers tax laws, administrative regulations, normative documents,
+    finance/tax documents, and work notices. Includes document numbers,
+    tax types, effectiveness status, and issuing departments.
+    ~4977 documents with full text in Chinese.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "Conservative rate limit for Chinese government servers."
+
+api:
+  type: "rest"
+  base_url: "https://www.chinatax.gov.cn"
+  endpoints:
+    listing: "/getFileListByCodeId (POST, JSON response)"
+    content: "https://fgk.chinatax.gov.cn/zcfgk/{channel}/{article}/content.html"
+
+data_model:
+  type: "doctrine"
+  update_strategy: "upsert"
+  dedup_key: ["doc_id"]
+
+schema:
+  key_fields:
+    - name: "doc_id"
+      description: "Article ID from URL path (e.g., c5249181)"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Written/publication date"
+      type: "date"
+      role: "temporal_key"
+    - name: "doc_number"
+      description: "Official document number (发文字号)"
+      type: "string"
+      role: "metadata"
+    - name: "tax_type"
+      description: "Tax policy category (税费类型)"
+      type: "string"
+      role: "classification"
+    - name: "effectiveness"
+      description: "Effectiveness status (时效性)"
+      type: "string"
+      role: "metadata"
+    - name: "effect_level"
+      description: "Effect level (效力等级)"
+      type: "string"
+      role: "classification"
+    - name: "channel_name"
+      description: "Document category channel"
+      type: "string"
+      role: "classification"
+
+license:
+  name: "Public Government Information"
+  url: "https://www.chinatax.gov.cn/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Chinese government open data — public information disclosure."

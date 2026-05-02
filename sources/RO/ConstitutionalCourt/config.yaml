@@ -57,9 +57,19 @@ schema:
   secondary_fields: []
   probably_ignorable: []
 
+license:
+  name: "Public Domain (Romanian official acts)"
+  url: "https://www.ccr.ro"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Romanian Constitutional Court decisions are official public acts."
+
 notes: |
   - Decisions published as PDFs on ccr.ro
   - PDFs extracted via common/pdf_extract.extract_pdf_markdown
   - No public API, scraping HTML listing pages
   - Language: Romanian
   - Coverage: 1992-present
+  - Community contribution by @nicoletaMC (PR #51)

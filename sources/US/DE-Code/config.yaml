@@ -1,0 +1,63 @@
+# ===================================================================
+# US/DE-Code -- Delaware Code
+# ===================================================================
+# Full Delaware Code from delcode.delaware.gov.
+# 31 titles, HTML full text with section-level granularity.
+# Notable for Title 8 (General Corporation Law).
+# ===================================================================
+
+source:
+  id: "US/DE-Code"
+  country: "US"
+  name: "Delaware Code"
+  url: "https://delcode.delaware.gov"
+  description: |
+    The official Delaware Code maintained by the Delaware Code Revisors.
+    31 titles organized into chapters and subchapters.
+    Full text available in HTML format with section-level granularity.
+    Notable for Title 8 (General Corporation Law), the foundation
+    of US corporate law used by most Fortune 500 companies.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scraping"
+  base_url: "https://delcode.delaware.gov"
+  title_pattern: "/title{N}/index.html"
+  chapter_pattern: "/title{N}/c{NNN}/index.html"
+  subchapter_pattern: "/title{N}/c{NNN}/sc{NN}/index.html"
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "section_number"
+      type: "string"
+      required: true
+    - name: "url"
+      type: "string"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Delaware Code is a work of the state government, in the public domain."

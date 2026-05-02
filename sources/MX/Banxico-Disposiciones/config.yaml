@@ -1,0 +1,78 @@
+source:
+  id: "MX/Banxico-Disposiciones"
+  country: "MX"
+  name: "Banco de México - Disposiciones y Circulares"
+  url: "https://www.banxico.org.mx/marco-normativo/normativa-agrupada-por-ano-cr.html"
+  description: |
+    Circulars and general provisions issued by Banco de México (the central bank)
+    regulating credit institutions, payment systems, foreign exchange, interest
+    rates, commissions, and other financial operations. ~319 unique regulations
+    from 1969 to present, each with compiled/consolidated text PDFs. Spanish.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  max_workers: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.banxico.org.mx"
+
+data_model:
+  type: "legislation"
+  source_nature: "consolidated"
+  primary_key: "regulation_slug"
+  update_strategy: "upsert"
+  versioning: "consolidated"
+  dedup_key:
+    - "regulation_slug"
+
+schema:
+  total_fields: null
+  key_fields:
+    - name: "id"
+      description: "Unique identifier (regulation slug)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Regulation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Original publication date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+  secondary_fields: []
+  probably_ignorable: []
+
+license:
+  id: "ogd"
+  name: "Open Government Data — Mexico"
+  url: "https://www.banxico.org.mx/footer/aviso-legal-702702.html"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Official government regulatory publications."
+
+notes: |
+  - Regulations organized by year on normativa-agrupada-por-ano-cr.html
+  - Each regulation has a landing page with links to compiled and original PDFs
+  - ~319 unique regulation pages, many with multiple amendment PDFs
+  - We fetch the compiled/consolidated PDF (first PDF link) for each regulation
+  - Full text extracted via pdf_extract
+  - Language: Spanish

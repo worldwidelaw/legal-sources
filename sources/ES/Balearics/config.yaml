@@ -1,0 +1,66 @@
+source:
+  id: ES/Balearics
+  name: Balearic Islands Regional Legislation (BOIB)
+  url: https://www.caib.es/eboibfront/
+  country: ES
+  region: Illes Balears
+  data_types:
+    - legislation
+  auth:
+    type: none
+
+api:
+  type: eli_xml
+  base_url: https://www.caib.es/eboibfront
+  endpoints:
+    calendar: "/ca/{year}/"
+    section_i: "/ca/{year}/{bulletin_id}/seccio-i-disposicions-generals/471"
+    eli_xml: "/eli/{jurisdiction}/{doc_type}/{date}/{number}/dof/{lang}/xml"
+    legacy_xml: "/ca/{year}/{bulletin_id}/{enviament_id}/{slug}/xml"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 2013-01-01
+    end: present
+  document_types:
+    - Lleis (Laws)
+    - Decrets (Decrees)
+    - Ordenances (Ordinances)
+    - Reglaments (Regulations)
+    - Pressupostos (Budgets)
+  estimated_count: 5000+
+
+license:
+  name: "CC BY 4.0"
+  url: "https://creativecommons.org/licenses/by/4.0/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Attribution to Govern de les Illes Balears"
+
+notes: |
+  Butlletí Oficial de les Illes Balears (BOIB).
+  ELI XML endpoints provide full text in <env:contingut> element.
+  Newer documents (2019+) use ELI URI format; older ones use legacy paths.
+  Filters for Secció I (Disposicions Generals) — core legislation.
+  Available in Catalan (primary) and Spanish.

@@ -1,0 +1,42 @@
+source:
+  id: "TW/MOF-TaxInterpretations"
+  country: "TW"
+  name: "Taiwan Ministry of Finance Tax Interpretations (財政部各稅法令函釋)"
+  url: "https://ttc.mof.gov.tw/"
+  description: |
+    Tax interpretive rulings (釋示函令) from the MOF Tax Law
+    Interpretation Search System covering 18 tax acts.
+    Chinese (Traditional). Official API at ttc.mof.gov.tw.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.67
+  burst: 1
+
+schema:
+  key_fields:
+    - _id
+    - title
+    - text
+    - date
+    - url
+    - tax_act
+    - tax_version
+    - chapter
+    - article
+    - category
+    - language
+
+license:
+  name: "Government Open Data (PRC Copyright Law Art. 5 analog — ROC Copyright Act Art. 9)"
+  url: "https://law.moj.gov.tw/ENG/LawClass/LawSingle.aspx?pcode=J0070017&flno=9"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official government documents are excluded from copyright protection under ROC Copyright Act Article 9."

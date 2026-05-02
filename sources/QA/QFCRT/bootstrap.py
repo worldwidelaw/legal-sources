@@ -192,7 +192,7 @@ class QFCRTScraper(BaseScraper):
 
         return meta
 
-    def _extract_pdf_text(self, pdf_url: str) -> str:
+    def _extract_pdf_text(self, pdf_url: str, doc_id: str) -> str:
         """Download a PDF and extract text."""
         time.sleep(DELAY)
         try:
@@ -200,7 +200,7 @@ class QFCRTScraper(BaseScraper):
             if resp.status_code != 200:
                 logger.warning("PDF download failed %s: %s", pdf_url, resp.status_code)
                 return ""
-            return extract_pdf_markdown(resp.content) or ""
+            return extract_pdf_markdown("QA/QFCRT", doc_id, pdf_bytes=resp.content) or ""
         except Exception as e:
             logger.warning("PDF extraction error for %s: %s", pdf_url, e)
             return ""
@@ -216,8 +216,9 @@ class QFCRTScraper(BaseScraper):
 
             # Extract full text from PDF
             pdf_url = meta.get("pdf_url")
+            slug = url.rstrip("/").split("/")[-1]
             if pdf_url:
-                text = self._extract_pdf_text(pdf_url)
+                text = self._extract_pdf_text(pdf_url, slug)
                 meta["text"] = text
             else:
                 logger.warning("No PDF found for %s", url)

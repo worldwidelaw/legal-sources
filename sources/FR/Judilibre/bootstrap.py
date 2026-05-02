@@ -46,6 +46,9 @@ REQUEST_DELAY = 0.5  # seconds between requests
 JURISDICTIONS = ["cc", "ca", "tj", "tcom"]  # All jurisdictions: Cour de cassation, Cours d'appel, Tribunaux judiciaires, Tribunaux de commerce
 WINDOW_DAYS = 7  # Date window size for /scan queries — weekly to avoid PISTE gateway caps (~10K/query)
 TRUNCATION_THRESHOLD = 9500  # If a window returns >= this many results, it's likely truncated
+# Bump this whenever the scanning logic changes in a way that requires a full re-scan.
+# Old checkpoints with a different version are automatically discarded.
+CHECKPOINT_VERSION = 2  # v2: weekly windows + truncation detection + dedup fix
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent
@@ -267,18 +270,29 @@ def fetch_sample(api: JudilibreAPI, count: int = 15) -> List[Dict]:
 
 
 def load_checkpoint() -> dict:
-    """Load checkpoint from file if it exists."""
+    """Load checkpoint from file if it exists.
+
+    Auto-clears stale checkpoints whose version doesn't match
+    CHECKPOINT_VERSION (scanning logic changed, full re-scan required).
+    """
     if CHECKPOINT_FILE.exists():
         try:
             with open(CHECKPOINT_FILE, "r") as f:
-                return json.load(f)
+                data = json.load(f)
+            if data.get("version") != CHECKPOINT_VERSION:
+                print(f"Checkpoint version mismatch (got {data.get('version')}, "
+                      f"expected {CHECKPOINT_VERSION}) — clearing stale checkpoint")
+                CHECKPOINT_FILE.unlink()
+                return {"fetched_count": 0, "version": CHECKPOINT_VERSION}
+            return data
         except json.JSONDecodeError:
             print("Warning: Invalid checkpoint file, starting fresh")
-    return {"current_year": None, "current_month": None, "fetched_count": 0}
+    return {"fetched_count": 0, "version": CHECKPOINT_VERSION}
 
 
 def save_checkpoint(checkpoint: dict):
     """Save checkpoint to file."""
+    checkpoint["version"] = CHECKPOINT_VERSION
     checkpoint["last_update"] = datetime.now(timezone.utc).isoformat()
     with open(CHECKPOINT_FILE, "w") as f:
         json.dump(checkpoint, f, indent=2)
@@ -312,20 +326,30 @@ def fetch_all(api: JudilibreAPI, days: int = 30) -> Generator[Dict, None, None]:
 def _scan_window(api: JudilibreAPI, date_start: str, date_end: str,
                   jurisdiction: str) -> Generator[Dict, None, None]:
     """Scan a single date window. If the result count hits the truncation
-    threshold, automatically subdivide into daily windows and re-scan."""
+    threshold, automatically subdivide into daily windows and re-scan.
+
+    When truncation is detected, the daily re-scan yields ONLY records
+    whose IDs were not already yielded by the initial wide scan — this
+    avoids emitting duplicates downstream.
+    """
+    seen_ids: set = set()
     count = 0
     for decision in api.get_scan(date_start, date_end,
                                  jurisdiction=[jurisdiction]):
         record = normalize(decision)
         if record.get("text"):
+            doc_id = record.get("_id")
+            if doc_id:
+                seen_ids.add(doc_id)
             count += 1
             yield record
 
     if count >= TRUNCATION_THRESHOLD:
         # Likely truncated by PISTE gateway — re-scan with daily windows
-        print(f"    ⚠ {count} results in {date_start}→{date_end} (≥{TRUNCATION_THRESHOLD}), "
+        wide_count = count
+        print(f"    ⚠ {wide_count} results in {date_start}→{date_end} (≥{TRUNCATION_THRESHOLD}), "
               f"re-scanning with daily windows...")
-        seen_ids: set = set()
+        new_from_daily = 0
         day = datetime.strptime(date_start, "%Y-%m-%d")
         end = datetime.strptime(date_end, "%Y-%m-%d")
         while day <= end:
@@ -337,12 +361,13 @@ def _scan_window(api: JudilibreAPI, date_start: str, date_end: str,
                     doc_id = record.get("_id")
                     if record.get("text") and doc_id and doc_id not in seen_ids:
                         seen_ids.add(doc_id)
+                        new_from_daily += 1
                         yield record
             except Exception as e:
                 print(f"      Error on {ds}: {e}")
             day += timedelta(days=1)
-        print(f"    ⚠ Daily re-scan recovered {len(seen_ids)} unique records "
-              f"(vs {count} from wide window)")
+        print(f"    ⚠ Daily re-scan found {new_from_daily} additional records "
+              f"(total {len(seen_ids)} unique, was {wide_count} from wide window)")
 
 
 def fetch_full_archive(api: JudilibreAPI, use_checkpoint: bool = True) -> Generator[Dict, None, None]:

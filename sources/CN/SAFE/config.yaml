@@ -1,0 +1,63 @@
+# ===================================================================
+# CN/SAFE -- State Administration of Foreign Exchange Regulations
+# ===================================================================
+# English translations of Chinese foreign exchange regulations
+# from www.safe.gov.cn/en/. ~128 documents with full text.
+# HTML scraping with pagination.
+# ===================================================================
+
+source:
+  id: "CN/SAFE"
+  country: "CN"
+  name: "State Administration of Foreign Exchange Regulations"
+  url: "https://www.safe.gov.cn/en/RulesandRegulations/index.html"
+  description: |
+    English translations of Chinese foreign exchange regulations from SAFE.
+    Covers foreign exchange administration, cross-border payments, capital
+    accounts, and currency management. ~128 documents with full text.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  notes: "Conservative rate limit for Chinese government servers."
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.safe.gov.cn"
+  endpoints:
+    listing: "/en/RulesandRegulations/index.html"
+    listing_paginated: "/en/RulesandRegulations/index_{page}.html"
+
+schema:
+  key_fields:
+    - name: "doc_id"
+      description: "Document ID from URL (numeric)"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      description: "Full text of the document"
+      type: "string"
+      role: "content"
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+
+license:
+  name: "Public Government Information"
+  url: "https://www.safe.gov.cn/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Chinese government open data — public information disclosure."

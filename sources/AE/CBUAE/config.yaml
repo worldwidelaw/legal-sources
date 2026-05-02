@@ -1,0 +1,72 @@
+source:
+  id: "AE/CBUAE"
+  country: "AE"
+  name: "Central Bank of the UAE Rulebook"
+  url: "https://rulebook.centralbank.ae/en"
+  description: |
+    Regulations, standards, and guidelines issued by the Central Bank of the UAE (CBUAE).
+    Covers banking, insurance, AML/CFT, consumer protection, and other financial regulations.
+    English language. ~190 regulatory documents with full text.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://rulebook.centralbank.ae"
+
+data_model:
+  type: "legislation"
+  source_nature: "consolidated"
+  primary_key: "slug"
+  update_strategy: "upsert"
+  dedup_key:
+    - "slug"
+
+schema:
+  total_fields: null
+  key_fields:
+    - name: "slug"
+      description: "URL slug identifier for the regulation"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Regulation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the regulation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "category"
+      description: "Regulation category (banking, insurance, etc.)"
+      type: "string"
+      role: "reference"
+      required: false
+  secondary_fields: []
+  probably_ignorable: []
+
+license:
+  id: "custom-terms"
+  name: "CBUAE Rulebook Terms of Use"
+  url: "https://rulebook.centralbank.ae/en"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Public regulatory information published for compliance purposes. No explicit license stated."
+
+notes: |
+  Drupal 10 site at rulebook.centralbank.ae. 4 categories (all-licensed, banking, insurance,
+  other-regulated-entities) with ~192 regulation pages. Each page has full text with structured
+  articles. English language only.

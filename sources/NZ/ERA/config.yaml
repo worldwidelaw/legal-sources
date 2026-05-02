@@ -1,0 +1,66 @@
+rate_limit:
+  burst: 3
+  requests_per_second: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _fetched_at
+    required: false
+    type: string
+  - name: reference_no
+    required: false
+    type: string
+  - name: member
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string
+  - name: parties
+    required: false
+    type: string
+  - name: pdf_url
+    required: false
+    type: string
+source:
+  auth: none
+  country: NZ
+  data_types:
+  - case_law
+  description: >
+    Employment Relations Authority determinations from 2000 to present.
+    ~21,000 decisions on employment disputes including personal grievances,
+    unjustified dismissal, and wage arrears. Full text extracted from PDFs
+    (available since 2005).
+  id: NZ/ERA
+  language: en
+  license:
+    name: "New Zealand Government (Crown Copyright, open access)"
+    url: "https://www.legislation.govt.nz/crown-copyright/"
+    commercial_use: true
+    attribution_required: true
+    share_alike: false
+    no_derivatives: false
+    notes: ""
+  name: NZ Employment Relations Authority - Determinations
+  url: https://determinations.era.govt.nz/determinations

@@ -1,0 +1,74 @@
+source:
+  id: "TH/RD-TaxGuidance"
+  country: "TH"
+  name: "Thailand Revenue Department Tax Rulings and Guidance"
+  url: "https://www.rd.go.th/english/index-eng.html"
+  description: |
+    Tax treaties, royal decrees, ministerial regulations, board of taxation
+    rulings, revenue departmental orders, and amendment acts from the
+    Thailand Revenue Department (English translations).
+    Covers income tax, VAT, specific business tax, stamp duty, withholding tax.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.rd.go.th"
+
+data_model:
+  type: "doctrine"
+  source_nature: "gazette"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "none"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "_id"
+      description: "Unique document identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Approximate date (Buddhist Era year converted)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "doc_type"
+      description: "Document type (royal_decree, ministerial_regulation, tax_treaty, etc.)"
+      type: "string"
+      role: "content"
+      required: false
+  secondary_fields:
+    - name: "category"
+      description: "Source category page"
+    - name: "url"
+      description: "URL to original PDF"
+
+license:
+  name: "Thai Government Publication"
+  url: "https://www.rd.go.th/english/index-eng.html"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Government tax guidance published for public compliance. English translations provided by the Revenue Department."

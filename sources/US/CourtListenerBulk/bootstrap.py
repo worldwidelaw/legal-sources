@@ -20,6 +20,7 @@ Usage:
 
 import bz2
 import csv
+import gzip
 import io
 import json
 import logging
@@ -696,6 +697,126 @@ class CourtListenerBulkScraper(BaseScraper):
             "original_source": "CourtListener / Free Law Project",
         }
 
+    # ── Override bootstrap_fast to use chunked gzip (#569) ──────────
+
+    def bootstrap_fast(self, **kwargs) -> Dict[str, Any]:
+        """
+        Override BaseScraper.bootstrap_fast() so the VPS pipeline
+        (vps-bootstrap.sh → run-bootstrap-fast.py → bootstrap-fast CLI)
+        uses chunked gzip output instead of a single records.jsonl.
+        Without this override the disk fills up at ~2.2M/10M records.
+        """
+        chunk_size = kwargs.get("batch_size", 500_000)
+        logger.info(
+            "bootstrap_fast() redirected to bootstrap_chunked() "
+            f"(chunk_size={chunk_size:,})"
+        )
+        return self.bootstrap_chunked(chunk_size=chunk_size)
+
+    # ── Chunked bootstrap (disk-safe for large datasets) ────────────
+
+    def bootstrap_chunked(
+        self,
+        chunk_size: int = 500_000,
+        compress: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Full bootstrap writing gzip-compressed JSONL chunks instead of a
+        single records.jsonl.  Solves the VPS disk-full issue (#559):
+        10M opinions × ~11 KB = 110 GB uncompressed; gzip brings it to
+        ~15-20 GB, well within a 38 GB CX23.
+
+        Output files:  data/chunk_0000.jsonl.gz, data/chunk_0001.jsonl.gz, …
+
+        Each chunk holds at most `chunk_size` records. After all chunks are
+        written, the VPS ingest pipeline reads them sequentially.
+        """
+        started_at = datetime.now(timezone.utc).isoformat()
+        data_dir = self.source_dir / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)
+
+        stats = {
+            "started_at": started_at,
+            "mode": "chunked",
+            "chunk_size": chunk_size,
+            "compressed": compress,
+            "records_written": 0,
+            "records_skipped": 0,
+            "errors": 0,
+            "chunks_written": 0,
+        }
+
+        ext = ".jsonl.gz" if compress else ".jsonl"
+        chunk_idx = 0
+        records_in_chunk = 0
+        fp = None
+
+        def _open_chunk(idx: int):
+            path = data_dir / f"chunk_{idx:04d}{ext}"
+            if compress:
+                return gzip.open(path, "wt", encoding="utf-8", compresslevel=6)
+            return open(path, "w", encoding="utf-8")
+
+        def _close_chunk():
+            nonlocal fp, chunk_idx, records_in_chunk
+            if fp is not None:
+                fp.close()
+                fp = None
+                stats["chunks_written"] = chunk_idx + 1
+                logger.info(
+                    f"Chunk {chunk_idx:04d} complete: "
+                    f"{records_in_chunk:,} records"
+                )
+                chunk_idx += 1
+                records_in_chunk = 0
+
+        try:
+            for raw in self.fetch_all():
+                try:
+                    record = self.normalize(raw)
+                except Exception as e:
+                    stats["errors"] += 1
+                    continue
+                if not isinstance(record, dict):
+                    stats["errors"] += 1
+                    continue
+
+                # Open first / next chunk as needed
+                if fp is None:
+                    fp = _open_chunk(chunk_idx)
+
+                line = json.dumps(record, ensure_ascii=False, default=str)
+                fp.write(line + "\n")
+                records_in_chunk += 1
+                stats["records_written"] += 1
+
+                if stats["records_written"] % 100_000 == 0:
+                    logger.info(
+                        f"Progress: {stats['records_written']:,} records, "
+                        f"chunk {chunk_idx:04d}"
+                    )
+
+                # Rotate chunk when full
+                if records_in_chunk >= chunk_size:
+                    _close_chunk()
+
+        except Exception as e:
+            logger.error(f"bootstrap_chunked error: {e}")
+            stats["error_message"] = str(e)
+            self.status["last_error"] = str(e)
+        finally:
+            _close_chunk()
+
+        stats["finished_at"] = datetime.now(timezone.utc).isoformat()
+
+        self.status["last_bootstrap"] = stats["finished_at"]
+        self.status["last_run"] = stats["finished_at"]
+        self.status["total_records"] = stats["records_written"]
+        self.status.setdefault("run_history", []).append(stats)
+        self._save_status()
+
+        return stats
+
     # ── Sample mode override ─────────────────────────────────────────
 
     def run_sample(self, n: int = 10) -> Dict[str, Any]:
@@ -883,7 +1004,8 @@ def main():
     if len(sys.argv) < 2:
         print(
             "Usage: python bootstrap.py "
-            "[bootstrap|bootstrap-fast|update] [--sample] [--sample-size N] [--workers N] [--batch-size N]"
+            "[bootstrap|bootstrap-fast|update] [--sample] [--sample-size N] "
+            "[--workers N] [--batch-size N] [--chunk-size N]"
         )
         sys.exit(1)
 
@@ -893,26 +1015,33 @@ def main():
     if command == "bootstrap":
         sample_mode = "--sample" in sys.argv
         sample_size = _parse_int_flag(sys.argv, "--sample-size", 10)
+        chunk_size = _parse_int_flag(sys.argv, "--chunk-size", 500_000)
         if sample_mode:
             stats = scraper.run_sample(n=sample_size)
             print(
                 f"\nSample complete: {stats['sample_records_saved']} records saved to sample/"
             )
         else:
-            stats = scraper.bootstrap()
+            # Default to chunked gzip output to avoid disk-full on VPS (#559).
+            stats = scraper.bootstrap_chunked(chunk_size=chunk_size)
             print(
-                f"\nBootstrap complete: {stats['records_new']} new, "
-                f"{stats.get('records_updated', 0)} updated, "
-                f"{stats.get('records_skipped', 0)} skipped"
+                f"\nBootstrap complete (chunked): {stats['records_written']:,} records "
+                f"in {stats['chunks_written']} chunks, {stats['errors']} errors"
             )
-    elif command == "bootstrap-fast":
-        workers = _parse_int_flag(sys.argv, "--workers", 1)
-        batch_size = _parse_int_flag(sys.argv, "--batch-size", 100)
-        stats = scraper.bootstrap_fast(max_workers=workers, batch_size=batch_size)
+    elif command == "bootstrap-legacy":
+        # Original single-file JSONL output (requires >110 GB disk for full ingest).
+        stats = scraper.bootstrap()
         print(
-            f"\nFast bootstrap complete: {stats['records_new']} new, "
+            f"\nBootstrap complete: {stats['records_new']} new, "
             f"{stats.get('records_updated', 0)} updated, "
-            f"{stats['errors']} errors"
+            f"{stats.get('records_skipped', 0)} skipped"
+        )
+    elif command == "bootstrap-fast":
+        chunk_size = _parse_int_flag(sys.argv, "--chunk-size", 500_000)
+        stats = scraper.bootstrap_fast(batch_size=chunk_size)
+        print(
+            f"\nFast bootstrap complete (chunked): {stats['records_written']:,} records "
+            f"in {stats['chunks_written']} chunks, {stats['errors']} errors"
         )
     elif command == "update":
         stats = scraper.update()

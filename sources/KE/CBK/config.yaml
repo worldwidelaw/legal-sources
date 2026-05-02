@@ -1,0 +1,82 @@
+source:
+  id: "KE/CBK"
+  country: "KE"
+  name: "Central Bank of Kenya Prudential Guidelines & Circulars"
+  url: "https://www.centralbank.go.ke/"
+  description: |
+    Banking circulars, prudential guidelines, foreign exchange guidelines,
+    and regulatory guidance from the Central Bank of Kenya.
+    Covers banking, microfinance, payments, and AML/CFT regulations.
+    Language: English.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.centralbank.go.ke"
+
+data_model:
+  type: "doctrine"
+  source_nature: "gazette"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "none"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "_id"
+      description: "Unique document identifier derived from PDF filename"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Approximate date (year extracted from title)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "doc_type"
+      description: "Document classification (circular, prudential_guideline, guideline, etc.)"
+      type: "string"
+      role: "content"
+      required: false
+  secondary_fields:
+    - name: "category"
+      description: "Source page category (circulars or guidelines)"
+    - name: "url"
+      description: "URL to original PDF"
+
+license:
+  id: "custom-terms"
+  name: "CBK Website Terms"
+  url: "https://www.centralbank.go.ke/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Government regulatory documents published for public compliance. No explicit license; standard government publication terms apply."
+
+notes: |
+  - ~160 PDF documents (banking circulars + prudential guidelines)
+  - Full text extracted from PDFs (native text, not scanned)
+  - Covers: AML/CFT, capital requirements, forex, payments, microfinance
+  - Language: English
+  - Coverage: 2011-2026

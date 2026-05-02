@@ -1,0 +1,80 @@
+# ===================================================================
+# CN/HuggingFace-CAIL2018 -- CAIL2018 Chinese Court Judgments Dataset
+# ===================================================================
+# 2.17M Chinese criminal case records with fact descriptions,
+# applicable law articles, charges, and sentences. From the China AI
+# Law Challenge 2018 dataset on HuggingFace.
+# ===================================================================
+
+source:
+  id: "CN/HuggingFace-CAIL2018"
+  country: "CN"
+  name: "CAIL2018 Chinese Court Judgments Dataset"
+  url: "https://huggingface.co/datasets/china-ai-law-challenge/cail2018"
+  description: |
+    Large-scale Chinese legal dataset for judgment prediction containing
+    2.17M criminal case records. Each record includes case fact descriptions
+    (full text), relevant law article IDs, criminal accusations, defendant
+    names, and sentencing information (imprisonment, fines, death/life
+    imprisonment). Sourced from real Chinese court judgments.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  notes: "HuggingFace API rate limits are generous."
+
+api:
+  type: "rest"
+  base_url: "https://datasets-server.huggingface.co"
+  endpoints:
+    rows: "/rows?dataset=china-ai-law-challenge/cail2018&config=default&split={split}&offset={offset}&length={length}"
+
+schema:
+  key_fields:
+    - name: "fact"
+      description: "Case fact description (full text of the case narrative)"
+      type: "string"
+      role: "content"
+    - name: "relevant_articles"
+      description: "IDs of relevant Chinese criminal law articles"
+      type: "list[int]"
+      role: "metadata"
+    - name: "accusation"
+      description: "Criminal accusations/charges"
+      type: "list[string]"
+      role: "classification"
+    - name: "criminals"
+      description: "Names of defendants"
+      type: "list[string]"
+      role: "metadata"
+    - name: "imprisonment"
+      description: "Imprisonment duration in months"
+      type: "float"
+      role: "metadata"
+    - name: "punish_of_money"
+      description: "Monetary punishment amount (CNY)"
+      type: "float"
+      role: "metadata"
+    - name: "death_penalty"
+      description: "Whether death penalty was applied"
+      type: "boolean"
+      role: "metadata"
+    - name: "life_imprisonment"
+      description: "Whether life imprisonment was applied"
+      type: "boolean"
+      role: "metadata"
+
+license:
+  name: "Unknown"
+  url: "https://huggingface.co/datasets/china-ai-law-challenge/cail2018"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Academic dataset from CAIL 2018 competition. No explicit license on HuggingFace page."

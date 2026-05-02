@@ -1,0 +1,77 @@
+source:
+  id: "PK/SECP"
+  country: "PK"
+  name: "Pakistan Securities and Exchange Commission"
+  url: "https://www.secp.gov.pk/laws/"
+  description: |
+    Regulatory documents from the Securities and Exchange Commission of Pakistan.
+    Includes acts, ordinances, rules, regulations, directives, guidelines, and
+    circulars. PDFs downloaded from WordPress document manager and text extracted.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "web_scrape"
+  base_url: "https://www.secp.gov.pk"
+  endpoints:
+    - path: "/laws/{category}/"
+      method: "GET"
+      format: "html"
+
+data_model:
+  type: "doctrine"
+  source_nature: "regulatory"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "none"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Unique document identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "category"
+      description: "Document category (acts, rules, regulations, etc.)"
+      type: "string"
+      role: "content"
+      required: false
+  secondary_fields:
+    - name: "url"
+      description: "URL to the document listing page"
+    - name: "pdf_url"
+      description: "Direct PDF download URL"
+
+license:
+  name: "Pakistan Government Publication"
+  url: "https://www.secp.gov.pk/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Regulatory documents published by SECP for public compliance and transparency."

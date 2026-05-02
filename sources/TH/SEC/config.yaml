@@ -1,0 +1,84 @@
+source:
+  id: "TH/SEC"
+  country: "TH"
+  name: "Thailand Securities and Exchange Commission Enforcement"
+  url: "https://market.sec.or.th/public/idisc/en/Enforce/"
+  description: |
+    Enforcement actions from the Thailand Securities and Exchange Commission (SEC).
+    Includes criminal complaints, administrative fines, civil actions, cases settled,
+    and administrative orders. Each record contains summarized facts with full text
+    describing the violation, relevant laws, and enforcement outcome.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "rest_api"
+  base_url: "https://market.sec.or.th"
+  endpoints:
+    - path: "/public/idisc/api/Enforce/GetEnforces"
+      method: "POST"
+      format: "html_in_json"
+
+data_model:
+  type: "case_law"
+  source_nature: "enforcement"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "none"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Unique enforcement action identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Name of the offender/entity"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Summarized facts of the enforcement action"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Enforcement date in ISO 8601 format"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "enforcement_type"
+      description: "Type of enforcement (Criminal Complaints, Administrative Fine, etc.)"
+      type: "string"
+      role: "content"
+      required: false
+  secondary_fields:
+    - name: "relevant_law"
+      description: "Relevant sections and laws"
+    - name: "details"
+      description: "Additional details about the case outcome"
+    - name: "sec_news_ref"
+      description: "SEC news reference number"
+    - name: "remark"
+      description: "Additional remarks"
+    - name: "url"
+      description: "URL to the enforcement portal"
+
+license:
+  name: "Thai Government Publication"
+  url: "https://market.sec.or.th/public/idisc/en/Enforce/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Enforcement actions published by Thailand SEC for public transparency and investor protection."

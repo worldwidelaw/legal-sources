@@ -1,0 +1,16 @@
+{
+  "_id": "TW-MOF-TaxInterp-143295",
+  "_source": "TW/MOF-TaxInterpretations",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-28T04:37:51.515886+00:00",
+  "title": "４村里辦公費事務費非屬課稅範圍",
+  "text": "鄉、鎮、區公所按月定額發給村、里長之「村、里辦公費」及「村、里長事務費」（編者註：現為村（里）長事務補助費），係供村里長處理村里事務及推行政令之用，非屬村、里長個人之所得，應免納所得稅。（財政部75/10/14台財稅第7571030號函）",
+  "date": null,
+  "url": "https://ttc.mof.gov.tw/?TaxSN=143295",
+  "tax_act": "所得稅法",
+  "tax_version": "一一四年版",
+  "chapter": "第一章　總　則",
+  "article": "第二條（綜合所得稅課稅範圍）",
+  "category": "釋示函令",
+  "language": "zh-TW"
+}

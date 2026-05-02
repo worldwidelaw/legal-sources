@@ -1,0 +1,16 @@
+{
+  "_id": "TW-MOF-TaxInterp-132010",
+  "_source": "TW/MOF-TaxInterpretations",
+  "_type": "doctrine",
+  "_fetched_at": "2026-04-28T04:38:57.903560+00:00",
+  "title": "2電器換修零件不課貨物稅",
+  "text": "已稅出廠之電視機及電冰箱若使用多年主要零件失卻效用，該等電器確係用戶送請修理並持有用戶送修單者，應准免予課稅。（財政部57/01/26(57)台財稅發第01323號令）",
+  "date": null,
+  "url": "https://ttc.mof.gov.tw/?TaxSN=132010",
+  "tax_act": "貨物稅條例",
+  "tax_version": "一一三年版",
+  "chapter": "第一章　總　則",
+  "article": "第一條（課徵範圍）",
+  "category": "釋示函令",
+  "language": "zh-TW"
+}

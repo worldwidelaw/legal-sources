@@ -1,0 +1,45 @@
+fetcher:
+  base_url: https://www.rra.gov.rw
+  rate_limit: 2.0
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: doc_type
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: RW
+  data_types:
+  - doctrine
+  description: >
+    Tax laws, presidential orders, ministerial orders, commissioner general's
+    rules, public rulings, and VAT exemption lists from the Rwanda Revenue
+    Authority (RRA). Trilingual (Kinyarwanda/English/French) PDFs. ~45 documents.
+  format: pdf
+  id: RW/RRA
+  language: en
+  name: Rwanda Revenue Authority Tax Laws and Rulings
+  url: https://www.rra.gov.rw/en/laws-policies-and-rulings
+license:
+  name: "Government open access"
+  url: "https://www.rra.gov.rw/en/disclaimer"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official tax laws and guidance published by Rwanda Revenue Authority for public access."

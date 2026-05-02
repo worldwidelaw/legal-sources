@@ -1,0 +1,74 @@
+source:
+  id: ES/Extremadura
+  name: Extremadura Regional Legislation (DOE)
+  url: https://doe.juntaex.es/eli/es-ex
+  country: ES
+  region: Extremadura
+  data_types:
+    - legislation
+  auth:
+    type: none
+
+api:
+  type: eli_xml
+  base_url: https://doe.juntaex.es
+  endpoints:
+    eli_types: "/eli/es-ex"
+    eli_years: "/eli/es-ex/{type}"
+    eli_months: "/eli/es-ex/{type}/{year}"
+    eli_days: "/eli/es-ex/{type}/{year}/{month}"
+    eli_docs: "/eli/es-ex/{type}/{year}/{month}/{day}"
+    eli_pdf_ref: "/eli/es-ex/{type}/{year}/{month}/{day}/{number}/dof/spa/pdf"
+    xml_doc: "/pdfs/doe/{year}/{doe_dir}/xml/{xml_id}.xml"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 1984-01-01
+    end: present
+  document_types:
+    - Leyes
+    - Decretos
+    - Decretos-Ley
+    - Decretos Legislativos
+    - Ordenes
+    - Reglamentos
+  estimated_count: 5000+
+
+license:
+  name: "CC BY 4.0"
+  url: "https://creativecommons.org/licenses/by/4.0/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Diario Oficial de Extremadura — open government data"
+
+notes: |
+  Diario Oficial de Extremadura (DOE).
+  Uses ELI hierarchy for document discovery, then fetches full text as XML.
+  ELI types: l (ley), d (decreto), dl (decreto-ley), dleg (decreto legislativo),
+  o (orden), reg (reglamento).
+  The PDF ELI endpoint returns an iframe with the PDF path, from which the XML
+  document ID and DOE issue directory are derived.
+  Full text is fetched as structured XML from /pdfs/doe/{year}/{doe_dir}/xml/{xml_id}.xml.
+  Coverage from 1984 to present.
+  Language: Spanish (es).

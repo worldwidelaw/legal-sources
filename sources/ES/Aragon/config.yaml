@@ -1,0 +1,66 @@
+source:
+  id: ES/Aragon
+  name: Aragón Regional Legislation (BOA)
+  url: https://www.boa.aragon.es
+  country: ES
+  region: Aragón
+  data_types:
+    - legislation
+  auth:
+    type: none
+
+api:
+  type: html_scrape
+  base_url: https://www.boa.aragon.es/cgi-bin/EBOA/BRSCGI
+  endpoints:
+    list: "?CMD=VERLST&BASE=BOLE&SEC=BUSQUEDA_AVANZADA&RNG={rng}&SORT=-PUBL&SEPARADOR=&SECC-C=DISPOSICIONES&docs={start}-{end}"
+    detail: "?CMD=VERDOC&BASE=BOLE&SEC=BUSQUEDA_AVANZADA&SEPARADOR=&DOCN={docn}"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 1978-01-01
+    end: present
+  document_types:
+    - Leyes
+    - Decretos
+    - Órdenes
+    - Resoluciones
+    - Acuerdos
+    - Convenios
+  estimated_count: 90000+
+
+license:
+  id: cc-by-4.0
+  name: "CC BY 4.0"
+  url: "https://creativecommons.org/licenses/by/4.0/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: ""
+
+notes: |
+  Boletín Oficial de Aragón (BOA) - Official Gazette of Aragón.
+  Full text available via BRSCGI CGI interface.
+  90,000+ legislative dispositions since 1978.
+  HTML parsing from CMD=VERDOC for full text.
+  Date-based filtering via @PUBL-GE / @PUBL-LE parameters.

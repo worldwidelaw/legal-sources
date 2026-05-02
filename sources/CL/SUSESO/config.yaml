@@ -1,0 +1,91 @@
+# ===================================================================
+# CL/SUSESO -- Superintendencia de Seguridad Social
+# ===================================================================
+# Chilean Social Security Superintendent's administrative rulings
+# (dictámenes) on workplace accidents, occupational diseases,
+# pensions, medical leave, and social security law interpretation.
+# ~16,000 documents from 1988 to present, with full text in HTML.
+# Free access, no authentication required.
+# ===================================================================
+
+source:
+  id: "CL/SUSESO"
+  country: "CL"
+  name: "Superintendencia de Seguridad Social - Dictámenes"
+  url: "https://www.suseso.gob.cl/612/w3-channel.html"
+  description: |
+    Administrative rulings (dictámenes) from Chile's Social Security
+    Superintendent (SUSESO). Covers interpretation of social security
+    legislation including Law 16.744 (workplace accidents and occupational
+    diseases), medical leave, disability subsidies, pensions, family
+    allowances, and related social security matters.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "Be respectful to SUSESO servers. JSONP search API + HTML detail pages."
+
+api:
+  type: "jsonp_api"
+  base_url: "https://suseso-engine.newtenberg.com"
+  endpoints:
+    search: "/mod/find/cgi/find.cgi?action=jsonquery&engine=SwisheFind&rpp={rpp}&cid=512&iid=612&searchon=aid&properties=546,523,532,620,548&json=1&start={start}&pvid_and=500:515"
+    article: "https://www.suseso.gob.cl/612/w3-article-{aid}.html"
+
+data_model:
+  type: "case_law"
+  primary_key: "aid"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "aid"
+      description: "Newtenberg CMS article identifier"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "dictamen_number"
+      description: "Official dictamen number (e.g., Dictamen O-01-S-01728-2026)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Title of the dictamen"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the dictamen"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the dictamen (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Open Government Data (Chile)"
+  url: "https://datos.gob.cl/dataset/about"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Official government administrative rulings, publicly available."
+
+notes: |
+  - JSONP search API via Newtenberg Engine returns metadata for all ~16K dictámenes
+  - Full text extracted from individual article HTML pages
+  - property-value_532 field contains a summary/abstract
+  - Topics include: workplace accidents (Ley 16.744), medical leave, disability subsidies,
+    pensions, family allowances, and other social security matters
+  - Language: Spanish
+  - Coverage: 1988 to present

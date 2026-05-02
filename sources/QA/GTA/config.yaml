@@ -1,0 +1,46 @@
+fetcher:
+  base_url: https://gta.gov.qa
+  rate_limit: 2.0
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: doc_type
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: QA
+  data_types:
+  - doctrine
+  description: >
+    Tax circulars, decisions, and laws published by the Qatar General Tax
+    Authority (GTA). Covers income tax, excise tax, withholding tax, and
+    global minimum tax. English-language PDFs with full text extraction.
+    ~30 documents across circulars, decisions, and laws.
+  format: pdf
+  id: QA/GTA
+  language: en
+  name: Qatar General Tax Authority Circulars and Guidance
+  url: https://gta.gov.qa/en/circulars
+license:
+  name: "Government open access"
+  url: "https://gta.gov.qa/en/terms-policy"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official tax guidance published by the Qatar GTA for public access."

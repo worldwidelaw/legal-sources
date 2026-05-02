@@ -1,0 +1,71 @@
+source:
+  id: ES/Navarra
+  name: Navarra Regional Legislation (BON)
+  url: https://www.boe.es/eli/es-nc
+  country: ES
+  region: Navarra
+  data_types:
+    - legislation
+  auth:
+    type: none
+
+api:
+  type: boe_eli_api
+  base_url: https://www.boe.es
+  endpoints:
+    eli_sitemaps: "/eli/sitemap{n}.xml"
+    eli_doc_page: "/eli/es-nc/{type}/{year}/{month}/{day}/{number}"
+    api_metadata: "/datosabiertos/api/legislacion-consolidada/id/{boe_id}/metadatos"
+    api_full_text: "/datosabiertos/api/legislacion-consolidada/id/{boe_id}/texto"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 1982-01-01
+    end: present
+  document_types:
+    - Leyes Forales
+    - Decretos Forales
+    - Decretos Forales Legislativos
+    - Decretos Ley Forales
+    - Órdenes Forales
+    - Resoluciones
+    - Acuerdos
+  estimated_count: 1175
+
+license:
+  name: "CC BY 4.0"
+  url: "https://creativecommons.org/licenses/by/4.0/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "BOE Open Data — Navarra foral legislation published in the official state gazette"
+
+notes: |
+  Navarra regional legislation via BOE (Boletín Oficial del Estado) ELI hierarchy
+  and Open Data API. Documents discovered from BOE ELI sitemaps (es-nc prefix).
+  Full text fetched as structured XML via BOE Open Data API.
+  ELI types: lf (ley foral), df (decreto foral), dflg (decreto foral legislativo),
+  dlf (decreto ley foral), of (orden foral), res (resolución), a (acuerdo).
+  Navarra has a distinctive foral civil law tradition.
+  Coverage from 1982 to present. ~1175 documents.
+  Language: Spanish (es).

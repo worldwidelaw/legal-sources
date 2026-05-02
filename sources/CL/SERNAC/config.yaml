@@ -1,0 +1,72 @@
+source:
+  id: "CL/SERNAC"
+  country: "CL"
+  name: "SERNAC - Servicio Nacional del Consumidor"
+  url: "https://www.sernac.cl/portal/618/w3-propertyvalue-14522.html"
+  description: |
+    Consumer protection guidance from Chile's National Consumer Service.
+    Includes interpretive circulars and interpretive rulings (dictámenes)
+    on consumer law topics. ~126 documents (2019-present). Spanish.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.sernac.cl"
+
+data_model:
+  type: "doctrine"
+  source_nature: "gazette"
+  primary_key: "article_id"
+  update_strategy: "upsert"
+  versioning: "none"
+  dedup_key:
+    - "article_id"
+    - "doc_type"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Unique identifier (CL-SERNAC-{type}-{aid})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "doc_type"
+      description: "circular or dictamen"
+      type: "string"
+      role: "status"
+      required: true
+
+license:
+  id: "pd-gov"
+  name: "Public Domain (Government)"
+  url: "https://www.sernac.cl/portal/618/w3-propertyvalue-14522.html"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official government interpretive guidance published for public information"

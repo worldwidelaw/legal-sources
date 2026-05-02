@@ -1,0 +1,49 @@
+api:
+  auth: none
+  base_url: https://ojv.tta.cl
+  endpoints:
+    list: GET /buscador/obtienedocumentosfiltroexpandidoes?sistema=SACTA&numeroPagina={page}&registrosPorPagina=100
+    metadata: GET /api/integracion/fallos?offset={offset}&limit={limit}
+    tribunals: GET /api/list/tribunal
+  rate_limit:
+    delay_seconds: 2
+    requests_per_minute: 30
+  type: rest_json
+data:
+  coverage:
+    estimated_records: 11500
+  encoding: utf-8
+  format: json
+  language: spa
+  notes: >
+    Tax and customs tribunal decisions (sentencias) from all 18 regional TTA courts.
+    Full text extracted via ElasticSearch attachment pipeline (no PDF download needed).
+    ~11,500 decisions from 2012-present covering tax disputes, customs appeals,
+    and real estate assessments.
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: url
+    required: true
+    type: string
+  required_fields:
+  - title
+  - text
+  - date
+  - url
+source:
+  country: CL
+  id: CL/TTA
+  name: Tribunales Tributarios y Aduaneros (Tax & Customs Courts)
+  type: case_law
+  url: https://ojv.tta.cl/#/instituciones/jurisprudencia
+license:
+  name: Public Domain (official judicial decisions)
+  url: https://www.tta.cl/
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: Official Chilean tribunal decisions are public domain under Chilean law.

@@ -1,0 +1,53 @@
+source:
+  id: "INTL/OECDTribunal"
+  name: "OECD Administrative Tribunal Judgments"
+  description: |
+    Judgments from the OECD Administrative Tribunal.
+    Covers employment disputes between OECD and its staff.
+    ~120 judgments from 1980s to present, available as PDFs with
+    predictable URL patterns.
+  url: "https://www.oecd.org/en/about/administrative-tribunal/all-judgements.html"
+  country: "INTL"
+  language: "EN"
+  data_types:
+    - case_law
+  auth:
+    type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "direct_pdf"
+  base_url: "https://www.oecd.org/content/dam/oecd/en/about/administrative-tribunal"
+
+schema:
+  key_fields:
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "url"
+      type: "string"
+      required: true
+    - name: "judgment_number"
+      type: "string"
+      required: true
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+license:
+  id: "custom-terms"
+  name: "OECD Terms of Use"
+  url: "https://www.oecd.org/en/about/terms-conditions.html"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Public tribunal judgments. OECD terms allow reuse with attribution."

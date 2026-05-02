@@ -1,0 +1,63 @@
+source:
+  id: "INTL/EFTA-ESA"
+  name: "EFTA Surveillance Authority Decisions"
+  description: |
+    EEA enforcement decisions by the EFTA Surveillance Authority (ESA).
+    Covers state aid, competition, internal market compliance for Iceland,
+    Liechtenstein, Norway. ~1500+ college decisions from 1994 to present.
+    Full text extracted from official PDF documents.
+  url: "https://www.eftasurv.int/esa-at-a-glance/publications/public-access-to-documents/public-documents?type=decision"
+  country: "INTL"
+  language: "EN"
+  data_types:
+    - case_law
+    - legislation
+  auth:
+    type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "rest"
+  base_url: "https://www.eftasurv.int"
+
+schema:
+  key_fields:
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true
+    - name: "case_number"
+      type: "string"
+      required: false
+    - name: "decision_number"
+      type: "string"
+      required: false
+    - name: "country"
+      type: "string"
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+license:
+  id: "custom-terms"
+  name: "EFTA Surveillance Authority Public Documents"
+  url: "https://www.eftasurv.int/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Public enforcement decisions. No restrictive reuse terms found."

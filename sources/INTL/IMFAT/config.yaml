@@ -1,0 +1,43 @@
+fetch:
+  list_url: https://www.imf.org/en/about/imfat-index/imfat-judgements
+  pdf_base_url: https://www.imf.org/-/media/files/imfat/
+  method: html_index_pdf
+  rate_limit_seconds: 2
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: judgment_number
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: >
+    IMF Administrative Tribunal judgments on employment disputes between
+    the IMF and its staff members. 61 judgments from 2006 to present,
+    published as PDFs at imf.org. Full text extracted from PDF.
+  id: INTL/IMFAT
+  language: en
+  name: IMF Administrative Tribunal Judgments
+  url: https://www.imf.org/en/about/imfat-index/imfat-judgements
+license:
+  name: "IMF Terms of Use"
+  url: "https://www.imf.org/external/terms.htm"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "IMF terms allow reproduction for personal/educational use with attribution"

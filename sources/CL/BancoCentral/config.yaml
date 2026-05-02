@@ -1,0 +1,89 @@
+# ===================================================================
+# CL/BancoCentral -- Banco Central de Chile - Normativa
+# ===================================================================
+# Central bank regulations, circulars, agreements, and monetary policy
+# normative acts. Accessed via LeyChile internal JSON API filtered by
+# organismo=Banco Central. ~3,400 norms with full text.
+# Free access, no authentication required.
+# ===================================================================
+
+source:
+  id: "CL/BancoCentral"
+  country: "CL"
+  name: "Banco Central de Chile - Normativa"
+  url: "https://www.bcentral.cl/areas/normativa"
+  description: |
+    Regulations issued by the Central Bank of Chile (BCCh) including
+    Acuerdos (Board Agreements), Circulares (Circulars), Cartas Circulares
+    (Circular Letters), Avisos (Notices), and Certificados. Covers monetary
+    policy, financial regulation, international exchange norms, and
+    prudential standards. Accessed via BCN LeyChile API filtered to
+    BCCh-issued norms.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  notes: "Be respectful to the BCN servers. 1 req/s for full text retrieval."
+
+api:
+  type: "rest"
+  base_url: "https://nuevo.leychile.cl/servicios"
+  endpoints:
+    search: "/buscarjson?string=&organismo=Banco+Central&tipoNorma=0&page_num={page}&itemsporpagina={per_page}&orden=2"
+    norm_json: "/Navegar/get_norma_json?idNorma={id}&idVersion=&idLey=&tipoVersion=Vigente&cve=&agrupa_partes=1"
+
+data_model:
+  type: "doctrine"
+  primary_key: "idNorma"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "idNorma"
+      description: "BCN unique norm identifier"
+      type: "integer"
+      role: "primary_key"
+      required: true
+    - name: "tipo_norma"
+      description: "Norm type (Acuerdo, Circular, Aviso, Certificado, etc.)"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "title"
+      description: "Norm title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the regulation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Open Government Data (Chile)"
+  url: "https://datos.gob.cl/dataset/about"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "BCN LeyChile is Chile's official open legislation platform."
+
+notes: |
+  - Uses same LeyChile API as CL/BCNLeyChile but filtered to Banco Central norms
+  - organismo=Banco+Central filter captures ~3,400 norms
+  - Includes Acuerdos, Circulares, Avisos, Certificados
+  - Full text via get_norma_json endpoint returns HTML sections
+  - Language: Spanish

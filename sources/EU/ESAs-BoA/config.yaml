@@ -1,0 +1,46 @@
+fetch:
+  list_url: https://www.eiopa.europa.eu/decisions-board-appeal_en
+  method: html_index_pdf
+  rate_limit_seconds: 2
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: reference
+    required: false
+    type: string
+  - name: respondent_esa
+    required: false
+    type: string
+source:
+  auth: none
+  country: EU
+  data_types:
+  - case_law
+  description: >
+    Joint Board of Appeal of the European Supervisory Authorities (EBA, EIOPA, ESMA).
+    Appeals against decisions of EBA, EIOPA, and ESMA under EU financial regulation
+    (CRA Regulation, banking, insurance, securities). ~26 decisions from 2013 to present.
+    Full text extracted from PDF.
+  id: EU/ESAs-BoA
+  language: en
+  name: ESAs Joint Board of Appeal (EBA/EIOPA/ESMA)
+  url: https://www.eiopa.europa.eu/decisions-board-appeal_en
+license:
+  name: "EUR-Lex / EU Reuse Policy"
+  url: "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "EU institutional documents; reuse permitted under Commission Decision 2011/833/EU"

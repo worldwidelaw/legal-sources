@@ -1,0 +1,78 @@
+source:
+  id: "MX/CNBV"
+  country: "MX"
+  name: "Comisión Nacional Bancaria y de Valores (CNBV) - Normatividad"
+  url: "https://www.cnbv.gob.mx/Normatividad"
+  description: |
+    Regulatory provisions (disposiciones de carácter general), circulars,
+    laws, and agreements issued by Mexico's National Banking and Securities
+    Commission (CNBV). ~112 consolidated PDF documents covering banking,
+    securities, fintech, payment systems, and financial institution supervision.
+    Full text extracted from PDFs via SharePoint REST API. Spanish.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  max_workers: 3
+
+api:
+  type: "rest"
+  base_url: "https://www.cnbv.gob.mx"
+
+data_model:
+  type: "legislation"
+  source_nature: "consolidated"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  versioning: "consolidated"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: null
+  key_fields:
+    - name: "id"
+      description: "Unique identifier based on document filename"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text content extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Last modification date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+  secondary_fields: []
+  probably_ignorable: []
+
+license:
+  name: "Open Government Data — Mexico"
+  url: "https://www.gob.mx/terminos"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Official government regulatory publications from CNBV."
+
+notes: |
+  - Documents listed via SharePoint REST API at /_api/web/GetFolderByServerRelativeUrl('/Normatividad')/Files
+  - PDFs downloadable at https://www.cnbv.gob.mx/Normatividad/{encoded_filename}
+  - SSL verification disabled (cnbv.gob.mx has certificate issues)
+  - ~112 PDF documents, 0.1–4.2 MB each
+  - Full text extracted via pdf_extract
+  - Language: Spanish

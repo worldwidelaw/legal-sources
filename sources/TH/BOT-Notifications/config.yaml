@@ -1,0 +1,74 @@
+source:
+  id: "TH/BOT-Notifications"
+  country: "TH"
+  name: "Thailand Bank of Thailand Notifications and Circulars"
+  url: "https://app.bot.or.th/FIPCS/eng/PFIPCS_list.aspx"
+  description: |
+    Notifications, circulars, ministerial regulations, and notices from the
+    Bank of Thailand (BOT) Financial Institutions Policy Circular System (FIPCS).
+    Covers financial institution supervision, payment systems, forex regulations,
+    and prudential requirements. English translations available.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://app.bot.or.th"
+
+data_model:
+  type: "doctrine"
+  source_nature: "gazette"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "none"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Unique document identifier based on BOT document number"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document subject/title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from English PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issued date in ISO 8601"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "doc_type"
+      description: "Document type (circular, notification, notice, ministerial_regulation)"
+      type: "string"
+      role: "content"
+      required: false
+  secondary_fields:
+    - name: "status"
+      description: "Document status (Currently in use / Cancelled)"
+    - name: "url"
+      description: "URL to English PDF"
+
+license:
+  name: "Thai Government Publication"
+  url: "https://www.bot.or.th/en/terms-of-use"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Government regulatory notifications published for public compliance."

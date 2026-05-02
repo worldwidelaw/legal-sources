@@ -1,0 +1,52 @@
+id: TR/SPK
+name: Turkey Capital Markets Board (SPK/CMB) — Administrative Sanctions
+country: TR
+url: https://ws.spk.gov.tr/IdariYaptirimlar/api/TumIdariParaCezalari
+description: >
+  Administrative sanctions of the Turkish Capital Markets Board (Sermaye Piyasası
+  Kurulu / SPK). Includes administrative fines (İdari Para Cezaları) and trading
+  bans (İşlem Yasakları). Data fetched from official REST API (Swagger-documented).
+  ~2,500 enforcement records covering violations, penalty amounts, and legal basis.
+data_types:
+  - case_law
+  - doctrine
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+license:
+  name: "Turkish Government Public Records"
+  url: "https://www.spk.gov.tr/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official government enforcement decisions published via public REST API. No explicit terms restricting reuse."
