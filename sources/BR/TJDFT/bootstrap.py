@@ -1,36 +1,29 @@
 #!/usr/bin/env python3
 """
-BR/TJDFT -- Federal District Court (Tribunal de Justiça do Distrito Federal e Territórios)
+BR/TJDFT -- Tribunal de Justiça do Distrito Federal e dos Territórios
 
-Fetches court decisions from TJDFT's JurisDF API.
-3.3M+ decisions (acordãos + monocratic decisions) with full text via HTML.
+Fetches decisions from the public Elasticsearch-backed REST API.
+No authentication required. Supports full pagination (no result cap).
 
 API: POST https://jurisdf.tjdft.jus.br/api/v1/pesquisa
-  - JSON body with query, pagina (0-indexed), tamanho (max 40)
-  - retornaInteiroTeor: true returns full text HTML in inteiroTeorHtml field
-  - No authentication required
-
-Bases: acordaos (~1.7M), decisoes (~1.6M), informativo-jurisprudencia,
-       jurisprudencia-foco, sumulas
+Response: {hits: {value: N}, registros: [...], paginacao: {...}}
 
 Usage:
-  python bootstrap.py bootstrap          # Full initial pull
-  python bootstrap.py bootstrap --sample # Fetch 15 sample records
-  python bootstrap.py update             # Fetch recent records
-  python bootstrap.py test               # Quick connectivity test
+  python bootstrap.py bootstrap          # Full collection
+  python bootstrap.py bootstrap --sample # 15 sample records
+  python bootstrap.py test               # Connectivity test
+  python bootstrap.py update             # Incremental (since last run)
 """
 
-import re
 import sys
 import json
+import re
 import time
-import html
+import hashlib
 import logging
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Optional
-
-import requests
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -43,264 +36,241 @@ logging.basicConfig(
 )
 logger = logging.getLogger("legal-data-hunter.BR.TJDFT")
 
-SOURCE_ID = "BR/TJDFT"
-SAMPLE_DIR = Path(__file__).parent / "sample"
-CHECKPOINT_FILE = Path(__file__).parent / "checkpoint.json"
-
 API_URL = "https://jurisdf.tjdft.jus.br/api/v1/pesquisa"
+PAGE_SIZE = 20
+
+# Default keyword set — broad enough for full-text discovery.
+# Override in config.yaml fetch.queries if you want domain-specific collection.
+DEFAULT_QUERIES = [
+    # Core jurisdiction keywords covering the full TJDFT docket
+    "direito",
+    "recurso",
+    "apelacao",
+    "mandado",
+]
 
 HEADERS = {
-    "User-Agent": "Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)",
+    "User-Agent": "legal-sources-bot/1.0 (research; github.com/worldwidelaw/legal-sources)",
     "Accept": "application/json",
     "Content-Type": "application/json",
+    "Origin": "https://jurisdf.tjdft.jus.br",
+    "Referer": "https://jurisdf.tjdft.jus.br/",
 }
 
-DELAY = 1.5
-PAGE_SIZE = 40
-BASES = ["acordaos", "decisoes"]
 
-
-def strip_html(text: str) -> str:
-    """Strip HTML tags and decode entities from text."""
+def _clean_html(text: str) -> str:
+    """Remove <mark> tags and normalise whitespace from API response text."""
     if not text:
         return ""
-    text = re.sub(r'<br\s*/?\s*>', '\n', text, flags=re.IGNORECASE)
-    text = re.sub(r'<p[^>]*>', '\n', text, flags=re.IGNORECASE)
-    text = re.sub(r'</p>', '\n', text, flags=re.IGNORECASE)
-    text = re.sub(r'<[^>]+>', '', text)
-    text = html.unescape(text)
-    text = re.sub(r'[ \t]+', ' ', text)
-    text = re.sub(r'\n{3,}', '\n\n', text)
-    return text.strip()
+    text = re.sub(r"</?mark>", "", text)
+    text = text.replace("\xa0", " ")
+    return " ".join(text.split())
+
+
+def _parse_date(dt_str: str) -> Optional[str]:
+    """Parse ISO 8601 datetime to YYYY-MM-DD, or return None."""
+    if not dt_str:
+        return None
+    m = re.match(r"(\d{4}-\d{2}-\d{2})", str(dt_str))
+    return m.group(1) if m else None
 
 
 class TJDFTScraper(BaseScraper):
-    """Scraper for BR/TJDFT -- Federal District Court decisions via JurisDF API."""
+    """
+    Scraper for the TJDFT public Elasticsearch REST API.
 
-    def __init__(self):
-        source_dir = Path(__file__).parent
-        super().__init__(source_dir)
-        self.session = requests.Session()
-        self.session.headers.update(HEADERS)
+    The API supports arbitrary keyword queries with full pagination.
+    Each page returns up to PAGE_SIZE (20) records with total hit count,
+    allowing complete collection without any result-count ceiling.
+    """
 
-    def _load_checkpoint(self) -> dict:
-        if CHECKPOINT_FILE.exists():
-            with open(CHECKPOINT_FILE, 'r') as f:
-                return json.load(f)
-        return {}
-
-    def _save_checkpoint(self, checkpoint: dict):
-        with open(CHECKPOINT_FILE, 'w') as f:
-            json.dump(checkpoint, f, indent=2)
-
-    def _search(self, query: str = "*", page: int = 0, size: int = PAGE_SIZE,
-                base: Optional[str] = None, full_text: bool = True) -> Optional[dict]:
-        """Execute a search against the JurisDF API."""
-        body = {
+    def _post(self, query: str, page: int = 0) -> dict:
+        """POST a single search request; returns parsed JSON response."""
+        import urllib.request
+        body = json.dumps({
             "query": query,
             "pagina": page,
-            "tamanho": size,
-            "retornaInteiroTeor": full_text,
-            "retornaTotalizacao": page == 0,
-        }
-        if base:
-            body["termosAcessorios"] = [{"campo": "base", "valor": base}]
+            "tamanho": PAGE_SIZE,
+            "espelho": False,
+            "sinonimos": False,
+        }, ensure_ascii=False).encode("utf-8")
+        req = urllib.request.Request(API_URL, data=body, headers=HEADERS, method="POST")
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read())
 
-        for attempt in range(4):
+    def fetch_all(self) -> Generator[dict, None, None]:
+        """
+        Yield all TJDFT decisions across all configured queries.
+
+        Queries are taken from config.yaml fetch.queries (if set) or DEFAULT_QUERIES.
+        Pagination is automatic — no result-count cap.
+        """
+        queries = self.config.get("fetch", {}).get("queries", DEFAULT_QUERIES)
+        seen_uuids: set = set()
+        sleep_s = self.config.get("fetch", {}).get("rate_limit_seconds", 0.3)
+
+        for query in queries:
+            # First request to get total count
             try:
-                time.sleep(DELAY)
-                resp = self.session.post(API_URL, json=body, timeout=60)
-                resp.raise_for_status()
-                return resp.json()
-            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-                wait = 3 * (attempt + 1)
-                logger.warning("Attempt %d failed: %s. Retrying in %ds...", attempt + 1, e, wait)
-                time.sleep(wait)
+                r0 = self._post(query, page=0)
             except Exception as e:
-                logger.error("API request failed: %s", e)
-                return None
-        logger.error("All retries exhausted")
-        return None
+                logger.warning("Query %r failed: %s", query, e)
+                continue
 
-    def normalize(self, doc: dict) -> Optional[dict]:
-        """Transform an API record into the standard schema."""
-        uuid = doc.get("uuid", "")
-        processo = doc.get("processo", "")
-        base = doc.get("base", "")
+            total = r0.get("hits", {}).get("value", 0)
+            pages = (total + PAGE_SIZE - 1) // PAGE_SIZE
+            logger.info("Query %r: %d results, %d pages", query, total, pages)
 
-        # Full text from inteiroTeorHtml
-        raw_html = doc.get("inteiroTeorHtml", "")
-        text = strip_html(raw_html)
+            # Yield first page
+            for record in r0.get("registros", []):
+                uid = record.get("uuid") or record.get("processo", "")
+                if uid and uid not in seen_uuids:
+                    seen_uuids.add(uid)
+                    yield record
 
-        # Fallback to ementa + decisao if full text unavailable
-        if len(text) < 50:
-            ementa = doc.get("ementa", "")
-            decisao = doc.get("decisao", "")
-            parts = []
-            if ementa:
-                parts.append(f"EMENTA: {ementa}")
-            if decisao:
-                parts.append(f"DECISÃO: {decisao}")
-            text = "\n\n".join(parts)
+            # Subsequent pages
+            for page in range(1, pages):
+                time.sleep(sleep_s)
+                try:
+                    resp = self._post(query, page=page)
+                    for record in resp.get("registros", []):
+                        uid = record.get("uuid") or record.get("processo", "")
+                        if uid and uid not in seen_uuids:
+                            seen_uuids.add(uid)
+                            yield record
+                except Exception as e:
+                    logger.warning("Page %d of query %r failed: %s", page, query, e)
+                    time.sleep(2)
 
-        if len(text) < 20:
+    def fetch_updates(self, since: Optional[str] = None) -> Generator[dict, None, None]:
+        """
+        Yield decisions published/judged after `since` (ISO 8601 date string).
+
+        The TJDFT API has no native date-filter parameter, so we fetch all
+        results for each query and filter client-side. For frequent incremental
+        runs this is efficient because the API is fast (0.3s/page).
+        """
+        if since is None:
+            since = self.status.get("last_run", "")
+
+        since_dt = None
+        if since:
+            try:
+                since_dt = datetime.fromisoformat(since.replace("Z", "+00:00")).date()
+            except ValueError:
+                pass
+
+        for raw in self.fetch_all():
+            date_str = _parse_date(raw.get("dataJulgamento") or raw.get("dataPublicacao", ""))
+            if since_dt and date_str:
+                try:
+                    record_date = datetime.fromisoformat(date_str).date()
+                    if record_date <= since_dt:
+                        continue
+                except ValueError:
+                    pass
+            yield raw
+
+    def normalize(self, raw: dict) -> Optional[dict]:
+        """
+        Transform a raw TJDFT API record into the worldwidelaw standard schema.
+
+        Returns None if the record lacks both ementa and decisao text
+        (insufficient content for indexing).
+        """
+        uuid = raw.get("uuid", "")
+        processo = raw.get("processo", "")
+
+        marcadores = raw.get("marcadores", {})
+        ementa_list = marcadores.get("ementa", [])
+        ementa_raw = ementa_list[0] if ementa_list else raw.get("ementa", "")
+        ementa = _clean_html(ementa_raw)
+        decisao = _clean_html(raw.get("decisao", ""))
+
+        text = ementa or decisao
+        if not text:
             return None
 
-        # Date
-        raw_date = doc.get("dataJulgamento", "")
-        date = raw_date[:10] if raw_date else None
+        date_julgamento = _parse_date(raw.get("dataJulgamento", ""))
+        date_publicacao = _parse_date(raw.get("dataPublicacao", ""))
+        date = date_julgamento or date_publicacao
 
-        # Title
-        identificador = doc.get("identificador", "")
-        orgao = doc.get("descricaoOrgaoJulgador", "")
-        title = f"Acórdão {identificador}" if base == "acordaos" else f"Decisão {identificador}"
+        orgao = raw.get("descricaoOrgaoJulgador", "")
+        relator = raw.get("nomeRelator", "")
+        base = raw.get("base", "")  # ACORDAOS, DECISOES, etc.
+        identificador = raw.get("identificador", "")
+
+        # Stable document ID: prefer UUID, fall back to process number hash
+        doc_id = uuid or hashlib.sha256(processo.encode()).hexdigest()[:16]
+
+        title = processo
         if orgao:
-            title += f" - {orgao}"
+            title = f"{processo} – {orgao}"
 
         return {
-            "_id": f"BR-TJDFT-{uuid}",
-            "_source": SOURCE_ID,
-            "_type": "case_law",
-            "_fetched_at": datetime.now(timezone.utc).isoformat(),
+            "_id": doc_id,
             "title": title,
             "text": text,
             "date": date,
-            "url": f"https://jurisdf.tjdft.jus.br/",
-            "language": "pt",
-            "uuid": uuid,
             "process_number": processo,
+            "judge_relator": relator,
+            "orgao_julgador": orgao,
             "base": base,
-            "rapporteur": doc.get("nomeRelator", ""),
-            "court_body": orgao,
-            "publication_date": (doc.get("dataPublicacao", "") or "")[:10] or None,
-            "cnj_class": doc.get("descricaoClasseCnj", ""),
+            "identificador": identificador,
+            "ementa": ementa,
+            "decisao": decisao[:2000] if decisao else "",
+            "url": f"https://jurisdf.tjdft.jus.br/#{identificador}" if identificador else "",
+            "source": "BR/TJDFT",
+            "country": "BR",
+            "language": "pt",
         }
-
-    def fetch_all(self, sample: bool = False) -> Generator[dict, None, None]:
-        """Fetch all TJDFT decisions."""
-        count = 0
-        sample_limit = 15 if sample else 999999
-
-        for base in BASES:
-            if count >= sample_limit:
-                break
-
-            logger.info("=== Fetching base: %s ===", base)
-            # First request to get total
-            result = self._search(query="*", page=0, base=base, full_text=True)
-            if not result:
-                logger.error("Failed to fetch base %s", base)
-                continue
-
-            total = result.get("hits", {}).get("value", 0)
-            logger.info("Base %s: %d total records", base, total)
-
-            records = result.get("registros", [])
-            for doc in records:
-                if count >= sample_limit:
-                    break
-                yield doc
-                count += 1
-
-            if count >= sample_limit:
-                break
-
-            # Paginate through remaining pages
-            max_pages = min((total + PAGE_SIZE - 1) // PAGE_SIZE, sample_limit // PAGE_SIZE + 1)
-            if sample:
-                max_pages = 1  # Already fetched page 0
-
-            for page in range(1, max_pages):
-                if count >= sample_limit:
-                    break
-                result = self._search(query="*", page=page, base=base, full_text=True)
-                if not result:
-                    break
-                records = result.get("registros", [])
-                if not records:
-                    break
-                for doc in records:
-                    if count >= sample_limit:
-                        break
-                    yield doc
-                    count += 1
-
-                if page % 10 == 0:
-                    logger.info("Base %s: page %d/%d, %d records so far", base, page, max_pages, count)
-
-        logger.info("Total records yielded: %d", count)
-
-    def fetch_updates(self, since: str) -> Generator[dict, None, None]:
-        """Fetch decisions published since a date."""
-        for base in BASES:
-            logger.info("Fetching updates for base %s since %s", base, since)
-            page = 0
-            while True:
-                body = {
-                    "query": "*",
-                    "pagina": page,
-                    "tamanho": PAGE_SIZE,
-                    "retornaInteiroTeor": True,
-                    "termosAcessorios": [
-                        {"campo": "base", "valor": base},
-                    ],
-                }
-                result = self._search(query="*", page=page, base=base, full_text=True)
-                if not result:
-                    break
-                records = result.get("registros", [])
-                if not records:
-                    break
-
-                yielded = 0
-                for doc in records:
-                    pub_date = (doc.get("dataPublicacao", "") or "")[:10]
-                    if pub_date and pub_date >= since:
-                        yield doc
-                        yielded += 1
-                    elif pub_date and pub_date < since:
-                        return  # Results are sorted by date desc, so we can stop
-
-                if yielded == 0:
-                    break
-                page += 1
-                time.sleep(DELAY)
-
-
-def main():
-    scraper = TJDFTScraper()
-
-    if len(sys.argv) < 2:
-        print("Usage: python bootstrap.py [bootstrap|update|test] [--sample]")
-        sys.exit(1)
-
-    command = sys.argv[1]
-    sample = "--sample" in sys.argv
-
-    if command == "test":
-        logger.info("Testing connectivity...")
-        result = scraper._search(query="*", page=0, size=1, full_text=False)
-        if result:
-            total = result.get("hits", {}).get("value", 0)
-            logger.info("API OK — %d total records", total)
-        else:
-            logger.error("API test failed")
-            sys.exit(1)
-        return
-
-    if command == "bootstrap":
-        stats = scraper.bootstrap(sample_mode=sample)
-        logger.info("Bootstrap complete: %s", json.dumps(stats, indent=2))
-
-    elif command == "update":
-        since = sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith("-") else "2025-01-01"
-        count = sum(1 for _ in scraper.fetch_updates(since))
-        logger.info("Update complete: %d records since %s", count, since)
-
-    else:
-        print(f"Unknown command: {command}")
-        sys.exit(1)
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="BR/TJDFT scraper")
+    parser.add_argument("command", choices=["bootstrap", "update", "test"])
+    parser.add_argument("--sample", action="store_true", help="Fetch 15 sample records only")
+    args = parser.parse_args()
+
+    source_dir = Path(__file__).parent
+    scraper = TJDFTScraper(str(source_dir))
+
+    if args.command == "test":
+        print("Testing TJDFT API connectivity...")
+        try:
+            r = scraper._post("agua", page=0)
+            total = r.get("hits", {}).get("value", 0)
+            print(f"OK — {total:,} results for query \'agua\'")
+        except Exception as e:
+            print(f"FAIL: {e}")
+            sys.exit(1)
+
+    elif args.command in ("bootstrap", "update"):
+        sample_limit = 15 if args.sample else None
+        generator = scraper.fetch_all() if args.command == "bootstrap" else scraper.fetch_updates()
+        count = 0
+        sample_dir = source_dir / "sample"
+        sample_dir.mkdir(exist_ok=True)
+
+        for raw in generator:
+            normalized = scraper.normalize(raw)
+            if normalized is None:
+                continue
+            count += 1
+
+            # Save first 15 as samples
+            if count <= 15:
+                safe_id = re.sub(r"[^\w-]", "_", normalized["_id"])[:40]
+                with open(sample_dir / f"{safe_id}.json", "w", encoding="utf-8") as f:
+                    json.dump(normalized, f, ensure_ascii=False, indent=2)
+
+            if sample_limit and count >= sample_limit:
+                print(f"Sample mode: collected {count} records")
+                break
+
+            if count % 500 == 0:
+                logger.info("Collected %d records so far...", count)
+
+        print(f"Done: {count} records collected")
