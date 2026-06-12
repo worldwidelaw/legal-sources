@@ -1,0 +1,87 @@
+source:
+  id: SI/AVK
+  country: SI
+  name: Slovenian Competition Protection Agency (AVK)
+  url: https://www.varstvo-konkurence.si
+  description: >
+    Published decision excerpts and linked decisions from the official website
+    of the Slovenian Competition Protection Agency.
+
+data_types:
+  - case_law
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: html_scrape
+  base_url: https://www.varstvo-konkurence.si
+  selectors:
+    restrictive_practices: /omejevalna-ravnanja/odlocitve-agencije/
+    merger_control: /koncentracije-podjetij/koncentracije-v-presoji-in-odlocitve-agencije/
+    detail_links: a[href*="/ostali-dokumenti/arhiv-odlocb/odlocba"]
+  tls:
+    verify: false
+    notes: Local Python certificate validation fails for this government site.
+
+data_model:
+  type: case_law
+  primary_key: doc_id
+  update_strategy: append_only
+  versioning: none
+  dedup_key:
+    - doc_id
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: doc_id
+      description: AVK case number or stable URL-derived identifier.
+      type: string
+      role: primary_key
+      required: true
+    - name: title
+      description: Decision title or first operative sentence.
+      type: string
+      role: content
+      required: true
+    - name: text
+      description: Official decision excerpt from the AVK detail page.
+      type: string
+      role: content
+      required: true
+    - name: date
+      description: Publication or decision date.
+      type: date
+      role: temporal_key
+      required: false
+    - name: url
+      description: Official AVK detail page.
+      type: string
+      role: reference
+      required: true
+  secondary_fields:
+    - name: category
+      description: Restrictive practices or merger control.
+    - name: pdf_url
+      description: Linked full decision PDF when present on the page.
+
+license:
+  id: cc-by-4.0
+  name: CC BY 4.0 / Slovenian open data
+  url: https://podatki.gov.si
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: Official Slovenian public-sector competition decisions.
+
+notes: |
+  Uses official AVK HTML decision excerpt pages. Some entries link PDFs, but
+  the HTML detail pages are the stable route used for samples. The scraper does
+  not bypass anti-bot controls; TLS verification is disabled only because the
+  local Python trust store rejects the public certificate chain.

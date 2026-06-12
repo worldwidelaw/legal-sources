@@ -30322,21 +30322,6 @@ sources:
   priority: 3
   status: complete
   url: https://www.sainthelena.gov.sh/government/legislation/
-- id: SI/AVK
-  name: Slovenia Competition Protection Agency (AVK) — Decisions
-  country: SI
-  url: https://www.varstvo-konkurence.si
-  data_types:
-  - case_law
-  status: blocked
-  priority: 3
-  auth: none
-  blocked_reason: scanned_pdf_no_ocr
-  license_id: pd-gov
-  license_name: Public Domain (Government)
-  license_url: null
-  commercial_use: true
-  notes: PDFs are scanned images (0 extractable text). HTML archive pages have only ~500 char summaries. ~235 decisions in archive + ~70 on restrictive practices page. Needs OCR (PyMuPDF/Tesseract) on VPS.
 - auth: none
   blocked_reason: null
   commercial_use: true
@@ -30364,6 +30349,21 @@ sources:
   priority: 2
   status: blocked
   url: https://us-rs.si
+- auth: none
+  blocked_reason: null
+  commercial_use: true
+  country: SI
+  data_types:
+  - case_law
+  id: SI/AVK
+  license_id: cc-by-4.0
+  license_name: CC BY 4.0 / Slovenian open data
+  license_url: https://podatki.gov.si
+  name: Slovenian Competition Protection Agency (AVK)
+  notes: Official AVK restrictive-practices and merger-control decision excerpt pages. Some records link full decision PDFs.
+  priority: 2
+  status: complete
+  url: https://www.varstvo-konkurence.si
 - auth: none
   blocked_reason: null
   commercial_use: true
