@@ -1,0 +1,123 @@
+# ===================================================================
+# UK/ScottishCourts -- Scottish Courts and Tribunals Service Judgments
+# ===================================================================
+# Official SCTS judgments search API plus public PDF downloads.
+# Covers Scottish courts from 1999 onwards.
+# No auth required. Crown copyright under the Open Government Licence.
+# ===================================================================
+
+source:
+  id: "UK/ScottishCourts"
+  country: "UK"
+  name: "Scottish Courts and Tribunals Service Judgments"
+  url: "https://www.scotcourts.gov.uk/judgments/"
+  description: |
+    Official Scottish Courts and Tribunals Service judgments search covering
+    Court of Session, High Court of Justiciary, Sheriff Appeal Court, Sheriff
+    Courts, National Personal Injury Court, and Scottish Upper Tribunal
+    chambers. Metadata is returned from the public SCTS web API and full text
+    is extracted from judgment PDFs.
+
+data_types:
+  - case_law
+
+jurisdictions:
+  - code: "GB-SCT"
+    name: "Scotland"
+    scope: "full"
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 4
+
+api:
+  type: "json_search_plus_pdf"
+  base_url: "https://api.pa.web.scotcourts.gov.uk/web"
+  tls_verify: false
+  endpoints:
+    definition: "/definition/1414"
+    search: "/search"
+  pagination:
+    per_page: 50
+
+data_model:
+  type: "case_law"
+  primary_key: "pdf_url"
+  update_strategy: "upsert"
+  dedup_key:
+    - "pdf_url"
+
+schema:
+  total_fields: 17
+  key_fields:
+    - name: "title"
+      description: "Case title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the judgment PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Opinion or decision date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "published_date"
+      description: "Date published by SCTS"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Judgment PDF URL"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "court"
+      description: "Primary court or chamber"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "courts"
+      description: "All courts or chambers listed by SCTS"
+      type: "array"
+      role: "classification"
+      required: false
+    - name: "division"
+      description: "Derived court division where available"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "judges"
+      description: "Judges listed by SCTS"
+      type: "array"
+      role: "metadata"
+      required: false
+    - name: "citation"
+      description: "Neutral citation extracted from the judgment text"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "jurisdiction_code"
+      description: "ISO 3166-2 jurisdiction code"
+      type: "string"
+      role: "classification"
+      required: true
+
+notes: |
+  - Fixes GitHub issue #131 by adding Scottish court coverage for UK discovery.
+  - SCTS judgments page states judgments can be searched from 1999 onwards.
+  - API currently reports about 13,000 judgment records.
+  - Courts include Court of Session, High Court of Justiciary, Sheriff Appeal
+    Court Civil/Criminal, Sheriff Court Civil/Criminal, National Personal
+    Injury Court, and Scottish Upper Tribunal chambers.
+  - Crown copyright material on the SCTS website is reusable under the Open
+    Government Licence, excluding logos, photographs, and third-party material.
+  - TLS verification is disabled for this source because Python requests and
+    curl fail certificate chain/revocation checks for scotcourts.gov.uk, while
+    the public HTTPS endpoints remain reachable from browser/OS clients.

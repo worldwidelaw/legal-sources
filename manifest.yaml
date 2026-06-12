@@ -33681,6 +33681,24 @@ sources:
   commercial_use: true
   country: UK
   data_types:
+  - case_law
+  id: UK/ScottishCourts
+  jurisdictions:
+  - code: GB-SCT
+    scope: full
+  license_id: ogl-3.0
+  license_name: Open Government Licence 3.0
+  license_url: https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+  name: Scottish Courts and Tribunals Service Judgments
+  notes: 'Fixes issue #131. Official SCTS judgments API plus PDF downloads. Covers Court of Session, High Court of Justiciary, Sheriff Appeal Court Civil/Criminal, Sheriff Court Civil/Criminal, National Personal Injury Court, and Scottish Upper Tribunal chambers. Search from 1999 onwards; API currently reports ~13K judgments. Crown copyright under OGL.'
+  priority: 1
+  status: complete
+  url: https://www.scotcourts.gov.uk/judgments/
+- auth: none
+  blocked_reason: null
+  commercial_use: true
+  country: UK
+  data_types:
   - doctrine
   id: UK/GC
   license_id: ogl-3.0

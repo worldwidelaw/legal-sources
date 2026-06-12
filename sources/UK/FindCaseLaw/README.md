@@ -8,8 +8,13 @@
 
 ## Overview
 
-Official database of ~365,000 court and tribunal judgments for England & Wales.
-Covers UKSC, EWCA, EWHC, and tribunals. Full text in Akoma Ntoso XML.
+Official database of ~365,000 court and tribunal judgments for England & Wales,
+plus UK-wide Supreme Court and Privy Council cases. Covers UKSC, UKPC, EWCA,
+EWHC, and tribunals. Full text is available in Akoma Ntoso XML.
+
+Devolved Scottish court judgments are not covered here; use
+`UK/ScottishCourts` for Court of Session, High Court of Justiciary, Sheriff
+Appeal Court, Sheriff Court, and Scottish tribunal judgments.
 
 ## Data Access
 

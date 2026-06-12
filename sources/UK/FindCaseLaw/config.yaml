@@ -1,7 +1,8 @@
 # ===================================================================
 # UK/FindCaseLaw -- UK Find Case Law (The National Archives)
 # ===================================================================
-# Official database of court and tribunal judgments for England & Wales.
+# Official database of court and tribunal judgments for England & Wales,
+# plus UK-wide Supreme Court and Privy Council cases.
 # Atom feed for listing + Akoma Ntoso XML for full text.
 # No auth required. Open Justice Licence.
 # API docs: https://nationalarchives.github.io/ds-find-caselaw-docs/public
@@ -14,8 +15,9 @@ source:
   url: "https://caselaw.nationalarchives.gov.uk"
   description: |
     Official database of court and tribunal judgments for England & Wales,
-    operated by The National Archives. ~365,000 judgments with full text
-    in Akoma Ntoso XML. Covers UKSC, EWCA, EWHC, and tribunals.
+    plus UK-wide Supreme Court and Privy Council cases, operated by The
+    National Archives. ~365,000 judgments with full text in Akoma Ntoso XML.
+    Covers UKSC, UKPC, EWCA, EWHC, and tribunals.
     Atom feed for listing/searching, per-document XML for full text.
     No authentication required. Open Justice Licence.
 
@@ -97,4 +99,5 @@ notes: |
   - Rate limit: 1,000 requests per 5-minute window
   - Open Justice Licence
   - Language: English
-  - Courts: UKSC, EWCA, EWHC, tribunals
+  - Courts: UKSC, UKPC, EWCA, EWHC, tribunals
+  - Devolved Scottish court judgments are covered separately by UK/ScottishCourts.
