@@ -1,0 +1,123 @@
+# ===================================================================
+# US/DOI-IBLA -- Interior Board of Land Appeals (U.S. DOI, OHA)
+# ===================================================================
+# Full-text decisions of the Interior Board of Land Appeals (IBLA), the
+# appellate body within the U.S. Department of the Interior's Office of
+# Hearings and Appeals that decides appeals from Bureau of Land Management
+# and other Interior bureau decisions on public-land use and resources
+# (grazing, oil & gas / mineral leasing, mining claims, rights-of-way,
+# surface management, wild horse & burro, land patents, etc.). Each
+# decision resolves a docketed appeal (e.g. "IBLA 98-287") -> case_law.
+# Published in a public ISYS/Perceptive full-text search database at
+# https://www.oha.doi.gov:8080/ (plain HTTP GET, no auth, no CAPTCHA).
+# Federal-government works, public domain (17 U.S.C. § 105).
+# ===================================================================
+
+source:
+  id: "US/DOI-IBLA"
+  country: "US"
+  name: "Interior Board of Land Appeals — Decisions (U.S. DOI, Office of Hearings and Appeals)"
+  url: "https://www.oha.doi.gov:8080/"
+  description: |
+    Decisions of the Interior Board of Land Appeals (IBLA), the U.S.
+    Department of the Interior appellate board that reviews Bureau of Land
+    Management and other Interior bureau decisions concerning the use and
+    disposition of public lands and their resources. Full text is read from
+    the born-digital decision PDFs served by Interior's OHA ISYS search
+    database (oha.doi.gov:8080). The database is queried with broad seed
+    terms, paged through, and de-duplicated by reporter citation (the PDF
+    filename, e.g. 157IBLA230.pdf == "157 IBLA 230").
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "isys_search"
+  base_url: "https://www.oha.doi.gov:8080"
+  endpoints:
+    search: "/search/?IW_FIELD_NATURAL_LANGUAGE={query}&IW_DATABASE=IBLA Decisions 1970-Present"
+    hit_list: "/isysquery/{guid}/{start}-{end}/list/"
+    document: "/isysquery/{guid}/{rank}/doc/{citation}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/DOI-IBLA/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "citation"
+      description: "Reporter citation, e.g. '157 IBLA 230'"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "docket_number"
+      description: "IBLA docket, e.g. 'IBLA 98-287' (parsed from the body)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Party caption + citation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision, extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from 'Decided <date>'"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (U.S. Government Work — 17 U.S.C. § 105)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Interior Board of Land Appeals are works of the U.S. federal government and are in the public domain under 17 U.S.C. § 105 (government edicts)."
+
+notes: |
+  - Corpus is enumerated from Interior OHA's ISYS/Perceptive full-text
+    search (oha.doi.gov:8080). The flow is stateless once a query is
+    issued: GET /search/?IW_FIELD_NATURAL_LANGUAGE=<q>&IW_DATABASE=IBLA
+    Decisions 1970-Present returns a results page carrying a server-cached
+    query GUID and a total hit count; /isysquery/<GUID>/<start>-<end>/list/
+    pages the hits (PAGE=50); each hit links its PDF at
+    /isysquery/<GUID>/<rank>/doc/<citation>.pdf. The GUID persists
+    server-side, so no cookies are needed. NOTE: ISYS 403s on POST to
+    /search/ but serves the identical query over GET.
+  - There is no stable direct PDF path (guessed /pdf/, /IBLA/ etc. all
+    404); the GUID-scoped /isysquery/.../doc/ URL is required.
+  - The single seed "Bureau of Land Management" returns ~88,954 hits and
+    effectively covers the whole IBLA database (every IBLA decision reviews
+    a BLM action); additional subject seeds in SEED_QUERIES widen coverage
+    and everything is de-duplicated by citation (the PDF filename).
+  - Full text lives only in the PDF; extraction uses the shared
+    common.pdf_extract helper (pdfplumber -> pypdf -> OCR). A <200-char
+    guard skips the rare image-only scan. Born-digital PDFs extract clean.
+  - Sibling Interior boards use the identical recipe with a different
+    IW_DATABASE and are easy extensions: "IBIA Decisions 1970-Present"
+    (Indian Appeals), "Directors Decisions 1996-Present", "Hearings
+    Division Decisions 2000-Present", "A and M Decisions 1920-1970",
+    "Land Decisions and Interior Decisions", "IBLA Dispositive Orders".
+  - Public-domain U.S. federal-government works.

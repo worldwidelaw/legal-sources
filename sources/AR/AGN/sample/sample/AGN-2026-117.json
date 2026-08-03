@@ -1,0 +1,23 @@
+{
+  "_id": "AGN-2026-117",
+  "_source": "AR/AGN",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-02T20:07:08.423796+00:00",
+  "title": "Evaluar las acciones realizadas del Instituto Nacional de la Agricultura Familiar, Campesina e Endígena. Cumplimiento de la Ley 27.118. Períodos 2023 y 2024. Secretaria de Agricultura, Ganadería y Pesca",
+  "text": "OBJETO Evaluar las acciones realizadas por el INAFCI en cumplimiento de la Ley 27.118. Período auditado: 01/01/23 al 31/12/24 1.1. Objetivos generales y específicos Objetivo general Analizar la gestión del INAFCI para la implementación de la Ley 27.118. Objetivos específicos 1. Evaluar si la estructura de gobernanza es adecuada para asegurar la implementación de la Ley 27.118 2. Analizar la eficacia del INAFCI en la aplicación de los instrumentos de gestión (Registro Nacional de la Agricultura Familiar / Banco de Tierras / Programas de asistencia financiera) para implementar la Ley 27.118 3. Evaluar los procedimientos implementados para intervenir el INAFCI y analizar los resultados de la intervención",
+  "date": "2026-04-30",
+  "url": "https://www.agn.gob.ar/Informe-117-2026",
+  "pdf_url": "https://webagnapi.agn.gob.ar/sites/default/files/informes/2026-117-Informe.pdf",
+  "ano": 2026,
+  "resolucion": 117,
+  "actuacion": "11/2025",
+  "fecha_acta": "2026-04-30",
+  "periodo_auditado": "2023-01-01 / 2024-12-31",
+  "organismo_auditado_ids": [
+    "3019",
+    "2472"
+  ],
+  "tipo_de_auditoria_ids": [
+    "51"
+  ]
+}

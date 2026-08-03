@@ -22,6 +22,7 @@ import json
 import re
 import socket
 import sys
+import threading
 import time
 from datetime import datetime, timezone
 from html import unescape
@@ -33,6 +34,42 @@ from bs4 import BeautifulSoup
 
 # Safety net against silent socket hangs
 socket.setdefaulttimeout(120)
+
+# Hard wall-clock deadline for any single HTTP request (issue #1173).
+# requests' own timeout= only fires when NO bytes arrive for the interval;
+# a slow/unresponsive Bavaria endpoint that trickles bytes (or holds a
+# keep-alive connection open) can wedge fetch_all indefinitely at 0 CPU.
+# We run each request in a daemon thread and abandon it past this deadline,
+# same pattern as PT/ROA #1168 and US/CA-AdminCode #1169.
+HARD_REQUEST_DEADLINE = 90
+
+
+def _get_with_deadline(session, url, timeout, deadline=HARD_REQUEST_DEADLINE, **kwargs):
+    """Run session.get in a daemon thread with a hard wall-clock deadline.
+
+    Guards against trickle-hangs where requests' read timeout never fires.
+    Returns the Response on success; raises requests.exceptions.Timeout if the
+    wall-clock deadline is exceeded, or re-raises any request exception.
+    The abandoned worker thread is a daemon and dies with the process.
+    """
+    result = {}
+
+    def _worker():
+        try:
+            result["resp"] = session.get(url, timeout=timeout, **kwargs)
+        except Exception as e:  # noqa: BLE001 — propagate to caller below
+            result["err"] = e
+
+    t = threading.Thread(target=_worker, daemon=True)
+    t.start()
+    t.join(deadline)
+    if t.is_alive():
+        raise requests.exceptions.Timeout(
+            f"wall-clock deadline {deadline}s exceeded for {url}"
+        )
+    if "err" in result:
+        raise result["err"]
+    return result.get("resp")
 
 # Configuration
 BASE_URL = "https://www.gesetze-bayern.de"
@@ -71,8 +108,8 @@ class BayernSession:
         """Load the search page to establish cookies."""
         try:
             time.sleep(RATE_LIMIT_DELAY)
-            resp = self.session.get(f"{BASE_URL}/Search/Filter/DOKTYP/rspr",
-                                    timeout=30, allow_redirects=True)
+            resp = _get_with_deadline(self.session, f"{BASE_URL}/Search/Filter/DOKTYP/rspr",
+                                      timeout=30, allow_redirects=True)
             if resp.status_code == 200:
                 print("Session established (Rechtsprechung filter active)")
                 return True
@@ -87,7 +124,8 @@ class BayernSession:
         for attempt in range(retries):
             time.sleep(RATE_LIMIT_DELAY)
             try:
-                resp = self.session.get(
+                resp = _get_with_deadline(
+                    self.session,
                     f"{BASE_URL}/Search/Page/{page}",
                     timeout=60,
                 )
@@ -116,7 +154,8 @@ class BayernSession:
         for attempt in range(retries):
             time.sleep(RATE_LIMIT_DELAY)
             try:
-                resp = self.session.get(
+                resp = _get_with_deadline(
+                    self.session,
                     f"{BASE_URL}/Content/Document/{doc_id}",
                     timeout=60,
                 )

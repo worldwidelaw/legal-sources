@@ -1,0 +1,113 @@
+# ===================================================================
+# US/NV-EthicsOpinions -- Nevada Commission on Ethics — Opinions
+# ===================================================================
+# Opinions and determinations published by the Nevada Commission on
+# Ethics under the Nevada Ethics in Government Law (NRS Chapter 281A).
+# Two document classes:
+#   * Advisory Opinions (case no. suffix "A") — the Commission's written
+#     interpretations of the conflict-of-interest, gift, disclosure and
+#     use-of-position statutes = doctrine.
+#   * Adjudicatory documents (case no. suffix "C") — Panel Determinations,
+#     Stipulated / Deferral / Settlement Agreements resolving ethics
+#     complaints against named public officers/employees = case_law.
+# Born-digital, full-text PDFs (real text layer, no OCR, no CAPTCHA,
+# no auth). Public-domain State of Nevada government works.
+# ===================================================================
+
+source:
+  id: "US/NV-EthicsOpinions"
+  country: "US"
+  name: "Nevada Commission on Ethics — Opinions & Determinations"
+  url: "https://www.ethics.nv.gov/opinions/"
+  description: |
+    Published opinions and determinations of the Nevada Commission on
+    Ethics under the Nevada Ethics in Government Law (NRS Chapter 281A).
+    Advisory Opinions (case number suffix "A") construe the conflict-of-
+    interest, gift, disclosure and use-of-position statutes = doctrine.
+    Panel Determinations and Stipulated / Deferral / Settlement Agreements
+    (case number suffix "C") resolve specific ethics complaints against
+    named public officers/employees = case_law. Enumerated from the
+    Commission's Opinions page; each document is a born-digital full-text
+    PDF whose text layer is extracted directly (no OCR).
+
+data_types:
+  - doctrine
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.ethics.nv.gov"
+  endpoints:
+    opinions: "/opinions/"
+
+data_model:
+  type: "mixed"
+  primary_key: "case_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NV-EthicsOpinions/{case_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "Case/Opinion number (e.g. 24-105A advisory, 25-024C complaint)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Case caption (e.g. 'In re Stavros Anthony, Case No. 25-024C ...')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion/determination, from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision/issue date (ISO 8601), parsed from filename or case-number year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (State of Nevada Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Opinions and determinations of the Nevada Commission on Ethics are official public records of the State of Nevada, published for public use with no copyright restriction."
+
+notes: |
+  - Enumeration: GET https://www.ethics.nv.gov/opinions/ and parse each
+    PDF <a> anchor. The anchor text carries the case caption + case number
+    (e.g. "In re ..., Case No. 25-024C (...)" or "..., Opinion No. 24-105A").
+  - Document type is derived from the case-number suffix under NRS 281A:
+    "A" = requested Advisory Opinion (doctrine); "C" = adjudicated ethics
+    Complaint document — Panel Determination / Stipulated / Deferral /
+    Settlement Agreement (case_law).
+  - Full text: each PDF is born-digital with a real text layer; extracted
+    via the shared common.pdf_extract backend — no OCR. Some /uploadedFiles
+    hrefs 301-redirect to a canonical /siteassets path (curl -L follows).
+  - Date parsed from the PDF filename (YYYY.MM.DD, YYYY-MM-DD, YYYYMMDD,
+    MM-DD-YYYY, MM.DD.YY, or "(YYYY)") with a fallback to the two-digit
+    year embedded in the case number.
+  - COVERAGE: this is the recent-opinions corpus surfaced on the front
+    page (~35 documents). The complete historical archive lives behind the
+    PDI Online portal (nvethics.pdi.online/public/dbo_AdvisoryOpinion), an
+    ASP.NET app whose list/search XHR is browser-bound — a future extension.

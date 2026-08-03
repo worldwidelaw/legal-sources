@@ -1,0 +1,87 @@
+# UK/ValuationTribunalWales — Valuation Tribunal for Wales (Tribiwnlys Prisio
+# Cymru) — Decisions.
+#
+# Source: Valuation Tribunal for Wales (VTW), the independent statutory tribunal
+#         for Wales. Its members and decisions are independent of central and
+#         local government; funded by the Welsh Government.
+# URL: https://valuationtribunalwales.net/
+# Data type: case_law  (Wales / GB-WLS — NOT covered by UK/CaseLaw, which indexes
+#            England & Wales superior courts + reserved UK tribunals via the
+#            National Archives Find Case Law service; VTW is not on that service).
+#            Distinct from UK/ValuationTribunalEngland (the separate VTE).
+# Auth: none
+#
+# VTW resolves disputes about property valuation for non-domestic (business)
+# rating, council tax banding/liability and land drainage rates. Its written,
+# reasoned decisions are binding and appealable to the Upper Tribunal (Lands
+# Chamber) / High Court = case law for the GB-WLS jurisdiction.
+#
+# Access (JSON-over-POST portal web service — no server-rendered HTML listing):
+#   1. Decisions listing: POST /WebServer/index.php with
+#        request={"appeals":{"what":"html","query":{cri-app-con-val,
+#          cri-app-dtx-val, cri-app-dec-typ=between, cri-app-dec-fro/too}}, page}
+#      -> appeals.aps-rws HTML table; each row has onclick='appeal(<id>)'.
+#   2. Appeal detail: POST with request={"appeal":{"query":{"id":<id>},...}}
+#      -> appeal.app label/value table; English decision cell has
+#         onclick='decisiontext(<doc>,<lan>)'.
+#   3. Decision PDF: GET /PDFServer/?doc=<doc>&lan=<lan> (lan 2 = English,
+#      1 = Welsh) — born-digital PDF, extract with PyMuPDF. No OCR.
+#
+# Full-text decision corpus: ~700+ decisions, 2018–present (the portal only
+# exposes decision documents from 2018 onward).
+
+source:
+  id: UK/ValuationTribunalWales
+  name: Valuation Tribunal for Wales — Decisions
+  country: UK
+  data_types:
+    - case_law
+  url: https://valuationtribunalwales.net/
+  language: en
+  auth: none
+  license: ogl-3.0
+
+jurisdictions:
+  - code: GB-WLS
+    scope: full
+
+license:
+  name: "Open Government Licence v3.0"
+  url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    Decisions of the Valuation Tribunal for Wales, a statutory public tribunal
+    funded by the Welsh Government. Public-sector information / Crown copyright
+    material re-usable under the Open Government Licence v3.0 (reproduce
+    accurately, not in a misleading context).
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: case_ref
+      type: string
+      required: false
+  indexed_fields:
+    - title
+    - text
+    - case_ref
+    - appeal_type
+    - category
+    - property
+    - billing_authority
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.2
+  page_size: 100
+  estimated_total: 720
+  sample_count: 15

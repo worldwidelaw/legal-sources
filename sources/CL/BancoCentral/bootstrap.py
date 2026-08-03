@@ -42,6 +42,7 @@ except ImportError:
 SOURCE_ID = "CL/BancoCentral"
 SOURCE_DIR = Path(__file__).parent
 SAMPLE_DIR = SOURCE_DIR / "sample"
+DATA_DIR = SOURCE_DIR / "data"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -245,34 +246,80 @@ def fetch_sample(count: int = 15) -> list:
     return records
 
 
+def _search_norms_safe(page: int, per_page: int) -> Optional[list]:
+    """Search a page, tolerating transient upstream errors.
+
+    Returns the result list (possibly empty) on success, or None if the page
+    could not be fetched after retries — the caller decides whether that means
+    end-of-data or a recoverable gap.
+    """
+    for attempt in range(4):
+        try:
+            results, _ = search_norms(page=page, per_page=per_page)
+            return results
+        except Exception as e:
+            wait = 2 ** attempt
+            logger.warning(
+                f"search page {page} failed (attempt {attempt + 1}/4): {e}; "
+                f"retrying in {wait}s"
+            )
+            time.sleep(wait)
+    logger.error(f"search page {page} failed after retries; skipping page")
+    return None
+
+
 def fetch_all() -> Generator[dict, None, None]:
-    """Fetch all BCCh norms with full text (paginated)."""
+    """Fetch all BCCh norms with full text (paginated).
+
+    Hardened so one bad page or record cannot abort the whole run: search-page
+    fetches retry with backoff, and per-record failures are logged and skipped.
+    """
     page = 1
     per_page = 50
     total_yielded = 0
+    consecutive_failed_pages = 0
 
-    _, total = search_norms(page=1, per_page=1)
-    logger.info(f"Total BCCh norms to process: {total:,}")
+    try:
+        _, total = search_norms(page=1, per_page=1)
+        logger.info(f"Total BCCh norms to process: {total:,}")
+    except Exception as e:
+        logger.warning(f"Could not read total count up front: {e}")
 
     while True:
-        search_results, _ = search_norms(page=page, per_page=per_page)
+        search_results = _search_norms_safe(page, per_page)
+
+        if search_results is None:
+            # Page fetch failed after retries. Don't treat a transient error as
+            # end-of-data; skip ahead, but give up after several dead pages.
+            consecutive_failed_pages += 1
+            if consecutive_failed_pages >= 3:
+                logger.error("3 consecutive page failures; stopping pagination")
+                break
+            page += 1
+            continue
+
+        consecutive_failed_pages = 0
         if not search_results:
             break
 
         for sr in search_results:
-            id_norma = sr.get('IDNORMA')
-            if not id_norma:
+            try:
+                id_norma = sr.get('IDNORMA')
+                if not id_norma:
+                    continue
+
+                norm_data = fetch_norm_text(id_norma)
+                time.sleep(1)
+
+                if norm_data and norm_data.get('text') and len(norm_data['text']) > 50:
+                    normalized = normalize(sr, norm_data)
+                    total_yielded += 1
+                    if total_yielded % 100 == 0:
+                        logger.info(f"  Processed {total_yielded} records (page {page})...")
+                    yield normalized
+            except Exception as e:
+                logger.warning(f"Skipping record on page {page} due to error: {e}")
                 continue
-
-            norm_data = fetch_norm_text(id_norma)
-            time.sleep(1)
-
-            if norm_data and norm_data.get('text') and len(norm_data['text']) > 50:
-                normalized = normalize(sr, norm_data)
-                total_yielded += 1
-                if total_yielded % 100 == 0:
-                    logger.info(f"  Processed {total_yielded} records (page {page})...")
-                yield normalized
 
         page += 1
 
@@ -342,7 +389,8 @@ def bootstrap_sample():
 
 def main():
     parser = argparse.ArgumentParser(description="CL/BancoCentral Normativa Fetcher")
-    parser.add_argument("command", choices=["bootstrap", "test-api"])
+    # bootstrap-fast is the VPS wrapper alias for a full fetch.
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "test-api"])
     parser.add_argument("--sample", action="store_true")
     parser.add_argument("--full", action="store_true", help="Fetch all records")
 
@@ -351,20 +399,25 @@ def main():
     if args.command == "test-api":
         success = test_api()
         sys.exit(0 if success else 1)
-    elif args.command == "bootstrap":
+    elif args.command in ("bootstrap", "bootstrap-fast"):
         if args.sample:
             success = bootstrap_sample()
             sys.exit(0 if success else 1)
         else:
-            logger.info("Full bootstrap mode")
+            # Full fetch: stream every record to data/records.jsonl incrementally
+            # so a mid-run crash never discards the records fetched so far.
+            logger.info("Full bootstrap mode (streaming to data/records.jsonl)")
+            DATA_DIR.mkdir(parents=True, exist_ok=True)
+            jsonl_path = DATA_DIR / "records.jsonl"
             count = 0
-            SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-            for record in fetch_all():
-                count += 1
-                filepath = SAMPLE_DIR / f"record_{record['idNorma']}.json"
-                with open(filepath, "w", encoding="utf-8") as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-            logger.info(f"Processed {count} records")
+            with open(jsonl_path, "w", encoding="utf-8") as f:
+                for record in fetch_all():
+                    f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    f.flush()
+                    count += 1
+                    if count % 100 == 0:
+                        logger.info(f"  Written {count} records -> {jsonl_path}")
+            logger.info(f"Processed {count} records -> {jsonl_path}")
             sys.exit(0)
 
 

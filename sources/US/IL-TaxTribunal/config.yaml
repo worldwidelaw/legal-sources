@@ -1,0 +1,106 @@
+# ===================================================================
+# US/IL-TaxTribunal -- Illinois Independent Tax Tribunal (Decisions/Rulings)
+# ===================================================================
+# Full text of every issued decision/ruling of the Illinois Independent
+# Tax Tribunal (created by the Illinois Independent Tax Tribunal Act of
+# 2012), which adjudicates disputes between taxpayers and the Illinois
+# Department of Revenue over notices of tax liability, penalties and
+# refund denials. Each document resolves a tax controversy, so the
+# corpus is case_law.
+#
+# The Tribunal's "Decisions/Rulings" page (Adobe AEM site) loads its
+# decision table client-side from a JSON endpoint
+# (data_table.datatablejson.json) listing one row per decision with the
+# case number (hyperlinked to the decision PDF under /content/dam/.../
+# rules-decisions/), year, decision date, case caption and subject. The
+# PDFs are born-digital text-layer documents. No JS execution needed
+# (the JSON is fetched directly), no CAPTCHA, no auth.
+# Public domain Illinois state government works.
+# ===================================================================
+
+source:
+  id: "US/IL-TaxTribunal"
+  country: "US"
+  name: "Illinois Independent Tax Tribunal — Decisions & Rulings"
+  url: "https://taxtribunal.illinois.gov/decisions-rulings.html"
+  description: |
+    Issued decisions and rulings of the Illinois Independent Tax
+    Tribunal, the executive-branch tribunal that adjudicates disputes
+    between taxpayers and the Illinois Department of Revenue (income,
+    sales/use, excise, etc.). Published on the Tribunal's
+    Decisions/Rulings page, whose decision table is served as a JSON
+    datatable; each row links to a born-digital text-layer decision PDF.
+    No JavaScript execution required, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "rest_json"
+  base_url: "https://taxtribunal.illinois.gov"
+  endpoints:
+    decisions: "/content/soi/taxtribunal/en/decisions-rulings/jcr:content/responsivegrid/container/data_table.datatablejson.json"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/IL-TaxTribunal/{pdf-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "Tribunal docket number (e.g. 23 TT 31)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Case caption (case name + docket number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Illinois)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Illinois Independent Tax Tribunal decisions are official state government works in the public domain."
+
+notes: |
+  - The Decisions/Rulings page is an Adobe AEM page; its decision table is
+    fetched directly as JSON from data_table.datatablejson.json (no browser
+    needed). Each row: col0 = <a href=PDF>case number</a>, col1 = year,
+    col2 = M/D/YYYY decision date, col3 = case caption, col4 = subject.
+  - PDFs live under /content/dam/soi/en/web/taxtribunal/documents/
+    rules-decisions/ and are born-digital text layers; extracted via
+    common.pdf_extract (curl browser UA, ~1 req/s).
+  - Small but complete corpus (~33 published final decisions, 2014-present;
+    the Tribunal opened in 2014). Newest-first ordering by decision date.
+  - Public domain Illinois state government data.

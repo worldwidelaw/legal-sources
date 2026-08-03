@@ -1,0 +1,83 @@
+source:
+  id: IT/ConsiglioStatoOrdinanze
+  country: IT
+  name: Council of State (Consiglio di Stato) — Ordinanze & Decreti
+  url: https://www.giustizia-amministrativa.it
+  auth: none
+  license: CC BY 4.0
+  data_types:
+  - case_law
+  description: |
+    Interlocutory administrative decisions of the Italian Council of State
+    (Consiglio di Stato): ordinanze (orders, including ordinanze cautelari /
+    interim relief) and decreti (monocratic decrees). Companion to
+    IT/ConsiglioDiStato (final judgments / sentenze); the two corpora do not
+    overlap. Full text in Italian. OpenGA dataset coverage 2023–present.
+
+data_types:
+- case_law
+
+coverage:
+  court: Consiglio di Stato (Italian Supreme Administrative Court)
+  decision_types:
+  - Ordinanze (orders / interim relief — mdp suffix _15)
+  - Decreti (monocratic decrees — mdp suffix _35)
+  years: 2023-present (OpenGA dataset coverage)
+  estimated_records: 25,000+ (≈6,500/year across cds-ordinanze + cds-decreti)
+
+data_portal:
+  openga: https://openga.giustizia-amministrativa.it
+  ckan_api: https://openga.giustizia-amministrativa.it/api/3/action
+  full_text_endpoint: https://mdp.giustizia-amministrativa.it/visualizza/
+
+implementation:
+  strategy: |
+    1. Query OpenGA CKAN datastore for cds-ordinanze and cds-decreti metadata
+       (per-year JSON resources, paginated).
+    2. For each record, construct the mdp full-text URL from schema=cds,
+       NUMERO_RICORSO (nrg) and NUMERO_PROVVEDIMENTO with the document-model
+       suffix (ordinanze _15, decreti _35; fallback list tried on miss).
+    3. Fetch XML, extract full text, normalize to the standard schema.
+  notes: |
+    - OpenGA CKAN provides metadata only; full text is on the mdp XML endpoint.
+    - Only schema=cds resolves full text on mdp; TAR/CGA use internal schema
+      codes not derivable from the dataset slug and are out of scope here.
+    - _id carries the doc-type marker (ORD/DEC) to avoid collision with the
+      per-type NUMERO_PROVVEDIMENTO sequences (and with IT/ConsiglioDiStato).
+  rate_limit: 1-2 requests/second
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  max_workers: 5
+
+api:
+  type: rest
+  base_url: https://openga.giustizia-amministrativa.it/api/3/action
+
+license:
+  name: CC BY 4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: OpenGA (giustizia-amministrativa.it) open data, CC BY 4.0.
+
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: decision_type
+    required: false
+    type: string
+  - name: year
+    required: false
+    type: string

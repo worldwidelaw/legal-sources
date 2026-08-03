@@ -1,0 +1,71 @@
+source:
+  id: "INTL/OHCHR-Jurisprudence"
+  country: "INTL"
+  name: "UN Treaty Body Jurisprudence (Individual Complaints — Views & Decisions)"
+  url: "https://juris.ohchr.org/"
+  description: |
+    Quasi-judicial output of the UN human-rights treaty bodies deciding
+    individual communications (complaints) against States: the "Views" (merits)
+    and "Decisions" (inadmissibility / discontinuance) of the Human Rights
+    Committee (CCPR), Committee against Torture (CAT), CEDAW, CERD, CRPD, CRC,
+    CED, CESCR and CMW under their Optional Protocols / complaint procedures.
+    ~2,000+ full-text decisions since the 1980s in EN/FR/ES. Enumerated via the
+    server-rendered Treaty Body Database search (tbinternet.ohchr.org) because
+    the juris.ohchr.org front-end is a Blazor Server SPA with no REST API.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "html_scrape"
+  base_url: "https://tbinternet.ohchr.org"
+
+schema:
+  key_fields:
+    - name: "text"
+      description: "Full text of the decision/Views (from born-digital .docx or .pdf)"
+      role: "content"
+      required: true
+    - name: "symbol"
+      description: "UN document symbol, e.g. CCPR/C/141/D/JC3, CERD/C/117/D/85/2023"
+      role: "identifier"
+      required: true
+    - name: "committee_code"
+      description: "Treaty body code (CCPR, CAT, CERD, CEDAW, CRPD, CRC, CED, CESCR, CMW)"
+      role: "metadata"
+      required: false
+    - name: "state_party"
+      description: "Respondent State party"
+      role: "metadata"
+      required: false
+    - name: "date"
+      description: "Adoption date of the decision (ISO 8601)"
+      role: "date"
+      required: false
+    - name: "title"
+      description: "Communication title / number"
+      role: "title"
+      required: false
+
+data_model:
+  update_strategy: "upsert"
+
+license:
+  name: "United Nations Open Access"
+  url: "https://www.un.org/en/about-us/terms-of-use"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "UN treaty-body jurisprudence documents are official public documents of
+    an intergovernmental organization, issued as UN documents (Distr. General) for
+    public distribution. Treated as public government/IGO edicts (open government
+    data)."

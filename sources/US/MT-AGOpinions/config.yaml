@@ -1,0 +1,98 @@
+# ===================================================================
+# US/MT-AGOpinions -- Montana Attorney General Opinions
+# ===================================================================
+# Full text of formal opinions issued by the Montana Attorney General.
+# These are official state legal interpretations (doctrine). The
+# historical corpus (Volumes 1-44, 1899-1992) is published openly as
+# text-layer PDFs by the Montana Judicial Branch State Law Library.
+# No authentication required. Public domain.
+# ===================================================================
+
+source:
+  id: "US/MT-AGOpinions"
+  country: "US"
+  name: "Montana Attorney General Opinions"
+  url: "https://courts.mt.gov/library/mr/agopinions/"
+  description: |
+    Formal opinions of the Montana Attorney General, Volumes 1-44
+    (1899-1992), published by the Montana Judicial Branch State Law
+    Library. Each opinion answers a legal question posed by a public
+    official and is an authoritative interpretation of Montana law. The
+    index is two shallow levels: a master page links each volume page,
+    and each volume page is an HTML table of opinions (number, "Held"
+    summary, date) each linking a text-layer PDF. No JS, no CAPTCHA.
+    Opinions from 1993-present are on dojmt.gov, which is WAF/Cloudflare-
+    gated (HTTP 403) and needs browser automation / a VPS pass.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://courts.mt.gov"
+  endpoints:
+    index: "/library/mr/agopinions/"
+    volume: "/library/mr/agopinions/vol{n}"
+    opinion_pdf: "/external/ag-opinions/{vol}/{num}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_key"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_key"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "opinion_number"
+      description: "AG opinion number (volume-number, e.g., '44-1')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "held"
+      description: "One-line holding / summary from the volume index table"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Composed opinion title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Montana)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Montana Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Historical AG opinions, Volumes 1-44 (1899-1992), ~145 opinions per
+    volume, on courts.mt.gov (Montana Judicial Branch State Law Library).
+  - Index: master page -> per-volume pages (vol{N}) -> opinion table rows
+    linking text-layer PDFs at /external/ag-opinions/{vol}/{num}.pdf.
+  - PDFs carry a real text layer (no OCR); extracted via common.pdf_extract.
+  - The recent set (1993-present) lives on dojmt.gov, which is WAF/CF-gated
+    (HTTP 403 to non-browser clients) — needs browser automation / a VPS pass.
+  - Public domain Montana government works.

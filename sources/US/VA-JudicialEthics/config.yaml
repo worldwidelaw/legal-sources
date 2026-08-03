@@ -1,0 +1,111 @@
+# ===================================================================
+# US/VA-JudicialEthics -- Virginia Judicial Ethics Advisory Committee
+#                         (JEAC) — Opinions
+# ===================================================================
+# Written advisory opinions issued by the Virginia Judicial Ethics
+# Advisory Committee (JEAC), a committee established by Order of the
+# Supreme Court of Virginia that advises inquiring judges on the
+# compliance of proposed future conduct with the Canons of Judicial
+# Conduct for the State of Virginia = doctrine. Full text is clean HTML
+# (older opinions) or born-digital PDF (newer). Public-domain Virginia
+# State government works. DISTINCT from US/VA-EthicsOpinions (the
+# Virginia Conflict of Interest & Ethics Advisory Council, which advises
+# public officials) and US/VA-LegalEthics (Virginia State Bar Legal
+# Ethics Opinions advising lawyers); this is the JUDICIAL-branch
+# committee advising judges under the Canons of Judicial Conduct.
+# ===================================================================
+
+source:
+  id: "US/VA-JudicialEthics"
+  country: "US"
+  name: "Virginia Judicial Ethics Advisory Committee (JEAC) — Opinions"
+  url: "https://www.vacourts.gov/programs/jeac/opinions/home"
+  description: |
+    Advisory opinions of the Virginia Judicial Ethics Advisory Committee
+    (JEAC), established by Order of the Supreme Court of Virginia. The
+    Committee issues written advisory opinions on whether a judge's
+    proposed future conduct complies with the Canons of Judicial Conduct
+    for the State of Virginia. Each opinion is numbered "YY-N" and states
+    the subject, the applicable canons and the Committee's conclusion;
+    opinions are advisory only and become public records. The older
+    opinions (1999-2008) are published as clean HTML pages, the newer
+    opinions (2016-present) as born-digital PDFs; the full text is
+    extracted directly (no OCR).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.vacourts.gov/"
+  endpoints:
+    index: "programs/jeac/opinions/home"
+    opinion_html: "programs/jeac/opinions/{year}/{num}"
+    opinion_pdf: "static/programs/jeac/opinions/{year}/{num}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/VA-JudicialEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number (e.g. 99-7, 24-2) — canonicalized YY-N from the index anchor text"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Judicial Ethics Advisory Committee Opinion {number}[: {subject}]"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (subject, canons, conclusion), from the HTML page or born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), from the 'Date Issued:' / 'Nth day of Month, YYYY' line; fallback to the opinion-number year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (Virginia State Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Virginia judicial ethics advisory opinions are official public records of the Supreme Court of Virginia, published on vacourts.gov for public use with no copyright restriction."
+
+notes: |
+  - Enumeration: GET the single index /programs/jeac/opinions/home; each anchor's
+    TEXT is the opinion number (e.g. "99-7", "24-2"), the href is taken verbatim.
+  - Two formats: older opinions (1999-2008) are HTML pages
+    /programs/jeac/opinions/{YYYY}/{num}; newer (2016-present) are born-digital
+    PDFs /static/programs/jeac/opinions/{YYYY}/{num}.pdf.
+  - Full text: HTML body from <main>; PDFs via PyMuPDF (fitz), no OCR.
+  - Number canonicalized to YY-N (strip zero-pad on seq: 01_03 -> 01-3).
+  - Date: 'Date Issued: Month D, YYYY' (HTML) or 'the Nth day of Month, YYYY'
+    (PDF transmittal), accepted only within +/-1yr of the opinion-number year;
+    fallback {YYYY}-01-01 (YY>=90 -> 19xx else 20xx).
+  - Type: every document is a written opinion construing the Canons of Judicial
+    Conduct = doctrine.

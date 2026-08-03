@@ -1,0 +1,102 @@
+# ===================================================================
+# INTL/IACtHR-Compliance -- Inter-American Court of Human Rights:
+#   Monitoring Compliance with Judgment (Supervisión de Cumplimiento
+#   de Sentencia) resolutions
+# ===================================================================
+# ~841 resoluciones assessing state compliance with the reparations
+# ordered in contentious judgments. Full text from born-digital PDF
+# (text layer, no OCR). Distinct from INTL/IACtHR (Series C judgments),
+# INTL/IACtHR-Advisory (Series A opinions) and
+# INTL/IACtHR-ProvisionalMeasures (provisional measures).
+# ===================================================================
+
+source:
+  id: "INTL/IACtHR-Compliance"
+  country: "INTL"
+  name: "Inter-American Court of Human Rights — Monitoring Compliance with Judgment (Supervisión de Cumplimiento de Sentencia)"
+  url: "https://corteidh.or.cr/casos_en_supervision_por_pais.cfm"
+  description: |
+    Compliance-monitoring resolutions (Resoluciones de Supervisión de
+    Cumplimiento de Sentencia) of the Inter-American Court of Human Rights
+    (Corte IDH), the autonomous judicial organ of the Organization of American
+    States (OAS). After delivering a contentious judgment, the Court retains
+    jurisdiction to supervise its execution and issues periodic binding
+    resolutions assessing whether the responsible state has complied with the
+    ordered reparations, keeping cases open until full compliance. These
+    resolutions are a distinct, authoritative body of case law. ~841
+    resolutions. Born-digital PDFs with full text (Spanish). Distinct from
+    INTL/IACtHR (contentious judgments, Series C), INTL/IACtHR-Advisory (Series
+    A) and INTL/IACtHR-ProvisionalMeasures (provisional measures).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_listing"
+  base_url: "https://corteidh.or.cr"
+  listing_urls:
+    - "https://corteidh.or.cr/casos_en_supervision_por_pais.cfm?lang=es"
+    - "https://corteidh.or.cr/casos_en_supervision_por_pais_archivados.cfm?lang=es"
+  document_base: "https://corteidh.or.cr/docs/supervisiones/"
+
+data_model:
+  type: "case_law"
+  primary_key: "resolution_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "title"
+      description: "Case name + resolution type + date"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the resolution extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the resolution was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "resolution_id"
+      description: "Document stem identifier (e.g. garrido_30_08_17)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "case_name"
+      description: "Name of the underlying contentious case being supervised"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "CC BY-NC-ND 3.0"
+  url: "https://creativecommons.org/licenses/by-nc-nd/3.0/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: true
+  notes: "Matches sibling INTL/IACtHR sources (Corte IDH jurisprudence). Commercial use restricted; attribution required, no derivatives."
+
+notes: |
+  - Two GET listing pages (casos_en_supervision_por_pais.cfm active +
+    _archivados.cfm archived) present each supervised case as a table row:
+    case name, judgment date, and one dated resolution per compliance
+    resolution under /docs/supervisiones/.
+  - Only anchors whose visible text is a Spanish date are kept (the real
+    resolutions). The undated "{case}c.pdf"/"{case}p.pdf" status-summary
+    documents and the separate party briefs (escritos) are excluded.
+  - Issue date parsed from the anchor text, falling back to the PDF header
+    ("... DE DD DE MES DE YYYY").
+  - Born-digital PDF text layer, no OCR required.

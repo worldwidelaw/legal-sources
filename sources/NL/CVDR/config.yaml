@@ -1,0 +1,72 @@
+source:
+  id: NL/CVDR
+  name: Dutch Decentralized Regulations (CVDR)
+  country: NL
+  url: https://lokaleregelgeving.overheid.nl/
+  description: >
+    Full-text corpus of Dutch decentralized (local) regulations from the CVDR
+    (Centrale Voorziening Decentrale Regelgeving) via the official SRU 1.2 API.
+    Covers regulations enacted by Dutch municipalities (gemeenten, ~299,000),
+    provinces (provincies, ~16,900) and water boards (waterschappen, ~6,800) —
+    ~322,700 regulations with full text extracted from born-digital XML. This is
+    the decentralized counterpart to NL/wetten.overheid.nl (national law), and is
+    distinct from the Caribbean CVDR subsets (AW/CW/SX Legislation).
+
+data_model:
+  types:
+    - legislation
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: doc_type
+      type: string
+      required: false
+    - name: creator
+      type: string
+      required: false
+    - name: organisatietype
+      type: string
+      required: false
+    - name: subject
+      type: string
+      required: false
+    - name: date
+      type: string
+      required: false
+
+license:
+  name: "CC0 1.0"
+  url: "https://creativecommons.org/publicdomain/zero/1.0/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Dutch legislation and decisions by public authorities carry no copyright
+    (art. 11 Auteurswet). The KOOP official-publications data (CVDR) is provided
+    as open government data under CC0.
+
+schedule:
+  full_refresh: quarterly
+  update_check: monthly

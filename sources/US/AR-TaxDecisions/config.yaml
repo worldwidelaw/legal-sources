@@ -1,0 +1,121 @@
+# ===================================================================
+# US/AR-TaxDecisions -- Arkansas DFA, Act 896 Administrative Decisions
+#                       & Legal Opinions
+# ===================================================================
+# Under Act 896 of 2015, the Arkansas Department of Finance &
+# Administration (DFA) publishes online (a) the Administrative Decisions
+# of its Office of Hearings & Appeals -- written, ALJ-signed decisions
+# resolving a taxpayer's protest of an assessment/refund denial
+# (case_law), and (b) Revenue Legal Counsel Legal Opinions interpreting
+# Arkansas tax law (doctrine). Both are public, taxpayer-identifier-
+# redacted, born-digital PDFs served from the Tyler Technologies "Act
+# 896" portal at app.ar.tylertech.com/dfa/act896. Server-rendered search
+# results carry docket number, release date, and PDF links; the full text
+# is extracted from each PDF via the shared OOM-hardened pdf_extract
+# helper. No JavaScript, no CAPTCHA, no auth. Public-domain Arkansas
+# state-government works (government-edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/AR-TaxDecisions"
+  country: "US"
+  name: "Arkansas DFA — Act 896 Administrative Decisions & Legal Opinions"
+  url: "https://www.dfa.arkansas.gov/office/revenue-legal-counsel/"
+  description: |
+    The Arkansas Department of Finance & Administration's tax adjudicative
+    and interpretive corpus published under Act 896 of 2015: Office of
+    Hearings & Appeals Administrative Decisions (case_law — ALJ decisions
+    resolving taxpayer protests of assessments, refund denials, and other
+    determinations) and Revenue Legal Counsel Legal Opinions (doctrine —
+    the Department's official written interpretation of Arkansas tax law).
+    Both families are public, redacted, born-digital PDFs served from the
+    Tyler Technologies Act 896 portal (app.ar.tylertech.com/dfa/act896).
+    No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_search"
+  base_url: "https://app.ar.tylertech.com/dfa/act896/index.php"
+
+data_model:
+  type: "mixed"
+  primary_key: "_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/AR-TaxDecisions/{pdf-hash})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Docket / decision number (e.g. '19-136', '21-449,21-450')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "document_kind"
+      description: "Administrative Decision (case_law) or Legal Opinion (doctrine)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (issuer + kind + docket number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision/opinion, extracted from the published PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Release date (ISO 8601) from the results-table Release Date cell"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Arkansas state tax adjudications & guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Administrative Decisions of the DFA Office of Hearings & Appeals and Revenue Legal Counsel Legal Opinions are official Arkansas state-government works published under Act 896 of 2015, in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Two families served by the Tyler Technologies Act 896 portal:
+    /index.php/search/decision (case_law) and /index.php/search/opinion
+    (doctrine). Each server-rendered results page holds up to 10 rows;
+    each row's nested table carries Docket Number, Release Date
+    (MM/DD/YYYY), and one or more .../download/<hash>.pdf links.
+  - An empty query returns nothing and stop-words ("the", "a", "of") are
+    filtered, so discovery unions tax-domain query terms (tax, taxpayer,
+    assessment, protest, refund, sales, income), paginates ?page=N until a
+    page yields no rows, and dedups globally by the PDF's hashed URL to
+    enumerate the full corpus (~1,600 decisions + ~600 opinions).
+  - PDFs are born-digital; text is extracted via common.pdf_extract
+    (OOM-hardened pdfplumber -> pypdf -> OCR). A <200-char guard skips the
+    rare image-only scan. Multi-part documents ("... Part1 / Part2") are
+    separate rows and become separate records keyed by their own hash.
+  - date is the row's Release Date (reliable temporal key).
+  - Types: Administrative Decisions -> case_law (adjudications of contested
+    taxpayer protests); Legal Opinions -> doctrine (interpretive guidance).
+  - The dfa.arkansas.gov landing page requires browser-like request headers
+    (returns 403 to a bare UA); the Act 896 portal itself serves normally.
+    Verify neither host is datacenter-IP-gated on the VPS at launch.
+  - Public-domain Arkansas state-government data.

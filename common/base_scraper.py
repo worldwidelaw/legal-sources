@@ -11,6 +11,7 @@ Handles:
 """
 
 import os
+import sys
 import json
 import time
 import yaml
@@ -23,7 +24,7 @@ from typing import Optional, Generator
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .rate_limiter import RateLimiter, AdaptiveRateLimiter
-from .storage import StorageManager
+from .storage import StorageManager, scrub_surrogates
 from .validators import SchemaValidator
 
 logger = logging.getLogger("legal-data-hunter")
@@ -41,6 +42,50 @@ class BaseScraper(ABC):
     The base class handles everything else: config, auth, rate limiting,
     deduplication, storage, and status tracking.
     """
+
+    # Captured at subclass-definition time; the resolved path to the module
+    # (bootstrap.py) that defines each concrete scraper. See __init_subclass__.
+    _module_file: Optional[str] = None
+
+    def __init_subclass__(cls, **kwargs):
+        """Record the defining module's file path when a scraper subclass is
+        created.
+
+        ``inspect.getfile(type(self))`` fails (raises ``TypeError: is a
+        built-in class``) when the subclass module is loaded via
+        ``importlib.util.exec_module`` **without** being registered in
+        ``sys.modules`` — which is exactly what the fleet's bootstrap-fast
+        wrapper does when it instantiates ``ScraperClass()`` with no args.
+        When that happens, source_dir silently fell back to ``os.getcwd()``
+        (a temp working dir the fleet cleans up), so every fetched record was
+        written outside the source tree and lost before ingest (issue #1171).
+
+        At class-definition time the module globals still carry ``__file__``,
+        so capture it here from the class-statement frame — robust regardless
+        of how the module was later (un)registered.
+        """
+        super().__init_subclass__(**kwargs)
+        try:
+            mod = sys.modules.get(cls.__module__)
+            module_file = getattr(mod, "__file__", None)
+            if not module_file:
+                # Module isn't registered in sys.modules (importlib exec_module).
+                # Walk the call stack for the frame that actually defines this
+                # class — the ABCMeta machinery inserts an abc.py frame between
+                # __init_subclass__ and the module body, so f_back alone is
+                # wrong. Match on the module name to find the real defining frame.
+                import inspect
+                frame = inspect.currentframe()
+                while frame is not None:
+                    fg = frame.f_globals
+                    if fg.get("__name__") == cls.__module__ and fg.get("__file__"):
+                        module_file = fg["__file__"]
+                        break
+                    frame = frame.f_back
+            if module_file:
+                cls._module_file = str(Path(module_file).resolve())
+        except Exception:
+            pass
 
     def __init__(self, source_dir: Optional[str] = None):
         """
@@ -74,6 +119,12 @@ class BaseScraper(ABC):
         instantiates the scraper class by introspection). Falls back to the
         current working directory if the module file cannot be located.
         """
+        # Prefer the path captured at subclass-definition time — it survives
+        # importlib loads that never register the module in sys.modules, which
+        # is what breaks inspect.getfile below (see __init_subclass__, #1171).
+        if self._module_file:
+            return str(Path(self._module_file).resolve().parent)
+
         import inspect
 
         try:
@@ -99,14 +150,19 @@ class BaseScraper(ABC):
         """
         candidates = [self.source_dir / "config.yaml"]
 
-        import inspect
-        try:
-            module_dir = Path(inspect.getfile(type(self))).resolve().parent
+        module_dir = None
+        if self._module_file:
+            module_dir = Path(self._module_file).resolve().parent
+        else:
+            import inspect
+            try:
+                module_dir = Path(inspect.getfile(type(self))).resolve().parent
+            except (TypeError, OSError):
+                module_dir = None
+        if module_dir is not None:
             module_config = module_dir / "config.yaml"
             if module_config not in candidates:
                 candidates.append(module_config)
-        except (TypeError, OSError):
-            pass
 
         for config_path in candidates:
             if config_path.exists():
@@ -212,7 +268,8 @@ class BaseScraper(ABC):
         dedup_fields = self.config.get("data_model", {}).get("dedup_key", [])
         if not dedup_fields:
             # Fallback: hash the entire record
-            return hashlib.sha256(json.dumps(record, sort_keys=True, default=str).encode()).hexdigest()
+            blob = json.dumps(record, sort_keys=True, default=str)
+            return hashlib.sha256(blob.encode("utf-8", "surrogatepass")).hexdigest()
 
         key_parts = []
         for field in dedup_fields:
@@ -486,16 +543,16 @@ class BaseScraper(ABC):
         sample_dir = self.source_dir / "sample"
         sample_dir.mkdir(parents=True, exist_ok=True)
 
-        # Save individual records
+        # Save individual records (scrub lone surrogates so the UTF-8 write can't crash)
         for i, record in enumerate(records):
             path = sample_dir / f"record_{i:04d}.json"
             with open(path, "w", encoding="utf-8") as f:
-                json.dump(record, f, indent=2, ensure_ascii=False, default=str)
+                f.write(scrub_surrogates(json.dumps(record, indent=2, ensure_ascii=False, default=str)))
 
         # Save combined file
         combined_path = sample_dir / "all_samples.json"
         with open(combined_path, "w", encoding="utf-8") as f:
-            json.dump(records, f, indent=2, ensure_ascii=False, default=str)
+            f.write(scrub_surrogates(json.dumps(records, indent=2, ensure_ascii=False, default=str)))
 
         logger.info(f"Saved {len(records)} sample records to {sample_dir}")
 

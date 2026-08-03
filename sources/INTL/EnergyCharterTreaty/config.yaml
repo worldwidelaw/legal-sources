@@ -1,0 +1,57 @@
+fetch:
+  list_url: https://www.energychartertreaty.org/cases/list-of-cases/
+  method: html_listing_pdf
+  rate_limit_seconds: 1.0
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: case_name
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: >
+    Energy Charter Treaty (ECT) investment-arbitration documents published in full
+    by the Energy Charter Secretariat for a curated set of landmark disputes brought
+    under Article 26 of the ECT (Nykomb v. Latvia, Plama v. Bulgaria, Petrobart v.
+    Kyrgyz Republic, the Yukos/Hulley/Veteran v. Russian Federation cases,
+    Kardassopoulos v. Georgia, Amto v. Ukraine). For each case the Secretariat hosts
+    the reasoned arbitral awards, decisions on jurisdiction, provisional-measures
+    orders and the national-court judgments in the subsequent set-aside / enforcement
+    proceedings (Svea Court of Appeal, Hague District Court and Court of Appeal). The
+    public "List of cases" page links every document PDF under
+    /fileadmin/DocumentsMedia/Cases/; the page is plain server HTML with no login or
+    WAF and is reachable from any IP. Each PDF is downloaded and its full text
+    extracted.
+  id: INTL/EnergyCharterTreaty
+  language: en
+  name: Energy Charter Treaty — Investment Arbitration Documents
+  url: https://www.energychartertreaty.org/cases/list-of-cases/
+license:
+  name: "Energy Charter Secretariat Terms of Use"
+  url: "https://www.energychartertreaty.org/terms-of-use"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Reproduction of the Secretariat's documents and materials is authorised provided
+    the source is acknowledged, but the terms of use prohibit use that promotes any
+    organisation, company, individual or commercial product/service, or that suggests
+    ECS endorsement — flagged as commercial-use restricted. © Energy Charter
+    Secretariat. Underlying arbitral awards and national-court judgments are official
+    legal/judicial documents.

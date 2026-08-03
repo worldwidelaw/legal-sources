@@ -1,0 +1,104 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — UK Teaching Regulation Agency (TRA) Misconduct Decisions
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/TeachingRegulationAgency"
+  country: "UK"
+  name: "Teaching Regulation Agency (TRA) — Teacher Misconduct Panel Decisions"
+  url: "https://www.gov.uk/government/organisations/teaching-regulation-agency"
+  description: |
+    Teacher-misconduct professional-conduct panel decisions of the Teaching
+    Regulation Agency (TRA), an executive agency of the Department for
+    Education that regulates the teaching profession in England. Independent
+    panels hear allegations of unacceptable professional conduct, conduct that
+    may bring the profession into disrepute, and relevant criminal
+    convictions; on the panel's recommendation the Secretary of State decides
+    whether to impose a prohibition order (a ban from teaching). The published
+    outcomes set out findings of fact, reasons and the final decision.
+    ~1,660 decisions. Discovery via GOV.UK Search API (filter_format=decision +
+    organisation=teaching-regulation-agency); full text from the born-digital
+    panel-decision PDF attached to each Content Store entry (extracted via the
+    shared PDF extractor).
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+  endpoints:
+    search:
+      path: "/api/search.json"
+      method: "GET"
+      description: "GOV.UK Search API; filter_format=decision + filter_organisations=teaching-regulation-agency"
+    content:
+      path: "/api/content/{path}"
+      method: "GET"
+      description: "GOV.UK Content Store API; PDF attachment URL under details.attachments"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "content_id"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "content_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "reference"
+      type: "string"
+      role: "classification"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "pdf_url"
+      type: "string"
+      role: "reference"
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Open Government Licence v3.0"
+  url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Crown copyright; GOV.UK content published under OGL v3.0."
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~1,660 teacher-misconduct professional-conduct panel decisions (England)
+  - Full text from the born-digital panel-decision PDF (assets.publishing.service.gov.uk),
+    extracted via common.pdf_extract (no OCR needed)
+  - Content Store details.body holds only a short notice/summary; the decision is the PDF
+  - "TRA reference" parsed from the decision body where present
+  - No authentication required
+  - Sibling of the GOV.UK finder scrapers UK/ET, UK/RPT, UK/FTT-Tax,
+    UK/TrafficCommissioner, UK/SchoolsAdjudicator, UK/CertificationOfficer

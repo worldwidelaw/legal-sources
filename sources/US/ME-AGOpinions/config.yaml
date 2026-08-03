@@ -1,0 +1,102 @@
+# ===================================================================
+# US/ME-AGOpinions -- Maine Attorney General Opinions
+# ===================================================================
+# Full text of formal opinions and memoranda issued by the Maine
+# Attorney General. These are official state legal interpretations
+# (doctrine), published openly as text-recognised PDFs by the Maine
+# Law and Legislative Digital Library. No authentication required.
+# Public domain.
+# ===================================================================
+
+source:
+  id: "US/ME-AGOpinions"
+  country: "US"
+  name: "Maine Attorney General Opinions"
+  url: "https://www.maine.gov/legis/lawlib/lldl/agops/agmaster.html"
+  description: |
+    Formal opinions and memoranda issued by the Maine Attorney General,
+    1874-present. Each opinion answers a legal question posed by a public
+    official and constitutes an authoritative interpretation of Maine law.
+    A single server-rendered "master" index page lists every opinion in
+    one HTML table (date, opinion number, subject, issuing AG, requestor,
+    citations) with a direct link to a text-recognised PDF on
+    lldc.mainelegislature.org. No pagination, no JS, no CAPTCHA. PDFs are
+    OCR'd scans of the original opinions ("text recognition applied");
+    a small minority with no extractable text are skipped.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.maine.gov"
+  endpoints:
+    index: "/legis/lawlib/lldl/agops/agmaster.html"
+    opinion_pdf: "https://lldc.mainelegislature.org/Open/AG/Opinions/{year}/ag_{date}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_key"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_key"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "opinion_number"
+      description: "AG opinion number (e.g., '2024-01'); blank for many older opinions"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "subject"
+      description: "One-line subject of the opinion (index link text)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "requestor"
+      description: "Official / body that requested the opinion"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Composed opinion title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Maine)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Maine Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - ~9,100 AG opinions and memoranda, 1874-present, indexed on a single
+    static "master" HTML page at maine.gov/legis/lawlib/lldl/agops/.
+  - Each table row links a text-recognised PDF on
+    lldc.mainelegislature.org (Maine Law and Legislative Digital Library).
+  - PDFs are OCR'd from scanned originals; the first page is a library
+    cover sheet, the opinion body follows. A minority with no extractable
+    text layer are skipped.
+  - Public domain Maine government works.

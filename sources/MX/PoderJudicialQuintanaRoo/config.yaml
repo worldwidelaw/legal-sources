@@ -1,0 +1,98 @@
+# ===================================================================
+# MX/PoderJudicialQuintanaRoo -- Quintana Roo State Court Decisions
+# ===================================================================
+# The Poder Judicial del Estado de Quintana Roo publishes public-version
+# court decisions (sentencias públicas) through its "Módulo de Consulta
+# Ciudadana de Sentencias Públicas" portal. Each juzgado / sala has a
+# server-rendered table of sentences; each row links to a full-text PDF
+# served through the portal's GetPdf proxy.
+# ===================================================================
+
+source:
+  id: "MX/PoderJudicialQuintanaRoo"
+  country: "MX"
+  name: "Poder Judicial del Estado de Quintana Roo"
+  url: "https://gestionchetumal.tsjqroo.gob.mx/sentenciaspublicas"
+  description: |
+    Public-version court decisions from the Poder Judicial del Estado de
+    Quintana Roo (Tribunal Superior de Justicia de Quintana Roo). Covers
+    sentences from the juzgados and salas across the state's judicial
+    districts (familiar, civil, mercantil, penal, etc.), accessed via the
+    public "Módulo de Consulta Ciudadana de Sentencias Públicas" portal.
+    Full text is extracted from the per-decision PDF served through the
+    portal's GetPdf proxy.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.8
+  burst: 2
+
+api:
+  type: "html"
+  base_url: "https://gestionchetumal.tsjqroo.gob.mx"
+  endpoints:
+    portal: "/sentenciaspublicas"
+    court: "/sentenciaspublicas/Home/Consultas?id={court_id}"
+    pdf: "/sentenciaspublicas/Home/GetPdf?FilePath={dir}&fileName={file}"
+  response_format: "html"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Unique decision identifier (derived from PDF filename)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (expediente, juzgado, materia)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date of the public-version sentence"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the public-version PDF (GetPdf proxy)"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "court"
+      description: "Juzgado or Sala name"
+    - name: "subject_area"
+      description: "Materia (Civil, Familiar, Penal, Mercantil, etc.)"
+    - name: "case_type"
+      description: "Type of proceeding (juicio)"
+    - name: "case_topic"
+      description: "Tema / acción of the case"
+    - name: "case_number"
+      description: "Expediente number"
+
+license:
+  name: "Open government data"
+  url: "https://datos.gob.mx"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Public-version judicial decisions published by a Mexican state court for transparency."

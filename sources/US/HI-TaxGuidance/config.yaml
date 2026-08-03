@@ -1,0 +1,112 @@
+# ===================================================================
+# US/HI-TaxGuidance -- Hawaii Department of Taxation
+#   Tax Information Releases (TIRs) & Letter Rulings
+# ===================================================================
+# Official tax guidance published by the Hawaii Department of Taxation
+# at tax.hawaii.gov/legal:
+#   * Tax Information Releases (TIRs) — the Department's formal published
+#     interpretations of Hawaii tax law (General Excise Tax, income tax,
+#     use tax, conveyance tax, etc.), 1963-present.
+#   * Letter Rulings — written determinations applying the tax law to a
+#     specific taxpayer's facts.
+# Both are official interpretive guidance (doctrine). The three index
+# pages share one server-rendered HTML table layout ([number, date,
+# title] + link) to born-digital text-layer PDFs on files.hawaii.gov.
+# No JavaScript, no CAPTCHA, no auth. Public domain Hawaii state
+# government works.
+# ===================================================================
+
+source:
+  id: "US/HI-TaxGuidance"
+  country: "US"
+  name: "Hawaii Department of Taxation — Tax Information Releases & Letter Rulings"
+  url: "https://tax.hawaii.gov/legal/tir/"
+  description: |
+    Official tax guidance of the Hawaii Department of Taxation: Tax
+    Information Releases (formal published interpretations of Hawaii tax
+    law, 1963-present) and Letter Rulings (determinations applying the
+    law to a specific taxpayer's facts). Published on server-rendered
+    HTML index tables linking born-digital text-layer PDFs. No
+    JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://tax.hawaii.gov"
+  endpoints:
+    tir: "/legal/tir/"
+    tirarchive: "/legal/tirarchive/"
+    letters: "/legal/letters/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/HI-TaxGuidance/{pdf-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "number"
+      description: "Document number (e.g. '2025-03' for TIR 2025-03)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "category"
+      description: "Document category ('Tax Information Release' or 'Letter Ruling')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (category + number + subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the index table"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Hawaii state tax guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Tax Information Releases and Letter Rulings of the Hawaii Department of Taxation are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Three server-rendered index pages share one HTML table layout
+    ([number, issue date, title] + a link to a born-digital text-layer
+    PDF on files.hawaii.gov): /legal/tir/ (current TIRs),
+    /legal/tirarchive/ (archived TIRs back to 1963) and /legal/letters/
+    (Letter Rulings). The scraper parses each row's number, date and
+    title, dedups PDF URLs across pages, and sorts newest-first.
+  - PDFs are extracted via common.pdf_extract (curl browser UA, ~1
+    req/s). The occasional scanned attachment with no text layer is
+    auto-skipped (<150-char guard), recoverable on an OCR host.
+  - Type is doctrine: TIRs and Letter Rulings are interpretive
+    government guidance, not adjudications of a contested case.
+  - Public domain Hawaii state government data.

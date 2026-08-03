@@ -1,0 +1,74 @@
+source:
+  id: ES/TARCJA-Andalucia
+  name: Tribunal Administrativo de Recursos Contractuales de la Junta de Andalucía (TARCJA)
+  url: https://datos.juntadeandalucia.es/api/v0/tender-court-decisions/all
+  country: ES
+  region: Andalucía
+  jurisdiction: ES-AN
+  data_types:
+    - case_law
+  auth:
+    type: none
+  license:
+    name: "Junta de Andalucía open data (PSI reuse)"
+    url: "https://datos.juntadeandalucia.es/aviso-legal"
+    commercial_use: true
+    attribution_required: true
+    share_alike: false
+    no_derivatives: false
+    notes: "Reutilización de información del sector público (Ley 37/2007 / RD 1495/2011)."
+
+api:
+  base_url: https://datos.juntadeandalucia.es/api/v0/tender-court-decisions
+  pdf_host: https://www.juntadeandalucia.es
+  endpoints:
+    all: /all?format=json
+    count: /count
+    detail: /{bid}
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  max_workers: 5
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+    - name: "resolution_number"
+      type: "string"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 2011-01-01
+    end: present
+  document_types:
+    - Resolución
+  estimated_count: 6600+
+
+notes: |
+  Tribunal Administrativo de Recursos Contractuales de la Junta de Andalucía.
+  Resolves the "recurso especial en materia de contratación" (special appeals
+  in public procurement) for Andalusia. Open-data REST API returns the whole
+  dataset as a single JSON dump; full text is in born-digital resolution PDFs
+  hosted at www.juntadeandalucia.es (extracted with PyMuPDF, no OCR).
+  Open-data alternative to the captcha-blocked central tribunal (ES/TACRC).

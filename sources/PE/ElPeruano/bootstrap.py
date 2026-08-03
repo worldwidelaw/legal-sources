@@ -316,7 +316,7 @@ if __name__ == "__main__":
         ok = scraper.test_api()
         sys.exit(0 if ok else 1)
 
-    elif command == "bootstrap":
+    elif command in ("bootstrap", "bootstrap-fast"):
         sample_mode = "--sample" in sys.argv
         count = 15
         for i, arg in enumerate(sys.argv):
@@ -325,22 +325,34 @@ if __name__ == "__main__":
 
         if sample_mode:
             gen = scraper.fetch_sample(count=count)
+            sample_dir = Path(__file__).parent / "sample"
+            sample_dir.mkdir(exist_ok=True)
+            saved = 0
+            for record in gen:
+                normalized = scraper.normalize(record)
+                out_path = sample_dir / f"{normalized['_id']}.json"
+                with open(out_path, "w", encoding="utf-8") as f:
+                    json.dump(normalized, f, ensure_ascii=False, indent=2)
+                saved += 1
+                logger.info(f"Saved: {out_path.name}")
+            logger.info(f"Bootstrap complete: {saved} records saved to {sample_dir}")
         else:
-            gen = scraper.fetch_all()
-
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        saved = 0
-        for record in gen:
-            normalized = scraper.normalize(record)
-            out_path = sample_dir / f"{normalized['_id']}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(normalized, f, ensure_ascii=False, indent=2)
-            saved += 1
-            logger.info(f"Saved: {out_path.name}")
-
-        logger.info(f"Bootstrap complete: {saved} records saved to {sample_dir}")
+            # Full corpus streams to data/records.jsonl — this is what the
+            # ingest pipeline consumes (writing to sample/ leaves 0 rows).
+            data_dir = Path(__file__).parent / "data"
+            data_dir.mkdir(parents=True, exist_ok=True)
+            jsonl_path = data_dir / "records.jsonl"
+            saved = 0
+            with open(jsonl_path, "w", encoding="utf-8") as f:
+                for record in scraper.fetch_all():
+                    normalized = scraper.normalize(record)
+                    f.write(json.dumps(normalized, ensure_ascii=False) + "\n")
+                    saved += 1
+                    if saved % 100 == 0:
+                        logger.info(f"Progress: {saved} records written")
+            logger.info(f"Bootstrap complete: {saved} records -> {jsonl_path}")
+            if saved == 0:
+                sys.exit(1)
 
     elif command == "update":
         logger.info("Running full fetch (newest first)")

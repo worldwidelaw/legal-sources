@@ -1,0 +1,23 @@
+{
+  "_id": "AGN-2026-125",
+  "_source": "AR/AGN",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-02T20:07:08.419808+00:00",
+  "title": "Programa de Innovación Federal (PIF)\", Subprograma 1. Estados financieros 2025. Ejercicio N° 4. Agencia Nacional de Promoción de la Investigación, el Desarrollo Tecnológico y la Innovación",
+  "text": "La Auditoría General de la Nación, en su carácter de auditor externo independiente, ha examinado los estados financieros detallados en I- siguiente, por el ejercicio N° 4 del 01/01/2025 al 31/12/2025 correspondiente al “Programa de Innovación Federal – PIF”, parcialmente financiado con recursos provenientes del Contrato de Préstamo Nº 5293/OC-AR - Subprograma I, suscripto el 14/10/2021 entre la Nación Argentina y el Banco Interamericano de Desarrollo (BID). La ejecución y administración es realizada por la Agencia Nacional de Promoción de la Investigación, el Desarrollo Tecnológico y la Innovación (AGENCIA I+D+i) a través de la Dirección General de Financiamiento Externo y Local (DGFEyL).",
+  "date": "2026-05-31",
+  "url": "https://www.agn.gob.ar/Informe-125-2026",
+  "pdf_url": "https://webagnapi.agn.gob.ar/sites/default/files/informes/2026-125-Informe.pdf",
+  "ano": 2026,
+  "resolucion": 125,
+  "actuacion": "322/2025",
+  "fecha_acta": "2026-05-31",
+  "periodo_auditado": "2025-01-01 / 2025-12-31",
+  "organismo_auditado_ids": [
+    "2614",
+    "3432"
+  ],
+  "tipo_de_auditoria_ids": [
+    "29"
+  ]
+}

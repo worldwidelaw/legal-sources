@@ -1,0 +1,107 @@
+# ===================================================================
+# US/CT-EthicsOpinions -- Connecticut Office of State Ethics — Advisory Opinions
+# ===================================================================
+# Formal Advisory Opinions issued by the Connecticut Office of State
+# Ethics (OSE) and its predecessor, the State Ethics Commission, under
+# the Codes of Ethics for Public Officials and Lobbyists (Conn. Gen.
+# Stat. § 1-79 et seq.). An advisory opinion is the agency's written
+# interpretation of the conflict-of-interest, gift, revolving-door and
+# disclosure statutes, requested by a public official, state employee or
+# lobbyist = doctrine. Full-text, no OCR needed for the 2012+ PDFs and
+# none for the 1993–2011 HTML pages; a few scanned PDFs fall back to OCR.
+# Public-domain State of Connecticut government works.
+# ===================================================================
+
+source:
+  id: "US/CT-EthicsOpinions"
+  country: "US"
+  name: "Connecticut Office of State Ethics — Advisory Opinions"
+  url: "https://portal.ct.gov/ethics/advisory-opinions/numerical-list-and-summaries/advisory-opinions---summaries"
+  description: |
+    Formal Advisory Opinions of the Connecticut Office of State Ethics
+    (OSE) and its predecessor State Ethics Commission, construing the
+    Codes of Ethics for Public Officials and Lobbyists (Conn. Gen. Stat.
+    § 1-79 et seq.) — conflict-of-interest, gift, revolving-door and
+    disclosure rules. Enumerated from the OSE "numerical list and
+    summaries" page (1993–present). 2012+ opinions are born-digital PDFs;
+    1993–2011 opinions are HTML detail pages whose content column is
+    extracted and cleaned. All are doctrine.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://portal.ct.gov"
+  endpoints:
+    list: "/ethics/advisory-opinions/numerical-list-and-summaries/advisory-opinions---summaries"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CT-EthicsOpinions/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Advisory opinion number, normalized YYYY-N (e.g. 2024-1)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion caption (e.g. 'Advisory Opinion No. 2024-1 — Application of ...')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory opinion (PDF text layer or HTML content column)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the opinion body; falls back to number year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (State of Connecticut Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Advisory opinions of the Connecticut Office of State Ethics are official public records of the State of Connecticut, published for public use."
+
+notes: |
+  - Enumeration: GET the OSE "numerical list and summaries" page and parse
+    each opinion anchor. hrefs come in two shapes: born-digital PDFs at
+    /-/media/ethics/advisory_opinions/{year}/...pdf (2012–present) and HTML
+    detail pages at /ethics/advisory-opinions/{year}/advisory-opinion-no-...
+    (1993–2011).
+  - Opinion number normalized to YYYY-N from the anchor text ("Advisory
+    Opinion No. 2024-1") or the href slug (advisory-opinion-no-20051).
+  - Full text: PDFs via the shared common.pdf_extract backend (text layer;
+    a few scanned scans fall back to OCR). HTML pages: extract the
+    <div class="small-12 medium-8 columns"><div class="content"> body and
+    strip tags/entities.
+  - Date: parsed from the first "Month DD, YYYY" line near the top of the
+    body; falls back to {opinion-number-year}-01-01.
+  - All advisory opinions are doctrine. OSE enforcement actions / declaratory
+    rulings are separate document classes not covered here (future extension).

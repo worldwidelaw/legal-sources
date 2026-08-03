@@ -1,0 +1,107 @@
+# ===================================================================
+# US/CA-TaxAppeals -- California Office of Tax Appeals (Precedential Opinions)
+# ===================================================================
+# Full text of California's precedential tax-appeal opinions published by
+# the Office of Tax Appeals (OTA) at ota.ca.gov/opinions/. The corpus is
+# dominated by the legacy State Board of Equalization (SBE) precedential
+# opinions (binding precedent before the OTA) plus OTA precedential
+# opinions. Each resolves a tax controversy between a taxpayer and the
+# Franchise Tax Board / CDTFA, so the corpus is case_law. Served as
+# born-digital text-layer PDFs listed on one server-rendered TablePress
+# page (~4,000 opinion PDFs). No JS, no CAPTCHA, no auth.
+# Public domain US state government works.
+# ===================================================================
+
+source:
+  id: "US/CA-TaxAppeals"
+  country: "US"
+  name: "California Office of Tax Appeals — Precedential Opinions"
+  url: "https://ota.ca.gov/opinions/"
+  description: |
+    Precedential tax-appeal opinions of the California Office of Tax
+    Appeals (OTA) and its predecessor, the State Board of Equalization
+    (SBE), which adjudicate disputes between taxpayers and the Franchise
+    Tax Board / California Department of Tax and Fee Administration.
+    Published openly at ota.ca.gov/opinions/ as text-layer PDFs listed on
+    a single server-rendered TablePress page — every opinion row and its
+    wp-content/uploads PDF link is present in the HTML (the DataTables
+    widget only paginates client-side). No JavaScript, no CAPTCHA, no
+    authentication.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://ota.ca.gov"
+  endpoints:
+    index: "/opinions/"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "slug"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "slug"
+      description: "Stable document slug derived from the PDF filename"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number ({YY}-SBE-{NNN} / {YY}-OTA-{NNN})"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Case caption (Appeal of <appellant>)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — California)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "California Office of Tax Appeals / State Board of Equalization precedential opinions are official state government works in the public domain."
+
+notes: |
+  - Precedential opinions at ota.ca.gov/opinions/, served as text-layer
+    PDFs under /wp-content/uploads/. One GET of the TablePress page
+    enumerates every opinion PDF (~4,000 links); the scraper dedups by
+    URL, skips admin docs (org charts, errata notices, agendas), parses
+    the opinion number + year from the filename, and orders newest first.
+  - The appellant name and decision date are parsed from the document
+    text (newer opinions interleave pleading line-numbers, which are
+    stripped). Date prefers the 'this Nth day of Month, YYYY' clause.
+  - Each PDF is extracted via common.pdf_extract. Pages/PDFs are fetched
+    via curl with a browser UA and passed to the extractor as bytes.
+    Paces at ~1 req/s.
+  - Born-digital opinions carry a real text layer (no OCR needed); any
+    older scanned PDFs are auto-skipped by the <150-char guard and
+    recovered on an OCR-capable host.
+  - Public domain California State government data.

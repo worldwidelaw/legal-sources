@@ -1,0 +1,25 @@
+{
+  "_id": "CAIL2018-first_stage_train-8f8f61a1ceead912",
+  "_source": "CN/HuggingFace-CAIL2018",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-28T00:29:10.603568+00:00",
+  "title": "冯某盗窃案",
+  "text": "南宁市江南区人民检察院指控，2014年9月12日14时许，被告人冯某去到南宁市江南区白沙北三里，趁无人之机，用螺丝刀撬开被害人谢某某停放在该处的一辆红旗牌电动车的电门锁，随后，冯某骑该车逃离现场。在驾车行至江南区江南大道西江码头附近时，冯某被公安人员抓获。被盗的电动车已被公安机关依法扣押并被返还给被害人。经南宁市价格认证中心鉴定，被盗的电动车案发时价值2550元。\r\n被告人冯某归案后如实供述了上述事实。被告人冯某曾因犯故意伤害罪于2008年8月6日被本院判处××，2010年3月6日刑满释放。",
+  "date": "2018-01-01",
+  "url": "https://huggingface.co/datasets/china-ai-law-challenge/cail2018",
+  "split": "first_stage_train",
+  "relevant_articles": [
+    264
+  ],
+  "accusation": [
+    "盗窃"
+  ],
+  "criminals": [
+    "冯某"
+  ],
+  "imprisonment_months": 7.0,
+  "punish_of_money": 1000.0,
+  "death_penalty": false,
+  "life_imprisonment": false,
+  "sentence_summary": "有期徒刑7.0个月；罚金1000.0元"
+}

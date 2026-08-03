@@ -1,0 +1,108 @@
+# ===================================================================
+# US/WI-JudicialEthics -- Wisconsin Judicial Conduct Advisory Committee
+#                         — Formal Advisory Opinions
+# ===================================================================
+# Formal advisory opinions issued by the Wisconsin Judicial Conduct
+# Advisory Committee, a committee of the Supreme Court of Wisconsin that
+# advises judges and judicial officers on the compliance of their
+# contemplated conduct with the Code of Judicial Conduct (SCR Chapter
+# 60). Each opinion answers a specific inquiry = doctrine. Born-digital
+# PDF full text (real text layer, no OCR, no CAPTCHA, no auth).
+# Public-domain Wisconsin State government works. Distinct from
+# US/WI-EthicsOpinions (the executive Wisconsin Ethics Commission,
+# which covers state public officials/employees & lobbying).
+# ===================================================================
+
+source:
+  id: "US/WI-JudicialEthics"
+  country: "US"
+  name: "Wisconsin Judicial Conduct Advisory Committee — Formal Advisory Opinions"
+  url: "https://www.wicourts.gov/supreme/sc_judcond.jsp"
+  description: |
+    Formal advisory opinions of the Wisconsin Judicial Conduct Advisory
+    Committee, a committee of the Supreme Court of Wisconsin. The
+    Committee renders formal advisory opinions to judges and judicial
+    officers on the compliance of their contemplated or proposed
+    conduct with the Code of Judicial Conduct (SCR Chapter 60). Each
+    opinion (numbered "NN-N") states the Issue, Answer, Facts and
+    Discussion. Opinions are published as born-digital PDFs on the
+    wicourts.gov site; the full text is extracted directly (no OCR).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.wicourts.gov/"
+  endpoints:
+    index: "supreme/sc_judcond.jsp"
+    opinion: "sc/judcond/DisplayDocument.pdf?content=pdf&seqNo={seq}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/WI-JudicialEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number in NN-N form (e.g. 19-1, 11-2R)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Wisconsin Judicial Ethics Opinion {number}: {question}"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (Issue / Answer / Facts / Discussion), from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Release date (ISO 8601), parsed from the index table; fallback to opinion-number year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (Wisconsin State Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Formal advisory opinions of the Wisconsin Judicial Conduct Advisory Committee are official public records of the State of Wisconsin court system, published for public use with no copyright restriction."
+
+notes: |
+  - Enumeration: GET the index (supreme/sc_judcond.jsp) and parse each
+    table row (Release date | Description "OPINION N-N: ..." | View);
+    each View cell links a born-digital PDF via
+    DisplayDocument.pdf?content=pdf&seqNo=NNNN. ~56 opinions.
+  - Full text: each opinion PDF has a real text layer (Issue / Answer /
+    Facts / Discussion), extracted via the shared PDF extractor. No OCR.
+    Guard raw[:4]==b'%PDF' (404s are served as non-PDF). The HTML variant
+    (content=html) returns 0 bytes; PDF is the only form.
+  - wicourts.gov returns HTTP 403 to non-browser User-Agents; all
+    requests carry a desktop-Chrome UA.
+  - Type: every published document is a formal advisory opinion
+    construing the Code of Judicial Conduct = doctrine.
+  - Date: parsed from the index Release-date column ("Mon DD, YYYY"),
+    with a fallback to the year embedded in the opinion number.

@@ -1,0 +1,102 @@
+# ===================================================================
+# US/MA-EthicsOpinions -- Massachusetts State Ethics Commission (EC-COI)
+# ===================================================================
+# Conflict-of-interest advisory opinions ("EC-COI" opinions) issued by
+# the Massachusetts State Ethics Commission construing the conflict-of-
+# interest law (G.L. c. 268A) and the financial-disclosure law
+# (G.L. c. 268B). An EC-COI opinion is the Commission's written
+# interpretation of those statutes, requested by a public official or
+# employee = doctrine. Born-digital HTML, no OCR needed. Public-domain
+# Commonwealth of Massachusetts government work.
+# ===================================================================
+
+source:
+  id: "US/MA-EthicsOpinions"
+  country: "US"
+  name: "Massachusetts State Ethics Commission — EC-COI Advisory Opinions"
+  url: "https://www.mass.gov/info-details/state-ethics-commission-public-legal-opinions"
+  description: |
+    Formal conflict-of-interest advisory opinions (EC-COI) of the
+    Massachusetts State Ethics Commission construing G.L. c. 268A
+    (conflict of interest) and G.L. c. 268B (financial disclosure).
+    Each opinion is a stable born-digital HTML page at
+    https://www.mass.gov/opinion/ec-coi-{YY}-{N}. The corpus (1979 to
+    the early 2010s) is enumerated by probing {YY}-{N} sequentially per
+    year and stopping after consecutive 404s. All opinions are doctrine.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "html_probe"
+  base_url: "https://www.mass.gov"
+  endpoints:
+    opinion: "/opinion/ec-coi-{yy}-{n}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/MA-EthicsOpinions/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Advisory opinion number, normalized YYYY-N (e.g. 1992-18)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion caption (e.g. 'EC-COI-92-18')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory opinion (ma__rich-text HTML body)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the page 'Date:' header; falls back to number year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (Commonwealth of Massachusetts Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "EC-COI advisory opinions are official public records of the Massachusetts State Ethics Commission, published for public use."
+
+notes: |
+  - Enumeration: no machine-readable index exists, so probe
+    /opinion/ec-coi-{YY}-{N} for N = 1,2,3,... per year 1979..2015,
+    stopping after MAX_MISS=6 consecutive 404s. Missing slugs 404;
+    live ones 200 with the marker "EC-COI-{YY}-{N}" in the page.
+  - Akamai on www.mass.gov 403s Mozilla-like User-Agents; send a plain
+    "python-requests" UA (same fingerprint quirk as US/MA-DALA).
+  - Full text: join the <div class="ma__rich-text"> blocks inside
+    <main id="main-content"> (born-digital, no OCR).
+  - Date: parsed from the "Date: MM/DD/YYYY" header line; falls back to
+    {opinion-number-year}-01-01.
+  - All EC-COI opinions are doctrine. The Commission's later topic
+    "advisories" and enforcement Decisions & Orders are separate document
+    classes not covered here (future extension).

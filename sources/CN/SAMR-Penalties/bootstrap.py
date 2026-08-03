@@ -452,7 +452,7 @@ def bootstrap_sample():
 
 def main():
     parser = argparse.ArgumentParser(description="CN/SAMR-Penalties Fetcher")
-    parser.add_argument("command", choices=["bootstrap", "test-api"])
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "test-api"])
     parser.add_argument("--sample", action="store_true")
     parser.add_argument("--full", action="store_true")
 
@@ -461,20 +461,25 @@ def main():
     if args.command == "test-api":
         success = test_api()
         sys.exit(0 if success else 1)
-    elif args.command == "bootstrap":
+    elif args.command in ("bootstrap", "bootstrap-fast"):
         if args.sample:
             success = bootstrap_sample()
             sys.exit(0 if success else 1)
         else:
+            # Full corpus streams to data/records.jsonl — this is what the
+            # ingest pipeline consumes (writing to sample/ leaves 0 rows).
             logger.info("Full bootstrap mode")
+            data_dir = SOURCE_DIR / "data"
+            data_dir.mkdir(parents=True, exist_ok=True)
+            jsonl_path = data_dir / "records.jsonl"
             count = 0
-            SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-            for record in fetch_all():
-                count += 1
-                filepath = SAMPLE_DIR / f"record_{count:07d}.json"
-                with open(filepath, "w", encoding="utf-8") as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-            logger.info(f"Processed {count} records")
+            with open(jsonl_path, "w", encoding="utf-8") as f:
+                for record in fetch_all():
+                    f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    count += 1
+            logger.info(f"Processed {count} records -> {jsonl_path}")
+            if count == 0:
+                sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,109 @@
+# ===================================================================
+# US/DC-TaxGuidance -- DC Office of Tax and Revenue (OTR):
+#                      Tax Notices, Rulings, PLRs & Declaratory Orders
+# ===================================================================
+# Full text of the District of Columbia Office of Tax and Revenue's published
+# interpretive tax guidance -- OTR Tax Notices, Sales Tax Notices, Tax Rulings,
+# Private Letter Rulings, Declaratory Orders and combined-reporting notices.
+# The DC tax authority's official interpretive guidance on how DC tax law
+# applies = doctrine. Public District of Columbia government works
+# (government-edicts doctrine, public domain).
+#
+# Site: otr.cfo.dc.gov (Drupal). Each guidance category has a /page/... landing
+# page listing its documents, either as a direct born-digital PDF link (under
+# /sites/default/files/.../attachments/) or as a /node/{id} link. Each
+# /node/{id} page renders an <h1> title and embeds the document's PDF under
+# /attachments/. The scraper walks every category page, collects direct-PDF and
+# node links, resolves each node to its embedded PDF, and extracts full text
+# (born-digital text layer, no OCR). No JavaScript, no CAPTCHA, no auth.
+# ===================================================================
+
+source:
+  id: "US/DC-TaxGuidance"
+  country: "US"
+  name: "DC Office of Tax and Revenue — Tax Notices, Rulings & Declaratory Orders"
+  url: "https://otr.cfo.dc.gov/page/otr-tax-notices-and-guidance"
+  description: |
+    Official interpretive tax guidance (OTR Tax Notices, Sales Tax Notices, Tax
+    Rulings, Private Letter Rulings, Declaratory Orders, combined-reporting
+    notices) published by the DC Office of Tax and Revenue = doctrine. Each
+    guidance category page lists documents as direct PDFs or node pages that
+    embed a born-digital PDF whose full text is extracted. No JavaScript, no
+    CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_index"
+  base_url: "https://otr.cfo.dc.gov"
+  endpoints:
+    tax_notices: "/page/otr-tax-notices-and-guidance"
+    sales_tax_notices: "/page/sales-tax-information-and-guidance"
+    tax_rulings: "/page/otr-tax-rulings"
+    private_letter_rulings: "/page/otr-private-letter-rulings"
+    declaratory_orders: "/page/otr-declaratory-orders"
+    combined_reporting: "/page/notices-regarding-combined-reporting"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/DC-TaxGuidance/{pdf-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "category"
+      description: "Guidance category (Tax Notice, Tax Ruling, Private Letter Ruling, Declaratory Order, etc.)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (node <h1> or derived from the file name)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601) parsed from the document body or title (may be null)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — DC government document)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Tax notices, rulings and declaratory orders of the DC Office of Tax and Revenue are official government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery: GET each guidance category /page/... landing page; collect direct
+    PDF links (/sites/default/files/.../attachments/*.pdf) and /node/{id} links.
+  - Node resolution: GET /node/{id}; take the <h1> title and the embedded
+    /attachments/*.pdf link.
+  - Full text: download each born-digital PDF and extract with
+    common.pdf_extract (pdfplumber), no OCR needed.
+  - Date parsed from the document body (Month D, YYYY or MM/DD/YYYY) with a
+    title-year fallback.
+  - Public domain District of Columbia government data.

@@ -1,0 +1,119 @@
+# ===================================================================
+# US/UT-LegalEthics -- Utah State Bar
+#                      — Ethics Advisory Opinion Committee Opinions
+# ===================================================================
+# Ethics advisory opinions issued by the Ethics Advisory Opinion
+# Committee ("EAOC") of the Utah State Bar. The EAOC issues formal
+# written opinions on the ethical propriety of the professional or
+# personal conduct of Bar members under the Utah Rules of Professional
+# Conduct = doctrine. ~286 opinions, 1970s-present, published by the
+# Utah State Bar (utahbar.org, WordPress) as born-digital PDFs (older)
+# and Elementor HTML (most recent). No OCR, no CAPTCHA, no auth.
+# Public-domain Utah State Bar official records. Distinct from
+# US/UT-JudicialEthics (Judicial Ethics Advisory Committee = judges).
+# ===================================================================
+
+source:
+  id: "US/UT-LegalEthics"
+  country: "US"
+  name: "Utah State Bar — Ethics Advisory Opinion Committee Opinions"
+  url: "https://www.utahbar.org/ethics-opinions/"
+  description: |
+    Ethics advisory opinions of the Ethics Advisory Opinion Committee
+    (EAOC) of the Utah State Bar. The EAOC issues formal written
+    opinions on the ethical propriety of the professional or personal
+    conduct of Bar members under the Utah Rules of Professional
+    Conduct. The corpus (~286 opinions, Opinion Nos. like "90-100",
+    "97-11", "2001-05", "22-04", "25-01") spans the 1970s to the
+    present; each opinion is published as a born-digital PDF (older
+    opinions) or an Elementor HTML page (most recent). The full text is
+    extracted from the PDF text layer, with an HTML fallback.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "wp_rest + pdf"
+  base_url: "https://www.utahbar.org"
+  endpoints:
+    opinions: "/wp-json/wp/v2/ethics-opinions?per_page=100&page={n}"   # enumerate
+    media: "/wp-json/wp/v2/media?search={slug}"                        # resolve PDF
+    detail: "/ethics-opinions/{slug}/"                                 # HTML fallback
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/UT-LegalEthics/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "EAOC opinion number / slug (e.g. '2001-05', '22-04')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title (usually the opinion number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text (Issue / Opinion / Background / analysis), from the PDF text layer or the Elementor detail page"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601); parsed from the 'Issued <date>' line in the opinion, else the year in the slug"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Utah State Bar — Ethics Advisory Opinion Committee"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (Utah State Bar Official Record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Ethics advisory opinions of the Utah State Bar's Ethics Advisory Opinion Committee are official public records of the Utah State Bar (the integrated bar that regulates lawyers in Utah), published on the State Bar website for public use with no copyright restriction."
+
+notes: |
+  - Discovery: enumerate the custom post type via the public WordPress
+    REST API — GET /wp-json/wp/v2/ethics-opinions?per_page=100&page=<n>
+    (X-WP-TotalPages header; ~286 opinions across 3 pages). Each record
+    carries slug/title/link/date; the REST content field is EMPTY (the
+    body is a PDF or an Elementor page, not post_content).
+  - Full text: resolve each opinion's born-digital PDF via the media
+    library — GET /wp-json/wp/v2/media?search=<slug> and pick the .pdf
+    source_url whose filename stem matches the slug (2-digit-year slugs
+    map to 4-digit-year filenames, e.g. "22-04" -> "2022-04.pdf").
+    Download and extract the text layer with PyMuPDF (no OCR). For the
+    handful of very recent HTML-only opinions with no PDF, fall back to
+    the Elementor detail page's div.elementor-widget-theme-post-content.
+  - Type: every document is an EAOC ethics advisory opinion
+    interpreting the Utah Rules of Professional Conduct = doctrine.
+  - Date: parsed from the "Issued <Month Day, Year>" line in the
+    opinion body, else the year encoded in the slug.
+  - Distinct from US/UT-JudicialEthics (Utah Judicial Ethics Advisory
+    Committee, which advises judges) and Utah Attorney General opinions.

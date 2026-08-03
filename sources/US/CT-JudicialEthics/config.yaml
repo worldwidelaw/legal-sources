@@ -1,0 +1,110 @@
+# ===================================================================
+# US/CT-JudicialEthics -- Connecticut Committee on Judicial Ethics
+#                         — Informal Opinion Summaries
+# ===================================================================
+# Written advisory opinions issued by the Connecticut Committee on
+# Judicial Ethics, a committee of the Connecticut Judicial Branch that
+# advises judges and judicial officials on the Connecticut Code of
+# Judicial Conduct. Each Informal Opinion Summary answers a specific
+# inquiry and sets out the applicable Rules/Canons and the Committee's
+# conclusion = doctrine. Born-digital full text: older opinions are
+# HTML pages (cp1252), newer opinions are PDFs with a real text layer;
+# no OCR, no CAPTCHA, no auth. Public-domain Connecticut State
+# government works. Distinct from US/CT-EthicsOpinions (the executive
+# Office of State Ethics, which covers state/quasi-public employees).
+# ===================================================================
+
+source:
+  id: "US/CT-JudicialEthics"
+  country: "US"
+  name: "Connecticut Committee on Judicial Ethics — Informal Opinion Summaries"
+  url: "https://www.jud.ct.gov/committees/ethics/summaries.htm"
+  description: |
+    Informal Opinion Summaries of the Connecticut Committee on Judicial
+    Ethics, a committee of the Connecticut Judicial Branch that issues
+    written advisory opinions construing the Connecticut Code of
+    Judicial Conduct as applied to specific inquiries from judicial
+    officials. Each opinion (numbered "YYYY-NN") states the facts, the
+    issue, the relevant Code provisions, and the Committee's conclusion.
+    Opinions from 2008 to present are published on the jud.ct.gov site:
+    older opinions as born-digital HTML pages, newer ones as
+    born-digital PDFs. The full text is extracted directly (no OCR).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.jud.ct.gov/committees/ethics/"
+  endpoints:
+    index: "summaries.htm"
+    opinion: "sum/{number}.{ext}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CT-JudicialEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number in YYYY-NN form (e.g. 2008-01, 2026-05)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Connecticut Judicial Ethics Informal Opinion {number}"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (Facts / Issue / relevant Code provisions / conclusion), from the HTML or PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the '(Month DD, YYYY)' header; fallback to opinion-number year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (Connecticut State Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Informal Opinion Summaries of the Connecticut Committee on Judicial Ethics are official public records of the State of Connecticut Judicial Branch, published for public use with no copyright restriction."
+
+notes: |
+  - Enumeration: GET the summaries index (summaries.htm) and parse every
+    "sum/YYYY-NN.(htm|pdf)" link, dedup by opinion number (~344 opinions
+    from 2008 to present).
+  - Full text: older opinions are cp1252-encoded HTML pages (detagged
+    with a utf-8->cp1252 fallback); newer opinions are born-digital PDFs
+    (real text layer, extracted via the shared PDF extractor). The index
+    lists the correct extension per opinion; the scraper retries the
+    other extension if the listed one comes back empty. No OCR.
+  - jud.ct.gov returns HTTP 403 to non-browser User-Agents; all requests
+    carry a desktop-Chrome UA.
+  - Type: every published document is a written advisory opinion
+    construing the Code of Judicial Conduct = doctrine.
+  - Date: parsed from the "(Month DD, YYYY)" header parenthetical, with
+    a fallback to the year embedded in the opinion number.

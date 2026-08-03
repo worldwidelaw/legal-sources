@@ -1,0 +1,60 @@
+source:
+  id: "INTL/ADNDRC"
+  country: "INTL"
+  name: "Asian Domain Name Dispute Resolution Centre (ADNDRC) — UDRP Decisions"
+  url: "https://www.adndrc.org/decisions/udrp"
+  description: |
+    Full-text panel decisions of the Asian Domain Name Dispute Resolution
+    Centre (ADNDRC), an ICANN-accredited Uniform Domain-Name Dispute-Resolution
+    Policy (UDRP) provider operating through four offices: Beijing (CIETAC,
+    case prefix "CN"), Hong Kong ("HK"), Seoul ("KR") and Kuala Lumpur ("KL" /
+    "KLRCA" / "AIAC"). ~2,700 decisions (2002-present), published openly as
+    full-text PDFs. English (and some bilingual) administrative panel decisions
+    resolving disputes over gTLD/ccTLD domain names.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.adndrc.org"
+  # Single server-rendered index at /decisions/udrp lists every decision across
+  # four office tables; each row links the decision PDF under /storage/files/...
+  # (older, {OFFICE}/{ID}_Decision.pdf) or /storage/uploads/decisions/udrp/
+  # (newer, udrp_{TS}.pdf). PDFs require a browser UA + Referer header.
+
+schema:
+  key_fields:
+    _id: "case_number"
+  required_fields:
+    - _id
+    - text
+    - title
+  temporal_key: "date"
+
+update:
+  strategy: "full_rescan"
+  # No incremental endpoint; the index is small enough to re-scan in full and
+  # the loader deduplicates on _id (case_number).
+
+license:
+  name: "Custom terms (publicly published decisions)"
+  url: "https://www.adndrc.org/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    ADNDRC panel decisions are public records published openly on adndrc.org
+    pursuant to the UDRP Rules (paragraph 4(j) requires publication of the full
+    decision). No explicit reuse licence; treated as publicly published
+    decisions, consistent with the project's other UDRP sources (INTL/CAC-UDRP,
+    INTL/Forum-DomainDecisions).

@@ -1,0 +1,105 @@
+# ===================================================================
+# US/IA-EthicsOpinions -- Iowa Ethics and Campaign Disclosure Board
+# (IECDB) -- Advisory Opinions
+# ===================================================================
+# Formal advisory opinions issued by the Iowa Ethics and Campaign
+# Disclosure Board construing Iowa Code ch. 68A (Campaign Finance) and
+# ch. 68B (Government Ethics and Lobbying) and the Board's rules. An
+# advisory opinion is the Board's written interpretation of those
+# statutes, requested by an official, candidate, committee, lobbyist or
+# agency (or issued sua sponte) = doctrine. Born-digital HTML detail
+# pages, no OCR. Public record of an Iowa state agency.
+# ===================================================================
+
+source:
+  id: "US/IA-EthicsOpinions"
+  country: "US"
+  name: "Iowa Ethics and Campaign Disclosure Board — Advisory Opinions"
+  url: "https://ethics.iowa.gov/rulings/advisory-opinions"
+  description: |
+    Formal advisory opinions of the Iowa Ethics and Campaign Disclosure
+    Board (IECDB) interpreting Iowa Code ch. 68A (campaign finance) and
+    ch. 68B (government ethics, lobbying, gifts, conflicts of interest)
+    and the Board's administrative rules. Each opinion is a born-digital
+    HTML page at /rulings/advisory-opinions/iecdb-ao-{YYYY}-{NN}. The
+    paginated listing (?page=0..) enumerates the full corpus (~259
+    opinions). All opinions are doctrine.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "html_index_paginated"
+  base_url: "https://ethics.iowa.gov"
+  endpoints:
+    listing: "/rulings/advisory-opinions?page={p}"
+    opinion: "/rulings/advisory-opinions/iecdb-ao-{yyyy}-{nn}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/IA-EthicsOpinions/AO-{YYYY-NN})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Advisory opinion number (e.g. 'AO 2022-04')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion caption (e.g. 'IECDB AO 2022-04: Attribution Statement on Text Messages')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory opinion (node__content HTML body)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the first 'Month DD, YYYY' in the body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "subject"
+      description: "Opinion subject (from the listing anchor text)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (Iowa state government edict / public record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "IECDB advisory opinions are official public records of an Iowa state agency interpreting statute; government-edict works, published for public use."
+
+notes: |
+  - Index: paginated listing at /rulings/advisory-opinions?page={p}
+    (plain ?page=N works; walk p=0,1,2,... until a page yields no new
+    opinion links). Each anchor carries the AO number + subject and links
+    to the detail page.
+  - Full text: born-digital HTML in <div class="node__content">, no OCR.
+  - Date: first "Month DD, YYYY" in the body (the issue date); null if none.
+  - UA: ethics.iowa.gov serves a browser User-Agent fine (no CAPTCHA/JS).
+  - All advisory opinions are doctrine. The Board's enforcement/probable-
+    cause orders are a separate document class not covered here.

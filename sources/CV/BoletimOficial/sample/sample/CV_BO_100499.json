@@ -1,0 +1,27 @@
+{
+  "_id": "CV_BO_100499",
+  "_source": "CV/BoletimOficial",
+  "_type": "legislation",
+  "_fetched_at": "2026-03-26T02:36:26.186298+00:00",
+  "title": " Extrato do Despacho n.º 07/MICE/2026",
+  "text": "Extrato do Despacho de S. Ex.ª o Ministro da Indústria, Comércio e Energia\n\nDe 20 de fevereiro de 2026\n\nNos termos do artigo 45º, alínea c), conjugado com os artigos 50º e 51º do Decreto-Lei n.º 3/2010, de 8 de março, é, a seu pedido, concedido uma licença sem vencimento de longa duração, à Sra. Ineida Hermínia da Cruz Orrico, inspetora Nível III, do Quadro da Inspeção Geral das Atividades Económicas (IGAE), do Ministério de Indústria, Comércio e Energia (MICE).\n\nA licença ora concedida tem efeitos a partir do dia 01 de abril de 2026.\n\nDireção dos Serviços Administrativos e Financeiros da Inspeção Geral das Atividades Económicas, na Cidade da Praia, aos 24 de março de 2026. – A Diretora Geral, Karine Barbosa de Aguiar Sousa Brito.",
+  "date": "2026-03-25",
+  "url": "https://boe.incv.cv/Bulletins/View/100499",
+  "ref_act": 28701,
+  "part": {
+    "id": 3,
+    "code": "C",
+    "description": "C - Governo e administração directa e indirecta do Estado",
+    "hide": false,
+    "refParent": 2,
+    "parent": {
+      "id": 2,
+      "description": "II Série",
+      "hide": false,
+      "order": 0
+    },
+    "order": 0
+  },
+  "entities": [],
+  "language": "pt"
+}

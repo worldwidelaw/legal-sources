@@ -1,0 +1,119 @@
+# ===================================================================
+# US/DOI-DirectorsDecisions -- Director's Decisions (U.S. DOI, OHA)
+# ===================================================================
+# Full-text Director's Decisions of the U.S. Department of the Interior's
+# Office of Hearings and Appeals (OHA) — decisions issued by (or on the
+# authority of) the Director of OHA, primarily contested-case decisions in
+# Indian probate and other Interior matters exercised under the Secretary's
+# delegated authority, published in the "OHA" reporter (e.g. "40 OHA 202").
+# Each decision resolves a contested case -> case_law. Published in the same
+# public ISYS/Perceptive full-text search database at
+# https://www.oha.doi.gov:8080/ as US/DOI-IBLA, under IW_DATABASE="Directors
+# Decisions 1996-Present". Plain HTTP GET, no auth, no CAPTCHA.
+# Federal-government works, public domain (17 U.S.C. § 105).
+# ===================================================================
+
+source:
+  id: "US/DOI-DirectorsDecisions"
+  country: "US"
+  name: "Director's Decisions (U.S. DOI, Office of Hearings and Appeals)"
+  url: "https://www.oha.doi.gov:8080/"
+  description: |
+    Director's Decisions of the U.S. Department of the Interior's Office of
+    Hearings and Appeals (OHA) — decisions issued by or on the authority of
+    the Director of OHA, primarily contested-case decisions in Indian probate
+    and other Interior matters, published in the "OHA" reporter (e.g.
+    "40 OHA 202"). Full text is read from the born-digital decision PDFs served
+    by Interior's OHA ISYS search database (oha.doi.gov:8080), queried with
+    broad seed terms, paged through, and de-duplicated by the PDF filename
+    (which embeds the OHA citation, party caption and decision date).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "isys_search"
+  base_url: "https://www.oha.doi.gov:8080"
+  endpoints:
+    search: "/search/?IW_FIELD_NATURAL_LANGUAGE={query}&IW_DATABASE=Directors Decisions 1996-Present"
+    hit_list: "/isysquery/{guid}/{start}-{end}/list/"
+    document: "/isysquery/{guid}/{rank}/doc/{filename}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/DOI-DirectorsDecisions/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "citation"
+      description: "OHA reporter citation, e.g. '40 OHA 202' (parsed from filename)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "file_id"
+      description: "PDF filename stem (citation + party caption + date)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "OHA citation + party caption"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision, extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), from the trailing M-D-YY filename token or the body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (U.S. Government Work — 17 U.S.C. § 105)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Director's Decisions of the Interior Office of Hearings and Appeals are works of the U.S. federal government and are in the public domain under 17 U.S.C. § 105 (government edicts)."
+
+notes: |
+  - Same ISYS/Perceptive full-text portal (oha.doi.gov:8080) and identical
+    stateless GET flow as US/DOI-IBLA, with IW_DATABASE="Directors Decisions
+    1996-Present": GET /search/?IW_FIELD_NATURAL_LANGUAGE=<q>&IW_DATABASE=...
+    returns a results page carrying a server-cached query GUID and a total
+    document count; /isysquery/<GUID>/<start>-<end>/list/ pages the hits
+    (PAGE=50); each hit links its PDF at /isysquery/<GUID>/<rank>/doc/<filename>.pdf.
+    POST to /search/ 403s; GET works. The GUID persists server-side.
+  - The PDF filename embeds the OHA reporter citation, party caption and a
+    trailing "M-D-YY" decision date, e.g.
+    "40OHA202 IN RE GRASSHOPPER SUPPRESSION 5-14-10.pdf". The filename is
+    URL-decoded for the dedup key, citation, title and date.
+  - A handful of the database's entries are bare CFR reference documents
+    (filenames like "25cfr2.pdf") rather than decisions; these are skipped.
+  - Decision date is taken from the trailing filename date first, falling back
+    to a "Decided"/bare "Month D, YYYY" line at the top of the body.
+  - Full text lives only in the PDF; extraction uses the shared
+    common.pdf_extract helper (pdfplumber -> pypdf -> OCR), with a <200-char
+    guard for the rare image-only scan.
+  - Sibling of US/DOI-IBLA, US/DOI-IBLA-Orders, US/DOI-IBIA and
+    US/DOI-HearingsDivision. Public-domain U.S. federal-government works.

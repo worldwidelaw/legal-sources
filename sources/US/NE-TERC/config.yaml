@@ -1,0 +1,119 @@
+# ===================================================================
+# US/NE-TERC -- Nebraska Tax Equalization and Review Commission
+# ===================================================================
+# Full text of the decisions and orders of the Nebraska Tax
+# Equalization and Review Commission (TERC) — Nebraska's independent
+# quasi-judicial commission that hears appeals of property-tax
+# valuations and equalization, exemptions and related ad-valorem tax
+# controversies (taxpayer / political subdivision v. a County Board of
+# Equalization; plus statewide equalization proceedings). Each decision
+# resolves a specific appeal, so the corpus is case_law.
+#
+# TERC publishes its decisions on a server-rendered Drupal site. The
+# /decisions-search page is a Search-API view whose results come from
+# the Drupal views AJAX endpoint (/views/ajax, view "decisions"), which
+# returns in one response the full list of ~1,100 "week ending …" index
+# pages spanning April 2003 to the present. Each weekly index page links
+# the born-digital, text-layer decision PDFs issued that week under
+# /sites/default/files/... . No JavaScript rendering, no CAPTCHA, no
+# auth. Public domain Nebraska government works (government edicts).
+# ===================================================================
+
+source:
+  id: "US/NE-TERC"
+  country: "US"
+  name: "Nebraska Tax Equalization and Review Commission — Decisions"
+  url: "https://terc.nebraska.gov/decisions-search"
+  description: |
+    Decisions and orders of the Nebraska Tax Equalization and Review
+    Commission (TERC), Nebraska's independent quasi-judicial commission
+    for appeals of property-tax valuation and equalization, exemptions
+    and related ad-valorem tax matters (taxpayer / political subdivision
+    v. a County Board of Equalization, plus statewide equalization
+    proceedings). Published on a server-rendered Drupal site: a views
+    AJAX endpoint lists ~1,100 weekly index pages (2003–present), each
+    linking born-digital text-layer decision PDFs. No JavaScript, no
+    CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://terc.nebraska.gov"
+  endpoints:
+    ajax: "/views/ajax"
+    index: "/decisions-search"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NE-TERC/{pdf-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket"
+      description: "TERC docket number parsed from the case caption (e.g. '22R-0633')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "case_name"
+      description: "Case caption (docket + parties) from the weekly index anchor text"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Case caption used as the document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601) — the week-ending date of the index page on which the decision was published"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Nebraska commission decision)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Nebraska Tax Equalization and Review Commission are official quasi-judicial government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery POSTs the Drupal views AJAX endpoint (/views/ajax,
+    view_name=decisions, view_display_id=page_1, page=0); the single
+    response lists every "decisions-week-ending-{month}-{d}-{yyyy}"
+    index page (~1,100 weeks, April 2003 to present, newest-first).
+  - Each weekly index page links that week's decision PDFs under
+    /sites/default/files/...; the anchor text is the docket + parties
+    (e.g. "22R 0633 Smolsky v. Douglas County Bd. of Equal."). The
+    decision date is taken from the week-ending date of the index page.
+  - Many weeks list only one-line summary dispositions (confessions,
+    dismissals, default judgments) with no PDF; only weeks with linked
+    PDFs yield full-text records (typically 1–5 substantive decisions).
+  - PDFs are born-digital text layers; extracted via common.pdf_extract
+    (curl browser UA, ~1 req/s).
+  - Public domain Nebraska state government data.

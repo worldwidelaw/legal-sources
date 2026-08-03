@@ -1,0 +1,120 @@
+# ===================================================================
+# US/IL-ICC -- Illinois Commerce Commission Orders
+# ===================================================================
+# Full text of Orders issued by the Illinois Commerce Commission
+# adjudicating utility dockets (electric, gas, water/sewer,
+# telecommunications, transportation). Administrative adjudications of
+# specific dockets = case_law. Public domain (US state government edict).
+# Published openly as born-digital PDFs via the ICC e-Docket system
+# (icc.illinois.gov/docket). No authentication required for search.
+# ===================================================================
+
+source:
+  id: "US/IL-ICC"
+  country: "US"
+  name: "Illinois Commerce Commission — Orders"
+  url: "https://icc.illinois.gov/docket/search/documents"
+  description: |
+    Orders issued by the Illinois Commerce Commission (ICC) resolving
+    utility rate, complaint, certificate, reorganization and other
+    dockets across the electric, gas, water/sewer, telecommunications
+    and transportation (motor carrier) industries. Each Order is the
+    Commission's administrative adjudication of a specific docket
+    (case_law). The e-Docket electronic corpus spans 2000 to present.
+    Full text is in born-digital Order PDFs (the rare image-only scan is
+    OCR'd with Tesseract).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 5
+
+api:
+  type: "html_scraping"
+  base_url: "https://icc.illinois.gov"
+  endpoints:
+    search: "/docket/search/documents/results"       # POST selectedDocumentType + SelectedYear
+    detail: "/docket/{case}/documents/{docid}"
+    file: "/docket/{case}/documents/{docid}/files/{fileid}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "doc_id"
+      description: "ICC e-Docket internal document id (stable primary key)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "ICC docket number, e.g. '25-0175'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "doc_type"
+      description: "Order document type (Order - Final, Order, Order on Rehearing, Order on Remand)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "parties"
+      description: "Party names from the e-Docket listing"
+      type: "array"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Docket number plus order type and description"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "summary"
+      description: "Short document description from the search listing"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "text"
+      description: "Full text of the Order extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the Order was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Illinois)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "ICC Orders are official Illinois state government edicts in the public domain."
+
+notes: |
+  - The public document search endpoint /docket/search/documents/results is a
+    POST form (no auth / cookie / anti-forgery token required). Filtering by
+    selectedDocumentType + SelectedYear returns a server-rendered card list of
+    every matching document for that year: the document type, description,
+    party names, issue date and a link /docket/{case}/documents/{docid}.
+  - fetch_all() walks years newest-first back to 2000, over the adjudicative
+    order document types (Order - Final [21], Order [42], Order on Rehearing
+    [44], Order on Remand [45]). "Order - Final" is the dominant series
+    (~800-900/year; ~21,700 total).
+  - fetch_all() yields raw metadata; normalize() fetches the detail page,
+    downloads the primary Order PDF and extracts full text (fitz/PyMuPDF;
+    Tesseract OCR fallback for the rare image-only scan). The docket number is
+    the case number from the detail URL, refined from the PDF body when present.
+  - Public domain Illinois government data.

@@ -178,30 +178,45 @@ class KonkurentsiametScraper(BaseScraper):
         rows = table.find_all("tr")
         records = []
 
+        # Size/format suffix that the site appends inside the linked cell,
+        # e.g. "5-5/2019-013(403.3 KB, PDF)" or "... | 403.3 KB | pdf".
+        size_suffix = re.compile(r"\s*[\(|]\s*[\d.]+\s*KB[,\s|]*PDF\s*\)?\s*$", re.I)
+
         for row in rows[1:]:  # skip header
             cells = row.find_all("td")
             if len(cells) < 4:
                 continue
 
-            # Column 0: date
-            date_text = cells[0].get_text(strip=True)
-            # Column 1: case number
-            case_number = cells[1].get_text(strip=True)
-            # Column 2: title with PDF link
-            title_cell = cells[2]
-            # Column 3: sector
-            sector = cells[3].get_text(strip=True)
-
-            link = title_cell.find("a")
-            if not link:
+            # Columns: 0=date (Kuupäev), 1=number (Nr), 2=title (Pealkiri),
+            # 3=sector (Tegevusala). The PDF link lives in EITHER the number
+            # cell or the title cell depending on the row, so scan for it
+            # instead of assuming a fixed column (this dropped ~160 of ~200
+            # enforcement decisions — issue #1079).
+            link = None
+            for cell in cells[1:3]:
+                link = cell.find("a", href=lambda h: h and h.lower().endswith(".pdf"))
+                if link:
+                    break
+            if link is None:
+                link = row.find("a", href=lambda h: h and h.lower().endswith(".pdf"))
+            if link is None:
                 continue
 
             href = link.get("href", "")
             if not href:
                 continue
 
-            title_text = link.get_text(strip=True)
-            title_text = re.sub(r"\|\s*[\d.]+\s*KB\s*\|\s*pdf\s*$", "", title_text).strip()
+            # Column 0: date
+            date_text = cells[0].get_text(strip=True)
+            # Column 1: case number (may carry the "(KB, PDF)" suffix)
+            case_number = size_suffix.sub("", cells[1].get_text(strip=True)).strip()
+            # Column 3: sector
+            sector = cells[3].get_text(strip=True)
+
+            # Column 2: title; fall back to the link text if the title cell is empty
+            title_text = size_suffix.sub("", cells[2].get_text(strip=True)).strip()
+            if not title_text:
+                title_text = size_suffix.sub("", link.get_text(strip=True)).strip()
 
             pdf_url = urljoin(BASE_URL, href)
 

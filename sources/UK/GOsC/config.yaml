@@ -1,0 +1,82 @@
+# UK/GOsC — General Osteopathic Council — Fitness to Practise decisions.
+#
+# Source: General Osteopathic Council (GOsC), the UK statutory regulator for
+#         osteopaths under the Osteopaths Act 1993. Fitness to practise concerns
+#         are heard by the independent Professional Conduct Committee (PCC) and
+#         Health Committee (HC), with interim orders made by the Investigating
+#         Committee (IC/ISO).
+# URL: https://www.osteopathy.org.uk/raise-a-concern/hearings/decisions/
+# Data type: case_law  (UK statutory professional-regulator adjudications —
+#            distinct from UK/GMC doctors, UK/GDC dentists, UK/GOC opticians,
+#            UK/GPhC pharmacists, UK/SDT solicitors, UK/BTAS barristers,
+#            UK/HCPTS health & care professions, UK/NMC nurses/midwives,
+#            UK/SocialWorkEngland).
+# Auth: none
+#
+# osteopathy.org.uk publishes a single "Decisions" listing page grouping
+# published cases (undertakings, interim suspension orders, hearing outcomes) as
+# links to per-osteopath decision pages under
+#     /news-and-resources/document-library/fitness-to-practise/{slug}/
+# The slug encodes the osteopath name, committee (PCC / HC / IC-ISO) and the
+# decision date. Each decision page is a thin wrapper that auto-downloads the
+# reasoned decision as a BORN-DIGITAL PDF linked with a relative "./{file}.pdf"
+# href (content-type application/pdf, real text layer, no OCR): a structured
+# header (Case No / committee / hearing date / case-of name / committee members /
+# legal assessor) followed by the numbered reasoned decision. The listing is a
+# rolling window (older removed under the GOsC publication policy), so one run
+# captures the current window (~40 decisions) and re-runs accumulate (the
+# pipeline dedups on _id = the stable decision slug).
+#
+# Total: ~40 full-text decisions in the live published window.
+
+source:
+  id: UK/GOsC
+  name: General Osteopathic Council (GOsC) — Fitness to Practise decisions
+  country: UK
+  data_types:
+    - case_law
+  url: https://www.osteopathy.org.uk/raise-a-concern/hearings/decisions/
+  language: en
+  auth: none
+  license: custom-terms
+
+license:
+  name: "GOsC website terms (no explicit open licence stated)"
+  url: "https://www.osteopathy.org.uk/terms-and-conditions/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    GOsC fitness-to-practise decisions are public professional-regulator
+    adjudication records published by the General Osteopathic Council under its
+    fitness-to-practise publication policy. The site states no explicit open
+    licence (GOsC / Crown copyright applies to the underlying records), so
+    commercial re-use is conservatively flagged per project policy, consistent
+    with the sibling UK professional-regulator tribunal sources (UK/GMC, UK/GDC,
+    UK/GOC, UK/SDT, UK/BTAS, UK/HCPTS, UK/NMC, UK/GPhC).
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: url
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - registrant
+    - case_number
+    - hearing_type
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.0
+  estimated_total: 40
+  sample_count: 15

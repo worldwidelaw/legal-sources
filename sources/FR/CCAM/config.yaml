@@ -1,0 +1,88 @@
+# ===================================================================
+# FR/CCAM -- CCAM en ligne (Classification Commune des Actes Médicaux)
+# ===================================================================
+# Crawls the ameli.fr "CCAM en ligne" portal: règles-de-facturation +
+# /telechargement pages link their real content as PDFs under
+# /fileadmin/user_upload/documents/*.pdf -> full text via pdfplumber.
+# Charset is ISO-8859-1; sub-pages soft-error HTTP 500 but render fully.
+# ===================================================================
+
+source:
+  id: "FR/CCAM"
+  country: "FR"
+  name: "CCAM en ligne — Classification Commune des Actes Médicaux"
+  url: "https://www.ameli.fr/accueil-de-la-ccam/index.php"
+  description: |
+    Billing rules and nomenclature of the French Classification Commune des
+    Actes Médicaux (CCAM), published by l'Assurance Maladie (CNAM) on the
+    "CCAM en ligne" portal. The CCAM is the binding classification used to
+    code, price and bill medical procedures under French statutory health
+    insurance. Covered documents: the consolidated "Liste des actes et des
+    prestations" (dispositions générales / diverses), "Définitions, contextes
+    et principes", the CAMNOTE release notes, methodological / topic fiches,
+    and the per-version nomenclature PDFs (act codes, libellés, tariffs).
+    Covers public-repo source request #1034.
+
+data_types:
+  - doctrine
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 1
+  max_workers: 2
+
+api:
+  type: "html_crawl_pdf"
+  base_url: "https://www.ameli.fr"
+  root_path: "/accueil-de-la-ccam"
+  documents_prefix: "/fileadmin/user_upload/documents/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "title"
+      description: "Document title (CCAM — <topic/document name>)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document (PDF extracted)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Best-effort publication date from filename (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Licence Ouverte 2.0"
+  url: "https://www.etalab.gouv.fr/licence-ouverte-open-licence/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Official texts of a French public-service body (CNAM / l'Assurance Maladie); covered by the Licence Ouverte / Etalab open licence (commercial use permitted, attribution required)."
+
+notes: |
+  - Portal at /accueil-de-la-ccam: règles-de-facturation/* and telechargement/* pages
+    are thin nav stubs that link the real content as PDFs under
+    /fileadmin/user_upload/documents/*.pdf
+  - Scraper crawls every CCAM sub-page, collects distinct PDFs (~19), and extracts
+    full text via common.pdf_extract (OOM-hardened pdfplumber)
+  - Sub-pages soft-error HTTP 500 (TYPO3) but return the full rendered body;
+    the scraper reads the body regardless of status code. Charset is ISO-8859-1
+  - Classification: CCAM_V*.pdf nomenclature + the consolidated "Liste des actes et
+    des prestations" -> legislation (binding coded list of acts + tariffs, partly
+    tabular, ~5 MB / 2 M chars each — OOM-hardened); all other docs -> doctrine
+  - date is best-effort from the filename and not a required key field

@@ -1,0 +1,130 @@
+# ===================================================================
+# US/VT-LegalEthics -- Vermont Bar Association — Advisory Ethics Opinions
+# ===================================================================
+# Advisory Ethics Opinions of the Vermont Bar Association's Professional
+# Responsibility Committee (formerly Committee on Professional Ethics),
+# each the Committee's advisory answer to a member inquiry interpreting
+# the Vermont Rules of Professional Conduct (formerly the Code of
+# Professional Responsibility) to advise LAWYERS = doctrine (advisory,
+# no weight of law). One continuous per-year numbered series ("YY-NN"),
+# ~312 opinions 1978-present, published as born-digital PDFs on
+# vtbar.org. The VBA is a voluntary bar association, so these are
+# published as an educational service; no login/paywall/reuse terms.
+# Distinct from US/VT-Legislation and Vermont judicial/AG sources.
+# ===================================================================
+
+source:
+  id: "US/VT-LegalEthics"
+  country: "US"
+  name: "Vermont Bar Association — Advisory Ethics Opinions"
+  url: "https://www.vtbar.org/advisory_ethics/"
+  description: |
+    Advisory Ethics Opinions issued by the Vermont Bar Association's
+    Professional Responsibility Committee (formerly the Committee on
+    Professional Ethics). Each opinion is the Committee's advisory answer
+    to a member's inquiry interpreting the Vermont Rules of Professional
+    Conduct (formerly the Code of Professional Responsibility). The corpus
+    is one continuous per-year numbered series ("YY-NN") running from 1978
+    to present (~312 opinions), each published in full as a born-digital
+    PDF carrying the opinion number, a SYNOPSIS summary and full
+    discussion.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_archive_pdf"
+  base_url: "https://www.vtbar.org"
+  endpoints:
+    archive: "/advisory_ethics/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/VT-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Advisory opinion number, canonical 'YYYY-NN' (e.g. 1979-03, 2017-02)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title (first sentence of the PDF SYNOPSIS summary)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text from the born-digital PDF (no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date as ISO 8601 (best-effort from body; falls back to YYYY-01-01)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Vermont Bar Association — Professional Responsibility Committee"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-VT)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain / freely published advisory opinions"
+  url: "https://www.vtbar.org/advisory_ethics/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "VBA Advisory Ethics Opinions are published free to the public on vtbar.org as born-digital PDFs, interpreting the Vermont Rules of Professional Conduct. They are advisory (no weight of law) and carry no login, paywall or terms prohibiting reuse. Treated as effectively public domain, consistent with the other state-bar legal-ethics sources (US/NY-LegalEthics, US/IL-LegalEthics, US/CT-LegalEthics). The VBA is a voluntary bar association (not an integrated/state bar), so the 17 U.S.C. § 105 government-edicts rationale is weaker than for court-arm boards; flagged here as freely-published advisory material with commercial use permitted."
+
+notes: |
+  - Discovery: the VBA publishes opinions under /advisory_ethics/, a
+    WordPress custom-post-type archive organised by TOPIC (category)
+    pages. The archive index paginates at /advisory_ethics/page/{n}/;
+    each entry links to a topic page /advisory_ethics/{topic}/ (~70
+    topics). Each topic page lists that topic's opinions as direct
+    born-digital PDF links /wp-content/uploads/{YYYY}/{MM}/{YY-NN}[-v].pdf.
+    The same opinion appears under several topics, so opinions are
+    de-duplicated on the canonical number (first /wp-content/ URL wins).
+    ~312 unique opinions 1978-present.
+  - The site's wp-json REST API is WAF-403 (returns an HTML block page),
+    so the archive HTML is scraped directly with a browser UA.
+  - Full text: each opinion PDF is born-digital (text layer) — extracted
+    with PyMuPDF, NO OCR needed. Body carries "ADVISORY ETHICS OPINION
+    {num}" / "OPINION {num}", a SYNOPSIS summary and full discussion.
+  - Number: canonicalised from the PDF filename 'YY-NN' (YY>=78 -> 19YY,
+    else 20YY). WordPress upload-collision suffixes ('-1','-2',...) on
+    re-uploaded files are stripped; they denote the same opinion listed
+    under multiple topics, not distinct opinions.
+  - Title: first sentence of the SYNOPSIS line; falls back to "VBA
+    Advisory Ethics Opinion {num}".
+  - Date: best-effort "Month DD, YYYY" from the body (±1yr guard); most
+    VBA opinions carry only a number, so it usually falls back to the
+    number's year -> YYYY-01-01.
+  - Type: every document is the Committee's advisory interpretation of
+    the Vermont Rules of Professional Conduct = doctrine.
+  - Distinct from US/VT-Legislation and Vermont judicial/AG sources.

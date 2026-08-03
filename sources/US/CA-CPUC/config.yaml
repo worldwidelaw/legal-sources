@@ -1,0 +1,139 @@
+# ===================================================================
+# US/CA-CPUC -- California Public Utilities Commission Decisions & Resolutions
+# ===================================================================
+# Adjudicatory dispositions of the California Public Utilities
+# Commission — Final Decisions and Final Resolutions — resolving
+# numbered proceedings (electric/gas/water/telecommunications/
+# transportation rate cases, applications, complaints, rulemakings and
+# enforcement) = case_law.
+#
+# Access is the docs.cpuc.ca.gov ASP.NET WebForms search (no auth, no
+# CAPTCHA, no JavaScript). The server renders full result tables
+# server-side, so the search is driven with plain HTTP POSTs; each
+# result row carries a DIRECT PublishedDocs PDF link whose born-digital
+# text is extracted with common.pdf_extract.
+#
+# CPUC decisions are official California state-government works /
+# government edicts in the public domain.
+# ===================================================================
+
+source:
+  id: "US/CA-CPUC"
+  country: "US"
+  name: "California Public Utilities Commission — Decisions & Resolutions"
+  url: "https://docs.cpuc.ca.gov/advancedsearchform.aspx"
+  description: |
+    Final Decisions and Final Resolutions of the California Public
+    Utilities Commission — the adjudicatory dispositions that resolve
+    numbered CPUC proceedings affecting electric, gas, water, sewer,
+    telecommunications and transportation utilities (rate cases,
+    applications, complaints, investigations, rulemakings and
+    enforcement) = case_law. Enumerated via the docs.cpuc.ca.gov
+    advanced-search form (document type "Final Decision" / "Final
+    Resolution") month by month from the present back to June 2000;
+    each decision's full text is extracted from its born-digital,
+    text-layer PublishedDocs PDF. No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+jurisdictions:
+  - code: US-CA
+    scope: full
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_form"
+  base_url: "https://docs.cpuc.ca.gov"
+  endpoints:
+    search_form: "/advancedsearchform.aspx"
+    results: "/SearchRes.aspx"
+    published_docs: "/PublishedDocs/..."
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CA-CPUC/{doc_id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "doc_id"
+      description: "PublishedDocs document id from the PDF filename (e.g. '534744149')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "decision_number"
+      description: "CPUC decision/resolution number (e.g. 'D2406021', 'D.24-06-021')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "proceeding"
+      description: "CPUC proceeding number the disposition resolves (e.g. 'A2205022')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "document_type"
+      description: "CPUC document type (Final Decision / Final Resolution)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (decision number + caption)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision/resolution (born-digital PDF text)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Published date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — CPUC decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions and resolutions of the California Public Utilities Commission are official government works in the public domain under the government-edicts doctrine (state adjudicatory dispositions); no copyright is asserted."
+
+notes: |
+  - Discovery drives the docs.cpuc.ca.gov ASP.NET advanced search:
+    GET advancedsearchform.aspx to read the viewstate, POST the search
+    with ddlCpuc01Types=19 ("Final Decision") / 55 ("Final Resolution")
+    and a PubDateFrom/PubDateTo month window, then page the result table
+    by POSTing __EVENTTARGET=lnkNextPage to SearchRes.aspx (viewstate
+    carried forward) until no next-page control remains. Walks month by
+    month from the present back to 2000-06.
+  - Each result row exposes a DIRECT PublishedDocs PDF link
+    (docs.cpuc.ca.gov/PublishedDocs/...); full text is extracted via
+    common.pdf_extract (born-digital text-layer). A <200-char guard
+    skips the rare scanned/empty document.
+  - Corpus is large (tens of thousands of decisions/resolutions since
+    2000); full pulls are VPS/long-run territory, sample mode grabs ~12
+    recent.
+  - Draft/proposed dispositions (Agenda Decision=17 / Comment
+    Decision=18) are intentionally excluded to avoid duplicating the
+    final adopted decisions. ALJ Rulings (ddlCpuc01Types=58, which mixes
+    procedural and Proposed/Presiding-Officer decisions) are an easy
+    future extension.
+  - Public domain U.S. state-government data.

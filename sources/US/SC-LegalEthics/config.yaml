@@ -1,0 +1,130 @@
+# ===================================================================
+# US/SC-LegalEthics -- South Carolina Bar — Ethics Advisory Opinions
+# ===================================================================
+# Ethics Advisory Opinions of the South Carolina Bar's Ethics Advisory
+# Committee, each the Committee's written response (upon a member's
+# request) on the ethical propriety of the inquirer's contemplated
+# conduct under the South Carolina Rules of Professional Conduct =
+# doctrine (advisory; the Committee has NO disciplinary authority —
+# lawyer discipline is administered by the S.C. Supreme Court through
+# its Commission on Lawyer Conduct). One numbered series "YY-NN" (with
+# occasional letter-suffixed sub-opinions, e.g. 98-32c/98-32d), ~506
+# opinions 1989-present, published free as clean HTML on scbar.org.
+# Distinct from US/SC-JudicialEthics (S.C. Supreme Court's Advisory
+# Committee on Standards of Judicial Conduct — judges) and
+# US/SC-Courts. The South Carolina Bar is the state's integrated bar.
+# ===================================================================
+
+source:
+  id: "US/SC-LegalEthics"
+  country: "US"
+  name: "South Carolina Bar — Ethics Advisory Opinions"
+  url: "https://www.scbar.org/for-lawyers/quicklinks/legal-resources/ethics-advisory-opinions/"
+  description: |
+    Ethics Advisory Opinions issued by the South Carolina Bar's Ethics
+    Advisory Committee. Each opinion is the Committee's written response,
+    upon a member's request, on the ethical propriety of the inquirer's
+    contemplated conduct under the South Carolina Rules of Professional
+    Conduct (advisory, no disciplinary authority). One numbered series
+    "YY-NN" (with occasional letter-suffixed sub-opinions) running from
+    1989 to present (~506 opinions), each rendered in full as clean HTML
+    carrying the opinion number, cited RPC rules, Facts, Question and
+    Conclusion.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_html"
+  base_url: "https://www.scbar.org"
+  endpoints:
+    index: "/for-lawyers/quicklinks/legal-resources/ethics-advisory-opinions/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/SC-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Advisory opinion number, canonical 'YYYY-NN[letter]' (e.g. 1989-01, 1998-32d, 2026-01)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title (generated: 'South Carolina Bar Ethics Advisory Opinion {number}')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text extracted from the detail-page HTML (no PDF/OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 date; SC EAOs are dated by year (from the number) -> YYYY-01-01 unless the body carries an explicit date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "South Carolina Bar — Ethics Advisory Committee"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-SC)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain / freely published advisory opinions"
+  url: "https://www.scbar.org/for-lawyers/quicklinks/legal-resources/ethics-advisory-opinions/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "South Carolina Bar Ethics Advisory Opinions are published free to the public on scbar.org as an educational service interpreting the South Carolina Rules of Professional Conduct. They are advisory (no disciplinary authority) and carry no login, paywall or terms prohibiting reuse. Treated as effectively public domain, consistent with the other state-bar legal-ethics sources (US/NC-LegalEthics, US/AZ-LegalEthics). The South Carolina Bar is the state's integrated (mandatory) bar, so the 17 U.S.C. § 105 government-edicts rationale applies more directly than for the voluntary-bar sources."
+
+notes: |
+  - Discovery: opinions are listed on the S.C. Bar public page
+    /for-lawyers/quicklinks/legal-resources/ethics-advisory-opinions/,
+    paginated via ?page=1..N (10 per page, ~51 pages, ~506 opinions).
+    Each row links to a detail page /…/ethics-advisory-opinion-{YY-NN}/
+    (the newest omit the word "advisory": /…/ethics-opinion-{YY-NN}/).
+    The scraper walks pages until two consecutive pages surface no new
+    opinion slugs.
+  - Number: parsed from the detail-page slug 'YY-NN[letter]'. Canonical
+    'YYYY-NN[letter]' with YY>=50 => 19YY (corpus is 1989-present, so
+    89/90/98 => 19xx and 24/25/26 => 20xx). Letter suffixes (e.g. 98-32c,
+    98-32d) mark sub-opinions and are preserved to avoid collisions.
+  - Full text: each detail page renders the opinion body in clean HTML
+    inside the main <article class="col-md-8 …"> column — extracted
+    directly with BeautifulSoup, NO PDF/OCR needed. The "Download PDF
+    Version" link and nav widgets are stripped in _extract_body.
+  - Date: SC EAOs are dated by year only (encoded in the number), so
+    date defaults to YYYY-01-01; if the body carries an explicit in-range
+    "Month DD, YYYY" it is used instead.
+  - Type: every document is the Committee's advisory interpretation of
+    the South Carolina Rules of Professional Conduct = doctrine.
+  - Distinct from US/SC-JudicialEthics (S.C. Supreme Court's Advisory
+    Committee on Standards of Judicial Conduct — judges) and
+    US/SC-Courts. This is the attorney professional-conduct
+    advisory-opinion series (lawyers).

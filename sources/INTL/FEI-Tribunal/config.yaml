@@ -1,0 +1,49 @@
+fetch:
+  list_url: https://inside.fei.org/fei/your-role/athletes/fei-tribunal
+  method: html_listing_pdf
+  rate_limit_seconds: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: >
+    FEI Tribunal decisions — the published full-text rulings of the independent
+    judicial body of the Fédération Équestre Internationale (FEI), the world
+    governing body for equestrian sport. Covers equine and human anti-doping
+    cases, controlled-medication and prohibited-substance cases, consent awards,
+    horse-abuse and other disciplinary matters, appeals against Ground Jury
+    decisions, and CAS awards in FEI-related appeals. Each case is published as a
+    full redacted decision PDF (the substantive findings, sanction, period of
+    ineligibility, fines and full legal reasoning), organised by category and
+    year on inside.fei.org. Openly published for transparency (no login); the
+    WAF rejects some datacenter IPs.
+  id: INTL/FEI-Tribunal
+  language: en
+  name: FEI Tribunal Decisions (international equestrian sport)
+  url: https://inside.fei.org/fei/your-role/athletes/fei-tribunal
+license:
+  name: "FEI Terms of Use (All Rights Reserved)"
+  url: "https://inside.fei.org/fei/about-fei/legal"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions published openly for transparency, but the FEI asserts copyright with no open licence. Commercial use flagged restricted per project policy (err on flagging)."

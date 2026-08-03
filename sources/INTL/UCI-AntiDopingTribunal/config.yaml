@@ -1,0 +1,49 @@
+fetch:
+  list_url: https://www.uci.org/uci-anti-doping-tribunal/5JsEGc56ZHWXlcVkHh66d9
+  method: contentful_richtext_pdf
+  rate_limit_seconds: 1.0
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: case_reference
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: >
+    UCI Anti-Doping Tribunal decisions and CAS appeal awards. The UCI Anti-Doping
+    Tribunal (Tribunal Antidopage de l'UCI) is the independent first-instance body
+    that hears anti-doping rule violation cases in international cycling under the
+    UCI Anti-Doping Rules and the World Anti-Doping Code. The UCI publishes, in
+    full, the reasoned tribunal judgments and the Court of Arbitration for Sport
+    (CAS) awards rendered on appeal against them. The "UCI Anti-Doping Tribunal"
+    page on uci.org is a Contentful-backed page whose rich-text body — including a
+    link to every decision PDF — is server-embedded in the HTML as a
+    unicode-escaped JSON island; each decision is a full reasoned PDF hosted openly
+    on assets.ctfassets.net (no login, no WAF, reachable from any IP).
+  id: INTL/UCI-AntiDopingTribunal
+  language: en
+  name: UCI Anti-Doping Tribunal Decisions & CAS Appeal Awards
+  url: https://www.uci.org/uci-anti-doping-tribunal/5JsEGc56ZHWXlcVkHh66d9
+license:
+  name: "UCI Terms of Use (All Rights Reserved)"
+  url: "https://www.uci.org/disclaimer/6PpA8u6xkUyhTfRkjj9Xqm"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "UCI copyright. Decisions published in full by the UCI for transparency under the UCI Anti-Doping Rules; no open licence, commercial use restricted."

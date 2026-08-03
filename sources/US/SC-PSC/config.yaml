@@ -1,0 +1,111 @@
+# ===================================================================
+# US/SC-PSC -- South Carolina Public Service Commission Orders
+# ===================================================================
+# Full text of Orders issued by the South Carolina Public Service
+# Commission adjudicating utility dockets (electric, gas, water/sewer,
+# telecommunications, transportation). Administrative adjudications of
+# specific dockets = case_law. Public domain (US state government edict).
+# Published openly as born-digital PDFs via the PSC document management
+# system (dms.psc.sc.gov). No authentication required.
+# ===================================================================
+
+source:
+  id: "US/SC-PSC"
+  country: "US"
+  name: "South Carolina Public Service Commission — Orders"
+  url: "https://dms.psc.sc.gov/Web/Orders"
+  description: |
+    Orders issued by the South Carolina Public Service Commission (PSC)
+    resolving utility rate, complaint, certificate and other dockets
+    across the electric, gas, water/sewer, telecommunications and
+    transportation industries, plus Hearing Officer Directives on those
+    dockets. Each Order is an administrative adjudication of a specific
+    docket (case_law). The corpus spans the late 1980s to present. Full
+    text is in born-digital Order PDFs (the rare image-only scan is OCR'd
+    with Tesseract).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 5
+
+api:
+  type: "html_scraping"
+  base_url: "https://dms.psc.sc.gov"
+  endpoints:
+    search: "/Web/Orders/Search?StartDate={mdY}&EndDate={mdY}&Number=&SearchKeyword="
+    attachment: "/Attachments/Order/{guid}"
+
+data_model:
+  type: "case_law"
+  primary_key: "order_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "order_number"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "order_number"
+      description: "PSC Order number, e.g. '2024-1', '2024-1H', '2026-154H(A)'"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Docket number parsed from the Order body, e.g. '2025-325-E'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "industry"
+      description: "Regulated industry (Electric, Gas, Water/Sewer, Telecommunications, Transportation)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Order number plus the order title / docket description"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "summary"
+      description: "Order title plus docket description from the search listing"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "text"
+      description: "Full text of the Order extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the Order was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — South Carolina)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "SC Public Service Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - The Orders search endpoint /Web/Orders/Search is a GET form returning a
+    server-rendered HTML datatable of Orders filtered by issue-date window
+    (StartDate/EndDate as M/D/YYYY). Each row carries the Order number,
+    industry, a summary (title + docket description), the issue date and a
+    direct attachment link /Attachments/Order/{guid} to the born-digital PDF.
+  - The result set is capped at 1000 rows, so fetch_all() walks the corpus
+    one month at a time (newest first) to stay under the cap.
+  - fetch_all() yields raw metadata; normalize() downloads each Order PDF and
+    extracts full text (fitz/PyMuPDF; Tesseract OCR fallback for the rare
+    image-only scan). The docket number is parsed from the PDF body.
+  - Public domain South Carolina government data.

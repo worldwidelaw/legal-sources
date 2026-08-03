@@ -405,8 +405,14 @@ if __name__ == "__main__":
         ok = scraper.test_api()
         sys.exit(0 if ok else 1)
 
-    elif command == "bootstrap":
-        sample_mode = "--sample" in sys.argv
+    elif command in ("bootstrap", "bootstrap-fast"):
+        # bootstrap-fast is the VPS fleet entrypoint and must sweep the FULL
+        # corpus. Only `bootstrap --sample` writes the 15-record validation set
+        # to sample/; every full run now streams the whole corpus to
+        # data/records.jsonl via BaseScraper.storage. Previously the full run
+        # wrote into sample/ (and bootstrap-fast wasn't recognized at all), so
+        # the fleet only ever ingested ~13 records.
+        sample_mode = "--sample" in sys.argv and command == "bootstrap"
         count = 15
         for i, arg in enumerate(sys.argv):
             if arg == "--count" and i + 1 < len(sys.argv):
@@ -414,22 +420,20 @@ if __name__ == "__main__":
 
         if sample_mode:
             gen = scraper.fetch_sample(count=count)
+            sample_dir = Path(__file__).parent / "sample"
+            sample_dir.mkdir(exist_ok=True)
+            saved = 0
+            for record in gen:
+                normalized = scraper.normalize(record)
+                out_path = sample_dir / f"{normalized['_id']}.json"
+                with open(out_path, "w", encoding="utf-8") as f:
+                    json.dump(normalized, f, ensure_ascii=False, indent=2)
+                saved += 1
+                logger.info(f"Saved: {out_path.name}")
+            logger.info(f"Bootstrap complete: {saved} records saved to {sample_dir}")
         else:
-            gen = scraper.fetch_all()
-
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        saved = 0
-        for record in gen:
-            normalized = scraper.normalize(record)
-            out_path = sample_dir / f"{normalized['_id']}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(normalized, f, ensure_ascii=False, indent=2)
-            saved += 1
-            logger.info(f"Saved: {out_path.name}")
-
-        logger.info(f"Bootstrap complete: {saved} records saved to {sample_dir}")
+            stats = scraper.bootstrap(sample_mode=False)
+            logger.info(f"Bootstrap complete: {stats}")
 
     elif command == "update":
         since_str = None

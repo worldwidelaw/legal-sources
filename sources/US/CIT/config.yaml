@@ -1,0 +1,110 @@
+# ===================================================================
+# US/CIT -- U.S. Court of International Trade (Slip Opinions)
+# ===================================================================
+# Full text of the U.S. Court of International Trade's published slip
+# opinions -- decisions of a specialized Article III federal court with
+# nationwide jurisdiction over civil actions arising out of the customs
+# and international-trade laws of the United States (antidumping and
+# countervailing-duty determinations, customs classification and
+# valuation protests, trade-remedy and enforcement matters). Each slip
+# opinion resolves a specific case = case_law. Official U.S. federal-
+# government works, public domain (17 U.S.C. 105).
+#
+# BUILD RECIPE (no auth, no CAPTCHA, builds locally): the main page
+#   https://www.cit.uscourts.gov/slip-opinions
+# links each year's archive (mostly /content/slip-opinions-{YYYY}, a few
+# years use /slip-opinions-{YYYY} -- links are harvested from the page).
+# Each year page is a clean HTML table (Number, Caption, Date, Court No.,
+# Judge, Jurisdiction) whose first cell links the born-digital PDF at
+# /sites/cit/files/{YY-NN}.pdf. The scraper walks every year, parses the
+# rows for metadata, downloads each PDF, and extracts full text with the
+# shared common.pdf_extract extractor. record_id is the slip-op number
+# {YY-NN} (e.g. 25-160), the natural unique citation.
+# ===================================================================
+
+source:
+  id: "US/CIT"
+  country: "US"
+  name: "U.S. Court of International Trade — Slip Opinions"
+  url: "https://www.cit.uscourts.gov/slip-opinions"
+  description: |
+    Full text of the U.S. Court of International Trade's published slip
+    opinions — decisions of the specialized Article III federal court with
+    exclusive nationwide jurisdiction over civil actions arising out of the
+    customs and international-trade laws of the United States (antidumping
+    and countervailing-duty determinations, customs classification and
+    valuation protests, trade-remedy and enforcement matters). Each slip
+    opinion resolves a specific case = case_law. Enumerated from the
+    per-year archive pages linked off the slip-opinions index; caption,
+    court number, judge, jurisdictional basis (28 U.S.C. 1581 subsection),
+    date, and the full text (from the born-digital PDF) are captured. No
+    CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.cit.uscourts.gov"
+  endpoints:
+    list_page: "/slip-opinions"
+    year_archive: "/content/slip-opinions-{YYYY}"
+    document_pdf: "/sites/cit/files/{YY-NN}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/CIT/{record_id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Slip-opinion number / citation (e.g. '25-160')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "{caption} (CIT Slip Op. {record_id})"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the slip opinion (PDF extract; OCR fallback)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), from the archive-table Date column"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the slip-opinion PDF on cit.uscourts.gov"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. federal government work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    U.S. Court of International Trade slip opinions are works of a U.S.
+    federal court and are not subject to copyright under 17 U.S.C. 105
+    (federal government edicts / public domain). Free to use, including
+    commercially.

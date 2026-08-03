@@ -1,0 +1,136 @@
+# ===================================================================
+# US/IA-PERB -- Iowa Public Employment Relations Board (PERB) Decisions
+# ===================================================================
+# Decisions, orders, and neutral (fact-finding / interest-arbitration)
+# awards of the Iowa Public Employment Relations Board (PERB), the
+# independent state agency that administers Iowa's public-sector
+# collective-bargaining law (Iowa Code chapter 20). PERB and its ALJs
+# decide prohibited-practice complaints, bargaining-unit determination
+# and representation/certification cases, declaratory-order petitions,
+# negotiability disputes, and state-employee grievance appeals; the
+# corpus also includes Iowa District Court and appellate rulings on
+# judicial review of PERB orders. Each numbered decision/order resolves
+# a specific contested case = case_law; the decisions are official Iowa
+# state-government works in the public domain (government edicts).
+#
+# BUILD RECIPE: the PERB website (iowaperb.iowa.gov) was retired -- the
+# domain now 301-redirects to eab.iowa.gov and the live searchable
+# database moved to iowa-superb.iowa.gov, a Blazor Server (SignalR
+# websocket) app that cannot be enumerated without a full browser. BUT
+# the entire born-digital decision corpus -- ~3,000 decision/order/award
+# PDFs -- was preserved by the Internet Archive Wayback Machine at
+#   https://iowaperb.iowa.gov/sites/default/files/{filename}.pdf
+# The scraper enumerates them via the Wayback CDX API (filter
+# statuscode:200, mimetype:application/pdf, collapse=urlkey) and
+# downloads each preserved PDF via the /web/{timestamp}id_/{url}
+# raw-replay endpoint, extracting full text with common.pdf_extract
+# (born-digital text layer; tesseract OCR fallback for the older scanned
+# awards). Case number + date are parsed from the body. No auth, no
+# CAPTCHA, no JS challenge.
+# ===================================================================
+
+source:
+  id: "US/IA-PERB"
+  country: "US"
+  name: "Iowa Public Employment Relations Board — Decisions"
+  url: "https://iowa-superb.iowa.gov/"
+  description: |
+    Decisions, orders, and neutral (fact-finding / interest-arbitration)
+    awards of the Iowa Public Employment Relations Board (PERB), which
+    administers Iowa's public-sector collective-bargaining law (Iowa Code
+    ch. 20). PERB and its ALJs decide prohibited-practice complaints,
+    unit-determination and representation/certification cases,
+    declaratory-order petitions, negotiability disputes, and state-employee
+    grievance appeals; the corpus also includes Iowa District Court and
+    appellate rulings on judicial review of PERB orders. Each numbered
+    decision resolves a specific contested case = case_law. The full
+    corpus (~3,000 PDFs) is enumerated from the Internet Archive Wayback
+    Machine preservation of the retired iowaperb.iowa.gov
+    /sites/default/files tree; case number, decision date, and the full
+    decision text (from the born-digital PDF) are captured. No CAPTCHA,
+    no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://web.archive.org"
+  endpoints:
+    cdx: "http://web.archive.org/cdx/search/cdx?url=iowaperb.iowa.gov/sites/default/files*"
+    decision_pdf: "/web/{timestamp}id_/https://iowaperb.iowa.gov/sites/default/files/{filename}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/IA-PERB/{filename-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Slug derived from the decision PDF filename (unique per file)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "case_number"
+      description: "Iowa PERB case number (e.g. '8776', '100079') or district-court CVCV number, from body or filename"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "issuer"
+      description: "Issuing body (Iowa PERB, or the Iowa courts on judicial review)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Decision title (Iowa PERB — Case No. N — parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (born-digital PDF extract; OCR fallback)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the body; null if absent"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Original decision PDF path (iowaperb.iowa.gov)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "archive_url"
+      description: "Wayback Machine raw-replay URL for the preserved PDF"
+      type: "string"
+      role: "reference"
+      required: false
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions of the Iowa Public Employment Relations Board are official
+    works of Iowa state government (edicts of a government agency) and are
+    not subject to copyright under the government-edicts doctrine. Free to
+    use, including commercially. Retrieved via the Internet Archive
+    Wayback Machine's preservation of the official iowaperb.iowa.gov
+    corpus.

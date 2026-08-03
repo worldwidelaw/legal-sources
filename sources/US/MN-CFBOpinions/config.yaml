@@ -1,0 +1,112 @@
+# ===================================================================
+# US/MN-CFBOpinions -- Minnesota Campaign Finance & Public Disclosure
+# Board (CFB) -- Advisory Opinions
+# ===================================================================
+# Formal advisory opinions issued by the Minnesota Campaign Finance
+# and Public Disclosure Board (and its predecessors, the State Ethics
+# Commission / Ethical Practices Board) construing Minn. Stat. ch. 10A
+# (Campaign Finance & Public Disclosure) and related lobbying, gift-ban,
+# conflict-of-interest and economic-interest law. An advisory opinion is
+# the Board's written interpretation of those statutes, requested by an
+# official, candidate, committee, lobbyist or principal = doctrine.
+# Born-digital PDFs (older ones scanned; extractor falls back to OCR).
+# Public record of a Minnesota state agency.
+# ===================================================================
+
+source:
+  id: "US/MN-CFBOpinions"
+  country: "US"
+  name: "Minnesota Campaign Finance & Public Disclosure Board — Advisory Opinions"
+  url: "https://cfb.mn.gov/citizen-resources/the-board/board-decisions/advisory-opinions/"
+  description: |
+    Formal advisory opinions of the Minnesota Campaign Finance and Public
+    Disclosure Board (CFB) and its predecessor the State Ethics /
+    Ethical Practices Board, interpreting Minn. Stat. ch. 10A and related
+    campaign-finance, lobbying, gift-ban, conflict-of-interest and
+    economic-interest statutes. Each opinion is a born-digital PDF at
+    https://cfb.mn.gov/pdf/advisory_opinions/AO{N}.pdf. The single
+    "advisory opinions" listing page carries the full index (opinion
+    number, program, subject, date issued) for AO6..AO471+ (1974–present).
+    All opinions are doctrine.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "html_index_plus_pdf"
+  base_url: "https://cfb.mn.gov"
+  endpoints:
+    index: "/citizen-resources/the-board/board-decisions/advisory-opinions/"
+    opinion_pdf: "/pdf/advisory_opinions/AO{n}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/MN-CFBOpinions/AO{N})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Advisory opinion number (e.g. AO471)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion caption (e.g. 'Advisory Opinion 471 — Campaign Finance')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory opinion (PDF text layer / OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the index 'Date issued' column"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "program"
+      description: "Subject program (Campaign Finance, Lobbying, Gift Ban, etc.)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (Minnesota state government edict / public record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "CFB advisory opinions are official public records of a Minnesota state agency interpreting statute; government-edict works, published for public use."
+
+notes: |
+  - Index: the single "advisory opinions" listing page is a table whose
+    rows carry opinion number, program, subject summary, date issued and
+    requestor, plus a direct href to /pdf/advisory_opinions/AO{N}.pdf.
+    No probing needed — parse the table, then download each PDF.
+  - Full text: born-digital PDFs (modern opinions have a clean text layer;
+    older 1974–1990s opinions are scanned images → extractor falls back to
+    OCR via tesseract). Extraction via common.pdf_extract._extract.
+  - Date: parsed from the "Date issued" column (MM/DD/YYYY → ISO); falls
+    back to null.
+  - UA: cfb.mn.gov serves a browser User-Agent fine (no CAPTCHA/auth/JS).
+  - All advisory opinions are doctrine. The Board's enforcement findings
+    and orders are a separate document class not covered here.

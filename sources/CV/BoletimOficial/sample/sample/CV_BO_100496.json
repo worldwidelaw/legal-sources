@@ -1,0 +1,27 @@
+{
+  "_id": "CV_BO_100496",
+  "_source": "CV/BoletimOficial",
+  "_type": "legislation",
+  "_fetched_at": "2026-03-26T02:36:26.186424+00:00",
+  "title": "Retificação n.º 33/2026",
+  "text": "Por ter sido publicado de forma inexata no Boletim Oficial n.º II Série, n.º 52 19 de março de 2026, sob o título “Autorização para Elaboração do Plano Detalhado de Curraletes – Concelho do Porto Novo”.\n\nOnde se lê:\n\nArtigo 1.º\n\n(Autorização de Elaboração do Plano Detalhado de Tarrafal de Monte Trigo)\n\nDeve ler-se: \n\nArtigo 1.º\n\n(Autorização de Elaboração do Plano Detalhado de Curraletes)\n\nPorto Novo, aos 23 de março de 2026. ― A Vereadora das Finanças Municipais, Ivone Fortes Sabino Évora.",
+  "date": "2026-03-25",
+  "url": "https://boe.incv.cv/Bulletins/View/100496",
+  "ref_act": 28676,
+  "part": {
+    "id": 7,
+    "code": "G",
+    "description": "G - Autarquias locais",
+    "hide": false,
+    "refParent": 2,
+    "parent": {
+      "id": 2,
+      "description": "II Série",
+      "hide": false,
+      "order": 0
+    },
+    "order": 0
+  },
+  "entities": [],
+  "language": "pt"
+}

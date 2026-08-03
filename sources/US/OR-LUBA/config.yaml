@@ -1,0 +1,123 @@
+# ===================================================================
+# US/OR-LUBA -- Oregon Land Use Board of Appeals (LUBA)
+#               Final Orders & Opinions
+# ===================================================================
+# Final Opinions and Orders of the Oregon Land Use Board of Appeals
+# (LUBA), Oregon's specialized quasi-judicial tribunal with exclusive
+# jurisdiction to review local government land-use decisions
+# (comprehensive plan / zoning amendments, conditional-use permits,
+# subdivisions, urban-growth-boundary and statewide-planning-goal
+# compliance, etc.) under ORS 197.805–197.860. Each Final Opinion and
+# Order resolves a specific appeal = case_law. Public domain Oregon
+# state-government works (government edicts).
+#
+# Published as a CONTENTdm digital collection (alias p17027coll12) on
+# the OCLC-hosted instance at cdm17027.contentdm.oclc.org. The public
+# dmwebservices JSON API is used: dmQuery enumerates item pointers,
+# dmGetItemInfo returns each item's Dublin-Core fields including the
+# full-text "transc" (Transcript) field. No PDF extraction, no CAPTCHA,
+# no auth.
+# ===================================================================
+
+source:
+  id: "US/OR-LUBA"
+  country: "US"
+  name: "Oregon Land Use Board of Appeals — Final Orders & Opinions"
+  url: "https://cdm17027.contentdm.oclc.org/digital/collection/p17027coll12"
+  description: |
+    Final Opinions and Orders of the Oregon Land Use Board of Appeals
+    (LUBA). LUBA is Oregon's specialized quasi-judicial tribunal with
+    exclusive jurisdiction to review local government land-use decisions
+    -- comprehensive plan and zoning amendments, conditional-use permits,
+    subdivisions, urban-growth-boundary and statewide-planning-goal
+    compliance disputes -- under ORS 197.805–197.860. Each Final Opinion
+    and Order resolves a specific appeal = case_law. Enumerated from
+    LUBA's CONTENTdm collection (alias p17027coll12) via the public
+    dmwebservices JSON API; LUBA case number, case name, document type,
+    authoring board member, decision date, and the full order text are
+    read from each item's Dublin-Core fields (title / subjec / descri /
+    creato / date / transc). No CAPTCHA, no auth. ~1,063 Final Orders &
+    Opinions.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://cdm17027.contentdm.oclc.org"
+  endpoints:
+    query: "/digital/bl/dmwebservices/index.php?q=dmQuery/p17027coll12/0/dmrecord!date/dmrecord/{max}/{start}/0/0/0/0/json"
+    item: "/digital/bl/dmwebservices/index.php?q=dmGetItemInfo/p17027coll12/{rec}/json"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/OR-LUBA/{CONTENTdm dmrecord})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "LUBA case number (e.g. '2023-071')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "case_name"
+      description: "Case name / parties (e.g. 'DLCD v. Josephine County')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "order_type"
+      description: "Document type (e.g. 'Final Opinion and Order')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "author"
+      description: "Authoring LUBA board member"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Order title (LUBA No. + case name)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Final Opinion and Order (CONTENTdm transcript field)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date issued (ISO 8601), from the CONTENTdm date field"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the CONTENTdm item page"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Final Opinions and Orders of the Oregon Land Use Board of Appeals are
+    official quasi-judicial works of Oregon state government (government
+    edicts) and are not subject to copyright. Free to use, including
+    commercially.

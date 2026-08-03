@@ -34,6 +34,41 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 
+try:
+    import fitz  # PyMuPDF
+except Exception:  # pragma: no cover
+    fitz = None
+
+
+def _pdf_text(pdf_bytes: bytes) -> str:
+    """Extract a text layer from a born-digital PDF (PyMuPDF, with a shared
+    pdfplumber/pypdf fallback). Returns '' if no usable text."""
+    if fitz is not None:
+        try:
+            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+            try:
+                text = "\n".join(page.get_text() for page in doc).strip()
+            finally:
+                doc.close()
+            if len(text) >= 200:
+                return text
+        except Exception:
+            pass
+    try:
+        from common import pdf_extract as _pe
+        for fn in ("_extract_with_pdfplumber", "_extract_with_pypdf"):
+            f = getattr(_pe, fn, None)
+            if f:
+                try:
+                    t = f(pdf_bytes)
+                    if t and len(t) >= 200:
+                        return t
+                except Exception:
+                    continue
+    except Exception:
+        pass
+    return ""
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -77,6 +112,23 @@ class SenegalLIIScraper(BaseScraper):
                 if attempt < 2:
                     time.sleep(10)
         return None
+
+    def _extract_pdf_text(self, doc_url: str) -> str:
+        """Fetch the born-digital source PDF for a document and extract text.
+
+        On the Laws.Africa / Indigo platform each document exposes its original
+        publication PDF at `{doc_url}/source.pdf` (the Journal Officiel gazette
+        scan/typeset). For senlii.org only ~5/75 acts carry an Akoma Ntoso HTML
+        body; the rest are PDF-only, so this recovers their full text.
+        """
+        pdf_url = doc_url.rstrip("/") + "/source.pdf"
+        resp = self._request(pdf_url, timeout=120)
+        if resp is None:
+            return ""
+        content = resp.content
+        if not content[:5].startswith(b"%PDF"):
+            return ""
+        return _pdf_text(content)
 
     def _parse_listing_page(self, html: str) -> List[Dict[str, str]]:
         """Parse a legislation listing page for document links."""
@@ -183,6 +235,7 @@ class SenegalLIIScraper(BaseScraper):
             "text": raw.get("text", ""),
             "date": raw.get("date", ""),
             "url": raw.get("url", ""),
+            "text_source": raw.get("text_source", "html"),
         }
 
     def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
@@ -215,9 +268,17 @@ class SenegalLIIScraper(BaseScraper):
                     continue
 
                 extracted = self._extract_full_text(doc_resp.text)
+                source = "html"
                 if not extracted["text"] or len(extracted["text"]) < 500:
-                    logger.warning(f"Insufficient text ({len(extracted['text'])} chars): {doc['title'][:60]}")
-                    continue
+                    # PDF-only document — recover full text from source.pdf
+                    pdf_text = self._extract_pdf_text(doc_url)
+                    if len(pdf_text) >= 500:
+                        extracted["text"] = pdf_text
+                        source = "pdf"
+                    else:
+                        logger.warning(f"Insufficient text (html={len(extracted['text'])}, "
+                                       f"pdf={len(pdf_text)} chars): {doc['title'][:60]}")
+                        continue
 
                 raw = {
                     "href": doc["href"],
@@ -225,6 +286,7 @@ class SenegalLIIScraper(BaseScraper):
                     "text": extracted["text"],
                     "date": extracted["date"],
                     "url": doc_url,
+                    "text_source": source,
                 }
                 count += 1
                 yield raw
@@ -250,8 +312,14 @@ class SenegalLIIScraper(BaseScraper):
                 continue
 
             extracted = self._extract_full_text(doc_resp.text)
+            source = "html"
             if not extracted["text"] or len(extracted["text"]) < 500:
-                continue
+                pdf_text = self._extract_pdf_text(doc_url)
+                if len(pdf_text) >= 500:
+                    extracted["text"] = pdf_text
+                    source = "pdf"
+                else:
+                    continue
 
             yield {
                 "href": doc["href"],
@@ -259,6 +327,7 @@ class SenegalLIIScraper(BaseScraper):
                 "text": extracted["text"],
                 "date": extracted["date"],
                 "url": doc_url,
+                "text_source": source,
             }
 
     def test(self) -> bool:

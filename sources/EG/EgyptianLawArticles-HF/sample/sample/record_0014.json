@@ -1,0 +1,13 @@
+{
+  "_id": "EG/EgyptianLawArticles-HF:art-١٤",
+  "_source": "EG/EgyptianLawArticles-HF",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-09T06:19:56.727251+00:00",
+  "title": "Egyptian Civil Code — Article ١٤",
+  "text": "في الأحوال المنصوص عليها في المادتين السابقتين إذا كان أحد الزوجين\nمصرياً وقت انعقاد الزواج يسري القانون المصري وحده، فيها علي شرط\nالأهلية للزواج.\n\n--- English Translation ---\n\nArticle 14\nIf, in the cases provided for in the two preceding articles\none of the two spouses is an Egyptian at the time of the\nconclusion of the marriage, Egyptian law alone shall\napply except as regards the legal capacity to marry.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/TawasulAI/egyptian-law-articles",
+  "article_number": "١٤",
+  "language": "ar",
+  "jurisdiction": "EG"
+}

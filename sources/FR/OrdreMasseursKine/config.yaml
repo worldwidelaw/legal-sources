@@ -1,0 +1,58 @@
+source:
+  id: FR/OrdreMasseursKine
+  name: "Ordre des Masseurs-Kinésithérapeutes — Jurisprudence disciplinaire"
+  country: FR
+  url: https://jurisprudence.ordremk.fr
+  auth: none
+  data_types:
+  - case_law
+
+endpoints:
+  base_url: https://jurisprudence.ordremk.fr
+  posts_api: https://jurisprudence.ordremk.fr/wp-json/wp/v2/posts
+  media_api: https://jurisprudence.ordremk.fr/wp-json/wp/v2/media
+  categories_api: https://jurisprudence.ordremk.fr/wp-json/wp/v2/categories
+
+rate_limit:
+  delay_between_requests: 1.2
+  requests_per_second: 0.83
+
+schema:
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - url
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+
+license:
+  name: "Custom terms (public anonymised jurisprudence)"
+  url: "https://www.ordremk.fr/mentions-legales/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Public anonymised disciplinary decisions of a body with a public service mission. No explicit open-data reuse licence declared; treated as public jurisprudence (comparable to French court decisions)."
+
+notes: >
+  Disciplinary jurisprudence of the French National Order of
+  Masseurs-Kinésithérapeutes (physiotherapists). Published on the WordPress
+  site jurisprudence.ordremk.fr, which exposes the standard WP REST API. Each
+  decision is a post (title carries the decision number and date) with the full
+  anonymised decision attached as a PDF (via /wp-json/wp/v2/media?parent={id}).
+  Covers the Chambre disciplinaire nationale, regional chambres disciplinaires
+  de première instance, sections des assurances sociales, and reproduced
+  higher-court decisions involving the profession. ~2092 posts. Full text is
+  extracted from the PDFs with pdfplumber; records de-duplicated by post id.

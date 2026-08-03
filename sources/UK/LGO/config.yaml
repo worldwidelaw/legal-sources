@@ -1,0 +1,112 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — UK Local Government & Social Care Ombudsman (LGSCO)
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/LGO"
+  country: "UK"
+  name: "Local Government & Social Care Ombudsman — Decisions"
+  url: "https://www.lgo.org.uk/decisions"
+  description: |
+    Published investigation decisions of the Local Government and Social Care
+    Ombudsman (Commission for Local Administration in England, Local Government
+    Act 1974) — the statutory body that investigates complaints about councils
+    and registered adult social care providers. Each decision records the
+    Ombudsman's findings (fault / no fault / maladministration), the injustice
+    caused and any remedy agreed. ~57,500 decisions (bulk 2016-present) across
+    adult social care, children's care, housing, education, benefits & tax,
+    environment & regulation, planning, transport & highways and health.
+    Full text via server-rendered HTML decision pages.
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "html"
+  base_url: "https://www.lgo.org.uk"
+  endpoints:
+    search:
+      path: "/Decisions/SearchResults?fd={from}&td={to}&page={page}"
+      method: "GET"
+      description: "Server-rendered decision search, date-windowed, 10/page"
+    decision:
+      path: "/decisions/{category}/{subcategory}/{ref}"
+      method: "GET"
+      description: "Individual decision page; full text in <article id=article>"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "case_id"
+  update_strategy: "upsert"
+  versioning: "date"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "case_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "authority"
+      type: "string"
+      role: "classification"
+    - name: "category"
+      type: "string"
+      role: "classification"
+    - name: "outcome"
+      type: "string"
+      role: "classification"
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Commission for Local Administration in England — custom re-use terms"
+  url: "https://www.lgo.org.uk/copyright"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    "You may re-use the information on this website free of charge in any format"
+    (copying, publishing, broadcasting, translating), subject to attribution,
+    accurate reproduction and not using it "for the principal purpose of
+    advertising or promoting a particular product or service". OGL-like;
+    commercial use permitted with attribution.
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~57,500 decisions (England; bulk 2016-present)
+  - Full text embedded in each decision page HTML (articleHeader metadata +
+    Summary / The complaint / The Ombudsman's role and powers / How I considered
+    this complaint / My assessment / Final decision narrative)
+  - Enumeration via GET /Decisions/SearchResults date windows (monthly), 10/page,
+    &page=N pagination; no reCAPTCHA on the results endpoint (captcha only guards
+    /searchpost + complaint forms)
+  - Checkpoint of completed windows in data/lgo_checkpoint.json for fleet resume
+  - Rich metadata: authority, reference, category > subcategory, outcome, date
+  - No authentication required; born-digital, no OCR
+  - Distinct from UK/HousingOmbudsman, UK/FinancialOmbudsman and the PHSO

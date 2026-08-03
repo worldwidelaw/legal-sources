@@ -1,0 +1,114 @@
+# ===================================================================
+# US/KS-BOTA -- Kansas Board of Tax Appeals (BOTA)
+# Published Decisions & Orders (case_law)
+# ===================================================================
+# The Kansas Board of Tax Appeals (BOTA, formerly the Court of Tax Appeals /
+# COTA) is the independent quasi-judicial agency that adjudicates all Kansas
+# tax appeals -- property valuation & equalization (docket suffix EQ/PV/PVX),
+# division-of-taxation income/sales/use determinations (DT), and tax-exemption
+# applications (TX/PR). Every published document decides a specific case
+# -> case_law. Distinct from US/KS-TaxRulings (Dept of Revenue guidance =
+# doctrine).
+#
+# Discovery is from one server-rendered WordPress page (no JS, no CAPTCHA, no
+# auth): https://bota.kansas.gov/decisions-orders/published-decisions/
+# It links ~25 curated decision PDFs directly under
+# /wp-content/uploads/Selected_Decisions/; the filename encodes the year,
+# docket, and tax-type suffix.
+#
+# Text layer: a few decisions are born-digital (extracted directly); most are
+# scanned images read via the OCR fallback in common.pdf_extract
+# (PyMuPDF -> pytesseract), which needs the `tesseract` binary. Public-domain
+# Kansas state works (government-edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/KS-BOTA"
+  country: "US"
+  name: "Kansas Board of Tax Appeals — Decisions & Orders"
+  url: "https://bota.kansas.gov/decisions-orders/published-decisions/"
+  description: |
+    Published / selected decisions and orders of the Kansas Board of Tax
+    Appeals (BOTA, formerly COTA), the independent agency that adjudicates all
+    Kansas tax appeals — property valuation & equalization, division-of-taxation
+    determinations, and tax-exemption applications = case_law. Discovered from
+    one server-rendered WordPress page linking the decision PDFs directly; full
+    text read from the PDFs (born-digital where available, OCR for the scanned
+    majority). No JavaScript scraping, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://bota.kansas.gov/"
+  endpoints:
+    index: "https://bota.kansas.gov/decisions-orders/published-decisions/"
+    pdf_folder: "https://bota.kansas.gov/wp-content/uploads/Selected_Decisions/"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/KS-BOTA/{filename-stem})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Docket parsed from the filename (e.g. '2004-3806', '2010-8538')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (tax-type label + docket + stage)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (born-digital or OCR-extracted)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision year as ISO date (YYYY-01-01), parsed from the filename"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Kansas state tax adjudications)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Published decisions and orders of the Kansas Board of Tax Appeals are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery parses the single server-rendered WordPress page at
+    bota.kansas.gov/decisions-orders/published-decisions/ (~25 curated
+    decisions), each an <a href> to a PDF under
+    /wp-content/uploads/Selected_Decisions/. Docket, tax type, and year are
+    parsed from the filename.
+  - _type is case_law for all documents (tax-tribunal adjudications).
+  - Text layer: a few decisions are born-digital and extract directly; most are
+    scanned images (0 text layer) and require the OCR fallback in
+    common.pdf_extract, gated on the `tesseract` binary. A <200-char guard skips
+    any PDF that still yields no text.
+  - The FULL docket corpus (beyond the ~25 curated) is behind the Grails/JSP
+    search app at kansas.gov/bota-search/ ("COTA-Search") — a form-POST search
+    whose result rows link the order PDFs; enumerating it is a follow-up.

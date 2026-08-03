@@ -1,0 +1,121 @@
+# ===================================================================
+# US/TN-TaxRulings -- Tennessee Department of Revenue Letter Rulings
+# ===================================================================
+# Official redacted Letter Rulings of the Tennessee Department of
+# Revenue: written interpretations applying Tennessee tax law to a
+# specific taxpayer's facts, published openly for informational use.
+# The "Tax Rulings" library on tn.gov organizes rulings into one HTML
+# page per tax type
+# (tn.gov/revenue/tax-resources/legal-resources/tax-rulings/{type}.html);
+# each page is a server-rendered rich-text widget whose body holds the
+# ruling links HTML-entity-encoded. After unescaping, every ruling is an
+# anchor to a public PDF under a stable path
+# (tn.gov/content/dam/tn/revenue/documents/rulings/{category}/{num}.pdf).
+# Full text lives only in the PDF, extracted via the shared OOM-hardened
+# pdf_extract helper. No JavaScript, no CAPTCHA, no auth. Public-domain
+# Tennessee state-government works (government edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/TN-TaxRulings"
+  country: "US"
+  name: "Tennessee Department of Revenue — Letter Rulings"
+  url: "https://www.tn.gov/revenue/tax-resources/legal-resources/tax-rulings.html"
+  description: |
+    Redacted Letter Rulings published by the Tennessee Department of
+    Revenue — the Department's written interpretation and application of
+    Tennessee tax law to a specific set of facts furnished by a taxpayer
+    (Tenn. Code Ann. Sec. 67-1-109). Organized into one HTML page per tax
+    type (sales & use, franchise & excise, business, etc.); each ruling's
+    full text is read from its public PDF
+    (tn.gov/content/dam/tn/revenue/documents/rulings/{category}/{num}.pdf).
+    No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.tn.gov"
+  endpoints:
+    index: "/revenue/tax-resources/legal-resources/tax-rulings.html"
+    tax_type_page: "/revenue/tax-resources/legal-resources/tax-rulings/{type}.html"
+    document: "/content/dam/tn/revenue/documents/rulings/{category}/{number}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/TN-TaxRulings/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "ruling_number"
+      description: "TN letter-ruling number (e.g. '00-41', '13-23')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "tax_type"
+      description: "Readable tax-type label (Sales & Use Tax, Franchise & Excise Tax, ...)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "category"
+      description: "URL category folder (sales, fae, business, misc, ...)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (ruling number + subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the ruling, extracted from the published PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the ruling body or the YY- number prefix"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Tennessee state tax guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Redacted Letter Rulings of the Tennessee Department of Revenue are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The Tax Rulings library is a Drupal/AEM site with one rich-text page
+    per tax type; ruling anchors are HTML-entity-encoded in the page body
+    and only appear after html.unescape(). The scraper unescapes each
+    tax-type page, regexes out every rulings/.../*.pdf anchor, dedups by
+    URL, and reads the ruling number + subject from the anchor text.
+  - Full text lives only in the PDF; extraction uses the shared
+    common.pdf_extract helper (OOM-hardened pdfplumber -> pypdf -> OCR).
+    A <200-char guard skips the rare image-only/empty scan.
+  - date is parsed from the ruling body (month-name date near the top)
+    when present, else derived from the YY- prefix of the ruling number
+    (YY<=30 -> 20YY, else 19YY).
+  - Type is doctrine: letter rulings are interpretive government guidance,
+    not adjudications of a contested case.
+  - Public-domain Tennessee state-government data.

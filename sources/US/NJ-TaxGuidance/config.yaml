@@ -1,0 +1,116 @@
+# ===================================================================
+# US/NJ-TaxGuidance -- New Jersey Division of Taxation, interpretive guidance
+# ===================================================================
+# The NJ Division of Taxation's official published interpretive tax
+# guidance = doctrine: Technical Bulletins (TBs, the Division's published
+# interpretation of the law/regulations/policy on a tax topic) and Letter
+# Rulings (LRs, written determinations applying the law to a specific
+# taxpayer's facts, published as guidance for like-situated taxpayers).
+# Both are public, born-digital PDFs on nj.gov, listed on two uniform
+# 5-column server-rendered index pages. Full text is extracted from each
+# PDF via the shared OOM-hardened pdf_extract helper. No auth, no CAPTCHA.
+# Distinct from US/NJ-Courts (Tax Court case_law) and US/NJ-Legislation
+# (statutes). Public-domain NJ state-government works (government edicts).
+# ===================================================================
+
+source:
+  id: "US/NJ-TaxGuidance"
+  country: "US"
+  name: "New Jersey Division of Taxation — Technical Bulletins & Letter Rulings"
+  url: "https://www.nj.gov/treasury/taxation/tech-pubs.shtml"
+  description: |
+    Official interpretive tax guidance published by the New Jersey Division
+    of Taxation. Technical Bulletins (TBs) set out the Division's
+    interpretation of the law, regulations, and policy on a given tax
+    topic; Letter Rulings (LRs) are written determinations applying the
+    law/regulations/policy to a specific taxpayer's facts (binding only on
+    the recipient, but published as guidance for like-situated taxpayers).
+    Enumerated from two server-rendered index pages (tech-pubs.shtml,
+    letterrulings-pubs.shtml). ~110 born-digital PDFs.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.nj.gov/treasury/taxation/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NJ-TaxGuidance/{filename-stem})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "doc_no"
+      description: "Document number (e.g. TB-117, LR: 2017-2-SUT)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "kind"
+      description: "Guidance kind (Technical Bulletin | Letter Ruling)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "tax_type"
+      description: "Tax type (Corporation Business Tax, Sales and Use Tax, ...)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (issuer + kind + doc number + subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the guidance document, extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601, YYYY-MM-01 from the index 'YYYY Mon')"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — New Jersey state tax guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Technical Bulletins and Letter Rulings of the NJ Division of Taxation are official state-government works published for public inspection, in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Two server-rendered index pages under www.nj.gov/treasury/taxation/ list
+    the documents in a uniform 5-column table: tech-pubs.shtml (Technical
+    Bulletins) and letterrulings-pubs.shtml (Letter Rulings). Each row:
+    [0] doc number + <a href> PDF, [1] title, [2] tax type, [3] "YYYY Mon"
+    issue date, [4] blank.
+  - The scraper parses every row carrying a /pubs/ PDF link (skipping the
+    boilerplate disclaimer link), resolves the PDF URL against the index
+    page, downloads the born-digital PDF, and extracts text via
+    common.pdf_extract (pdfplumber -> pypdf; no OCR needed). A <200-char
+    guard skips the rare unreadable file.
+  - date is derived from the index "YYYY Mon" column (-> YYYY-MM-01); the
+    precise issue date also appears in the PDF body header.
+  - Type is doctrine: TBs and LRs are interpretive guidance, not
+    adjudications. NJ Tax Court case_law is covered by US/NJ-Courts;
+    statutes by US/NJ-Legislation.
+  - Public-domain NJ state-government data.

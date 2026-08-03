@@ -1,0 +1,127 @@
+# ===================================================================
+# US/AL-TaxTribunal -- Alabama Tax Tribunal (Decisions & Orders)
+# ===================================================================
+# Full text of the decisions and orders of the Alabama Tax Tribunal —
+# Alabama's independent, executive-branch quasi-judicial tribunal
+# (created by the Alabama Taxpayer Fairness Act, Act 2014-146, operative
+# Oct 1 2014; successor to the Administrative Law Division of the Alabama
+# Department of Revenue, whose decisions back to the 1980s the Tribunal
+# also publishes). It hears appeals of tax and other matters administered
+# by the Alabama Department of Revenue and by self-administered counties
+# and municipalities — individual & corporate income tax, sales & use
+# tax, business privilege tax, financial institution excise tax, ad
+# valorem tax, withholding, penalties, motor-vehicle and mandatory
+# liability insurance matters, etc. Disputes are between taxpayers and
+# the Revenue Department (or a local taxing authority), so the corpus is
+# case_law.
+#
+# The Tribunal publishes every final decision on a WordPress site under a
+# custom "decisions" post type. The WP REST API
+# (/wp-json/wp/v2/decisions) lists all ~1,930 decisions newest-first with
+# the docket number (title), the entered date, taxonomy terms
+# (decision-type, appeal-type, decision-category) and the canonical page
+# link. Each decision page carries a single "Download PDF" button
+# (Elementor button-link) pointing at the born-digital text-layer PDF of
+# the opinion/order. No JavaScript-gated content, no CAPTCHA, no auth.
+# Public-domain Alabama government works (government-edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/AL-TaxTribunal"
+  country: "US"
+  name: "Alabama Tax Tribunal — Decisions"
+  url: "https://www.taxtribunal.alabama.gov/decisions/"
+  description: |
+    Decisions and orders of the Alabama Tax Tribunal, Alabama's
+    independent quasi-judicial tribunal (operative 2014; successor to the
+    Department of Revenue Administrative Law Division, with decisions back
+    to the 1980s) for appeals of tax matters administered by the Alabama
+    Department of Revenue and self-administered local taxing authorities
+    (income, sales/use, business privilege, financial institution excise,
+    ad valorem, withholding, penalty and related taxes; taxpayer v. the
+    Revenue Department). Listed via the site's WordPress REST API; each
+    decision links a born-digital text-layer PDF of the opinion/order.
+    No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "wp_rest"
+  base_url: "https://www.taxtribunal.alabama.gov"
+  endpoints:
+    index: "/wp-json/wp/v2/decisions"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/AL-TaxTribunal/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Tribunal docket number (e.g. '25-0066-LP'), from the post title"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "case_name"
+      description: "Case caption / taxpayer name parsed from the PDF body"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Full caption (taxpayer, docket, decision type)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Entered date (ISO 8601), from the WP post date / 'Entered' line"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Alabama tribunal decision)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Alabama Tax Tribunal are official quasi-judicial government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery uses the WordPress REST API at
+    /wp-json/wp/v2/decisions?per_page=100&page=N (newest-first). The
+    response gives id, slug, post date (= the decision's entered date),
+    docket number (title), the canonical /decisions/{slug}/ link and the
+    decision-type / appeal-type / decision-category taxonomy term IDs,
+    resolved to labels via the matching /wp-json/wp/v2/<taxonomy>
+    endpoints. X-WP-Total ~1,930.
+  - Each decision page exposes one "Download PDF" button — an Elementor
+    anchor (class contains "elementor-button-link") whose href is the
+    born-digital text-layer PDF under /wp-content/uploads/. The scraper
+    fetches the page, grabs that anchor's href, downloads the PDF and
+    extracts text via common.pdf_extract (~1 req/s).
+  - case_name (taxpayer) is parsed from the PDF body (the text before
+    "Taxpayer,"); date falls back to the WP post date.
+  - Public-domain Alabama state government data.

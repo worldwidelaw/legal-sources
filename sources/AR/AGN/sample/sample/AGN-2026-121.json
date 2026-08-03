@@ -1,0 +1,23 @@
+{
+  "_id": "AGN-2026-121",
+  "_source": "AR/AGN",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-02T20:07:08.422243+00:00",
+  "title": "Programas de Construcción de Viviendas. Gestión. Periodo 2017-2022. Ministerio del Interior, Obras Públicas y Vivienda (MIOPyV). Ministerio de Desarrollo Territorial y Hábitat (MDTyH)",
+  "text": "ALCANCE DEL EXAMEN 2.1. Enfoque En términos de las Normas de Control Externo de la Gestión Gubernamental (Resolución 186/2016 AGN), el enfoque de la auditoría es a procesos atento que se intenta conocer y evaluar los sistemas diseñados e implementados por los entonces MIOPyV y MDTyH para gestionar los Programas de Construcción de Viviendas. 2.2. Alcance El trabajo se realizó de conformidad con las Normas de Control Externo Gubernamental aprobadas por las Resoluciones 26/2015 AGN y 186/2016 AGN, dictadas en virtud de las facultades conferidas por el artículo 119, inciso d) de la Ley 24.156. El período de auditoría abarca desde el 01/01/2017 al 31/12/2022 sin perjuicio de la consideración de los hechos posteriores relevantes. Las tareas de campo se desarrollaron entre noviembre de 2023 y noviembre de 2024. Aplicados los procedimientos previstos por la Resolución 198/2018 AGN, fue incorporado un objetivo de auditoría relativo a la implementación y seguimiento de la Meta 11.1 del ODS 11. Por último, en función de lo establecido en la Disposición 62/2022 AGN que aprueba la incorporación en los planes de trabajo de las auditorías de cumplimiento y/o gestión, un objetivo sobre la aplicación de la Ley 27.499, referida a la capacitación obligatoria en género para todas las personas que se desempeñan en la función pública en los tres poderes del Estado Nacional, si bien no se definió un objetivo específico de auditoría, se aplicaron los procedimientos a efectos de determinar el estado de situación en la organización auditada y expedirse al respecto.",
+  "date": "2026-05-21",
+  "url": "https://www.agn.gob.ar/Informe-121-2026",
+  "pdf_url": "https://webagnapi.agn.gob.ar/sites/default/files/informes/2026-121-Informe.pdf",
+  "ano": 2026,
+  "resolucion": 121,
+  "actuacion": "227/2023",
+  "fecha_acta": "2026-05-21",
+  "periodo_auditado": "2017-01-01 / 2022-12-31",
+  "organismo_auditado_ids": [
+    "672",
+    "2516"
+  ],
+  "tipo_de_auditoria_ids": [
+    "51"
+  ]
+}

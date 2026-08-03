@@ -1,0 +1,116 @@
+# ===================================================================
+# US/WY-SBOE -- Wyoming State Board of Equalization (SBOE)
+# Board Decisions & Orders (case_law)
+# ===================================================================
+# The Wyoming State Board of Equalization is the constitutional full-time board
+# that hears and decides all Wyoming state/local tax appeals -- Department of
+# Revenue determinations on sales/use, mineral/severance and ad valorem
+# valuation, plus appeals from County Boards of Equalization on property-tax
+# valuation. Every published document decides a specific case -> case_law.
+#
+# Discovery is from two server-rendered HTML tables (no JS, no CAPTCHA, no
+# auth): 18_opinions.html ("Recent Board Decisions") and 18_proc_orders.html
+# ("Procedural Orders"). Each <tr> ships Petitioner, decision Date, and the
+# Docket No. as an <a href="images/....PDF"> link. The dominant filename
+# pattern is images/docket_no_{YYYYNN}.PDF.
+#
+# NOTE on the host: the HTTPS certificate is name-invalid, so this scraper
+# talks plain HTTP (http://taxappeals.state.wy.us/) with verify=False.
+#
+# OCR REQUIRED: the decision PDFs are scanned images with no text layer, so
+# full text is extracted via the OCR fallback in common.pdf_extract
+# (PyMuPDF -> pytesseract), which needs the `tesseract` binary.
+# Public-domain Wyoming state-government works (government-edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/WY-SBOE"
+  country: "US"
+  name: "Wyoming State Board of Equalization — Board Decisions & Orders"
+  url: "http://taxappeals.state.wy.us/"
+  description: |
+    Published Board Decisions & Orders of the Wyoming State Board of
+    Equalization (the constitutional board adjudicating Wyoming sales/use,
+    mineral/severance, and ad valorem property-tax appeals from the Department
+    of Revenue and County Boards of Equalization = case_law), plus its
+    Procedural Orders. Discovered from two server-rendered HTML listing tables;
+    full text read from the scanned decision PDFs via OCR. No JavaScript
+    scraping, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "http://taxappeals.state.wy.us/"
+  endpoints:
+    opinions: "http://taxappeals.state.wy.us/18_opinions.html"
+    proc_orders: "http://taxappeals.state.wy.us/18_proc_orders.html"
+    document_root: "http://taxappeals.state.wy.us/images/"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/WY-SBOE/{filename-stem})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Docket parsed from the row / filename (e.g. '2025-26', '2024-30')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (doc kind + docket + petitioner)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision, OCR-extracted from the scanned PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601) from the row's Date cell (fallback: docket year)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Wyoming state tax adjudications)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions and orders of the Wyoming State Board of Equalization are official Wyoming state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery parses two server-rendered HTML tables (18_opinions.html =
+    Board Decisions, 18_proc_orders.html = Procedural Orders); each <tr>
+    supplies Petitioner, decision Date ("Month D, YYYY"), and the Docket No.
+    linked to a PDF under images/. Dedup is by resolved PDF URL.
+  - _type is case_law for all documents (SBOE adjudications and orders).
+  - Host: the HTTPS cert is name-invalid, so the scraper uses plain HTTP with
+    verify=False.
+  - CAVEAT — OCR REQUIRED: the decision PDFs are scanned images (0 text layer);
+    full text is extracted via the OCR fallback in common.pdf_extract, gated on
+    the `tesseract` binary. A <200-char guard skips any PDF that still yields no
+    text. OCR of the largest decisions is capped at 50 pages by the shared
+    extractor. Launch on a vantage with tesseract; budget for OCR slowness
+    across the ~1,150-document corpus.

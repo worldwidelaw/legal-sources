@@ -1,0 +1,16 @@
+{
+  "_id": "US/NM-TaxRulings/100-94-01-b2c8fe38",
+  "_source": "US/NM-TaxRulings",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-30T15:09:34.563101+00:00",
+  "slug": "100-94-01-b2c8fe38",
+  "ruling_number": "100-94-01",
+  "ruling_type": "Ruling",
+  "tax_category": "100-Tax Administration Act",
+  "issuer": "New Mexico Taxation and Revenue Department",
+  "title": "New Mexico TRD Ruling 100-94-1 Record Retention--CD ROM application",
+  "text": "Ruling 100-94-1\nIssued: October 25, 1994\nEffective: October 25, 1994\nRevised: December 5, 2008, correction, as indicated by brackets\nA ruling has been requested concerning the applicability of certain provisions of the Tax\nAdministration Act to the following facts:\nX, a business in New Mexico, stores accounting and other records on CD-\nROM media, using computer scanning technology. The resulting CD-ROM files are\nin unalterable form. The CD-ROM files are available for computer display and for\nhard-copy printing. The printed documents are identified as copies but are otherwise\nindistinguishable from the originals. The back-up copies of the CD-ROM disks are\nmade and originals documents are destroyed. The process is standardized as a\nregular business practice across the company's divisions and facilities.\nX requests a ruling on the acceptability of CD-ROM disks as the media for accounting and\nother documents for tax compliance and audit purposes. X also asks how long it should retain\nrecords for state tax purposes.\nSection 7-1-10 NMSA 1978 states in part:\nA. Every person required by the provisions of any statute administered\nby the department to keep records and documents and every taxpayer shall maintain\nbooks of account or other records in a manner that will permit the accurate\ncomputation of state taxes or provide information required by the statute under\n[which] he is required to keep records....\nUnder the provisions of Section 7-1-10 NMSA 1978, assuming that all relevant records are\nstored, X's proposed method of record keeping is acceptable because the documents will be kept in\na manner that will permit the accurate computation of state taxes.\nThe Tax Administration Act sets no time requirement for taxpayer retention of books of\naccount or other records. The Department has no rule on this question. However, Section 7-1-18\nNMSA 1978 sets out time limits on the Department's ability to assess tax asserted to be due.\nDepending upon a taxpayer's situation, the Department may assess unpaid taxes for a period of up to\nten years.",
+  "url": "https://klvg4oyd4j.execute-api.us-west-2.amazonaws.com/prod/PublicFiles/34821a9573ca43e7b06dfad20f5183fd/b2c8fe38-97c1-4f43-bc46-45837d2bc30a/100-94-01.pdf",
+  "date": "2013-12-19",
+  "jurisdiction": "US-NM"
+}

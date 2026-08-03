@@ -1,0 +1,120 @@
+# ===================================================================
+# US/NM-TaxDecisions -- New Mexico Taxation and Revenue Department
+# Decisions & Orders (hearing-officer adjudicatory decisions)
+# ===================================================================
+# Written Decisions and Orders issued by an Administrative Hearings
+# Office hearing officer resolving a taxpayer's protest of an assessment
+# or denial -- adjudications of a contested case, so the corpus is
+# case_law. Published at tax.newmexico.gov/all-nm-taxes/tax-decisions-orders/.
+# The page embeds the same "RealFile" (rtsclients.com) file-browser
+# widget used by US/NM-TaxRulings (same accountGUID, different
+# folder/widget). The folder tree and files are served by a public JSON
+# API (GetWidgetFiles). The root holds one subfolder per year
+# (1994..present); each year folder holds the decision PDFs, named like
+# "25-04 Raymond Merrick.pdf" (decision number + taxpayer caption). Full
+# text lives only in the born-digital PDF, extracted via the shared
+# OOM-hardened pdf_extract helper. No JavaScript scraping, no CAPTCHA, no
+# auth. Public-domain New Mexico state-government works.
+# ===================================================================
+
+source:
+  id: "US/NM-TaxDecisions"
+  country: "US"
+  name: "New Mexico Taxation and Revenue Department — Decisions & Orders"
+  url: "https://www.tax.newmexico.gov/all-nm-taxes/tax-decisions-orders/"
+  description: |
+    Decisions and Orders issued by a New Mexico Administrative Hearings Office
+    hearing officer adjudicating a taxpayer's protest of a Taxation and Revenue
+    Department assessment or denial. The full text of each decision is read
+    from its born-digital PDF, served by the RealFile file-browser widget that
+    backs the official Decisions & Orders page. Year-partitioned, 1994 to
+    present. No JavaScript scraping, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "json_widget"
+  base_url: "https://klvg4oyd4j.execute-api.us-west-2.amazonaws.com/prod"
+  endpoints:
+    list: "/GetWidgetFiles"
+    document: "/PublicFiles/{accountGUID}/{fileId}/{fileName}"
+  params:
+    accountGUID: "34821a9573ca43e7b06dfad20f5183fd"
+    widgetId: "be24c963-0ff1-4a56-b188-dbc2ee378313"
+    rootFolderId: "8224075e-df4f-429b-8ca4-d1d7992afe4a"
+    publicTokenGUID: "0f69200a-5699-48e6-a041-ce3d1324140c"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NM-TaxDecisions/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Decision & Order number, parsed from the file name (e.g. '25-04')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "case_name"
+      description: "Taxpayer caption, parsed from the file name"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Decision title (D&O number + caption)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Decision & Order, extracted from the published PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Posting date (ISO 8601), from the widget 'uploaded' timestamp (falls back to the year folder)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — New Mexico state tax adjudications)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions and Orders of the New Mexico Taxation and Revenue Department / Administrative Hearings Office are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Same RealFile (rtsclients.com) widget pattern as US/NM-TaxRulings:
+    GET .../prod/GetWidgetFiles?widgetId=&folderId=&rootFolderId=
+        &accountGUID=&publicTokenGUID= returns the folder tree. The scraper
+    walks year folders (1994..present), dedups files by fileId, and downloads
+    each PDF from .../prod/PublicFiles/{accountGUID}/{fileId}/{fileName}.
+  - Full text lives only in the PDF; extraction uses the shared
+    common.pdf_extract helper (OOM-hardened pdfplumber -> pypdf -> OCR).
+    A <200-char guard skips the rare image-only/empty scan.
+  - The decision number and taxpayer caption are parsed from the file name
+    (e.g. "25-04 Raymond Merrick.pdf" -> docket 25-04, case_name
+    "Raymond Merrick").
+  - Type is case_law: these are hearing-officer adjudications of a contested
+    case, distinct from the TRD interpretive Rulings (US/NM-TaxRulings,
+    doctrine).
+  - Public-domain New Mexico state-government data.

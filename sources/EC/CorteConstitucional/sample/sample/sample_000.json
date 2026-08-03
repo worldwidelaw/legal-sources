@@ -1,0 +1,19 @@
+{
+  "_id": "EC-CC-9779",
+  "_source": "EC/CorteConstitucional",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-01T18:25:08.918715+00:00",
+  "title": "Sentencia 2701-22-EP/26",
+  "text": "La Corte tuteló el derecho al debido proceso en la garantía de la motivación en una sentencia que aceptó el recurso de apelación propuesto y declaró improcedente la acción de protección presentada en contra de un GAD por la terminación del contrato de servicios ocasionales de una mujer con discapacidad física del 40% y con licencia de maternidad. La Corte verificó que la Sala incurrió en el vicio de incongruencia frente a las partes, por no haberse pronunciado sobre el argumento relevante alegado por la accionante, relativo a la protección laboral reforzada de una persona con discapacidad, pues se enfocó únicamente en la protección laboral de mujeres en estado de embarazo, licencia por maternidad o gozando del periodo de maternidad, lo cual invisibilizó la situación de vulnerabilidad de la accionante en cuanto a su discapacidad.",
+  "date": "2026-01-22",
+  "url": "https://esacc.corteconstitucional.gob.ec/storage/api/v1/10_DWL_FL/eyJjYXJwZXRhIjogInRyYW1pdGUiLCAidXVpZCI6ICI0MzcxMmQ4MS0wYjBmLTQ5ZjktYjJlNi1mY2UyOWRjNTZiOTkucGRmIn0=",
+  "numero": "2701-22-EP/26",
+  "numero_causa": "2701-22-EP",
+  "tipo_accion": "ACCIÓN EXTRAORDINARIA DE PROTECCIÓN",
+  "materia": "Constitucional",
+  "juez": "CLAUDIA HELENA SALGADO LEVY",
+  "decision": "ACEPTAR",
+  "metadata_sentencia": "",
+  "es_novedad": false,
+  "es_relevante": false
+}

@@ -1,0 +1,66 @@
+# IE/FSPO — Financial Services and Pensions Ombudsman of Ireland (Legally Binding Decisions)
+#
+# Source: Financial Services and Pensions Ombudsman (FSPO), Ireland
+# URL: https://www.fspo.ie/complaint-outcomes/investigation-services/legally-binding-decisions/
+# Data type: case_law
+# Auth: none
+# License: PSI Licence / CC BY 4.0 (Irish public sector information)
+#
+# Statutory, legally binding decisions (FSPO Act 2017) on complaints against
+# financial service and pension providers. Anonymised, published in full as
+# born-digital PDFs, searchable by year/sector/product/conduct/outcome.
+#
+# Total: ~2,000+ decisions, 2018-present
+#
+# Access:
+#   - Listing (per year, 25/page):
+#       display.asp?dyear=YYYY&product=0&conduct=0&sector=0&outcome=0&decisionref=&mypage=N
+#   - Decision PDF: documents/{YYYY}-{NNNN}.pdf (born-digital text layer)
+#   - Full text via PyMuPDF (fitz); structured header parsed from text.
+
+source:
+  id: IE/FSPO
+  name: Financial Services and Pensions Ombudsman of Ireland (Legally Binding Decisions)
+  country: IE
+  data_types:
+    - case_law
+  url: https://www.fspo.ie/complaint-outcomes/investigation-services/legally-binding-decisions/
+  language: en
+  auth: none
+  license: cc-by-4.0
+
+license:
+  name: "PSI Licence / CC BY 4.0"
+  url: "https://www.gov.ie/en/help/re-use-of-public-sector-information/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Irish public sector information re-use framework (default CC BY 4.0)."
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: decision_ref
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - decision_ref
+    - sector
+    - product
+    - conduct
+    - outcome
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.5
+  page_size: 25
+  estimated_total: 2000
+  sample_count: 15

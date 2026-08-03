@@ -1,0 +1,122 @@
+# ===================================================================
+# US/DOI-HearingsDivision -- Departmental Cases Hearings Division (U.S. DOI, OHA)
+# ===================================================================
+# Full-text decisions of the Departmental Cases Hearings Division (formerly
+# "Hearings Division") of the U.S. Department of the Interior's Office of
+# Hearings and Appeals — the trial-level tribunal whose administrative law
+# judges hold hearings and decide contested cases arising under Interior
+# programs: Bureau of Land Management grazing decisions and trespass, Surface
+# Mining (OSM) civil-penalty and permit cases, and other public-land
+# enforcement matters. Each decision resolves a contested case -> case_law.
+# Published in the same public ISYS/Perceptive full-text search database at
+# https://www.oha.doi.gov:8080/ as US/DOI-IBLA, under IW_DATABASE="Hearings
+# Division Decisions 2000-Present". Plain HTTP GET, no auth, no CAPTCHA.
+# Federal-government works, public domain (17 U.S.C. § 105).
+# ===================================================================
+
+source:
+  id: "US/DOI-HearingsDivision"
+  country: "US"
+  name: "Departmental Cases Hearings Division — Decisions (U.S. DOI, Office of Hearings and Appeals)"
+  url: "https://www.oha.doi.gov:8080/"
+  description: |
+    Decisions of the Departmental Cases Hearings Division of the U.S.
+    Department of the Interior's Office of Hearings and Appeals, the
+    trial-level tribunal whose administrative law judges decide contested
+    cases under Interior programs — BLM grazing decisions and trespass,
+    Surface Mining (OSM) civil-penalty and permit cases, and other public-land
+    enforcement matters. Full text is read from the born-digital decision PDFs
+    served by Interior's OHA ISYS search database (oha.doi.gov:8080), queried
+    with broad seed terms, paged through, and de-duplicated by the PDF
+    filename (a descriptive party + case-reference name).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "isys_search"
+  base_url: "https://www.oha.doi.gov:8080"
+  endpoints:
+    search: "/search/?IW_FIELD_NATURAL_LANGUAGE={query}&IW_DATABASE=Hearings Division Decisions 2000-Present"
+    hit_list: "/isysquery/{guid}/{start}-{end}/list/"
+    document: "/isysquery/{guid}/{rank}/doc/{filename}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/DOI-HearingsDivision/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Interior case reference, e.g. 'ID-JFO-2020-006' (parsed from filename/body)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "file_id"
+      description: "Descriptive PDF filename stem (party + case reference)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Party caption + case reference"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision, extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), from the filename 'dtd MM-DD-YYYY' token or the body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (U.S. Government Work — 17 U.S.C. § 105)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Interior Departmental Cases Hearings Division are works of the U.S. federal government and are in the public domain under 17 U.S.C. § 105 (government edicts)."
+
+notes: |
+  - Same ISYS/Perceptive full-text portal (oha.doi.gov:8080) and identical
+    stateless GET flow as US/DOI-IBLA, with IW_DATABASE="Hearings Division
+    Decisions 2000-Present": GET /search/?IW_FIELD_NATURAL_LANGUAGE=<q>&IW_DATABASE=...
+    returns a results page carrying a server-cached query GUID and a total
+    document count; /isysquery/<GUID>/<start>-<end>/list/ pages the hits
+    (PAGE=50); each hit links its PDF at /isysquery/<GUID>/<rank>/doc/<filename>.pdf.
+    POST to /search/ 403s; GET works. The GUID persists server-side.
+  - IMPORTANT: unlike the IBLA/IBIA databases (whose PDF filename is a clean
+    reporter citation), here the filename is a DESCRIPTIVE name with spaces
+    (URL-encoded as %20) embedding the party, the Interior case reference and
+    a "dtd MM-DD-YYYY" decision date, e.g. "Western Watersheds Project
+    ID-JFO-2020-006 et al dtd 10-20-2021.pdf". The HIT regex captures up to
+    ".pdf" (not across an href quote); the filename is URL-decoded for the
+    dedup key, docket and title.
+  - Decision date is taken from the filename "dtd" token first, falling back
+    to a "Decided"/bare "Month D, YYYY" line at the top of the body.
+  - Full text lives only in the PDF; extraction uses the shared
+    common.pdf_extract helper (pdfplumber -> pypdf -> OCR), with a <200-char
+    guard for the rare image-only scan.
+  - Sibling of US/DOI-IBLA (Land Appeals merits), US/DOI-IBLA-Orders and
+    US/DOI-IBIA (Indian Appeals). Public-domain U.S. federal-government works.

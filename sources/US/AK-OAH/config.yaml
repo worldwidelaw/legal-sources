@@ -1,0 +1,125 @@
+# ===================================================================
+# US/AK-OAH -- Alaska Office of Administrative Hearings — Decisions
+# ===================================================================
+# Final decisions of the Alaska Office of Administrative Hearings
+# (OAH) — Alaska's centralized, independent administrative tribunal
+# and, by statute (AS 44.64), the state's tax court of general
+# jurisdiction. Each decision resolves a specific contested case
+# between a person and a State agency (state tax appeals,
+# permanent-fund-dividend, Medicaid, public assistance, professional
+# licensing, etc.) = case_law. AS 44.64.070 requires OAH to publish
+# its final decisions in an online electronic database. Individual
+# decisions render as server-side HTML at a deterministic sequential
+# URL (aws.state.ak.us/OAH/Decision/Display?rec={N}); no JavaScript,
+# no CAPTCHA, no auth. Public domain Alaska state government works.
+# ===================================================================
+
+source:
+  id: "US/AK-OAH"
+  country: "US"
+  name: "Alaska Office of Administrative Hearings — Decisions"
+  url: "https://aws.state.ak.us/OAH/"
+  description: |
+    Final decisions of the Alaska Office of Administrative Hearings
+    (OAH), Alaska's centralized independent administrative tribunal and
+    statutory tax court of general jurisdiction (AS 44.64). Each
+    decision resolves a specific contested case between a person and a
+    State agency — state tax appeals, permanent-fund-dividend,
+    Medicaid, public assistance, professional licensing, and other
+    agency matters — and is case_law. Enumerated by walking the
+    sequential decision-record ids at
+    aws.state.ak.us/OAH/Decision/Display?rec={N}; each decision renders
+    as server-side HTML, full text extracted by stripping site chrome.
+    OAH case numbers follow "OAH No. YY-NNNN-XXX" where the suffix
+    encodes the category (TAX, PFD, MED, etc.). No JavaScript, no
+    CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "wayback_cdx"
+  base_url: "http://web.archive.org"
+  endpoints:
+    cdx: "http://web.archive.org/cdx/search/cdx"
+    raw: "https://web.archive.org/web/{ts}id_/{url}"
+  # Live host (geo/drops foreign IPs) — the canonical decision URL, fetched
+  # through the Internet Archive which crawled the Display tree.
+  decision: "https://aws.state.ak.us/OAH/Decision/Display?rec={rec}"
+  display_prefix: "aws.state.ak.us/OAH/Decision/Display"
+
+data_model:
+  type: "case_law"
+  primary_key: "rec"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/AK-OAH/{rec})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "OAH case number (e.g. '15-0873-TAX'); null if not parseable"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "category"
+      description: "Case category from the case-number suffix (Tax, Permanent Fund Dividend, Medicaid, ...)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (OAH case number + matter)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the OAH decision (server-rendered HTML body, chrome stripped)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the decision body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Alaska state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Final decisions of the Alaska Office of Administrative Hearings are official state-government works in the public domain under the government-edicts doctrine; AS 44.64.070 mandates their online publication."
+
+notes: |
+  - Enumeration: walk rec = 1..MAX_REC (7000) against
+    aws.state.ak.us/OAH/Decision/Display?rec={N}. Gaps / empty /
+    non-decision responses are expected and skipped. A page is accepted
+    only if its body contains an OAH decision marker
+    ("OFFICE OF ADMINISTRATIVE HEARINGS" / "OAH No.") and >=400 chars.
+  - Full text: each decision renders as server-side HTML; the body is
+    extracted by removing script/style/nav/header/footer/form and
+    collapsing whitespace, then trimmed to start at
+    "BEFORE THE STATE OF ALASKA ...".
+  - case_number parsed as "OAH No. YY-NNNN-XXX"; category derived from
+    the trailing suffix (TAX, PFD, MED, DHS, ...). date prefers a real
+    "Month D, YYYY" from the decision body.
+  - VANTAGE: aws.state.ak.us (158.145.75.84) TCP-times-out on :443 from
+    many datacenter build vantages; build/launch from a VPS or
+    residential vantage that can reach the host and confirm full text.
+  - Public domain Alaska state government data.

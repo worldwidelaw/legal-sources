@@ -1,0 +1,117 @@
+# ===================================================================
+# US/WI-PSC -- Public Service Commission of Wisconsin Orders
+# ===================================================================
+# Full text of Orders (and ALJ Orders) issued by the Public Service
+# Commission of Wisconsin adjudicating utility dockets (electric,
+# natural-gas, water, telecommunications). Administrative adjudications
+# of specific dockets = case_law. Public domain (US state government
+# edict). Published openly as born-digital PDFs via the PSC Electronic
+# Records Filing (ERF) system (apps.psc.wi.gov). No authentication.
+# ===================================================================
+
+source:
+  id: "US/WI-PSC"
+  country: "US"
+  name: "Public Service Commission of Wisconsin — Orders"
+  url: "https://apps.psc.wi.gov/ERF/ERFsearch/default.aspx"
+  description: |
+    Orders and ALJ Orders issued by the Public Service Commission of
+    Wisconsin (PSC) resolving utility rate cases, certificate of
+    authority (CE/CW) applications, complaints and other dockets across
+    the electric, natural-gas, water and telecommunications industries.
+    Each Order is an administrative adjudication of a specific docket
+    (case_law). The corpus spans the early-2000s to present. Full text is
+    extracted from born-digital Order PDFs (the rare image-only scan is
+    OCR'd with Tesseract).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 5
+
+api:
+  type: "html_scraping"
+  base_url: "https://apps.psc.wi.gov"
+  endpoints:
+    search: "/ERF/ERFsearch/default.aspx"
+    viewdoc: "/ERF/ERFview/viewdoc.aspx?docid={docid}"
+    document_info: "/ERF/ERFsearch/content/documentInfo.aspx?docid={docid}"
+
+data_model:
+  type: "case_law"
+  primary_key: "psc_ref"
+  update_strategy: "upsert"
+  dedup_key:
+    - "psc_ref"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "psc_ref"
+      description: "PSC Ref# — the ERF internal document id (docid), e.g. '597228'"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Docket / Utility id, e.g. '9020-RX-186', '5-CE-156', '4480-CW-113'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "doc_type"
+      description: "Document type: 'Order' or 'ALJ Order'"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Document type plus docket and description"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "description"
+      description: "Document description from the ERF search listing"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "text"
+      description: "Full text of the Order extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Received/issued date of the Order (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Wisconsin)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "WI Public Service Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - The ERF advanced search /ERF/ERFsearch/default.aspx is an ASP.NET
+    WebForms page. A POST filtering by document type (checkbox
+    ckb_doc_type_cd$21 = "Order", $1 = "ALJ Order") and a received-date
+    window (datepicker_start/datepicker_end as M/D/YYYY) returns a
+    server-rendered HTML results table: one row per document with the
+    PSC Ref# (docid), description, document type, docket/utility id and
+    received date.
+  - The hidden __VIEWSTATE / __EVENTVALIDATION captured once from the
+    search page are reused across every window POST (static control set),
+    so fetch_all() walks the corpus one month at a time (newest first)
+    back to the ERF floor.
+  - normalize() downloads each Order PDF directly from
+    /ERF/ERFview/viewdoc.aspx?docid={docid} and extracts full text via
+    fitz/PyMuPDF (Tesseract OCR fallback for the rare image-only scan);
+    the docket number falls back to a parse of the PDF body.
+  - Public domain Wisconsin government data.

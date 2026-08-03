@@ -1,0 +1,116 @@
+# ===================================================================
+# US/LA-TaxRulings -- Louisiana Department of Revenue Policy Documents
+# ===================================================================
+# Official interpretive guidance published by the Louisiana Department
+# of Revenue (LDR), Policy Services Division: Revenue Rulings (RR),
+# redacted Private Letter Rulings (PLR), Revenue Information Bulletins
+# (RIB), Statements of Acquiescence/Nonacquiescence, Remote Sellers
+# Information Bulletins, and other Guidance Documents. The "Policies"
+# page (revenue.louisiana.gov/tax-policy/policies) is a single
+# server-rendered list with one card per document; each card links to
+# the document's public PDF on the LDR digital-asset host
+# (dam.ldr.la.gov/lawspolicies/<file>.pdf). Full text lives only in the
+# PDF, extracted via the shared OOM-hardened pdf_extract helper. No
+# JavaScript, no CAPTCHA, no auth. Public-domain Louisiana
+# state-government works (government edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/LA-TaxRulings"
+  country: "US"
+  name: "Louisiana Department of Revenue — Policy Documents (Revenue Rulings, PLRs, RIBs)"
+  url: "https://revenue.louisiana.gov/tax-policy/policies"
+  description: |
+    Revenue Rulings (RR YY-NNN), redacted Private Letter Rulings
+    (PLR YY-NNN), Revenue Information Bulletins (RIB YY-NNN), Statements
+    of Acquiescence/Nonacquiescence, Remote Sellers Information Bulletins
+    and other Guidance Documents published by the Louisiana Department of
+    Revenue, Policy Services Division — the Department's written
+    interpretation and application of Louisiana tax law. The full text of
+    each document is read from its public PDF on the LDR digital-asset
+    host (dam.ldr.la.gov/lawspolicies/<file>.pdf). No JavaScript, no
+    CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://revenue.louisiana.gov"
+  endpoints:
+    index: "/tax-policy/policies"
+    document: "https://dam.ldr.la.gov/lawspolicies/{file}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/LA-TaxRulings/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "ruling_number"
+      description: "LDR policy number (e.g. '26-011', '01-001')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "ruling_type"
+      description: "Revenue Ruling, Private Letter Ruling, Revenue Information Bulletin, etc."
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (policy type + number + subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document, extracted from the published PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the listing card or body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Louisiana state tax guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Revenue Rulings, Private Letter Rulings, Revenue Information Bulletins and other policy documents of the Louisiana Department of Revenue are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The Policies library is a single server-rendered page; each document
+    is a <div class="card download-card filterable {policy_type}
+    {tax_type} {year}"> carrying an <h4> title, a <small id="NN-NNN">
+    number, a <small> date, and an <a href> to the public PDF on
+    dam.ldr.la.gov. The scraper reads policy type / tax type / year from
+    the card class and dedups by PDF URL.
+  - Full text lives only in the PDF; extraction uses the shared
+    common.pdf_extract helper (OOM-hardened pdfplumber -> pypdf -> OCR).
+    A <200-char guard skips the rare image-only/empty scan; a few older
+    files 404 on the asset host and are skipped.
+  - date is the <small> date in the card, falling back to a month-name
+    date near the top of the body, else the year token (YY<=60 -> 20YY).
+  - Type is doctrine: these are interpretive government guidance
+    documents, not adjudications of a contested case.
+  - Public-domain Louisiana state-government data.

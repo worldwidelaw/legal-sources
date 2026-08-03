@@ -1,0 +1,22 @@
+{
+  "_id": "820_OE",
+  "_source": "EE/Riigikogu",
+  "_type": "legislation",
+  "_fetched_at": "2026-02-11T22:05:25.339869+00:00",
+  "title": "Riigikogu otsus „Ettepaneku tegemine Vabariigi Valitsusele töötada välja \nperedele suunatud maksusoodustuste pakett\"",
+  "text": "Eelnõu näeb ette anda valitsusele ülesanne töötada välja terviklik ja peresõbralik maksusoodustuste pakett, mis parandab perede, eeskätt lastega perede, majanduslikku toimetulekut, suurendab kindlustunnet ning toetab pikaajalisi ühiskondlikke eesmärke, sealhulgas Eesti demograafilise olukorra parandamist, sündimust, töö- ja pereelu ühitamist ning eluaseme kättesaadavust.",
+  "date": "2026-02-10",
+  "url": "https://www.riigikogu.ee/tegevus/eelnoud/eelnou/4015dc39-bf20-4972-95c1-525f7ae33824",
+  "uuid": "4015dc39-bf20-4972-95c1-525f7ae33824",
+  "mark": 820,
+  "draft_type": "OE",
+  "draft_type_name": "Resolution draft (Otsuse eelnõu)",
+  "status": "MENETLUSSE_VOETUD",
+  "stage": "MENETLUSSE_VOETUD",
+  "initiators": [
+    "Eesti Keskerakonna fraktsioon"
+  ],
+  "leading_committee": "Sotsiaalkomisjon",
+  "membership": 15,
+  "introduction": "Eelnõu näeb ette anda valitsusele ülesanne töötada välja terviklik ja peresõbralik maksusoodustuste pakett, mis parandab perede, eeskätt lastega perede, majanduslikku toimetulekut, suurendab kindlustunnet ning toetab pikaajalisi ühiskondlikke eesmärke, sealhulgas Eesti demograafilise olukorra parandamist, sündimust, töö- ja pereelu ühitamist ning eluaseme kättesaadavust."
+}

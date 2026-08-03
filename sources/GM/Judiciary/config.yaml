@@ -1,0 +1,96 @@
+# ═══════════════════════════════════════════════════════════════════
+# GM/Judiciary — Judiciary of The Gambia: Law Reports & Judgments
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "GM/Judiciary"
+  country: "GM"
+  name: "Judiciary of The Gambia — Law Reports & Judgments"
+  url: "https://judiciary.gov.gm/law-report"
+  description: |
+    Reported decisions of the superior courts of The Gambia (Supreme Court,
+    Court of Appeal, High Court) and the Cadi (Sharia) Appeals Panel, published
+    by the National Council for Law Reporting on judiciary.gov.gm. The site
+    hosts bound multi-case PDF volumes (The Gambia Law Reports, the Sharia Law
+    Report) which this scraper splits into individual full-text cases.
+    Language: English. Coverage: ~2002–2011 reported decisions.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://judiciary.gov.gm"
+  selectors:
+    list_page: "https://judiciary.gov.gm/law-report"
+    item_selector: "a[href$='.pdf']"
+
+data_model:
+  type: "case_law"
+  source_nature: "bulk_archive"
+  primary_key: "_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Unique case identifier (volume slug + index, or appeal number)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case name / parties"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the reported decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "court"
+      description: "Deciding court"
+      type: "string"
+      role: "reference"
+      required: false
+  secondary_fields:
+    - name: "citation"
+      description: "Appeal / suit number where available"
+    - name: "url"
+      description: "Source PDF volume URL"
+    - name: "jurisdiction"
+      description: "ISO country code (GM)"
+    - name: "language"
+      description: "Document language (en)"
+  probably_ignorable: []
+
+# ── License ──────────────────────────────────────────────────────
+license:
+  id: "pd-gov"
+  name: "Government Edict — Public Domain"
+  url: "https://judiciary.gov.gm/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Court judgments and official law reports are government edicts of The
+    Gambia and are not subject to copyright. Published by the National Council
+    for Law Reporting on the official judiciary.gov.gm domain.

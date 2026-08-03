@@ -1,0 +1,104 @@
+# ===================================================================
+# MX/PoderJudicialCampeche -- Campeche State Court Decisions
+# ===================================================================
+# The Poder Judicial del Estado de Campeche publishes full-text court
+# decisions (versiones públicas de resoluciones jurisdiccionales y
+# precedentes) via its "Sistema de Versiones Públicas" portal. ~28,000
+# decisions across Civil, Mercantil, Familiar, Penal, Oral, and other
+# matters, each a downloadable full-text PDF.
+# ===================================================================
+
+source:
+  id: "MX/PoderJudicialCampeche"
+  country: "MX"
+  name: "Campeche State Court Decisions"
+  url: "https://tribunalvirtual.poderjudicialcampeche.gob.mx/precedentes/precedentes/publico/"
+  description: |
+    Full-text court decisions (versiones públicas) from the Poder Judicial
+    del Estado de Campeche. ~28,000 decisions covering Familiar, Mercantil,
+    Penal, Oral Penal, Oral Familiar, and other matters. Accessed via the
+    public "Sistema de Versiones Públicas de Resoluciones Jurisdiccionales y
+    Precedentes" (Django + DataTables) — a server-side handler returns
+    paginated rows as JSON, and each decision's full-text PDF downloads from
+    /precedentes/precedentes/sentencias/sentenciapublica/<id>/.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1.0
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "json"
+  base_url: "https://tribunalvirtual.poderjudicialcampeche.gob.mx/precedentes/precedentes"
+  endpoints:
+    listing: "/tabla-sentencias-handler-publico-renewed/"
+    detail: "/obtener-datos-version-publica/"
+    document: "/sentencias/sentenciapublica/{id}/"
+  response_format: "json"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Unique decision identifier (MX-CAM-<id_resolucion>)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (materia, asunto, expediente)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (extracted from the public PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (null if source year is invalid)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the full-text PDF document"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "subject_area"
+      description: "Subject area / materia (Familiar, Mercantil, Penal, etc.)"
+    - name: "case_type"
+      description: "Type of proceeding / asunto"
+    - name: "ruling"
+      description: "Resolution type (Sentencia Definitiva, Interlocutoria, etc.)"
+    - name: "case_number"
+      description: "Expediente number"
+    - name: "period"
+      description: "Año judicial (e.g. '24-2025')"
+
+license:
+  name: "Mexican Federal Government Public Data"
+  url: "https://datos.gob.mx/libreusomx"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Public-version court decisions published by a Mexican state judiciary
+    as transparency obligations (versiones públicas). Mexican government
+    public information is freely reusable under the Términos de Libre Uso
+    de la Información (LIBRE USO MX); commercial use permitted with
+    attribution.

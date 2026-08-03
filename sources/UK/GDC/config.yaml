@@ -1,0 +1,87 @@
+# UK/GDC — General Dental Council — Fitness to Practise hearing determinations.
+#
+# Source: General Dental Council (GDC), the UK statutory regulator for ~120,000
+#         dentists and dental care professionals. Fitness to practise and
+#         registration cases are heard by the independent Dental Professionals
+#         Hearings Service (DPHS).
+# URL: https://www.dentalhearings.org/hearings-and-decisions/decisions
+# Data type: case_law  (UK statutory professional-regulator adjudications —
+#            distinct from UK/GMC doctors, UK/SDT solicitors, UK/BTAS barristers,
+#            UK/HCPTS health & care professions, UK/NMC nurses/midwives,
+#            UK/SocialWorkEngland).
+# Auth: none
+#
+# dentalhearings.org is a Nuxt/Vue SPA backed by a plain JSON API at
+# https://api.dentalhearings.org :
+#   * GET /Hearing?futureHearings=false&page={N} — paginated list of concluded
+#     hearings (20/page, ~630 total across ~32 pages).
+#   * GET /Hearing/{hearingId} — full detail incl. `determinationDocuments` and
+#     `chargeDocuments` arrays (each with annotationId / filename / mimeType).
+#   * The PDFs are served from public Azure blob storage:
+#     https://gdcolrlive1.blob.core.windows.net/annotationspublic/{annotationId}.
+#     Born-digital PDFs with a real text layer (no OCR): structured header
+#     (committee / hearing type / dates / name / registration number / case
+#     number / representation / fitness to practise / outcome / immediate order /
+#     committee members) followed by the numbered reasoned determination.
+# The API exposes a rolling window of published concluded hearings (older ones
+# removed under the GDC publication policy), so one run captures the current
+# window (~500-600 determinations) and re-runs accumulate (pipeline dedups on
+# _id = the stable hearingId). Determination PDFs preferred; the charge / Notice
+# of Hearing PDFs are the fallback when no determination has been published yet.
+#
+# Total: ~500-600 full-text determinations in the live window.
+
+source:
+  id: UK/GDC
+  name: General Dental Council (GDC) — Dental Professionals Hearings Service
+  country: UK
+  data_types:
+    - case_law
+  url: https://www.dentalhearings.org/hearings-and-decisions/decisions
+  language: en
+  auth: none
+  license: custom-terms
+
+license:
+  name: "Dental Professionals Hearings Service / GDC website terms (no explicit open licence stated)"
+  url: "https://www.dentalhearings.org/terms-and-conditions"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    GDC fitness-to-practise and registration-appeal determinations are public
+    professional-regulator adjudication records published by the independent
+    Dental Professionals Hearings Service under the GDC's disclosure and
+    publication policy. The site states no explicit open licence (GDC / Crown
+    copyright applies to the underlying records), so commercial re-use is
+    conservatively flagged per project policy, consistent with the sibling UK
+    professional-regulator tribunal sources (UK/GMC, UK/SDT, UK/BTAS, UK/HCPTS,
+    UK/NMC).
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: url
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - registrant
+    - registration_number
+    - profession
+    - hearing_type
+    - outcome
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.0
+  estimated_total: 550
+  sample_count: 15

@@ -1,0 +1,119 @@
+# ===================================================================
+# US/OK-LegalEthics -- Oklahoma Bar Association — Legal Ethics Opinions
+# ===================================================================
+# Advisory legal-ethics opinions issued by the Oklahoma Bar Association's
+# Legal Ethics Committee / Legal Ethics Advisory Panel interpreting the
+# Oklahoma Rules of Professional Conduct to advise LAWYERS = doctrine
+# (advisory). One continuous "Opinion No. N" series (No. 1, 1931 -> No.
+# 330+, present; cited "___ OK LEG ETH ___"). The Oklahoma Bar Association
+# is the state's INTEGRATED (mandatory/unified) bar, created by and under
+# the Supreme Court of Oklahoma -> pd-us. Distinct from US/OK-Courts,
+# US/OK-Legislation and US/OK-TaxDecisions.
+# ===================================================================
+
+source:
+  id: "US/OK-LegalEthics"
+  country: "US"
+  name: "Oklahoma Bar Association — Legal Ethics Opinions"
+  url: "https://www.okbar.org/ethics/"
+  description: |
+    Advisory legal-ethics opinions issued by the Oklahoma Bar Association's
+    Legal Ethics Committee / Legal Ethics Advisory Panel, interpreting the
+    Oklahoma Rules of Professional Conduct (and, for older opinions, the
+    predecessor Canons/Code) in response to a stated question, to advise
+    lawyers. One continuous "Opinion No. N" series running from No. 1 (1931)
+    to No. 330+ (present); finalized opinions are published in the Oklahoma
+    Bar Journal and made available free as clean HTML pages on okbar.org.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.okbar.org"
+  endpoints:
+    index: "/ethics/page/{page}/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/OK-LegalEthics/{N})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion label ('Opinion No. {N}')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion label ('Oklahoma Bar Association Legal Ethics Opinion No. {N}')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text from the born-HTML detail page (BeautifulSoup, no PDF/OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 issue date from the 'Adopted / Issued <Month DD, YYYY>' line"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Oklahoma Bar Association — Legal Ethics Committee"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-OK)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (US government edict — integrated bar advisory opinions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Oklahoma Bar Association legal-ethics opinions interpret the Oklahoma Rules of Professional Conduct. The OBA is the state's integrated (mandatory/unified) bar, created by and operating under the Supreme Court of Oklahoma, so the opinions are the work of a government-authorized body — treated as public domain under the 17 U.S.C. § 105 government-edicts rationale, consistent with the other state-bar legal-ethics sources. Published free to the public on okbar.org (and in the Oklahoma Bar Journal) with no login, paywall or terms prohibiting reuse. Commercial use permitted."
+
+notes: |
+  - Discovery: the corpus is a paginated WordPress (Beaver Builder) archive at
+    /ethics/page/{p}/ (p = 1 .. ~34, then HTTP 404). Each page links opinion
+    detail pages as /ethics/ethics-opinion-no-{N}/ (some carry a "-2" WP slug
+    collision suffix). ~329 opinions.
+  - Number: parsed from the slug (ethics-opinion-no-{N}); when a number maps to
+    more than one slug (WP "-2" suffix), the scraper fetches each candidate and
+    keeps the one with the longest text.
+  - Full text: each detail page is clean born-HTML; the opinion body lives in
+    the Beaver-Builder post-content module
+    "div.fl-module-fl-post-content .fl-module-content" -> BeautifulSoup, NO PDF,
+    NO OCR. Body opens with a standing "Oklahoma Bar Association Legal Ethics
+    Committee Advisory Opinions" header + "Opinion No. {N}. {topic}" (older) or
+    "Issued <date> QUESTION:" (newer).
+  - Title: generic "Oklahoma Bar Association Legal Ethics Opinion No. {N}".
+  - Date: "Adopted January 22, 1932" / "Issued July 3, 2013" -> YYYY-MM-DD;
+    null if absent.
+  - Type: every document is the Committee's advisory interpretation of the
+    rules governing lawyers = doctrine.
+  - Distinct from US/OK-Courts, US/OK-Legislation and US/OK-TaxDecisions.

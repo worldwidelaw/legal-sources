@@ -1,0 +1,151 @@
+# ===================================================================
+# US/OR-EthicsOpinions -- Oregon Government Ethics Commission (OGEC)
+# Advisory & Staff Opinions
+# ===================================================================
+# The published ethics guidance of the Oregon Government Ethics
+# Commission (OGEC), the state agency created under ORS chapter 244 to
+# interpret and enforce Oregon Government Ethics law, the public-meetings
+# law and lobbying regulation. The Commission issues written opinions
+# construing the standards of conduct for public officials:
+#   - Commission Advisory Opinion (ORS 244.280): binding guidance adopted
+#     by the Commission on which the requester may rely.
+#   - Staff Advisory Opinion: the Executive Director's written assessment
+#     of how the ethics laws apply to stated facts.
+# Both are the agency's written interpretation of statute = doctrine.
+# Historical corpus (issued prior to 2017) is a public SharePoint list;
+# the born-digital / scanned PDFs are served without auth. Full text via
+# the shared PDF extractor (text layer for older opinions, OCR for the
+# scanned newer ones).
+# ===================================================================
+
+source:
+  id: "US/OR-EthicsOpinions"
+  country: "US"
+  name: "Oregon Government Ethics Commission — Advisory & Staff Opinions"
+  url: "https://www.oregon.gov/ogec/public-records/Pages/advice-records.aspx"
+  description: |
+    The formal ethics guidance of the Oregon Government Ethics Commission
+    (OGEC), the state body established under ORS chapter 244 to interpret
+    and enforce the Oregon Government Ethics law (standards of conduct for
+    public officials), the public-meetings law and lobbying regulation.
+    The OGEC issues two written opinion series, each the agency's written
+    construction of the ethics statutes and therefore doctrine: Commission
+    Advisory Opinions (adopted by the Commission under ORS 244.280, binding
+    guidance) and Staff Advisory Opinions (the Executive Director's written
+    assessment). The historical corpus (issued prior to 2017, ~68 distinct
+    opinions) is published as a Microsoft SharePoint list, enumerated via
+    the public SharePoint REST API, with each opinion served as a
+    born-digital or scanned PDF under /ogec/public-records/Documents/.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "sharepoint_rest_list"
+  base_url: "https://www.oregon.gov"
+  endpoints:
+    list_items: "/ogec/public-records/_api/web/lists/getbytitle('Advisory & Staff Opinions ~ Prior to 2017')/items?$top=1000"
+    document: "/ogec/public-records/Documents/{publication_number}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/OR-EthicsOpinions/{publication_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "OGEC publication number (e.g. '16A-1003', '15S-004')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "document_type"
+      description: "Advisory Opinion | Staff Advisory Opinion"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Composed caption: 'OGEC {type} {number}: {subject/summary}'"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (PDF text layer or OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601) from the SharePoint Date Issued field"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Issuing body (Oregon Government Ethics Commission)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "topics"
+      description: "Subject-index topics aggregated across the opinion's list rows"
+      type: "array"
+      role: "metadata"
+      required: false
+    - name: "target_jurisdiction"
+      description: "The public body/jurisdiction the opinion concerns (SharePoint field)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 subdivision (US-OR)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (Oregon state government edict / public record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Advisory and staff opinions of the Oregon Government Ethics Commission are official public records of an Oregon state agency interpreting state statute (ORS chapter 244); government-edict works published by the OGEC for public use. No copyright is asserted."
+
+notes: |
+  - Index: the OGEC public-records site is Microsoft SharePoint. The
+    pre-2017 opinion corpus is a SharePoint list titled "Advisory & Staff
+    Opinions ~ Prior to 2017", enumerated in one call via the public,
+    unauthenticated SharePoint REST API (_api/web/lists/getbytitle(...)/
+    items). Each list item carries the publication number (Title), issue
+    date, opinion type and subject metadata plus an HTML "View Details"
+    anchor whose href is the opinion PDF.
+  - A single opinion is indexed under several subject rows (170 rows ->
+    ~68 distinct opinions); records are deduped by PDF href and the
+    subject topics/summaries are aggregated onto the one record.
+  - Full text: born-digital PDF text layer (older opinions) or OCR
+    (scanned newer opinions) via common.pdf_extract. A missing PDF returns
+    a 200 HTML soft-404 page; guarded by a %PDF magic check.
+  - Type code: the letter after the 2-digit year in the publication number
+    ('A' = Commission Advisory Opinion, 'S' = Staff Advisory Opinion).
+  - SCOPE NOTE: opinions issued 2017-present live in the OGEC Case
+    Management System (apps.oregon.gov/OGEC/CMS/Advice). Its metadata is
+    public via a DataTables endpoint (/OGEC/CMS/DataTables/PublicAdvice,
+    ~414 records) but the opinion FILES are served only through an
+    authenticated File/GetFile route (HTTP 500 for anonymous callers), so
+    full text is not retrievable there. This source therefore covers the
+    fully-public pre-2017 born-digital/scanned corpus. Revisit if OGEC
+    exposes the CMS files publicly.

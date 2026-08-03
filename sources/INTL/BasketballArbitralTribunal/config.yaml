@@ -1,0 +1,45 @@
+fetch:
+  list_url: https://about.fiba.basketball/en/services/basketball-arbitral-tribunal/bat-awards
+  method: html_index_pdf
+  rate_limit_seconds: 2
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: case_number
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: >
+    FIBA Basketball Arbitral Tribunal (BAT) awards — international sports
+    arbitration resolving financial and contractual disputes in basketball
+    (players, coaches, agents vs. clubs). Born-digital, full-text award PDFs.
+    The server-rendered listing exposes the most-recent awards; the full
+    historical corpus (case numbers reach BAT 2037/23, est. ~1,000-1,500 awards
+    since 2007) is paginated via the Contentful gateway as a follow-up.
+  id: INTL/BasketballArbitralTribunal
+  language: en
+  name: FIBA Basketball Arbitral Tribunal (BAT) Awards
+  url: https://about.fiba.basketball/en/services/basketball-arbitral-tribunal/bat-awards
+license:
+  name: "FIBA Terms (All Rights Reserved)"
+  url: "https://about.fiba.basketball/en/footer/terms-conditions"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Awards are openly published (non-confidential per BAT Rules) but FIBA asserts copyright, all rights reserved. Commercial use restricted."

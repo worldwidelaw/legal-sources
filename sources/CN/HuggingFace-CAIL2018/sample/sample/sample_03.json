@@ -1,0 +1,25 @@
+{
+  "_id": "CAIL2018-first_stage_train-0fcbc89565a9610a",
+  "_source": "CN/HuggingFace-CAIL2018",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-28T00:29:10.603324+00:00",
+  "title": "李某某强奸案",
+  "text": "永顺县人民检察院指控，2014年1月11日，被告人李某某与彭某某（另案处理）在永顺县塔卧镇“新都宾馆”一房间内先后强行与被害人邹某某发生性关系。就此，公诉机关举出了如下证据：抓获经过、户籍证明、通话清单、情况说明；辨认笔录；现场勘验笔录及现场照片；物证检验报告及物证鉴定书；证人刘某甲、刘某乙、刘某丙、邹某某、杜某某的证言；被告人李某某的供述和辩解；视听资料。该院认为，被告人李某某伙同他人使用暴力和语言威胁的手段，在永顺县塔卧镇“新都宾馆”房间内分别强行与被害人邹某某发生性关系，其行为已触犯了《中华人民共和国刑法》××××第（四）项之规定，犯罪事实清楚，证据确实、充分，应当以××追究其刑事责任。在共同犯罪中，被告人李某某起主要作用，系主犯，对其应结合《中华人民共和国刑法》××××、××××、××之规定，予以处罚。",
+  "date": "2018-01-01",
+  "url": "https://huggingface.co/datasets/china-ai-law-challenge/cail2018",
+  "split": "first_stage_train",
+  "relevant_articles": [
+    236
+  ],
+  "accusation": [
+    "强奸"
+  ],
+  "criminals": [
+    "李某某"
+  ],
+  "imprisonment_months": 144.0,
+  "punish_of_money": 0.0,
+  "death_penalty": false,
+  "life_imprisonment": false,
+  "sentence_summary": "有期徒刑144.0个月"
+}

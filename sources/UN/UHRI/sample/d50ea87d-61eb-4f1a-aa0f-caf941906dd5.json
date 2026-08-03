@@ -1,0 +1,44 @@
+{
+  "_id": "d50ea87d-61eb-4f1a-aa0f-caf941906dd5",
+  "_source": "UN/UHRI",
+  "_type": "doctrine",
+  "_fetched_at": "2026-07-06T11:14:47.968052+00:00",
+  "title": "CEDAW/C/IRQ/CO/8/REV.1 — Recommendations — Iraq",
+  "text": "Women’s access to justice\n18. The Committee recommends that the State Party:(a) Implement an intersectional, survivor-centred and trauma-informed legal framework to prosecute rape and other forms of gender-based violence as stand-alone crimes, ensuring that shame is shifted to the perpetrator, that the voices and narratives of the women survivors as the chief protagonists of justice are amplified, that protection from stigma and reprisals is guaranteed, and that investigations are not retraumatizing, including through the adoption of the Global Code of Conduct for Gathering and Using Information about Systematic and Conflict-related Sexual Violence (Murad Code), and amend the Yazidi Survivors Act to:\n(i) Strengthen access to justice, simplify access to rights and ensure gender-sensitive and non-stigmatizing procedures;\n(ii) Establish effective monitoring and align implementation of the Act with the Basic Principles and Guidelines on the Right to a Remedy and Reparation for Victims of Gross Violations of International Human Rights Law and Serious Violations of International Humanitarian Law, in the spirit of the Rome Statute of the International Criminal Court and the Policy on Gender-based Crimes of the Office of the Prosecutor of the Court, as revised in 2023;\n(b) Take the necessary steps towards the abolition of the death penalty and, ad interim, establish a formal and permanent moratorium on executions and produce gender-disaggregated data on death penalty cases.",
+  "date": "2026-05-20",
+  "url": "https://uhri.ohchr.org/en/search-human-rights-recommendations",
+  "symbol": "CEDAW/C/IRQ/CO/8/REV.1",
+  "body": "CEDAW",
+  "annotation_type": "Recommendations",
+  "countries": [
+    "Iraq"
+  ],
+  "themes": [
+    "Violence against women",
+    "Rule of law & impunity",
+    "Administration of justice & fair trial",
+    "Legal & institutional reform",
+    "Death penalty",
+    "Access to justice & remedy",
+    "Constitutional & legislative framework",
+    "International criminal & humanitarian law (including crimes against humanity, war crimes, genocide)",
+    "Sexual & gender-based violence",
+    "Data collection & research"
+  ],
+  "sdgs": [
+    "16 - PEACE, JUSTICE AND STRONG INSTITUTIONS",
+    "17 - PARTNERSHIPS FOR THE GOALS",
+    "5 - GENDER EQUALITY",
+    "5.2 - End all violence against and exploitation of women",
+    "17.18 - Enhance availability of reliable data",
+    "16.3 - Promote the rule of law and access to justice for all"
+  ],
+  "affected_persons": [
+    "Women & girls"
+  ],
+  "regions": [
+    "Asia-Pacific"
+  ],
+  "upr_cycle": null,
+  "upr_recommending_country": []
+}

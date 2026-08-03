@@ -1,0 +1,112 @@
+# ===================================================================
+# US/TX-JudicialEthics -- Texas Committee on Judicial Ethics
+#                         — Judicial Ethics Opinions (1975 to Present)
+# ===================================================================
+# Written opinions issued by the Committee on Judicial Ethics of the
+# State Bar of Texas Judicial Section, interpreting the Texas Code of
+# Judicial Conduct in response to written inquiries from judges. The
+# General Counsel of the Office of Court Administration (OCA) publishes
+# them = doctrine. Born-digital PDF full text (real text layer, no OCR,
+# no CAPTCHA, no auth). Public-domain Texas State government works.
+# Distinct from US/TX-EthicsOpinions (the executive Texas Ethics
+# Commission, which covers public officials/candidates/lobbying); this
+# is the JUDICIAL-branch committee advising judges under the Code of
+# Judicial Conduct.
+# ===================================================================
+
+source:
+  id: "US/TX-JudicialEthics"
+  country: "US"
+  name: "Texas Committee on Judicial Ethics — Judicial Ethics Opinions"
+  url: "https://www.txcourts.gov/publications-training/judicial-ethics-bench-books/judicial-ethics-opinions.aspx"
+  description: |
+    Judicial ethics opinions of the Committee on Judicial Ethics of the
+    State Bar of Texas Judicial Section. The Committee renders written
+    opinions interpreting the Texas Code of Judicial Conduct in response
+    to written inquiries from judges; the General Counsel of the Office
+    of Court Administration publishes the entire corpus (Opinion No. 1,
+    1975, to present) in a single born-digital PDF compilation. Each
+    opinion (numbered "N", with occasional letter suffixes such as 53A)
+    states the topic, QUESTION, ANSWER and DISCUSSION. The full text is
+    extracted directly from the PDF text layer (no OCR) and split
+    per-opinion.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "pdf_compilation"
+  base_url: "https://www.txcourts.gov/"
+  endpoints:
+    compilation: "media/678096/JudicialEthicsOpinions.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/TX-JudicialEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number (e.g. 1, 100, 53A)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Texas Judicial Ethics Opinion No. {number} ({year}): {topic}"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (topic / QUESTION / ANSWER / DISCUSSION), from the born-digital PDF compilation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Opinion year as ISO 8601 (YYYY-01-01), parsed from the header parenthesis"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (Texas State Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Texas judicial ethics opinions are official public records published by the Office of Court Administration of the Texas Judicial Branch for public use with no copyright restriction."
+
+notes: |
+  - Enumeration + full text: the entire corpus is one born-digital PDF
+    compilation ("TEXAS JUDICIAL ETHICS OPINIONS 1975 to Present") at
+    media/678096/JudicialEthicsOpinions.pdf. Extract the text layer,
+    strip the running "Texas Judicial Ethics Opinions / Page N of NNN"
+    footer, then split on the per-opinion "Opinion No. N (YYYY)" headers
+    (each alone on its own line; inline citations to other opinions are
+    excluded). ~289 opinions, Nos. 1-296 (1975-2013).
+  - The ALL-CAPS topic caption printed just above each header is taken as
+    the opinion title; the year in the header parenthesis is the date.
+  - txcourts.gov is behind an Azure Front Door WAF that 403s datacenter /
+    non-residential IPs. The scraper tries the live host first (desktop-
+    Chrome UA) and falls back to the latest Internet-Archive Wayback
+    capture of the same PDF (refreshed several times a year) so the corpus
+    stays reachable and current from any vantage.
+  - Type: every document is a written opinion construing the Code of
+    Judicial Conduct = doctrine.

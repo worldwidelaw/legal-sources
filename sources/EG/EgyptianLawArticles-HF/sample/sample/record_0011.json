@@ -1,0 +1,13 @@
+{
+  "_id": "EG/EgyptianLawArticles-HF:art-١١",
+  "_source": "EG/EgyptianLawArticles-HF",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-09T06:19:56.726262+00:00",
+  "title": "Egyptian Civil Code — Article ١١",
+  "text": "(1) الحالة المدنية للأشخاص وأهليتهم يسري عليها قانون الدولة التي\nينتمون إليها بجنسيتهم ومع ذلك ففي التصرفات المالية التي تعقد في مصر\nوتترتب آثارها فيها إذا كان أحد الطرفين أجنبياً ناقص الأهلية وكان نقص\nالأهلية يرجع إلي سبب فيه خفاء لا يسهل علي الطرف الآخر تبينه فإن\nهذا السبب لا يؤثر في أهليته.\n(٢) أما النظام القانوني للأشخاص الاعتبارية الأجنبية من شركات\nوجمعيات ومؤسسات وغيرها فيسري عليه قانون الدولة التي اتخذت فيها\nهذه الأشخاص مراكز إدارتها الرئيسي الفعلي. ومع ذلك فإذا باشرت\nنشاطها الرئيسي في مصر فان القانون المصري هو الذي يسري.\n\n--- English Translation ---\n\nThe status and the legal capacity of persons are\ngoverned by the law of the country to which they belong\nby reason of their nationality. If, however, in a\ntransaction of a pecuniary nature, concluded and having\neffect in Egypt, one of the parties is a foreigner without\nlegal capacity and such lack of capacity is due to a\nreason that is not apparent and which cannot be easily\ndetected by the other party, this reason has no effect on\nhis legal capacity.\nThe legal status of foreign juristic persons such as\ncompanies, associations, foundations, or others, is\nsubject to the law of the State in whose territory such\njuristic persons have established their actual principal\nseat of management. If, however, a juristic person\ncarries on its principal activities in Egypt, Egyptian law\nwill be applied.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/TawasulAI/egyptian-law-articles",
+  "article_number": "١١",
+  "language": "ar",
+  "jurisdiction": "EG"
+}

@@ -1,0 +1,121 @@
+# ===================================================================
+# US/GA-PSC -- Georgia Public Service Commission Orders
+# ===================================================================
+# Full text of Orders issued by the Georgia Public Service Commission
+# (GPSC) adjudicating utility dockets (electric, natural-gas,
+# telecommunications, transportation). Administrative adjudications of
+# specific dockets = case_law. Public domain (US state government edict).
+# Published openly as born-digital Word (.docx) / PDF documents via the
+# public FACTS JSON API (services.psc.ga.gov). No authentication.
+# ===================================================================
+
+source:
+  id: "US/GA-PSC"
+  country: "US"
+  name: "Georgia Public Service Commission — Orders"
+  url: "https://psc.ga.gov/facts-advanced-search/"
+  description: |
+    Orders issued by the Georgia Public Service Commission (GPSC)
+    resolving utility rate cases, certificate / territorial-service
+    transfers, Integrated Resource Plans, Universal Service Fund
+    disbursements, complaints and other proceedings across the electric,
+    natural-gas, telecommunications and transportation industries. Each
+    Order is an administrative adjudication of a specific docket
+    (case_law). Full text is extracted from born-digital Microsoft Word
+    (.docx) and PDF documents served by the public FACTS API (the rare
+    image-only scan is OCR'd with Tesseract).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 5
+
+api:
+  type: "rest_json"
+  base_url: "https://services.psc.ga.gov/api/v1/External/Public"
+  endpoints:
+    document_filter: "/Post/DocumentFilingsFilter"
+    download_file: "/Get/Document/DownloadFile/{documentId}/{attachmentId}"
+    document_page: "https://psc.ga.gov/search/facts-document/?documentId={documentId}"
+    swagger: "https://services.psc.ga.gov/swagger/v1/swagger.json"
+
+data_model:
+  type: "case_law"
+  primary_key: "document_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "document_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "document_id"
+      description: "FACTS internal document id (documentId), e.g. '204959'"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "GPSC docket number (docketId), e.g. '56001', '55356'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "industry"
+      description: "Industry classification: Electric, Gas, Telecommunications, Transportation"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Order label plus docket and description"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "description"
+      description: "Document description from the FACTS filing listing"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "text"
+      description: "Full text of the Order extracted from born-digital .docx / PDF attachments"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Filed / issued date of the Order (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Georgia)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "GA Public Service Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - The GPSC "FACTS" system exposes a PUBLIC no-auth JSON API at
+    services.psc.ga.gov/api/v1/External/Public (Swagger at
+    /swagger/v1/swagger.json).
+  - POST /Post/DocumentFilingsFilter with documentDescription="ORDER" and
+    a filingDateFrom/filingDateTo window returns the document filings whose
+    description contains "ORDER"; paginate via startIndex (1-based offset) /
+    pageSize against totalCount. We keep only Commission-issued Orders
+    (companyName contains "GPSC"), dropping party-filed proposed orders.
+  - Each result carries documentId, docketId (== the public GPSC docket
+    number), companyName, description and filedDate (= real issue date).
+  - The server-rendered document detail page
+    /search/facts-document/?documentId={id} lists the attachment download
+    links (Get/Document/DownloadFile/{documentId}/{attachmentId}).
+  - normalize() downloads every attachment and combines de-duplicated text
+    (an Order is frequently attached as both .docx and identical .pdf);
+    .docx text is parsed from word/document.xml, PDFs via fitz/PyMuPDF
+    (Tesseract OCR fallback for the rare image-only scan).
+  - Public domain Georgia government data.

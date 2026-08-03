@@ -1,0 +1,81 @@
+# UK/ScotHousingChamber — First-tier Tribunal for Scotland (Housing and Property
+# Chamber) — Written Decisions.
+#
+# Source: Scottish Courts and Tribunals Service (SCTS) — Housing and Property
+#         Chamber of the First-tier Tribunal for Scotland
+# URL: https://www.housingandpropertychamber.scot/previous-tribunal-decisions
+# Data type: case_law  (Scotland / GB-SCT — not covered by UK/CaseLaw, which is
+#            England & Wales + reserved UK tribunals only)
+# Auth: none
+#
+# The Housing and Property Chamber determines disputes between landlords,
+# tenants, homeowners, property factors and letting agents under Scottish
+# housing law. Its binding "Written Decisions (with Statement of Reasons)" are
+# published on the SCTS subsite as born-digital PDFs, organised into six
+# server-rendered Drupal listings (one per application category), each a
+# paginated HTML table (?page=N).
+#
+# Total: ~21,000+ written decisions, 2017-present
+#   Evictions & civil proceedings ~16,300 | Other private tenancy ~2,300 |
+#   Property factors ~1,400 | Right of entry ~960 | Rent ~640 | Letting agents ~340
+#
+# Access:
+#   - Discover the six category listing URLs from /previous-tribunal-decisions
+#     (hard-coded canonical paths as fallback).
+#   - Page each listing table, parse Chamber ref + hearing date + PDF href(s).
+#   - Download each born-digital PDF, extract full text with PyMuPDF (pdfplumber/
+#     pypdf fallback). No OCR needed.
+
+source:
+  id: UK/ScotHousingChamber
+  name: First-tier Tribunal for Scotland (Housing and Property Chamber) — Written Decisions
+  country: UK
+  data_types:
+    - case_law
+  url: https://www.housingandpropertychamber.scot/previous-tribunal-decisions
+  language: en
+  auth: none
+  license: custom-terms
+
+jurisdictions:
+  - code: GB-SCT
+    scope: full
+
+license:
+  name: "SCTS terms (personal / in-house use only)"
+  url: "https://www.housingandpropertychamber.scot/terms-and-conditions"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    Site terms state material "may be reproduced without formal permission or
+    charge for personal or in-house use only" — commercial re-use restricted;
+    flagged per project policy. Underlying tribunal decisions are public records
+    (Crown copyright / SCTS).
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: case_ref
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - case_ref
+    - category
+    - category_label
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.5
+  page_size: 10
+  estimated_total: 21000
+  sample_count: 15

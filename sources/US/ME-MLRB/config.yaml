@@ -1,0 +1,114 @@
+# ===================================================================
+# US/ME-MLRB -- Maine Labor Relations Board — Decisions
+# ===================================================================
+# Published decisions of the Maine Labor Relations Board (MLRB),
+# Maine's independent quasi-judicial labor-relations agency:
+# prohibited practice complaints (PPC), unit determination /
+# representation cases (UD/UC/UDA/IR), interpretive rulings, and the
+# Superior Court / Law Court appeals reviewing those Board orders.
+# Each decision resolves a specific contested case = case_law. The
+# "Decision Summaries" page lists every case from May 2006 to the
+# present with a direct link to the full decision PDF; full text is
+# extracted from those PDFs. No JavaScript, no CAPTCHA, no auth.
+# Public-domain Maine state government works.
+# ===================================================================
+
+source:
+  id: "US/ME-MLRB"
+  country: "US"
+  name: "Maine Labor Relations Board — Decisions"
+  url: "https://www.maine.gov/mlrb/decisions/summaries"
+  description: |
+    Published decisions of the Maine Labor Relations Board (MLRB),
+    Maine's independent quasi-judicial agency adjudicating public- and
+    private-sector labor disputes — prohibited practice complaints,
+    unit determination / representation cases, interpretive rulings —
+    together with the Superior Court and Law Court appellate decisions
+    reviewing those Board orders. Enumerated from the server-rendered
+    "Decision Summaries" index (every case from May 2006 to present);
+    each <h2> entry links the full decision PDF, whose text is
+    extracted via the shared PDF extractor. case_law.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_pdf"
+  base_url: "https://www.maine.gov"
+  endpoints:
+    summaries: "/mlrb/decisions/summaries"
+
+data_model:
+  type: "case_law"
+  primary_key: "case_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/ME-MLRB/{case_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "MLRB case number, e.g. '26-PPC-03' / '24-UD-02' / 'AP-24-40' (court appeal)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "category"
+      description: "Case type from the number (Prohibited Practice Complaint, Unit Determination, Interpretive Ruling, Court Appeal, ...)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (case number + party caption)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision, extracted from the linked PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision / issuance date (ISO 8601), parsed from the index heading (fallback: PDF 'Issued:' line)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Maine state agency & court decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Maine Labor Relations Board and the reviewing Maine courts are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Enumeration: GET https://www.maine.gov/mlrb/decisions/summaries and
+    walk each <h2> heading that carries a .pdf link. The page lists
+    every Board / hearing-examiner case "from May 2006 through the
+    present" plus the court appeals of those cases (~98 decisions).
+  - Full text: each heading links a decision PDF under
+    /mlrb/sites/maine.gov.mlrb/files/inline-files/{CASE}.pdf; text is
+    extracted via common.pdf_extract (opendataloader/pdfplumber, OCR
+    fallback for the rare scanned older PDF).
+  - case_number derived from the PDF filename (e.g. "26-PPC-03",
+    "AP-24-40"); category from the type token; date from the leading
+    "Month D, YYYY" in the heading (fallback: PDF "Issued:" line).
+  - Cases earlier than May 2006 are reachable only via the site's
+    Google-CSE search box (browser-bound) and are out of scope for this
+    deterministic index scrape.
+  - Public-domain Maine state government data.

@@ -293,8 +293,16 @@ class OPCWDecisionsScraper(BaseScraper):
     # Main fetch logic
     # ------------------------------------------------------------------ #
 
-    def fetch_all(self, sample: bool = False) -> Generator[dict, None, None]:
-        """Fetch all OPCW decisions with full text."""
+    def fetch_all(self) -> Generator[dict, None, None]:
+        """Fetch all OPCW decisions with full text.
+
+        Yields RAW document dicts (with a "text" field added) per the
+        BaseScraper contract — the framework's bootstrap()/update() then
+        call normalize() and stream each record to data/records.jsonl.
+        Sample mode is signalled via the instance flag ``_sample_mode`` so
+        the framework can call fetch_all() with no arguments.
+        """
+        sample = getattr(self, "_sample_mode", False)
         # Step 1: Discover session URLs
         logger.info("Discovering CSP session URLs...")
         csp_urls = self._get_csp_session_urls()
@@ -356,16 +364,16 @@ class OPCWDecisionsScraper(BaseScraper):
                 continue
 
             d["text"] = text
-            record = self.normalize(d)
             count += 1
-            yield record
+            # Yield RAW; BaseScraper.bootstrap() normalizes + writes to storage.
+            yield d
 
         logger.info("Done: %d records yielded, %d skipped, %d total decisions",
                      count, skipped, len(all_decisions))
 
     def fetch_updates(self, since) -> Generator[dict, None, None]:
         """Fetch recent decisions."""
-        yield from self.fetch_all(sample=False)
+        yield from self.fetch_all()
 
     def test_connection(self) -> bool:
         """Quick connectivity test."""
@@ -392,26 +400,13 @@ def main():
     sample = "--sample" in args
     command = args[0]
 
-    if command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-        count = 0
-        for record in scraper.fetch_all(sample=sample):
-            count += 1
-            out_path = sample_dir / f"{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            text_len = len(record.get("text", ""))
-            logger.info("[%d] %s — %d chars", count, record["doc_symbol"], text_len)
-        print(f"\nBootstrap complete: {count} records saved to sample/")
-
-    elif command in ("update", "bootstrap-fast"):
-        since = args[1] if len(args) > 1 else "2020-01-01"
-        count = 0
-        for record in scraper.fetch_updates(since):
-            count += 1
-            print(json.dumps(record, ensure_ascii=False))
-        logger.info("Update complete: %d records", count)
+    # All fetch paths delegate to BaseScraper.bootstrap(), which normalizes,
+    # validates and streams every record to data/records.jsonl (the file the
+    # fleet ingests). In sample mode it stops early and also writes sample/.
+    if command in ("bootstrap", "bootstrap-fast", "update"):
+        scraper._sample_mode = sample
+        stats = scraper.bootstrap(sample_mode=sample, sample_size=15)
+        print(json.dumps(stats, ensure_ascii=False, indent=2, default=str))
 
     else:
         print(f"Unknown command: {command}")

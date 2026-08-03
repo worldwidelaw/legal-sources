@@ -1,0 +1,108 @@
+# ===================================================================
+# US/CT-TaxRulings -- Connecticut Department of Revenue Services Rulings
+# ===================================================================
+# Official Rulings of the Connecticut Department of Revenue Services
+# (DRS): the Department's written interpretation of how Connecticut tax
+# law applies to a described set of facts, published openly on the ct.gov
+# portal. The DRS "Rulings" library is organized into one server-rendered
+# index page per year
+# (portal.ct.gov/DRS/Publications/Rulings/{YEAR}/{YEAR}-Rulings); each
+# year index links that year's individual ruling pages, and each ruling
+# page renders the full text as HTML inside a <div class="content"> block
+# (an <h1> caption + FACTS / ISSUE / DISCUSSION / RULING paragraphs).
+# No JavaScript, no CAPTCHA, no auth. Public-domain Connecticut
+# state-government works (government edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/CT-TaxRulings"
+  country: "US"
+  name: "Connecticut Department of Revenue Services — Rulings"
+  url: "https://portal.ct.gov/DRS/Publications/Rulings"
+  description: |
+    Rulings issued by the Connecticut Department of Revenue Services
+    (DRS) — the Department's written interpretation of how Connecticut
+    tax law applies to a described set of facts (sales & use tax,
+    corporation business tax, admissions tax, etc.). Published openly on
+    the ct.gov portal, organized into one index page per year
+    (1990-present); each ruling's full text is read directly from the
+    <div class="content"> body of its page. No JavaScript, no CAPTCHA,
+    no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://portal.ct.gov"
+  endpoints:
+    year_index: "/DRS/Publications/Rulings/{year}/{year}-Rulings"
+    ruling: "/DRS/Publications/Rulings/{year}/ruling-{number}-{slug}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CT-TaxRulings/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "ruling_number"
+      description: "DRS ruling number (e.g. '95-1', '2016-4')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (ruling number + subject, from the page <h1>)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the ruling, from the page <div class=content> body"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the ruling body or the ruling number's year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Connecticut state tax guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Rulings of the Connecticut Department of Revenue Services are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The DRS Rulings library is a ct.gov portal (server-rendered) with one
+    year-index page per year. The scraper walks years newest->oldest,
+    regexes the ruling-page links from each year index, dedups by URL,
+    and reads each ruling page. ~255 rulings online (1990-2019).
+  - Full text is HTML, not PDF: each ruling page renders the body inside
+    <div class="content"> (cut at </main>); tags are stripped and
+    entities decoded. A retired/"Oops" page (HTTP 200 with an error body)
+    or a <200-char page is skipped.
+  - The ruling number and title come from the page <h1>; date is parsed
+    from the ruling body (month-name date) when present, else derived
+    from the ruling number's year (Jan 1 fallback).
+  - Type is doctrine: DRS rulings are interpretive government guidance,
+    not adjudications of a contested case.
+  - Public-domain Connecticut state-government data.

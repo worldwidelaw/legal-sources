@@ -4,7 +4,7 @@
 **URL**: https://caselaw.nationalarchives.gov.uk
 **Data types**: Case law
 **Auth**: None
-**License**: Open Justice Licence
+**License**: Open Justice Licence v2.0 for ordinary reuse; separate TNA computational-analysis licence required for LDH-style indexing/search
 
 ## Overview
 
@@ -23,7 +23,19 @@ Covers UKSC, EWCA, EWHC, and tribunals. Full text in Akoma Ntoso XML.
 
 ## License
 
-[Open Justice Licence](https://caselaw.nationalarchives.gov.uk/open-justice-licence) — open access to court judgments.
+> ⚠️ **Computational analysis restricted.** The Open Justice Licence v2.0 permits
+> many ordinary uses of Find Case Law judgments, including legal research,
+> citation, education, journalism, and some commercial product use. The National
+> Archives requires a separate licence for computational analysis, including bulk
+> programmatic searching, text mining/NLP, AI or LLM use, and building
+> semantic/vector-search indexes.
+
+[Open Justice Licence v2.0](https://caselaw.nationalarchives.gov.uk/open-justice-licence) — ordinary judgment re-use.
+
+[When you need permission](https://caselaw.nationalarchives.gov.uk/when-you-need-permission) — TNA guidance requiring a separate licence for computational analysis and bulk programmatic searching.
+
+Treat this source as **licence-scope pending for Legal Data Hunter indexing and
+retrieval** until a separate TNA computational-analysis licence is confirmed.
 
 ## Usage
 

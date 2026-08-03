@@ -1,0 +1,98 @@
+# ===================================================================
+# MX/PoderJudicialTabasco -- Tabasco State Court Decisions
+# ===================================================================
+# The Tribunal Superior de Justicia del Estado de Tabasco publishes
+# public-version court decisions (versiones públicas de sentencias)
+# for both trial courts (primera instancia) and appellate chambers
+# (segunda instancia / fallos) via a public AJAX search portal.
+# Each result links to a full-text PDF of the decision.
+# ===================================================================
+
+source:
+  id: "MX/PoderJudicialTabasco"
+  country: "MX"
+  name: "Poder Judicial del Estado de Tabasco"
+  url: "https://tsj-tabasco.gob.mx/sentencias-version-publica/"
+  description: |
+    Public-version court decisions from the Tribunal Superior de Justicia
+    del Estado de Tabasco. Covers appellate judgments (Tocas/Amparos in
+    Civil and Penal matters across the Salas) and trial-court sentencias
+    from the juzgados of all municipios. Accessed via the public
+    "Consulta de Versiones Públicas de Sentencias" AJAX portal; full text
+    extracted from the per-decision PDF.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html-ajax"
+  base_url: "https://tsj-tabasco.gob.mx"
+  endpoints:
+    ajax: "/resources/php/ajax.php"
+    juzgados: "/resources/php/funciones.php?funcion=juzgado2&Id={municipio}"
+  response_format: "html"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Unique decision identifier (derived from PDF filename)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (toca/expediente, court, subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (fecha de fallo / fecha de sentencia)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the public-version PDF document"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "court"
+      description: "Sala (appellate) or Juzgado (trial court) name"
+    - name: "instance"
+      description: "Court instance: 1ra (trial) or 2da (appellate)"
+    - name: "subject_area"
+      description: "Subject area (Civil, Penal)"
+    - name: "case_type"
+      description: "Type of proceeding (Toca, Amparo, or trial-court actos)"
+    - name: "ruling"
+      description: "Resolution type (e.g. sentencia definitiva)"
+    - name: "case_number"
+      description: "Toca or expediente number"
+
+license:
+  name: "Open government data"
+  url: "https://datos.gob.mx"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Public-version judicial decisions published by a Mexican state court for transparency."

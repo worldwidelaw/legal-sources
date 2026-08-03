@@ -1,0 +1,99 @@
+# ===================================================================
+# US/GA-AGOpinions -- Georgia Attorney General Legal Opinions
+# ===================================================================
+# Full text of official and unofficial legal opinions issued by the
+# Georgia Attorney General. These are official state legal
+# interpretations (doctrine). Published openly as HTML at
+# law.georgia.gov. No authentication required. Public government data.
+# ===================================================================
+
+source:
+  id: "US/GA-AGOpinions"
+  country: "US"
+  name: "Georgia Attorney General Legal Opinions"
+  url: "https://law.georgia.gov/opinions"
+  description: |
+    Official and unofficial legal opinions issued by the Georgia
+    Department of Law (Office of the Attorney General). Official
+    opinions are binding on state agencies; unofficial opinions are
+    advisory. Each answers a legal question posed by a public official
+    and constitutes an authoritative interpretation of Georgia law.
+    Full text extracted from the official HTML pages at law.georgia.gov.
+    Coverage runs ~2000-present via paginated HTML listings.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://law.georgia.gov"
+  endpoints:
+    official_list: "/opinions/official?page={page}"
+    unofficial_list: "/opinions/unofficial?page={page}"
+    opinion: "/opinions/{year}-{n}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "opinion_number"
+      description: "Official AG opinion number (e.g., '2024-1')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_kind"
+      description: "'official' or 'unofficial'"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Opinion title (Georgia Attorney General Official/Unofficial Opinion No. ...)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "syllabus"
+      description: "One-line summary (the opinion's 'Re' line)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "text"
+      description: "Full text of the opinion extracted from the HTML"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Georgia)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Georgia Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Official + unofficial AG opinions at law.georgia.gov/opinions
+  - Paginated HTML listings /opinions/official?page=N and
+    /opinions/unofficial?page=N; opinion links are /opinions/{YYYY-N}
+  - Each opinion is a plain HTML page (real text, no PDF/OCR)
+  - Document text captured from the record-header (date / To / Re
+    syllabus) through the </main> body; tags stripped, entities decoded
+  - Coverage ~2000-present; public domain Georgia government data

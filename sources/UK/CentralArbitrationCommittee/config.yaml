@@ -1,0 +1,102 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — UK Central Arbitration Committee (CAC) Decisions
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/CentralArbitrationCommittee"
+  country: "UK"
+  name: "Central Arbitration Committee (CAC) — Decisions"
+  url: "https://www.gov.uk/government/organisations/central-arbitration-committee"
+  description: |
+    Decisions of the Central Arbitration Committee (CAC), the permanent
+    independent statutory body under the Trade Union and Labour Relations
+    (Consolidation) Act 1992. The CAC adjudicates statutory trade-union
+    recognition and derecognition applications, disclosure-of-information for
+    collective-bargaining complaints, and European Works Council / information
+    & consultation disputes. Each case produces one or more binding, reasoned
+    decisions (Acceptance, Validity, Bargaining unit, Form of ballot,
+    Declaration of recognition, Method, etc.) — quasi-judicial case law.
+    ~936 case pages, each with 1+ decision documents. Discovery via GOV.UK
+    Search API (filter_format=decision + organisation=central-arbitration-committee);
+    full text from born-digital decision PDF(s) (older cases) or html_publication
+    documents (newer cases) attached to each Content Store entry.
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+  endpoints:
+    search:
+      path: "/api/search.json"
+      method: "GET"
+      description: "GOV.UK Search API; filter_format=decision + filter_organisations=central-arbitration-committee"
+    content:
+      path: "/api/content/{path}"
+      method: "GET"
+      description: "GOV.UK Content Store API; decision attachment URLs (PDF or html_publication) under details.attachments"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "content_id"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "content_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "ref_url"
+      type: "string"
+      role: "reference"
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Open Government Licence v3.0"
+  url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Crown copyright; GOV.UK content published under OGL v3.0."
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~936 CAC case pages, each with 1+ reasoned decision documents
+  - Full text from born-digital decision PDF(s) (assets.publishing.service.gov.uk,
+    extracted via common.pdf_extract) for older cases, or html_publication
+    Content Store body (stripped to text) for newer cases; per-case documents concatenated
+  - 'application-progress' tracker attachments are skipped (status, not decision)
+  - No authentication required
+  - Sibling of the GOV.UK finder scrapers UK/ET, UK/RPT, UK/FTT-Tax,
+    UK/TrafficCommissioner, UK/SchoolsAdjudicator, UK/CertificationOfficer,
+    UK/TeachingRegulationAgency

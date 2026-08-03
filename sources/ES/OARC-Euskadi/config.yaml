@@ -1,0 +1,71 @@
+source:
+  id: ES/OARC-Euskadi
+  name: Órgano Administrativo de Recursos Contractuales de la Comunidad Autónoma de Euskadi (OARC / KEAO)
+  url: https://opendata.euskadi.eus/contenidos/ds_juridicos/resoluciones_oarc/opendata/documentacion.json
+  country: ES
+  region: País Vasco / Euskadi
+  jurisdiction: ES-PV
+  data_types:
+    - case_law
+  auth:
+    type: none
+  license:
+    name: "CC BY 4.0"
+    url: "https://creativecommons.org/licenses/by/4.0/"
+    commercial_use: true
+    attribution_required: true
+    share_alike: false
+    no_derivatives: false
+    notes: "Gobierno Vasco open data (opendata.euskadi.eus) — CC BY 4.0."
+
+api:
+  catalog: https://opendata.euskadi.eus/contenidos/ds_juridicos/resoluciones_oarc/opendata/documentacion.json
+  pdf_host: https://www.contratacion.euskadi.eus
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  max_workers: 4
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+    - name: "resolution_number"
+      type: "string"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 2011-01-01
+    end: present
+  document_types:
+    - Resolución OARC
+  estimated_count: 2595+
+
+notes: |
+  Órgano Administrativo de Recursos Contractuales de la Comunidad Autónoma de
+  Euskadi (OARC / KEAO). Resolves the "recurso especial en materia de
+  contratación" for Basque contracting authorities. Gobierno Vasco open-data
+  catalogue returns the whole dataset as one JSON dump; each record's dataXML
+  carries the exact born-digital PDF url (full text via PyMuPDF, no OCR).
+  Open-data sibling of ES/TARCJA-Andalucia; alternative to the captcha-blocked
+  central tribunal ES/TACRC.

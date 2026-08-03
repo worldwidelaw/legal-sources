@@ -1,0 +1,22 @@
+{
+  "_id": "AGN-2026-123",
+  "_source": "AR/AGN",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-02T20:07:08.421047+00:00",
+  "title": "Gestión de la Coordinación General de Vigilancia y Alerta de Residuos y Contaminantes COGVARC). Plan nacional de control de residuos e higiene de alimentos de origen vegetal y animal (CREHA vegetal-animal). Gestión 2023 y 2024. SENASA",
+  "text": "Objetivo general y objetivos específicos Objetivo General Examen de la Gestión del organismo auditado en la elaboración, implementación y ejecución de medidas sanitarias desarrolladas en el marco del Plan de Control de Residuos, Contaminantes e Higiene en Alimentos (CREHA) a fin de minimizar los riesgos y contar con un nivel adecuado de protección al consumidor de alimentos para consumo humano tanto de origen vegetal como animal.",
+  "date": "2026-05-21",
+  "url": "https://www.agn.gob.ar/Informe-123-2026",
+  "pdf_url": "https://webagnapi.agn.gob.ar/sites/default/files/informes/2026-123-Informe.pdf",
+  "ano": 2026,
+  "resolucion": 123,
+  "actuacion": "7/2025",
+  "fecha_acta": "2026-05-21",
+  "periodo_auditado": "2023-01-01 / 2024-12-31",
+  "organismo_auditado_ids": [
+    "1192"
+  ],
+  "tipo_de_auditoria_ids": [
+    "51"
+  ]
+}

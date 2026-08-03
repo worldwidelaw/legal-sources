@@ -1,0 +1,13 @@
+{
+  "_id": "EG/EgyptianLawArticles-HF:art-1",
+  "_source": "EG/EgyptianLawArticles-HF",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-09T06:19:56.721892+00:00",
+  "title": "Egyptian Civil Code — Article 1",
+  "text": "(۱) تسرى النصوص التشريعية على جميع المسائل التي تتناولها هذه\nالنصوص في لفظها أو في فحواها.\n(۲) فإذا لم يوجد نص تشريعي يمكن تطبيقه، حكم القاضي بمقتضى\nالعرف، فإذا لم يوجد، فبمقتضى مبادئ الشريعة الإسلامية، فإذا لم يوجد\nفبمقتضى مبادئ القانون الطبيعي وقواعد العدالة.\n\n--- English Translation ---\n\nProvisions of laws govern all matters to which these\nprovisions apply in letter or spirit.\nIn the absence of a provision of a law that is applicable,\nthe Judge will decide according to custom and in the\nabsence of custom in accordance with the principles of\nMoslem Law.\nIn the absence of such principles, the Judge will apply the\nprinciples of natural justice and the rules of equity.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/TawasulAI/egyptian-law-articles",
+  "article_number": "1",
+  "language": "ar",
+  "jurisdiction": "EG"
+}

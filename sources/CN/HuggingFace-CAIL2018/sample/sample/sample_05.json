@@ -1,0 +1,25 @@
+{
+  "_id": "CAIL2018-first_stage_train-4e6baab295945c7f",
+  "_source": "CN/HuggingFace-CAIL2018",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-28T00:29:10.603423+00:00",
+  "title": "张某故意伤害案",
+  "text": "大名县人民检察院起诉书指控，2014年3月25日9时许，被告人张某在自家庄某处因故与本村席某甲发生争执，并引起打架，在打架过程中，被告人张某用撬杠将席某甲及其儿子席某丙、席某丁打伤。经大名县公安局物证鉴定室鉴定，席某甲的伤情为轻伤二级，席某丙、席某丁的伤情为轻微伤。为证实上述指控，公诉机关当庭宣读和出示的证据有被害人陈述、被告人供述、证人证言、法医学人体损伤程度鉴定书、现场勘查笔录及照片等。公诉机关认为，被告人张某故意伤害他人身体致人轻伤，其行为已触犯《中华人民共和国刑法》××××之规定，犯罪事实清楚，证据确实、充分，应当以××追究其刑事责任。\r\n附带民事诉讼原告人及其诉讼代理人对本案的定性不持异议，要求被告人赔偿因其行为给附带民事诉讼原告人造成的各项经济损失共计120960.6元，提交了医疗费、鉴定费票据、诊断证明书、住院病历等相关证据。",
+  "date": "2018-01-01",
+  "url": "https://huggingface.co/datasets/china-ai-law-challenge/cail2018",
+  "split": "first_stage_train",
+  "relevant_articles": [
+    234
+  ],
+  "accusation": [
+    "故意伤害"
+  ],
+  "criminals": [
+    "张某"
+  ],
+  "imprisonment_months": 21.0,
+  "punish_of_money": 0.0,
+  "death_penalty": false,
+  "life_imprisonment": false,
+  "sentence_summary": "有期徒刑21.0个月"
+}

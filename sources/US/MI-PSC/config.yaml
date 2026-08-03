@@ -1,0 +1,94 @@
+# ===================================================================
+# US/MI-PSC -- Michigan Public Service Commission Orders (E-Dockets)
+# ===================================================================
+# Full text of Orders issued by the Michigan Public Service Commission
+# adjudicating utility dockets (electric, natural-gas, water,
+# telecommunications, video/cable). Administrative adjudications of
+# specific cases = case_law. Public domain (US state government edict).
+# Published openly through the public MPSC E-Dockets Salesforce
+# Experience Cloud community (mi-psc.my.site.com). No auth.
+# ===================================================================
+
+source:
+  id: "US/MI-PSC"
+  country: "US"
+  name: "Michigan Public Service Commission — Orders"
+  url: "https://mi-psc.my.site.com/s/"
+  description: |
+    Orders issued by the Michigan Public Service Commission (MPSC)
+    resolving utility rate cases, certificate/approval applications,
+    complaints, rulemakings and other dockets across the electric,
+    natural-gas, water, telecommunications and video/cable industries.
+    Each Order is an administrative adjudication of a specific case by the
+    Commission (case_law). The corpus is the "Order" filing type within the
+    MPSC E-Dockets public record (~13K Orders of ~180K total filings).
+    Full text is extracted from born-digital Order PDFs served by the
+    community's guest-accessible Salesforce file endpoint (the rare
+    image-only scan is OCR'd with Tesseract).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+  max_workers: 4
+
+api:
+  type: "salesforce_community_aura"
+  base_url: "https://mi-psc.my.site.com"
+  endpoints:
+    sitemap_index: "/s/sitemap.xml"
+    filing_sitemap: "/s/sitemap-filing__c-{n}.xml"
+    aura: "/s/sfsites/aura"
+    document_download: "/sfc/servlet.shepherd/version/download/{versionId}?operationContext=S1"
+  notes: |
+    Discovery via the public SEO sitemap (Filing__c object). Per-filing
+    metadata via the guest Aura endpoint
+    (RecordUiController.getRecordsWithFields, batched 50, aura.token="null");
+    keep Filing_Type__c=="Order" & Public__c==true & File_Link_Internal__c set.
+    fwuid/app-load id parsed live from /s/ and rotated on 401.
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "_source"
+      type: "string"
+      required: true
+    - name: "_type"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "case_number"
+      type: "string"
+      required: false
+    - name: "filing_number"
+      type: "string"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true
+
+license:
+  name: "U.S. Government Work (state edict / public domain)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Orders of a U.S. state administrative agency are government edicts and
+    are not subject to copyright (public domain).

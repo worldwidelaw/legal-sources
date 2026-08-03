@@ -1,0 +1,78 @@
+# ===================================================================
+# INTL/COBAC-Regulations -- Commission Bancaire de l'Afrique Centrale
+# ===================================================================
+# Consolidated banking regulations (règlements COBAC) of the CEMAC
+# monetary union's supranational banking supervisor, hosted as PDFs
+# on the BEAC website. HTML listing scrape + PDF full-text extraction.
+# ===================================================================
+
+source:
+  id: "INTL/COBAC-Regulations"
+  country: "INTL"
+  name: "COBAC — Commission Bancaire de l'Afrique Centrale Banking Regulations (CEMAC)"
+  url: "https://www.beac.int/supervision-bancaire/reglements-de-cobac/"
+  description: |
+    Banking regulations ("règlements COBAC") issued by the Commission Bancaire
+    de l'Afrique Centrale, the supranational banking supervisor of the CEMAC
+    monetary union (Cameroon, Central African Republic, Chad, Republic of the
+    Congo, Equatorial Guinea, Gabon). Texts are published as PDFs on the BEAC
+    (Bank of Central African States) website. Full text is extracted from the
+    regulation PDFs that carry a text layer; older scanned-image règlements
+    without an OCR layer are skipped.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  max_workers: 4
+
+api:
+  type: "html_scrape_pdf"
+  listing_url: "https://www.beac.int/supervision-bancaire/reglements-de-cobac/"
+  base_url: "https://www.beac.int"
+
+data_model:
+  type: "legislation"
+  primary_key: "_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "title"
+      description: "Regulation reference and subject (from the PDF heading)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the regulation PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication/enactment date (ISO 8601) when derivable, else null"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Open Government Data"
+  url: null
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Official regulatory texts of the COBAC/BEAC, a CEMAC public institution. Published for public information on beac.int; no explicit open licence, treated as open government data."
+
+notes: |
+  - Single listing page lists ~79 PDF règlements; ~37 carry an extractable text layer
+  - Near-identical filename variants (foo.pdf / foo-1.pdf) are de-duplicated
+  - normalize() downloads each PDF and extracts text via common/pdf_extract.py
+  - PDFs below 500 chars (scanned images, no OCR layer) are skipped
+  - Date/year derived from the filename, falling back to the /uploads/YYYY/MM/ path
+  - Sibling CG/BEAC-Regulations is blocked (all-scanned corpus); this COBAC page differs

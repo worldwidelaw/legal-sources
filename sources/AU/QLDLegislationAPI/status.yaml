@@ -1,0 +1,37 @@
+last_bootstrap: null
+last_error: 'HTTP Error 406: '
+last_run: '2026-07-12T11:12:34.254797+00:00'
+run_history:
+- error_message: 'HTTP Error 500: '
+  errors: 0
+  finished_at: '2026-07-12T11:09:17.611686+00:00'
+  records_fetched: 1
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 1
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-07-12T11:09:10.586804+00:00'
+- error_message: 'HTTP Error 406: '
+  errors: 0
+  finished_at: '2026-07-12T11:11:10.306683+00:00'
+  records_fetched: 1
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 1
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-07-12T11:11:04.320145+00:00'
+- errors: 0
+  finished_at: '2026-07-12T11:12:34.254797+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-07-12T11:11:43.828886+00:00'
+total_records: 0

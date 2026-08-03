@@ -1,0 +1,123 @@
+# ===================================================================
+# US/NM-PELRB -- New Mexico Public Employee Labor Relations Board
+# ===================================================================
+# Decisions of the New Mexico Public Employee Labor Relations Board
+# (PELRB), the state agency that adjudicates public-sector labor
+# disputes under the Public Employee Bargaining Act (PEBA, NMSA 1978
+# §§ 10-7E-1 et seq.): prohibited-practice complaints, representation
+# / unit-determination petitions, and related matters. Each Board
+# order resolves a specific contested case = case_law; the corpus also
+# includes reviewing NM court decisions, select hearing-examiner
+# decisions, and select arbitration awards. Decisions are published as
+# PDFs indexed on server-rendered HTML pages. No JavaScript, no
+# CAPTCHA, no auth. Public-domain New Mexico state government works.
+# ===================================================================
+
+source:
+  id: "US/NM-PELRB"
+  country: "US"
+  name: "New Mexico Public Employee Labor Relations Board — Decisions"
+  url: "https://www.pelrb.nm.gov/decisions-and-research-aids/"
+  description: |
+    Decisions of the New Mexico Public Employee Labor Relations Board
+    (PELRB), adjudicating public-sector labor disputes under the Public
+    Employee Bargaining Act (PEBA) — prohibited-practice complaints,
+    representation / unit-determination petitions, and related matters
+    — together with reviewing New Mexico court decisions, select
+    hearing-examiner decisions, and select arbitration awards.
+    Enumerated from the Board's server-rendered decision index pages;
+    each row links the full decision PDF (Board citation "N-PELRB-YYYY"
+    + "PELRB NO. NNN-YY In re: {parties}" caption), text extracted via
+    the shared PDF extractor. case_law.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_pdf"
+  base_url: "https://www.pelrb.nm.gov"
+  endpoints:
+    board_orders_peba_ii: "/decisions-and-research-aids/board-orders/peba-ii/"
+    board_orders_peba_i: "/decisions-and-research-aids/board-orders/peba-i/"
+    hearing_examiner: "/decisions-and-research-aids/select-hearing-examiner-decisions/"
+    court_decisions: "/decisions-and-research-aids/court-decisions/"
+    arbitration_awards: "/decisions-and-research-aids/select-arbitration-awards/"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NM-PELRB/{citation})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "citation"
+      description: "Board citation, e.g. '47-PELRB-2024'"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "pelrb_no"
+      description: "Internal PELRB docket number, e.g. '304-22' (from the caption)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "doctype"
+      description: "Document class (Board Order, Hearing Examiner Decision, Court Decision, Arbitration Award)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (citation + party caption)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision, extracted from the linked PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the decision body; null if not parseable"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — New Mexico state agency & court decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the New Mexico PELRB and the reviewing New Mexico courts are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Enumeration: GET the five decision index pages under
+    https://www.pelrb.nm.gov/decisions-and-research-aids/ (board-orders
+    peba-ii + peba-i, select-hearing-examiner-decisions, court-decisions,
+    select-arbitration-awards). Collect anchors whose link text / filename
+    is a Board citation ("N-PELRB-YYYY", legacy "N-pelrb-YY", or old
+    PEBA-I "cp-N-YY-..."); the surrounding cell carries the caption.
+  - Administrative documents (open-meetings/OMA resolutions, annual
+    reports, audits, IPRA notices, practice manuals, bargaining-unit
+    lists, agendas/minutes) are filtered out — only adjudicative
+    decisions are kept (~578 unique decision PDFs).
+  - Full text via common.pdf_extract (born-digital PDFs; OCR fallback
+    for the rare scanned older order). date parsed from the decision
+    body (Dated/Issued/"Nth day of Month, YYYY").
+  - Public-domain New Mexico state government data.

@@ -1,0 +1,131 @@
+# ===================================================================
+# US/NH-LegalEthics -- New Hampshire Bar Association — Ethics Opinions
+# ===================================================================
+# Ethics Committee Advisory / Formal / Informal Opinions of the New
+# Hampshire Bar Association's Ethics Committee, each the Committee's
+# written interpretation of the New Hampshire Rules of Professional
+# Conduct in response to an inquiry about contemplated attorney conduct
+# to advise LAWYERS = doctrine (advisory; the Committee has NO
+# disciplinary authority — lawyer discipline is administered by the
+# N.H. Supreme Court Attorney Discipline Office). Numbered in a bar-year
+# scheme "#YYYY-YY/N" (e.g. #2017-18/01, #1990-91/10); ~133 born-digital
+# PDF opinions 1970-present, published free on nhbar.org. The New
+# Hampshire Bar Association is the state's UNIFIED (mandatory) bar.
+# Distinct from US/NH-Legislation and US/NH-Courts.
+# ===================================================================
+
+source:
+  id: "US/NH-LegalEthics"
+  country: "US"
+  name: "New Hampshire Bar Association — Ethics Committee Opinions"
+  url: "https://www.nhbar.org/list-of-all-nhba-ethics-opinions-and-articles-with-hyperlinks/"
+  description: |
+    Ethics Committee Advisory / Formal / Informal Opinions issued by the
+    New Hampshire Bar Association's Ethics Committee. Each opinion is the
+    Committee's written interpretation of the New Hampshire Rules of
+    Professional Conduct in response to an inquiry about contemplated
+    attorney conduct (advisory, no disciplinary authority). Numbered in a
+    bar-year scheme "#YYYY-YY/N"; ~133 born-digital PDF opinions from 1970
+    to present, each carrying the opinion number, cited Rule references,
+    abstract/annotation and full reasoning.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_pdf"
+  base_url: "https://www.nhbar.org"
+  endpoints:
+    index: "/list-of-all-nhba-ethics-opinions-and-articles-with-hyperlinks/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NH-LegalEthics/{opinion_number|pdf-stem})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number in canonical bar-year form 'YYYY-YY/N' (e.g. 1990-91/1, 2017-18/1); null for a few old opinions whose page carries no parsable number"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Opinion title (opinion number + subject, from the index anchor)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text extracted from the born-digital PDF (PyMuPDF, no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 date; explicit date from the PDF body/index caption, else the first bar-year -> YYYY-01-01"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "New Hampshire Bar Association — Ethics Committee"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-NH)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain / freely published advisory opinions"
+  url: "https://www.nhbar.org/list-of-all-nhba-ethics-opinions-and-articles-with-hyperlinks/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "New Hampshire Bar Association Ethics Committee opinions are published free to the public on nhbar.org as an educational service interpreting the New Hampshire Rules of Professional Conduct. They are advisory (no disciplinary authority) and carry no login, paywall or terms prohibiting reuse. Treated as effectively public domain, consistent with the other state-bar legal-ethics sources. The New Hampshire Bar Association is the state's unified (mandatory) bar, so the 17 U.S.C. § 105 government-edicts rationale applies directly."
+
+notes: |
+  - Discovery: opinions are enumerated from a set of public index pages on
+    nhbar.org — the master "list of all NHBA ethics opinions" page
+    (1990-present) plus the per-decade pages (1970-1979; 1980-1989 /
+    1983-84-thru-1980; 1990-1999; 2000-2007). ~133 unique opinions,
+    de-duplicated on the S3 PDF URL.
+  - Two publishing schemes coexist. OLD (1970-1984): each opinion title
+    links DIRECTLY to a born-digital PDF on nhba.s3.amazonaws.com, with the
+    "#YYYY-YY/N" number preceding the title in the page text (associated by
+    a document-order walk). MODERN (1990-present): each opinion has a detail
+    page (/ethics/opinion-YYYY-YY-NN or /YYYY-YY-NN-slug/) that shows only an
+    ABSTRACT; its first "Read More" link is the full-text PDF. The scraper
+    always resolves the "Read More" PDF so it captures the FULL opinion body
+    rather than the summary (the earlier HTML-only approach silently kept
+    abstracts of ~600 chars for many opinions).
+  - Full text: each opinion is a born-digital PDF on nhba.s3.amazonaws.com;
+    extracted with PyMuPDF (fitz), NO OCR. Records under 200 chars are
+    skipped — a handful of the very oldest 1970s-80s opinions survive only
+    as scanned images (no text layer) and are dropped.
+  - Number: canonical 'YYYY-YY/N' (bar-year pair + sequence). _id uses the
+    number with "/" -> "-", falling back to the PDF filename stem.
+  - Date: explicit "Month DD, YYYY" / "M/D/YY" from the PDF body or index
+    caption, else the first bar-year -> YYYY-01-01.
+  - Type: every document is the Committee's advisory interpretation of the
+    New Hampshire Rules of Professional Conduct = doctrine.
+  - Distinct from US/NH-Legislation and US/NH-Courts. This is the attorney
+    professional-conduct advisory-opinion series (lawyers), the NH member of
+    the US/{ST}-LegalEthics vein.

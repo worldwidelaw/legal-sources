@@ -1,0 +1,107 @@
+# ===================================================================
+# US/PBGC-OpinionLetters -- PBGC Opinion Letters
+# ===================================================================
+# Published Opinion Letters of the Pension Benefit Guaranty Corporation
+# (PBGC), the U.S. federal agency that administers Title IV of ERISA and
+# insures private-sector defined-benefit pension plans. Opinion Letters
+# are the agency's formal, published interpretive determinations (plan
+# coverage under Title IV, guarantee and premium provisions, final
+# decisions on reconsideration requests) -- the PBGC counterpart to DOL
+# and IRS advisory opinions, i.e. authoritative interpretive guidance =
+# doctrine. Official U.S. federal-government works, public domain
+# (17 U.S.C. 105).
+#
+# BUILD RECIPE (no auth, no CAPTCHA, builds locally): the whole series is
+# linked from one server-rendered database page,
+#   https://www.pbgc.gov/employers-practitioners/legal-resources/opinion-letters/database
+# as /documents/opinion-letter-{YY}-{NNN}. Each of those /documents/ URLs
+# returns the letter's PDF directly. The scraper collects every id from
+# the database page, downloads each PDF, and extracts full text with the
+# shared common.pdf_extract extractor. record_id is the letter id
+# (opinion-letter-YY-NNN); letter number and date are parsed from the PDF
+# body (year derived from the id as a fallback).
+# ===================================================================
+
+source:
+  id: "US/PBGC-OpinionLetters"
+  country: "US"
+  name: "PBGC Opinion Letters"
+  url: "https://www.pbgc.gov/employers-practitioners/legal-resources/opinion-letters/database"
+  description: |
+    Published Opinion Letters of the Pension Benefit Guaranty
+    Corporation (PBGC), the U.S. federal agency administering Title IV of
+    ERISA and insuring private-sector defined-benefit pension plans.
+    Opinion Letters are PBGC's formal, published interpretive
+    determinations — plan coverage under Title IV, guarantee and premium
+    provisions, and final decisions on reconsideration requests. They are
+    authoritative agency interpretive guidance (doctrine), enumerated
+    from the Board's single opinion-letter database page; letter number,
+    date issued, and the full text (from the born-digital or scanned PDF)
+    are captured. No CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.pbgc.gov"
+  endpoints:
+    index_page: "/employers-practitioners/legal-resources/opinion-letters/database"
+    document_pdf: "/documents/{id}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/PBGC-OpinionLetters/{record_id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Opinion-letter id (e.g. 'opinion-letter-96-001')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "PBGC Opinion Letter {number}"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion letter (PDF extract; OCR fallback)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date issued (ISO 8601), parsed from the letter body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the opinion letter PDF on pbgc.gov"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. federal government work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    PBGC Opinion Letters are works of the U.S. federal government (a
+    federal agency) and are not subject to copyright under 17 U.S.C. 105.
+    Free to use, including commercially.

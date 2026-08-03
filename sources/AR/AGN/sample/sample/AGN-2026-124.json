@@ -1,0 +1,22 @@
+{
+  "_id": "AGN-2026-124",
+  "_source": "AR/AGN",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-02T20:07:08.420465+00:00",
+  "title": "Controles efectuados por el BCRA para proteger y prevenir a los usuarios de servicios financieros de fraudes y estafas bancarias. Cheques rechazados. Cheque electrónico (E-Cheq). Sanciones aplicadas. Período 2022 y 2023. BCRA",
+  "text": "ALCANCE Período Auditado El período auditado abarca desde el 01/01/2022 al 31/12/2023. Marco normativo institucional aplicable El análisis del objeto de la tarea de control fue realizado de conformidad con las Normas de Control Externo Gubernamental (NCEG), aprobadas por la Resolución 26/2015, como marco general, así como las Normas de Control Externo de la Gestión Gubernamental y las Normas de Control de Cumplimiento Gubernamental, aprobadas por la Resolución 186/2016 y 187/2016 respectivamente, como marco particular, ambas dictadas en virtud de las facultades conferidas por la Ley 24.156, de Administración Financiera y de los Sistemas de Control del Sector Público Nacional, Art. 119, inciso d). Las tareas de campo se desarrollaron desde el 01/04/2025 hasta el 16/12/2025.",
+  "date": "2026-05-21",
+  "url": "https://www.agn.gob.ar/Informe-124-2026",
+  "pdf_url": "https://webagnapi.agn.gob.ar/sites/default/files/informes/2026-124-2026-Informe.pdf",
+  "ano": 2026,
+  "resolucion": 124,
+  "actuacion": "450/2024",
+  "fecha_acta": "2026-05-21",
+  "periodo_auditado": "2023-01-01 / 2024-12-31",
+  "organismo_auditado_ids": [
+    "533"
+  ],
+  "tipo_de_auditoria_ids": [
+    "51"
+  ]
+}

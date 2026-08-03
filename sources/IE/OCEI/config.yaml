@@ -1,0 +1,66 @@
+# IE/OCEI — Commissioner for Environmental Information (Ireland) — Appeal Decisions
+#
+# Source: Office of the Commissioner for Environmental Information (OCEI)
+# URL: https://ocei.ie/en/decisions/
+# Data type: case_law
+# Auth: none
+# License: PSI Licence (Ireland) — re-use free of charge incl. commercial,
+#          attribution required (© Commissioner for Environmental Information)
+#
+# The OCEI is the independent statutory office that reviews decisions made by
+# public authorities under the European Communities (Access to Information on the
+# Environment) Regulations 2007-2018 (the "AIE Regulations"). Each published
+# decision is a formal, binding adjudication on a specific appeal for
+# environmental information = case_law.
+#
+# Total: ~770 decisions (ocei.ie server-rendered decisions listing runs
+# ~77 pages of 10 decisions each).
+#
+# Access:
+#   - Enumerate every decision by paging the server-rendered listing:
+#       https://ocei.ie/en/decisions/?page=N
+#     Each page lists 10 /en/ombudsman-decision/{slug}/ links.
+#   - Full text is born-digital HTML in the gov.ie-style main content region
+#     (<div id="main" role="main"> up to the site footer / "Help us improve"
+#     feedback form). No OCR/PDF extraction required.
+#   - Metadata parsed per page: case number (OCE-NNNNNN-XXXXXX), publication
+#     date (<time datetime="...">), and title (applicant & respondent authority).
+
+source:
+  id: IE/OCEI
+  name: Commissioner for Environmental Information (Ireland) — Appeal Decisions
+  country: IE
+  data_types:
+    - case_law
+  url: https://ocei.ie/en/decisions/
+  language: en
+  auth: none
+  license: ogd
+
+license:
+  name: "PSI Licence (Ireland)"
+  url: "https://data.gov.ie/pages/opendatalicence"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "© Commissioner for Environmental Information. Re-use permitted free of charge in any format (incl. commercial) under the Irish PSI Licence, subject to accurate reproduction and source acknowledgement."
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: case_reference
+      type: string
+      required: false
+    - name: text
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - case_reference
+    - respondent
+    - applicant
+  date_field: date

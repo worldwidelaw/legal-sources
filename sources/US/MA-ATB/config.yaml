@@ -1,0 +1,106 @@
+# ===================================================================
+# US/MA-ATB -- Massachusetts Appellate Tax Board
+# ===================================================================
+# Full text of the decisions ("Findings of Fact and Reports") of the
+# Massachusetts Appellate Tax Board, the quasi-judicial state agency
+# that adjudicates appeals from local and state tax assessments. Served
+# by the State Library of Massachusetts DSpace 7 REST API (the same
+# repository as US/MA-SessionLaws). No auth, no WAF.
+# Public domain — US state government works.
+# ===================================================================
+
+source:
+  id: "US/MA-ATB"
+  country: "US"
+  name: "Massachusetts Appellate Tax Board"
+  url: "https://archives.lib.state.ma.us/"
+  description: |
+    Decisions of the Massachusetts Appellate Tax Board (ATB) — the
+    quasi-judicial state agency that hears appeals from local property-tax
+    abatement denials and from state-tax determinations (corporate excise,
+    income, sales/use, etc.). Each "Findings of Fact and Report" resolves a
+    specific taxpayer-vs-assessors / taxpayer-vs-Commissioner controversy, so
+    the corpus is case_law. Served by the State Library of Massachusetts
+    DSpace 7 REST API (archives.lib.state.ma.us/server/api), open and without
+    auth/WAF. ~1,114 decision items carry the author
+    "Massachusetts. Appellate Tax Board.". Paged at size 100;
+    embed=bundles/bitstreams returns each item's files inline. Full text comes
+    from the DSpace-extracted plain-text bitstream (TEXT bundle) — no local
+    PDF/OCR step. The docket number is parsed from item metadata or the
+    decision body.
+
+data_types:
+  - case_law
+
+jurisdictions:
+  - code: US-MA
+    scope: full
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 4
+
+api:
+  type: "dspace7_rest"
+  base_url: "https://archives.lib.state.ma.us/server/api"
+  endpoints:
+    discover: "/discover/search/objects?query=dc.contributor.author:\"Massachusetts. Appellate Tax Board.\""
+    item: "/core/items/{uuid}?embed=bundles/bitstreams"
+    bitstream: "/core/bitstreams/{uuid}/content"
+
+data_model:
+  type: "case_law"
+  primary_key: "url"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "title"
+      description: "Case caption (parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Findings of Fact and Report (DSpace-extracted)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "url"
+      description: "DSpace handle/item URL"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "date"
+      description: "Date promulgated (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "docket_number"
+      description: "ATB docket number(s) (e.g. F339485)"
+      type: "string"
+      role: "identifier"
+      required: false
+
+license:
+  name: "Public domain — US state government works"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Massachusetts Appellate Tax Board decisions are official state government works (judicial-type opinions / edicts of government) in the public domain. Digitized and served openly by the State Library of Massachusetts."
+
+notes: |
+  - DSpace 7 REST API at archives.lib.state.ma.us/server/api (open, no auth/WAF)
+  - ~1,114 items, author "Massachusetts. Appellate Tax Board.", scan paged 100/item
+  - embed=bundles/bitstreams; full text from the TEXT bundle bitstream
+  - One document per ATB decision (Findings of Fact and Report)
+  - Docket number parsed from dc.description or the decision body
+  - Same repository/recipe as US/MA-SessionLaws; distinct corpus (case_law)
+  - Public domain MA state government data

@@ -1,0 +1,138 @@
+# ===================================================================
+# US/OR-DAPublicRecords -- Oregon District Attorney Public Records
+#                          Orders
+# ===================================================================
+# Public-records appeal orders issued by Oregon District Attorneys.
+# Under the Oregon Public Records Law (ORS 192.415) a person whose
+# request for records held by a LOCAL public body is denied may
+# petition the District Attorney of the county in which the body is
+# located; the DA adjudicates the petition and issues a written order
+# granting or denying disclosure -- the county-level counterpart of
+# the Attorney General's orders for state agencies (US/OR-AGPublicRecords).
+# Each order resolves a specific contested public-records appeal =
+# case_law. Public domain Oregon state/local-government works (edicts).
+#
+# Published as a CONTENTdm digital collection (alias p17027coll4,
+# "District Attorney Public Records Orders") on the OCLC-hosted
+# instance at cdm17027.contentdm.oclc.org. The public dmwebservices
+# JSON API enumerates items (dmQuery) and returns their Dublin-Core
+# metadata (dmGetItemInfo). Unlike the sibling collections the transc
+# field is EMPTY here, so the full order text is extracted from each
+# item's PDF (downloaded from the CONTENTdm download endpoint). No
+# CAPTCHA, no auth.
+# ===================================================================
+
+source:
+  id: "US/OR-DAPublicRecords"
+  country: "US"
+  name: "Oregon District Attorney Public Records Orders"
+  url: "https://cdm17027.contentdm.oclc.org/digital/collection/p17027coll4"
+  description: |
+    Public-records appeal orders issued by Oregon District Attorneys.
+    Under the Oregon Public Records Law (ORS 192.415), a person whose
+    request for records held by a local public body is denied may
+    petition the District Attorney of the county in which the body is
+    located; the DA adjudicates the petition and issues a written
+    order granting or denying disclosure -- the county-level
+    counterpart of the Attorney General's public-records orders for
+    state agencies (US/OR-AGPublicRecords). Each order resolves a
+    specific contested public-records appeal = case_law. Enumerated
+    from the Oregon State Library's CONTENTdm collection (alias
+    p17027coll4) via the public dmwebservices JSON API; case name,
+    petitioner, respondent public body, county, exemptions at issue,
+    records requested, result and date of order are read from each
+    item's Dublin-Core fields, and the full order text is extracted
+    from the item PDF. No CAPTCHA, no auth. ~89 orders.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://cdm17027.contentdm.oclc.org"
+  endpoints:
+    query: "/digital/bl/dmwebservices/index.php?q=dmQuery/p17027coll4/0/dmrecord!date/dmrecord/{max}/{start}/0/0/0/0/json"
+    item: "/digital/bl/dmwebservices/index.php?q=dmGetItemInfo/p17027coll4/{rec}/json"
+    download: "/digital/api/collection/p17027coll4/id/{rec}/download"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 17
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/OR-DAPublicRecords/{CONTENTdm dmrecord})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_name"
+      description: "Case name (petitioner / respondent short label)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "petitioner"
+      description: "Petitioner (records requester)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "respondent"
+      description: "Respondent public body that withheld the records"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "county"
+      description: "County of the adjudicating District Attorney"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "exemptions"
+      description: "Primary public-records exemptions at issue"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "result"
+      description: "Result of the appeal (disclosure granted / denied / not subject to review)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Order title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the order (extracted from the item PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of order (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the CONTENTdm item page"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    District Attorney public-records orders are official quasi-judicial
+    works of Oregon state/local government (edicts of government) and
+    are not subject to copyright. Free to use, including commercially.

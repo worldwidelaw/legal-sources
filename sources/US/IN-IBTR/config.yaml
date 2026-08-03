@@ -1,0 +1,115 @@
+# ===================================================================
+# US/IN-IBTR -- Indiana Board of Tax Review (Final Determinations)
+# ===================================================================
+# Full text of the final determinations of the Indiana Board of Tax
+# Review (IBTR) — the Indiana state administrative tribunal that
+# adjudicates appeals of property-tax assessments (taxpayer or county
+# assessor v. the other, reviewing a county Property Tax Assessment
+# Board of Appeals). Each final determination resolves a specific
+# assessment controversy, so the corpus is case_law.
+#
+# The official site (https://www.in.gov/ibtr/decisions/) links one
+# month/decision sub-page per period back to 2002; each links that
+# period's final-determination PDFs under /ibtr/files/. The PDFs are
+# born-digital text-layer documents. No JavaScript, no CAPTCHA, no auth;
+# in.gov is reachable from ordinary clients. Public domain Indiana state
+# government works (government-edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/IN-IBTR"
+  country: "US"
+  name: "Indiana Board of Tax Review — Final Determinations"
+  url: "https://www.in.gov/ibtr/decisions/"
+  description: |
+    Final determinations of the Indiana Board of Tax Review, the Indiana
+    administrative tribunal for property-tax assessment appeals. Each
+    determination (Findings & Conclusions) resolves a specific dispute
+    between a taxpayer and a county assessor over real or personal
+    property assessment, exemption, deduction or credit. Published as
+    born-digital text-layer PDFs on a server-rendered in.gov index of
+    monthly decision pages (2002-present). No JavaScript, no CAPTCHA,
+    no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.in.gov"
+  endpoints:
+    index: "/ibtr/decisions/"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/IN-IBTR/{pdf-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "IBTR petition/parcel number parsed from the PDF filename (e.g. 49-600-22-2-8-00334-23)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "petitioner"
+      description: "Petitioner / party name parsed from the PDF filename"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Synthetic title (party + Indiana Board of Tax Review Final Determination + petition)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the final determination from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Determination issued date (ISO 8601), from the month-page Issued column; falls back to a date parsed from the PDF body, then the first of the listing month"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Indiana tribunal determination)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Final determinations of the Indiana Board of Tax Review are official quasi-judicial government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The /ibtr/decisions/ index links one decision sub-page per period
+    (~270 pages, 2002-present). Slug formats vary by era
+    ("february-2026-decisions", "2008-april-decisions",
+    "2002-january-february-decisions", "december-2008",
+    "february-2025-decisions2"); the scraper accepts any
+    /ibtr/decisions/<slug> whose slug carries a 4-digit year and derives
+    (year, month) from the slug.
+  - Each month page is an HTML table (Petition # | Issued | Petitioner
+    link | Issues). The scraper collects every /ibtr/files/*.pdf link
+    (skipping petition-listing / cause-list / calendar artefacts) and
+    associates each with the authoritative "Issued" M/D/YYYY date that
+    precedes it.
+  - PDFs are born-digital text layers extracted via common.pdf_extract
+    (curl browser UA, ~1 req/s).
+  - Public domain Indiana state government data.

@@ -1,0 +1,123 @@
+# ===================================================================
+# US/KY-TaxAppeals -- Kentucky Board of Tax Appeals, Final Orders
+# ===================================================================
+# Final Orders of the Kentucky Board of Tax Appeals (BTA), the
+# Commonwealth's independent quasi-judicial tribunal (now within the
+# Public Protection Cabinet's Office of Claims and Appeals) that hears
+# taxpayer appeals from Department of Revenue assessments/refund denials
+# ("Revenue" cases) and from local property-tax valuation and
+# classification determinations ("Property"/PVA cases). Each Final Order
+# finally adjudicates a specific contested case = case_law. Orders are
+# public, born-digital or scanned PDFs served by the Office of Claims and
+# Appeals case search (an ASP.NET WebForms app) at kycc.ky.gov. Full text
+# is extracted from each PDF via the shared OOM-hardened pdf_extract
+# helper (pdfplumber -> pypdf -> OCR). No auth, no CAPTCHA.
+# Public-domain KY state-government works (government edicts).
+# ===================================================================
+
+source:
+  id: "US/KY-TaxAppeals"
+  country: "US"
+  name: "Kentucky Board of Tax Appeals — Final Orders"
+  url: "https://kycc.ky.gov/claims/search.aspx"
+  description: |
+    Final Orders of the Kentucky Board of Tax Appeals — the Commonwealth's
+    independent tax tribunal (Office of Claims and Appeals, Public
+    Protection Cabinet). The Board hears taxpayer appeals from Department
+    of Revenue assessments and refund denials ("Revenue" cases) and from
+    county Property Valuation Administrator / Board of Assessment Appeals
+    property-tax determinations ("Property" cases). Each Final Order
+    (order of dismissal, agreed order, or merits ruling) is a public PDF
+    finally adjudicating a contested case. Enumerated from the OCA case
+    search results per tax year (2021-present).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "aspnet_webforms_search"
+  base_url: "https://kycc.ky.gov/claims/"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/KY-TaxAppeals/{APPEAL-NO}-{DOCID})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "appeal_no"
+      description: "Board appeal number / K# (e.g. 24-R-010), R=Revenue S=Property"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "tax_type"
+      description: "Appeal type (Revenue, Property, Transportation, Other)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "taxpayer"
+      description: "Appellant / taxpayer name"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (issuer + taxpayer + appeal no)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Final Order, extracted from the published PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the appeal was filed (ISO 8601), used as the temporal key"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Kentucky state tax adjudications)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Final Orders of the Kentucky Board of Tax Appeals are official state-government adjudicative works, published for public inspection, in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The Office of Claims and Appeals case search
+    (https://kycc.ky.gov/claims/search.aspx) is an ASP.NET WebForms page.
+    The scraper GETs it once to capture the hidden fields (__VIEWSTATE,
+    __VIEWSTATEGENERATOR, __EVENTVALIDATION), then POSTs a Search for each
+    tax year in the TxYear dropdown (2021-2026 as of 2026-07). All results
+    render on one page (no pagination); ~140 orders per recent year.
+  - Each results-table row exposes one or more "View Final Order"
+    hyperlinks to /claims/FinalOrder/{APPEAL-NO}-{DOCID}.pdf, plus columns
+    Tax Year, County, Appeal Type, Status, Tax Payer Name, K# and Date
+    Filed. Every PDF link becomes a record; dedup is by filename slug.
+  - PDFs are a mix of born-digital orders and scanned orders (some carry a
+    one-page email transmittal cover followed by the signed order); text is
+    extracted via common.pdf_extract (pdfplumber -> pypdf -> OCR). A
+    <100-char guard skips the rare unreadable scan. OCR (tesseract) is
+    required for the scanned subset.
+  - date is the Date Filed column (reliable ISO temporal key); the decision
+    date appears within the order body.
+  - Type is case_law: each Final Order finally adjudicates a contested tax
+    appeal (dismissal, agreed order, or merits ruling).
+  - Public-domain KY state-government data.

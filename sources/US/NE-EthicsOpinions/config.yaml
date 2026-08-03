@@ -1,0 +1,115 @@
+# ===================================================================
+# US/NE-EthicsOpinions -- Nebraska Accountability and Disclosure
+#                         Commission (NADC) — Advisory Opinions
+# ===================================================================
+# Advisory opinions of the Nebraska Accountability and Disclosure
+# Commission (NADC) interpreting the Nebraska Political Accountability
+# and Disclosure Act (NPADA, Neb. Rev. Stat. ch. 49) — the state
+# conflict-of-interest, campaign-finance and lobbying provisions. Each
+# advisory opinion is the Commission's authoritative written
+# interpretation, issued on request and published as a public record
+# = doctrine. Born-digital full-text CLEAN HTML (a few of the newest
+# opinions are attached PDFs; OCR fallback). Public-domain State of
+# Nebraska government works.
+# ===================================================================
+
+source:
+  id: "US/NE-EthicsOpinions"
+  country: "US"
+  name: "Nebraska Accountability and Disclosure Commission — Advisory Opinions"
+  url: "https://nadc.nebraska.gov/advisory-opinions"
+  description: |
+    Advisory opinions of the Nebraska Accountability and Disclosure
+    Commission (NADC). Interpreting the Nebraska Political Accountability
+    and Disclosure Act (Neb. Rev. Stat. ch. 49), the Commission issues
+    advisory opinions on conflict-of-interest, campaign-finance and
+    lobbying questions. Every opinion is a public record published on
+    nadc.nebraska.gov (Drupal) as a born-digital HTML node whose body
+    field holds the full text; a few of the newest opinions attach the
+    full text as a PDF instead. Opinion numbers are sequential
+    (001–206, contiguous).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "html_index"
+  base_url: "https://nadc.nebraska.gov"
+  endpoints:
+    index: "/advisory-opinions"
+    opinion: "/advisory-opinion-{NNN}"
+    pdf: "/sites/default/files/doc/Advisory Opinion-{NNN}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NE-EthicsOpinions/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Advisory opinion number, 3-digit zero-padded (e.g. 001, 199)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "subject"
+      description: "Subject category (Conflict of Interest / Campaign Finance / Lobbying)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Issuer + opinion number + subject"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion, from the born-digital HTML body (PDF+OCR fallback for the newest scanned opinions)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date adopted (ISO 8601), from the 'Date Adopted' field"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (State of Nebraska Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Advisory opinions of the Nebraska Accountability and Disclosure Commission are official public records of the State of Nebraska, published for public use with no copyright restriction."
+
+notes: |
+  - Enumeration: the index https://nadc.nebraska.gov/advisory-opinions lists
+    every opinion as /advisory-opinion-{NNN}. Numbers are 3-digit zero-padded
+    sequential ints, contiguous 001–206 (verified 2026-07-09, no gaps).
+  - Full text: each opinion page is a Drupal node whose labelled fields carry
+    the opinion number, Date Adopted, Subject, "Requested by" and Summary, and
+    whose <div class="field--name-body"> holds the full opinion text as clean
+    born-digital HTML. When the HTML body is thin (the few newest opinions,
+    ~203–206), the full text is an attached PDF at
+    /sites/default/files/doc/Advisory Opinion-{NNN}.pdf — read via
+    common.pdf_extract (text layer; OCR fallback for scans, needs tesseract on
+    the runner).
+  - Type: every opinion is an advisory opinion = doctrine.
+  - Date: parsed from the "Date Adopted" field ("Weekday, Month DD, YYYY").
+  - COVERAGE: 206 advisory opinions, 1977–2023.

@@ -1,0 +1,73 @@
+source:
+  id: ES/TACPN-Navarra
+  name: Tribunal Administrativo de Contratos Públicos de Navarra (TACPN)
+  url: https://portalcontratacion.navarra.es/es/todos-acuerdos
+  country: ES
+  region: Navarra
+  jurisdiction: ES-NC
+  data_types:
+    - case_law
+  auth:
+    type: none
+  license:
+    name: "Gobierno de Navarra open data (PSI reuse)"
+    url: "https://gobiernoabierto.navarra.es/es/open-data/informacion-practica/aviso-legal"
+    commercial_use: true
+    attribution_required: true
+    share_alike: false
+    no_derivatives: false
+    notes: "Reutilización de información del sector público (Ley 37/2007)."
+
+api:
+  base_url: https://portalcontratacion.navarra.es/es/todos-acuerdos
+  list_instance: com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet_INSTANCE_bJBLb1tjplPX
+  page_size: 20
+  pagination: "_cur param (Liferay Asset Publisher), 1-indexed"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+    - name: "acuerdo_number"
+      type: "string"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 2010-01-01
+    end: present
+  document_types:
+    - Acuerdo
+  estimated_count: 1095
+
+notes: |
+  Tribunal Administrativo de Contratos Públicos de Navarra (TACPN). Resolves the
+  "reclamación especial en materia de contratación pública" for Navarra and
+  issues binding acuerdos. The public "Todos los acuerdos" Liferay Asset
+  Publisher list links directly to born-digital acuerdo PDFs (extracted with
+  PyMuPDF, no OCR). Paginate the _cur param until a page yields no links.
+  Regional sibling of ES/TARCJA-Andalucia and ES/OARC-Euskadi; open-data
+  alternative to the captcha-blocked central tribunal (ES/TACRC).

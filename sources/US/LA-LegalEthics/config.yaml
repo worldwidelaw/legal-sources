@@ -1,0 +1,127 @@
+# ===================================================================
+# US/LA-LegalEthics -- Louisiana State Bar Association, Rules of
+# Professional Conduct Committee — PUBLIC Ethics Advisory Opinions
+# ===================================================================
+# PUBLIC ethics advisory opinions of the Louisiana State Bar
+# Association (LSBA) Rules of Professional Conduct Committee (via its
+# Publications Subcommittee): each answers, on an actual member
+# advisory-service inquiry, how the Louisiana Rules of Professional
+# Conduct apply to contemplated attorney conduct = doctrine. Only
+# opinions expressly designated "PUBLIC" are published and citable
+# (e.g. "LSBA-RPCC PUBLIC Opinion 05-RPCC-001"). ~22 public opinions
+# 2005-present, born-digital PDFs on lsba.org. The LSBA is Louisiana's
+# INTEGRATED (mandatory) bar. Distinct from US/LA-Courts and
+# US/LA-Legislation.
+# ===================================================================
+
+source:
+  id: "US/LA-LegalEthics"
+  country: "US"
+  name: "Louisiana State Bar Association — Rules of Professional Conduct Committee (PUBLIC Ethics Opinions)"
+  url: "https://www.lsba.org/members/EthicsAdvisory.aspx"
+  description: |
+    PUBLIC ethics advisory opinions issued by the Louisiana State Bar
+    Association (LSBA) Rules of Professional Conduct Committee. Each
+    opinion answers, on the basis of an actual member advisory-service
+    inquiry, how the Louisiana Rules of Professional Conduct apply to
+    contemplated attorney conduct. Only opinions the Committee has
+    expressly designated "PUBLIC" are published and may be cited (~22
+    opinions 2005-present), each a born-digital PDF carrying the
+    opinion number, date and full analysis.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_pdf"
+  base_url: "https://www.lsba.org"
+  endpoints:
+    index: "/members/EthicsAdvisory.aspx"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/LA-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number, canonical 'YYYY-RPCC-NNN' (e.g. 2005-RPCC-001, 2021-RPCC-022)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title ('Louisiana State Bar Association PUBLIC Opinion {number}')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text extracted from the born-digital PDF (PyMuPDF, no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 date parsed from the index anchor '(MM/DD/YYYY)'"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Louisiana State Bar Association — Rules of Professional Conduct Committee"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-LA)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain / freely published advisory opinions"
+  url: "https://www.lsba.org/members/EthicsAdvisory.aspx"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "LSBA PUBLIC ethics opinions are published free to the public on lsba.org, expressly designated 'PUBLIC' and 'may be cited', with no login, paywall or terms prohibiting reuse. The Louisiana State Bar Association is the state's INTEGRATED (mandatory) bar, established by the Louisiana Supreme Court, so the 17 U.S.C. § 105 government-edicts rationale applies fairly directly (like US/SC-LegalEthics). Treated as effectively public domain, consistent with the other state-bar legal-ethics sources. Each opinion PDF carries a '© YYYY by the Louisiana State Bar Association' notice, but the opinions are the mandatory bar's advisory interpretations of the Rules of Professional Conduct, published free for citation — pd-us + commercial-OK."
+
+notes: |
+  - Discovery: the single public page /members/EthicsAdvisory.aspx lists
+    every PUBLIC opinion as an anchor whose visible text starts with the
+    number and carries the date, e.g.
+    "05-LSBA-RPCC-001 PUBLIC Opinion (04/04/2005)". ~22 opinions
+    2005-present. Number and date are read from this authoritative anchor
+    (the PDF body occasionally carries a typo, e.g. "21-RPCC-221" for
+    2021-RPCC-022).
+  - Number: 'YY-(LSBA-)RPCC-NNN' -> canonical 'YYYY-RPCC-NNN' (2000s
+    corpus, YY+2000; sequence zero-padded to 3 for sortability).
+  - Full text: each opinion is a born-digital PDF under
+    /documents/Ethics/ (filenames irregular — descriptive slugs, taken
+    from the href verbatim, spaces %-encoded). Extracted with PyMuPDF
+    (fitz), NO OCR needed; recurring "– Page (N) –" footers stripped.
+    Records under 200 chars are skipped.
+  - Date: parsed from the index anchor '(MM/DD/YYYY)'; falls back to
+    YYYY-01-01 from the number year.
+  - Type: every document is the Committee's advisory interpretation of
+    the Louisiana Rules of Professional Conduct = doctrine.
+  - Distinct from US/LA-Courts and US/LA-Legislation. This is the
+    attorney professional-conduct advisory-opinion series (lawyers).
+  - Note: only the ~22 opinions the Committee has designated "PUBLIC"
+    are published; the remainder of the advisory service is confidential
+    (member-only), so this is the complete public corpus.

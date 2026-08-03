@@ -1,0 +1,92 @@
+# ===================================================================
+# US/HI-AGOpinions -- Hawaii Attorney General Opinions
+# ===================================================================
+# Full text of official legal opinions issued by the Hawaii Department of
+# the Attorney General. These are authoritative (advisory) state legal
+# interpretations (doctrine). Served as text-layer PDFs from the official
+# opinions pages at ag.hawaii.gov. No authentication required. Public
+# domain government data.
+# ===================================================================
+
+source:
+  id: "US/HI-AGOpinions"
+  country: "US"
+  name: "Hawaii Attorney General Opinions"
+  url: "https://ag.hawaii.gov/publications/ag-opinions/"
+  description: |
+    Official legal opinions issued by the Hawaii Department of the Attorney
+    General. Each opinion answers a legal question posed by a public
+    official or agency and constitutes an authoritative (advisory)
+    interpretation of Hawaii law. Full text is extracted from the opinion
+    PDFs linked on the official ag.hawaii.gov opinion pages (current + past
+    + 1993-1999 + 2000-2009 + 2010-2019). ~67 opinion PDFs; the majority
+    carry a real text layer (the rest are scanned and recovered via OCR on
+    the VPS extraction backends).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_pdf"
+  base_url: "https://ag.hawaii.gov/publications/ag-opinions/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "opinion_number"
+      description: "Official AG opinion number (e.g., '97-03', '22-01')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Opinion title (opinion number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (extracted from the PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public domain — 17 U.S.C. § 105"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Hawaii Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - ag.hawaii.gov (WordPress) lists every published opinion as a direct
+    wp-content/uploads *.pdf link, spread across the current + past +
+    1993-1999 + 2000-2009 + 2010-2019 landing pages.
+  - fetch_all collects the unique opinion PDF URLs (administrative PDFs such
+    as the annual org chart are filtered out by NON_OPINION_RE), downloads
+    each PDF, and extracts the text layer via common.pdf_extract.
+  - opinion_number is derived from the NN-NN / YYYY-NN token in the
+    filename; the issue date is parsed from the opinion body (first "Month
+    DD, YYYY"), falling back to the year implied by the opinion number.
+  - ~67 PDFs as of 2026-06-28; ~44 carry a usable local text layer (7K-76K
+    chars), the remaining scanned ones are recovered by OCR on the VPS.
+  - Public domain Hawaii government data.

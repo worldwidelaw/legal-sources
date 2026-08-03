@@ -1,0 +1,121 @@
+# ===================================================================
+# US/IN-EthicsOpinions -- Indiana State Ethics Commission
+# Formal Advisory Opinions
+# ===================================================================
+# The formal advisory opinions of the Indiana State Ethics Commission
+# (administered by the Office of Inspector General) construing the Code
+# of Ethics for state officers, employees and special state appointees
+# (Ind. Code 4-2-6 and 42 IAC 1). Each is the Commission's authoritative
+# written interpretation of the ethics code = doctrine. Born-digital
+# PDFs (clean text layer), enumerated from the per-year listing pages.
+# ===================================================================
+
+source:
+  id: "US/IN-EthicsOpinions"
+  country: "US"
+  name: "Indiana State Ethics Commission — Formal Advisory Opinions"
+  url: "https://www.in.gov/ig/opinions/"
+  description: |
+    The formal advisory opinions of the Indiana State Ethics Commission, the
+    body administered by the Indiana Office of Inspector General that
+    interprets and enforces the Code of Ethics for state officers, employees
+    and special state appointees (Ind. Code 4-2-6 and 42 IAC 1). On request,
+    the Commission issues a written opinion at a monthly public meeting
+    construing the ethics code as applied to specific circumstances; the
+    opinion is public and is the Commission's authoritative interpretation =
+    doctrine. ~408 opinions (1988–present). Numbered "YY-I-N" (pre-2020) and
+    "YYYY-FAO-NNN" (2020+). Served as born-digital PDFs.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "html_listing"
+  base_url: "https://www.in.gov"
+  endpoints:
+    index: "/ig/opinions/"
+    year: "/ig/opinions/advisory-opinions-{YYYY}/"
+    document: "/ig/files/opinions/{YYYY}/{filename}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/IN-EthicsOpinions/{opinion number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number (e.g. '06-I-25', '2020-FAO-009')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "document_type"
+      description: "Formal Advisory Opinion"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Issuer + opinion number"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory opinion (born-digital PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601); parsed from the PDF body, falls back to Jan 1 of the year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Issuing body (Indiana State Ethics Commission)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 subdivision (US-IN)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (Indiana state government edict / public record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Formal advisory opinions of the Indiana State Ethics Commission are official public records of an Indiana state body interpreting statute and administrative rule (government-edict works), issued at public meetings and published for public use under the Code of Ethics (Ind. Code 4-2-6, 42 IAC 1)."
+
+notes: |
+  - Index: in.gov/ig is a state CMS. The opinions index /ig/opinions/ links one
+    listing page per year /ig/opinions/advisory-opinions-{YYYY}/ (1988–present,
+    39 year pages) whose rows are anchors to the born-digital opinion PDFs at
+    /ig/files/opinions/{YYYY}/{filename}.pdf.
+  - Two filename schemes: pre-2020 "s{YY}-I-{N}_{agency-tags}.pdf" (opinion
+    number YY-I-N) and 2020+ "{YYYY}-FAO-{NNN}-{agency}-REDACTED.pdf" (number
+    YYYY-FAO-NNN). The scraper parses the number from the filename with both.
+  - Full text: born-digital PDF text layer via common.pdf_extract
+    (opendataloader -> pdfplumber -> pypdf -> OCR fallback). The <200-char
+    guard skips any unreadable scan.
+  - Issue date parsed from the first "Month DD, YYYY" in the body (which follows
+    the "ADVISORY OPINION / No. ..." header), falling back to Jan 1 of the year.
+  - Year pages 301-redirect to a trailing-slash URL; the scraper follows it.

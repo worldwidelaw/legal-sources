@@ -1,0 +1,124 @@
+# ===================================================================
+# US/WI-LIRC -- Wisconsin Labor & Industry Review Commission Decisions
+# ===================================================================
+# Full-text decisions of the Wisconsin Labor and Industry Review
+# Commission (LIRC), the independent state agency that provides
+# appellate review of the decisions of the administrative law judges of
+# the Department of Workforce Development (DWD) in three programs:
+#   - Unemployment Insurance (UI) appeals   (ucdecsns/)
+#   - Worker's Compensation (WC) appeals     (wcdecsns/)
+#   - Equal Rights / discrimination (ER)     (erdecsns/)
+# Each decision resolves a specific contested case = case_law, and they
+# are official Wisconsin state-government works in the public domain
+# (government edicts). DISTINCT from US/WI-WERC (Employment Relations
+# Commission, collective bargaining) -- LIRC reviews UI/WC/ER appeals.
+#
+# BUILD RECIPE (no auth, no CAPTCHA, builds locally): individual
+# decisions render as server-side HTML (a minority as born-digital PDF)
+# at deterministic per-program paths:
+#   https://lirc.wisconsin.gov/ucdecsns/{N}.htm   (UI)
+#   https://lirc.wisconsin.gov/wcdecsns/{N}.htm   (WC)
+#   https://lirc.wisconsin.gov/erdecsns/{N}.htm   (ER)
+# where {N} is a numeric decision id (plus a minority of surname / other
+# slugs, e.g. ucdecsns/bondar.pdf, erdecsns/black&decker-v-dilhr.htm).
+# The site directory listing is 403 and robots blocks named crawlers,
+# so enumeration is HYBRID: (1) numeric-id range probing per program
+# (skip 404 gaps), unioned with (2) a broad-term sweep of the site's
+# Mindbreeze search JSON API at
+#   POST https://mbsearchlirc.wisconsin.gov/api/v2/search
+#        {"query":{"unparsed":"<term>"},"count":100}
+# whose result ids embed the decision URL ("Web:lirc:{url}:") -- this
+# captures the non-numeric slugs the numeric probe misses. HTML body is
+# extracted with BeautifulSoup (the UI pages are MS-Word HTML exports;
+# only the <body> WordSection holds the decision, so head Word-CSS junk
+# is dropped); PDFs go through common.pdf_extract. Title, program,
+# claimant/party and decision date come from the page <title> and body.
+
+source:
+  id: "US/WI-LIRC"
+  country: "US"
+  name: "Wisconsin Labor & Industry Review Commission — Decisions"
+  url: "https://lirc.wisconsin.gov/"
+  description: |
+    Full-text decisions of the Wisconsin Labor and Industry Review
+    Commission (LIRC), the independent Wisconsin agency that reviews the
+    decisions of the administrative law judges of the Department of
+    Workforce Development in Unemployment Insurance (UI), Worker's
+    Compensation (WC), and Equal Rights / discrimination (ER) appeals.
+    Each numbered decision resolves a specific contested case = case_law
+    and is an official Wisconsin state-government work (public domain,
+    government edicts). Distinct from US/WI-WERC (Employment Relations
+    Commission). ~8,900 full-text decisions, enumerated by numeric-id
+    range probing per program unioned with a broad-term sweep of the
+    site's Mindbreeze search API. Program, claimant/party, decision date
+    and full body text are captured. No CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://lirc.wisconsin.gov"
+  endpoints:
+    ui_decision: "/ucdecsns/{N}.htm"
+    wc_decision: "/wcdecsns/{N}.htm"
+    er_decision: "/erdecsns/{N}.htm"
+    search_api: "https://mbsearchlirc.wisconsin.gov/api/v2/search"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/WI-LIRC/{program}-{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Program + filename stem (e.g. 'uc-4176', 'wc-1177', 'er-1447')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Case caption / decision title (from page <title>)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (HTML body extract; PDF extract for the minority of PDF decisions)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), from the page title/body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the decision on lirc.wisconsin.gov"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions of the Wisconsin Labor and Industry Review Commission are
+    official works of Wisconsin state government (edicts of a quasi-
+    judicial government body) and are not subject to copyright under the
+    government-edicts doctrine. Free to use, including commercially.

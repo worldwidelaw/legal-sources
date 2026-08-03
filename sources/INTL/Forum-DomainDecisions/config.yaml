@@ -1,0 +1,97 @@
+# ===================================================================
+# INTL/Forum-DomainDecisions -- Forum (formerly NAF) domain disputes
+# ===================================================================
+# UDRP + URS + usDRP/usRS + CDRP and other registry dispute policies.
+# 43,000+ UDRP decisions alone, each with full text (HTML).
+# ===================================================================
+
+source:
+  id: "INTL/Forum-DomainDecisions"
+  country: "INTL"
+  name: "Forum (National Arbitration Forum) — Domain Name Dispute Decisions"
+  url: "https://www.adrforum.com/domain-dispute/search-decisions"
+  description: |
+    Panel decisions of Forum (forumadr.com, legacy adrforum.com), formerly the
+    National Arbitration Forum (NAF). Forum is an ICANN-accredited Uniform
+    Domain-Name Dispute-Resolution Policy (UDRP) provider — the second largest
+    after WIPO — and also administers URS (Uniform Rapid Suspension), the U.S.
+    usTLD policies (usDRP/usRS), the Canadian CDRP and numerous registry-specific
+    dispute policies. The public "Search Decisions" portal exposes the full
+    decision corpus (43,000+ UDRP decisions) with complete full-text reasoning.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.83
+  burst: 1
+  delay_seconds: 1.2
+
+api:
+  type: "json_api"
+  rulesets_url: "https://webapi.adrforum.com/api/SearchDecisions/GetRulesets"
+  search_url: "https://webapi.adrforum.com/api/SearchDecisions/DoStandardSearch"
+  decision_url: "https://www.adrforum.com/DomainDecisions/{caseNumber}.htm"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Forum case identifier (e.g., FORUM-92016)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "text"
+      description: "Full text of the panel decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "ruleset"
+      description: "Dispute policy (UDRP, URS, USDRP, CDRP, ...)"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "domain_names"
+      description: "Disputed domain name(s)"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "decision_result"
+      description: "Outcome (Transferred, Claim Denied, ...)"
+      type: "string"
+      role: "content"
+      required: false
+
+license:
+  name: "Custom terms (publicly published decisions)"
+  url: "https://www.adrforum.com/terms-of-use"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Forum publishes its domain-name dispute decisions openly on adrforum.com as
+    a public record, in accordance with ICANN's UDRP Rules (paragraph 4(j))
+    which require providers to publish the full decision on a publicly
+    accessible website. No login required.
+
+notes: |
+  - JSON API (webapi.adrforum.com). GetRulesets lists all dispute policies;
+    DoStandardSearch with {"ruleset": RS, ...} returns the complete case list
+    for that ruleset (each row: caseId, caseNumber, domains, caseName, ruleset,
+    status, decisionDate, and a `url` to the full-text decision document).
+  - Full text fetched from the `url` (.htm) and cleaned from HTML.
+  - Rate limited to 1 req / 1.2s. UDRP alone is ~43,400 decisions.

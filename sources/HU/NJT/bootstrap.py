@@ -2,7 +2,7 @@
 """
 HU/NJT -- Hungarian National Legislation Database (Nemzeti Jogszabálytár)
 
-Fetches Hungarian legislation from njt.hu, the official Hungarian legislation database.
+Fetches Hungarian legislation from njt.jog.gov.hu, the official Hungarian legislation database.
 
 Strategy:
   - Uses search endpoint to discover documents by year
@@ -10,9 +10,9 @@ Strategy:
   - Parses HTML to extract clean text content from jogszabaly div
 
 Endpoints:
-  - Search: https://njt.hu/search/-:-:{year}:-:-:-:-:-:-:-:1/{page}/{size}
-  - Document: https://njt.hu/jogszabaly/{year}-{num}-{mod1}-{mod2}
-  - ELI: https://njt.hu/eli/TV/{year}/{num}
+  - Search: https://njt.jog.gov.hu/search/-:-:{year}:-:-:-:-:-:-:-:1/{page}/{size}
+  - Document: https://njt.jog.gov.hu/jogszabaly/{year}-{num}-{mod1}-{mod2}
+  - ELI: https://njt.jog.gov.hu/eli/TV/{year}/{num}
 
 Data:
   - Legislation types: TV (laws), TVR (statutory decrees), KR (govt decrees), MR (ministerial)
@@ -50,7 +50,7 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.HU.njt")
 
 # Base URL for Hungarian NJT
-BASE_URL = "https://njt.hu"
+BASE_URL = "https://njt.jog.gov.hu"
 
 # Years to scrape (most recent first for sample mode)
 YEARS_TO_SCRAPE = list(range(2025, 1989, -1))  # 2025 down to 1990
@@ -63,7 +63,7 @@ class NJTScraper(BaseScraper):
     """
     Scraper for HU/NJT -- Hungarian National Legislation Database.
     Country: HU
-    URL: https://njt.hu
+    URL: https://njt.jog.gov.hu
 
     Data types: legislation
     Auth: none (Open Government Data, CC BY 4.0)
@@ -109,56 +109,45 @@ class NJTScraper(BaseScraper):
         """
         Extract clean law text from the jogszabaly HTML page.
 
-        The text is in a div with class 'jogszabaly' containing structured
-        elements like preambulum, szakasz, bekezdesNyito, etc.
+        The 2026 njt.jog.gov.hu redesign server-renders the law body inside a
+        ``div.jogszabalyCtrl`` reader container, made up of structured blocks
+        such as ``preambulumbekezdes`` (preamble paragraphs), ``szakasz``
+        (sections/§) and ``alcim`` (subtitles). We parse that container with
+        BeautifulSoup and stitch the block texts together.
         """
+        from bs4 import BeautifulSoup
+
+        soup = BeautifulSoup(html_content, "html.parser")
+
+        # Remove the navigation / table-of-contents / toolbar so we keep only
+        # the legislative text (the TOC tree mirrors section markers and would
+        # otherwise pollute the body).
+        for junk in soup.select(
+            ".tartalom-tree, .tartalomjegyzekButtonContainer, "
+            ".navigation-panel, .eszkoztar_panel, script, style, button, nav, header, footer"
+        ):
+            junk.decompose()
+
+        # The 2026 redesign renders the law body as sibling blocks (the
+        # ``.jogszabalyCtrl`` container itself is empty). Collect the structured
+        # content blocks wherever they live in the document, in order.
+        blocks = soup.select(
+            ".cim, .alcim, .preambulum, .preambulumbekezdes, .szakasz, "
+            ".bekezdes, .melleklet, .footnoteContent"
+        )
         text_parts = []
-
-        # Extract main title
-        title_match = re.search(r'<h1[^>]*class="[^"]*jogszabalyMainTitle[^"]*"[^>]*>([^<]+)', html_content)
-        if title_match:
-            text_parts.append(html.unescape(title_match.group(1).strip()))
-
-        # Extract subtitle
-        subtitle_match = re.search(r'<h2[^>]*class="[^"]*jogszabalySubtitle[^"]*"[^>]*>([^<]+)', html_content)
-        if subtitle_match:
-            text_parts.append(html.unescape(subtitle_match.group(1).strip()))
-
-        # Extract preambulum text
-        for match in re.finditer(r'<div[^>]*class="preambulum"[^>]*>(.*?)</div>', html_content, re.DOTALL):
-            text = self._clean_html_text(match.group(1))
-            if text:
+        seen = set()
+        for block in blocks:
+            # Skip a block that is an ancestor of another matched block to avoid
+            # emitting the same text twice (parent + child).
+            if any(child is not block and child in block.descendants for child in blocks):
+                continue
+            text = self._clean_html_text(str(block))
+            if text and len(text) > 3 and text not in seen:
+                seen.add(text)
                 text_parts.append(text)
 
-        # Extract all bekezdes (paragraph) content - these contain the law text
-        # Pattern: <div class="bekezdesNyito"> or <div class="bekezdes">
-        for match in re.finditer(r'<div[^>]*class="[^"]*bekezdes[^"]*"[^>]*>(.*?)</div><!--', html_content, re.DOTALL):
-            div_content = match.group(1)
-            # Extract text from <p> tags within
-            for p_match in re.finditer(r'<p[^>]*>(.*?)</p>', div_content, re.DOTALL):
-                text = self._clean_html_text(p_match.group(1))
-                if text and len(text) > 10:
-                    text_parts.append(text)
-
-        # Extract melléklet (appendix/annex) content - often has important text
-        for match in re.finditer(r'<p[^>]*class="[^"]*mhk-[^"]*"[^>]*>(.*?)</p>', html_content, re.DOTALL):
-            text = self._clean_html_text(match.group(1))
-            if text and len(text) > 10:
-                text_parts.append(text)
-
-        # Also extract plain paragraphs with AC/AJ/UJ classes (common in legislation)
-        for match in re.finditer(r'<p[^>]*class="[^"]*(?:AC|AJ|UJ)[^"]*"[^>]*>(.*?)</p>', html_content, re.DOTALL):
-            text = self._clean_html_text(match.group(1))
-            if text and len(text) > 10:
-                text_parts.append(text)
-
-        # Extract footnotes
-        for match in re.finditer(r'<div class="footnote"[^>]*><sup>\d+</sup><p>(.*?)</p></div>', html_content, re.DOTALL):
-            text = self._clean_html_text(match.group(1))
-            if text:
-                text_parts.append(f"[Note: {text}]")
-
-        full_text = '\n\n'.join(text_parts)
+        full_text = "\n\n".join(text_parts)
         return full_text.strip()
 
     def _clean_html_text(self, html_text: str) -> str:
@@ -245,14 +234,25 @@ class NJTScraper(BaseScraper):
         url = f"/jogszabaly/{doc_id}"
 
         try:
-            self.rate_limiter.wait()
-            resp = self.client.get(url)
-            resp.raise_for_status()
+            # The njt.jog.gov.hu Angular front-end occasionally serves an
+            # un-rendered shell (empty body) on the first hit; a quick re-fetch
+            # returns the server-rendered legislative text. Retry once.
+            # The first hit often primes a server-side render and returns an
+            # empty Angular shell; the rendered legislative text becomes
+            # available a few seconds later. Retry a few times with a growing
+            # delay so the render can complete.
+            content = ""
+            full_text = ""
+            for attempt in range(4):
+                self.rate_limiter.wait()
+                resp = self.client.get(url)
+                resp.raise_for_status()
+                content = resp.text
+                full_text = self._extract_text_from_html(content)
+                if full_text and len(full_text) >= 100:
+                    break
+                time.sleep(3)
 
-            content = resp.text
-
-            # Extract text and metadata
-            full_text = self._extract_text_from_html(content)
             metadata = self._extract_metadata(content, doc_id)
 
             if not full_text or len(full_text) < 100:

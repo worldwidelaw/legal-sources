@@ -1,0 +1,15 @@
+{
+  "_id": "US/MO-LegalEthics/INF-930085",
+  "_source": "US/MO-LegalEthics",
+  "_type": "doctrine",
+  "_fetched_at": "2026-07-11T13:12:02.491489+00:00",
+  "opinion_number": "930085",
+  "series": "Informal",
+  "issuer": "Advisory Committee of the Supreme Court of Missouri / Office of Legal Ethics Counsel",
+  "title": "Missouri Informal Ethics Opinion 930085",
+  "text": "QUESTION: May attorney enter into a contingent fee arrangement to collect on final judgment which was entered in a domestic relations case? Because payments to client as a result of collection action will be in installments over a lengthy period, may attorney require that client irrevocably designate attorney as payee of the payments? ANSWER: The contingent fee arrangement is not prohibited. The irrevocable assignment implicates Rule 1.8(a) on conflicts of interest.",
+  "rules_cited": "1.8",
+  "url": "https://mo-legal-ethics.org/informal-opinion/930085/",
+  "date": "1993-01-01",
+  "jurisdiction": "US-MO"
+}

@@ -1,0 +1,39 @@
+{
+  "_id": "US-FEC-AO-2025-06",
+  "_source": "US/FEC-Legal",
+  "_type": "doctrine",
+  "_fetched_at": "2026-07-05T19:25:03.390708+00:00",
+  "title": "FEC Advisory Opinion 2025-06: Campaign Legal Center",
+  "text": "FEDERAL ELECTION COMMISSION\nWASHINGTON, D.C.\nApril 16, 2025\nADVISORY OPINION 2025-06\nMr. Saurav Ghosh\nMs. Shanna Ports\nCampaign Legal Center\n1101 14th Street, NW\nSuite 400\nWashington, DC 20005\nDear Mr. Ghosh and Ms. Ports:\nWe are responding to your request on behalf of Campaign Legal Center (the\n“Requestor”) regarding the application of the Federal Election Campaign Act, 52 U.S.C.\n§§ 30101-45 (the “Act”), and Commission regulations to the Requestor’s plan to file a complaint\nwith the Commission. The Commission concludes that the Requestor may file a complaint with\nthe Commission pursuant to 52 U.S.C. § 30109(a)(1) if it believes a violation of the Act has\noccurred.\nBackground and Question Presented\nThe facts presented in this advisory opinion are based on your advisory opinion request\nreceived on March 25, 2025.\nThe Requestor states that it intends to file a complaint with the Commission alleging\nviolations of the Act.1 The Requestor asks whether 52 U.S.C. § 30109(a)(1) “permits” it to file\nthe proposed complaint.2\nLegal Analysis\nSection 30109(a)(1) states that “any person who believes a violation of [the Act] has\noccurred” may file a complaint with the Commission. Thus, under the terms of this provision of\n1 AOR002.\n2 Id.\n\nAO 2025-06\nPage 2\nthe Act, the Requestor may file a complaint with the Commission if it believes a violation of the\nAct has occurred.3\nThis response constitutes an advisory opinion concerning the application of the Act and\nCommission regulations to the specific transaction or activity set forth in your request.4 This\nresponse does not address the substance of the Requestor’s proposed complaint or the potential\napplication of any executive orders, the authority of any Executive Branch official or agency, or\nother matters not within the Commission’s jurisdiction.\nThe Commission emphasizes that, if there is a change in any of the facts or assumptions\npresented, and such facts or assumptions are material to a conclusion presented in this advisory\nopinion, then the Requestor may not rely on that conclusion as support for its proposed activity.\nAny person involved in any specific transaction or activity which is indistinguishable in all its\nmaterial aspects from the transaction or activity with respect to which this advisory opinion is\nrendered may rely on this advisory opinion.5 Please note that the analysis or conclusions in this\nadvisory opinion may be affected by subsequent developments in the law including, but not\nlimited to, statutes, regulations, advisory opinions, and case law. Any advisory opinions cited\nherein are available on the Commission’s website.\nOn behalf of the Commission,\nJames E. “Trey” Trainor III\nActing Chairman\n3 See 52 U.S.C.§ 30101(11) (defining “person”). For information about the technical requirements for\ncomplaints, see id. § 30109(a)(1) and 11 C.F.R. § 111.4.\n4 See 52 U.S.C. § 30108.\n5 See id. § 30108(c)(1)(B).",
+  "date": "2025-04-16",
+  "url": "https://www.fec.gov/data/legal/advisory-opinions/2025-06/",
+  "matter_type": "advisory_opinion",
+  "ao_number": "2025-06",
+  "ao_year": 2025,
+  "status": "Final",
+  "summary": "Whether 52 U.S.C. 30109(a)(1) permits the requestor to file a complaint with the Commission.",
+  "requestor_names": [
+    "Campaign Legal Center"
+  ],
+  "statutory_citations": [
+    {
+      "section": "30101",
+      "title": 52
+    },
+    {
+      "section": "30108",
+      "title": 52
+    },
+    {
+      "section": "30109",
+      "title": 52
+    }
+  ],
+  "regulatory_citations": [
+    {
+      "part": 111,
+      "section": 4,
+      "title": 11
+    }
+  ]
+}

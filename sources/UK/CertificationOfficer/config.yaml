@@ -1,0 +1,99 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — UK Certification Officer Decisions
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/CertificationOfficer"
+  country: "UK"
+  name: "Certification Officer (Trade Unions & Employers' Associations) — Decisions"
+  url: "https://www.gov.uk/government/organisations/certification-officer"
+  description: |
+    Decisions of the Certification Officer, the independent statutory
+    regulator of trade unions and employers' associations in Great Britain
+    under the Trade Union and Labour Relations (Consolidation) Act 1992.
+    The Officer determines complaints by members (breach of union rules,
+    elections, discipline, ballots, accounting records, political funds,
+    mergers/amalgamations) and enforces statutory duties. Decisions are
+    quasi-judicial and binding.
+    ~530 decisions. Discovery via GOV.UK Search API (filter_format=decision +
+    organisation=certification-officer); full text from the born-digital
+    decision PDF(s) attached to each Content Store entry (extracted via the
+    shared PDF extractor; multiple attachments concatenated).
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+  endpoints:
+    search:
+      path: "/api/search.json"
+      method: "GET"
+      description: "GOV.UK Search API; filter_format=decision + filter_organisations=certification-officer"
+    content:
+      path: "/api/content/{path}"
+      method: "GET"
+      description: "GOV.UK Content Store API; PDF attachment URLs under details.attachments"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "content_id"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "content_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "pdf_url"
+      type: "string"
+      role: "reference"
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Open Government Licence v3.0"
+  url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Crown copyright; GOV.UK content published under OGL v3.0."
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~530 Certification Officer decisions (Great Britain)
+  - Full text from born-digital decision PDF(s) (assets.publishing.service.gov.uk),
+    extracted via common.pdf_extract (no OCR needed); multiple attachments concatenated
+  - Content Store details.body holds only a short summary; the decision is the PDF
+  - No authentication required
+  - Sibling of the GOV.UK finder scrapers UK/ET, UK/RPT, UK/FTT-Tax,
+    UK/TrafficCommissioner, UK/SchoolsAdjudicator

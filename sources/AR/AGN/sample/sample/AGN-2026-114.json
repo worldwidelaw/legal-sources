@@ -1,0 +1,22 @@
+{
+  "_id": "AGN-2026-114",
+  "_source": "AR/AGN",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-02T20:07:12.107508+00:00",
+  "title": "Programa ProHuerta. Período 2023 al 28/02/2025. Ministerio de Capital Humano",
+  "text": "Programa ProHuerta (PPH) Período auditado: 01/01/2023 al 28/02/2025 1.1 Objetivo general y objetivos específicos Evaluar si el Ministerio de Capital Humano, a través de la implementación del Programa ProHuerta, garantizó el acceso a una alimentación segura y de calidad a familias y comunidades en situación de vulnerabilidad social en todo el territorio nacional, específicamente en lo referido a: 1) Evaluar si el MCH cuenta con una estructura de gobernanza adecuada para la ejecución efectiva y eficaz del Programa ProHuerta 2) Evaluar en qué medida el Programa ProHuerta cuenta con recursos adecuados y suficientes para su implementación 3) Examinar la eficacia y efectividad del Programa ProHuerta para garantizar el acceso a una dieta equilibrada y diversificada a través de la autoproducción de alimentos mediante huertas y granjas agroecológicas",
+  "date": "2026-04-30",
+  "url": "https://www.agn.gob.ar/Informe-114-2026",
+  "pdf_url": "https://webagnapi.agn.gob.ar/sites/default/files/informes/2026-114-Informe.pdf",
+  "ano": 2026,
+  "resolucion": 114,
+  "actuacion": "66/2025",
+  "fecha_acta": "2026-04-30",
+  "periodo_auditado": "2023-01-01 / 2025-02-28",
+  "organismo_auditado_ids": [
+    "3133"
+  ],
+  "tipo_de_auditoria_ids": [
+    "51"
+  ]
+}

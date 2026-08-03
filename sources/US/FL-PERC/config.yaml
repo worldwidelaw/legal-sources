@@ -1,0 +1,137 @@
+# ===================================================================
+# US/FL-PERC -- Florida Public Employees Relations Commission (PERC)
+#   Final Orders (2015-present, via DOAH FLAIO)
+# ===================================================================
+# Final Orders of the Florida Public Employees Relations Commission
+# (PERC), Florida's independent quasi-judicial agency for public-sector
+# labor relations under Part II of Chapter 447, Florida Statutes. PERC
+# adjudicates unfair labor practice charges, bargaining-unit and
+# representation/decertification matters, employee-organization
+# registrations, and career-service / veterans'-preference employment
+# appeals. Each order resolves a specific contested case = case_law.
+# Per s. 120.53, Fla. Stat., every agency Final Order after 1 Jul 2015
+# is published on the Division of Administrative Hearings' "Florida
+# Agency Indexed Orders" (FLAIO) database (doah.state.fl.us/FLAIO/,
+# agency code PER). The orders are born-digital text-layer PDFs on the
+# DOAH file host. No JavaScript, no CAPTCHA, no auth. Public domain
+# Florida state government works (government edicts).
+# ===================================================================
+
+source:
+  id: "US/FL-PERC"
+  country: "US"
+  name: "Florida Public Employees Relations Commission — Final Orders"
+  url: "https://www.doah.state.fl.us/FLAIO/"
+  description: |
+    Final Orders of the Florida Public Employees Relations Commission
+    (PERC), Florida's independent public-sector labor-relations
+    tribunal (Ch. 447 Part II, Fla. Stat.): unfair labor practice
+    charges, bargaining-unit/representation matters, employee-
+    organization registrations, and career-service employment appeals.
+    Each order resolves a specific contested case = case_law.
+    Enumerated from the Division of Administrative Hearings' "Florida
+    Agency Indexed Orders" (FLAIO) database via a stateful ASP session:
+    a POST search on agency code PER returns a paged result set
+    (50 rows/page) whose rows link the born-digital order PDFs on the
+    DOAH file host (doah.state.fl.us/FLAID/PER/{YEAR}/...). Text is
+    extracted via common.pdf_extract; the agency case number, DOAH
+    order number, doc type, subject and issue date come from the index
+    row. No JavaScript, no CAPTCHA, no auth. ~7,000 orders 2015-present.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_session_search"
+  base_url: "https://www.doah.state.fl.us"
+  endpoints:
+    landing: "/FLAIO/"
+    search: "/FLAIO/searchAction.asp?sT=byOther"
+    page: "/FLAIO/flaioDisplay.asp?pc={pc}"
+    document: "/FLAID/PER/{year}/{filename}"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/FL-PERC/{pdf-filename-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "PERC agency case number (e.g. 'CA-2026-018', 'EL-2026-047'); prefix encodes the case type (CA=unfair labor practice, EL=election, RC=representation-certification, OR=organization registration, etc.)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "order_number"
+      description: "DOAH-assigned FLAIO order number (e.g. '26E-0593')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "order_type"
+      description: "Document type from the index (Final Order, Order Directing Election, Verification of Election Results, etc.)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "subject"
+      description: "PERC subject category (Elections, Unfair Labor Practice, Representation-Certification, Organization Registration, etc.)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (case number + doc type + subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the PERC order (born-digital PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order issue date (ISO 8601), parsed from the FLAIO index row"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Florida state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Orders of the Florida Public Employees Relations Commission are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery uses the DOAH FLAIO stateful ASP session: GET /FLAIO/ to
+    seed the session cookie, POST /FLAIO/searchAction.asp?sT=byOther
+    with Agency=PER, DocType=ALL, Subject=ALL and a wide IssueDate
+    range, then GET /FLAIO/flaioDisplay.asp?pc={N} for each of the
+    ~142 result pages (50 rows/page, ~7,000 orders 2015-present).
+  - Each row carries the agency case number, DOAH order number, issue
+    date, document type and subject; the linked PDF is a born-digital
+    text-layer order at doah.state.fl.us/FLAID/PER/{YEAR}/PER_...pdf.
+  - Full text is extracted from the PDF via common.pdf_extract; the
+    issue date and case identifiers come from the reliable index row.
+    A <200-char guard auto-skips empty/placeholder documents.
+  - PERC only publishes Final Orders after 1 Jul 2015 on FLAIO (per
+    s. 120.53, Fla. Stat.); earlier orders are not in this database.
+  - Distinct, non-overlapping with US/FL-DOAH: DOAH (/ROS/) holds ALJ
+    Recommended Orders in Chapter 120 contested cases; FLAIO PER holds
+    PERC's own agency Final Orders in Chapter 447 labor cases.
+  - Public domain Florida state government data.

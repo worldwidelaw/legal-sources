@@ -1,0 +1,105 @@
+# ===================================================================
+# US/USDA-AgricultureDecisions -- USDA "Agriculture Decisions"
+#   OALJ Initial Decisions + Secretary's Judicial Officer final decisions
+# ===================================================================
+# "Agriculture Decisions" is the official combined reporter of decisions
+# and orders issued in USDA adjudicatory proceedings — both the Office of
+# Administrative Law Judges (OALJ) initial decisions and the Secretary's
+# Judicial Officer (JO) final decisions — under the Packers & Stockyards
+# Act, Animal Welfare Act, PACA, Agricultural Marketing Agreement Act,
+# Horse Protection Act, Organic Foods Production Act, the meat/poultry
+# inspection acts, and other USDA-administered statutes. Each entry
+# resolves a specific contested case = case_law. Public U.S. federal
+# government works (17 U.S.C. § 105, government edicts).
+#
+# The official USDA OALJ site (oalj.oha.usda.gov -> www.usda.gov/oha/oalj)
+# is unreachable from most build vantages. The full run is mirrored,
+# born-digital with a text layer, by the National Agricultural Law Center
+# as semi-annual COMPILATION PDFs (Vol 55 = 1996 ... Vol 78 = 2019, two
+# books per volume). We split each compilation on the per-decision caption
+# ("In re: NAME. Docket No. NN-NNNN. <type>. Filed <Month DD, YYYY>." or
+# court "NAME v. USDA. No. N. ... Filed <date>.") into individual decision
+# records. Text via PyMuPDF born-digital layer. No JavaScript/CAPTCHA/auth.
+# ===================================================================
+
+source:
+  id: "US/USDA-AgricultureDecisions"
+  country: "US"
+  name: "USDA Agriculture Decisions — OALJ & Judicial Officer Decisions"
+  url: "https://www.usda.gov/about-usda/general-information/staff-offices/office-hearings-and-appeals/office-administrative-law-judges/services/oalj-decisions"
+  description: |
+    Decisions and orders issued in U.S. Department of Agriculture
+    adjudicatory proceedings — OALJ initial decisions and the Secretary's
+    Judicial Officer final decisions — published in the official
+    "Agriculture Decisions" reporter under the Packers & Stockyards Act,
+    Animal Welfare Act, Perishable Agricultural Commodities Act,
+    Agricultural Marketing Agreement Act, Horse Protection Act, Organic
+    Foods Production Act, and other USDA-administered statutes. Each entry
+    resolves a specific contested case = case_law. Sourced from the
+    born-digital compilation PDFs mirrored by the National Agricultural
+    Law Center; each semi-annual volume is split on the per-decision
+    caption into individual decision records. Full text via PyMuPDF.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "pdf_compilation"
+  base_url: "https://nationalaglawcenter.org"
+  endpoints:
+    document: "/wp-content/uploads/assets/agdecisions/VOLUME-{vol}-BOOK-{book}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "_source"
+      type: "string"
+      required: true
+    - name: "_type"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+    - name: "case_number"
+      type: "string"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true
+
+license:
+  name: "US Public Domain (17 U.S.C. § 105)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    U.S. federal government works (USDA OALJ / Judicial Officer decisions)
+    are in the public domain under 17 U.S.C. § 105 and the
+    government-edicts doctrine. Retrieved via the National Agricultural
+    Law Center mirror, which redistributes the official reporter.

@@ -1,0 +1,85 @@
+# ===================================================================
+# US/FL-AGOpinions -- Florida Attorney General Formal Opinions
+# ===================================================================
+# Full text of formal legal opinions issued by the Florida Attorney
+# General. These are official state legal interpretations (doctrine).
+# Published openly as HTML at myfloridalegal.com/ag-opinions.
+# No authentication required. Public government data.
+# ===================================================================
+
+source:
+  id: "US/FL-AGOpinions"
+  country: "US"
+  name: "Florida Attorney General Formal Opinions"
+  url: "https://www.myfloridalegal.com/ag-opinions"
+  description: |
+    Formal legal opinions issued by the Florida Office of the Attorney
+    General ("AGOs"). Each opinion answers a legal question posed by a
+    public official and constitutes an authoritative (advisory) state
+    legal interpretation. Full text extracted from the official HTML
+    detail pages. ~5,000 opinions, paginated index back to the 1970s.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.myfloridalegal.com"
+  endpoints:
+    index: "/ag-opinions?page={page}"
+    detail: "/node/{node_id}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 7
+  key_fields:
+    - name: "opinion_number"
+      description: "Official AG opinion number (e.g., 'AGO 2026-05')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Opinion title (subject of the question presented)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the HTML body"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Florida)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Florida Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Formal AG opinions ("AGOs") at myfloridalegal.com/ag-opinions
+  - Paginated index (?page=N, ~30 rows/page, ~168 pages); rows give
+    opinion number, issued date (<time datetime>), title, /node/{id} link
+  - Full text from the Drupal field--name-body region of each /node/{id}
+  - HTML extraction (no PDFs); ~5,000 opinions back to the 1970s
+  - Public domain Florida government data

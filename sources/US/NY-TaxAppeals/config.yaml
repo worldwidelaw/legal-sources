@@ -1,0 +1,111 @@
+# ===================================================================
+# US/NY-TaxAppeals -- New York State Division of Tax Appeals
+# ===================================================================
+# Full text of the adjudicative output of the NY State Division of Tax
+# Appeals: Tax Appeals Tribunal decisions (*.dec.pdf) and Administrative
+# Law Judge determinations (*.det.pdf), plus procedural orders. Each
+# resolves a tax controversy between a taxpayer and the NY Department of
+# Taxation and Finance, so the corpus is case_law. Published openly at
+# dta.ny.gov as born-digital, text-layer PDFs listed on server-rendered
+# HTML index pages (current decisions/determinations + a ~23,600-link
+# historical archive index). No JS, no CAPTCHA, no auth.
+# Public domain US state government works.
+# ===================================================================
+
+source:
+  id: "US/NY-TaxAppeals"
+  country: "US"
+  name: "New York State Division of Tax Appeals"
+  url: "https://dta.ny.gov/"
+  description: |
+    Decisions of the New York State Tax Appeals Tribunal and
+    determinations of its Administrative Law Judges, which adjudicate
+    disputes between taxpayers and the NY Department of Taxation and
+    Finance under the Tax Law. Documents are published openly at
+    dta.ny.gov as text-layer PDFs, listed as direct links on three
+    server-rendered HTML index pages: /decisions/ (current Tribunal
+    decisions), /determinations/ (current ALJ determinations), and
+    /pdf/archive/archive_index.htm (full historical archive,
+    ~23,600 links). No JavaScript, no pagination beyond the index
+    pages, no CAPTCHA, no authentication.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://dta.ny.gov"
+  endpoints:
+    decisions: "/decisions/"
+    determinations: "/determinations/"
+    archive: "/pdf/archive/archive_index.htm"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "slug"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "slug"
+      description: "Stable document slug derived from the PDF filename"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "DTA docket number (e.g. 851583)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Case caption (Matter of <petitioner> — <forum> <kind>)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision/determination from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision/determination date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — New York)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "New York State Division of Tax Appeals decisions and determinations are official state government works in the public domain."
+
+notes: |
+  - Decisions/determinations at dta.ny.gov, served as text-layer PDFs
+    under /pdf/decisions/, /pdf/determinations/ and /pdf/archive/.
+  - The /decisions/ and /determinations/ pages list current documents;
+    /pdf/archive/archive_index.htm lists the full historical archive
+    (~23,600 PDF links). The scraper reads all index pages, collects
+    every *.pdf link, dedups by URL, and orders newest docket first.
+  - The DTA docket number and document kind (decision / determination /
+    order) are parsed from the filename; the petitioner name and the
+    decision date are parsed from the document text.
+  - Each PDF is extracted via common.pdf_extract. Pages/PDFs are fetched
+    via curl with a browser UA and passed to the extractor as bytes.
+    Paces at ~1 req/s.
+  - Born-digital PDFs (the modern corpus) carry a real text layer and
+    extract without OCR; any older scanned PDFs are auto-skipped by the
+    <150-char guard and recovered on an OCR-capable host.
+  - Public domain New York State government data.

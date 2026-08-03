@@ -1,0 +1,105 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — UK Housing Ombudsman Service (England) Decisions
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/HousingOmbudsman"
+  country: "UK"
+  name: "Housing Ombudsman Service (England) — Determinations"
+  url: "https://www.housing-ombudsman.org.uk/decisions/"
+  description: |
+    Published determinations of the Housing Ombudsman Service, the statutory
+    dispute-resolution body (Housing Act 1996; Housing Ombudsman Scheme) that
+    investigates complaints by residents against member landlords — social
+    landlords, local authorities and voluntary members. Each determination
+    decides whether the landlord's handling amounted to maladministration or
+    service failure and imposes binding orders and recommendations.
+    ~17,000+ determinations. Full text via server-rendered HTML pages.
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "html"
+  base_url: "https://www.housing-ombudsman.org.uk"
+  endpoints:
+    listing:
+      path: "/decisions/page/{page}/"
+      method: "GET"
+      description: "Paginated WordPress decisions archive (~1,674 pages)"
+    decision:
+      path: "/decisions/{slug}/"
+      method: "GET"
+      description: "Individual determination page; full text embedded in HTML"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "case_id"
+  update_strategy: "upsert"
+  versioning: "date"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "case_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "decision_type"
+      type: "string"
+      role: "classification"
+    - name: "landlord"
+      type: "string"
+      role: "classification"
+    - name: "landlord_type"
+      type: "string"
+      role: "classification"
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Custom terms (© Housing Ombudsman Service)"
+  url: "https://www.housing-ombudsman.org.uk/legal/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    No explicit Open Government Licence statement on the site; footer asserts
+    "© Housing Ombudsman Service". Commercial use flagged pending confirmation.
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~17,000+ determinations (England; 2020-present)
+  - Full text embedded in each decision page HTML (metadata table +
+    Background / Complaint / Determination / Reasons / Orders narrative)
+  - No public WP REST API for the `decision` post type (404); server-rendered
+    HTML pages scraped directly
+  - Rich metadata: Case ID, Decision type, Jurisdiction, Landlord,
+    Landlord type, Occupancy, Date
+  - No authentication required; born-digital, no OCR
+  - Distinct from UK/ScotHousingChamber (Scotland) and UK/PHSO

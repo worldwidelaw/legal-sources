@@ -1,0 +1,108 @@
+# ===================================================================
+# US/VA-EthicsOpinions -- Virginia Conflict of Interest and Ethics
+#                         Advisory Council — Formal Advisory Opinions
+# ===================================================================
+# Formal advisory opinions issued by the Virginia Conflict of Interest
+# and Ethics Advisory Council under Va. Code title 30, chapter 56
+# (§ 30-355 et seq.). Each opinion is the Council's official written
+# interpretation of the State and Local Government Conflict of Interests
+# Act (§ 2.2-3100 et seq.), the General Assembly Conflicts of Interests
+# Act (§ 30-100 et seq.) and the lobbyist-disclosure statutes = doctrine.
+# Born-digital, full-text PDFs (real text layer, no OCR, no CAPTCHA,
+# no auth). Public-domain Commonwealth of Virginia government works.
+# ===================================================================
+
+source:
+  id: "US/VA-EthicsOpinions"
+  country: "US"
+  name: "Virginia Conflict of Interest and Ethics Advisory Council — Formal Advisory Opinions"
+  url: "https://ethics.dls.virginia.gov/advisory-opinions.asp"
+  description: |
+    Formal advisory opinions of the Virginia Conflict of Interest and
+    Ethics Advisory Council. Under Va. Code § 30-355 the Council issues
+    formal advisory opinions construing the State and Local Government
+    Conflict of Interests Act (§ 2.2-3100 et seq.), the General Assembly
+    Conflicts of Interests Act (§ 30-100 et seq.) and the lobbyist-
+    disclosure provisions (§ 2.2-418 et seq.). Formal advisory opinions
+    are public record and are published on the Council's website as
+    born-digital PDFs whose text layer is extracted directly (no OCR).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://ethics.dls.virginia.gov"
+  endpoints:
+    opinions: "/advisory-opinions.asp"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/VA-EthicsOpinions/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Formal advisory opinion number (e.g. 2016-F-001, 2015-F-004A)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Opinion number + short subject caption"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion, from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the opinion body ('Month DD, YYYY'), fallback to opinion-number year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (Commonwealth of Virginia Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Formal advisory opinions of the Virginia Conflict of Interest and Ethics Advisory Council are official public records of the Commonwealth of Virginia, published for public use with no copyright restriction."
+
+notes: |
+  - Enumeration: GET https://ethics.dls.virginia.gov/advisory-opinions.asp
+    and parse each PDF <a> anchor. The opinion number is parsed from the
+    filename/caption in the "YYYY-F-NNN[.rev|letter]" form; a few older
+    memos live under a "Formal Advisory Opinions/" subfolder.
+  - Full text: each PDF is born-digital with a real text layer; extracted
+    via the shared common.pdf_extract backend — no OCR. Hrefs mix raw
+    spaces and %20-encoded spaces; the URL builder keeps % in the safe set
+    to avoid double-encoding.
+  - Type: every published document is a formal advisory opinion = doctrine
+    (the Council's informal opinions are confidential and not published).
+  - Date: parsed from the first "Month DD, YYYY" in the opinion body, with
+    a fallback to the year embedded in the opinion number.
+  - COVERAGE: the corpus is the full set of formal advisory opinions the
+    Council has published since its 2014 creation (~25 opinions,
+    2015-F-001 through 2023-F-002). The Council issues only a handful of
+    formal opinions per year, so the corpus is small but authoritative.

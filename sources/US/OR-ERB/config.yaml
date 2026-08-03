@@ -1,0 +1,116 @@
+# ===================================================================
+# US/OR-ERB -- Oregon Employment Relations Board (ERB) Board Orders
+# ===================================================================
+# Board Orders of the Oregon Employment Relations Board (ERB), the
+# state's quasi-judicial agency that adjudicates public-sector
+# labor-relations disputes -- unfair labor practice complaints,
+# representation / unit-clarification cases, contract disputes,
+# declaratory rulings, and appeals -- under Oregon's Public Employee
+# Collective Bargaining Act (PECBA, ORS 243) and related statutes.
+# Each Board Order resolves a specific contested case = case_law.
+# Public domain Oregon state-government works (government edicts).
+#
+# Published as a CONTENTdm digital collection (alias p17027coll9,
+# "Employment Relations Board Orders") on the OCLC-hosted instance at
+# cdm17027.contentdm.oclc.org. The public dmwebservices JSON API is
+# used: dmQuery enumerates item pointers, dmGetItemInfo returns each
+# item's Dublin-Core fields including the full-text "transc"
+# (Transcript) field. No PDF extraction, no CAPTCHA, no auth.
+# ===================================================================
+
+source:
+  id: "US/OR-ERB"
+  country: "US"
+  name: "Oregon Employment Relations Board — Board Orders"
+  url: "https://cdm17027.contentdm.oclc.org/digital/collection/p17027coll9"
+  description: |
+    Board Orders of the Oregon Employment Relations Board (ERB). ERB
+    adjudicates public-sector labor-relations disputes in Oregon --
+    unfair labor practice complaints, representation and unit
+    clarification cases, contract disputes, declaratory rulings, and
+    related matters -- under Oregon's Public Employee Collective
+    Bargaining Act (PECBA, ORS 243) and the State Personnel Relations
+    Law. Each Board Order resolves a specific contested case = case_law.
+    Enumerated from the ERB's CONTENTdm collection (alias p17027coll9)
+    via the public dmwebservices JSON API; case number, official case
+    name, case type, decision date, and the full order text are read
+    from each item's Dublin-Core fields (title / subjec / type / date /
+    transc). No CAPTCHA, no auth. ~4,859 Board Orders, 2004–present.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://cdm17027.contentdm.oclc.org"
+  endpoints:
+    query: "/digital/bl/dmwebservices/index.php?q=dmQuery/p17027coll9/0/dmrecord!date/dmrecord/{max}/{start}/0/0/0/0/json"
+    item: "/digital/bl/dmwebservices/index.php?q=dmGetItemInfo/p17027coll9/{rec}/json"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/OR-ERB/{CONTENTdm dmrecord})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "ERB case number (e.g. 'UC-017-13')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "case_name"
+      description: "Official case name (parties)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "case_type"
+      description: "Case type (e.g. 'Representation/Unit Clarification', 'Unfair Labor Practice')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Order title (ERB case number + official case name)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Board Order (CONTENTdm transcript field)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date issued (ISO 8601), from the CONTENTdm date field"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the CONTENTdm item page"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Board Orders of the Oregon Employment Relations Board are official
+    works of Oregon state government (judicial/quasi-judicial edicts of
+    government) and are not subject to copyright. Free to use, including
+    commercially.

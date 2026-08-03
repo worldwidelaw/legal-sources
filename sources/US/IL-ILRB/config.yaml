@@ -1,0 +1,139 @@
+# ===================================================================
+# US/IL-ILRB -- Illinois Labor Relations Board (ILRB) Decisions & Orders
+# ===================================================================
+# Published decisions of the Illinois Labor Relations Board (ILRB), the
+# state's quasi-judicial agency that adjudicates public-sector labor-
+# relations disputes under the Illinois Public Labor Relations Act
+# (5 ILCS 315). The Board (State Panel and Local Panel), together with
+# its Administrative Law Judges and Executive Director / General
+# Counsel, decides unfair-labor-practice charges, representation and
+# unit-clarification petitions, and related contested cases. Each
+# decision resolves a specific case = case_law, and they are official
+# Illinois state-government works in the public domain (government
+# edicts).
+#
+# BUILD RECIPE: decisions are published on the Illinois.gov Adobe
+# Experience Manager (AEM) site at https://ilrb.illinois.gov/decisions/ .
+# Two families are paginated by state fiscal year:
+#   - Board Decisions and Orders  /decisions/boarddecisions/boardfyNN.html
+#   - ALJ / ED Recommended
+#         Decisions and Orders    /decisions/decisionorders/decisionordersfyNN.html
+# Each fiscal-year page renders a JavaScript DataTable whose rows come
+# from an AEM "datatableassets" JSON endpoint embedded in the page HTML
+# (…/jcr:content/…/data_table_assets_co*.datatableassets.json). That
+# JSON's `data` array holds one row per decision:
+#   [ [caseNumber, pdfRelPath, "true"], dateIssued, periCitation,
+#     parties, documentCategory ]
+# The pdfRelPath (/content/dam/…) is the born-digital decision PDF, whose
+# full text is extracted with common.pdf_extract. No auth, no CAPTCHA.
+# ===================================================================
+
+source:
+  id: "US/IL-ILRB"
+  country: "US"
+  name: "Illinois Labor Relations Board — Decisions & Orders"
+  url: "https://ilrb.illinois.gov/decisions.html"
+  description: |
+    Published decisions of the Illinois Labor Relations Board (ILRB).
+    The ILRB adjudicates public-sector labor-relations disputes in
+    Illinois -- unfair-labor-practice charges, representation and
+    unit-clarification petitions, and related contested cases -- under
+    the Illinois Public Labor Relations Act (5 ILCS 315). Covers both
+    the Board's own Decisions and Orders (State Panel and Local Panel)
+    and the Administrative Law Judge / Executive Director Recommended
+    Decisions and Orders. Each decision resolves a specific contested
+    case = case_law. Enumerated from the ILRB's Illinois.gov AEM
+    fiscal-year decision pages via the embedded "datatableassets" JSON
+    tables; case number, PERI citation, decision date, parties, and the
+    full decision text (from the born-digital PDF) are captured. No
+    CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://ilrb.illinois.gov"
+  endpoints:
+    category_landing: "/decisions/{category}.html"
+    fiscal_year_page: "/decisions/{category}/{stem}fy{fy}.html"
+    datatable_json: "/content/soi/ilrb/en/decisions/{category}/{page}/jcr:content/responsivegrid/container/container_293684588/container/data_table_assets_co.datatableassets.json"
+    decision_pdf: "/content/dam/soi/en/web/ilrb/decisions/{category}/documents/{name}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/IL-ILRB/{pdf-filename-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Slug derived from the decision PDF filename (unique per file)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "case_number"
+      description: "ILRB case number (e.g. 'S-CA-24-087', 'L-RC-24-009')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "citation"
+      description: "PERI citation (Public Employee Reporter for Illinois), e.g. '41 PERI 107'"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "parties"
+      description: "Charging party / petitioner and respondent employer / union"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "category"
+      description: "Decision family ('boarddecisions' or 'decisionorders')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Decision title (case number — parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (born-digital PDF extract)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date issued (ISO 8601), from the DataTable 'Date Issued' column"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the decision PDF on ilrb.illinois.gov"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions of the Illinois Labor Relations Board are official works
+    of Illinois state government (edicts of a quasi-judicial government
+    body) and are not subject to copyright under the government-edicts
+    doctrine. Free to use, including commercially.

@@ -1,0 +1,104 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — UK Legal Ombudsman (LeO) Public Interest Decisions
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/LegalOmbudsman"
+  country: "UK"
+  name: "Legal Ombudsman (LeO) — Public Interest Decisions"
+  url: "https://www.legalombudsman.org.uk/information-centre/public-interest-decisions/"
+  description: |
+    Published "public interest" decisions of the Legal Ombudsman (LeO), the
+    statutory ombudsman scheme (Office for Legal Complaints, established under
+    the Legal Services Act 2007) that resolves complaints about legal service
+    providers in England & Wales. Under its policy statement on publishing
+    decisions, LeO publishes selected final ombudsman decisions in the public
+    interest — full, reasoned determinations that name the legal service
+    provider. Full text via born-digital PDFs (extracted with common.pdf_extract,
+    no OCR). Distinct from LeO's firm-level "ombudsman decision data" CSV, which
+    is aggregate complaint-outcome metadata (not decision text) and is not used.
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "html"
+  base_url: "https://www.legalombudsman.org.uk"
+  endpoints:
+    listing:
+      path: "/information-centre/public-interest-decisions/"
+      method: "GET"
+      description: "Single listing page; one card per published decision"
+    file:
+      path: "/media/{id}/{slug}-pid.pdf"
+      method: "GET"
+      description: "Born-digital public-interest decision PDF"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "case_id"
+  update_strategy: "upsert"
+  versioning: "date"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "case_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "firm"
+      type: "string"
+      role: "classification"
+    - name: "summary"
+      type: "string"
+      role: "content"
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Custom terms (Legal Ombudsman / Office for Legal Complaints)"
+  url: "https://www.legalombudsman.org.uk/information-centre/data-centre/ombudsman-decision-data/policy-statement-publishing-our-decisions/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    No Open Government Licence statement on the site; decisions are published
+    under LeO's "policy statement on publishing our decisions". Commercial use
+    flagged pending confirmation.
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~25-30 published public-interest decisions (England & Wales; a curated,
+    growing set)
+  - Each listing card links to the full decision PDF (/media/{id}/{slug}-pid.pdf)
+  - Born-digital PDFs extracted via common.pdf_extract (no OCR); a small number
+    of scanned decisions with no text layer are skipped
+  - Decision date is stamped in the PDF body ("Final Decision / Date DD Month YYYY")
+  - No authentication required
+  - Distinct from UK/FinancialOmbudsman, UK/HousingOmbudsman, UK/PensionsOmbudsman

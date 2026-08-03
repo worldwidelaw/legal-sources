@@ -1,0 +1,50 @@
+fetch:
+  list_url: https://aquaticsintegrity.com/suspended-persons/
+  news_url: https://aquaticsintegrity.com/news/
+  method: html_pdf_and_article
+  rate_limit_seconds: 2
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: >
+    Aquatics Integrity Unit (AQIU) decisions — the independent integrity body of
+    World Aquatics (formerly FINA) that investigates and adjudicates anti-doping,
+    integrity-code, safeguarding and competition-manipulation matters across the
+    aquatic disciplines (swimming, water polo, diving, artistic swimming, open
+    water, high diving). Two openly published full-text corpora on
+    aquaticsintegrity.com: (1) born-digital, multi-page reasoned
+    Adjudicatory-Body / Doping-Panel decision PDFs linked from the Suspended
+    Persons registry, and (2) official sanction-decision news notices carrying
+    the respondent, the rule(s) violated, the sanction and the ineligibility
+    period. Public WordPress site, no login, no WAF, reachable from any IP.
+  id: INTL/WorldAquatics-Integrity
+  language: en
+  name: Aquatics Integrity Unit (AQIU) Decisions
+  url: https://aquaticsintegrity.com/suspended-persons/
+license:
+  name: "World Aquatics / AQIU Terms (All Rights Reserved)"
+  url: "https://aquaticsintegrity.com/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions are openly published for transparency, but World Aquatics / AQIU asserts copyright with no open licence. Commercial use flagged restricted per project policy (err on flagging)."

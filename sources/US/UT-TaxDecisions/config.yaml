@@ -1,0 +1,118 @@
+# ===================================================================
+# US/UT-TaxDecisions -- Utah State Tax Commission
+# Commission Decisions (case_law) + Private Letter Rulings (doctrine)
+# ===================================================================
+# The Utah State Tax Commission's Appeals Unit publishes its REDACTED
+# adjudicative Commission Decisions (taxpayer appeals of assessments and
+# denials -> case_law) and its interpretive Private Letter Rulings
+# (-> doctrine) as public, born-digital PDFs.
+#
+# Discovery is from two server-rendered WordPress pages whose Ninja Tables
+# ship every row in the static HTML (no JavaScript, no CAPTCHA, no auth):
+#   - Decisions: https://tax.utah.gov/commission/decisions/
+#   - Rulings:   https://tax.utah.gov/commission/rulings/
+# Each <tr class="ninja_table_row_N"> row has a <td><a href> direct PDF
+# link plus metadata columns (number, decision date, tax type, tax year,
+# posted date for decisions; number, ruling date, posted date, subject for
+# rulings). Full text lives only in the PDF, served from the file CDN
+# https://files.tax.utah.gov/tax/commission/{decision,ruling}/{NUM}.pdf
+# and extracted via the shared, OOM-hardened common.pdf_extract helper.
+# Public-domain Utah state-government works (government-edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/UT-TaxDecisions"
+  country: "US"
+  name: "Utah State Tax Commission — Decisions & Private Letter Rulings"
+  url: "https://tax.utah.gov/commission/decisions/"
+  description: |
+    Redacted Commission Decisions (adjudications of taxpayer appeals =
+    case_law) and Private Letter Rulings (interpretive guidance = doctrine)
+    published by the Utah State Tax Commission Appeals Unit. Discovered from
+    the server-rendered Ninja Table rows on the official Decisions and Rulings
+    pages; full text read from the born-digital PDF on files.tax.utah.gov.
+    No JavaScript scraping, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "wayback_cdx"
+  base_url: "http://web.archive.org"
+  endpoints:
+    cdx: "http://web.archive.org/cdx/search/cdx"
+    raw: "https://web.archive.org/web/{ts}id_/{url}"
+  # Original (live) file host — geo-blocks foreign IPs via CloudFront, so we
+  # discover + fetch through the Internet Archive, which crawled it from a US
+  # vantage.
+  decision_prefix: "files.tax.utah.gov/tax/commission/decision/"
+  ruling_prefix: "files.tax.utah.gov/tax/commission/ruling/"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/UT-TaxDecisions/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Decision or ruling number parsed from the row (e.g. '21-0823', '17-003')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (number + tax type / subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision / ruling, extracted from the published PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision / ruling date (ISO 8601) from the row's date column"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Utah state tax adjudications)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Commission Decisions and Private Letter Rulings of the Utah State Tax Commission are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The live file host files.tax.utah.gov geo-blocks foreign IPs via a
+    CloudFront distribution that returns an HTML "404" decoy (verified
+    x-cache: Error from cloudfront). We therefore discover + fetch through
+    the Internet Archive, which crawled the whole tree from a US vantage.
+  - Discovery uses the CDX API (statuscode:200, collapse=urlkey) over the two
+    prefixes; ~2,870 decisions + ~510 rulings (3,387 total). Bytes are
+    fetched verbatim from the Wayback /web/{ts}id_/{url} raw endpoint.
+  - The corpus is overwhelmingly born-digital Word-exported HTML (clean text
+    layer); the extractor strips the Word style/xml/comment islands then the
+    tags. A handful of recent items are born-digital PDFs (common.pdf_extract).
+  - _type is case_law for /commission/decision/ docs and doctrine for
+    /commission/ruling/ docs. The docket number is the filename; the decision
+    date is parsed from the body "Signed M/D/YY" line. A <200-char guard
+    skips the rare empty capture.

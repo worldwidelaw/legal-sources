@@ -1,0 +1,19 @@
+{
+  "_id": "BR-CVM-PAS-19957000155202612",
+  "_source": "BR/CVM",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-03T12:10:36.373537+00:00",
+  "title": "PAS 19957000155202612",
+  "text": "Objeto: O presente Termo de Acusação baseia-se nas irregularidades identificadas no processo 19957.011404/2025-14, instaurado conforme denúncia recebida por meio do SAC da CVM em 20/08/2025 (2565857). A GOI, após encaminhar reposta ao remetente, enviou à Gerência de Supervisão de Intermediários 2 (GSUI-2) o Ofício Interno nº 385/2025/CVM/SOI/GOI (2565859) para ciência e tratamento. A investigação conduzida pela SMI, por meio da GSUI-2, comprovou a ocorrência de irregularidades, com suficientes evidências de autoria e materialidade, de forma a justificar a instauração do presente Processo Administrativo Sancionador, como se descreve ao longo deste Termo de Acusação.",
+  "date": "2026-02-09",
+  "url": "https://sistemas.cvm.gov.br/?PAS",
+  "language": "pt",
+  "process_number": "19957000155202612",
+  "phase": "Citação e envio de defesas",
+  "subphase": "GCP inicia citação dos acusados com comunicação externa",
+  "accused": [
+    "AxiCorp Financial Services Pty Ltd",
+    "AxiTrader LLC"
+  ],
+  "instruction_unit": "GSUI-2"
+}

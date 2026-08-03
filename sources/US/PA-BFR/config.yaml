@@ -1,0 +1,130 @@
+# ===================================================================
+# US/PA-BFR -- Pennsylvania Board of Finance and Revenue (Decisions)
+# ===================================================================
+# Full text of the published decisions of the Pennsylvania Board of
+# Finance and Revenue (BF&R) — the Commonwealth's independent
+# administrative tax-appeal tribunal that reviews petitions for
+# refund/reassessment of state taxes (Personal Income; Corporate,
+# Franchise & Capital Stock; Sales & Use; Realty Transfer; and other
+# "Miscellaneous" taxes) appealed from the Department of Revenue's Board
+# of Appeals. Each redacted "Decision and Order" resolves a specific
+# petition (taxpayer v. Commonwealth Dept. of Revenue), so the corpus is
+# case_law. Decisions are published since April 1, 2014.
+#
+# The Board publishes the decisions through a public search app at
+#   https://bfrcases.patreasury.gov/DecisionSearch
+# an ASP.NET WebForms page whose results load from a clean PageMethod JSON
+# endpoint. The docket-search PageMethod returns the WHOLE published corpus
+# when queried with an empty docket (a SQL LIKE '%%' match):
+#   POST /DecisionSearch.aspx/SearchDocket   body {"Docket":""}
+# Each row carries TransactionId, DocketNumber, PetitionerName, TaxName,
+# SubTaxName and the redacted-decision PDF FileName; the PDF is served from
+# OpenDocument.aspx?id={TransactionId}&fname={FileName}. No JS, no CAPTCHA,
+# no auth. Decisions of a Pennsylvania state administrative tribunal are
+# public domain government works (government-edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/PA-BFR"
+  country: "US"
+  name: "Pennsylvania Board of Finance and Revenue — Decisions"
+  url: "https://bfrcases.patreasury.gov/DecisionSearch"
+  description: |
+    Published decisions of the Pennsylvania Board of Finance and Revenue
+    (BF&R), the Commonwealth's independent administrative tax-appeal
+    tribunal reviewing petitions for refund/reassessment of state taxes
+    (Personal Income; Corporate/Franchise/Capital Stock; Sales & Use;
+    Realty Transfer; Miscellaneous) appealed from the Department of
+    Revenue's Board of Appeals. Redacted Decision-and-Order PDFs since
+    April 1, 2014, enumerated via a PageMethod JSON endpoint and served as
+    born-digital text-layer PDFs. No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "json_pagemethod"
+  base_url: "https://bfrcases.patreasury.gov"
+  endpoints:
+    search: "/DecisionSearch.aspx/SearchDocket"
+    document: "/OpenDocument.aspx"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/PA-BFR/{transactionId}-{docket})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket"
+      description: "BF&R docket number from the search row (e.g. '1308873')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "petitioner"
+      description: "Petitioner / taxpayer name from the search row"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "tax_type"
+      description: "Tax category (Personal Income, Corporate Tax, Sales, Miscellaneous)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Synthesized caption (In re <petitioner>, court, docket)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the redacted Decision and Order from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601) parsed from the 'AND NOW, <Month D, YYYY>,' ordering clause"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Pennsylvania state tribunal decision)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Pennsylvania Board of Finance and Revenue are official quasi-judicial government works in the public domain under the government-edicts doctrine. Taxpayer-identifying details are redacted by the Board prior to publication."
+
+notes: |
+  - Discovery: a single POST to /DecisionSearch.aspx/SearchDocket with body
+    {"Docket":""} returns the whole published corpus (~1,000 rows, the SP does
+    a LIKE '%%' match; TransactionIds are contiguous 10..1014 so this is the
+    full set, not a paginated cap). Each row gives TransactionId, DocketNumber,
+    PetitionerName, TaxName, SubTaxName and the redacted-decision FileName.
+  - PDFs are served from OpenDocument.aspx?id={TransactionId}&fname={FileName}
+    (URL-encode the FileName) and are born-digital text layers; extracted via
+    common.pdf_extract.
+  - Decision date is parsed from the standard BF&R ordering clause
+    "AND NOW, <Month D, YYYY>, pursuant to the Fiscal Code ..." (fallback:
+    latest in-document date).
+  - The companion GetDecisionSearch PageMethod (TaxType + MonthPicker date
+    range) requires the picker's exact calendar value and returns
+    "No Records Found" for arbitrary ranges; SearchDocket is the reliable
+    full-corpus enumeration path.
+  - Public domain Pennsylvania state administrative-tribunal data.

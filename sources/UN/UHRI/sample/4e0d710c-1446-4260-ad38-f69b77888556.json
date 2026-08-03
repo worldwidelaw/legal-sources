@@ -1,0 +1,49 @@
+{
+  "_id": "4e0d710c-1446-4260-ad38-f69b77888556",
+  "_source": "UN/UHRI",
+  "_type": "doctrine",
+  "_fetched_at": "2026-07-06T11:14:47.966807+00:00",
+  "title": "CEDAW/C/IRQ/CO/8/REV.1 — Concerns/Observations — Iraq",
+  "text": "Women’s access to justice\n17.The Committee notes with concern that the definition of terrorism fails to include rape as a crime of genocide, limiting accountability by prioritizing punishment for terrorist membership. It notes that the State Party lacks a strong framework to investigate and prosecute gender-based violence, including rape, as stand-alone crimes in cases involving Da’esh and other non-State actors, as well as mechanisms for the protection of witnesses and victims and adequate procedures to ensure survivors’ participation in justice processes. The Committee further notes with concern that the Yazidi Survivors Act may at times impose burdensome and stigmatizing procedures on survivors, such as the filing of judicial complaints to gain access to reparations, or inflexible measures for gaining access to benefits for those in remote areas or camps. It notes that the Act has been implemented without transparent data on the reparations granted. Lastly, it notes with concern that despite a general amnesty law, under which executions have been temporarily halted and a partial reprieve granted, the death penalty has not yet been abolished and disproportionately affects women in a context marked by gender bias and tolerance of so-called “honour”-based violence. Similarly, it notes the absence of publicly available, gender-disaggregated data on death penalty cases.",
+  "date": "2026-05-20",
+  "url": "https://uhri.ohchr.org/en/search-human-rights-recommendations",
+  "symbol": "CEDAW/C/IRQ/CO/8/REV.1",
+  "body": "CEDAW",
+  "annotation_type": "Concerns/Observations",
+  "countries": [
+    "Iraq"
+  ],
+  "themes": [
+    "Violence against women",
+    "Rule of law & impunity",
+    "Administration of justice & fair trial",
+    "Death penalty",
+    "Right to life",
+    " Human rights & counter-terrorism",
+    "Access to justice & remedy",
+    "Constitutional & legislative framework",
+    "International criminal & humanitarian law (including crimes against humanity, war crimes, genocide)",
+    "Sexual & gender-based violence",
+    "Data collection & research"
+  ],
+  "sdgs": [
+    "16 - PEACE, JUSTICE AND STRONG INSTITUTIONS",
+    "17 - PARTNERSHIPS FOR THE GOALS",
+    "5 - GENDER EQUALITY",
+    "5.2 - End all violence against and exploitation of women",
+    "16.6 - Effective, accountable and transparent institutions",
+    "17.18 - Enhance availability of reliable data",
+    "16.3 - Promote the rule of law and access to justice for all",
+    "5.5 - Equal opportunities and participation in leadership"
+  ],
+  "affected_persons": [
+    "Persons living in rural areas",
+    "Women & girls",
+    "Judges, lawyers and prosecutors"
+  ],
+  "regions": [
+    "Asia-Pacific"
+  ],
+  "upr_cycle": null,
+  "upr_recommending_country": []
+}

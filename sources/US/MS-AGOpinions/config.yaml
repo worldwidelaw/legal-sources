@@ -1,0 +1,100 @@
+# ===================================================================
+# US/MS-AGOpinions -- Mississippi Attorney General Official Opinions
+# ===================================================================
+# Full text of official opinions issued by the Mississippi Attorney
+# General. These are official state legal interpretations (doctrine).
+# Published openly as text-layer PDFs in the attorneygenerallynnfitch.com
+# WordPress media library and listed in full on a single server-rendered
+# "recent opinions" page. No authentication required. Public domain US
+# state government works.
+# ===================================================================
+
+source:
+  id: "US/MS-AGOpinions"
+  country: "US"
+  name: "Mississippi Attorney General Opinions"
+  url: "https://attorneygenerallynnfitch.com/divisions/opinions-and-policy/recent-opinions/"
+  description: |
+    Official opinions issued by the Mississippi Attorney General. Each
+    opinion answers a legal question posed by a public official (county
+    or municipal board, state agency, legislator) and constitutes an
+    authoritative interpretation of Mississippi law. Published as
+    text-layer PDFs in the attorneygenerallynnfitch.com media library;
+    the scraper reads the single server-rendered "recent opinions" page
+    (no JS, no CAPTCHA, no pagination) and collects every
+    wp-content/uploads/*.pdf link (~512 opinions, 2020-present).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://attorneygenerallynnfitch.com"
+  endpoints:
+    index: "/divisions/opinions-and-policy/recent-opinions/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "slug"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "slug"
+      description: "Stable document slug derived from the PDF filename"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Opinion title (derived from the opinion's Re: subject line)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date of the opinion (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Mississippi)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Mississippi Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Official AG opinions at attorneygenerallynnfitch.com, published as
+    text-layer PDFs in the WordPress media library.
+  - The "recent opinions" page is a single server-rendered HTML page that
+    lists every published opinion since 2020 as a direct PDF link — no JS,
+    no pagination, no CAPTCHA. The scraper collects all
+    wp-content/uploads/*.pdf links (~512 opinions).
+  - Issue date is derived from the filename's Month-DD-YYYY pattern, with
+    fallback to the docket year and the /uploads/YYYY/MM/ media path.
+  - Title is taken from each opinion's "Re:" subject line.
+  - Each opinion is a text-layer PDF (real text, no OCR), extracted via
+    common.pdf_extract.
+  - The site's WAF 403s the default python-requests UA, so PDFs are
+    downloaded via curl with a browser UA and passed to the extractor as
+    bytes. Paces at ~1 req/s.
+  - Coverage 2020-present (~512 opinions). The pre-2020 historical corpus
+    is only available behind Westlaw and is not included.
+  - Public domain Mississippi government data.

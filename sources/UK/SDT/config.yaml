@@ -1,0 +1,76 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — UK Solicitors Disciplinary Tribunal (SDT) Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/SDT"
+  country: "UK"
+  name: "UK Solicitors Disciplinary Tribunal (SDT)"
+  url: "https://solicitorstribunal.org.uk"
+  description: |
+    Judgments of the Solicitors Disciplinary Tribunal (SDT), the independent
+    statutory tribunal (s.46 Solicitors Act 1974) that adjudicates professional
+    misconduct allegations against solicitors and other regulated persons in
+    England & Wales. Full text extracted from born-digital Final Judgment PDFs.
+    ~2,200 judgments (2016-present).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://solicitorstribunal.org.uk"
+  endpoints:
+    archive:
+      path: "/case/page/{n}/"
+      description: "Paginated cases archive listing (~10 cases/page)"
+    case:
+      path: "/case/{id}/"
+      description: "Per-case page with metadata + Final Judgment PDF link"
+
+schema:
+  key_fields:
+    - name: "case_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      required: false
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "respondent"
+      type: "string"
+      required: false
+      role: "content"
+    - name: "outcome"
+      type: "string"
+      required: false
+      role: "classification"
+
+license:
+  name: "Custom terms (© Solicitors Disciplinary Tribunal)"
+  url: "https://solicitorstribunal.org.uk/terms/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    The SDT website asserts site copyright with separate Terms & Conditions and
+    carries no Open Government Licence statement. Judgments are public documents
+    (published under the Tribunal's judgment publication policy) but re-use terms
+    are not open; commercial use flagged pending confirmation.

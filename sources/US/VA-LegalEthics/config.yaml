@@ -1,0 +1,129 @@
+# ===================================================================
+# US/VA-LegalEthics -- Virginia State Bar
+#                      — Legal Ethics Opinions (LEOs)
+# ===================================================================
+# Advisory Legal Ethics Opinions ("LEOs") issued by the Standing
+# Committee on Legal Ethics of the Virginia State Bar (and approved,
+# for many, by the Supreme Court of Virginia). A LEO applies the
+# Virginia Rules of Professional Conduct to a hypothetical set of
+# facts and states whether the conduct complies with or violates the
+# ethics rules = doctrine. ~350+ opinions, LEO Nos. ~183-1900,
+# published by the Virginia State Bar (vsb.org) as born-digital PDFs
+# (text layer, no OCR/CAPTCHA/auth). Distinct from
+# US/VA-EthicsOpinions (Virginia Conflict of Interest & Ethics
+# Advisory Council = government officials, executive-branch).
+# FIFTH source in the state-bar attorney-ethics vein after
+# NC/AZ/TX/UT-LegalEthics.
+# ===================================================================
+
+source:
+  id: "US/VA-LegalEthics"
+  country: "US"
+  name: "Virginia State Bar — Legal Ethics Opinions"
+  url: "https://vsb.org/Site/Site/about/rules-regulations/leo-opinions.aspx"
+  description: |
+    Advisory Legal Ethics Opinions (LEOs) issued by the Standing
+    Committee on Legal Ethics of the Virginia State Bar. A LEO applies
+    the Virginia Rules of Professional Conduct to a hypothetical set of
+    facts and states whether the described conduct complies with or
+    violates the ethics rules. The corpus (~350+ opinions numbered
+    roughly LEO 183 to LEO 1900, spanning 1980-present) is published on
+    the Virginia State Bar website as born-digital PDFs. Full text is
+    extracted from the PDF text layer (no OCR).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "aspnet_radgrid + pdf"
+  base_url: "https://vsb.org"
+  endpoints:
+    index: "/Site/Site/about/rules-regulations/leo-opinions.aspx"   # Telerik RadGrid, paginated
+    pdf: "/common/Uploaded files/LEOs/{filename}.pdf"               # born-digital PDF
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/VA-LegalEthics/{leo_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "LEO number (e.g. '598', '1750', '186A')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title / subject (from the LEO heading)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text from the PDF text layer (born-digital, no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Opinion / approval date (ISO 8601); parsed from the opinion body (Supreme Court approval date or latest committee-opinion date)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Virginia State Bar — Standing Committee on Legal Ethics"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (Virginia State Bar Official Record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Legal Ethics Opinions of the Virginia State Bar (the agency of the Supreme Court of Virginia that regulates the practice of law in Virginia) are official public records, published on the State Bar website for public use with no copyright restriction. Many are formally approved by the Supreme Court of Virginia."
+
+notes: |
+  - Discovery: the Virginia State Bar publishes its LEOs through a
+    Telerik RadGrid "LEO - RPC Index" at
+    /Site/Site/about/rules-regulations/leo-opinions.aspx. The grid is
+    a rule-cross-reference index (one row per opinion x cited Rule of
+    Professional Conduct), so each opinion appears on multiple rows; we
+    collect the unique PDF hrefs (LEOs/{filename}.pdf) across all pages.
+    Pagination is driven by ASP.NET __doPostBack against the grid's
+    pager (page-number anchors within the visible 10-page window, plus
+    the "Next Pages" window-advance control), carrying __VIEWSTATE /
+    __EVENTVALIDATION forward on each POST. Page 1 alone already yields
+    ~300 unique opinions spanning the full LEO-number range.
+  - Filenames are inconsistently zero-padded (e.g. "0847.pdf" vs
+    "872.pdf") and some carry letter suffixes ("0186A.pdf"), so the
+    exact filename must be taken from the index href, not constructed
+    from the number.
+  - Full text: download each PDF from
+    https://vsb.org/common/Uploaded files/LEOs/{filename}.pdf and
+    extract the text layer with PyMuPDF (born-digital, no OCR).
+  - Date: prefer the "Approved by the Supreme Court of Virginia
+    <Month DD, YYYY>" line; else the latest "<Month DD, YYYY>" date in
+    the opinion body (LEOs are frequently revised); else null.
+  - Type: every document is an advisory Legal Ethics Opinion
+    interpreting the Virginia Rules of Professional Conduct = doctrine.
+  - Distinct from US/VA-EthicsOpinions (Virginia Conflict of Interest
+    & Ethics Advisory Council, which advises public officials) and from
+    Virginia Attorney General opinions. Fifth source in the state-bar
+    attorney-ethics vein after US/NC-, US/AZ-, US/TX-, US/UT-LegalEthics.

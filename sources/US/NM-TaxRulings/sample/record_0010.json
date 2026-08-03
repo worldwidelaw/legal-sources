@@ -1,0 +1,16 @@
+{
+  "_id": "US/NM-TaxRulings/225-94-01-0eab6026",
+  "_source": "US/NM-TaxRulings",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-30T15:10:03.949537+00:00",
+  "slug": "225-94-01-0eab6026",
+  "ruling_number": "225-94-01",
+  "ruling_type": "Ruling",
+  "tax_category": "200-Income Taxes General",
+  "issuer": "New Mexico Taxation and Revenue Department",
+  "title": "New Mexico TRD Ruling 225-94-1 Severance Pay",
+  "text": "Ruling 225-94-1\nIssued: January 21, 1994\nEffective: January 21, 1994\nRevised: December 12, 2008, correction and citation updated, as indicated by brackets\nA ruling has been requested concerning the applicability of certain provisions of the Income\nTax Act to the following facts:\nX was a resident of Texas until August of 1991. Until June 1991 X, was employed\nby Company Y. In June, 1991 Y closed the division in which X was employed. X\nwas granted a severance package. X received the severance pay over a twelve month\nperiod including the last half of 1991 and the first half of 1992. In August 1991, X\nmoved to and became a resident of New Mexico.\nX states that the severance pay received while a resident of New Mexico is not subject to\ntaxation under the Income Tax Act since the severance pay was for wages earned in Texas prior to\nbecoming a resident of New Mexico. X references the instructions for completing the Personal\nIncome Tax Returns which state “Only income earned while a New Mexico resident is subject to\nNew Mexico income tax.”\nSection 7-2-3 NMSA 1978 states:\nA tax is imposed at the rates specified in the Income Tax Act upon the net income\nof every resident individual and upon the net income of every nonresident individual\nemployed or engaged in the transaction of business in, into or from this state or\nderiving any income from any property or employment within this state. (Emphasis\nadded)\nSection 7-2-11(A)(3) NMSA 1978 states \"compensation of a resident [taxpayer] shall be\nallocated to this state.\"\nTaxation and Revenue Department regulation IT 11:6 [3.3.11.11(A) NMAC] states: “All\ncompensation received while a resident of New Mexico shall be allocated to this state whether or\nnot such compensation is earned from employment in this state.”\nExcept for accrual basis taxpayers which X does not claim to be, income generally is\n“earned” for income tax purposes in the period in which it is received, not the period in which the\nactivity, if any, which gave rise to the income occurred. X's severance pay is reportable as\ncompensation in the year in which it was received. Severance pay received after X became a\nresident of New Mexico is subject to the New Mexico income tax.\nThe New Mexico income tax imposes a tax on the total income of a resident unless there is a\nspecific exemption or deduction provided in the New Mexico Income Tax Act. In this case there is\nno specific deduction or exemption which would authorize X to exclude the severance pay.",
+  "url": "https://klvg4oyd4j.execute-api.us-west-2.amazonaws.com/prod/PublicFiles/34821a9573ca43e7b06dfad20f5183fd/0eab6026-076e-40c4-957a-6e450cb0a583/225-94-01.pdf",
+  "date": "2013-12-19",
+  "jurisdiction": "US-NM"
+}

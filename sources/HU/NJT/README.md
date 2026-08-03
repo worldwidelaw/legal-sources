@@ -1,7 +1,7 @@
 # HU/NJT - Hungarian National Legislation Database
 
 **Source:** Nemzeti Jogszabálytár (National Legislation Database)
-**URL:** https://njt.hu
+**URL:** https://njt.jog.gov.hu
 **Country:** Hungary (HU)
 **Data Types:** Legislation
 **License:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
@@ -73,7 +73,7 @@ python bootstrap.py update
 
 ## References
 
-- [NJT Homepage](https://njt.hu)
-- [ELI URI Templates](https://njt.hu/eli/urisemak)
+- [NJT Homepage](https://njt.jog.gov.hu)
+- [ELI URI Templates](https://njt.jog.gov.hu/eli/urisemak)
 - [N-Lex Hungary Info](https://n-lex.europa.eu/n-lex/info/info-hu/index)
 - [EUR-Lex ELI Hungary](https://eur-lex.europa.eu/eli-register/hungary.html)

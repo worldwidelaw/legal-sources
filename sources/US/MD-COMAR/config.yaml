@@ -1,0 +1,106 @@
+# ===================================================================
+# US/MD-COMAR -- Code of Maryland Regulations (COMAR)
+# ===================================================================
+# The official compilation of the administrative regulations adopted
+# by the agencies of the State of Maryland. Published by the Office of
+# the Secretary of State's Division of State Documents and mirrored as
+# the free public "Library of Maryland Regulations" at regs.maryland.gov.
+# Each regulation is an administrative rule with the force of law =
+# legislation. Born-digital full text (real text layer, no OCR, no
+# CAPTCHA, no auth). Public-domain State of Maryland government works.
+# ===================================================================
+
+source:
+  id: "US/MD-COMAR"
+  country: "US"
+  name: "Code of Maryland Regulations (COMAR)"
+  url: "https://regs.maryland.gov/us/md/exec/comar"
+  description: |
+    The Code of Maryland Regulations (COMAR) is the official compilation
+    of the administrative regulations of the agencies of the State of
+    Maryland, published by the Division of State Documents in the Office
+    of the Secretary of State. regs.maryland.gov exposes the whole code
+    as a JSON tree (index.json) plus per-subtitle born-digital
+    "index.full.html" documents that carry the complete regulation text
+    and Administrative History. The subtitle is the natural document unit
+    (~1,850 subtitle documents across all COMAR titles).
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "json_tree"
+  base_url: "https://regs.maryland.gov"
+  endpoints:
+    index: "/us/md/exec/comar/index.json"
+    full_html: "/us/md/exec/comar/{code}/index.full.html"
+
+data_model:
+  type: "legislation"
+  primary_key: "comar_code"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/MD-COMAR/{comar_code})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "comar_code"
+      description: "COMAR subtitle short code (e.g. 19A.02, 10.09)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "COMAR code + Title/Subtitle caption"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the subtitle (all chapters/regulations + Administrative History), from the born-digital HTML"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Earliest 'Effective date: Month DD, YYYY' in the Administrative History (ISO 8601), or null"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (State of Maryland Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "The Code of Maryland Regulations is an official public compilation of the administrative regulations of the State of Maryland, published for public use with no copyright restriction (edicts of government)."
+
+notes: |
+  - Enumeration: GET https://regs.maryland.gov/us/md/exec/comar/index.json
+    and walk the nested Title -> Subtitle -> Chapter -> Section tree. Every
+    SUBTITLE node carries an "fh" pointing at its index.full.html. There are
+    ~1,850 such subtitle documents.
+  - Full text: each index.full.html is born-digital (real text layer, no OCR);
+    the <article class="content"> body holds every chapter and regulation of
+    the subtitle plus its Administrative History (adoption/amendment dates).
+  - Type: COMAR regulations are administrative rules with the force of law =
+    legislation. This is distinct from US/MD-Legislation, which covers the
+    Maryland Code/statutes (mgaleg.maryland.gov), not the regulations.
+  - Date: earliest "Effective date: Month DD, YYYY" parsed from the
+    Administrative History, with a null fallback.
+  - COVERAGE: the full COMAR as mirrored on regs.maryland.gov (all titles,
+    ~1,850 subtitles). The subtitle is the site's own canonical full-text
+    unit; chapter-level index.full.html files do not exist (404).

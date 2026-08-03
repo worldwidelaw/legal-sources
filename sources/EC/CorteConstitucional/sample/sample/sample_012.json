@@ -1,0 +1,19 @@
+{
+  "_id": "EC-CC-7975",
+  "_source": "EC/CorteConstitucional",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-01T18:25:08.919770+00:00",
+  "title": "Sentencia 2900-18-EP/23",
+  "text": "Acción extraordinaria de protección presentada contra el auto que declaró el abandono de la causa dentro de un proceso de reivindicación de dominio. En el proceso de origen el juez de la Unidad Judicial Civil con sede en el cantón Milagro, provincia del Guayas declaró el abandono de la causa por inasistencia de la defensa técnica de la parte actora a la audiencia definitiva de conformidad con lo establecido en el artículo 87.1 del COGEP. La Corte aceptó la acción y señaló que la autoridad judicial accionada (i) vulneró el derecho a la defensa ya que dictó el auto de abandono de la causa sin considerar la intención manifiesta de la parte actora de continuar con ella y, (ii) vulneró el derecho al debido proceso en la garantía de cumplimiento de normas y derechos de las partes, ya que el accionante compareció a la audiencia, pero la autoridad judicial, sin realizar ninguna distinción entre la calidad de los asistentes a la audiencia y desconociendo la presencia del actor, declaró el abandono de la causa, por lo que estableció una exigencia no contemplada en la normativa, sobre la presencia del defensor técnico.",
+  "date": "2023-08-16",
+  "url": "https://esacc.corteconstitucional.gob.ec/storage/api/v1/10_DWL_FL/eyJjYXJwZXRhIjogInRyYW1pdGUiLCAidXVpZCI6ICI4YWNhYWI3MC04OWM2LTQ0NGMtOTU3NS1kMzRhYjIyY2ZhMzIucGRmIn0=",
+  "numero": "2900-18-EP/23",
+  "numero_causa": "2900-18-EP",
+  "tipo_accion": "ACCIÓN EXTRAORDINARIA DE PROTECCIÓN",
+  "materia": "Civil",
+  "juez": "HILDA TERESA NUQUES MARTINEZ",
+  "decision": "ACEPTAR",
+  "metadata_sentencia": "",
+  "es_novedad": true,
+  "es_relevante": false
+}

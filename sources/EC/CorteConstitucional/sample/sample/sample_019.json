@@ -1,0 +1,19 @@
+{
+  "_id": "EC-CC-9867",
+  "_source": "EC/CorteConstitucional",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-01T18:25:08.920048+00:00",
+  "title": "Sentencia 2280-23-EP/26",
+  "text": "La Corte Constitucional acepta la acción extraordinaria de protección al verificar que\nla sentencia impugnada vulneró el derecho a la seguridad jurídica por haber aceptado una\ndemanda de acción de protección que es manifiestamente improcedente al versar sobre un asunto\nde naturaleza estrictamente laboral, pues pretendía que se conozca el despido intempestivo de un\nservidor de una empresa pública.",
+  "date": "2026-03-12",
+  "url": "https://esacc.corteconstitucional.gob.ec/storage/api/v1/10_DWL_FL/eyJjYXJwZXRhIjogInRyYW1pdGUiLCAidXVpZCI6ICJkNTdlZWRkYS1iYjJhLTQxOGQtYmUyMy0xZDNmYjJjMjU0ZTMucGRmIn0=",
+  "numero": "2280-23-EP/26",
+  "numero_causa": "2280-23-EP",
+  "tipo_accion": "ACCIÓN EXTRAORDINARIA DE PROTECCIÓN",
+  "materia": "Constitucional",
+  "juez": "JORGE ISAAC BENAVIDES ORDOÑEZ",
+  "decision": "ACEPTAR",
+  "metadata_sentencia": "",
+  "es_novedad": true,
+  "es_relevante": false
+}

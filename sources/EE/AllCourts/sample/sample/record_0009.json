@@ -1,0 +1,20 @@
+{
+  "_id": "EE-453171318",
+  "_source": "EE/AllCourts",
+  "_type": "case_law",
+  "_fetched_at": "2026-07-18T00:31:17.146789+00:00",
+  "title": "Viru Maakohus Narva kohtumaja — 2-26-10760/6 — Hagimenetlus",
+  "text": "K O H T U O T S U S\nEESTI VABARIIGI NIMEL\n(Õigeksvõtul põhinev otsus)\n\nKohus\nViru Maakohus\nKohtunik\nTriin Maksing\nOtsuse tegemise aeg ja koht\n12.07.2026, Narva\nTsiviilasja number\n2-26-10760\nTsiviilasi\nI.Y hagi I.D vastu abielu  lahutamise nõudes\nTsiviilasja hind\n3500 eurot\nMenetlusosalised ja nende\nesindajad\nHageja: I.Y (isikukood XXX), lepinguline esindaja N   S\nKostja: I.D (isikukood XXX)\nAsja läbivaatamine\nKirjalik menetlus\nRESOLUTSIOON\n1. Rahuldada hagi õigeksvõtul põhineva otsusega.\n2. Lahutada I.Y (isikukood XXX) ja I.D (isikukood XXX) abielu, mis sõlmiti 02.07.1993\nNarva Linnavalitsuses.\n3. Jätta menetluskulud poolte endi kanda.\n4. Rahuldada hageja taotlus riigilõivu tagastamiseks ja tagastada tasutud riigilõivust\npool, s.o 50 eurot, I.Y arvelduskontole nr xxx.\n5. Asendada käeoleva otsuse avaldamisel menetlusosaliste nimed initsiaalidega. Mitte\navaldada menetlusosaliste isikukoodi, sünniaega ega aadressi.\n6. Õigeksvõtul põhinev otsus on tagatiseta viivitamata täidetav.\nEdasikaebamise kord ja kohtu selgitused\nPooled on loobunud apellatsioonkaebuse esitamise õigusest. Seega ei ole otsus vaidlustatav.\nKostja võttis 15.06.2026 avalduses hagi õigeks. Hageja kinnitas 16.06.2026, et ei soovi enda\närakuulamist isiklikult kohtuistungil. Kui kostja võtab kohtule esitatud avalduses hageja nõude\nõigeks, siis vastavalt tsiviilkohtumenetluse seadustiku (TsMS) § 440 lg-le 1 rahuldab kohus\nhagi.  Kohus  on  seisukohal,  et  poolte  abielusuhted  on  pöördumatult  lõppenud  ning\nperekonnaseaduse  §-s  67  toodud  eeldused  abielu  lahutamiseks  on  täidetud.  Õigeksvõtul\npõhinevast otsusest võib jätta välja kirjeldava ja põhjendava osa (TsMS § 444 lg 3). Abielu\nlõpeb kohtuotsuse jõustumise päeval.\n\n(allkirjastatud digitaalselt)\nTriin Maksing kohtunik",
+  "date": "2026-07-12",
+  "url": "https://www.riigiteataja.ee/public-api/api/v1/kohtuteave/kohtulahendid/453524419/file",
+  "case_number": "2-26-10760/6",
+  "court": "Viru Maakohus Narva kohtumaja",
+  "proceeding_type": "Hagimenetlus",
+  "status": "Jõustunud",
+  "categories": [
+    "Perekonnaõigus"
+  ],
+  "ecli": null,
+  "jurisdiction": "EE",
+  "language": "et"
+}

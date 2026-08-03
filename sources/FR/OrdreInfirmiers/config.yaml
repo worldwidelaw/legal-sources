@@ -1,0 +1,52 @@
+endpoints:
+  base_url: https://www.ordre-infirmiers.fr
+  index_page: https://www.ordre-infirmiers.fr/jurisprudence-0
+  year_page: https://www.ordre-infirmiers.fr/decisions-de-l-annee-{year}
+notes: 'Disciplinary jurisprudence of the French National Order of Nurses
+  (Ordre National des Infirmiers).
+
+  Covers decisions of the Chambre disciplinaire nationale, published on yearly
+  pages (/decisions-de-l-annee-{YYYY}). Each decision is an anchor linking to the
+  full anonymised decision PDF under /system/files/inline-files/. The anchor text
+  carries the decision number(s) and decision date. Full text is extracted from
+  the PDF with pdfplumber; records are de-duplicated by PDF URL.
+
+  '
+rate_limit:
+  delay_between_requests: 1.5
+  requests_per_second: 0.66
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - url
+source:
+  auth: none
+  country: FR
+  data_types:
+  - case_law
+  id: FR/OrdreInfirmiers
+  name: "Ordre des Infirmiers — Jurisprudence disciplinaire"
+  url: https://www.ordre-infirmiers.fr/jurisprudence-0
+license:
+  name: "Custom terms (public anonymised jurisprudence)"
+  url: "https://www.ordre-infirmiers.fr/mentions-legales"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Public anonymised disciplinary decisions of a body with a public service mission. No explicit open-data reuse licence declared; treated as public jurisprudence (comparable to French court decisions)."

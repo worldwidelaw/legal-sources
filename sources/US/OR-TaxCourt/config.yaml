@@ -1,0 +1,113 @@
+# ===================================================================
+# US/OR-TaxCourt -- Oregon Tax Court (Regular + Magistrate Divisions)
+# ===================================================================
+# Full text of every decision, opinion and order of the Oregon Tax Court
+# — the specialised state court with exclusive jurisdiction over Oregon
+# tax appeals. The corpus is the complete digitised run of the Oregon Tax
+# Reports (OTR) plus current Regular- and Magistrate-Division decisions,
+# back to volume 1 and updated as new decisions issue. Each document
+# resolves a tax controversy (taxpayer v. Department of Revenue or a
+# county assessor), so the corpus is case_law.
+#
+# Published by the Oregon Judicial Department in a public CONTENTdm
+# digital collection (alias p17027coll6) at ojd.contentdm.oclc.org. The
+# CONTENTdm web-services API enumerates the whole collection (dmQuery)
+# and returns per-item metadata PLUS the full opinion text in the
+# transcript (transc) field (dmGetItemInfo) — no PDF download, no OCR, no
+# JavaScript, no CAPTCHA, no auth. ~8,260 records.
+# Oregon state government works — no known copyright restrictions.
+# ===================================================================
+
+source:
+  id: "US/OR-TaxCourt"
+  country: "US"
+  name: "Oregon Tax Court — Decisions & Opinions"
+  url: "https://www.courts.oregon.gov/courts/tax/Pages/default.aspx"
+  description: |
+    Decisions, opinions and orders of the Oregon Tax Court (Regular and
+    Magistrate Divisions), the specialised state court with exclusive
+    jurisdiction over Oregon tax appeals. Published by the Oregon
+    Judicial Department in a public CONTENTdm digital collection
+    (p17027coll6) at ojd.contentdm.oclc.org. The CONTENTdm web-services
+    API enumerates every item (dmQuery) and returns the full opinion
+    text in the transcript field along with the official case name,
+    citation (NN OTR NNN), decision date, judge, case number and
+    division (dmGetItemInfo). No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "rest_json"
+  base_url: "https://ojd.contentdm.oclc.org"
+  endpoints:
+    query: "/digital/bl/dmwebservices/index.php?q=dmQuery/p17027coll6/..."
+    item: "/digital/bl/dmwebservices/index.php?q=dmGetItemInfo/p17027coll6/{pointer}/json"
+
+data_model:
+  type: "case_law"
+  primary_key: "pointer"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 16
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/OR-TaxCourt/{CONTENTdm pointer})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "citation"
+      description: "Oregon Tax Reports citation (e.g. 25 OTR 471)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Case caption (official case name + citation/number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion from the CONTENTdm transcript field"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Oregon)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Oregon Tax Court decisions are official state government works; the CONTENTdm rights field records 'No known copyright restrictions.'"
+
+notes: |
+  - Corpus = CONTENTdm collection p17027coll6 (Oregon Tax Reports + current
+    Regular/Magistrate decisions), ~8,260 records back to volume 1.
+  - dmQuery pages the whole collection (PAGE_SIZE=1000) to collect every
+    top-level PDF item pointer (parentobject == -1, filetype == pdf).
+  - dmGetItemInfo returns the full opinion text in the `transc` field plus
+    case name (subjec), parties (subjec1), citation (cita), case number
+    (relispt), judge, type, division (divisi) and decision date (dated, ISO).
+    No PDF download / OCR needed for the vast majority of records.
+  - Fallback: if `transc` is empty, the PDF is downloaded from
+    /digital/api/collection/p17027coll6/id/{pointer}/download and extracted
+    via common.pdf_extract (text-layer; older scanned items recovered on an
+    OCR-capable host).
+  - Paces at ~1 req/s. Reachable locally (NOT geo-blocked).
+  - Public domain Oregon state government data.

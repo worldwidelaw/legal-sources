@@ -1,0 +1,27 @@
+{
+  "_id": "CV_BO_100862",
+  "_source": "CV/BoletimOficial",
+  "_type": "legislation",
+  "_fetched_at": "2026-04-16T22:58:15.753749+00:00",
+  "title": "Despacho n.º 25/CMSCZ/2017",
+  "text": "Despacho do Presidente da Câmara Municipal de Santa Cruz\n\nSr. João Pereira de Carvalho, formado no Instituto Pedagógico, Professor do Ensino Básico Assistente I/2, do quadro pessoal da Delegação do Ministério da Educação requisitado nos termos do artigo 8 do Decreto-Lei n.º 54/2009 de 7 de Dezembro, é nomeado em comissão ordinário de serviço para exercer as funções do Coordenador Administrativo do Pré-Escolar e Jardins Infantis da Câmara Municipal de Santa Cruz, a partir de 1 de janeiro de 2018, nos termos do artigo 26º do Decreto-Lei n.º 59/2014 de 4 de novembro.\n\nAs despesas têm cabimentação na rúbrica 02.01.01.01.02 do pessoal quadro no orçamento aprovado da Câmara Municipal de Santa Cruz no a no de 2018.\n\nIsento de visto do Tribunal de Contas, nos termos do art.º 5º, nº 3 do Decreto-Lei n.º 49/2014.\n\nPedra Badejo, aos 26 de março de 2026. — O Presidente da Câmara Municipal, Carlos Alberto Gonçalves Silva.",
+  "date": "2026-04-16",
+  "url": "https://boe.incv.cv/Bulletins/View/100862",
+  "ref_act": 39012,
+  "part": {
+    "id": 7,
+    "code": "G",
+    "description": "G - Autarquias locais",
+    "hide": false,
+    "refParent": 2,
+    "parent": {
+      "id": 2,
+      "description": "II Série",
+      "hide": false,
+      "order": 0
+    },
+    "order": 0
+  },
+  "entities": [],
+  "language": "pt"
+}

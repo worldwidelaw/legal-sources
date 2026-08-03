@@ -1,0 +1,37 @@
+source:
+  id: INTL/ACtHPRJuricaf
+  country: INTL
+  name: "African Court on Human and Peoples' Rights (CADHP) Decisions (Juricaf)"
+  url: https://juricaf.org/recherche/+/facet_pays:CADHP
+  data_types:
+    - case_law
+  language: fr
+license:
+  name: "ODbL 1.0 (Juricaf/AHJUCAF)"
+  url: https://opendatacommons.org/licenses/odbl/1-0/
+  commercial_use: true
+  attribution_required: true
+  share_alike: true
+  no_derivatives: false
+  notes: "African Court (ACtHPR/CADHP) decisions published on Juricaf by AHJUCAF."
+fetcher:
+  type: api_json
+  pagination: page_number
+  rate_limit: 2.0
+schema:
+  key_fields:
+    - name: _id
+      required: true
+      type: string
+  date_fields:
+    - date
+    - _fetched_at
+  text_fields:
+    - text
+    - title
+notes: >
+  African Court on Human and Peoples' Rights (Cour africaine des droits de
+  l'homme et des peuples, ACtHPR/CADHP), seated in Arusha, Tanzania — the
+  judicial organ of the African Union human rights system. Full judgment text
+  in French via Juricaf. ODbL 1.0. Distinct from INTL/ACHPR-Communications,
+  which covers the African COMMISSION (Banjul) decisions on communications.

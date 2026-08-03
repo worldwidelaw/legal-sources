@@ -1,0 +1,145 @@
+# ===================================================================
+# US/GA-LegalEthics -- State Bar of Georgia — Formal Advisory Opinions
+# ===================================================================
+# Legal-ethics advisory opinions published by the State Bar of Georgia
+# interpreting the Georgia Rules of Professional Conduct to advise
+# LAWYERS = doctrine (SCOG-approved Formal Advisory Opinions are
+# binding). Three co-published series are folded in:
+#   - FAO   Formal Advisory Opinions (No. YY-N) — issued by the Formal
+#           Advisory Opinion Board and approved/issued by the Supreme
+#           Court of Georgia under Bar Rule 4-403.
+#   - SDBAO State Disciplinary Board Advisory Opinions (older numbered
+#           series "Advisory Opinion N").
+#   - UPL   Unlicensed Practice of Law Advisory Opinions (No. YYYY-N).
+# The State Bar of Georgia is the state's integrated (mandatory) bar
+# -> pd-us direct. Distinct from US/GA-EthicsOpinions (executive
+# Georgia Government Transparency & Campaign Finance Commission —
+# public officials) and US/GA-Courts / US/GA-Legislation.
+# ===================================================================
+
+source:
+  id: "US/GA-LegalEthics"
+  country: "US"
+  name: "State Bar of Georgia — Formal Advisory Opinions"
+  url: "https://www.gabar.org/handbook/?handbook=Formal_Advisory_Opinions"
+  description: |
+    Legal-ethics advisory opinions of the State Bar of Georgia
+    interpreting the Georgia Rules of Professional Conduct (and, for the
+    older series, the predecessor Standards of Conduct) to advise
+    lawyers. The corpus (~84 substantive opinions) spans three
+    co-published series — Formal Advisory Opinions (FAO, board-issued and
+    Supreme-Court-of-Georgia-approved under Bar Rule 4-403), the older
+    numbered State Disciplinary Board Advisory Opinions (SDBAO), and the
+    Unlicensed Practice of Law Advisory Opinions (UPL). All are published
+    free as born-HTML full text inside the gabar.org online Handbook.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "embedded_json_handbook"
+  base_url: "https://www.gabar.org"
+  endpoints:
+    handbook: "/handbook/?handbook=Formal_Advisory_Opinions"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/GA-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Canonical code: FAO-{YY-N}, SDBAO-{N}, or UPL-{YYYY-N}"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "series"
+      description: "Opinion series: FAO, SDBAO or UPL"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "title"
+      description: "Opinion label plus the Question Presented subject line"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text (born-HTML, de-tagged; no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 issue/approval date (first date in the header; falls back to the year encoded in the number -> YYYY-01-01)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Issuing body (FAOB/SCOG, State Disciplinary Board, or UPL Standing Committee)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-GA)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (US government edict — integrated bar advisory opinions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "State Bar of Georgia Formal Advisory Opinions are issued by the Formal Advisory Opinion Board and approved/issued by the Supreme Court of Georgia under Bar Rule 4-403 (SCOG-approved FAOs are binding); the State Disciplinary Board and UPL advisory opinions are likewise the work of Georgia's integrated (mandatory) bar. Published free to the public in the gabar.org online Handbook with no login, paywall or terms prohibiting reuse. Treated as public domain under the 17 U.S.C. § 105 government-edicts rationale, consistent with the other state-bar legal-ethics sources. Commercial use permitted."
+
+notes: |
+  - Discovery: the opinions are published inside the gabar.org online
+    Handbook (Sitefinity CMS). The page
+    /handbook/?handbook=Formal_Advisory_Opinions returns a single ~16 MB
+    HTML document embedding the ENTIRE handbook as an HTML-entity-encoded
+    JSON tree inside <data id="bar-rules-data" value="...">. The
+    ?rule=... query fragments are client-side JS navigation only — the
+    server always renders the whole handbook and there are NO per-opinion
+    server-side URLs, so discovery = fetch the one page ONCE, decode +
+    json.loads the tree, and split it into per-opinion records.
+  - Series: each opinion node's Title identifies the series and number —
+    "Formal Advisory Opinion No. YY-N" (FAO), "Advisory Opinion N"
+    (SDBAO, the older State Disciplinary Board series), and "UPL Advisory
+    Opinion No. YYYY-N" (UPL). Opinions appear ~4× in the tree
+    (cross-referenced from several Rules of Professional Conduct) → we
+    de-duplicate on (series, number), keeping the longest Content.
+  - Full text: the Content field is born-HTML — de-tagged with
+    BeautifulSoup, NO PDF, NO OCR. Superseded/withdrawn FAOs are reduced
+    by the CMS to a boilerplate "If you have any questions regarding the
+    replaced opinion..." pointer with no body → skipped (12 of the 96
+    raw FAO nodes). Result ≈ 84 substantive opinions (FAO 52, SDBAO 25,
+    UPL 7).
+  - Number: canonicalised to FAO-{YY-N} / SDBAO-{N} / UPL-{YYYY-N}.
+  - Date: the issue/approval date is the FIRST calendar date in the
+    header ("Issued ... On <date>", "Approved And Issued On <date>",
+    "PURSUANT TO BAR RULE 4-403 ON <date>", "State Disciplinary Board
+    <date>"); body citations come later. Falls back to the year encoded
+    in the FAO number (2-digit YY<=25 -> 20YY else 19YY) -> YYYY-01-01.
+  - Type: every document is the bar's advisory interpretation of the
+    rules governing lawyers = doctrine.
+  - Distinct from US/GA-EthicsOpinions (executive Georgia Government
+    Transparency & Campaign Finance Commission — public officials /
+    campaign finance), US/GA-Courts and US/GA-Legislation.

@@ -1,0 +1,79 @@
+source:
+  id: "BE/Wallex"
+  country: "BE"
+  name: "Wallex — Walloon Region Consolidated Legislation"
+  url: "https://wallex.wallonie.be/home.html"
+  description: |
+    Official consolidated legislation database of the Walloon Region (Belgium),
+    published by the Service public de Wallonie on a Jahia CMS exposing ELI URIs.
+    Covers Walloon decrees (décrets) and government orders (arrêtés du
+    Gouvernement wallon) with full consolidated article text. Acts are
+    enumerated via the wallexSearch JSON action (windowed by promulgation date)
+    and full text is extracted from the structured ELI pages.
+
+data_types:
+  - legislation
+
+jurisdictions:
+  - code: BE-WAL
+    scope: full
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  max_workers: 3
+
+api:
+  type: "json_search_and_html"
+  base_url: "https://wallex.wallonie.be"
+  search_endpoint: "/sites/wallex/home/search/content-area/rercherce-acte.wallexSearch.do"
+
+data_model:
+  type: "legislation"
+  source_nature: "consolidated_legislation"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "consolidated"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Unique act identifier (Wallex actId UUID)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act title from the ELI listing"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full consolidated legal text extracted from the ELI page"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Promulgation date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "eli"
+      description: "European Legislation Identifier path"
+      type: "string"
+      role: "reference"
+      required: false
+
+license:
+  name: "Open Data (Service public de Wallonie)"
+  url: "https://www.wallonie.be/fr/conditions-generales-dutilisation"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Official Walloon government legislation; open reuse of public-sector data."

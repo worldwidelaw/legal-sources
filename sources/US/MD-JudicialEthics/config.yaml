@@ -1,0 +1,111 @@
+# ===================================================================
+# US/MD-JudicialEthics -- Maryland Judicial Ethics Committee — Opinions
+# ===================================================================
+# Written advisory opinions issued by the Maryland Judicial Ethics
+# Committee, a committee of the Maryland Judiciary (Maryland Rules,
+# Title 18) that advises inquiring Maryland judges and judicial
+# appointees on the propriety of contemplated conduct under the Maryland
+# Code of Judicial Conduct / Code of Conduct for Judicial Appointees =
+# doctrine. Born-digital PDF full text (no OCR, no CAPTCHA, no auth).
+# Public-domain Maryland State government works. DISTINCT from
+# US/MD-EthicsOpinions (the executive State Ethics Commission, which
+# advises public officials/employees) and US/MD-LegalEthics (bar/lawyer
+# ethics); this is the JUDICIAL-branch committee advising judges.
+# ===================================================================
+
+source:
+  id: "US/MD-JudicialEthics"
+  country: "US"
+  name: "Maryland Judicial Ethics Committee — Opinions"
+  url: "https://www.mdcourts.gov/ethics/opinions"
+  description: |
+    Advisory opinions of the Maryland Judicial Ethics Committee, a
+    committee of the Maryland Judiciary established under the Maryland
+    Rules (Title 18). The Committee renders written advisory opinions to
+    inquiring Maryland judges and judicial appointees on the propriety of
+    contemplated conduct under the Maryland Code of Judicial Conduct and
+    the Code of Conduct for Judicial Appointees. Each opinion is numbered
+    "YYYY-NN" and states the question/subject, the applicable rules and
+    the Committee's conclusion (Published Opinion / Unpublished Opinion /
+    Unpublished Letter of Advice). Opinions are published as born-digital
+    PDFs on mdcourts.gov; the full text is extracted directly with
+    PyMuPDF (no OCR). The requesting judge's identity is confidential;
+    published opinions are a matter of public record.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.mdcourts.gov/"
+  endpoints:
+    index: "ethics/opinions"
+    opinion: "sites/default/files/import/ethics/pdfs/{file}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/MD-JudicialEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number (e.g. 2025-32, 2026-03) — the index anchor text (authoritative)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Judicial Ethics Opinion {number}: {subject}"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (question, rules, conclusion), from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), from the index table's MM-DD-YY column"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (Maryland State Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Maryland judicial ethics opinions are official public records of the Maryland Judiciary, published on mdcourts.gov for public use with no copyright restriction."
+
+notes: |
+  - Enumeration: GET the single index https://www.mdcourts.gov/ethics/opinions;
+    each opinion is one HTML table row: <a href=/sites/default/files/import/
+    ethics/pdfs/{file}.pdf>{number}</a> | {MM-DD-YY date} | {subject}.
+  - Number: the anchor TEXT is authoritative (e.g. "2014-14"); the PDF filename
+    is sometimes typo'd or uses underscores ("2104-14.pdf", "2009_13.pdf",
+    "2008_31and32.pdf"), so take the href verbatim for download and the anchor
+    text for the number.
+  - Full text: each opinion is a born-digital PDF (text layer); extracted with
+    PyMuPDF (fitz), no OCR.
+  - Date: parsed from the index table's MM-DD-YY column (2-digit year, >=60 -> 19xx
+    else 20xx).
+  - Type: every document is a written opinion construing the Code of Judicial
+    Conduct = doctrine.

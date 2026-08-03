@@ -1,0 +1,101 @@
+# ===================================================================
+# US/MA-AGOpinions -- Opinions of the Attorney General of Massachusetts
+# ===================================================================
+# Full text of the official opinions of the Massachusetts Attorney
+# General — the AG's authoritative advisory interpretations of MA law.
+# Published 1832-2006 in the AG's annual report, plus the bound series
+# "Official opinions of the Attorney-General" (Vols 1-8, 1891-1929).
+# Served by the State Library of Massachusetts open DSpace 7 REST API.
+# No auth. Public domain — US state government work (17 U.S.C. § 105).
+# ===================================================================
+
+source:
+  id: "US/MA-AGOpinions"
+  country: "US"
+  name: "Massachusetts Attorney General Opinions"
+  url: "https://archives.lib.state.ma.us/"
+  description: |
+    The official opinions of the Massachusetts Attorney General — the AG's
+    authoritative (advisory) interpretations of Massachusetts law, issued to
+    state officers, boards, and the General Court. From 1832 through 2006 the
+    opinions were published in the AG's annual report ("Report of the attorney
+    general for the year ending ..."); an early run was also issued as the bound
+    multi-year series "Official opinions of the Attorney-General of the
+    Commonwealth of Massachusetts" (Volumes 1-8, 1891-1929). Served by the State
+    Library of Massachusetts DSpace 7 REST API (archives.lib.state.ma.us/server/api),
+    open and without auth/WAF — the same repository as US/MA-SessionLaws. 181
+    items carry the LCSH subject "Attorneys general's opinions -- Massachusetts.".
+    Full text comes from the DSpace-extracted plain-text bitstream (TEXT bundle):
+    recent reports are clean, older volumes are readable OCR of print. No local
+    PDF/OCR step.
+
+data_types:
+  - doctrine
+
+jurisdictions:
+  - code: US-MA
+    scope: full
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 4
+
+api:
+  type: "dspace7_rest"
+  base_url: "https://archives.lib.state.ma.us/server/api"
+  endpoints:
+    discover: "/discover/search/objects?query=dc.subject.lcsh:\"Attorneys general's opinions -- Massachusetts.\""
+    item: "/core/items/{uuid}?embed=bundles/bitstreams"
+    bitstream: "/core/bitstreams/{uuid}/content"
+
+data_model:
+  type: "doctrine"
+  primary_key: "url"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "title"
+      description: "Report/volume title (year covered)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the AG opinions (DSpace-extracted)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "url"
+      description: "DSpace handle/item URL"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "date"
+      description: "Date of the report/volume (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public domain — US state government work"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Opinions of the Massachusetts Attorney General are official government works in the public domain (edicts/works of government; Banks v. Manchester). Digitized and served openly by the State Library of Massachusetts."
+
+notes: |
+  - DSpace 7 REST API at archives.lib.state.ma.us/server/api (open, no auth/WAF)
+  - 181 items, LCSH subject "Attorneys general's opinions -- Massachusetts."
+  - 173 annual reports 1832-2006 + 8 bound opinion volumes 1891-1929
+  - Single subject query, 100/page, embed=bundles/bitstreams (no year partition needed)
+  - Full text from TEXT bundle bitstream (clean recent reports, OCR earlier)
+  - One document per annual report / bound volume; doctrine (AG advisory opinions)
+  - Public domain MA state government work

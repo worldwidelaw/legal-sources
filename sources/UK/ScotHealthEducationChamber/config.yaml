@@ -1,0 +1,78 @@
+# UK/ScotHealthEducationChamber — First-tier Tribunal for Scotland (Health and
+# Education Chamber) — Additional Support Needs (ASN) decisions.
+#
+# Source: Scottish Courts and Tribunals Service (SCTS) — Health and Education
+#         Chamber of the First-tier Tribunal for Scotland
+# URL: https://healthandeducationchamber.scot/additional-support-needs/decisions
+# Data type: case_law  (Scotland / GB-SCT — not covered by UK/CaseLaw, which is
+#            England & Wales + reserved UK tribunals only)
+# Auth: none
+#
+# The Health and Education Chamber hears references/claims about the additional
+# support needs of children and young people (Education (Additional Support for
+# Learning) (Scotland) Act 2004), disability-discrimination claims against
+# schools (Equality Act 2010) and placing-request appeals. Its anonymised
+# decisions are binding, appealable to the Upper Tribunal for Scotland.
+#
+# Access:
+#   - Single server-rendered Drupal "Views" listing, ?page=N (0-indexed),
+#     10 rows/page; each row carries the Chamber ref, decision date, category
+#     and a detail-page link.
+#   - Detail page holds the FULL decision text inline as born-digital HTML in the
+#     field--name-field-decision-text container (no PDF/OCR needed). A born-digital
+#     PDF under /sites/default/files/decisions/add/ is used only as a fallback.
+#
+# Total: ~360 anonymised full-text decisions, ~2018-present (grows over time).
+
+source:
+  id: UK/ScotHealthEducationChamber
+  name: First-tier Tribunal for Scotland (Health and Education Chamber) — Additional Support Needs decisions
+  country: UK
+  data_types:
+    - case_law
+  url: https://healthandeducationchamber.scot/additional-support-needs/decisions
+  language: en
+  auth: none
+  license: custom-terms
+
+jurisdictions:
+  - code: GB-SCT
+    scope: full
+
+license:
+  name: "SCTS terms (personal / in-house use only)"
+  url: "https://healthandeducationchamber.scot/terms-and-conditions"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    SCTS site terms state material "may be reproduced without formal permission
+    or charge for personal or in-house use only" — commercial re-use restricted;
+    flagged per project policy. Underlying tribunal decisions are public records
+    (Crown copyright / SCTS). Decisions are anonymised by the Chamber.
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: case_ref
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - case_ref
+    - category
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.5
+  page_size: 10
+  estimated_total: 360
+  sample_count: 15

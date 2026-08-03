@@ -1,0 +1,80 @@
+source:
+  id: "DO/TribunalSuperiorElectoral"
+  country: "DO"
+  name: "Dominican Republic Tribunal Superior Electoral — Sentencias Contenciosas"
+  url: "https://tse.do/category/decisiones/sentenciascontenciosas/"
+  description: |
+    Full-text contentious sentencias of the Tribunal Superior Electoral (TSE),
+    the Dominican Republic's highest electoral court (distinct from the Suprema
+    Corte de Justicia and the Tribunal Constitucional).
+
+    Decisions are served as machine-readable PDFs via the TSE's standalone
+    viewer at visorpdf.tse.do, listed by year (2012–present) and paginated by
+    `pos`. Each detail page exposes the sentencia number, expediente, síntesis,
+    publication date and the underlying PDF. Language: Spanish.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1.0
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html"
+  base_url: "https://visorpdf.tse.do"
+  endpoints:
+    list: "/?pos={pos}&y={year}&s="
+    detail: "/documento/contenciosas/{token}"
+
+data_model:
+  type: "case_law"
+  source_nature: "gazette"
+  primary_key: "expediente"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "expediente"
+      description: "Case file number (Expediente, e.g. TSE-01-0123-2024)"
+      type: "string"
+      role: "primary_key"
+      required: false
+    - name: "title"
+      description: "Decision title (sentencia number + expediente)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the contentious sentencia"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "tribunal"
+      description: "Court name (Tribunal Superior Electoral)"
+      type: "string"
+      role: "reference"
+      required: false
+
+license:
+  id: "ogd"
+  name: "Open Government Data"
+  url: "https://tse.do/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Public judicial decisions of a Dominican Republic state court, published openly with no authentication. Treated as open government data."

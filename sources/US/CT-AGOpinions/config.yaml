@@ -1,0 +1,94 @@
+# ===================================================================
+# US/CT-AGOpinions -- Connecticut Attorney General Formal Opinions
+# ===================================================================
+# Full text of formal legal opinions issued by the Connecticut Attorney
+# General. These are official state legal interpretations (doctrine).
+# Published openly as text PDFs at portal.ct.gov. No authentication
+# required. Public government data.
+# ===================================================================
+
+source:
+  id: "US/CT-AGOpinions"
+  country: "US"
+  name: "Connecticut Attorney General Formal Opinions"
+  url: "https://portal.ct.gov/ag/opinions"
+  description: |
+    Formal legal opinions issued by the Connecticut Office of the
+    Attorney General. Each opinion answers a legal question posed by a
+    public official and constitutes an authoritative (advisory)
+    interpretation of Connecticut law. Full text extracted from the
+    official digitally-produced PDFs under portal.ct.gov/-/media/ag/
+    opinions/. Coverage runs 1990-present, one static HTML year page per
+    year.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://portal.ct.gov"
+  endpoints:
+    hub: "/ag/opinions"
+    year_page: "/ag/opinions/{year}-formal-opinions"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 7
+  key_fields:
+    - name: "opinion_number"
+      description: "Official AG opinion number (e.g., '2024-1')"
+      type: "string"
+      role: "primary_key"
+      required: false
+    - name: "title"
+      description: "Opinion title (Connecticut Attorney General Formal Opinion ...)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Connecticut)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Connecticut Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Formal AG opinions hub at portal.ct.gov/ag/opinions
+  - One static HTML page per year (/ag/opinions/{YYYY}-formal-opinions),
+    1990-present
+  - Year pages list opinions as anchors to /-/media/ag/opinions/{YYYY}/*.pdf;
+    the descriptive subject comes from the anchor title= attribute. An
+    unrelated accessibility-policy PDF is filtered out by path.
+  - PDFs are digitally-produced text (no OCR); a small number of older
+    (2020/2021) opinions are scanned images and are skipped (0 chars)
+  - Full text via common.pdf_extract.extract_pdf_markdown (OOM-hardened)
+  - Issued date derived from the opinion's opening lines, falling back to
+    year when absent
+  - curl subprocess fallback for macOS LibreSSL TLS negotiation
+  - Coverage 1990-present; public domain Connecticut government data

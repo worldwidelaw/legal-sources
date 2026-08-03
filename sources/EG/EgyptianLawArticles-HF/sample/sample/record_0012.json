@@ -1,0 +1,13 @@
+{
+  "_id": "EG/EgyptianLawArticles-HF:art-١٢",
+  "_source": "EG/EgyptianLawArticles-HF",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-09T06:19:56.726589+00:00",
+  "title": "Egyptian Civil Code — Article ١٢",
+  "text": "يرجع في الشروط الموضوعية لصحة الزواج إلي قانون كل من الزوجين.\n\n--- English Translation ---\n\nThe fundamental conditions relating to the validity of\nmarriage are governed by the (national) law of each of\nthe two spouses.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/TawasulAI/egyptian-law-articles",
+  "article_number": "١٢",
+  "language": "ar",
+  "jurisdiction": "EG"
+}

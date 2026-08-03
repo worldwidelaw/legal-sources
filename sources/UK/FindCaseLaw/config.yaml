@@ -3,7 +3,10 @@
 # ===================================================================
 # Official database of court and tribunal judgments for England & Wales.
 # Atom feed for listing + Akoma Ntoso XML for full text.
-# No auth required. Open Justice Licence.
+# No auth required for ordinary access. Open Justice Licence v2.0 covers many
+# ordinary re-use cases, but The National Archives requires a separate licence
+# for computational analysis, including bulk programmatic searching, AI/LLM use,
+# and semantic/vector indexing.
 # API docs: https://nationalarchives.github.io/ds-find-caselaw-docs/public
 # ===================================================================
 
@@ -17,7 +20,10 @@ source:
     operated by The National Archives. ~365,000 judgments with full text
     in Akoma Ntoso XML. Covers UKSC, EWCA, EWHC, and tribunals.
     Atom feed for listing/searching, per-document XML for full text.
-    No authentication required. Open Justice Licence.
+    No authentication required for ordinary access. The Open Justice Licence
+    covers many ordinary re-use cases, but a separate TNA computational-analysis
+    licence is required for LDH-style bulk programmatic search, AI/LLM use, or
+    semantic/vector indexing.
 
 data_types:
   - case_law
@@ -95,6 +101,24 @@ notes: |
   - Atom feed at /atom.xml with search, filter, and pagination
   - Full text Akoma Ntoso XML at /{uri}/data.xml
   - Rate limit: 1,000 requests per 5-minute window
-  - Open Justice Licence
+  - Open Justice Licence v2.0 for ordinary re-use
+  - Separate TNA computational-analysis licence required for bulk programmatic search,
+    AI/LLM use, or semantic/vector indexing
   - Language: English
   - Courts: UKSC, EWCA, EWHC, tribunals
+
+license:
+  id: "custom-terms"
+  name: "Open Justice Licence v2.0; separate TNA computational-analysis licence required"
+  url: "https://caselaw.nationalarchives.gov.uk/open-justice-licence"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Ordinary re-use of judgments is available under the Open Justice Licence,
+    including many legal-work, research, publication, and commercial-product uses.
+    The National Archives requires a separate licence for computational analysis,
+    including bulk programmatic searching, text mining/NLP, AI or LLM uses, and
+    building semantic/vector search indexes. Treat LDH indexing/search exposure as
+    licence-scope pending until the separate TNA licence is confirmed.

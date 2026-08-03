@@ -1,0 +1,14 @@
+{
+  "_id": "EE-EMTA-dividendid-ja-muud-kasumieraldised-2022",
+  "_source": "EE/EMTA-TaxRulings",
+  "_type": "doctrine",
+  "_fetched_at": "2026-03-30T20:38:27.100003+00:00",
+  "title": "Siduvad eelotsused",
+  "text": "2022 I kvartal\n\nVabatahtlik reservkapital\n\nVabatahtliku reservkapitali sissemakse on omakapitali sissemakse, mis deklareeritakse TSD lisal 7 koodiga 7030 ning vabatahtliku reservkapitali likvideerimisel tehtud väljamakse on omakapitali väljamakse, mis kuulub deklareerimisele TSD lisal 7 koodiga 7060. Tehtud väljamakse maksustatakse juriidilise isiku tasemel TuMS § 50 lg 2 alusel ning tulumaksukohustust ei teki, kui väljamakse osa ei ületa tehtud sissemakset. Kui vabatahtliku reservkapitali väljamaksmisel ei teki juriidilise isiku tasemel tulumaksukohustust, siis tekib residendist ja mitteresidendist füüsilisel isikul ning mitteresidendist juriidilisel isikul Eestis kohustus deklareerida vabatahtliku reservkapitali väljamaksmisel saadud summa, mis on juriidilise isiku tasemel TuMS § 50 lg 2 alusel maksustamata, ning tasuda tulumaks TuMS § 15 lg 2 ja § 29 lg 5 alusel.\n\nOma osa tagasiostmine\n\nOma osa tagasiostmine maksustatakse TuMS § 50 lg 2 alusel. Osa tagasiostmine ei too juriidilise isiku tasemel kaasa tulumaksukohustust, kui väljamakse omakapitalist ei ületa eelnevalt omakapitali tehtud sissemakset. Kui oma osa tagasiostmisel ei teki juriidilise isiku tasemel tulumaksukohustust, siis tekib residendist ja mitteresidendist füüsilisel isikul ning mitteresidendist juriidilisel isikul Eestis kohustus deklareerida oma osa tagasiostmisel saadud summa, mis on juriidilise isiku tasemel TuMS § 50 lg 2 alusel maksustamata, ning tasuda tulumaks TuMS § 15 lg 2 ja § 29 lg 5 alusel. Kuivõrd oma osa tagasiostmine kuulub maksustamisele juriidilise isiku tasemel TuMS § 50 lg 2 alusel ning füüsilise isiku tasemel TuMS § 15 lg 2 alusel, ei saa tegemist olla erisoodustusega TuMS § 48 lg 1 tähenduses.\n\nSiduva eelotsuse kuupäev: 22.02.2022",
+  "date": "2022-01-01",
+  "url": "https://www.emta.ee/eraklient/maksud-ja-tasumine/tasumine-volad/siduvad-eelotsused/dividendid-ja-muud-kasumieraldised-2022",
+  "language": "et",
+  "topic": "Dividends",
+  "tax_category": "Income Tax",
+  "year": "2022"
+}

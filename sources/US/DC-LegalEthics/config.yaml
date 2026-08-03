@@ -1,0 +1,127 @@
+# ===================================================================
+# US/DC-LegalEthics -- District of Columbia Bar, Legal Ethics
+# Committee — Ethics Opinions
+# ===================================================================
+# Ethics opinions of the D.C. Bar Legal Ethics Committee: each
+# interprets the District of Columbia Rules of Professional Conduct as
+# applied to a lawyer's contemplated conduct to advise LAWYERS =
+# doctrine. The D.C. Bar cites its opinions by number (e.g. "D.C.
+# Legal Ethics Opinion 388"). Opinions 210-present are published as
+# clean, born-digital HTML pages, one page per opinion (~180 opinions,
+# roughly 1990-present). The D.C. Bar is an INTEGRATED (mandatory) bar.
+# ===================================================================
+
+source:
+  id: "US/DC-LegalEthics"
+  country: "US"
+  name: "District of Columbia Bar — Legal Ethics Committee (Ethics Opinions)"
+  url: "https://www.dcbar.org/for-lawyers/legal-ethics/ethics-opinions-210-present"
+  description: |
+    Ethics opinions issued by the District of Columbia Bar Legal Ethics
+    Committee. Each opinion interprets the D.C. Rules of Professional
+    Conduct as applied to a lawyer's contemplated conduct. Opinions
+    210-present (~180, roughly 1990-present) are published free on
+    dcbar.org, each on its own born-digital HTML page, indexed on a
+    single public listing page. Full text (facts, analysis, conclusion)
+    is on the HTML page — no PDF, no OCR, no login.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_html"
+  base_url: "https://www.dcbar.org"
+  endpoints:
+    index: "/for-lawyers/legal-ethics/ethics-opinions-210-present"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/DC-LegalEthics/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number as cited (e.g. 388, or '389 (Revised)')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title (from the page's heading)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text extracted from the born-digital HTML page (no OCR, no PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 date from the 'Published: <Month> <Year>' line (first of month); null when the opinion carries no explicit publication date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "District of Columbia Bar — Legal Ethics Committee"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-DC)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain / freely published advisory opinions"
+  url: "https://www.dcbar.org/for-lawyers/legal-ethics/ethics-opinions-210-present"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "D.C. Bar legal ethics opinions are published free to the public on dcbar.org, indexed on an open listing page, with no login, paywall or terms prohibiting reuse. The District of Columbia Bar is the District's INTEGRATED (mandatory) bar (membership is required to practice law in D.C. under D.C. Court of Appeals rule), so the 17 U.S.C. § 105 government-edicts rationale applies fairly directly (like US/SC/LA/WI/GA/MT-LegalEthics). Treated as effectively public domain, consistent with the other integrated-bar legal-ethics sources — pd-us + commercial-OK."
+
+notes: |
+  - Discovery: the single public listing page
+    /for-lawyers/legal-ethics/ethics-opinions-210-present links every
+    opinion 210-present as an anchor to its own detail page
+    /For-Lawyers/Legal-Ethics/Ethics-Opinions-210-Present/
+    Ethics-Opinion-{N}. A few numbers carry a "-(Revised)" variant
+    (e.g. 389 (Revised)); these are kept as distinct records
+    (slug "{N}-revised"). ~182 links -> ~180 opinions.
+  - Number: the opinion number cited by the D.C. Bar, taken from the
+    URL slug / the page's <h1> ("Ethics Opinion 388"). Revised variants
+    carry the "(Revised)" qualifier.
+  - Full text: each opinion is a born-digital HTML page; the body lives
+    in <article class="c-news-detail"> (h1 = number, h2 = title, then
+    <p>/<ul>/<ol> paragraphs). Extracted directly from the HTML with
+    BeautifulSoup — NO PDF, NO OCR. Records under 200 chars are skipped.
+  - Date: best-effort from the "Published: <Month> <Year>" line the
+    newer opinions carry (first-of-month ISO). Older opinions carry no
+    explicit publication date in the body, so date is null for them.
+  - Type: every document is the Committee's advisory interpretation of
+    the D.C. Rules of Professional Conduct = doctrine.
+  - Scope: opinions 2-209 (interpreting the pre-1991 D.C. Code of
+    Professional Responsibility) are published only as a single
+    consolidated 1991-edition PDF and are intentionally excluded; this
+    source is the current, per-opinion HTML series (210-present).
+  - Distinct from US/DC-Code / US/DC-Legislation / US/DC-Courts /
+    US/DC-TaxGuidance. This is the attorney professional-conduct
+    advisory-opinion series (lawyers), the D.C. member of the
+    US/{ST}-LegalEthics vein.

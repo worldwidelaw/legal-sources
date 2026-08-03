@@ -1,0 +1,109 @@
+# ===================================================================
+# US/MD-TaxCourt -- Maryland Tax Court (Memoranda of Grounds for Decision)
+# ===================================================================
+# Full text of the decisions of the Maryland Tax Court — the highest
+# administrative tribunal in Maryland for tax appeals (income tax,
+# property-tax assessments, inheritance/estate tax and other state/local
+# taxes). Disputes are between taxpayers and the Comptroller of Maryland,
+# the State Department of Assessments and Taxation, a local Supervisor of
+# Assessments, or a Register of Wills, so the corpus is case_law.
+#
+# The court publishes its "Memorandum of Grounds for Decision" documents
+# on one server-rendered HTML page (taxcourt.maryland.gov/Decisions.shtml).
+# Each list item links the case PDF under /PDF/Decisions/ followed by a
+# "Decided MM/DD/YYYY" date. PDFs are born-digital text-layer documents.
+# No JavaScript, no CAPTCHA, no auth. Public domain Maryland gov works.
+# ===================================================================
+
+source:
+  id: "US/MD-TaxCourt"
+  country: "US"
+  name: "Maryland Tax Court — Decisions"
+  url: "https://taxcourt.maryland.gov/Decisions.shtml"
+  description: |
+    Decisions ("Memoranda of Grounds for Decision") of the Maryland Tax
+    Court, the state's highest administrative tribunal for tax appeals
+    (income, property-tax assessment, inheritance/estate and other
+    state/local taxes; taxpayer v. Comptroller of Maryland / SDAT / a
+    local Supervisor of Assessments or Register of Wills). Published on
+    one server-rendered HTML page; each list item links a born-digital
+    text-layer decision PDF plus a "Decided MM/DD/YYYY" date. No
+    JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://taxcourt.maryland.gov"
+  endpoints:
+    index: "/Decisions.shtml"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/MD-TaxCourt/{pdf-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Maryland Tax Court docket number, parsed from the PDF filename (e.g. 25-IR-OO-0471)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "case_name"
+      description: "Case caption (parties)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Case caption"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), from the 'Decided MM/DD/YYYY' annotation"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Maryland)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Maryland Tax Court decisions are official state government works in the public domain."
+
+notes: |
+  - One GET of /Decisions.shtml enumerates every decision: each <li> has
+    <a href="PDF/Decisions/...pdf">Case Name (archive)</a><br />Decided
+    MM/DD/YYYY. The scraper parses the PDF href, the anchor case name
+    (dropping the recurring "(archive)" annotation) and the Decided date.
+  - PDFs live under /PDF/Decisions/ and are born-digital text layers;
+    extracted via common.pdf_extract (curl browser UA, ~1 req/s).
+  - ~127 decisions currently listed (2008-present); newest-first by date.
+    A minority of older archive PDFs carry no "Decided" annotation → date
+    is null (date is optional, not a key field).
+  - Public domain Maryland state government data.

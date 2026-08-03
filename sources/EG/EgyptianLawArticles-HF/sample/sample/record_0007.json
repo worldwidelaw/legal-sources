@@ -1,0 +1,13 @@
+{
+  "_id": "EG/EgyptianLawArticles-HF:art-٧",
+  "_source": "EG/EgyptianLawArticles-HF",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-09T06:19:56.724951+00:00",
+  "title": "Egyptian Civil Code — Article ٧",
+  "text": "(۱) تسري النصوص الجديدة المتعلقة بالتقادم من وقت العمل بها علي كل\nتقادم لم يكتمل.\n(۲) علي أن النصوص القديمة هي التي تسري علي المسائل الخاصة ببدء\nالتقادم ووقفه وانقطاعه وذلك عن المدة السابقة علي العمل بالنصوص\nالجديدة.\n\n--- English Translation ---\n\nNew legislative provisions as regards prescription apply\nfrom such time as they come into force in all cases in\nwhich the period of prescription has not been\ncompleted.\nFormer legislative provisions however, apply as regards\nthe date of commencement of prescription, its\nsuspension and its interruption in respect of the period\nprior to the application of the provisions of the new law.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/TawasulAI/egyptian-law-articles",
+  "article_number": "٧",
+  "language": "ar",
+  "jurisdiction": "EG"
+}

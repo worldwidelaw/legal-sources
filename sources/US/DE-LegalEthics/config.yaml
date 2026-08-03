@@ -1,0 +1,129 @@
+# ===================================================================
+# US/DE-LegalEthics -- Delaware State Bar Association, Committee on
+# Professional Ethics — Legal Ethics Opinions
+# ===================================================================
+# Legal ethics opinions of the Delaware State Bar Association (DSBA)
+# Committee on Professional Ethics: each answers, on an actual member
+# inquiry, how the Delaware Lawyers' Rules of Professional Conduct
+# apply to contemplated attorney conduct = doctrine. Citation e.g.
+# "DSBA Comm. on Prof'l Ethics, Op. 2009-1". ~55 born-digital opinions
+# 1989-present (older 1979-1988 opinions are scanned images, skipped).
+# Distinct from US/DE-EthicsOpinions (Public Integrity Commission —
+# opinions to state officials under the state Code of Conduct).
+# ===================================================================
+
+source:
+  id: "US/DE-LegalEthics"
+  country: "US"
+  name: "Delaware State Bar Association — Committee on Professional Ethics (Legal Ethics Opinions)"
+  url: "https://www.dsba.org/publications/ethics-opinions-index/"
+  description: |
+    Legal ethics opinions issued by the Delaware State Bar Association
+    (DSBA) Committee on Professional Ethics. Each opinion answers, on
+    the basis of an actual member inquiry, how the Delaware Lawyers'
+    Rules of Professional Conduct apply to contemplated attorney
+    conduct. ~55 born-digital PDF opinions 1989-present are published
+    free on media.dsba.org / media1.dsba.org, indexed on a single
+    public page; each carries the opinion number and full analysis.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_pdf"
+  base_url: "https://www.dsba.org"
+  endpoints:
+    index: "/publications/ethics-opinions-index/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/DE-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number, canonical 'YYYY-N' (e.g. 1989-1, 2009-1, 2021-1; '-dissent' suffix for a filed dissent)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title ('Delaware State Bar Association Committee on Professional Ethics — Opinion {number}')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "summary"
+      description: "One-line 'Rules Discussed' / topic summary read from the index table row"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "text"
+      description: "Full opinion text extracted from the born-digital PDF (PyMuPDF, no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 date parsed from the opinion body ('Month DD, YYYY'); falls back to YYYY-01-01"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Delaware State Bar Association — Committee on Professional Ethics"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-DE)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain / freely published advisory opinions"
+  url: "https://www.dsba.org/publications/ethics-opinions-index/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "DSBA legal ethics opinions are published free to the public on dsba.org / media.dsba.org, indexed on an open page, with no login, paywall or terms prohibiting reuse. The DSBA is a VOLUNTARY (non-integrated) bar, so unlike the integrated-bar states the § 105 government-edicts rationale is weaker; however the opinions are authoritative interpretations of the Delaware Lawyers' Rules of Professional Conduct (adopted by the Delaware Supreme Court) published free for citation, and are treated as effectively public domain consistent with the other state-bar legal-ethics sources (caveated pd-us, like US/NY/IL/CT/VT-LegalEthics)."
+
+notes: |
+  - Discovery: the single public index page
+    /publications/ethics-opinions-index/ links every opinion PDF as an
+    anchor whose visible text is the number (e.g. "2009-1"); the
+    surrounding table row carries a one-line "Rules Discussed" summary.
+    ~80 opinions listed 1979-2021; ~55 are born-digital (1989+).
+  - Number: read from the PDF filename ('1989-1.pdf' -> 1989-1,
+    '2009-01.pdf' -> 2009-1, '1987.pdf' -> 1987-1); a filed dissent
+    (e.g. '2003-2Dissent.pdf') gets a '-dissent' suffix so it doesn't
+    collide with the majority opinion.
+  - Full text: each opinion is a born-digital PDF on media.dsba.org or
+    media1.dsba.org (http/CloudFront 30x redirects followed). Extracted
+    with PyMuPDF (fitz), NO OCR. Records under 200 chars are skipped —
+    these are the scanned 1979-1988 opinions (no text layer; no OCR
+    available in this environment).
+  - Date: parsed from the opinion body ('Month DD, YYYY'); falls back to
+    YYYY-01-01 from the number year when the body carries no such date
+    (common in the 1989-1990 opinions).
+  - Type: every document is the Committee's advisory interpretation of
+    the Delaware Lawyers' Rules of Professional Conduct = doctrine.
+  - Distinct from US/DE-EthicsOpinions (Delaware Public Integrity
+    Commission — advisory opinions to state officials/employees). This
+    is the attorney professional-conduct advisory-opinion series
+    (lawyers), the DE member of the US/{ST}-LegalEthics vein.

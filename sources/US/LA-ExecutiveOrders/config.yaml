@@ -1,0 +1,122 @@
+# ===================================================================
+# US/LA-ExecutiveOrders -- Louisiana Governor Executive Orders
+# ===================================================================
+# Executive Orders of the Governor of Louisiana. Under the Governor's
+# constitutional executive authority (La. Const. art. IV) and statute,
+# the Governor issues numbered Executive Orders that establish binding
+# state policy, create and direct executive agencies, allocate
+# private-activity bond volume, declare states of emergency, and
+# otherwise regulate the executive branch. Each EO is a binding
+# regulatory/administrative instrument = legislation (which includes
+# regulations). Public domain Louisiana state-government works (edicts).
+#
+# Published by the State Library of Louisiana as part of its CONTENTdm
+# "Louisiana Public Documents Digital Archive" (alias p267101coll4) on
+# the OCLC-hosted instance at cdm16313.contentdm.oclc.org -- the same
+# open dmwebservices JSON API used by the sibling US/LA-AGOpinions. A
+# server-side title search ("Executive Order") isolates the ~2,406 EOs
+# from the ~44,700-item archive. The transc field is empty, so the full
+# order text is extracted from each item's PDF (born-digital text layer)
+# via the shared common.pdf_extract helper. No CAPTCHA, no auth.
+# ===================================================================
+
+source:
+  id: "US/LA-ExecutiveOrders"
+  country: "US"
+  name: "Louisiana Governor Executive Orders"
+  url: "https://cdm16313.contentdm.oclc.org/digital/collection/p267101coll4"
+  description: |
+    Executive Orders of the Governor of Louisiana (La. Const. art. IV),
+    numbered by governor (e.g. BJ 15-25, KB 04-12, MJF 98-1). Each EO is
+    a binding regulatory/administrative instrument establishing state
+    policy, directing executive agencies, allocating bond volume,
+    declaring emergencies, etc. = legislation. Enumerated from the State
+    Library of Louisiana's CONTENTdm "Louisiana Public Documents Digital
+    Archive" (alias p267101coll4) via the public dmwebservices JSON API;
+    a server-side title search isolates the ~2,406 Executive Orders. EO
+    number, issuer, subject and date are read from each item's
+    Dublin-Core fields, and the full order text is extracted from the
+    item PDF. No CAPTCHA, no auth.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://cdm16313.contentdm.oclc.org"
+  endpoints:
+    query: "/digital/bl/dmwebservices/index.php?q=dmQuery/p267101coll4/title^Executive Order^all^and/dmrecord!title!date/date/{max}/{start}/1/0/0/0/json"
+    item: "/digital/bl/dmwebservices/index.php?q=dmGetItemInfo/p267101coll4/{rec}/json"
+    download: "/digital/api/collection/p267101coll4/id/{rec}/download"
+
+data_model:
+  type: "legislation"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/LA-ExecutiveOrders/{CONTENTdm dmrecord})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "eo_number"
+      description: "Executive Order designation (e.g. BJ 15-25); null for pre-1980 EOs"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "caption"
+      description: "Order caption / short subject"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "subject"
+      description: "Subject headings (Dublin-Core subjec)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "issuer"
+      description: "Issuing authority (Louisiana Office of the Governor)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Order title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the executive order (extracted from the item PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of order (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the CONTENTdm item page"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Louisiana Governor Executive Orders are official works of Louisiana
+    state government (edicts of government) and are not subject to
+    copyright. Free to use, including commercially.

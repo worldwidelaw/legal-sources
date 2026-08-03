@@ -1,0 +1,124 @@
+# ===================================================================
+# US/ME-PUC -- Maine Public Utilities Commission Orders & Issuances
+# ===================================================================
+# Full text of Orders issued by the Maine Public Utilities Commission
+# (MPUC) adjudicating utility dockets (electric, gas, water,
+# telecommunications). Each Order (Order, Procedural Order, Protective
+# Order) is an administrative adjudication / disposition of a specific
+# docket by the Commission = case_law. Public domain (US state government
+# edict). Published as born-digital PDFs via the public case-management
+# portal (mpuc-cms.maine.gov). No auth.
+# ===================================================================
+
+source:
+  id: "US/ME-PUC"
+  country: "US"
+  name: "Maine Public Utilities Commission — Orders"
+  url: "https://mpuc-cms.maine.gov/CQM.Public.WebUI/"
+  description: |
+    Orders issued by the Maine Public Utilities Commission (MPUC)
+    resolving utility rate cases, certificate/approval applications,
+    complaints, and scheduling matters across the electric, natural-gas,
+    water and telecommunications industries. Each Order, Procedural Order
+    or Protective Order is an administrative adjudication of a specific
+    docket (case_law). Full text is extracted from born-digital Order PDFs
+    and .docx (the rare image-only scan is OCR'd with Tesseract).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://mpuc-cms.maine.gov/CQM.Public.WebUI"
+  endpoints:
+    home: "/"
+    search: "/Common/AdvanceSearch.aspx"
+    document: "/Common/ViewDoc.aspx"
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_ref"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_ref"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "doc_ref"
+      description: "MPUC internal document reference number (DocRefNo)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Maine PUC docket id, e.g. '2026-00007', '2025-00312'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "doc_type"
+      description: "Document type (Order, Procedural Order, Protective Order)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Order title (docket + document title)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "case_title"
+      description: "Docket / case title from the search listing"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "company"
+      description: "Utility / company party from the search listing"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "text"
+      description: "Full text of the Order extracted from the born-digital PDF/.docx"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Filed date of the Order (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Maine)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Maine Public Utilities Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - mpuc-cms.maine.gov/CQM.Public.WebUI is a Hyland-style "CQM.Public.WebUI"
+    ASP.NET WebForms case-management app behind Imperva/Incapsula (same
+    family as US/NJ-BPU and US/WI-PSC). GET / establishes the session
+    (Incapsula visid_incap + incap_ses cookies and the ASP.NET __VIEWSTATE
+    / __EVENTVALIDATION tokens).
+  - A POST __EVENTTARGET=lbadvancedsearch reaches /Common/AdvanceSearch.aspx;
+    a further POST switches the radio group rdblstMatterDocument=DOC into
+    Documents search mode. A POST btnTopSearch=Search with a Date-Filed
+    window (txtDateFiledFrom / txtDateFiledTo as M/D/YYYY) returns the
+    server-rendered results grid (grdSearchedPublicDocument): one row per
+    document with Docket #, Case Title, Filing #, Filed Date, Document Type,
+    Company and Document Title. Only Order-variant rows are kept.
+  - The grid pages via a __doPostBack on LnkNext. fetch_all() walks the
+    corpus one month at a time (newest first) back to the ~2000 floor.
+  - Each document is opened via HdnDocumentParameter + HdnBtnDocumentOpen,
+    then GET /Common/ViewDoc.aspx streams the born-digital Order PDF/.docx.
+    Full text is extracted via fitz/PyMuPDF (Tesseract OCR fallback for the
+    rare image-only scan) or from the .docx (word/document.xml).

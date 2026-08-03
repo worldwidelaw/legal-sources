@@ -174,13 +174,30 @@ class CongBaoFetcher:
         self.delay = DELAY
 
     def get_total_pages(self) -> int:
-        """Get total number of listing pages."""
+        """Get total number of listing pages.
+
+        Returns -1 when the listing root could not be fetched at all (network
+        block / connection reset — typical of a datacenter-IP block on VN gov
+        hosts) so callers can distinguish "host unreachable" from a genuine
+        "0 pages". Returns 0 only when the page loaded but the pagination token
+        is absent (real upstream markup change worth investigating).
+        """
         url = BASE_URL + "/van-ban-dang-cong-bao.htm"
         data = http_get(url)
         if not data:
-            return 0
+            logger.error(
+                "Listing root %s unreachable (empty response) — likely a "
+                "datacenter-IP block; cannot determine page count", url
+            )
+            return -1
         m = re.search(r"totalPageSodo\s*=\s*(\d+)", data)
-        return int(m.group(1)) if m else 0
+        if not m:
+            logger.error(
+                "Pagination token 'totalPageSodo' not found on %s — upstream "
+                "markup may have changed", url
+            )
+            return 0
+        return int(m.group(1))
 
     def list_documents(self, page: int) -> List[Dict[str, str]]:
         """Fetch one listing page and return document URLs with titles."""
@@ -344,16 +361,42 @@ class CongBaoFetcher:
         return raw
 
     def fetch_all(self) -> Iterator[Dict[str, Any]]:
-        """Yield all documents from congbao.chinhphu.vn."""
-        total_pages = self.get_total_pages()
-        logger.info(f"Total listing pages: {total_pages}")
+        """Yield all documents from congbao.chinhphu.vn.
 
-        for page in range(1, total_pages + 1):
-            logger.info(f"Listing page {page}/{total_pages}")
+        Discovery does not depend solely on the ``totalPageSodo`` token: even
+        when it is missing (markup change) we still walk the paginated
+        ``trang-{page}.htm`` listing until a page comes back empty. The token,
+        when present, only supplies an upper bound / progress denominator.
+        """
+        total_pages = self.get_total_pages()
+        if total_pages < 0:
+            # Listing root unreachable — surface it loudly rather than silently
+            # yielding nothing (which the fleet reads as "0 records, complete").
+            raise RuntimeError(
+                "congbao.chinhphu.vn listing root is unreachable "
+                "(datacenter-IP block?) — aborting so the run fails loud "
+                "instead of reporting a false-empty corpus"
+            )
+
+        # Cap: known total when the token parsed, otherwise a generous ceiling.
+        # The loop stops early on the first empty page regardless.
+        page_cap = total_pages if total_pages > 0 else 5000
+        logger.info(f"Total listing pages: {total_pages} (walking up to {page_cap})")
+
+        empty_streak = 0
+        for page in range(1, page_cap + 1):
+            logger.info(f"Listing page {page}/{page_cap}")
             items = self.list_documents(page)
             if not items:
-                logger.warning(f"Empty page {page}, stopping")
-                break
+                # Tolerate a single transient empty page, stop on two in a row.
+                empty_streak += 1
+                logger.warning(f"Empty page {page} (streak {empty_streak})")
+                if empty_streak >= 2:
+                    logger.info("Two consecutive empty pages — end of listing")
+                    break
+                time.sleep(self.delay)
+                continue
+            empty_streak = 0
 
             for item in items:
                 doc = self.fetch_document(item)

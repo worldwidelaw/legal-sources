@@ -1,0 +1,108 @@
+# ===================================================================
+# US/WA-EthicsOpinions -- Washington State Executive Ethics Board — Advisory Opinions
+# ===================================================================
+# Formal Advisory Opinions of the Washington State Executive Ethics
+# Board (EEB), issued under the Ethics in Public Service Act (RCW 42.52).
+# Each opinion is the Board's written, authoritative interpretation of
+# the ethics statutes it administers — conflicts of interest, use of
+# state resources (RCW 42.52.160), gifts, special privileges, honoraria,
+# post-employment restrictions and related standards of conduct for
+# Washington state officers and employees — applied to the facts
+# presented. Agencies statewide rely on them. Official state legal
+# interpretation = doctrine.
+# Published as born-digital, full-text PDF pages (real text layer, no
+# OCR, no JavaScript, no CAPTCHA, no auth). Public-domain Washington
+# state-government works.
+# ===================================================================
+
+source:
+  id: "US/WA-EthicsOpinions"
+  country: "US"
+  name: "Washington State Executive Ethics Board — Advisory Opinions"
+  url: "https://ethics.wa.gov/advisories/advisory-opinions"
+  description: |
+    Formal Advisory Opinions of the Washington State Executive Ethics
+    Board (EEB), issued under the Ethics in Public Service Act
+    (RCW 42.52) — the Board's written interpretations of Washington's
+    conflict-of-interest, use-of-state-resources, gift, honorarium and
+    post-employment statutes, applied to the facts presented in each
+    request. Enumerated from the single Drupal listing table; each
+    opinion is a born-digital full-text PDF whose text layer is
+    extracted directly (no OCR). doctrine.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://ethics.wa.gov"
+  endpoints:
+    listing: "/advisories/advisory-opinions"
+    opinion_pdf: "/sites/default/files/public/AO%20{NN-NN}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/WA-EthicsOpinions/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Advisory Opinion number (e.g. 25-01, 96-09A)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title ('Washington State Advisory Opinion {N} — {subject}')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory opinion, extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Approval date (ISO 8601), parsed from the opinion body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Washington state agency opinions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Advisory Opinions of the Washington State Executive Ethics Board are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Enumeration: GET the single Drupal listing table at
+    /advisories/advisory-opinions. Each table row is one advisory
+    opinion; the first cell is the opinion number (YY-NN, 1996-present)
+    and the row's title link is the born-digital full-text PDF under
+    /sites/default/files/public/AO%20{...}.pdf (~85 opinions). The
+    listing is not truly paginated (?page=1 returns the same table).
+  - Full text: each opinion PDF carries a real text layer; text is
+    extracted with PyMuPDF (fitz) — no OCR needed.
+  - opinion_number taken from the listing cell; approval date parsed
+    from the body ('APPROVAL DATE: Month [D,] YYYY'), falling back to
+    the YY prefix of the opinion number (→ YYYY-01-01).
+  - Public-domain Washington state-government data.

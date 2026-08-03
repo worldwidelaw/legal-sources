@@ -1,0 +1,116 @@
+# ===================================================================
+# US/CO-TaxRulings -- Colorado Department of Revenue Letter Rulings
+# ===================================================================
+# Official Letter Rulings published by the Colorado Department of
+# Revenue, Taxation Division: Private Letter Rulings (PLR-YY-###, binding
+# on the Department per 1 CCR 201-1, Rule 24-35-103.5) and General
+# Information Letters (GIL-YY-###, non-binding interpretive guidance).
+# The "All Letter Rulings" page (tax.colorado.gov/all-letter-rulings) is a
+# single server-rendered table; each row links to the ruling's public PDF
+# under /sites/tax/files/documents/<NUM>.pdf. Full text lives only in the
+# PDF, extracted via the shared OOM-hardened pdf_extract helper. No
+# JavaScript, no CAPTCHA, no auth. Public-domain Colorado state-government
+# works (government edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/CO-TaxRulings"
+  country: "US"
+  name: "Colorado Department of Revenue — Letter Rulings (PLRs & GILs)"
+  url: "https://tax.colorado.gov/all-letter-rulings"
+  description: |
+    Private Letter Rulings (PLR-YY-###) and General Information Letters
+    (GIL-YY-###) published by the Colorado Department of Revenue, Taxation
+    Division — the Department's written interpretation and application of
+    Colorado tax law. PLRs are binding on the Department as to the
+    requesting taxpayer (1 CCR 201-1, Rule 24-35-103.5); GILs are general,
+    non-binding statements of the Department's interpretation. The full
+    text of each ruling is read from its public PDF
+    (tax.colorado.gov/sites/tax/files/documents/<NUM>.pdf). No JavaScript,
+    no CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://tax.colorado.gov"
+  endpoints:
+    index: "/all-letter-rulings"
+    document: "/sites/tax/files/documents/{number}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CO-TaxRulings/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "ruling_number"
+      description: "CO letter-ruling number (e.g. 'PLR-25-001', 'GIL-20-003')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "ruling_type"
+      description: "Private Letter Ruling or General Information Letter"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (ruling type + number + subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the ruling, extracted from the published PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Published date (ISO 8601), parsed from the listing or body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Colorado state tax guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Private Letter Rulings and General Information Letters of the Colorado Department of Revenue are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The All Letter Rulings library is a Drupal page with one table; each
+    row's first cell is the ruling number and the second cell holds the
+    PDF anchor, the title, a "Published <date>" clause and a short
+    description. Rescinded rulings appear as rows with no PDF link and are
+    skipped. The scraper dedups by PDF URL.
+  - Full text lives only in the PDF; extraction uses the shared
+    common.pdf_extract helper (OOM-hardened pdfplumber -> pypdf -> OCR).
+    A <200-char guard skips the rare image-only/empty scan.
+  - tax.colorado.gov returns HTTP 403 to non-browser User-Agents (incl.
+    the project UA); the scraper sends a desktop-browser UA, which is
+    served 200. No CAPTCHA, no JS challenge (nginx, not Cloudflare).
+  - date is the "Published" date from the listing, falling back to a
+    month-name date near the top of the body, else the YY- prefix of the
+    ruling number (YY<=60 -> 20YY, else 19YY).
+  - Type is doctrine: letter rulings are interpretive government guidance,
+    not adjudications of a contested case.
+  - Public-domain Colorado state-government data.

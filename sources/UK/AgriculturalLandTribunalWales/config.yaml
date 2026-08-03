@@ -1,0 +1,79 @@
+# UK/AgriculturalLandTribunalWales — Agricultural Land Tribunal for Wales
+# (Tribiwnlys Tir Amaethyddol Cymru) — Decisions.
+#
+# Source: Agricultural Land Tribunal for Wales (ALT Wales), the independent
+#         statutory tribunal for Wales that determines agricultural-land
+#         disputes (tenancy succession, notices to quit, certificates of bad
+#         husbandry, land drainage / watercourse disputes).
+# URL: https://agriculturallandtribunal.gov.wales/decisions
+# Data type: case_law  (Wales / GB-WLS — NOT covered by UK/CaseLaw, which indexes
+#            England & Wales superior courts + reserved UK tribunals via the
+#            National Archives Find Case Law service; ALT Wales is not on it)
+# Auth: none
+#
+# The tribunal is bilingual; decisions may be issued in Welsh, English, or both.
+#
+# Total: full-text decisions, 2002-present (~22 and growing)
+#
+# Access:
+#   - Three case-type pages (/land-drainage-applications = window-id 3,
+#     /tenancy-applications = 4, /agricultural-applications-decisions = 5) each
+#     list April-April "tribunal year" windows.
+#   - /decisions/{3|4|5}/{YYYY-04--YYYY-04} lists per-decision detail-page slugs
+#     (/alt-{NNNN}-{party-holding}).
+#   - Each detail page carries the title (case ref "ALT NNNN") and one or more
+#     decision PDFs under /sites/agriculturalland/files/.
+#   - Newer decisions are born-digital PDFs (PyMuPDF); older 2002-2019 decisions
+#     were bulk-scanned in 2020 (image-only) → OCR fallback (tesseract eng+cym).
+#     Date = tribunal-year window start (YYYY-04-01).
+
+source:
+  id: UK/AgriculturalLandTribunalWales
+  name: Agricultural Land Tribunal for Wales — Decisions
+  country: UK
+  data_types:
+    - case_law
+  url: https://agriculturallandtribunal.gov.wales/decisions
+  language: cy
+  auth: none
+  license: ogl-3.0
+
+jurisdictions:
+  - code: GB-WLS
+    scope: full
+
+license:
+  name: "Open Government Licence v3.0"
+  url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    Site copyright statement: most material is Crown copyright and may be used
+    and re-used free of charge in any format or medium under the Open Government
+    Licence (must reproduce accurately, not in a misleading context).
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: case_ref
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - case_ref
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.5
+  page_size: 30
+  estimated_total: 22
+  sample_count: 15

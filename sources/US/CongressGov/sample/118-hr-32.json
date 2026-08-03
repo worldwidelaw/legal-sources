@@ -1,0 +1,19 @@
+{
+  "_id": "118-hr-32",
+  "_source": "US/CongressGov",
+  "_type": "legislation",
+  "_fetched_at": "2026-07-12T20:01:38.827063+00:00",
+  "title": "Keeping Texas School Construction Costs Down Act of 2023",
+  "text": "To amend the Internal Revenue Code of 1986 to create a safe harbor for certain perpetual trust funds.\nKeeping Texas School Construction Costs Down Act of 2023 1.Short titleThis Act may be cited as the Keeping Texas School Construction Costs Down Act of 2023.\n2.Safe harbor for certain perpetual trust funds (a)In generalSection 148(b) of the Internal Revenue Code of 1986 is amended by adding at the end the following new paragraph: (5)Safe harbor for certain perpetual trust fundsThe term investment property does not include any fund created and controlled by a State and established pursuant to its constitution or State law ifâ€” (A)substantially all of the assets of the fund consist of nonfinancial assets, revenues derived from such assets, gifts, appropriations, or bequests, (B)the assets of the fund may be used only to support specifically designated essential governmental functions (within the meaning of section 115(1)) that are carried out by political subdivisions with general taxing powers or public elementary and public secondary schools, (C)the assets of the fund are required to support designated functions, (D)to the extent the fund guarantees obligations, such obligations are not private activity bonds (other than qualified 501(c)(3) bonds) substantially all of the proceeds of which are to be used for designated functions, and (E)the fund satisfied each of the requirements of subparagraphs (A) through (D) on August 16, 1986..\n(b)Effective dateThe amendment made by this section shall take effect on the date of the enactment of this Act.",
+  "date": "2023-01-09",
+  "url": "https://www.congress.gov/bill/118th-congress/house-bill/32",
+  "congress": 118,
+  "bill_type": "HR",
+  "bill_number": "32",
+  "sponsor": "Rep. Doggett, Lloyd [D-TX-37]",
+  "cosponsors_count": 27,
+  "policy_area": "Taxation",
+  "origin_chamber": "House",
+  "latest_action": "Referred to the House Committee on Ways and Means.",
+  "update_date": "2025-05-27T14:13:33Z"
+}

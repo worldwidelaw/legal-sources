@@ -1,0 +1,90 @@
+# ===================================================================
+# US/AR-AGOpinions -- Arkansas Attorney General Opinions
+# ===================================================================
+# Full text of official legal opinions issued by the Arkansas Attorney
+# General. These are authoritative (advisory) state legal interpretations
+# (doctrine). Served by the public Meilisearch index backing the official
+# opinions search at arkansasag.gov. No authentication required.
+# Public government data.
+# ===================================================================
+
+source:
+  id: "US/AR-AGOpinions"
+  country: "US"
+  name: "Arkansas Attorney General Opinions"
+  url: "https://arkansasag.gov/divisions/opinions-foia/attorney-general-opinions-search/"
+  description: |
+    Official legal opinions issued by the Arkansas Office of the Attorney
+    General. Each opinion answers a legal question posed by a public
+    official and constitutes an authoritative (advisory) interpretation of
+    Arkansas law. Full text comes from the public Meilisearch index
+    (`opinions`) that backs the official opinions-search SPA. ~10,600
+    opinions, full text in the FullText field (no PDF download required).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 4
+
+api:
+  type: "json_api"
+  base_url: "https://ms-20efc50b2abc-32991.sfo.meilisearch.io"
+  endpoints:
+    documents: "/indexes/opinions/documents?limit={limit}&offset={offset}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "opinion_number"
+      description: "Official AG opinion / open-file number (e.g., '2005-071')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Opinion title (opinion number + requestor)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (FullText field)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was published (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public domain — 17 U.S.C. § 105"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Arkansas Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Official opinions search at arkansasag.gov embeds a React SPA
+    (prod.opinions-search.arkansasag.gov) backed by a public Meilisearch
+    index `opinions` (primary key OpenFileNo).
+  - fetch_all pages GET /indexes/opinions/documents?limit&offset using the
+    read-only search key shipped in the SPA bundle; each document carries
+    FullText, OpinionSummary, requestor, publication date, and a PDF URL.
+  - No per-document HTML scraping or PDF extraction needed — FullText is
+    the official text layer. Rows with no usable full text are skipped.
+  - ~10,599 opinions as of 2026-06-28; full text 1.5K-24K chars/doc.
+  - Public domain Arkansas government data.

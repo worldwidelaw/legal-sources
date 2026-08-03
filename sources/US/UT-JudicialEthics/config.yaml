@@ -1,0 +1,123 @@
+# ===================================================================
+# US/UT-JudicialEthics -- Utah Judicial Ethics Advisory Committee
+# Ethics Advisory Opinions
+# ===================================================================
+# The ethics advisory opinions of the Utah Judicial Ethics Advisory
+# Committee construing the Utah Code of Judicial Conduct. Each is the
+# committee's authoritative written interpretation of the Code, issued in
+# response to a judge's inquiry = doctrine. Two classes (Informal / Formal
+# Opinions), published on the Utah Courts (utcourts.gov, AEM) index page as
+# born-digital PDFs (newer) and HTML pages (older).
+# ===================================================================
+
+source:
+  id: "US/UT-JudicialEthics"
+  country: "US"
+  name: "Utah Judicial Ethics Advisory Committee — Ethics Advisory Opinions"
+  url: "https://www.utcourts.gov/en/court-records-publications/publications/judicial-ethics-opinions.html"
+  description: |
+    The ethics advisory opinions of the Utah Judicial Ethics Advisory
+    Committee, the committee established by the Utah Supreme Court that issues
+    written opinions construing the Utah Code of Judicial Conduct in response to
+    inquiries from judges and judicial officers. The committee publishes two
+    classes, both doctrine: Informal Opinions ("Informal Opinion No. YY-NN")
+    and Formal Opinions ("Formal Opinion No. YY-NN"), 1988–present. Each is the
+    committee's written interpretation of the Code. Served as born-digital PDFs
+    (newer opinions) and HTML opinion pages (older opinions).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "html_listing"
+  base_url: "https://www.utcourts.gov"
+  endpoints:
+    index: "/en/court-records-publications/publications/judicial-ethics-opinions.html"
+    document_pdf: "/content/dam/court-records-publications/publications/ethadv/ethics_opinions/{YYYY}/{num}.pdf"
+    document_html: "/en/court-records-publications/publications/judicial-ethics-opinions/ethics-opinions/{YYYY}/{num}.html"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/UT-JudicialEthics/{class}-{number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number (e.g. '25-01', '98-1')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "document_type"
+      description: "Informal Opinion | Formal Opinion"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Opinion class + number"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory opinion (PDF text layer or HTML page body)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601); parsed from the opinion body, falls back to Jan 1 of the URL year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Issuing body (Utah Judicial Ethics Advisory Committee)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 subdivision (US-UT)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (Utah state government edict / public record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Ethics advisory opinions of the Utah Judicial Ethics Advisory Committee are official public records of the Utah judiciary interpreting the Code of Judicial Conduct (government-edict works), published for public use by the Utah Courts."
+
+notes: |
+  - Index: utcourts.gov is Adobe Experience Manager (AEM). One index page,
+    /en/court-records-publications/publications/judicial-ethics-opinions.html,
+    lists every opinion. Each opinion is an <a> whose text is the caption
+    ("Informal Opinion No. 25-01") and whose href is either a born-digital PDF
+    (/content/dam/.../ethics_opinions/{YYYY}/{num}.pdf) or an HTML opinion page
+    (/en/.../ethics-opinions/{YYYY}/{num}.html). ~144 opinions; newer ones are
+    PDFs, older ones HTML. Prefer the PDF version when both exist.
+  - The /content/dam PDF endpoint 406s a bare User-Agent — a full browser UA
+    plus an Accept header serves the PDF (the session sets both).
+  - Full text: PDF via common.pdf_extract; HTML via BeautifulSoup (AEM
+    "main .container" content region, nav/header/footer stripped). The <200-char
+    guard skips anything unreadable. HTML bytes are decoded utf-8 then cp1252
+    (the site emits cp1252 § etc.).
+  - Class (Informal/Formal) and number parsed from the anchor caption; year from
+    the URL path; issue date = first "Month DD, YYYY" in the body, else Jan 1 of
+    the URL year (a body date can be the following January for a late-year opinion).

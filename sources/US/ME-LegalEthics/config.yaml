@@ -1,0 +1,130 @@
+# ===================================================================
+# US/ME-LegalEthics -- Maine Board of Overseers of the Bar — Ethics Opinions
+# ===================================================================
+# Advisory Ethics Opinions of the Professional Ethics Commission of the
+# Maine Board of Overseers of the Bar. Each opinion is the Commission's
+# formal written interpretation and application of the Maine Rules of
+# Professional Conduct (formerly the Maine Bar Rules / Code of
+# Professional Responsibility), rendered on request to advise LAWYERS
+# whether described conduct is proper = doctrine. One continuous
+# numbered series ("Opinion #N", 1979-present, ~228 opinions). Born-
+# digital HTML, no OCR/CAPTCHA/auth. Distinct from US/ME-AGOpinions
+# (Attorney General).
+# ===================================================================
+
+source:
+  id: "US/ME-LegalEthics"
+  country: "US"
+  name: "Maine Board of Overseers of the Bar — Ethics Opinions"
+  url: "https://www.mebaroverseers.org/attorney_services/ethics_opinions.html"
+  description: |
+    Advisory Ethics Opinions issued by the Professional Ethics Commission
+    of the Maine Board of Overseers of the Bar. Each opinion is the
+    Commission's formal written interpretation and application of the
+    Maine Rules of Professional Conduct (formerly the Maine Bar Rules /
+    Code of Professional Responsibility), rendered on request to the
+    Court, Board, Grievance Commission, Bar Counsel and members of the
+    Maine bar to advise lawyers whether described conduct is proper. The
+    corpus is one continuous numbered series ("Opinion #N", 1979-present,
+    ~228 opinions), each published in full as born-digital HTML carrying
+    "Opinion #N. {Title}", "Date Issued: {date}", the Question and the
+    Commission's Opinion (many older opinions also carry an "Enduring
+    Ethics Opinion" update note).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_listing"
+  base_url: "https://www.mebaroverseers.org"
+  endpoints:
+    index: "/attorney_services/ethics_opinions.html"
+    opinion: "/attorney_services/opinion.html?id={id}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/ME-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number ('N', e.g. 1, 228) from the 'Opinion #N' header"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "opinion_id"
+      description: "Site internal id used in the opinion.html?id= URL"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Opinion title (topical, from the 'Opinion #N. {Title}' header)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text (Question + Opinion) from the born-digital HTML body"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date as ISO 8601 (from the 'Date Issued: Month DD, YYYY' line)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Maine Board of Overseers of the Bar — Professional Ethics Commission"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-ME)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Ethics Opinions of the Maine Board of Overseers of the Bar (an agency of the Maine Supreme Judicial Court) are official written interpretations of the Maine Rules of Professional Conduct, published free to the public on mebaroverseers.org with no login, paywall or terms prohibiting reuse. As edicts of a U.S. state government body they carry no copyright (17 U.S.C. § 105 government-edicts doctrine)."
+
+notes: |
+  - Discovery: the public index /attorney_services/ethics_opinions.html
+    lists every opinion as an opinion.html?id={id} link with anchor text
+    "#N. {Title}"; the scraper collects all ids (228) de-duplicated.
+  - Full text: each opinion page is born-digital HTML; the opinion body
+    is div#maincontent2, carrying "Opinion #N. {Title}", "Date Issued:
+    {Month DD, YYYY}", the Question and the Commission's full Opinion.
+  - Number + title parsed from the "Opinion #N. {Title}" header (falls
+    back to the index anchor text); records de-duplicated on number.
+  - Date from the "Date Issued: Month DD, YYYY" line -> ISO 8601.
+  - Type: every document is the Commission's official interpretation of
+    the attorney-conduct rules = doctrine.
+  - DATA-QUALITY NOTE: the source CMS renders smart quotes/apostrophes as
+    literal "?" (0x3F bytes) in some opinion bodies and titles (e.g.
+    "Prosecutor?s"); this is upstream, not a decoding error, and is left
+    as served — the full text is otherwise clean (no HTML, no U+FFFD).
+  - Distinct from US/ME-AGOpinions (Maine Attorney General). This is the
+    state bar's attorney-ethics advisory-opinion series (12th in the
+    US state-bar legal-ethics vein).

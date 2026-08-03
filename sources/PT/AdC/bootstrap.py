@@ -262,20 +262,38 @@ class AdCFetcher:
         }
 
 
-def main():
-    """Main entry point"""
-    if len(sys.argv) > 1 and sys.argv[1] == 'bootstrap':
-        fetcher = AdCFetcher()
-        sample_dir = Path(__file__).parent / 'sample'
-        sample_dir.mkdir(exist_ok=True)
+def _run_bootstrap(is_sample: bool):
+    """Run the AdC bootstrap.
 
-        is_sample = '--sample' in sys.argv
-        target_count = 12 if is_sample else None
-        limit = target_count + 5 if target_count else None
+    Sample mode: fetch a small set and write one JSON file per record to
+    sample/ (for validation).
 
-        logger.info(f"Starting bootstrap (sample={is_sample})...")
+    Full mode (the VPS fleet's `bootstrap-fast` / `bootstrap --full`): stream
+    the ENTIRE corpus to data/records.jsonl (one normalized record per line)
+    so the pipeline ingests real records instead of only the samples. This is
+    a standalone (non-BaseScraper) source, so it must write records.jsonl
+    itself — the previous version only ever wrote to sample/, which is why the
+    fleet ingested samples-only (GH issue #1132).
+    """
+    fetcher = AdCFetcher()
+    src_dir = Path(__file__).parent
+    sample_dir = src_dir / 'sample'
+    sample_dir.mkdir(exist_ok=True)
 
-        saved = 0
+    target_count = 12 if is_sample else None
+    limit = target_count + 5 if target_count else None
+
+    logger.info(f"Starting bootstrap (sample={is_sample})...")
+
+    records_fh = None
+    if not is_sample:
+        data_dir = src_dir / 'data'
+        data_dir.mkdir(exist_ok=True)
+        records_fh = open(data_dir / 'records.jsonl', 'w', encoding='utf-8')
+
+    saved = 0
+    total_chars = 0
+    try:
         for raw in fetcher.discover_documents(limit=limit):
             if target_count and saved >= target_count:
                 break
@@ -287,30 +305,41 @@ def main():
                 logger.warning(f"Skipping {normalized['_id']} - text too short ({text_len} chars)")
                 continue
 
-            filename = f"{normalized['_id']}.json"
-            filename = re.sub(r'[^\w\-.]', '_', filename)
-            filepath = sample_dir / filename
+            if is_sample:
+                filename = re.sub(r'[^\w\-.]', '_', f"{normalized['_id']}.json")
+                with open(sample_dir / filename, 'w', encoding='utf-8') as f:
+                    json.dump(normalized, f, indent=2, ensure_ascii=False)
+            else:
+                records_fh.write(json.dumps(normalized, ensure_ascii=False) + "\n")
+                if saved < 12:
+                    # Keep a small committed sample set in sync on full runs too.
+                    filename = re.sub(r'[^\w\-.]', '_', f"{normalized['_id']}.json")
+                    with open(sample_dir / filename, 'w', encoding='utf-8') as f:
+                        json.dump(normalized, f, indent=2, ensure_ascii=False)
 
-            with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(normalized, f, indent=2, ensure_ascii=False)
-
+            total_chars += text_len
             logger.info(f"Saved [{saved+1}]: {normalized['title'][:50]}... ({text_len:,} chars)")
             saved += 1
+    finally:
+        if records_fh:
+            records_fh.close()
 
-        logger.info(f"Bootstrap complete. Saved {saved} documents to {sample_dir}")
+    dest = "sample/" if is_sample else "data/records.jsonl"
+    logger.info(f"Bootstrap complete. Wrote {saved} documents to {dest}")
 
-        # Summary
-        files = list(sample_dir.glob('*.json'))
-        total_chars = 0
-        for fp in files:
-            with open(fp, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                total_chars += len(data.get('text', ''))
+    print(f"\n=== SUMMARY ===")
+    print(f"Records written: {saved}")
+    print(f"Total text chars: {total_chars:,}")
+    print(f"Average chars/doc: {total_chars // max(saved, 1):,}")
 
-        print(f"\n=== SUMMARY ===")
-        print(f"Sample files: {len(files)}")
-        print(f"Total text chars: {total_chars:,}")
-        print(f"Average chars/doc: {total_chars // max(len(files), 1):,}")
+
+def main():
+    """Main entry point"""
+    cmd = sys.argv[1] if len(sys.argv) > 1 else None
+    # bootstrap-fast is the VPS fleet entrypoint; treat it as a full bootstrap.
+    if cmd in ('bootstrap', 'bootstrap-fast'):
+        is_sample = '--sample' in sys.argv and cmd != 'bootstrap-fast'
+        _run_bootstrap(is_sample)
 
     else:
         fetcher = AdCFetcher()

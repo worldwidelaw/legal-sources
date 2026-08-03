@@ -1,0 +1,33 @@
+{
+  "_id": "91455ea3-38a4-4a78-ad55-38ae849acc9c",
+  "_source": "UN/UHRI",
+  "_type": "doctrine",
+  "_fetched_at": "2026-07-06T11:14:47.960412+00:00",
+  "title": "CEDAW/C/IRQ/CO/8/REV.1 — Concerns/Observations — Iraq",
+  "text": "Withdrawal of reservations\n9.The Committee is concerned about:(a)The State Party’s continued reluctance to withdraw its reservations to article 2 (f) and (g) and article 16 of the Convention;\n(b)The failure to implement at the domestic level, ad interim, the constituent provisions of article 2 (b) to (e) of the Convention, which are fully in force in the State Party, and mandate the elimination of de jure and de facto discrimination against women and girls.",
+  "date": "2026-05-20",
+  "url": "https://uhri.ohchr.org/en/search-human-rights-recommendations",
+  "symbol": "CEDAW/C/IRQ/CO/8/REV.1",
+  "body": "CEDAW",
+  "annotation_type": "Concerns/Observations",
+  "countries": [
+    "Iraq"
+  ],
+  "themes": [
+    "Equality & non-discrimination",
+    "Reservations",
+    "Discrimination against women"
+  ],
+  "sdgs": [
+    "5.1 - End discrimination against women and girls",
+    "5 - GENDER EQUALITY"
+  ],
+  "affected_persons": [
+    "Women & girls"
+  ],
+  "regions": [
+    "Asia-Pacific"
+  ],
+  "upr_cycle": null,
+  "upr_recommending_country": []
+}

@@ -1,0 +1,22 @@
+{
+  "_id": "AGN-2026-126",
+  "_source": "AR/AGN",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-02T20:07:08.419114+00:00",
+  "title": "Estados Contables. Ejercicio 2023. Instituto de Ayuda Financiera para Pago de Retiros y Pensiones Militares (I.A.F.P.R.P.M.)",
+  "text": "ALCANCE DEL TRABAJO DE AUDITORÍA El examen fue realizado de conformidad con las Normas de Control Externo Gubernamental emitidas por la Auditoría General de la Nación, las cuales son compatibles con las de aceptación general en la República Argentina para la profesión contable y con las recomendadas por la Organización Internacional de Entidades Fiscalizadora Superiores (INTOSAI).",
+  "date": "2026-05-21",
+  "url": "https://www.agn.gob.ar/Informe-126-2026",
+  "pdf_url": "https://webagnapi.agn.gob.ar/sites/default/files/informes/2026-126-Informe.pdf",
+  "ano": 2026,
+  "resolucion": 126,
+  "actuacion": "2/2025",
+  "fecha_acta": "2026-05-21",
+  "periodo_auditado": "2023-01-01 / 2023-12-31",
+  "organismo_auditado_ids": [
+    "564"
+  ],
+  "tipo_de_auditoria_ids": [
+    "35"
+  ]
+}

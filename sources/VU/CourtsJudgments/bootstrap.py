@@ -63,7 +63,18 @@ class VUCourtsJudgmentsScraper(BaseScraper):
         for attempt in range(3):
             try:
                 time.sleep(1)
-                resp = self.session.get(url, timeout=timeout)
+                try:
+                    resp = self.session.get(url, timeout=timeout)
+                except requests.exceptions.SSLError as ssl_exc:
+                    # courts.gov.vu omits its intermediate CA cert → AIA-fetch it
+                    # and retry with an augmented bundle rather than dropping
+                    # TLS verification (issue #1161).
+                    from common.ssl_aia import is_missing_issuer_error, ca_bundle_for
+                    bundle = ca_bundle_for(url) if is_missing_issuer_error(ssl_exc) else None
+                    if not bundle:
+                        raise
+                    logger.warning("Retrying with AIA-augmented CA bundle: %s", url)
+                    resp = self.session.get(url, timeout=timeout, verify=bundle)
                 if resp.status_code == 429:
                     logger.warning("Rate limited, waiting 30s")
                     time.sleep(30)
@@ -137,15 +148,28 @@ class VUCourtsJudgmentsScraper(BaseScraper):
         soup = BeautifulSoup(html, "html.parser")
         result = {"text": "", "title": "", "judges": "", "parties": ""}
 
-        # Title from article-header
-        header = soup.find("div", class_="article-header")
-        if header:
-            h_tag = header.find(["h1", "h2"])
+        # The judiciary site was redesigned (2026): the article is now
+        # <article class="judgement-single"> with the title in an <h1> and the
+        # full text in <div class="judgement-single__content-body">. Fall back to
+        # the old cck-* selectors for any un-migrated pages.
+        article = soup.find("article", class_="judgement-single")
+
+        # Title from the article header <h1> (new) or old article-header block.
+        if article:
+            h_tag = article.find(["h1", "h2"])
             if h_tag:
                 result["title"] = h_tag.get_text(strip=True)
+        if not result["title"]:
+            header = soup.find("div", class_="article-header")
+            if header:
+                h_tag = header.find(["h1", "h2"])
+                if h_tag:
+                    result["title"] = h_tag.get_text(strip=True)
 
-        # Full text from cck-line-body
-        body = soup.find("div", class_="cck-line-body")
+        # Full text: new content-body container, else legacy cck-line-body.
+        body = soup.find("div", class_="judgement-single__content-body")
+        if body is None:
+            body = soup.find("div", class_="cck-line-body")
         if body:
             text = body.get_text(separator="\n", strip=True)
             # Clean up excessive whitespace
@@ -153,7 +177,7 @@ class VUCourtsJudgmentsScraper(BaseScraper):
             text = re.sub(r" {2,}", " ", text)
             result["text"] = text.strip()
 
-        # Extra metadata from cck-line-top
+        # Extra metadata from cck-line-top (legacy layout only)
         top = soup.find("div", class_="cck-line-top")
         if top:
             top_text = top.get_text(separator="\n", strip=True)
@@ -299,7 +323,7 @@ def main():
     parser = argparse.ArgumentParser(description="VU/CourtsJudgments data fetcher")
     parser.add_argument(
         "command",
-        choices=["bootstrap", "update", "test"],
+        choices=["bootstrap", "bootstrap-fast", "update", "test"],
         help="Command to run",
     )
     parser.add_argument(
@@ -316,8 +340,12 @@ def main():
         success = scraper.test()
         sys.exit(0 if success else 1)
 
-    elif args.command == "bootstrap":
-        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+    elif args.command in ("bootstrap", "bootstrap-fast"):
+        # bootstrap-fast is the VPS fleet entrypoint; it must run the FULL
+        # corpus (streamed to data/records.jsonl by BaseScraper), never the
+        # 15-record sample path.
+        sample_mode = args.sample and args.command == "bootstrap"
+        stats = scraper.bootstrap(sample_mode=sample_mode, sample_size=15)
         fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
         logger.info(f"Bootstrap complete: {fetched} records — {stats}")
         if fetched == 0:

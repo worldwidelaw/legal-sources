@@ -1,0 +1,85 @@
+# UK/GPhC — General Pharmaceutical Council — Fitness to Practise determinations.
+#
+# Source: General Pharmaceutical Council (GPhC), the UK statutory regulator for
+#         ~60,000 pharmacists and pharmacy technicians and ~14,000 pharmacies in
+#         Great Britain.
+# URL: https://www.pharmacyregulation.org/patients-and-public/reporting-concerns/investigating-concerns/hearings
+# Data type: case_law  (UK statutory professional-regulator adjudications —
+#            distinct from UK/GMC doctors, UK/SDT solicitors, UK/BTAS barristers,
+#            UK/HCPTS health & care professions, UK/NMC nurses/midwives,
+#            UK/GDC dentists, UK/SocialWorkEngland).
+# Auth: none
+#
+# The GPhC Fitness to Practise Committee sits under the Pharmacy Order 2010. The
+# Hearings page lists forthcoming and past hearings in a Drupal Views table; each
+# concluded past-hearing row carries the hearing date, registrant name, category
+# (pharmacist / pharmacy technician), registration number, type of hearing and
+# outcome, plus a "Read determination" link to a born-digital PDF at
+# https://files.pharmacyregulation.org/determinations/D{NNNNNN}/D{NNNNNN}.pdf —
+# a structured header (committee / hearing type / dates / registrant name /
+# registration number / part of the register / type of case / committee members /
+# representation) followed by the numbered reasoned determination. Text via
+# PyMuPDF (pdfplumber/pypdf fallback), no OCR.
+#
+# GPhC publishes determinations only where fitness to practise is impaired and
+# keeps each on the website for ~12 months, so one run captures the current
+# rolling window (~240 determinations) and re-runs accumulate the record
+# (pipeline dedups on _id = the stable determination number D{NNNNNN}).
+# www.pharmacyregulation.org UA-gates plain clients (403); a browser User-Agent
+# gets 200 and the whole window renders on the single Hearings page.
+#
+# Total: ~240 full-text determinations in the live window.
+
+source:
+  id: UK/GPhC
+  name: General Pharmaceutical Council (GPhC) — Fitness to Practise determinations
+  country: UK
+  data_types:
+    - case_law
+  url: https://www.pharmacyregulation.org/patients-and-public/reporting-concerns/investigating-concerns/hearings
+  language: en
+  auth: none
+  license: custom-terms
+
+license:
+  name: "GPhC website terms (no explicit open licence stated)"
+  url: "https://www.pharmacyregulation.org/about-us/website-information/terms-and-conditions"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    GPhC fitness-to-practise determinations are public professional-regulator
+    adjudication records published under the GPhC's publication policy (kept
+    online ~12 months). The site states no explicit open licence (GPhC / Crown
+    copyright applies to the underlying records), so commercial re-use is
+    conservatively flagged per project policy, consistent with the sibling UK
+    professional-regulator tribunal sources (UK/GMC, UK/SDT, UK/BTAS, UK/HCPTS,
+    UK/NMC, UK/GDC).
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: url
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - registrant
+    - registration_number
+    - profession
+    - hearing_type
+    - outcome
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.0
+  estimated_total: 240
+  sample_count: 15

@@ -1,0 +1,83 @@
+# UK/GOC — General Optical Council — Fitness to Practise hearing determinations.
+#
+# Source: General Optical Council (GOC), the UK statutory regulator for
+#         optometrists, dispensing opticians, student registrants and optical
+#         businesses. Fitness to practise concerns are heard by the independent
+#         GOC Fitness to Practise Committee under the Opticians Act 1989 and the
+#         General Optical Council (Fitness to Practise) Rules 2013.
+# URL: https://optical.org/raising-concerns/hearings/past-hearings.html
+# Data type: case_law  (UK statutory professional-regulator adjudications —
+#            distinct from UK/GMC doctors, UK/GDC dentists, UK/SDT solicitors,
+#            UK/BTAS barristers, UK/HCPTS health & care professions, UK/NMC
+#            nurses/midwives, UK/GPhC pharmacists, UK/SocialWorkEngland).
+# Auth: none
+#
+# optical.org serves the "Past hearings and outcomes" page as a single static
+# HTML document. It groups every published hearing under year → month collapsible
+# panels, each holding a <table> whose rows are:
+#     Hearing date | Registrant name | Outcome | Decision (link)
+# The Decision link points at a born-digital PDF served from
+#     https://optical.org/asset/{GUID}/
+# (content-type application/pdf, real text layer, no OCR): a structured header
+# (F(NN)NN case reference / registrant name + registration number / hearing type
+# / committee members / legal & clinical advisers) followed by the reasoned
+# DETERMINATION (allegation, facts found, impairment, sanction / interim order).
+# The page exposes a rolling window (~12 months for warnings/suspension/
+# conditions, up to 5 years for erasure per the GOC disclosure policy), so one
+# run captures the current window (~80 determinations spanning ~2.5 years) and
+# re-runs accumulate (the pipeline dedups on _id = the stable asset GUID).
+#
+# Total: ~80 full-text determinations in the live published window.
+
+source:
+  id: UK/GOC
+  name: General Optical Council (GOC) — Fitness to Practise determinations
+  country: UK
+  data_types:
+    - case_law
+  url: https://optical.org/raising-concerns/hearings/past-hearings.html
+  language: en
+  auth: none
+  license: custom-terms
+
+license:
+  name: "GOC website terms (no explicit open licence stated)"
+  url: "https://optical.org/terms-and-conditions.html"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    GOC fitness-to-practise determinations are public professional-regulator
+    adjudication records published by the General Optical Council under its
+    disclosure and publication policy. The site states no explicit open licence
+    (GOC / Crown copyright applies to the underlying records), so commercial
+    re-use is conservatively flagged per project policy, consistent with the
+    sibling UK professional-regulator tribunal sources (UK/GMC, UK/GDC, UK/SDT,
+    UK/BTAS, UK/HCPTS, UK/NMC, UK/GPhC).
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: url
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - registrant
+    - registration_number
+    - hearing_type
+    - outcome
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.0
+  estimated_total: 80
+  sample_count: 15

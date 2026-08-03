@@ -1,0 +1,124 @@
+# ===================================================================
+# US/VT-LRB -- Vermont Labor Relations Board Decisions
+# ===================================================================
+# Decisions of the Vermont Labor Relations Board (VLRB), the quasi-
+# judicial state agency that adjudicates public- and private-sector
+# labor-relations disputes in Vermont under the State Employees Labor
+# Relations Act (SELRA, 3 V.S.A. ch. 27), the Municipal Employees Labor
+# Relations Act (21 V.S.A. ch. 22), the Labor Relations for Teachers
+# Act (16 V.S.A. ch. 57), the Judiciary Employees Labor Relations Act
+# (JELRA), and the State Employees Grievance system. The Board decides
+# grievances, unfair-labor-practice charges, representation and election
+# petitions, unit determinations, and related contested cases. Each
+# decision resolves a specific case = case_law, and they are official
+# Vermont state-government works in the public domain (government
+# edicts).
+#
+# BUILD RECIPE (no auth, no CAPTCHA, builds locally): the Board
+# publishes its complete run of bound decision volumes as per-volume
+# ZIP archives linked from https://vlrb.vermont.gov/decisions/download
+# (Volume 1: 1977-78 through the current volume). Volumes 1-34 are
+# direct /sites/vlrb/files/.../Volume N.zip links; later volumes (35+)
+# are linked via a Drupal node/document page whose body carries the ZIP
+# link. Each ZIP holds one born-digital PDF per decision, named
+# "Volume N/N-PPP <caption>.pdf" (N-PPP = volume/page citation, caption
+# = parties). The scraper walks the download page, resolves every volume
+# ZIP, downloads each ZIP once, and extracts full text from each member
+# PDF with common.pdf_extract. The internal docket number
+# ("DOCKET NO. YY-NN") and decision date ("dated ... Nth day of Month,
+# YYYY") are parsed from the decision body.
+# ===================================================================
+
+source:
+  id: "US/VT-LRB"
+  country: "US"
+  name: "Vermont Labor Relations Board — Decisions"
+  url: "https://vlrb.vermont.gov/decisions/download"
+  description: |
+    Decisions of the Vermont Labor Relations Board (VLRB). The Board
+    adjudicates public- and private-sector labor-relations disputes in
+    Vermont -- state, municipal, teacher, and judiciary employees --
+    under SELRA (3 V.S.A. ch. 27), the Municipal Employees Labor
+    Relations Act (21 V.S.A. ch. 22), the Labor Relations for Teachers
+    Act (16 V.S.A. ch. 57), JELRA, and the state grievance system,
+    deciding grievances, unfair-labor-practice charges, representation
+    and election petitions, unit determinations, and related contested
+    cases. Each decision resolves a specific contested case = case_law.
+    Enumerated from the Board's complete run of bound decision volumes,
+    published as per-volume ZIP archives (Volume 1: 1977-78 to present);
+    docket number, volume/page citation, decision date, and full
+    decision text (from the born-digital PDF) are captured. No CAPTCHA,
+    no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://vlrb.vermont.gov"
+  endpoints:
+    download_page: "/decisions/download"
+    volume_zip: "/sites/vlrb/files/documents/Decisions/Volume {N}.zip"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/VT-LRB/{decision-filename-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Slug of the decision filename (volume/page citation + caption)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "docket"
+      description: "VLRB docket number parsed from the body (e.g. '16-50')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Decision caption (parties), from the PDF filename"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (born-digital PDF extract)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the body signature date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the volume ZIP on vlrb.vermont.gov"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions of the Vermont Labor Relations Board are official works of
+    Vermont state government (edicts of a quasi-judicial government
+    body) and are not subject to copyright under the government-edicts
+    doctrine. Free to use, including commercially.

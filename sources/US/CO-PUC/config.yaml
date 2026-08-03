@@ -1,0 +1,116 @@
+# ===================================================================
+# US/CO-PUC -- Colorado Public Utilities Commission Decisions
+# ===================================================================
+# Full text of Decisions issued by the Colorado Public Utilities
+# Commission (PUC) adjudicating utility proceedings (electric, gas,
+# water, transportation, telecommunications). Each Decision is the
+# Commission's administrative adjudication of a specific proceeding
+# = case_law. Public domain (US state government edict). Published
+# openly as born-digital PDFs via the DORA E-Filings (EFI) system
+# (www.dora.state.co.us/pls/efi). No authentication required.
+# ===================================================================
+
+source:
+  id: "US/CO-PUC"
+  country: "US"
+  name: "Colorado Public Utilities Commission — Decisions"
+  url: "https://puc.colorado.gov/puc-decisions"
+  description: |
+    Decisions issued by the Colorado Public Utilities Commission (PUC)
+    resolving utility rate, tariff, certificate (CPCN), complaint and
+    rulemaking proceedings across the electric, gas, water and
+    transportation industries. Each Decision is the Commission's
+    administrative adjudication of a specific proceeding (case_law).
+    The DORA E-Filings electronic corpus spans 2000 to present. Full
+    text is in born-digital Decision PDFs (Tesseract OCR fallback for
+    the rare image-only scan).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 5
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.dora.state.co.us/pls/efi"
+  endpoints:
+    search: "/EFI_SEARCH_UI.getDecisionResults"     # GET, date range p_after/p_before
+    detail: "/EFI_Search_UI.Show_Decision?p_dec={p_dec}"
+    file: "/efi_p2_v2_demo.show_document?p_dms_document_id={dms_id}"
+
+data_model:
+  type: "case_law"
+  primary_key: "decision_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "decision_number"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "decision_number"
+      description: "Colorado PUC decision number, e.g. 'C25-0024' or 'R25-0006-I'"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "proceeding_number"
+      description: "PUC proceeding number, e.g. '21A-0141E'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "p_dec"
+      description: "DORA EFI internal decision id (stable, used for the detail page)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Decision number plus decision title/description"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "summary"
+      description: "Short decision description from the search listing"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "text"
+      description: "Full text of the Decision extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the Decision was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Colorado)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Colorado PUC Decisions are official Colorado state government edicts in the public domain."
+
+notes: |
+  - The DORA E-Filings (EFI) decision search is an Oracle PL/SQL web app.
+    Despite the interactive form carrying a p_session_id hidden field, the
+    results endpoint EFI_SEARCH_UI.getDecisionResults works with an EMPTY
+    p_session_id: a GET with p_after=MM/DD/YYYY & p_before=MM/DD/YYYY (plus
+    empty filter params) returns a server-rendered <table> of every decision
+    issued in that window — decision number, a Show_Decision?p_dec={id} link +
+    title, the issued date and the proceeding number. No auth/cookie/token.
+  - fetch_all() walks years newest-first back to the corpus floor (2000; 1999
+    and earlier return 0 rows), ~800-900 decisions/year (~20K total).
+  - fetch_all() yields raw metadata; normalize() fetches the Show_Decision
+    detail page, resolves the primary Decision PDF via
+    efi_p2_v2_demo.show_document?p_dms_document_id={id}, downloads it and
+    extracts full text (fitz/PyMuPDF; Tesseract OCR fallback).
+  - Public domain Colorado government data.

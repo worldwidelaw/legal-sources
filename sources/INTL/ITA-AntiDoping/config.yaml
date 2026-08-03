@@ -1,0 +1,50 @@
+fetch:
+  list_url: https://ita.sport/anti-doping-rule-violations/
+  method: html_table_article
+  rate_limit_seconds: 1.5
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: athlete
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: >
+    International Testing Agency (ITA) Anti-Doping Rule Violations — the publicly
+    disclosed anti-doping cases managed by the ITA, the independent body that
+    delivers anti-doping programmes on behalf of the IOC and ~70 international
+    federations and major-event organisers. The ITA Legal Affairs Department
+    conducts results management of ADRVs from initial review to first-instance
+    hearing panels (including the CAS Anti-Doping Division) and CAS appeals,
+    under the World Anti-Doping Code and the ITA Public Disclosure Policy. The
+    "Anti-Doping Rule Violations" page is a server-rendered HTML table; each case
+    links a full reasoned news article (substance, regulatory framework, ADRV
+    finding, sanction and consequences) hosted openly on ita.sport (no login,
+    no WAF, reachable from any IP).
+  id: INTL/ITA-AntiDoping
+  language: en
+  name: International Testing Agency (ITA) Anti-Doping Rule Violations
+  url: https://ita.sport/anti-doping-rule-violations/
+license:
+  name: "ITA Terms of Use (All Rights Reserved)"
+  url: "https://ita.sport/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "ITA copyright; published under the ITA Public Disclosure Policy. No open licence; commercial use restricted."

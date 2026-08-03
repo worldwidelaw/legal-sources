@@ -135,7 +135,25 @@ class HttpClient:
         logger.debug(f"{method} {url}")
 
         try:
-            response = self.session.request(method, url, **kwargs)
+            try:
+                response = self.session.request(method, url, **kwargs)
+            except requests.exceptions.SSLError as ssl_exc:
+                # Some servers omit their intermediate CA cert → "unable to get
+                # local issuer certificate". Recover by AIA-fetching the missing
+                # intermediate and retrying with an augmented CA bundle, without
+                # dropping verification. See issue #1161 / common.ssl_aia.
+                if kwargs.get("verify", self.verify) is False:
+                    raise
+                from common.ssl_aia import is_missing_issuer_error, ca_bundle_for
+
+                if not is_missing_issuer_error(ssl_exc):
+                    raise
+                bundle = ca_bundle_for(url)
+                if not bundle:
+                    raise
+                logger.warning(f"Retrying with AIA-augmented CA bundle: {url}")
+                kwargs["verify"] = bundle
+                response = self.session.request(method, url, **kwargs)
 
             if response.status_code == 429:
                 # Rate limited — notify adaptive limiter and retry

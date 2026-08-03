@@ -1,0 +1,111 @@
+# ===================================================================
+# US/NE-TaxRulings -- Nebraska Department of Revenue
+# Revenue Rulings & General Information Letters
+# ===================================================================
+# Official interpretive guidance published by the Nebraska Department
+# of Revenue (NDR): Revenue Rulings issued by the Tax Commissioner
+# (formal interpretations carrying a "safe harbor" for taxpayers that
+# follow them) and General Information Letters (GILs). Two
+# server-rendered listing pages, each a Drupal table
+# (<table class="table tablefield">) with the columns Number | Tax Type
+# | Title/Topic | Date | Document; the Document cell links to a
+# born-digital PDF under /sites/default/files/doc/legal/rulings/. Full
+# text lives only in the PDF, extracted via the shared OOM-hardened
+# pdf_extract helper. No JavaScript, no CAPTCHA, no auth. Public-domain
+# Nebraska state-government works (government edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/NE-TaxRulings"
+  country: "US"
+  name: "Nebraska Department of Revenue — Revenue Rulings & General Information Letters"
+  url: "https://revenue.nebraska.gov/about/legal-information/revenue-rulings-issued-tax-commissioner"
+  description: |
+    Revenue Rulings (NN-NN-N) issued by the Nebraska Tax Commissioner —
+    formal interpretations of how Nebraska tax law applies to a stated set
+    of facts; a taxpayer that follows a current ruling has a "safe harbor"
+    from tax, penalty and interest on the issue addressed — and General
+    Information Letters (GIL NN-NN-N), less formal written statements of the
+    Department's position. The full text of each document is read from its
+    born-digital PDF on the NDR host. No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://revenue.nebraska.gov"
+  endpoints:
+    rulings: "/about/legal-information/revenue-rulings-issued-tax-commissioner"
+    gils: "/about/legal-information/general-information-letters-gils"
+    document: "/sites/default/files/doc/legal/rulings/{file}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NE-TaxRulings/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "ruling_number"
+      description: "NDR document number (e.g. '01-16-1')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "ruling_type"
+      description: "Revenue Ruling or General Information Letter"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (doc type + number + subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document, extracted from the published PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the listing row"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Nebraska state tax guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Revenue Rulings and General Information Letters of the Nebraska Department of Revenue are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Two listing pages (Revenue Rulings + GILs) are Drupal tables; each
+    row's columns are Number | Tax Type | Title/Topic | Date | Document.
+    The scraper restricts to content tables (class "tablefield") to avoid
+    nav menus, locates the Document cell by its PDF anchor, identifies the
+    date cell by an MM/DD/YYYY pattern, and dedups by PDF URL.
+  - Full text lives only in the PDF; extraction uses the shared
+    common.pdf_extract helper (OOM-hardened pdfplumber -> pypdf -> OCR).
+    A <200-char guard skips the rare image-only/empty scan.
+  - Type is doctrine: these are interpretive government guidance
+    documents, not adjudications of a contested case.
+  - Public-domain Nebraska state-government data.

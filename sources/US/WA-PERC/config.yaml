@@ -1,0 +1,128 @@
+# ===================================================================
+# US/WA-PERC -- Washington State Public Employment Relations Commission
+# ===================================================================
+# Decisions of the Washington State Public Employment Relations
+# Commission (PERC), the state's quasi-judicial agency that adjudicates
+# public-sector labor-relations disputes -- unfair labor practice
+# complaints, representation / unit-determination cases, interest
+# arbitration and related matters under Washington's public-employee
+# collective-bargaining statutes (RCW 41.56, 41.58, 41.59, 41.76,
+# 41.80, the PSRA, etc.). Each decision resolves a specific contested
+# case = case_law. Public domain Washington state-government works
+# (government edicts).
+#
+# Served by Lexum's "Decisia" platform at decisions.perc.wa.gov across
+# five collections (decisions, advisory-opinions, interest-arbitrations,
+# law-enforcement-disciplinary-arbitration, marine-employees-commission).
+# Each collection browses by year; the ?iframe=true view of every item
+# renders a metadata table + full decision text in HTML (no PDF, no
+# CAPTCHA, no auth).
+# ===================================================================
+
+source:
+  id: "US/WA-PERC"
+  country: "US"
+  name: "Washington State Public Employment Relations Commission — Decisions"
+  url: "https://decisions.perc.wa.gov/waperc/en/nav.do"
+  description: |
+    Decisions of the Washington State Public Employment Relations
+    Commission (PERC). PERC adjudicates public-sector labor-relations
+    disputes in Washington -- unfair labor practice complaints,
+    representation and unit-determination cases, interest arbitration,
+    and law-enforcement disciplinary arbitration -- under RCW 41.56,
+    41.58, 41.59, 41.76, 41.80, the PSRA and related statutes. Each
+    decision resolves a specific contested case = case_law. Enumerated
+    from the Lexum Decisia site (decisions.perc.wa.gov) by browsing each
+    collection's per-year listing; full text and metadata (case number,
+    decision maker, case type, statute, date) are parsed from the
+    ?iframe=true HTML of each item. No CAPTCHA, no auth. ~10,000
+    decisions across five collections, 1976–present.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://decisions.perc.wa.gov"
+  endpoints:
+    year_index: "/waperc/{collection}/en/{year}/nav_date.do?page={page}&iframe=true"
+    item: "/waperc/{collection}/en/item/{id}/index.do?iframe=true"
+
+data_model:
+  type: "case_law"
+  primary_key: "item_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/WA-PERC/{collection}-{Decisia item id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "PERC case/docket number (e.g. '143221-U-25', '332-U-76')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "case_type"
+      description: "Case type (e.g. 'Unfair Labor Practice', 'Representation')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "statute"
+      description: "Governing statute (e.g. 'PSRA - RCW 41.80')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Decision title (parties + Decision number + statute + year)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the PERC decision (HTML documentcontent -> plain text)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the metadata Date field"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Washington state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Washington State Public Employment Relations Commission are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Platform: Lexum Decisia at decisions.perc.wa.gov. Five collections:
+    decisions, advisory-opinions, interest-arbritations (their spelling),
+    law-enforcement-disciplinary-arbitration, marine-employees-commission.
+  - Enumeration: each collection browses by year at
+    /waperc/{collection}/en/{YYYY}/nav_date.do?page={N}&iframe=true
+    (25 items/page, years 1976–present). Item links are
+    /waperc/{collection}/en/item/{id}/index.do .
+  - Full text: the ?iframe=true item view is the raw Decisia content (the
+    same URL without the flag is wrapped in the perc.wa.gov WordPress
+    theme). Metadata is a <td class="label">/<td class="metadata"> table;
+    the decision body is <div id="document-content"> ... The scraper
+    converts that HTML fragment to plain text (paragraph/line breaks
+    preserved, tags stripped, entities decoded). A <200-char guard skips
+    empty items. No OCR needed (born-digital HTML).
+  - Public domain Washington state government data.

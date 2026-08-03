@@ -1,0 +1,59 @@
+source:
+  id: FR/OrdrePedicuresPodologues
+  name: "Ordre des Pédicures-Podologues — Jurisprudence disciplinaire"
+  country: FR
+  url: https://www.onpp.fr/juridique/jurisprudence/
+  auth: none
+  data_types:
+  - case_law
+
+endpoints:
+  base_url: https://www.onpp.fr
+  jurisprudence_page: https://www.onpp.fr/juridique/jurisprudence/
+  pdf_base: https://www.onpp.fr/assets/jurisprudence/
+
+rate_limit:
+  delay_between_requests: 1.2
+  requests_per_second: 0.83
+
+schema:
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - url
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+
+license:
+  name: "Custom terms (public anonymised jurisprudence)"
+  url: "https://www.onpp.fr/mentions-legales.html"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Public anonymised disciplinary decisions of an ordinal body with a public service mission. No explicit open-data reuse licence declared; treated as public jurisprudence (comparable to French court decisions)."
+
+notes: >
+  Disciplinary jurisprudence of the French National Order of
+  Pédicures-Podologues (chiropodists/podiatrists), ONPP. The consolidated
+  jurisprudence page at onpp.fr/juridique/jurisprudence/ embeds an inline
+  JavaScript `const data = [...]` array with one object per decision (date,
+  title, region, juridiction, abstract, keywords, and the PDF filename). The
+  full anonymised decision is the linked PDF under /assets/jurisprudence/, from
+  which full text is extracted with pdfplumber (per-page cache flush). Covers
+  the chambres disciplinaires de première instance (regional/inter-regional),
+  the Chambre disciplinaire nationale, the sections des assurances sociales,
+  and reproduced Conseil d'État cassation decisions. ~265 decisions; records
+  de-duplicated by PDF link.

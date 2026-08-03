@@ -1,0 +1,111 @@
+# ===================================================================
+# US/WV-TaxAppeals -- West Virginia Office of Tax Appeals
+# Redacted Final Decisions (case_law)
+# ===================================================================
+# The West Virginia Office of Tax Appeals is the independent state tribunal
+# that adjudicates all West Virginia state tax disputes (consumer sales & use,
+# personal income, corporate net income, business franchise, severance, and
+# ad valorem / property tax). Its redacted final decisions are official public
+# records filed in the State Register and published online by the West Virginia
+# Secretary of State. Every published document decides a specific case
+# -> case_law.
+#
+# Discovery is from one server-rendered results page (no JS, no CAPTCHA, no
+# auth): https://apps.sos.wv.gov/adlaw/taxappealdecisions/
+# Each <tr> ships the docket number, the "Date Issued" (M/D/YYYY), a
+# readpdf.aspx?did=N link to the redacted decision PDF, and a description row.
+#
+# Text layer: the newest decisions are born-digital (extracted directly); most
+# older decisions are scanned images with no text layer, so full text is read
+# via the OCR fallback in common.pdf_extract (PyMuPDF/pdf2image -> pytesseract),
+# which needs the `tesseract` binary. Public-domain West Virginia state works
+# (government-edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/WV-TaxAppeals"
+  country: "US"
+  name: "West Virginia Office of Tax Appeals — Decisions"
+  url: "https://apps.sos.wv.gov/adlaw/taxappealdecisions/"
+  description: |
+    Redacted final decisions of the West Virginia Office of Tax Appeals (the
+    independent tribunal adjudicating West Virginia consumer sales & use,
+    income, corporate net income, business franchise, severance, and property
+    tax disputes = case_law), published online by the West Virginia Secretary
+    of State. Discovered from one server-rendered results page; full text read
+    from the decision PDFs (born-digital where available, OCR for the scanned
+    majority). No JavaScript scraping, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://apps.sos.wv.gov/adlaw/taxappealdecisions/"
+  endpoints:
+    index: "https://apps.sos.wv.gov/adlaw/taxappealdecisions/"
+    pdf: "https://apps.sos.wv.gov/adlaw/taxappealdecisions/readpdf.aspx?did={did}"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/WV-TaxAppeals/did-{did})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Docket number from the results table (e.g. '24-1036')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (WV Office of Tax Appeals Decision + docket)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (born-digital or OCR-extracted)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date issued (ISO 8601), parsed from the results table"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — West Virginia state tax adjudications)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Redacted final decisions of the West Virginia Office of Tax Appeals, filed in the State Register and published by the WV Secretary of State, are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery parses the single server-rendered results page at
+    apps.sos.wv.gov/adlaw/taxappealdecisions/ (~591 decisions), one <tr> per
+    decision: docket number, Date Issued (M/D/YYYY), readpdf.aspx?did=N PDF
+    link, and a description row.
+  - _type is case_law for all documents (tax-tribunal adjudications).
+  - Text layer: the newest decisions are born-digital and extract directly; the
+    older majority are scanned images (0 text layer) and require the OCR
+    fallback in common.pdf_extract, gated on the `tesseract` binary. Launch on
+    a vantage with tesseract; budget for OCR slowness over ~591 PDFs. A
+    <200-char guard skips any PDF that still yields no text.

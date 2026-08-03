@@ -1,0 +1,122 @@
+# ===================================================================
+# US/TX-TaxDecisions -- Texas Comptroller of Public Accounts, STAR
+# (State Tax Automated Research) database
+# ===================================================================
+# The Texas Comptroller's STAR system is the state's official, public
+# tax-research library. It publishes the redacted full text of the
+# Comptroller's administrative Hearings (taxpayer-protest adjudications,
+# case_law), summaries of tax Court Cases (case_law), adopted
+# administrative Rules with preamble (legislation, 34 TAC), and a large
+# body of interpretive guidance — Letters (letter rulings), policy Memos,
+# tax Publications and Web Content (doctrine). ~24,700 documents back to
+# the 1980s. Served as clean HTML full text by the STAR JSON API; no
+# auth, no CAPTCHA. Public-domain Texas state-government works.
+# ===================================================================
+
+source:
+  id: "US/TX-TaxDecisions"
+  country: "US"
+  name: "Texas Comptroller — STAR (State Tax Automated Research)"
+  url: "https://star.comptroller.texas.gov/"
+  description: |
+    The Texas Comptroller of Public Accounts' STAR database — the state's
+    official tax-research library. Publishes the redacted full text of
+    administrative Hearings (taxpayer-protest adjudications), tax Court
+    Case summaries, adopted administrative Rules with preamble, and
+    interpretive guidance (letter rulings, policy memos, publications,
+    guidance webpages). ~24,700 documents back to the 1980s, retrieved
+    from the STAR JSON API as clean HTML full text.
+
+data_types:
+  - case_law
+  - legislation
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "json_api"
+  base_url: "https://api.comptroller.texas.gov/star/v1"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/TX-TaxDecisions/{acc_no})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "acc_no"
+      description: "STAR accession number (e.g. 202410024H)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "doc_type"
+      description: "STAR document type (Hearing, Court Case, Rule, Letters, Memos, Publications, Web Content)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "tax_type"
+      description: "Tax type the document concerns (e.g. Sales, Franchise-Margin)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the document, extracted from STAR contents HTML"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Document date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Texas state tax research documents)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "STAR documents are official works of the Texas Comptroller of Public Accounts published for public inspection; edicts of government (hearings, court-case summaries, adopted rules) and public agency guidance are in the public domain."
+
+notes: |
+  - Access via the STAR JSON API (https://api.comptroller.texas.gov/star/v1),
+    the backend of the public STAR SPA (https://star.comptroller.texas.gov/).
+    No auth, no CAPTCHA.
+  - Discovery: GET /search with params q="", date_range=YYYY-01-01,YYYY-12-31,
+    limit=5000, sort="doc_date asc". The corpus is partitioned by YEAR because
+    the API's `start` offset param is NOT honored and large `limit` values
+    (>=10000) time out (504). Each year returns only a few hundred rows, so a
+    single per-year call retrieves that year in full. Iterated START_YEAR..now,
+    dedup on acc_no.
+  - Response rows carry acc_no, title, doc_type, doc_type_code, doc_date,
+    tax_type_short/long, subjects.
+  - Full text: GET /view/{acc_no} -> data.contents holds the body as HTML;
+    tags stripped / entities unescaped to plain text. A <200-char guard skips
+    rows without a real body (e.g. some Web Content pointers).
+  - _type mapping by doc_type_code: H (Hearing) + C (Court Case) -> case_law;
+    R (Rule) -> legislation; L/M/P/W/N (Letters/Memos/Publications/Web/…) ->
+    doctrine.
+  - Taxpayer-identifying details are redacted at source (asterisks).
+  - Sample mode draws from a single recent year (2024) for a fast, mixed-type
+    sample; the full pull scans every year.
+  - Public-domain Texas state-government data.

@@ -1,0 +1,88 @@
+# FR/H2A-Sanctions — Haute autorité de l'audit (H2A), Commission des sanctions —
+# Décisions.
+#
+# Source: H2A — the French public authority regulating the statutory-audit
+#         profession (commissaires aux comptes and sustainability-assurance
+#         providers). Successor to the Haut conseil du commissariat aux comptes
+#         (H3C) since 1 January 2024. Its Commission des sanctions (before 2021,
+#         the H3C "formation restreinte") imposes disciplinary sanctions after
+#         adversarial proceedings on auditors/audit firms for professional
+#         misconduct.
+# URL: https://h2a-france.org/commission-des-sanctions/decisions-de-la-commission-des-sanctions/
+# Data type: case_law  (reasoned adjudications by an independent disciplinary body)
+# Auth: none
+#
+# Access:
+#   - The public WordPress REST media API (/wp-json/wp/v2/media) enumerates every
+#     uploaded PDF; decision PDFs are identified by file-name pattern:
+#       "CS-YYYY-NN"   Commission des sanctions decisions (2021-present)
+#       "FR-YYYY-NN-S" formation restreinte decisions (former H3C, pre-2021)
+#     (non-decision publications — vademecum, rapports, accords de composition,
+#     avis, listes — are excluded by name.)
+#   - Download each born-digital PDF and extract full text with PyMuPDF
+#     (pdfplumber/pypdf fallback). No OCR needed. Decision date parsed from the
+#     PDF body ("Décision du/rendue le DD mois YYYY"), falling back to upload date.
+#
+# Total: ~106 decisions, 2010-present. Companion to FR/AMF_Sanctions and
+#        FR/ACPR-Sanctions (the other French financial/professional regulator
+#        sanctions commissions).
+
+source:
+  id: FR/H2A-Sanctions
+  name: Haute autorité de l'audit (H2A) — Commission des sanctions (Décisions)
+  country: FR
+  data_types:
+    - case_law
+  url: https://h2a-france.org/commission-des-sanctions/decisions-de-la-commission-des-sanctions/
+  language: fr
+  auth: none
+  license: licence-ouverte-2.0
+
+license:
+  name: "Licence Ouverte / Open Licence 2.0 (Etalab)"
+  url: "https://www.etalab.gouv.fr/licence-ouverte-open-licence/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    Decisions of the H2A (ex-H3C) Commission des sanctions are official acts of a
+    French independent public authority (public information). Like the sibling
+    FR/AMF_Sanctions and FR/ACPR-Sanctions regulator corpora, they fall under the
+    French open public-information regime (Licence Ouverte / Etalab 2.0): free
+    re-use including commercial, attribution to the H2A required. Public access,
+    no login/paywall. Decisions are anonymised by the H2A where required.
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: decision_number
+      type: string
+      required: false
+    - name: date
+      type: date
+      required: false
+  indexed_fields:
+    - title
+    - text
+    - decision_number
+    - court
+  date_field: date
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+
+fetch:
+  rate_limit_delay: 1.5
+  estimated_total: 106
+  sample_count: 15

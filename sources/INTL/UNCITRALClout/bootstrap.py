@@ -40,15 +40,33 @@ from common.pdf_extract import extract_pdf_markdown
 BASE_URL = "https://www.uncitral.org"
 SEARCH_URL = f"{BASE_URL}/clout/search.jspx"
 SAMPLE_DIR = Path(__file__).parent / "sample"
+DATA_DIR = Path(__file__).parent / "data"
+INDEX_CACHE = DATA_DIR / "abstracts_index.json"
 SOURCE_ID = "INTL/UNCITRALClout"
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) LegalDataHunter/1.0",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0 Safari/537.36 LegalDataHunter/1.0",
     "Accept": "text/html,application/xhtml+xml",
 }
 
 RATE_LIMIT_DELAY = 2.0
 PAGE_SIZE = 10  # Fixed by the server
+
+# CLOUT abstracts are published only as compilation documents in the UN document
+# series A/CN.9/SER.C/ABSTRACTS/{N} (each covers ~9-12 consecutive cases). The old
+# per-case links (daccess-ods.un.org ?JN=... / undocs.org) died when the UN document
+# server migrated to documents.un.org; the modern PDF endpoint below is the stable
+# way to retrieve the compilations. We fetch every compilation, split it into
+# per-case abstracts, and index by CLOUT case number.
+ABSTRACT_SYMBOL = "A/CN.9/SER.C/ABSTRACTS/{n}"
+UN_DOC_PDF_API = "https://documents.un.org/api/symbol/access?s={sym}&l=en&t=pdf"
+# Boilerplate that marks the compilation's Introduction section — a table-of-contents
+# "Case N:" entry that runs into the Introduction must be discarded, not kept as text.
+_ABSTRACT_BOILERPLATE = "This compilation of abstracts forms part of the system"
+
+# Populated lazily by build_abstract_index(); maps CLOUT case number (str) -> abstract text.
+_ABSTRACT_INDEX: Optional[dict] = None
 
 
 class SimpleHTMLTextExtractor(HTMLParser):
@@ -95,6 +113,112 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
         pdf_bytes=pdf_bytes,
         table="case_law",
     ) or ""
+
+def fetch_abstract_pdf(n: int) -> Optional[bytes]:
+    """Fetch compilation A/CN.9/SER.C/ABSTRACTS/{n} as PDF bytes (None if it doesn't exist)."""
+    sym = ABSTRACT_SYMBOL.format(n=n)
+    url = UN_DOC_PDF_API.format(sym=sym)
+    try:
+        resp = requests.get(url, headers=HEADERS, timeout=120, allow_redirects=True)
+    except requests.RequestException as e:
+        print(f"    Error fetching abstract {sym}: {e}")
+        return None
+    # Missing documents return a small HTML "Document Viewer" error page, not a PDF.
+    if resp.status_code != 200 or not resp.content[:4] == b"%PDF":
+        return None
+    return resp.content
+
+
+def split_compilation_into_cases(text: str) -> dict:
+    """Split a compilation's extracted text into {case_number: abstract_text}.
+
+    Each case number appears at least twice (table of contents + body). The body
+    segment is the real abstract; the TOC entry is short and the *last* TOC entry
+    also swallows the Introduction boilerplate. We drop any segment containing the
+    boilerplate and keep the longest remaining segment per case number.
+    """
+    out: dict = {}
+    matches = list(re.finditer(r"\bCase\s+(\d{2,4})\s*:", text))
+    for i, m in enumerate(matches):
+        num = m.group(1)
+        start = m.start()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+        seg = text[start:end].strip()
+        # Trim trailing table-of-contents dot leaders ("... 11").
+        seg = re.sub(r"\s*\.\s*(?:\.\s*){2,}\d+\s*$", "", seg).strip()
+        if _ABSTRACT_BOILERPLATE in seg:
+            continue
+        if num not in out or len(seg) > len(out[num]):
+            out[num] = seg
+    return out
+
+
+def discover_max_abstract(ceiling: int = 400) -> int:
+    """Find the highest published A/CN.9/SER.C/ABSTRACTS/{n} via exponential + binary search."""
+    lo, hi = 1, 1
+    while hi <= ceiling and fetch_abstract_pdf(hi) is not None:
+        lo = hi
+        hi *= 2
+    hi = min(hi, ceiling)
+    while lo + 1 < hi:
+        mid = (lo + hi) // 2
+        if fetch_abstract_pdf(mid) is not None:
+            lo = mid
+        else:
+            hi = mid
+    return lo
+
+
+def build_abstract_index(needed: Optional[set] = None, use_cache: bool = True) -> dict:
+    """Build (or load) the case_number -> abstract_text index.
+
+    If ``needed`` is given, scan compilations newest-first and stop early once every
+    needed case number is covered (fast path for sample runs). Otherwise build the
+    full index over all compilations and persist it to ``INDEX_CACHE``.
+    """
+    global _ABSTRACT_INDEX
+    if _ABSTRACT_INDEX is not None and needed is None:
+        return _ABSTRACT_INDEX
+
+    if use_cache and needed is None and INDEX_CACHE.exists():
+        try:
+            _ABSTRACT_INDEX = json.loads(INDEX_CACHE.read_text(encoding="utf-8"))
+            print(f"  Loaded abstract index from cache ({len(_ABSTRACT_INDEX)} cases)")
+            return _ABSTRACT_INDEX
+        except (ValueError, OSError):
+            pass
+
+    print("  Building abstract index from A/CN.9/SER.C/ABSTRACTS compilations...")
+    max_n = discover_max_abstract()
+    print(f"  Highest compilation: A/CN.9/SER.C/ABSTRACTS/{max_n}")
+    index: dict = {}
+    order = range(max_n, 0, -1) if needed else range(1, max_n + 1)
+    for n in order:
+        pdf_bytes = fetch_abstract_pdf(n)
+        if not pdf_bytes:
+            continue
+        text = extract_text_from_pdf(pdf_bytes)
+        if not text:
+            continue
+        cases = split_compilation_into_cases(text)
+        for num, seg in cases.items():
+            if num not in index or len(seg) > len(index[num]):
+                index[num] = seg
+        print(f"    ABSTRACTS/{n}: +{len(cases)} cases (index now {len(index)})")
+        time.sleep(0.5)
+        if needed and needed.issubset(index.keys()):
+            print("    All needed cases covered — stopping early.")
+            break
+
+    if needed is None:
+        _ABSTRACT_INDEX = index
+        try:
+            DATA_DIR.mkdir(parents=True, exist_ok=True)
+            INDEX_CACHE.write_text(json.dumps(index, ensure_ascii=False), encoding="utf-8")
+        except OSError:
+            pass
+    return index
+
 
 def fetch_html(url: str) -> Optional[str]:
     """Fetch an HTML page."""
@@ -223,22 +347,20 @@ def parse_case_detail(html: str) -> dict:
     return result
 
 
-def get_case_text(case_data: dict) -> str:
-    """Get full text for a case - try original fulltext PDF first, then abstract PDF."""
-    # Priority 1: Original fulltext PDF
-    if case_data.get("fulltext_pdf_url"):
-        print(f"    Fetching original fulltext PDF...")
-        pdf_bytes = fetch_pdf(case_data["fulltext_pdf_url"])
-        if pdf_bytes:
-            text = extract_text_from_pdf(pdf_bytes)
-            if text and len(text) > 50:
-                return text
-        time.sleep(1)
+def get_case_text(case_data: dict, case_number: str, index: dict) -> str:
+    """Get the CLOUT abstract text for a case.
 
-    # Priority 2: Abstract PDF
-    if case_data.get("abstract_pdf_url"):
-        print(f"    Fetching abstract PDF...")
-        pdf_bytes = fetch_pdf(case_data["abstract_pdf_url"])
+    Priority 1: the per-case abstract split out of the A/CN.9/SER.C/ABSTRACTS
+    compilation index (stable, covers ~all cases). Priority 2: an original-fulltext
+    PDF hosted on uncitral.org, when the case links one.
+    """
+    if case_number and index.get(case_number):
+        return index[case_number]
+
+    # Fallback: original fulltext PDF still hosted on uncitral.org (a minority of cases).
+    if case_data.get("fulltext_pdf_url"):
+        print(f"    Index miss — fetching original fulltext PDF...")
+        pdf_bytes = fetch_pdf(case_data["fulltext_pdf_url"])
         if pdf_bytes:
             text = extract_text_from_pdf(pdf_bytes)
             if text and len(text) > 50:
@@ -248,13 +370,16 @@ def get_case_text(case_data: dict) -> str:
     return ""
 
 
+def extract_case_number(title: str) -> str:
+    """Extract the CLOUT case number from a title like 'CLOUT case 1935'."""
+    m = re.search(r"case\s+(\d+)", title, re.IGNORECASE)
+    return m.group(1) if m else ""
+
+
 def normalize(case_data: dict, full_text: str, case_url: str) -> dict:
     """Normalize case data into standard schema."""
     title = case_data.get("title", "")
-    case_number = ""
-    num_match = re.search(r"case\s+(\d+)", title, re.IGNORECASE)
-    if num_match:
-        case_number = num_match.group(1)
+    case_number = extract_case_number(title)
 
     return {
         "_id": f"CLOUT-{case_number}" if case_number else f"CLOUT-{hash(case_url) % 10**8}",
@@ -312,27 +437,32 @@ def fetch_all_case_urls(limit: int = 0) -> list[str]:
 
 
 def fetch_cases(limit: int = 0) -> Generator[dict, None, None]:
-    """Fetch cases with full text."""
+    """Fetch cases with full abstract text."""
     case_urls = fetch_all_case_urls(limit=limit)
     fetched = 0
 
+    # Fetch all case metadata first so we know which case numbers to cover, then build
+    # the abstract index (scoped/early-stop for small runs, full+cached for bootstrap).
+    parsed = []
     for case_url in case_urls:
-        print(f"  [{fetched+1}/{len(case_urls)}] Fetching {case_url.split('/')[-1]}...")
+        print(f"  [{len(parsed)+1}/{len(case_urls)}] Fetching {case_url.split('/')[-1]}...")
         html = fetch_html(case_url)
         if not html:
             time.sleep(RATE_LIMIT_DELAY)
             continue
-
         case_data = parse_case_detail(html)
-        full_text = get_case_text(case_data)
+        parsed.append((case_url, case_data, extract_case_number(case_data.get("title", ""))))
+        time.sleep(RATE_LIMIT_DELAY)
 
+    needed = {num for (_, _, num) in parsed if num}
+    index = build_abstract_index(needed=needed if limit else None)
+
+    for case_url, case_data, case_number in parsed:
+        full_text = get_case_text(case_data, case_number, index)
         if not full_text:
             print(f"    WARNING: No text extracted for {case_data.get('title', 'unknown')}")
-
-        record = normalize(case_data, full_text, case_url)
-        yield record
+        yield normalize(case_data, full_text, case_url)
         fetched += 1
-        time.sleep(RATE_LIMIT_DELAY)
 
 
 def bootstrap_sample():
@@ -353,17 +483,21 @@ def bootstrap_sample():
 
 
 def bootstrap_full():
-    """Fetch all records."""
-    SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
+    """Fetch all records, streaming to data/records.jsonl for pipeline ingest."""
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    out_path = DATA_DIR / "records.jsonl"
     total = 0
+    with_text = 0
 
-    for record in fetch_cases():
-        fname = SAMPLE_DIR / f"{record['_id']}.json"
-        with open(fname, "w", encoding="utf-8") as f:
-            json.dump(record, f, ensure_ascii=False, indent=2)
-        total += 1
+    with open(out_path, "w", encoding="utf-8") as out:
+        for record in fetch_cases():
+            out.write(json.dumps(record, ensure_ascii=False) + "\n")
+            out.flush()
+            total += 1
+            if record.get("text"):
+                with_text += 1
 
-    print(f"\nFull bootstrap complete: {total} records saved.")
+    print(f"\nFull bootstrap complete: {total} records ({with_text} with text) -> {out_path}")
 
 
 def validate_sample():
@@ -446,7 +580,9 @@ def test_connectivity():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="INTL/UNCITRALClout data fetcher")
-    parser.add_argument("command", choices=["bootstrap", "test"], help="Command to run")
+    parser.add_argument(
+        "command", choices=["bootstrap", "bootstrap-fast", "test"], help="Command to run"
+    )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
     parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
@@ -454,8 +590,9 @@ if __name__ == "__main__":
     if args.command == "test":
         success = test_connectivity()
         sys.exit(0 if success else 1)
-    elif args.command == "bootstrap":
-        if args.sample:
+    elif args.command in ("bootstrap", "bootstrap-fast"):
+        # "bootstrap-fast" is the command the fleet runner invokes; treat it as a full run.
+        if args.sample and args.command == "bootstrap":
             bootstrap_sample()
         else:
             bootstrap_full()

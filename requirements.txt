@@ -67,3 +67,9 @@ openpyxl>=3.1.0
 # AWS S3 client (used by US/CourtListenerBulk for the public CourtListener
 # bulk-data bucket — anonymous access, no credentials needed)
 boto3>=1.34.0
+
+# Free Law Project's juriscraper (BSD-2) — the scraper library that powers
+# US/JuriscraperUpdater, which runs ~198 state + 22 federal opinion scrapers.
+# Without it the source raises "No module named 'juriscraper'" and yields 0
+# records (samples-only). See issue #1136.
+juriscraper>=3.0.0

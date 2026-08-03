@@ -1,0 +1,133 @@
+# ===================================================================
+# US/NJ-LegalEthics -- New Jersey Supreme Court ethics advisory opinions
+# ===================================================================
+# Full text of the three series of advisory ethics opinions issued by the
+# standing ethics committees appointed by the Supreme Court of New Jersey,
+# each advising LAWYERS on the New Jersey Rules of Professional Conduct and
+# related rules = doctrine (advisory):
+#   * ACPE -- Advisory Committee on Professional Ethics       (prefix "acp")
+#   * CAA  -- Committee on Attorney Advertising               (prefix "caa")
+#   * UPL  -- Committee on the Unauthorized Practice of Law   (prefix "cua")
+# Digitized as born-digital PDFs by the Rutgers Law Library; ~900 files ->
+# ~849 opinions. Committees appointed by the NJ Supreme Court -> pd-us.
+# Distinct from US/NJ-EthicsDecisions (State Ethics Commission = executive),
+# US/NJ-Courts and US/NJ-Legislation.
+# ===================================================================
+
+source:
+  id: "US/NJ-LegalEthics"
+  country: "US"
+  name: "New Jersey Supreme Court — Ethics Advisory Opinions (ACPE / Attorney Advertising / Unauthorized Practice)"
+  url: "https://njlaw.rutgers.edu/ethics/"
+  description: |
+    Advisory ethics opinions issued by the three standing ethics committees
+    appointed by the Supreme Court of New Jersey — the Advisory Committee on
+    Professional Ethics (ACPE), the Committee on Attorney Advertising (CAA),
+    and the Committee on the Unauthorized Practice of Law (UPL) — each applying
+    the New Jersey Rules of Professional Conduct and related court rules to a
+    stated question to advise lawyers. Digitized as born-digital PDFs by the
+    Rutgers Law Library digital collection (~900 files -> ~849 opinions),
+    spanning 1963-present, published free to the public.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 3
+  burst: 4
+  max_workers: 2
+
+api:
+  type: "open_directory_index_pdf"
+  base_url: "https://njlaw.rutgers.edu/ethics"
+  endpoints:
+    index: "/pdfs/"
+    opinion: "/pdfs/{fname}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NJ-LegalEthics/{series}-{number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Series code + number (e.g. ACPE-724, CAA-16, UPL-24)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "series"
+      description: "Committee series code (ACPE, CAA, UPL)"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "title"
+      description: "Opinion subject caption (from the PDF header, after 'OPINION {N}')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text from the born-digital PDF(s) (PyMuPDF, no OCR; multi-part opinions concatenated)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 issue date (first Month DD, YYYY in the opinion header)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Supreme Court of New Jersey — {committee}"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-NJ)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (US government edict — NJ Supreme Court ethics-committee opinions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "The ACPE, Committee on Attorney Advertising and Committee on the Unauthorized Practice of Law are standing committees appointed by, and acting under the authority of, the Supreme Court of New Jersey (R. 1:19, R. 1:19A, R. 1:22). Their advisory opinions interpret the New Jersey Rules of Professional Conduct and related court rules, so the texts are the work of a government-authorized body — treated as public domain under the 17 U.S.C. § 105 government-edicts rationale, consistent with the other state ethics-committee legal-ethics sources. Digitized and published free to the public by the Rutgers Law Library digital collection with no login, paywall or terms prohibiting reuse. Commercial use permitted."
+
+notes: |
+  - Discovery: the Rutgers collection at njlaw.rutgers.edu/ethics/ stores every
+    opinion as a born-digital PDF under /ethics/pdfs/, and that directory has an
+    OPEN index listing all files. The scraper parses the listing and groups the
+    files into opinions by (series prefix, number). File prefixes: acp -> ACPE,
+    caa -> Committee on Attorney Advertising, cua -> Committee on the
+    Unauthorized Practice of Law.
+  - Multi-part: a single opinion may span several PDFs
+    ("{prefix}{N}_1.pdf", "{prefix}{N}_2.pdf", ...) which are concatenated in
+    natural part order.
+  - Full text: PyMuPDF/fitz get_text, NO OCR. The collection prepends a
+    "Link to original WordPerfect Document" breadcrumb that is stripped.
+  - Number: from the filename ("acp724" -> ACPE Opinion 724); the header echoes
+    it as "OPINION {N}".
+  - Title: the subject caption printed on the short lines immediately after the
+    "OPINION {N}" header (matched at line start, uppercase, to avoid mixed-case
+    "... Opinion No. N ..." citations elsewhere); falls back to
+    "{series} Opinion {N}".
+  - Date: the first "Month DD, YYYY" in the body (the opinion's issue date,
+    printed beside its N.J.L.J. citation); falls back to null.
+  - Type: every document is a committee's advisory interpretation of the rules
+    governing lawyers = doctrine.
+  - Distinct from US/NJ-EthicsDecisions (NJ State Ethics Commission = executive
+    officials), US/NJ-Courts and US/NJ-Legislation.

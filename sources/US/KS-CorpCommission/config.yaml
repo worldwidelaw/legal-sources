@@ -1,0 +1,118 @@
+# ===================================================================
+# US/KS-CorpCommission -- Kansas Corporation Commission (KCC) Orders
+# ===================================================================
+# Full text of Orders issued by the Kansas Corporation Commission
+# adjudicating utility, energy (oil & gas conservation) and
+# transportation dockets. Administrative adjudications of specific
+# dockets = case_law. Public domain (US state government edict).
+# Published openly as born-digital PDFs via the public "KCC Connect"
+# Salesforce community (kcc-connect.kcc.ks.gov) + public SpringCM
+# download URLs. No auth.
+# ===================================================================
+
+source:
+  id: "US/KS-CorpCommission"
+  country: "US"
+  name: "Kansas Corporation Commission — Orders"
+  url: "https://kcc-connect.kcc.ks.gov/s/"
+  description: |
+    Orders issued by the Kansas Corporation Commission (KCC) resolving
+    utility rate cases, certificate applications, complaints, oil-&-gas
+    conservation and transportation dockets across the electric,
+    natural-gas, telecom, water, oil-&-gas and motor-carrier industries.
+    Each Order is an administrative adjudication of a specific docket
+    (case_law). The corpus is ~60,000-80,000 Orders. Full text is
+    extracted from born-digital Order PDFs (Tesseract OCR fallback for
+    the rare image-only scan).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "salesforce_aura"
+  base_url: "https://kcc-connect.kcc.ks.gov"
+  endpoints:
+    sitemap_index: "/s/sitemap.xml"
+    order_shard: "/s/sitemap-order__c-{N}.xml"
+    aura: "/s/sfsites/aura"
+    order_page: "/s/order/{Order__c-id}/{slug}"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "order_number"
+      description: "KCC order number, e.g. '24-0872' or 'CVT056378' (Order__c.Name)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "docket"
+      description: "Docket number, e.g. '16-CONS-300-CSHO' (from Order__c.Docket__c anchor)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "order_type"
+      description: "Order type (Order__c.Type__c), e.g. 'Order'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "title"
+      description: "Docket number plus the order Title__c"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Order extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order date (ISO 8601), from Order__c.OrderDate__c"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "pdf_url"
+      description: "Public SpringCM DownloadPdf URL for the born-digital Order PDF"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Kansas)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "KS Corporation Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - The public "KCC Connect" Salesforce Experience Cloud community
+    (kcc-connect.kcc.ks.gov/s/) publishes a SEO sitemap /s/sitemap.xml →
+    per-object shards /s/sitemap-order__c-{N}.xml (~20K Order__c URLs each,
+    4 shards, ~60-80K Orders). Each URL is /s/order/{Order__c-id}/{slug}.
+  - Metadata via the community's own GUEST Aura endpoint (POST /s/sfsites/aura,
+    aura://RecordUiController/ACTION$getRecordsWithFields, batched 50,
+    aura.token="null"): Name, Docket__c (an <a> whose text = docket number),
+    OrderDate__c, Title__c, Type__c, Publicly_Available__c/DocumentAccess__c
+    and PreviewUrl__c (a PUBLIC SpringCM DownloadPdf URL).
+  - fetch_all() walks the order shards (checkpointed to
+    data/ks_cc_checkpoint.json so fleet reruns advance monotonically);
+    normalize() downloads the born-digital Order PDF from PreviewUrl__c and
+    extracts full text via fitz/PyMuPDF (Tesseract OCR fallback). fwuid + app
+    id parsed live and re-parsed on 401/403 (rotate on redeploy).
+  - Public domain Kansas government data.

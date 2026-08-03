@@ -2,51 +2,36 @@
 """
 IN/HighCourtAWS -- Indian High Court Judgments (AWS Open Data)
 
-Fetches Indian High Court judgments from the AWS Open Data Registry bucket
-(indian-high-court-judgments) in ap-south-1.
+Primary path uses the bucket's pre-extracted text layer:
+  derived/landlit-v2/texts/*.jsonl.gz
 
-Strategy:
-  - Lists JSON metadata files from S3 using the REST ListObjectsV2 API
-  - For each JSON, downloads the corresponding PDF from the data/pdf/ prefix
-  - Extracts full text from PDFs using pdfplumber
-  - Normalizes records to standard schema with full text
-
-Data:
-  - 16.7M judgments from 25 High Courts across India (1950-present)
-  - Full text extracted from PDF judgments
-  - JSON metadata includes court, case parties, judges, dates
-  - CC-BY-4.0 license, updated quarterly
-
-Usage:
-  python bootstrap.py bootstrap          # Full initial pull
-  python bootstrap.py bootstrap --sample # Fetch 15 sample records
-  python bootstrap.py update             # Fetch recent year's judgments
-  python bootstrap.py test               # Quick connectivity test
+Each JSONL record contains full judgment text, avoiding the old hot path that
+fetched PDFs from data/pdf/ and ran pdfplumber. PDF extraction remains available
+only as an explicit fallback for metadata judgments missing from landlit-v2.
 """
 
-import io
+from __future__ import annotations
+
+import gzip
+import json
+import logging
 import re
 import sys
-import json
 import time
-import logging
 import xml.etree.ElementTree as ET
+from datetime import datetime, timezone
 from html import unescape
 from pathlib import Path
-from datetime import datetime, timezone
-from typing import Generator, Optional, Dict, Any
+from typing import Any, Generator, Iterable, Optional
 from urllib.parse import quote
 
 import requests
 
-# Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
-
 from common.pdf_extract import extract_pdf_markdown
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -57,26 +42,40 @@ logger = logging.getLogger("legal-data-hunter.IN.HighCourtAWS")
 S3_BASE = "https://s3.ap-south-1.amazonaws.com/indian-high-court-judgments"
 METADATA_PREFIX = "metadata/json/"
 PDF_PREFIX = "data/pdf/"
+TEXT_PREFIX = "derived/landlit-v2/texts/"
+SOURCE_ID = "IN/HighCourtAWS"
 
-# Court code mapping (court_code in JSON uses ~ separator, S3 paths use _)
-# This is derived from the high_courts.csv in the source repo
+_TEXT_KEY_RE = re.compile(
+    r"data__tar__year=(?P<year>\d{4})__court=(?P<court>[^_]+_[^_]+)__bench=(?P<bench>[^_]+)__data\.tar\.jsonl\.gz$"
+)
+_SOURCE_RE = re.compile(
+    r"year=(?P<year>\d{4})/court=(?P<court>[^/]+)/bench=(?P<bench>[^/]+)/data\.tar:\./(?P<filename>[^/]+\.pdf)$"
+)
+_FILENAME_RE = re.compile(r"^(?P<cnr>[A-Z0-9]+)_(?P<seq>\d+)_(?P<date>\d{4}-\d{2}-\d{2})\.(?:json|pdf)$")
+_ISO_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 class IndianHighCourtAWSScraper(BaseScraper):
-    """
-    Scraper for IN/HighCourtAWS -- Indian High Court Judgments.
-    Country: IN
-    URL: https://registry.opendata.aws/indian-high-court-judgments/
+    """Scraper for Indian High Court judgments from AWS Open Data."""
 
-    Data types: case_law
-    Auth: none (public S3 bucket)
-    """
-
-    def __init__(self):
+    def __init__(
+        self,
+        year_range: tuple[int, int] | None = None,
+        court: str | None = None,
+        include_pdf_fallback: bool = False,
+        max_text_shards: int | None = None,
+    ):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": "LegalDataHunter/1.0"})
+        self.year_range = year_range
+        self.court = court
+        self.include_pdf_fallback = include_pdf_fallback
+        self.max_text_shards = max_text_shards
+        self._metadata_cache: dict[str, dict[str, Any]] = {}
+        self._seen_cnr: set[str] = set()
+        self.pdf_fallback_attempts = 0
 
     def _s3_get(self, url: str, timeout: int = 120, retries: int = 3, stream: bool = False) -> requests.Response:
         """GET from S3 with retry logic for intermittent connectivity."""
@@ -88,13 +87,19 @@ class IndianHighCourtAWSScraper(BaseScraper):
             except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
                 if attempt < retries - 1:
                     wait = 5 * (attempt + 1)
-                    logger.warning(f"S3 request failed (attempt {attempt + 1}/{retries}), retrying in {wait}s: {e}")
+                    logger.warning(
+                        "S3 request failed (attempt %s/%s), retrying in %ss: %s",
+                        attempt + 1,
+                        retries,
+                        wait,
+                        e,
+                    )
                     time.sleep(wait)
                 else:
                     raise
 
     def _list_s3_objects(self, prefix: str, max_keys: int = 1000, delimiter: str = "") -> list:
-        """List objects in S3 bucket under a prefix."""
+        """List objects or common prefixes in the public S3 bucket."""
         results = []
         continuation_token = None
 
@@ -110,11 +115,9 @@ class IndianHighCourtAWSScraper(BaseScraper):
             ns = {"s3": "http://s3.amazonaws.com/doc/2006-03-01/"}
 
             if delimiter:
-                # Return common prefixes (directories)
                 for cp in root.findall("s3:CommonPrefixes/s3:Prefix", ns):
                     results.append(cp.text)
             else:
-                # Return object keys
                 for content in root.findall("s3:Contents", ns):
                     key = content.find("s3:Key", ns).text
                     size = int(content.find("s3:Size", ns).text)
@@ -125,43 +128,186 @@ class IndianHighCourtAWSScraper(BaseScraper):
                 token_el = root.find("s3:NextContinuationToken", ns)
                 if token_el is not None:
                     continuation_token = token_el.text
-                else:
-                    break
-            else:
-                break
+                    continue
+            break
 
         return results
 
-    def _list_years(self) -> list:
-        """List available years in the metadata."""
+    def _list_years(self) -> list[int]:
         prefixes = self._list_s3_objects(METADATA_PREFIX, delimiter="/")
         years = []
         for p in prefixes:
-            m = re.search(r'year=(\d{4})/', p)
+            m = re.search(r"year=(\d{4})/", p)
             if m:
                 years.append(int(m.group(1)))
         return sorted(years)
 
-    def _list_courts(self, year: int) -> list:
-        """List courts for a given year."""
-        prefix = f"{METADATA_PREFIX}year={year}/"
-        return self._list_s3_objects(prefix, delimiter="/")
+    def _list_courts(self, year: int) -> list[str]:
+        return self._list_s3_objects(f"{METADATA_PREFIX}year={year}/", delimiter="/")
 
-    def _list_benches(self, year: int, court_path: str) -> list:
-        """List benches under a court path."""
+    def _list_benches(self, court_path: str) -> list[str]:
         return self._list_s3_objects(court_path, delimiter="/")
 
-    def _extract_pdf_text(self, pdf_content: bytes) -> str:
-        """Extract text from PDF using centralized extractor."""
+    def _years_to_scan(self) -> list[int] | None:
+        if not self.year_range:
+            return None
+        start, end = self.year_range
+        return list(range(start, end + 1))
+
+    def _text_prefixes(self) -> Iterable[str]:
+        years = self._years_to_scan()
+        if years is None:
+            yield TEXT_PREFIX
+            return
+        for year in years:
+            if self.court:
+                yield f"{TEXT_PREFIX}data__tar__year={year}__court={self.court}"
+            else:
+                yield f"{TEXT_PREFIX}data__tar__year={year}__"
+
+    def _iter_text_keys(self) -> Generator[dict[str, Any], None, None]:
+        emitted = 0
+        seen = set()
+        for prefix in self._text_prefixes():
+            for obj in self._list_s3_objects(prefix):
+                key = obj["key"]
+                if key in seen or not key.endswith(".jsonl.gz"):
+                    continue
+                seen.add(key)
+                info = self._parse_text_key(key)
+                if not info:
+                    logger.warning("Skipping unexpected text-layer key: %s", key)
+                    continue
+                if self.year_range:
+                    start, end = self.year_range
+                    if not (start <= info["year"] <= end):
+                        continue
+                if self.court and info["court"] != self.court:
+                    continue
+                yield {**info, "key": key, "size": obj.get("size")}
+                emitted += 1
+                if self.max_text_shards and emitted >= self.max_text_shards:
+                    return
+
+    def _parse_text_key(self, key: str) -> dict[str, Any] | None:
+        m = _TEXT_KEY_RE.search(key)
+        if not m:
+            return None
+        return {
+            "year": int(m.group("year")),
+            "court": m.group("court"),
+            "bench": m.group("bench"),
+        }
+
+    def _parse_text_source(self, source: str, shard: dict[str, Any]) -> dict[str, str]:
+        m = _SOURCE_RE.search(source or "")
+        if m:
+            filename = m.group("filename")
+            year = m.group("year")
+            court = m.group("court")
+            bench = m.group("bench")
+        else:
+            filename = Path(source or "").name
+            year = str(shard["year"])
+            court = shard["court"]
+            bench = shard["bench"]
+
+        name_match = _FILENAME_RE.match(filename)
+        stem = filename[:-4] if filename.endswith(".pdf") else filename
+        cnr = name_match.group("cnr") if name_match else stem.split("_")[0]
+        date = name_match.group("date") if name_match else self._date_from_filename(filename)
+        json_key = f"{METADATA_PREFIX}year={year}/court={court}/bench={bench}/{stem}.json"
+        pdf_key = f"{PDF_PREFIX}year={year}/court={court}/bench={bench}/{stem}.pdf"
+        return {
+            "filename": filename,
+            "cnr_number": cnr,
+            "date": date,
+            "json_key": json_key,
+            "pdf_key": pdf_key,
+            "year": year,
+            "court": court,
+            "bench": bench,
+        }
+
+    def _date_from_filename(self, filename: str) -> str:
+        m = re.search(r"(\d{4}-\d{2}-\d{2})(?:\.(?:json|pdf))?$", filename or "")
+        return m.group(1) if m else ""
+
+    def _fetch_metadata(self, json_key: str) -> dict[str, Any]:
+        if json_key in self._metadata_cache:
+            return self._metadata_cache[json_key]
+        try:
+            r = self._s3_get(f"{S3_BASE}/{json_key}", timeout=60)
+            metadata = r.json()
+        except Exception as e:
+            logger.warning("Metadata fetch failed for %s: %s", json_key, e)
+            metadata = {}
+        self._metadata_cache[json_key] = metadata
+        # Keep cache bounded for long shards.
+        if len(self._metadata_cache) > 5000:
+            self._metadata_cache.clear()
+        return metadata
+
+    def _iter_text_records(self, shard: dict[str, Any]) -> Generator[dict[str, Any], None, None]:
+        key = shard["key"]
+        url = f"{S3_BASE}/{key}"
+        logger.info("Streaming text shard %s", key)
+        with self._s3_get(url, timeout=300, stream=True) as r:
+            with gzip.GzipFile(fileobj=r.raw) as gz:
+                for line_no, raw_line in enumerate(gz, start=1):
+                    if not raw_line.strip():
+                        continue
+                    try:
+                        text_rec = json.loads(raw_line)
+                    except json.JSONDecodeError as e:
+                        logger.warning("Bad JSONL in %s line %s: %s", key, line_no, e)
+                        continue
+                    path_info = self._parse_text_source(text_rec.get("source", ""), shard)
+                    cnr = path_info.get("cnr_number", "")
+                    if cnr:
+                        self._seen_cnr.add(cnr)
+                    metadata = self._fetch_metadata(path_info["json_key"])
+                    yield {
+                        "mode": "landlit_text",
+                        "text_key": key,
+                        "text_record": text_rec,
+                        "metadata": metadata,
+                        **path_info,
+                    }
+
+    def _iter_missing_metadata_records(self) -> Generator[dict[str, Any], None, None]:
+        if not self.include_pdf_fallback:
+            return
+        years = self._years_to_scan() or self._list_years()
+        for year in years:
+            for court_prefix in self._list_courts(year):
+                court_match = re.search(r"court=([^/]+)/", court_prefix)
+                if self.court and (not court_match or court_match.group(1) != self.court):
+                    continue
+                for bench_prefix in self._list_benches(court_prefix):
+                    for obj in self._list_s3_objects(bench_prefix):
+                        key = obj["key"] if isinstance(obj, dict) else obj
+                        if not key.endswith(".json"):
+                            continue
+                        filename = key.rsplit("/", 1)[-1]
+                        name_match = _FILENAME_RE.match(filename)
+                        cnr = name_match.group("cnr") if name_match else filename.split("_")[0]
+                        if cnr in self._seen_cnr:
+                            continue
+                        result = self._fetch_judgment(key)
+                        if result:
+                            self.pdf_fallback_attempts += 1
+                            yield result
+
+    def _extract_pdf_text(self, pdf_content: bytes, source_id: str = "") -> str:
         return extract_pdf_markdown(
-            source="IN/HighCourtAWS",
-            source_id="",
+            source=SOURCE_ID,
+            source_id=source_id,
             pdf_bytes=pdf_content,
             table="case_law",
         ) or ""
 
-    def _parse_raw_html(self, raw_html: str) -> dict:
-        """Parse the raw_html field from JSON metadata to extract case details."""
+    def _parse_raw_html(self, raw_html: str) -> dict[str, str]:
         info = {
             "case_number": "",
             "parties": "",
@@ -175,269 +321,285 @@ class IndianHighCourtAWSScraper(BaseScraper):
         if not raw_html:
             return info
 
-        # Clean HTML entities
         html = unescape(raw_html)
 
-        # Extract case parties from the button text
-        # Pattern: "CASE/NUM/YEAR of PETITIONER Vs RESPONDENT" or similar
         btn_match = re.search(r"aria-label=\"([^\"]+)\"", html)
         if btn_match:
             label = btn_match.group(1)
-            # Remove " pdf" suffix
-            label = re.sub(r'\s+pdf$', '', label)
-            # Parse case number and parties
-            # Formats: "CASE/NUM/YEAR of PARTY1 .Array[N]. PARTY2"
-            #          "CASE/NUM/YEAR of PARTY1 Vs PARTY2"
-            label = re.sub(r'\.Array\[\d+\]\.?\s*', ' Vs ', label)
-            parts = re.split(r'\s+of\s+', label, maxsplit=1)
+            label = re.sub(r"\s+pdf$", "", label)
+            label = re.sub(r"\.Array\[\d+\]\.?\s*", " Vs ", label)
+            parts = re.split(r"\s+of\s+", label, maxsplit=1)
             if len(parts) == 2:
                 info["case_number"] = parts[0].strip()
                 info["parties"] = parts[1].strip()
             else:
-                info["parties"] = label
+                info["parties"] = label.strip()
         else:
-            # Fallback: try to extract from button text content
             btn_text = re.search(r"'>([^<]+)</button>", html)
             if btn_text:
-                text = btn_text.group(1).strip()
-                text = re.sub(r'\.Array\[\d+\]\.?\s*', ' Vs ', text)
-                parts = re.split(r'\s+of\s+', text, maxsplit=1)
+                text = re.sub(r"\.Array\[\d+\]\.?\s*", " Vs ", btn_text.group(1).strip())
+                parts = re.split(r"\s+of\s+", text, maxsplit=1)
                 if len(parts) == 2:
                     info["case_number"] = parts[0].strip()
                     info["parties"] = parts[1].strip()
                 else:
                     info["parties"] = text
 
-        # Extract judges
-        judge_match = re.search(r"Judge\s*:\s*([^<]+)", html)
-        if judge_match:
-            info["judges"] = judge_match.group(1).strip()
-
-        # Extract CNR number
-        cnr_match = re.search(r"CNR\s*:\s*</span><font[^>]*>\s*(\w+)", html)
-        if cnr_match:
-            info["cnr_number"] = cnr_match.group(1).strip()
-
-        # Extract registration date
-        reg_match = re.search(r"Date of registration\s*:\s*</span><font[^>]*>\s*([\d-]+)", html)
-        if reg_match:
-            info["registration_date"] = reg_match.group(1).strip()
-
-        # Extract decision date
-        dec_match = re.search(r"Decision Date\s*:\s*</span><font[^>]*>\s*([\d-]+)", html)
-        if dec_match:
-            info["decision_date"] = dec_match.group(1).strip()
-
-        # Extract disposal nature
-        disp_match = re.search(r"Disposal Nature\s*:\s*</span><font[^>]*>\s*([^<]+)", html)
-        if disp_match:
-            info["disposal_nature"] = disp_match.group(1).strip()
+        patterns = {
+            "judges": r"Judge\s*:\s*([^<]+)",
+            "cnr_number": r"CNR\s*:\s*</span><font[^>]*>\s*(\w+)",
+            "registration_date": r"Date of registration\s*:\s*</span><font[^>]*>\s*([\d-]+)",
+            "decision_date": r"Decision Date\s*:\s*</span><font[^>]*>\s*([\d-]+)",
+            "disposal_nature": r"Disposal Nature\s*:\s*</span><font[^>]*>\s*([^<]+)",
+        }
+        for field, pattern in patterns.items():
+            match = re.search(pattern, html)
+            if match:
+                info[field] = match.group(1).strip()
 
         return info
 
     def _json_key_to_pdf_key(self, json_key: str) -> str:
-        """Convert a metadata JSON S3 key to the corresponding PDF S3 key."""
-        # metadata/json/year=Y/court=X/bench=Z/FILE.json -> data/pdf/year=Y/court=X/bench=Z/FILE.pdf
-        return json_key.replace("metadata/json/", "data/pdf/").replace(".json", ".pdf")
+        return json_key.replace(METADATA_PREFIX, PDF_PREFIX).replace(".json", ".pdf")
 
-    def _fetch_judgment(self, json_key: str) -> Optional[dict]:
-        """Fetch a single judgment: download JSON metadata + PDF, extract text."""
+    def _fetch_judgment(self, json_key: str) -> Optional[dict[str, Any]]:
+        """PDF fallback for metadata judgments missing from derived text layer."""
         try:
-            # Download JSON metadata
-            json_url = f"{S3_BASE}/{json_key}"
-            r = self._s3_get(json_url)
-            metadata = r.json()
-
-            # Download PDF
+            metadata = self._fetch_metadata(json_key)
+            filename = json_key.rsplit("/", 1)[-1]
+            cnr = filename.split("_", 1)[0]
             pdf_key = self._json_key_to_pdf_key(json_key)
             pdf_url = f"{S3_BASE}/{pdf_key}"
             try:
                 pdf_r = self._s3_get(pdf_url, timeout=180)
-                # Verify it's actually a PDF, not an HTML error page
-                if pdf_r.content[:5] == b'%PDF-' or pdf_r.content[:5] == b'\x25PDF':
-                    text = self._extract_pdf_text(pdf_r.content)
+                if pdf_r.content[:5] == b"%PDF-":
+                    text = self._extract_pdf_text(pdf_r.content, source_id=cnr)
                 else:
-                    logger.warning(f"Not a PDF: {pdf_key}")
+                    logger.warning("Not a PDF: %s", pdf_key)
                     text = ""
             except Exception as e:
-                logger.warning(f"PDF download failed for {pdf_key}: {e}")
+                logger.warning("PDF fallback failed for %s: %s", pdf_key, e)
                 text = ""
 
             return {
+                "mode": "pdf_fallback",
                 "json_key": json_key,
                 "pdf_key": pdf_key,
                 "metadata": metadata,
                 "text": text,
+                "cnr_number": cnr,
+                "date": self._date_from_filename(filename),
             }
         except Exception as e:
-            logger.error(f"Failed to fetch judgment {json_key}: {e}")
+            logger.error("Failed to fetch judgment %s: %s", json_key, e)
             return None
 
     def fetch_all(self) -> Generator[dict, None, None]:
-        """
-        Yield all judgments from S3. Iterates over years/courts/benches.
-        For full bootstrap, this would take a very long time (16.7M records).
-        In practice, use sample mode or iterate by year.
-        """
-        years = self._list_years()
-        logger.info(f"Found {len(years)} years of data: {years[0]}-{years[-1]}")
-
-        for year in sorted(years, reverse=True):
-            court_prefixes = self._list_courts(year)
-            logger.info(f"Year {year}: {len(court_prefixes)} courts")
-
-            for court_prefix in court_prefixes:
-                bench_prefixes = self._list_benches(year, court_prefix)
-
-                for bench_prefix in bench_prefixes:
-                    # List JSON files in this bench
-                    objects = self._list_s3_objects(bench_prefix, max_keys=100)
-
-                    for obj in objects:
-                        key = obj["key"] if isinstance(obj, dict) else obj
-                        if not key.endswith(".json"):
-                            continue
-
-                        result = self._fetch_judgment(key)
-                        if result:
-                            yield result
-                            time.sleep(0.5)  # Rate limit S3 requests
+        """Yield raw records: text-layer judgments first, optional PDF gaps second."""
+        text_shards = list(self._iter_text_keys())
+        logger.info(
+            "Found %d landlit-v2 text shards%s%s",
+            len(text_shards),
+            f" for years {self.year_range[0]}-{self.year_range[1]}" if self.year_range else "",
+            f" court={self.court}" if self.court else "",
+        )
+        for shard in text_shards:
+            yield from self._iter_text_records(shard)
+        if self.include_pdf_fallback:
+            logger.info("Text layer complete for selected shard(s); scanning metadata gaps for PDF fallback")
+            yield from self._iter_missing_metadata_records()
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
-        """Fetch judgments from recent years (the dataset is updated quarterly)."""
+        """Dataset updates quarterly; recent years are the practical update window."""
         current_year = datetime.now().year
-        for year in [current_year, current_year - 1]:
-            court_prefixes = self._list_courts(year)
-            for court_prefix in court_prefixes:
-                bench_prefixes = self._list_benches(year, court_prefix)
-                for bench_prefix in bench_prefixes:
-                    objects = self._list_s3_objects(bench_prefix, max_keys=100)
-                    for obj in objects:
-                        key = obj["key"] if isinstance(obj, dict) else obj
-                        if not key.endswith(".json"):
-                            continue
-                        result = self._fetch_judgment(key)
-                        if result:
-                            yield result
-                            time.sleep(0.5)
+        previous_filter = self.year_range
+        self.year_range = (current_year - 1, current_year)
+        try:
+            yield from self.fetch_all()
+        finally:
+            self.year_range = previous_filter
+
+    def _normalize_date(self, value: str) -> str:
+        if not value:
+            return ""
+        if _ISO_DATE_RE.match(value):
+            return value
+        if re.match(r"\d{2}-\d{2}-\d{4}$", value):
+            dd, mm, yyyy = value.split("-")
+            return f"{yyyy}-{mm}-{dd}"
+        return ""
 
     def normalize(self, raw: dict) -> Optional[dict]:
-        """Transform raw judgment data into standard schema."""
-        metadata = raw.get("metadata", {})
-        text = raw.get("text", "")
-        json_key = raw.get("json_key", "")
+        """Transform a raw text-layer or fallback record into standard schema."""
+        metadata = raw.get("metadata", {}) or {}
+        parsed = self._parse_raw_html(metadata.get("raw_html", ""))
 
-        # Skip if no text extracted
+        text = raw.get("text") or (raw.get("text_record") or {}).get("text") or ""
         if not text or len(text.strip()) < 50:
             return None
 
-        # Parse metadata from raw_html
-        parsed = self._parse_raw_html(metadata.get("raw_html", ""))
-
-        # Extract CNR from filename if not in HTML
-        cnr = parsed["cnr_number"]
+        cnr = raw.get("cnr_number") or parsed.get("cnr_number") or ""
         if not cnr:
-            # Filename: JKHC020000011979_1_2024-04-29.json
-            filename = json_key.split("/")[-1].replace(".json", "")
-            parts = filename.split("_")
-            if parts:
-                cnr = parts[0]
+            filename = (raw.get("json_key") or raw.get("filename") or "").rsplit("/", 1)[-1]
+            cnr = filename.split("_", 1)[0]
+        if not cnr:
+            return None
 
-        # Extract date from filename or HTML
-        decision_date = parsed["decision_date"]
+        decision_date = self._normalize_date(raw.get("date") or parsed.get("decision_date") or "")
         if not decision_date:
-            # Try filename: ..._2024-04-29.json
-            date_match = re.search(r'(\d{4}-\d{2}-\d{2})\.json$', json_key)
-            if date_match:
-                decision_date = date_match.group(1)
-
-        # Convert date format DD-MM-YYYY to ISO
-        if decision_date and re.match(r'\d{2}-\d{2}-\d{4}$', decision_date):
-            parts = decision_date.split("-")
-            decision_date = f"{parts[2]}-{parts[1]}-{parts[0]}"
+            decision_date = self._normalize_date(self._date_from_filename(raw.get("json_key") or raw.get("filename") or ""))
+        if not decision_date:
+            return None
 
         court_name = metadata.get("court_name", "")
         court_code = metadata.get("court_code", "")
-
-        # Build title from parties or case number
-        title = parsed["parties"] or parsed["case_number"] or cnr
-        if parsed["case_number"] and parsed["parties"]:
+        title = parsed.get("parties") or parsed.get("case_number") or cnr
+        if parsed.get("case_number") and parsed.get("parties"):
             title = f"{parsed['case_number']} - {parsed['parties']}"
 
-        # Build PDF URL
         pdf_key = raw.get("pdf_key", "")
         pdf_url = f"{S3_BASE}/{pdf_key}" if pdf_key else ""
+        text_record = raw.get("text_record") or {}
+        pages = text_record.get("pages") or []
 
         return {
             "_id": cnr,
-            "_source": "IN/HighCourtAWS",
+            "_source": SOURCE_ID,
             "_type": "case_law",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             "title": title,
             "text": text,
-            "date": decision_date or None,
+            "date": decision_date,
             "url": pdf_url,
             "cnr_number": cnr,
             "court_name": court_name,
             "court_code": court_code,
-            "case_number": parsed["case_number"],
-            "parties": parsed["parties"],
-            "judges": parsed["judges"],
-            "registration_date": parsed["registration_date"] or None,
-            "disposal_nature": parsed["disposal_nature"],
+            "case_number": parsed.get("case_number", ""),
+            "parties": parsed.get("parties", ""),
+            "judges": parsed.get("judges", ""),
+            "registration_date": self._normalize_date(parsed.get("registration_date", "")) or None,
+            "disposal_nature": parsed.get("disposal_nature", ""),
+            "landlit_text_key": raw.get("text_key", ""),
+            "text_tier": text_record.get("tier", ""),
+            "page_count": text_record.get("page_count") or len(pages) or None,
         }
+
+    def coverage_report(self, count_text_records: bool = False) -> dict[str, Any]:
+        """Report text-layer shard coverage against metadata bench shards."""
+        text_shards = list(self._iter_text_keys())
+        text_shard_ids = {(s["year"], s["court"], s["bench"]) for s in text_shards}
+
+        years = self._years_to_scan() or self._list_years()
+        metadata_shard_ids: set[tuple[int, str, str]] = set()
+        for year in years:
+            for court_prefix in self._list_courts(year):
+                court_match = re.search(r"court=([^/]+)/", court_prefix)
+                if not court_match:
+                    continue
+                court = court_match.group(1)
+                if self.court and court != self.court:
+                    continue
+                for bench_prefix in self._list_benches(court_prefix):
+                    bench_match = re.search(r"bench=([^/]+)/", bench_prefix)
+                    if bench_match:
+                        metadata_shard_ids.add((year, court, bench_match.group(1)))
+
+        report = {
+            "year_range": self.year_range,
+            "court": self.court,
+            "text_shards": len(text_shard_ids),
+            "metadata_shards": len(metadata_shard_ids),
+            "text_shard_coverage_pct": round((len(text_shard_ids) / len(metadata_shard_ids) * 100), 2)
+            if metadata_shard_ids else None,
+            "metadata_shards_missing_text_layer": len(metadata_shard_ids - text_shard_ids),
+            "issue_reported_full_corpus_records": 16_700_000,
+        }
+        if count_text_records:
+            total = 0
+            for shard in text_shards:
+                url = f"{S3_BASE}/{shard['key']}"
+                with self._s3_get(url, timeout=300, stream=True) as r:
+                    with gzip.GzipFile(fileobj=r.raw) as gz:
+                        total += sum(1 for line in gz if line.strip())
+            report["text_records_counted"] = total
+        return report
+
+
+def parse_year_range(value: str | None) -> tuple[int, int] | None:
+    if not value:
+        return None
+    if "-" in value:
+        left, right = value.split("-", 1)
+        start, end = int(left), int(right)
+    else:
+        start = end = int(value)
+    if start > end:
+        raise ValueError("--year-range start must be <= end")
+    return start, end
 
 
 def main():
-    """CLI entry point."""
     import argparse
 
     parser = argparse.ArgumentParser(description="IN/HighCourtAWS data fetcher")
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 
-    # bootstrap
+    def add_shard_args(p):
+        p.add_argument("--year-range", help="Limit to one year or inclusive range, e.g. 2023 or 2020-2023")
+        p.add_argument("--court", help="Limit to S3 court shard, e.g. 36_29")
+        p.add_argument("--max-text-shards", type=int, help="Debug/test limit on text-layer shard files")
+
     bp = subparsers.add_parser("bootstrap", help="Full initial fetch")
     bp.add_argument("--sample", action="store_true", help="Fetch sample records only")
     bp.add_argument("--sample-size", type=int, default=15, help="Number of sample records")
     bp.add_argument("--full", action="store_true", help="Fetch all records")
+    bp.add_argument("--include-pdf-fallback", action="store_true", help="After text shards, PDF-extract metadata judgments missing from landlit-v2")
+    add_shard_args(bp)
 
-    # update
-    subparsers.add_parser("update", help="Incremental update")
+    up = subparsers.add_parser("update", help="Incremental update")
+    add_shard_args(up)
 
-    # test
+    cov = subparsers.add_parser("coverage", help="Report landlit-v2 text shard coverage vs metadata shards")
+    cov.add_argument("--count-text-records", action="store_true", help="Also stream selected text shards and count JSONL records")
+    add_shard_args(cov)
+
     subparsers.add_parser("test", help="Quick connectivity test")
 
     args = parser.parse_args()
-
     if not args.command:
         parser.print_help()
         sys.exit(1)
 
-    scraper = IndianHighCourtAWSScraper()
+    year_range = parse_year_range(getattr(args, "year_range", None))
+    scraper = IndianHighCourtAWSScraper(
+        year_range=year_range,
+        court=getattr(args, "court", None),
+        include_pdf_fallback=getattr(args, "include_pdf_fallback", False),
+        max_text_shards=getattr(args, "max_text_shards", None),
+    )
 
     if args.command == "test":
         logger.info("Testing S3 connectivity...")
-        try:
-            years = scraper._list_years()
-            logger.info(f"OK: Found {len(years)} years ({years[0]}-{years[-1]})")
-            # Test one JSON download
-            courts = scraper._list_courts(years[-1])
-            logger.info(f"Latest year {years[-1]}: {len(courts)} courts")
-            logger.info("Connectivity test passed!")
-        except Exception as e:
-            logger.error(f"Connectivity test failed: {e}")
-            sys.exit(1)
+        years = scraper._list_years()
+        text_keys = list(scraper._iter_text_keys())[:3]
+        logger.info("OK: metadata years=%s-%s (%d years)", years[0], years[-1], len(years))
+        logger.info("OK: first text shards=%s", [k["key"] for k in text_keys])
+        return
 
-    elif args.command == "bootstrap":
-        stats = scraper.bootstrap(
-            sample_mode=args.sample,
-            sample_size=args.sample_size,
-        )
-        logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2)}")
+    if args.command == "coverage":
+        print(json.dumps(scraper.coverage_report(count_text_records=args.count_text_records), indent=2, default=str))
+        return
 
-    elif args.command == "update":
+    if args.command == "bootstrap":
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=args.sample_size)
+        stats["pdf_fallback_attempts"] = scraper.pdf_fallback_attempts
+        logger.info("Bootstrap complete: %s", json.dumps(stats, indent=2, default=str))
+        return
+
+    if args.command == "update":
         stats = scraper.update()
-        logger.info(f"Update complete: {json.dumps(stats, indent=2)}")
+        stats["pdf_fallback_attempts"] = scraper.pdf_fallback_attempts
+        logger.info("Update complete: %s", json.dumps(stats, indent=2, default=str))
 
 
 if __name__ == "__main__":

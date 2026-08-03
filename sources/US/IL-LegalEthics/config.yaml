@@ -1,0 +1,121 @@
+# ===================================================================
+# US/IL-LegalEthics -- Illinois State Bar Association (ISBA)
+#                      — Professional Conduct Advisory Opinions
+# ===================================================================
+# Advisory Opinions on Professional Conduct issued by the Illinois
+# State Bar Association's Standing Committee on Professional Conduct.
+# Each opinion expresses the ISBA's interpretation of the Illinois
+# Rules of Professional Conduct (IRPC) in response to a stated
+# hypothetical fact situation and advises lawyers whether the conduct
+# is proper = doctrine. The online archive spans the older sequential
+# series (Opinion No. 6xx/7xx, late 1970s-1983) through the modern
+# "{YY}-{NN}" series (Opinion No. 84-1 to the present, ~389 opinions),
+# published as born-digital HTML, no OCR/CAPTCHA/auth. Distinct from
+# US/IL-AGOpinions (Illinois Attorney General opinions).
+# ===================================================================
+
+source:
+  id: "US/IL-LegalEthics"
+  country: "US"
+  name: "Illinois State Bar Association (ISBA) — Professional Conduct Advisory Opinions"
+  url: "https://www.isba.org/ethics/years"
+  description: |
+    Advisory Opinions on Professional Conduct of the Illinois State Bar
+    Association's Standing Committee on Professional Conduct. The
+    Committee expresses the ISBA's interpretation of the Illinois Rules
+    of Professional Conduct (IRPC) in response to a stated hypothetical
+    fact situation. Each opinion is published in full as a born-digital
+    HTML page carrying labelled Opinion Number and Opinion Date fields,
+    a title, and the Digest / Facts / Question / Opinion sections. The
+    online archive dates back to the sequentially numbered opinions of
+    the late 1970s and continues in the modern "{YY}-{NN}" series to the
+    present (~389 opinions).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_listing"
+  base_url: "https://www.isba.org"
+  endpoints:
+    listing: "/ethics/years"
+    opinion: "/ethics/opinions/{id}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/IL-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number ('24-01' modern series, '700' older sequential series)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title (topical, from the page h1)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text (Digest / Facts / Question / Opinion + references) from the HTML article body"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Opinion date as ISO 8601 (YYYY-MM-01, parsed from the 'Opinion Date' field)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "rules"
+      description: "Referenced Illinois Rules of Professional Conduct (IRPC) rule numbers"
+      type: "array"
+      role: "metadata"
+      required: false
+    - name: "issuer"
+      description: "Illinois State Bar Association — Standing Committee on Professional Conduct"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (Illinois State Bar Association Advisory Opinions)"
+  url: "https://www.isba.org/ethics"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "ISBA Professional Conduct Advisory Opinions are published free to the public on isba.org as an educational service interpreting the Illinois Rules of Professional Conduct; they are advisory (no weight of law) and carry no copyright restriction on the opinion text. No login, paywall, or terms prohibiting reuse."
+
+notes: |
+  - Discovery: the "Ethics Opinions by Year" index (/ethics/years)
+    embeds a direct link /ethics/opinions/{id} for EVERY opinion; the
+    scraper extracts and de-duplicates all such links (389 as of 2026-07).
+  - Full text: each opinion page's <article> body carries labelled
+    "Opinion Number" / "Opinion Date" fields, the h1 title, and the
+    Digest / Facts / Question / Opinion sections plus references. Born-
+    digital HTML, no OCR. The trailing "See Related Opinions" navigation
+    is trimmed; referenced IRPC rules are captured from the "By IRPC
+    rule:" list into the `rules` field.
+  - Type: every document is an advisory opinion interpreting the Illinois
+    Rules of Professional Conduct = doctrine.
+  - Date: parsed from the "Opinion Date" field (Month YYYY -> YYYY-MM-01).
+  - Distinct from US/IL-AGOpinions (Illinois Attorney General opinions);
+    this is the state bar's attorney-ethics advisory opinion series.

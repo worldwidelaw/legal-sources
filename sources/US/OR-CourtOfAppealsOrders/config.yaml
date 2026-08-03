@@ -1,0 +1,126 @@
+# ===================================================================
+# US/OR-CourtOfAppealsOrders -- Oregon Court of Appeals Orders of
+#                               Interest
+# ===================================================================
+# Selected orders of the Oregon Court of Appeals ("Orders of
+# Interest") -- orders resolving specific motions and matters in
+# appeals before the court (orders allowing or denying petitions,
+# dismissals, attorney-fee awards and other case dispositions that do
+# not issue as full written opinions). Each order resolves a specific
+# contested matter in a named case = case_law. Public domain Oregon
+# state-government judicial works (government edicts).
+#
+# Published as a CONTENTdm digital collection (alias p17027coll17,
+# "Oregon Court of Appeals Orders of Interest") on the OCLC-hosted
+# instance at cdm17027.contentdm.oclc.org. The public dmwebservices
+# JSON API is used: dmQuery enumerates item pointers, dmGetItemInfo
+# returns each item's Dublin-Core fields including the full-text
+# "transc" (Transcript) field. No PDF extraction, no CAPTCHA, no auth.
+# ===================================================================
+
+source:
+  id: "US/OR-CourtOfAppealsOrders"
+  country: "US"
+  name: "Oregon Court of Appeals — Orders of Interest"
+  url: "https://cdm17027.contentdm.oclc.org/digital/collection/p17027coll17"
+  description: |
+    Selected orders of the Oregon Court of Appeals ("Orders of
+    Interest") -- orders resolving specific motions and matters in
+    appeals before the court, such as orders allowing or denying
+    petitions, dismissals, attorney-fee awards and other case
+    dispositions that do not issue as full written opinions. Each
+    order resolves a specific contested matter in a named case =
+    case_law. Enumerated from the Oregon Judicial Department's
+    CONTENTdm collection (alias p17027coll17) via the public
+    dmwebservices JSON API; case title, case number, classification,
+    disposition (allowed / denied), order type, issuing judge, date of
+    order and the full order text are read from each item's
+    Dublin-Core fields (title / identi / subjec / descri / creato /
+    publis / date / transc). No CAPTCHA, no auth. ~57 orders.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://cdm17027.contentdm.oclc.org"
+  endpoints:
+    query: "/digital/bl/dmwebservices/index.php?q=dmQuery/p17027coll17/0/dmrecord!date/dmrecord/{max}/{start}/0/0/0/0/json"
+    item: "/digital/bl/dmwebservices/index.php?q=dmGetItemInfo/p17027coll17/{rec}/json"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 16
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/OR-CourtOfAppealsOrders/{CONTENTdm dmrecord})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_title"
+      description: "Case title (party names)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "case_number"
+      description: "Appellate case number (e.g. 'A186155')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "classification"
+      description: "Case classification / subject"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "disposition"
+      description: "Disposition (Allowed or Denied)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "order_type"
+      description: "Type of order"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Order title (case title + case number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the order (CONTENTdm transcript field)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of order / entry date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the CONTENTdm item page"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Orders of the Oregon Court of Appeals are official judicial works
+    of Oregon state government (edicts of government) and are not
+    subject to copyright. Free to use, including commercially.

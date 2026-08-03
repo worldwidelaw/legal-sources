@@ -1,0 +1,13 @@
+{
+  "_id": "EG/EgyptianLawArticles-HF:art-١٠",
+  "_source": "EG/EgyptianLawArticles-HF",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-09T06:19:56.725941+00:00",
+  "title": "Egyptian Civil Code — Article ١٠",
+  "text": "القانون المصري هو المرجع في تكييف العلاقات عندما يطلب تحديد نوع\nهذه العلاقات في قضية تتنازع فيها القوانين' لمعرفة القانون الواجب تطبيقه\nمن بينها.\n\n--- English Translation ---\n\nEgyptian law will rule to determine the nature of a legal\nrelationship in order to ascertain the law applicable in\nthe event of a conflict between various laws in any\nparticular suit.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/TawasulAI/egyptian-law-articles",
+  "article_number": "١٠",
+  "language": "ar",
+  "jurisdiction": "EG"
+}

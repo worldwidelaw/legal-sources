@@ -1,0 +1,93 @@
+# ===================================================================
+# US/DE-AGOpinions -- Delaware Attorney General Opinions
+# ===================================================================
+# Full text of opinions issued by the Delaware Attorney General --
+# primarily FOIA (Freedom of Information Act) opinion letters
+# interpreting 29 Del. C. ch. 100, plus formal legal opinions. These
+# are authoritative state legal interpretations (doctrine). Published
+# openly as full-text WordPress posts at attorneygeneral.delaware.gov.
+# No authentication required. Public domain (Delaware state work).
+# ===================================================================
+
+source:
+  id: "US/DE-AGOpinions"
+  country: "US"
+  name: "Delaware Attorney General Opinions"
+  url: "https://attorneygeneral.delaware.gov/opinions/"
+  description: |
+    Opinions issued by the Delaware Attorney General. The bulk are
+    FOIA opinion letters (numbered YY-IBNN) responding to petitions
+    under Delaware's Freedom of Information Act, 29 Del. C. ch. 100;
+    the office also issues formal legal opinions. Each constitutes an
+    authoritative interpretation of Delaware law. The index is a
+    paginated listing at /opinions/ (/opinions/page/N/), ~10 opinions
+    per page, ~87 pages. Each opinion's full body is rendered as
+    readable HTML on its own post page (a print-version PDF is also
+    linked).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://attorneygeneral.delaware.gov"
+  endpoints:
+    index: "/opinions/"
+    index_page: "/opinions/page/{page}/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "opinion_number"
+      description: "AG opinion number (e.g., '26-IB17', '21-IB05')"
+      type: "string"
+      role: "primary_key"
+      required: false
+    - name: "opinion_kind"
+      description: "'foia opinion' or 'opinion'"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Descriptive opinion title (number, date, subject)"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion body"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date issued (ISO 8601)"
+      type: "string"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Permalink to the opinion post"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government work)"
+  url: "https://attorneygeneral.delaware.gov/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Opinions of the Delaware Attorney General are official state government works, published openly with no access restriction."

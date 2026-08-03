@@ -54,8 +54,16 @@ class CPVODecisionsScraper(BaseScraper):
         })
 
     def _request(self, url: str, method: str = "GET", json_data: Optional[Dict] = None,
-                 max_retries: int = 3, timeout: int = 60) -> requests.Response:
-        """Make HTTP request with retry logic and rate-limit awareness."""
+                 max_retries: int = 6, timeout: int = 60) -> requests.Response:
+        """Make HTTP request with retry logic and rate-limit awareness.
+
+        Always returns a Response or raises — never returns None (a None
+        return previously crashed callers with 'NoneType has no attribute
+        json', issue #1141-class). Sustained rate-limiting past max_retries
+        raises loudly so partial progress is preserved and the run fails
+        visibly instead of silently yielding 0.
+        """
+        last_exc: Optional[Exception] = None
         for attempt in range(max_retries):
             try:
                 if method == "POST":
@@ -74,11 +82,16 @@ class CPVODecisionsScraper(BaseScraper):
                 resp.raise_for_status()
                 return resp
             except requests.exceptions.RequestException as e:
+                last_exc = e
                 logger.warning(f"Request failed (attempt {attempt + 1}/{max_retries}): {e}")
                 if attempt < max_retries - 1:
                     time.sleep(2 * (2 ** attempt))
-                else:
-                    raise
+        # Exhausted all retries — fail loud rather than returning None.
+        if last_exc is not None:
+            raise last_exc
+        raise RuntimeError(
+            f"CPVO API rate-limited past {max_retries} retries (TOO MANY REQUESTS): {url}"
+        )
 
     def _search_cases(self, offset: int = 0, size: int = 20) -> list:
         """Search for CPVO Board of Appeal cases."""
@@ -234,7 +247,7 @@ if __name__ == "__main__":
             print(f"  FAIL: {e}")
             sys.exit(1)
 
-    elif command == "bootstrap":
+    elif command in ("bootstrap", "bootstrap-fast"):
         scraper.bootstrap(sample_mode=sample_mode)
     else:
         print(f"Unknown command: {command}")

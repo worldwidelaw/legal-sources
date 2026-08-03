@@ -1,0 +1,123 @@
+# ===================================================================
+# US/WA-LegalEthics -- Washington State Bar Association (WSBA)
+#                      — Advisory Opinions
+# ===================================================================
+# Advisory Opinions issued by the Washington State Bar Association's
+# Committee on Professional Ethics (and its predecessor RPC Committee).
+# Each opinion interprets the Washington Rules of Professional Conduct
+# and advises WSBA members on their ethical obligations = doctrine.
+# ~1,700 opinions with two numbering schemes: older sequential numbers
+# (e.g. "835", "1120", some with a "W" withdrawn/variant suffix) and
+# newer year-based numbers (e.g. "201601"). Published in full on the
+# WSBA Advisory Opinions portal (ao.wsba.org) as born-digital HTML
+# print views, no OCR/CAPTCHA/auth. Public-domain Washington
+# regulatory-agency official records. Distinct from US/WA-EthicsOpinions
+# (Washington State Executive Ethics Board = public officials) and
+# Washington Attorney General opinions.
+# ===================================================================
+
+source:
+  id: "US/WA-LegalEthics"
+  country: "US"
+  name: "Washington State Bar Association (WSBA) — Advisory Opinions"
+  url: "https://ao.wsba.org/"
+  description: |
+    Advisory Opinions of the Washington State Bar Association's Committee
+    on Professional Ethics. The Committee assists WSBA members in
+    interpreting their ethical obligations by issuing advisory opinions
+    on specific issues arising under the Washington Rules of Professional
+    Conduct (RPCs). The corpus (~1,700 opinions) uses two numbering
+    schemes — older sequential numbers (some with a "W" withdrawn/variant
+    suffix) and newer year-based numbers — and is published in full on
+    the WSBA Advisory Opinions portal (ao.wsba.org) as born-digital HTML.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_sequential"
+  base_url: "https://ao.wsba.org"
+  endpoints:
+    print: "/print.aspx?ID={id}"     # printable HTML opinion view by internal id
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/WA-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Advisory opinion number (e.g. '835', '900W', '201601')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "WSBA Advisory Opinion {number}: {subject}"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text (metadata header, body and disclaimer) from the print.aspx HTML view"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "subject"
+      description: "Opinion subject line"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "date"
+      description: "Year issued as ISO 8601 (YYYY-01-01, from the 'Year Issued' field)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Washington State Bar Association — Committee on Professional Ethics"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (Washington Regulatory-Agency Official Record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Advisory Opinions of the Washington State Bar Association's Committee on Professional Ethics are official public records of a Washington regulatory body (the WSBA operates under the authority of the Washington Supreme Court), published for public use on ao.wsba.org with no copyright restriction."
+
+notes: |
+  - Discovery: the WSBA portal's own listing is a stateful WebForms
+    search, so the corpus is enumerated by walking the contiguous
+    internal id space (1 .. ~1750) at /print.aspx?ID={id}. Ids past the
+    ceiling return an empty stub (~50 chars); the walk stops after 60
+    consecutive empties.
+  - Full text: each print.aspx view carries labelled fields (Advisory
+    Opinion, Year Issued, RPC(s), Subject) followed by the opinion body
+    and a standard disclaimer; the whole <body> text is captured.
+    Born-digital HTML, no OCR.
+  - Type: every document is an advisory opinion interpreting the
+    Washington Rules of Professional Conduct = doctrine.
+  - Date: the "Year Issued" field as YYYY-01-01 (non-required).
+  - Two numbering schemes: older sequential (835, 1120, some with a "W"
+    withdrawn/variant suffix) and newer year-based (201601 = 2016). The
+    leading dash on year-based numbers ("-201601") is stripped.
+  - Distinct from US/WA-EthicsOpinions (Washington State Executive Ethics
+    Board, public officials) and Washington Attorney General opinions.

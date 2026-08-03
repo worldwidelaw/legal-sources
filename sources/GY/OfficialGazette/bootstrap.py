@@ -49,10 +49,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger("legal-data-hunter.GY.OfficialGazette")
 
-BASE_URL = "https://officialgazette.gov.gy"
-PUBLICATIONS_PATH = "/index.php/publications"
-ITEMS_PER_PAGE = 20
-MAX_PAGES = 200  # Safety cap
+# The site was redesigned in 2026 into a Next.js "e-Gazette" app backed by a
+# clean JSON API. The old Joomla /index.php/publications HTML layout is gone
+# (it now 301-redirects to the SPA homepage). See GH issue #1129.
+BASE_URL = "https://egazette.officialgazette.gov.gy"
+API_PATH = "/api/publications"          # ?page=N -> {"publications":[...], "totalItems":N}
+PDF_PATH = "/api/pdf/{id}"              # born-digital gazette PDF by document id
+ITEMS_PER_PAGE = 10                     # API returns 10 per page
+MAX_PAGES = 500  # Safety cap
 
 # Month name mapping for date parsing
 MONTHS = {
@@ -116,70 +120,63 @@ class OfficialGazetteScraper(BaseScraper):
         else:
             return "official"
 
-    def _fetch_publications_page(self, start: int = 0) -> str:
-        """Fetch one page of publications."""
+    def _fetch_publications_page(self, page: int = 1) -> dict:
+        """Fetch one page of publications from the JSON API.
+
+        Returns the parsed JSON: {"publications": [...], "totalItems": N}.
+        The API is 1-indexed by page and returns 10 items per page.
+        """
         self.rate_limiter.wait()
-        url = f"{PUBLICATIONS_PATH}?start={start}"
+        url = f"{API_PATH}?page={page}"
         resp = self.client.get(url)
         resp.raise_for_status()
-        return resp.text
+        return resp.json()
 
-    def _parse_publications(self, html: str) -> List[Dict[str, str]]:
-        """Parse gazette entries from publications page.
+    def _parse_publications(self, data) -> List[Dict[str, str]]:
+        """Normalize the API's publication objects into flat entry dicts.
 
-        HTML structure (Joomla blog layout):
-          <div class="items-row ...">
-            <h2 itemprop="name">TITLE</h2>
-            ...
-            <a href="/images/...pdf">PDF label</a>
-            ...
-            <div id="attachmentsList_com_content_article_ARTICLE_ID">
-          </div>
+        Accepts either the raw API dict or its "publications" list (the `test`
+        command passes the dict through). Each publication looks like:
+          {"id": "<uuid>", "name": "...pdf", "title": "...",
+           "publishedAt": "2026-07-12T...Z", "downloadUrl": "/api/pdf/<id>",
+           "year": 2026, ...}
         """
+        if isinstance(data, dict):
+            pubs = data.get("publications", [])
+        else:
+            pubs = data or []
+
         entries = []
-
-        # Split HTML into per-entry blocks using items-row dividers
-        blocks = re.split(r'<div\s+class="items-row\b', html)
-
-        for block in blocks[1:]:  # skip everything before first items-row
-            # Extract title from <h2 itemprop="name">
-            title_match = re.search(
-                r'<h2\s+itemprop="name">\s*(.*?)\s*</h2>',
-                block, re.DOTALL
-            )
-            if not title_match:
+        for pub in pubs:
+            pub_id = pub.get("id")
+            if not pub_id:
                 continue
-            title = re.sub(r'<[^>]+>', '', title_match.group(1))
-            title = re.sub(r'\s+', ' ', title).strip()
+            title = (pub.get("title") or pub.get("name") or "").strip()
+            download = pub.get("downloadUrl") or PDF_PATH.format(id=pub_id)
+            pdf_url = download if download.startswith("http") else f"{BASE_URL}{download}"
 
-            # Extract article ID from attachmentsList div
-            id_match = re.search(
-                r'attachmentsList_com_content_article_(\d+)', block
-            )
-            pub_id = id_match.group(1) if id_match else None
+            # Prefer the explicit publish/gazette date; fall back to parsing
+            # the human date out of the title, then the year.
+            date = None
+            published = pub.get("publishedAt")
+            if published:
+                # publishedAt is the upload timestamp; the gazette's own date is
+                # in the title (e.g. "11th July, 2026"). Prefer the title date.
+                date = self._parse_date(title)
+                if not date:
+                    date = published[:10]
+            else:
+                date = self._parse_date(title)
+            if not date and pub.get("year"):
+                date = f"{pub['year']}-01-01"
 
-            # Extract PDF link(s)
-            pdf_matches = re.findall(r'href="([^"]*\.pdf)"', block, re.IGNORECASE)
-            if not pdf_matches:
-                continue
-
-            for raw_pdf in pdf_matches:
-                # Fix backslash paths (Windows-style paths in Joomla)
-                fixed_pdf = raw_pdf.replace("\\", "/")
-                if not fixed_pdf.startswith("http"):
-                    pdf_url = f"{BASE_URL}{fixed_pdf}"
-                else:
-                    pdf_url = fixed_pdf
-
-                entries.append({
-                    "pub_id": pub_id or hashlib.md5(
-                        f"{title}-{fixed_pdf}".encode()
-                    ).hexdigest()[:8],
-                    "title": title,
-                    "pdf_url": pdf_url,
-                    "date": self._parse_date(title),
-                    "gazette_type": self._classify_gazette(title),
-                })
+            entries.append({
+                "pub_id": pub_id,
+                "title": title,
+                "pdf_url": pdf_url,
+                "date": date,
+                "gazette_type": self._classify_gazette(title),
+            })
 
         return entries
 
@@ -221,21 +218,30 @@ class OfficialGazetteScraper(BaseScraper):
             return None
 
     def fetch_all(self) -> Generator[dict, None, None]:
-        """Yield all gazette documents with full text."""
-        start = 0
-        page_num = 0
+        """Yield all gazette documents with full text.
 
-        while page_num < MAX_PAGES:
-            logger.info(f"Fetching publications page {page_num + 1} (start={start})...")
+        NOTE: the API's ``totalItems`` field is unreliable — it is a running
+        count that grows with the page number (page 1 → 92, page 50 → 530,
+        page 150 → 1529) rather than the true corpus size, so it must NOT be
+        used as a stop condition (doing so capped the sweep at page 10 / 100
+        records, GH #1157). The real end of the corpus (~2,065 items over ~207
+        pages of 10) is detected by the API returning an empty ``publications``
+        list, which is the sole termination signal below.
+        """
+        page = 1
+        seen = 0
+
+        while page <= MAX_PAGES:
+            logger.info(f"Fetching publications page {page}...")
             try:
-                html = self._fetch_publications_page(start)
+                data = self._fetch_publications_page(page)
             except Exception as e:
-                logger.warning(f"Failed to fetch page at start={start}: {e}")
+                logger.warning(f"Failed to fetch page {page}: {e}")
                 break
 
-            entries = self._parse_publications(html)
+            entries = self._parse_publications(data)
             if not entries:
-                logger.info(f"No entries at start={start}, stopping")
+                logger.info(f"No entries on page {page}, stopping (fetched {seen})")
                 break
 
             for entry in entries:
@@ -245,22 +251,21 @@ class OfficialGazetteScraper(BaseScraper):
                     yield entry
                 else:
                     logger.warning(f"No text for: {entry['title']}")
+                seen += 1
 
-            start += ITEMS_PER_PAGE
-            page_num += 1
+            page += 1
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
-        """Fetch recent gazette issues."""
-        # Only check first few pages for recent updates
-        start = 0
-        for page_num in range(5):
-            logger.info(f"Checking updates page {page_num + 1}...")
+        """Fetch recent gazette issues (newest-first pages until older than `since`)."""
+        page = 1
+        for _ in range(5):
+            logger.info(f"Checking updates page {page}...")
             try:
-                html = self._fetch_publications_page(start)
+                data = self._fetch_publications_page(page)
             except Exception:
                 break
 
-            entries = self._parse_publications(html)
+            entries = self._parse_publications(data)
             if not entries:
                 break
 
@@ -278,7 +283,7 @@ class OfficialGazetteScraper(BaseScraper):
                     entry["text"] = text
                     yield entry
 
-            start += ITEMS_PER_PAGE
+            page += 1
 
     def normalize(self, raw: dict) -> dict:
         """Transform raw gazette entry into standard schema."""
@@ -311,7 +316,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="GY/OfficialGazette scraper")
-    parser.add_argument("command", choices=["bootstrap", "update", "test"])
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "update", "test"])
     parser.add_argument("--sample", action="store_true")
     parser.add_argument("--full", action="store_true")
     args = parser.parse_args()
@@ -321,9 +326,10 @@ def main():
     if args.command == "test":
         logger.info("Testing connectivity...")
         try:
-            html = scraper._fetch_publications_page(0)
-            entries = scraper._parse_publications(html)
-            logger.info(f"Connection OK. Found {len(entries)} entries on page 1.")
+            data = scraper._fetch_publications_page(1)
+            entries = scraper._parse_publications(data)
+            logger.info(f"Connection OK. Found {len(entries)} entries on page 1 "
+                        f"(totalItems={data.get('totalItems')}).")
             for e in entries[:3]:
                 logger.info(f"  [{e['gazette_type']}] {e['title']} -> {e.get('date', 'no date')}")
             print("TEST PASSED")
@@ -332,8 +338,14 @@ def main():
             print("TEST FAILED")
             sys.exit(1)
 
-    elif args.command == "bootstrap":
-        sample_mode = args.sample or not args.full
+    elif args.command in ("bootstrap", "bootstrap-fast"):
+        # bootstrap-fast is the VPS fleet entrypoint; it must run the FULL
+        # corpus (streamed to data/records.jsonl by BaseScraper), never fall
+        # back to sample mode. Plain `bootstrap` still defaults to sample.
+        if args.command == "bootstrap-fast":
+            sample_mode = False
+        else:
+            sample_mode = args.sample or not args.full
         sample_size = 15 if sample_mode else 99999
         logger.info(f"Bootstrap (sample={sample_mode}, size={sample_size})")
         stats = scraper.bootstrap(sample_mode=sample_mode, sample_size=sample_size)

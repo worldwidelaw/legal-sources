@@ -1,0 +1,120 @@
+# ===================================================================
+# US/NM-TaxRulings -- New Mexico Taxation and Revenue Department
+# Rulings
+# ===================================================================
+# Official interpretive Rulings published by the New Mexico Taxation
+# and Revenue Department (TRD) at tax.newmexico.gov/all-nm-taxes/rulings/.
+# A Ruling is a written statement of the Department's interpretation of
+# how the tax laws and regulations apply to a stated set of facts. The
+# page embeds a "RealFile" (rtsclients.com) file-browser widget whose
+# folder tree and files are served by a public JSON API
+# (GetWidgetFiles). Files are grouped into category folders (e.g.
+# "400-Gross Receipts and Compensating Tax Act"), mostly with tax-type
+# subfolders; each file is a born-digital PDF downloaded from the
+# widget's PublicFiles endpoint. Full text lives only in the PDF,
+# extracted via the shared OOM-hardened pdf_extract helper. No
+# JavaScript-rendered scraping, no CAPTCHA, no auth. Public-domain New
+# Mexico state-government works (government edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/NM-TaxRulings"
+  country: "US"
+  name: "New Mexico Taxation and Revenue Department — Rulings"
+  url: "https://www.tax.newmexico.gov/all-nm-taxes/rulings/"
+  description: |
+    Rulings issued by the New Mexico Taxation and Revenue Department (TRD) —
+    written statements of the Department's interpretation of how New Mexico
+    tax law and regulations apply to a stated set of facts. The full text of
+    each Ruling is read from its born-digital PDF, served by the RealFile
+    file-browser widget that backs the official Rulings page. No JavaScript
+    scraping, no CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "json_widget"
+  base_url: "https://klvg4oyd4j.execute-api.us-west-2.amazonaws.com/prod"
+  endpoints:
+    list: "/GetWidgetFiles"
+    document: "/PublicFiles/{accountGUID}/{fileId}/{fileName}"
+  params:
+    accountGUID: "34821a9573ca43e7b06dfad20f5183fd"
+    widgetId: "5e9e105f-f1a6-4c2e-825f-9ce2c9d55e3f"
+    rootFolderId: "69bf9c97-04f7-4383-803c-83122c9d2f0a"
+    publicTokenGUID: "0f69200a-5699-48e6-a041-ce3d1324140c"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NM-TaxRulings/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "ruling_number"
+      description: "TRD ruling number, parsed from the file name (e.g. '200-11-01')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "ruling_type"
+      description: "Document type (Ruling)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (ruling number + subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Ruling, extracted from the published PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Posting date (ISO 8601), from the widget 'uploaded' timestamp"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — New Mexico state tax guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Rulings of the New Mexico Taxation and Revenue Department are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The Rulings page embeds a RealFile (rtsclients.com) widget; its folder
+    tree and files are served by a public JSON API,
+    GET .../prod/GetWidgetFiles?widgetId=&folderId=&rootFolderId=
+        &accountGUID=&publicTokenGUID=. The scraper walks the tree from the
+    root folder, dedups files by fileId, and downloads each PDF from
+    .../prod/PublicFiles/{accountGUID}/{fileId}/{fileName}.
+  - Full text lives only in the PDF; extraction uses the shared
+    common.pdf_extract helper (OOM-hardened pdfplumber -> pypdf -> OCR).
+    A <200-char guard skips the rare image-only/empty scan.
+  - The ruling number is derived from the file name (e.g. 200-11-01.pdf);
+    the human-readable subject comes from the widget 'title' metadata.
+  - Type is doctrine: these are interpretive government guidance documents,
+    not adjudications of a contested case. (TRD hearing-officer
+    "Decisions & Orders" are a separate case_law collection.)
+  - Public-domain New Mexico state-government data.

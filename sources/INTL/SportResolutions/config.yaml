@@ -1,0 +1,50 @@
+fetch:
+  list_url: https://www.sportresolutions.com/decisions
+  method: html_paginated_pdf
+  rate_limit_seconds: 2
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: sport
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: >
+    Sport Resolutions (UK) Published Decisions — full-text sports-arbitration and
+    anti-doping tribunal decisions hosted by Sport Resolutions, the independent
+    London dispute-resolution body that provides the secretariat for the UK
+    National Anti-Doping Panel (NADP) and administers cases for many sports
+    governing bodies. The published-decisions database spans athletics (World
+    Athletics Disciplinary & Appeals Tribunal), tennis (ITIA/ITF), football
+    (FA/EFL/CFRU financial regulation), rugby, snooker (WPBSA), sailing, golf,
+    cricket, skiing (FIS), boxing, cycling and more. Each case links a
+    born-digital, full-text decision PDF hosted openly on sportresolutions.com
+    (no login, no WAF). Decisions are removed once a ban is served, so the live
+    corpus is a rolling set (~60 decisions).
+  id: INTL/SportResolutions
+  language: en
+  name: Sport Resolutions (UK) Published Decisions
+  url: https://www.sportresolutions.com/decisions
+license:
+  name: "Sport Resolutions Terms (All Rights Reserved)"
+  url: "https://www.sportresolutions.com/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions are published openly for transparency, but Sport Resolutions / the relevant governing body asserts copyright with no open licence. Commercial use flagged restricted per project policy (err on flagging)."

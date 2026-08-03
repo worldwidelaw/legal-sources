@@ -1,0 +1,110 @@
+# ===================================================================
+# US/SEC-AdminProceedings -- SEC Administrative Proceedings
+# ===================================================================
+# Full text of the U.S. Securities and Exchange Commission's published
+# Administrative Proceeding documents: orders instituting proceedings,
+# ALJ initial decisions, Commission opinions and orders, settlement
+# orders, and related determinations issued in the SEC's administrative
+# enforcement and regulatory adjudications. Each release advances or
+# resolves a specific administrative proceeding against named respondents
+# = case_law. Official U.S. federal-government works, public domain
+# (17 U.S.C. 105).
+#
+# BUILD RECIPE (no auth, no CAPTCHA, builds locally): a paginated Drupal
+# View table at
+#   https://www.sec.gov/enforcement-litigation/administrative-proceedings?page=N
+# Each row (<tr class="pr-list-page-row">) carries a <time datetime>
+# publish date, the respondent name linking to the document PDF at
+# /files/litigation/admin/{YYYY}/{release}[-suffix].pdf, and the SEC
+# Release No. (e.g. 34-105843). The scraper walks the pager from page 0
+# until an empty page, downloads each PDF, and extracts full text with the
+# shared common.pdf_extract extractor. record_id is the PDF filename stem.
+# NOTE: sec.gov requires a declared User-Agent identifying the requester
+# (SEC automated-access policy); the scraper sends one.
+# ===================================================================
+
+source:
+  id: "US/SEC-AdminProceedings"
+  country: "US"
+  name: "SEC Administrative Proceedings"
+  url: "https://www.sec.gov/enforcement-litigation/administrative-proceedings"
+  description: |
+    Full text of the U.S. Securities and Exchange Commission's published
+    Administrative Proceeding documents — orders instituting proceedings,
+    ALJ initial decisions, Commission opinions and orders, settlement
+    orders, and related determinations issued in the SEC's administrative
+    enforcement and regulatory adjudications. Each release advances or
+    resolves a specific administrative proceeding against named
+    respondents = case_law. Enumerated from the paginated administrative-
+    proceedings list; respondent, SEC Release No., date, and the full
+    text (from the born-digital or scanned PDF) are captured. No CAPTCHA,
+    no auth (SEC requires a descriptive User-Agent, which the scraper
+    sends).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.sec.gov"
+  endpoints:
+    list_page: "/enforcement-litigation/administrative-proceedings?page={n}"
+    document_pdf: "/files/litigation/admin/{YYYY}/{release}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/SEC-AdminProceedings/{record_id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "PDF filename stem (e.g. '34-105843', '34-105804-pp')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "In re {respondent} (SEC Release No. {release})"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the proceeding document (PDF extract; OCR fallback)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publish date (ISO 8601), from the list <time datetime>"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the proceeding document PDF on sec.gov"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. federal government work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    SEC administrative-proceeding documents are works of the U.S. federal
+    government (a federal agency and its administrative law judges) and
+    are not subject to copyright under 17 U.S.C. 105. Free to use,
+    including commercially.

@@ -1,0 +1,79 @@
+# ===================================================================
+# FR/AssuranceMaladie -- Circulaires réseau de l'Assurance Maladie (CNAM)
+# ===================================================================
+# Drupal listing (/directives pager) -> /circulaire/{slug} detail pages
+# -> full-text PDF (pdfplumber). The ?_format=json endpoint is WAF-
+# rejected, so HTML detail + PDF extraction is the supported path.
+# ===================================================================
+
+source:
+  id: "FR/AssuranceMaladie"
+  country: "FR"
+  name: "Circulaires réseau de l'Assurance Maladie (CNAM)"
+  url: "https://circulaires.ameli.fr/"
+  description: |
+    Official regulatory circulars ("directives réseau"/"directives extranet")
+    of the French statutory health-insurance fund (Caisse nationale de
+    l'Assurance Maladie, CNAM), published at circulaires.ameli.fr. They
+    instruct the CPAM / CGSS / CARSAT / CRAMIF network on how to apply
+    social-security and health-insurance law (gestion du risque, prestations,
+    AT/MP prevention, relations with health professionals, etc.). ~3,060
+    circulaires spanning 1999–present, each with a full-text PDF.
+    Covers public-repo source requests #1033 and #1035.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 1
+  max_workers: 2
+
+api:
+  type: "html_listing_pdf"
+  listing_url: "https://circulaires.ameli.fr/directives"
+  base_url: "https://circulaires.ameli.fr"
+  detail_pattern: "/circulaire/{slug}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "title"
+      description: "Circulaire number + objet (e.g. CIR-9/2026 — ...)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the circulaire (PDF extracted)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Signature/publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Licence Ouverte 2.0"
+  url: "https://www.etalab.gouv.fr/licence-ouverte-open-licence/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Official texts of a French public-service body (CNAM); covered by the Licence Ouverte / Etalab open licence (commercial use permitted, attribution required)."
+
+notes: |
+  - Listing at /directives with numeric pager (?page=N); ~153 pages × 20 ≈ 3,060 circulaires (1999–present)
+  - Each /circulaire/{slug} detail page links a full-text PDF under /sites/default/files/directives/...
+  - normalize() fetches the detail HTML, parses metadata (date/objet/résumé/domaine/plan/mots clés) and extracts the PDF body via common.pdf_extract (OOM-hardened pdfplumber)
+  - ?_format=json is WAF-rejected ("Request Rejected"); HTML + PDF is the supported path
+  - Classified as doctrine (binding administrative directives/circulaires to the assurance-maladie network)

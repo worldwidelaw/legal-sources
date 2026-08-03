@@ -84,6 +84,13 @@ class TLS12Adapter(HTTPAdapter):
     def init_poolmanager(self, *args, **kwargs):
         ctx = create_urllib3_context()
         ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+        # taxlaw.nts.go.kr has a cert chain requests can't verify, so the session
+        # runs with verify=False. When a custom ssl_context is supplied, urllib3
+        # sets verify_mode=CERT_NONE on it — which raises unless check_hostname is
+        # cleared first. Do both here (order matters) so every request doesn't die
+        # with "Cannot set verify_mode to CERT_NONE when check_hostname is enabled".
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
         kwargs['ssl_context'] = ctx
         return super().init_poolmanager(*args, **kwargs)
 

@@ -234,8 +234,27 @@ def normalize(raw: Dict) -> Dict:
     }
 
 
-def fetch_sample(api: JudilibreAPI, count: int = 15) -> List[Dict]:
+def _build_api_from_env() -> JudilibreAPI:
+    """Construct a JudilibreAPI from environment credentials.
+
+    Used when a fetch function is invoked without an explicit ``api`` object —
+    e.g. by the VPS generic bootstrap runner, which calls ``fetch_all()`` with no
+    args (issue #1065). Mirrors the credential handling in main().
+    """
+    api_key = os.environ.get("JUDILIBRE_API_KEY")
+    environment = os.environ.get("JUDILIBRE_ENVIRONMENT", "production")
+    if not api_key:
+        raise RuntimeError(
+            "Missing API key: set JUDILIBRE_API_KEY (PISTE app KeyId) in the "
+            "environment. See .env.template."
+        )
+    return JudilibreAPI(api_key, environment)
+
+
+def fetch_sample(api: Optional[JudilibreAPI] = None, count: int = 15) -> List[Dict]:
     """Fetch a sample of records with full text."""
+    if api is None:
+        api = _build_api_from_env()
     print(f"Searching for recent decisions...")
     records = []
     page = 0
@@ -305,8 +324,14 @@ def clear_checkpoint():
         print("Checkpoint cleared")
 
 
-def fetch_all(api: JudilibreAPI, days: int = 30) -> Generator[Dict, None, None]:
-    """Fetch all decisions from the last N days, using weekly windows per jurisdiction."""
+def fetch_all(api: Optional[JudilibreAPI] = None, days: int = 30) -> Generator[Dict, None, None]:
+    """Fetch all decisions from the last N days, using weekly windows per jurisdiction.
+
+    ``api`` is optional so the generic bootstrap runner can call ``fetch_all()`` with
+    no arguments (issue #1065); it is self-constructed from env credentials when None.
+    """
+    if api is None:
+        api = _build_api_from_env()
     now = datetime.now()
     start = now - timedelta(days=days)
     print(f"Scanning decisions from {start.strftime('%Y-%m-%d')} to {now.strftime('%Y-%m-%d')} "
@@ -370,12 +395,17 @@ def _scan_window(api: JudilibreAPI, date_start: str, date_end: str,
               f"(total {len(seen_ids)} unique, was {wide_count} from wide window)")
 
 
-def fetch_full_archive(api: JudilibreAPI, use_checkpoint: bool = True) -> Generator[Dict, None, None]:
+def fetch_full_archive(api: Optional[JudilibreAPI] = None, use_checkpoint: bool = True) -> Generator[Dict, None, None]:
     """
     Fetch all decisions from 2010 to present, per jurisdiction, using weekly
     date windows to avoid PISTE gateway result caps (~10K per query).
     Supports checkpoint/resume for this long-running operation.
+
+    ``api`` is optional (self-constructed from env when None) for parity with the
+    generic runner contract (issue #1065).
     """
+    if api is None:
+        api = _build_api_from_env()
     if use_checkpoint:
         checkpoint = load_checkpoint()
         start_jurisdiction = checkpoint.get("current_jurisdiction") or JURISDICTIONS[0]
@@ -453,8 +483,12 @@ def fetch_full_archive(api: JudilibreAPI, use_checkpoint: bool = True) -> Genera
             print(f"  {j}: {c} records")
 
 
-def fetch_updates(api: JudilibreAPI, since: datetime) -> Generator[Dict, None, None]:
+def fetch_updates(api: Optional[JudilibreAPI] = None, since: datetime = None) -> Generator[Dict, None, None]:
     """Fetch updates since a given date, using weekly windows per jurisdiction."""
+    if api is None:
+        api = _build_api_from_env()
+    if since is None:
+        since = datetime.now() - timedelta(days=1)
     now = datetime.now()
     print(f"Scanning updates from {since.strftime('%Y-%m-%d')} to {now.strftime('%Y-%m-%d')} "
           f"(all jurisdictions, {WINDOW_DAYS}-day windows)...")

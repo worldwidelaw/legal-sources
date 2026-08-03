@@ -123,22 +123,49 @@ def parse_date_from_title(title):
     return None
 
 
+def _release_pdfplumber_page(page):
+    """Free a pdfplumber Page's cached objects/textmap (memory mitigation).
+
+    pdfplumber keeps every visited page's parsed layout objects and its
+    get_textmap() LRU result alive for the open document's lifetime, so a large
+    multi-hundred-page gazette PDF can balloon to multiple GB and OOM-kill a
+    small VPS (exit 137, issue #1125). Flushing per page keeps peak memory flat
+    with byte-identical text output.
+    """
+    try:
+        page.flush_cache()
+    except Exception:
+        pass
+    try:
+        page.get_textmap.cache_clear()
+    except Exception:
+        pass
+
+
 def extract_pdf_text(pdf_bytes, max_pages=None):
-    """Extract text from PDF bytes using pdfplumber."""
+    """Extract text from PDF bytes using pdfplumber.
+
+    Returns (text, page_count). page_count is the total number of pages in the
+    document (not just the ones read when max_pages is set).
+    """
     try:
         with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            pages = pdf.pages
-            if max_pages:
-                pages = pages[:max_pages]
+            all_pages = pdf.pages
+            page_count = len(all_pages)
+            pages = all_pages[:max_pages] if max_pages else all_pages
             texts = []
             for page in pages:
                 text = page.extract_text() or ""
+                # Drop pdfplumber's unrenderable-glyph markers, e.g. "(cid:9)".
+                text = re.sub(r"\(cid:\d+\)", "", text)
                 if text.strip():
                     texts.append(text.strip())
-            return "\n\n".join(texts)
+                # Release cached layout/textmap before moving on (see above).
+                _release_pdfplumber_page(page)
+            return "\n\n".join(texts), page_count
     except Exception as e:
         logger.error(f"PDF extraction error: {e}")
-        return ""
+        return "", None
 
 
 def get_listing_page(page_num):
@@ -208,7 +235,7 @@ def fetch_all(sample=False):
             try:
                 logger.info(f"Downloading: {item['pdf_url']}")
                 pdf_resp = _get(item["pdf_url"])
-                text = extract_pdf_text(pdf_resp.content)
+                text, page_count = extract_pdf_text(pdf_resp.content)
 
                 if not text or len(text) < 50:
                     logger.warning(f"Skipping {item['gazette_id']}: no text extracted")
@@ -225,15 +252,8 @@ def fetch_all(sample=False):
                     "url": item["pdf_url"],
                     "language": "es",
                     "gazette_id": item["gazette_id"],
-                    "page_count": None,
+                    "page_count": page_count,
                 }
-
-                # Get page count
-                try:
-                    with pdfplumber.open(io.BytesIO(pdf_resp.content)) as pdf:
-                        record["page_count"] = len(pdf.pages)
-                except Exception:
-                    pass
 
                 yield record
                 count += 1
@@ -278,7 +298,7 @@ def test_api():
         print(f"\nTesting PDF download: {pdf_url}")
         pdf_resp = _get(pdf_url)
         print(f"PDF size: {len(pdf_resp.content)} bytes")
-        text = extract_pdf_text(pdf_resp.content, max_pages=1)
+        text, _ = extract_pdf_text(pdf_resp.content, max_pages=1)
         print(f"Page 1 text: {len(text)} chars")
         if text:
             print(f"Sample: {text[:200]}")
@@ -286,25 +306,65 @@ def test_api():
     print("\nAPI test passed." if gaceta_links else "WARNING: No gaceta links found!")
 
 
+def run_bootstrap(sample=False):
+    """Stream gazette records to data/records.jsonl (full) and save samples.
+
+    Records are written one-at-a-time as they are yielded so the full ~20K-issue
+    corpus never accumulates in memory (issue #1125 OOM). In sample mode only the
+    sample/ JSON files are written.
+    """
+    DATA_DIR = SOURCE_DIR / "data"
+    records_path = DATA_DIR / "records.jsonl"
+    samples = []
+    count = 0
+    text_lens = []
+
+    jsonl_f = None
+    if not sample:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        jsonl_f = open(records_path, "w", encoding="utf-8")
+
+    try:
+        for rec in fetch_all(sample=sample):
+            count += 1
+            text_lens.append(len(rec.get("text", "")))
+            if jsonl_f is not None:
+                jsonl_f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+                jsonl_f.flush()
+            # Keep the first 15 in memory as validation samples (bounded).
+            if len(samples) < 15:
+                samples.append(rec)
+    finally:
+        if jsonl_f is not None:
+            jsonl_f.close()
+
+    if count == 0:
+        print("ERROR: No records fetched!")
+        sys.exit(1)
+
+    if samples:
+        save_sample(samples, SAMPLE_DIR)
+
+    if not sample:
+        print(f"\nBootstrap complete: {count} records streamed to {records_path}")
+    else:
+        print(f"\nBootstrap complete: {count} sample records saved to {SAMPLE_DIR}")
+    print(f"Text lengths: min={min(text_lens)}, max={max(text_lens)}, avg={sum(text_lens)//len(text_lens)}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="NI/SajurinGacetas bootstrapper")
-    parser.add_argument("command", choices=["test-api", "bootstrap"])
+    # bootstrap-fast is the VPS fleet entrypoint; alias it to the full bootstrap
+    # path so it streams the full corpus to data/records.jsonl.
+    parser.add_argument("command", choices=["test-api", "bootstrap", "bootstrap-fast"])
     parser.add_argument("--sample", action="store_true")
     parser.add_argument("--full", action="store_true")
     args = parser.parse_args()
 
     if args.command == "test-api":
         test_api()
-    elif args.command == "bootstrap":
-        records = list(fetch_all(sample=args.sample))
-        if records:
-            save_sample(records, SAMPLE_DIR)
-            print(f"\nBootstrap complete: {len(records)} records saved to {SAMPLE_DIR}")
-            text_lens = [len(r.get("text", "")) for r in records]
-            print(f"Text lengths: min={min(text_lens)}, max={max(text_lens)}, avg={sum(text_lens)//len(text_lens)}")
-        else:
-            print("ERROR: No records fetched!")
-            sys.exit(1)
+    elif args.command in ("bootstrap", "bootstrap-fast"):
+        run_bootstrap(sample=args.sample)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,122 @@
+# ===================================================================
+# US/DOI-IBLA-Orders -- IBLA Dispositive Orders (U.S. DOI, OHA)
+# ===================================================================
+# Full-text dispositive ORDERS of the Interior Board of Land Appeals (IBLA),
+# as distinct from its reported merits decisions (US/DOI-IBLA): orders that
+# dispose of a docketed appeal without a full reported opinion — dismissals
+# for mootness / untimeliness / lack of standing or jurisdiction, orders
+# granting withdrawal or approving settlement, stay rulings, etc. Each order
+# resolves a docketed appeal (e.g. "IBLA 2021-123") -> case_law. Published in
+# the same public ISYS/Perceptive full-text search database at
+# https://www.oha.doi.gov:8080/ as US/DOI-IBLA, but under IW_DATABASE="IBLA
+# Dispositive Orders". Plain HTTP GET, no auth, no CAPTCHA. Federal-government
+# works, public domain (17 U.S.C. § 105).
+# ===================================================================
+
+source:
+  id: "US/DOI-IBLA-Orders"
+  country: "US"
+  name: "Interior Board of Land Appeals — Dispositive Orders (U.S. DOI, Office of Hearings and Appeals)"
+  url: "https://www.oha.doi.gov:8080/"
+  description: |
+    Dispositive orders of the Interior Board of Land Appeals (IBLA), the U.S.
+    Department of the Interior appellate board that reviews Bureau of Land
+    Management and other Interior bureau decisions on public-land use and
+    resources. These are the orders that dispose of an appeal without a full
+    reported opinion (dismissals, withdrawals, settlements, stays). Full text
+    is read from the born-digital order PDFs served by Interior's OHA ISYS
+    search database (oha.doi.gov:8080), queried with broad seed terms, paged
+    through, and de-duplicated by the PDF filename (the appeal docket, e.g.
+    2021-0123.pdf == "IBLA 2021-123").
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "isys_search"
+  base_url: "https://www.oha.doi.gov:8080"
+  endpoints:
+    search: "/search/?IW_FIELD_NATURAL_LANGUAGE={query}&IW_DATABASE=IBLA Dispositive Orders"
+    hit_list: "/isysquery/{guid}/{start}-{end}/list/"
+    document: "/isysquery/{guid}/{rank}/doc/{filename}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/DOI-IBLA-Orders/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "IBLA docket, e.g. 'IBLA 2021-123' (parsed from the body)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "file_id"
+      description: "PDF filename stem (the appeal docket, e.g. '2021-0123')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Party caption + docket"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the order, extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order date (ISO 8601), parsed from the top of the body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (U.S. Government Work — 17 U.S.C. § 105)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Orders of the Interior Board of Land Appeals are works of the U.S. federal government and are in the public domain under 17 U.S.C. § 105 (government edicts)."
+
+notes: |
+  - Same ISYS/Perceptive full-text portal (oha.doi.gov:8080) and identical
+    stateless GET flow as US/DOI-IBLA, with IW_DATABASE="IBLA Dispositive
+    Orders": GET /search/?IW_FIELD_NATURAL_LANGUAGE=<q>&IW_DATABASE=... returns
+    a results page carrying a server-cached query GUID and a total document
+    count; /isysquery/<GUID>/<start>-<end>/list/ pages the hits (PAGE=50); each
+    hit links its PDF at /isysquery/<GUID>/<rank>/doc/<filename>.pdf. The GUID
+    persists server-side, so no cookies are needed. POST to /search/ 403s; GET
+    works.
+  - The PDF filename is the appeal docket (e.g. 2021-0123.pdf == "IBLA
+    2021-123"); it is the stable dedup key across seed queries.
+  - The single seed "Bureau of Land Management" returns ~3,678 documents and
+    effectively covers the whole orders database; additional subject seeds in
+    SEED_QUERIES widen coverage.
+  - Order date is parsed from the "Decided <date>" / bare "Month D, YYYY" line
+    at the top of the body; the docket from "IBLA <docket>" in the body. Older
+    orders (1970s) use a shorter docket format and may leave docket/date null,
+    but full text still extracts.
+  - Full text lives only in the PDF; extraction uses the shared
+    common.pdf_extract helper (pdfplumber -> pypdf -> OCR), with a <200-char
+    guard for the rare image-only scan.
+  - Sibling of US/DOI-IBLA (merits decisions) and US/DOI-IBIA (Indian
+    Appeals). Public-domain U.S. federal-government works.

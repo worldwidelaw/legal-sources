@@ -1,0 +1,39 @@
+{
+  "_id": "BD-act-V-1799",
+  "_source": "BD/BangladeshActs-HuggingFace",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-02T16:21:54.810317+00:00",
+  "title": "THE1[***] WILLS AND INTESTACY REGULATION, 1799",
+  "text": "2. In all cases of Hindu, Mussalman or other person subject to the jurisdiction of the Zila Courts, having at his death left a will and appointed an executor or executors to carry the same into effect, and in which the heir to the deceased may not be a disqualified landholder subject to the superintendence of the Courts of wards the executors so appointed are to take charge of the estate of the deceased, and proceed in the execution of their trust according to the will of the deceased and the laws and usages of the country, without any application to the Judge of the Diwani Adalat or any other officer of the Government for his sanction; and the Courts of Justice are prohibited to interfere in such cases, except on a regular complaint against the executors for a breach of trust or otherwise, when they are to take cognizance of such complaint in common with all others of a civil nature.\n\n3. In case of a Hindu, Mussalman or other person subject to the jurisdiction of the Zila Courts dying intestate, but leaving a son or other heir, who, by the laws of the country, may be entitled to succeed to the whole estate of the deceased, such heir, if of age and competent to take the possession and management of the estate, or, if under age or incompetent and not under the superintendence of the courts of Wards, his guardian or nearest of kin who, by special appointment or by the law and usage of the country, may be authorised to act for him, is not required to apply to the Courts of Justice for permission to take possession of the estate of the deceased as far as the same can be done without violence; and the Courts of Justice are restricted from interference in such cases, except a regular complaint be preferred.\n\n4. If there be more heirs than one to the estate of a person dying intestate, and they can agree amongst themselves in the appointment of a common manager, they are at liberty to take possession, and the Courts of Justice are restricted from interference, without a regular Complaint, as in the case of a single heir;But if the right of succession to the estate be disputed between several claimants, one or more of whom may have taken possession, the Judge, on a regular suit being preferred by the party out of possession, shall take good and sufficient security from the party or parties in possession for his or their compliance with the judgment that may be passed in the suit; or, in default of such security being given within a reasonable period, may give possession, until the suit may be determined, to the other claimant or claimants who may be able to give such security, declaring at the same time that such possession is not in any degree to affect the right of property at issue between the parties, but to be considered merely as an administration to the estate for the benefit of the heirs who may on investigation be found entitled to succeed thereto.\n\n5. In the event of none of the claimants to the estate of a person dying intestate being able to give the security required by the preceding section, and in all cases wherein there may be no person authorised and willing to take charge of the landed estate of a person deceased, the Judge within whose jurisdiction such estate may be  situated (or in which the deceased may have resided, or the principle part of the estate may lie, in the event of its being situated within two or more jurisdictions) is authorised to appoint an administrator for the due care and management of such estate, until, in the former case, the suit depending between the several claimants shall have been determined, or in the latter case until the legal heir to the estate, or other person entitled to receive charge thereof as executor, administrator or otherwise, shall attend and claim the same; when, if the Judge be satisfied that the claim is well-founded, or if the same be established after any inquiry that may appear necessary, the administrator appointed by the Court shall deliver over the estate to him, with a full and just account of all receipts and disbursements during the period of his administration.\n\n6. In all instances of an administrator being appointed under this regulation, he is, previous to entering upon the execution of his office, to give good security for the faithful discharge of his trust in a sum proportionate to the extent thereof and appointing him is authorised to fix for him (Subject to the approbation of the Court of Sadar Diwani Adalat, to whom a report is to be made in such instances) an adequate personal allowance to be paid out of the proceeds of the estate, and to be a percentage thereupon, after deducting the expenses of management.\n\n7. The Judges of the Zila Courts on receiving information that any person within  their respective jurisdictions has died intestate, leaving personal property, and that there is no claimant to such property, are to adopt such measures as may be necessary for the temporary care of the property, and to issue an advertisement in the current languages of the country requiring the heir of the deceased, or any person entitled to receive charge of his effects, to attend for this purpose. Such advertisement to be published on the spot where the property was found, at the Diwani Adalat cutcherry of the Zila, and if ascertainable, at the dwelling place of the deceased; after whish, should any person attend and satisfy the Judge of his title to the property, or to receive charge thereof as executor, administrator or otherwise, the same is to be delivered up to him, on repayment of any necessary expense incurred in the care of it.Should no claim be preferred within the twelve months next ensuing, an inventory of the property and report of the circumstances of the case is to be transmitted to the [Government], for its orders.\n\n8. Nothing in this Regulation is to be understood to limit or alter the jurisdiction of the Court of Wards in the appointment of managers or guardians for disqualified landholders, or in any case wherein a special power may be vested in the Court of Wards.\n\n\n--- Footnotes ---\n1The word \"Bengal\" was omitted by Article 6 of theBangladesh (Adaptation of Existing Laws) Order, 1972(President’s Order No. 48 of 1972).\n2The word “Bangladesh” was substituted  of the  word “Province” by Article 5 of theBangladesh (Adaptation of Existing Laws) Order, 1972(President’s Order No. 48 of 1972).",
+  "date": "1799-01-01",
+  "url": "http://bdlaws.minlaw.gov.bd/act-print-1315.html",
+  "act_number": "V",
+  "act_year": "1799",
+  "language": "english",
+  "is_repealed": false,
+  "token_count": 1277,
+  "government_context": {
+    "government_name": "",
+    "govt_system": "Company Rule (Dual System until 1772)",
+    "period_years": "1799-1805"
+  },
+  "legal_system_context": {
+    "legal_framework": {
+      "primary_laws": [
+        "Regulating Act 1773",
+        "Bengal Regulations",
+        "Anglo-Muhammadan Law",
+        "Cornwallis Code 1793"
+      ],
+      "court_system": [
+        "Supreme Court at Fort William (1774)",
+        "District Courts",
+        "Company Courts"
+      ],
+      "legal_basis": "Hybrid of British common law and Islamic/Hindu personal law",
+      "enforcement_mechanism": "Company magistrates and British judicial system"
+    },
+    "period": "",
+    "description": ""
+  }
+}

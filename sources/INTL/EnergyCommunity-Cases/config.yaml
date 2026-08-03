@@ -1,0 +1,80 @@
+# ===================================================================
+# INTL/EnergyCommunity-Cases -- Energy Community dispute settlement cases
+# ===================================================================
+# ~228 Article 91 non-compliance cases (2008-present) brought by the
+# Energy Community Secretariat against Contracting Parties. Per-case
+# detail pages on the EnC-LEX portal carry the structured case summary
+# plus narrative reasoning; linked Ministerial Council Decision PDFs
+# provide the full legal text.
+# ===================================================================
+
+source:
+  id: "INTL/EnergyCommunity-Cases"
+  country: "INTL"
+  name: "Energy Community Dispute Settlement Cases"
+  url: "https://www.energy-community.org/enc-lex/cases/registry.html"
+  description: |
+    Dispute settlement cases under Article 91 of the Energy Community
+    Treaty. The Energy Community extends the EU energy, environment,
+    climate and competition acquis to the Western Balkans, Ukraine,
+    Moldova and Georgia. The Secretariat opens non-compliance cases
+    against Contracting Parties, proceeding through Opening Letter,
+    Reasoned Opinion and Ministerial Council Decision stages. Full text
+    from the per-case detail page narrative plus linked Ministerial
+    Council Decision / Reasoned Opinion PDFs.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_registry_detail_pdf"
+  registry_url: "https://www.energy-community.org/enc-lex/cases/registry.html"
+  case_url_pattern: "https://www.energy-community.org/enc-lex/cases/registry/{YYYY}/case{code}.html"
+  note: "Registry index lists ~228 per-case detail pages; detail narrative + linked /dam/*.pdf decisions extracted"
+
+data_model:
+  type: "case_law"
+  primary_key: "case_number"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "title"
+      description: "Case title (e.g., 'Case ECS-01/12: Ukraine / electricity')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Case summary narrative plus extracted decision PDF text"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Case registration date (ISO 8601), null if not present"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "case_number"
+      description: "Energy Community case number (e.g., ECS-01/12)"
+      type: "string"
+      role: "identifier"
+      required: true
+
+notes: |
+  - Registry index at /enc-lex/cases/registry.html links every per-case page
+    /enc-lex/cases/registry/YYYY/caseNNYYCC.html (CC = ISO-2 country code)
+  - Detail page content lives in <div class="content-area content-container">
+  - Ministerial Council Decision / Reasoned Opinion PDFs under /dam/jcr:.../*.pdf
+  - Reachable from this machine (HTTP 200); the site 403s some US datacenter IPs
+    (WebFetch) but local/residential and EU IPs work
+  - Country codes: AL, BH, GE, KO(Kosovo*), MD/MO/ML(Moldova), ME(Montenegro),
+    MK/NM/MA(North Macedonia), RS/SR(Serbia), UA(Ukraine)
+  - date optional: procedural cases may carry no registration date

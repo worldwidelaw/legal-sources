@@ -23,6 +23,14 @@ from urllib.parse import urljoin
 
 import requests
 
+# Make the repo root importable so we can reuse common.storage for the
+# full-corpus path (streams to data/records.jsonl for fleet ingest).
+SCRIPT_DIR = Path(__file__).parent
+ROOT_DIR = SCRIPT_DIR.parent.parent.parent
+sys.path.insert(0, str(ROOT_DIR))
+
+from common.storage import StorageManager  # noqa: E402
+
 # Rate limit: 5000/hour = ~1.4/sec. DEMO_KEY has stricter limits.
 # Use 2s delay between requests and retry with exponential backoff on 429s.
 DELAY_SECONDS = 2.0
@@ -368,6 +376,49 @@ def fetch_updates(since: datetime) -> Generator[Dict[str, Any], None, None]:
         offset += limit
 
 
+def bootstrap_full(
+    congresses: Optional[list] = None,
+    bill_types: Optional[list] = None,
+    max_records: Optional[int] = None,
+) -> int:
+    """Full corpus fetch that STREAMS every bill (with full text) to
+    data/records.jsonl via StorageManager.
+
+    This is the path the fleet ingest uses. It is idempotent: re-runs skip
+    bills already written (dedup by _id), so a crashed run can be resumed.
+    """
+    data_dir = SCRIPT_DIR / "data"
+    storage = StorageManager(data_dir)
+
+    if congresses is None:
+        # Default: recent congresses (most complete text coverage). Widen via
+        # --congress / a range when a deeper historical backfill is needed.
+        congresses = [118, 117]
+    if bill_types is None:
+        bill_types = ["hr", "s", "hjres", "sjres", "hconres", "sconres", "hres", "sres"]
+
+    written = 0
+    skipped = 0
+    for congress in congresses:
+        print(f"=== Congress {congress} ===")
+        for record in fetch_all(
+            congress=congress, bill_types=bill_types, max_records=max_records
+        ):
+            dedup_key = record["_id"]
+            if storage.exists(dedup_key):
+                skipped += 1
+                continue
+            storage.write(dedup_key, record)
+            written += 1
+            if written % 25 == 0:
+                print(f"  Wrote {written} records (skipped {skipped} dupes)...")
+
+    storage.close()
+    print(f"\nFull bootstrap complete: {written} written, {skipped} skipped")
+    print(f"Records at: {storage.records_path}")
+    return written
+
+
 def bootstrap_sample(sample_dir: Path, count: int = 15) -> int:
     """Fetch sample records and save to sample directory."""
     sample_dir.mkdir(parents=True, exist_ok=True)
@@ -439,7 +490,7 @@ def main():
     parser = argparse.ArgumentParser(description="US/CongressGov data fetcher")
     parser.add_argument(
         "command",
-        choices=["bootstrap", "validate", "fetch"],
+        choices=["bootstrap", "bootstrap-fast", "validate", "fetch"],
         help="Command to run",
     )
     parser.add_argument(
@@ -456,8 +507,8 @@ def main():
     parser.add_argument(
         "--congress",
         type=int,
-        default=118,
-        help="Congress number (default: 118)",
+        default=None,
+        help="Congress number (default: recent congresses for --full; 118 for fetch)",
     )
     parser.add_argument(
         "--since",
@@ -465,13 +516,19 @@ def main():
         help="Fetch records since date (YYYY-MM-DD)",
     )
     parser.add_argument("--full", action="store_true", help="Fetch all records")
+    parser.add_argument(
+        "--max-records",
+        type=int,
+        default=None,
+        help="Cap total records written by --full (testing / bounded runs)",
+    )
 
     args = parser.parse_args()
 
     script_dir = Path(__file__).parent
     sample_dir = script_dir / "sample"
 
-    if args.command == "bootstrap":
+    if args.command in ("bootstrap", "bootstrap-fast"):
         if args.sample:
             saved = bootstrap_sample(sample_dir, args.count)
             print(f"\nSaved {saved} sample records to {sample_dir}")
@@ -480,8 +537,13 @@ def main():
             print("\nValidating samples...")
             valid = validate_samples(sample_dir)
             sys.exit(0 if saved >= 10 and valid else 1)
+        elif args.full:
+            # Full corpus → data/records.jsonl (fleet ingest path).
+            congresses = [args.congress] if args.congress else None
+            written = bootstrap_full(congresses=congresses, max_records=args.max_records)
+            sys.exit(0 if written > 0 else 1)
         else:
-            print("Use --sample for bootstrap mode")
+            print("Use --sample for a sample fetch or --full for the full corpus")
             sys.exit(1)
 
     elif args.command == "validate":
@@ -494,7 +556,7 @@ def main():
             for record in fetch_updates(since):
                 print(json.dumps(record, ensure_ascii=False))
         else:
-            for record in fetch_all(congress=args.congress, max_records=args.count):
+            for record in fetch_all(congress=args.congress or 118, max_records=args.count):
                 print(json.dumps(record, ensure_ascii=False))
 
 

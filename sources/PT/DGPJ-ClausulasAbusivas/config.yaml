@@ -1,0 +1,70 @@
+# PT/DGPJ-ClausulasAbusivas — Portuguese Unfair Contract Terms case law
+#
+# Source: DGPJ (Direção-Geral da Política de Justiça, Ministério da Justiça)
+#         "Cláusulas Abusivas" database, published on dgsi.pt as jdgpj.nsf
+# URL: https://www.dgsi.pt/jdgpj.nsf
+# Data type: case_law
+# Auth: none
+# License: Open Government Data (Portugal)
+#
+# Court decisions declaring standard/general contract terms abusive and null
+# under DL 446/85 (Regime das Cláusulas Contratuais Gerais) and consumer law.
+#
+# Total: ~392 decisions (single Lotus Domino database)
+#
+# Access:
+#   - JSON enumeration: /jdgpj.nsf/Por+Ano?ReadViewEntries&Start=N&Count=N&OutputFormat=JSON
+#   - Full document: /jdgpj.nsf/0/{unid}?OpenDocument&ExpandSection=1
+#   - Lotus Notes/Domino backend, ISO-8859-1 encoding
+#   - Full text lives in the "Texto das Cláusulas Abusivas" / "Texto Integral"
+#     cells (bgcolor #E0F1FF)
+
+source:
+  id: PT/DGPJ-ClausulasAbusivas
+  name: Portuguese Unfair Contract Terms case law (DGPJ Cláusulas Abusivas)
+  country: PT
+  data_types:
+    - case_law
+  url: https://www.dgsi.pt/jdgpj.nsf
+  language: pt
+  auth: none
+  license: ogd
+
+license:
+  name: "Open Government Data (Portugal)"
+  url: "https://dados.gov.pt"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Portuguese court decisions published as public government data on dgsi.pt (Ministério da Justiça)."
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: case_number
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - case_number
+    - court
+    - section
+    - action_type
+    - contract_type
+    - plaintiff
+    - defendant
+    - descriptors
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.5
+  page_size: 200
+  estimated_total: 392
+  sample_count: 15

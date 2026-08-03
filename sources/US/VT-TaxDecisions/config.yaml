@@ -1,0 +1,108 @@
+# ===================================================================
+# US/VT-TaxDecisions -- Vermont Department of Taxes: Formal Rulings
+# ===================================================================
+# Full text of the Vermont Department of Taxes' published FORMAL RULINGS --
+# redacted interpretive rulings issued to a requesting taxpayer and published
+# for general guidance (interpretive doctrine under 32 V.S.A.). Public
+# Vermont state-government works (government-edicts doctrine, public domain).
+#
+# SCOPE NOTE (2026-07-02): the Department's separate DETERMINATIONS collection
+# (adjudications = case_law) has been removed from the site -- the path and its
+# taxonomy term page 404/render empty, and the master /documents library does
+# not carry the Determination or Formal Ruling categories. So this source is
+# doctrine-only (Formal Rulings).
+#
+# Site: tax.vermont.gov (Drupal). The listing page
+#   https://tax.vermont.gov/tax-law-and-guidance/formal-rulings
+# renders every ruling link SERVER-SIDE (paths /tax-law-and-guidance/
+# formal-rulings/fr-YYYY-NN and a few legacy /content/formal-ruling-YYYY-NN).
+# Each ruling node page renders its FULL TEXT inline in the body field
+# (<div property="content:encoded" class="... field--name-body ...">), so no
+# PDF download is required. No JavaScript, no CAPTCHA, no auth.
+# ===================================================================
+
+source:
+  id: "US/VT-TaxDecisions"
+  country: "US"
+  name: "Vermont Department of Taxes — Formal Rulings"
+  url: "https://tax.vermont.gov/tax-law-and-guidance/formal-rulings"
+  description: |
+    Redacted formal rulings (interpretive guidance issued to a requesting
+    taxpayer under 32 V.S.A. = doctrine) published by the Vermont Department
+    of Taxes. The listing renders every ruling link server-side; each ruling
+    node page renders its full text inline in the body field. No PDF, no
+    JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_index"
+  base_url: "https://tax.vermont.gov"
+  endpoints:
+    listing: "/tax-law-and-guidance/formal-rulings"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/VT-TaxDecisions/{ruling-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "category"
+      description: "Vermont document category (always 'Formal Ruling')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Ruling title from the node page <h1>"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the node body field"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date (ISO 8601) parsed from the ruling body (may be null)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Vermont state agency document)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Formal rulings of the Vermont Department of Taxes are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery: GET /tax-law-and-guidance/formal-rulings; parse ruling links
+    (paths /tax-law-and-guidance/formal-rulings/fr-YYYY-NN and legacy
+    /content/formal-ruling-YYYY-NN), all rendered server-side.
+  - Full text: each ruling node page renders the body inline in
+    <div property="content:encoded" class="... field--name-body ...">;
+    extracted by depth-tracking the nested <div>, no PDF download needed.
+  - Ruling date parsed from the body (Month D, YYYY or MM/DD/YYYY), with the
+    fr-YYYY number as a year fallback.
+  - The Determinations collection was removed from the site (was case_law);
+    this source is doctrine-only.
+  - Public domain Vermont state-government data.

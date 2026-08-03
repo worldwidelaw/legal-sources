@@ -1,0 +1,119 @@
+# ===================================================================
+# US/NY-AdvisoryOpinions -- New York State Department of Taxation
+#   and Finance -- Advisory Opinions (TSB-A)
+# ===================================================================
+# Official interpretive guidance of the NYS Department of Taxation and
+# Finance, issued in response to a taxpayer's Petition for Advisory
+# Opinion (TSB-A series), binding on the Department only as to the
+# person to whom issued and only on the facts presented. Spans every NY
+# tax type (income, sales, corporation, estate, fuel, mortgage
+# recording, real estate transfer, etc.), 1980-present.
+#
+# tax.ny.gov serves a server-rendered index tree under
+# /pubs_and_bulls/advisory_opinions/. Within that tree the URL shape
+# distinguishes index from opinion: 1 path segment = index page,
+# 2 path segments = HTML opinion. Older opinions are PDFs at
+# /pdf/advisory_opinions/{type}/a{YY}-{N}{t}.pdf. No JavaScript, no
+# CAPTCHA, no auth. Public domain NY state government works.
+# ===================================================================
+
+source:
+  id: "US/NY-AdvisoryOpinions"
+  country: "US"
+  name: "New York State Department of Taxation and Finance — Advisory Opinions (TSB-A)"
+  url: "https://www.tax.ny.gov/pubs_and_bulls/advisory_opinions/ao_tax_types.htm"
+  description: |
+    Published Advisory Opinions (TSB-A) of the New York State Department
+    of Taxation and Finance — official interpretive guidance issued on a
+    taxpayer's Petition for Advisory Opinion, across all NY tax types
+    (income, sales, corporation, estate, fuel, mortgage recording, real
+    estate/property transfer, etc.), 1980-present. Crawled from the
+    server-rendered advisory-opinion index tree; recent opinions are
+    HTML pages, older ones are PDFs. No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.tax.ny.gov"
+  endpoints:
+    seed: "/pubs_and_bulls/advisory_opinions/ao_tax_types.htm"
+    html_opinion: "/pubs_and_bulls/advisory_opinions/{type}/{id}.htm"
+    pdf_opinion: "/pdf/advisory_opinions/{type}/a{id}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NY-AdvisoryOpinions/{type}-{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "tsba_number"
+      description: "TSB-A designation (e.g. 'TSB-A-24(2)I')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "tax_type"
+      description: "NY tax type (Income Tax, Sales Tax, Corporation Tax, etc.)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (tax type + advisory opinion + TSB-A number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory opinion (HTML body or PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the document head"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — New York state tax guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Advisory opinions of the NYS Department of Taxation and Finance are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - tax.ny.gov serves a server-rendered index tree under
+    /pubs_and_bulls/advisory_opinions/. The hub page ao_tax_types.htm
+    links one index page per tax type (income_ao.htm, sales_ao.htm, ...);
+    each tax type's index links the current opinions plus a left-nav of
+    per-year archive pages back to 1980 (mixed naming:
+    {type}-ao-{YEAR}.htm and {type}_ao_{YEAR}.htm). The scraper BFS-walks
+    the index tree, distinguishing index pages (1 path segment after
+    /advisory_opinions/) from individual HTML opinions (2 path segments).
+  - Recent opinions are HTML pages whose <main> body holds the full text;
+    older opinions are PDFs at /pdf/advisory_opinions/{type}/a{id}.pdf,
+    extracted via common.pdf_extract. A <150-char guard skips empties.
+  - TSB-A number and issue date are parsed from the document head
+    (the number tolerates legacy 'TSB-A-86 (2) M' spacing).
+  - Type is doctrine: advisory opinions are interpretive government
+    guidance, not adjudications of a contested case (those go to the NYS
+    Division of Tax Appeals, US/NY-TaxAppeals).
+  - Public domain New York state government data.

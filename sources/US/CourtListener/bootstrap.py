@@ -46,6 +46,14 @@ REQUEST_DELAY = 0.75  # seconds between requests
 SCRIPT_DIR = Path(__file__).parent
 DATA_DIR = SCRIPT_DIR / "data"
 SAMPLE_DIR = SCRIPT_DIR / "sample"
+CHECKPOINT_PATH = DATA_DIR / "checkpoint.json"
+
+# Make the repo root importable so we can reuse common.storage for the
+# full-corpus path (streams to data/records.jsonl for fleet ingest).
+ROOT_DIR = SCRIPT_DIR.parent.parent.parent
+sys.path.insert(0, str(ROOT_DIR))
+
+from common.storage import StorageManager  # noqa: E402
 
 
 class CourtListenerAPI:
@@ -323,6 +331,139 @@ def normalize(opinion: Dict, cluster: Optional[Dict] = None) -> Dict:
     }
 
 
+def _load_checkpoint() -> Dict[str, Any]:
+    """Load the resume checkpoint (last cursor URL walked)."""
+    if CHECKPOINT_PATH.exists():
+        try:
+            with open(CHECKPOINT_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError):
+            pass
+    return {}
+
+
+def _save_checkpoint(ckpt: Dict[str, Any]) -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    tmp = CHECKPOINT_PATH.with_suffix(".json.tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(ckpt, f)
+    tmp.replace(CHECKPOINT_PATH)
+
+
+def fetch_all(
+    api: CourtListenerAPI,
+    since: Optional[str] = None,
+    max_records: Optional[int] = None,
+    checkpoint: Optional[Dict[str, Any]] = None,
+) -> Generator[Dict, None, None]:
+    """Yield every full-text opinion in the corpus, ordered oldest-first.
+
+    Walks /opinions/ with cursor pagination (ascending date_created so the walk
+    is stable and resumable). Text is extracted directly from each list row —
+    CourtListener's v4 Opinion serializer already returns the html_*/plain_text
+    fields — so we avoid a per-opinion detail request; only when the list row
+    carries no usable text do we fall back to the detail endpoint. Opinions with
+    no retrievable text are skipped (metadata-only records are not useful).
+
+    When ``checkpoint`` is supplied, the walk resumes from the last saved cursor
+    URL and each page's ``next`` cursor is persisted so a crashed run continues
+    without re-reading the corpus from the start.
+    """
+    params = {
+        "page_size": 100,
+        "order_by": "date_created",  # ascending → stable resumable walk
+    }
+    if since:
+        params["date_created__gte"] = since
+
+    resume_url = (checkpoint or {}).get("next_url")
+    if resume_url:
+        print(f"Resuming from saved cursor: {resume_url[:80]}...")
+        result = api._request_url(resume_url)
+    else:
+        result = api._request("/opinions/", params)
+
+    yielded = 0
+    while True:
+        opinions = result.get("results", [])
+        if not opinions:
+            break
+
+        for opinion in opinions:
+            opinion_id = opinion.get("id")
+            if not opinion_id:
+                continue
+
+            text = extract_text(opinion)
+            if not text or len(text) < 100:
+                # List row lacked usable text — fall back to the detail record.
+                try:
+                    full_opinion = api.get_opinion_detail(opinion_id)
+                    text = extract_text(full_opinion)
+                    opinion = full_opinion
+                    time.sleep(REQUEST_DELAY)
+                except Exception as e:
+                    print(f"  Error fetching opinion {opinion_id}: {e}", file=sys.stderr)
+                    continue
+
+            if not text or len(text) < 100:
+                continue
+
+            yield normalize(opinion, None)
+            yielded += 1
+            if max_records and yielded >= max_records:
+                return
+
+        next_url = result.get("next")
+        if checkpoint is not None:
+            checkpoint["next_url"] = next_url
+            _save_checkpoint(checkpoint)
+        if not next_url:
+            break
+
+        time.sleep(REQUEST_DELAY)
+        result = api._request_url(next_url)
+
+
+def bootstrap_full(
+    since: Optional[str] = None, max_records: Optional[int] = None
+) -> int:
+    """Full historical corpus fetch that STREAMS every full-text opinion to
+    data/records.jsonl via StorageManager.
+
+    This is the path the fleet ingest uses. It is idempotent: re-runs skip
+    opinions already written (dedup by _id) and resume from the saved cursor
+    checkpoint, so a crashed multi-million-record run continues where it stopped
+    with bounded memory (records are streamed, never accumulated).
+    """
+    api_token = os.environ.get("COURTLISTENER_API_TOKEN")
+    if not api_token:
+        print("Error: Missing COURTLISTENER_API_TOKEN.", file=sys.stderr)
+        return 0
+
+    api = CourtListenerAPI(api_token)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    storage = StorageManager(DATA_DIR)
+    checkpoint = _load_checkpoint()
+
+    written = 0
+    skipped = 0
+    for record in fetch_all(api, since=since, max_records=max_records, checkpoint=checkpoint):
+        dedup_key = record["_id"]
+        if storage.exists(dedup_key):
+            skipped += 1
+            continue
+        storage.write(dedup_key, record)
+        written += 1
+        if written % 100 == 0:
+            print(f"  Wrote {written} records (skipped {skipped} dupes)...")
+
+    storage.close()
+    print(f"\nFull bootstrap complete: {written} written, {skipped} skipped")
+    print(f"Records at: {storage.records_path}")
+    return written
+
+
 def fetch_sample(api: CourtListenerAPI, count: int = 15) -> List[Dict]:
     """Fetch a sample of recent opinions with full text."""
     print(f"Fetching {count} sample opinions from CourtListener...")
@@ -495,11 +636,15 @@ def main():
     parser = argparse.ArgumentParser(description="US/CourtListener case law fetcher")
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 
-    bootstrap_parser = subparsers.add_parser("bootstrap", help="Initial data fetch")
-    bootstrap_parser.add_argument("--sample", action="store_true", help="Fetch sample only")
-    bootstrap_parser.add_argument("--recent", action="store_true", help="Last 30 days only")
-    bootstrap_parser.add_argument("--count", type=int, default=15, help="Number of samples")
-    bootstrap_parser.add_argument("--days", type=int, default=30, help="Days to fetch for --recent")
+    for cmd in ("bootstrap", "bootstrap-fast"):
+        p = subparsers.add_parser(cmd, help="Initial data fetch")
+        p.add_argument("--sample", action="store_true", help="Fetch sample only")
+        p.add_argument("--recent", action="store_true", help="Last 30 days only")
+        p.add_argument("--full", action="store_true", help="Fetch the full corpus to data/records.jsonl")
+        p.add_argument("--since", help="For --full: only opinions with date_created >= this (YYYY-MM-DD)")
+        p.add_argument("--count", type=int, default=15, help="Number of samples")
+        p.add_argument("--days", type=int, default=30, help="Days to fetch for --recent")
+        p.add_argument("--max-records", type=int, default=None, help="Cap total records (testing)")
 
     updates_parser = subparsers.add_parser("updates", help="Fetch updates")
     updates_parser.add_argument("--since", required=True, help="Date to fetch from (YYYY-MM-DD)")
@@ -531,7 +676,10 @@ def main():
 
     api = CourtListenerAPI(api_token)
 
-    if args.command == "bootstrap":
+    if args.command in ("bootstrap", "bootstrap-fast"):
+        if args.full:
+            written = bootstrap_full(since=args.since, max_records=args.max_records)
+            sys.exit(0 if written > 0 else 1)
         if args.sample:
             print(f"Fetching {args.count} sample records from CourtListener...")
             try:
@@ -577,15 +725,26 @@ def main():
             sys.exit(1)
 
     elif args.command == "updates":
+        if args.full:
+            # Whole-corpus walk from the given date, streamed + resumable.
+            written = bootstrap_full(since=args.since)
+            sys.exit(0 if written > 0 else 1)
+
         since = datetime.strptime(args.since, "%Y-%m-%d").replace(tzinfo=timezone.utc)
         print(f"Fetching updates since {since.date()}...")
         DATA_DIR.mkdir(parents=True, exist_ok=True)
-        count = 0
-        with open(DATA_DIR / "records.jsonl", "w", encoding="utf-8") as f:
-            for record in fetch_updates(api, since):
-                f.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
-                count += 1
-        print(f"Fetched {count} updated records")
+        storage = StorageManager(DATA_DIR)
+        written = skipped = 0
+        for record in fetch_updates(api, since):
+            dedup_key = record["_id"]
+            if storage.exists(dedup_key):
+                skipped += 1
+                continue
+            storage.write(dedup_key, record)
+            written += 1
+        storage.close()
+        print(f"Updates complete: {written} written, {skipped} skipped")
+        sys.exit(0 if written > 0 else 1)
 
 
 if __name__ == "__main__":

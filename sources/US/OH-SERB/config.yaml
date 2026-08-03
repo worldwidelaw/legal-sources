@@ -1,0 +1,133 @@
+# ===================================================================
+# US/OH-SERB -- Ohio State Employment Relations Board (SERB) Opinions
+# ===================================================================
+# Published opinions of the Ohio State Employment Relations Board
+# (SERB), the state agency that administers Ohio's Public Employees'
+# Collective Bargaining Act (Ohio Revised Code Chapter 4117). SERB
+# adjudicates unfair-labor-practice charges, representation /
+# certification petitions, and bargaining-unit determinations for Ohio
+# public employers and employee organizations. Each numbered SERB
+# Opinion resolves a specific contested case = case_law; the opinions
+# are official Ohio state-government works in the public domain
+# (government edicts).
+#
+# BUILD RECIPE: serb.ohio.gov migrated to a modern InnovateOhio/Akamai
+# platform that blocks datacenter enumeration and the born-digital
+# opinion tree is no longer directly browsable. BUT the full SERB
+# Opinions corpus (1984-2018, ~480 numbered PDFs at
+# http://www.serb.ohio.gov/pdf/opinions/{YEAR}/{name}.pdf) was preserved
+# by the Internet Archive Wayback Machine. The scraper enumerates them
+# via the Wayback CDX API (filter statuscode:200, collapse urlkey) and
+# downloads each preserved PDF via /web/{timestamp}id_/{url}, extracting
+# full text with common.pdf_extract (most born-digital; a minority of
+# scanned opinions fall back to OCR -- run with tesseract on PATH). The
+# SERB opinion number and internal case number are parsed from the body;
+# the year comes from the file path. No auth, no CAPTCHA.
+# ===================================================================
+
+source:
+  id: "US/OH-SERB"
+  country: "US"
+  name: "Ohio State Employment Relations Board — Opinions"
+  url: "https://serb.ohio.gov/"
+  description: |
+    Published opinions of the Ohio State Employment Relations Board
+    (SERB). SERB administers Ohio's Public Employees' Collective
+    Bargaining Act (R.C. Chapter 4117) and adjudicates unfair-labor-
+    practice charges, representation / certification petitions, and
+    bargaining-unit determinations. Each numbered SERB Opinion resolves
+    a specific contested case = case_law. The full opinion corpus
+    (~480 opinions, 1984-2018) is enumerated from the Internet Archive
+    Wayback Machine preservation of the serb.ohio.gov /pdf/opinions
+    tree; the SERB opinion number, internal case number, decision date,
+    and full opinion text (from the PDF) are captured. No CAPTCHA, no
+    auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://web.archive.org"
+  endpoints:
+    cdx: "http://web.archive.org/cdx/search/cdx?url=serb.ohio.gov/pdf/opinions*"
+    opinion_pdf: "/web/{timestamp}id_/http://www.serb.ohio.gov/pdf/opinions/{year}/{name}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/OH-SERB/{year}-{filename-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Slug derived from the opinion PDF path (unique per file)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "opinion_number"
+      description: "SERB opinion number (e.g. '2014-001')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "case_number"
+      description: "Internal SERB case number (e.g. '2013-REP-01-0012')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "issuer"
+      description: "Issuing body (Ohio State Employment Relations Board)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Opinion title (SERB Opinion N — parties / case)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (PDF extract; OCR if scanned)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Opinion date (ISO 8601), parsed from the body; year fallback"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Original opinion PDF path (serb.ohio.gov)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "archive_url"
+      description: "Wayback Machine raw-replay URL for the preserved PDF"
+      type: "string"
+      role: "reference"
+      required: false
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Opinions of the Ohio State Employment Relations Board are official
+    works of Ohio state government (edicts of a government agency) and are
+    not subject to copyright under the government-edicts doctrine. Free to
+    use, including commercially. Retrieved via the Internet Archive
+    Wayback Machine's preservation of the official serb.ohio.gov corpus.

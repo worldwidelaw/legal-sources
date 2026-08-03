@@ -1,0 +1,22 @@
+{
+  "_id": "AGN-2026-127",
+  "_source": "AR/AGN",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-02T20:07:08.416336+00:00",
+  "title": "Financiamiento Adicional para el Programa para la Mejora de la Inclusión Educativa en el Nivel Secundario y Superior. Certificación de los Indicadores Vinculados a Desembolsos (IVD) Octubre 2025. Ministerio de Capital Humano",
+  "text": "ALCANCE DE LA CERTIFICACIÓN En nuestro carácter de auditores independientes, a vuestro requerimiento y para su presentación ante el Banco Internacional de Reconstrucción y Fomento (BIRF), hemos realizado la tarea de certificación indicada en el punto 3, de conformidad con las Normas de Control Externo Gubernamental (Res. 26/15 -AGN y Res. 185/16-AGN) emitidas por la Auditoría General de la Nación y requerimientos específicos del BIRF. La emisión de esta certificación consiste únicamente en constatar determinados hechos y/o circunstancias establecidas en el Convenio de Préstamo, con los elementos de respaldo exhibidos por la Dirección de Programas y Proyectos Sectoriales y Especiales de Educación (2.6 y 3.6), la Dirección Nacional de Evaluación de Aprendizajes y Enseñanzas (7.5); y la Dirección Nacional de Políticas de Fortalecimiento Educativo de la Subsecretaría de Políticas e Innovación Educativa (8.6 y 9.6) sin emitir un juicio profesional, asumiendo que los mismos son legítimos, libres de fraudes y otros actos ilegales, para lo cual hemos tenido en cuenta su apariencia y estructura formal. Por ello, nuestra tarea no consistió en realizar un examen de auditoría con el objeto de expresar una opinión profesional acerca de la información que se certifica, de los controles administrativos ni de las políticas implementadas por la Entidad.",
+  "date": "2026-05-21",
+  "url": "https://www.agn.gob.ar/Informe-127-2026",
+  "pdf_url": "https://webagnapi.agn.gob.ar/sites/default/files/informes/2026-127-Informe.pdf",
+  "ano": 2026,
+  "resolucion": 127,
+  "actuacion": "427/2025",
+  "fecha_acta": "2026-05-21",
+  "periodo_auditado": "2025-10-01 / 2025-10-30",
+  "organismo_auditado_ids": [
+    "3133"
+  ],
+  "tipo_de_auditoria_ids": [
+    "51"
+  ]
+}

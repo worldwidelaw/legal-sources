@@ -1,0 +1,73 @@
+source:
+  id: CH/ENSI
+  name: ENSI — Swiss Federal Nuclear Safety Inspectorate
+  country: CH
+  url: https://www.ensi.admin.ch/
+  description: >
+    The Swiss Federal Nuclear Safety Inspectorate (Eidgenössisches
+    Nuklearsicherheitsinspektorat, ENSI) is the national regulatory authority
+    for the nuclear safety and security of Swiss nuclear facilities. Under the
+    Nuclear Energy Act (KEG) it issues binding regulatory guidelines
+    (Richtlinien, ENSI-A/B/G series), requirements, expert reports (Gutachten)
+    on licensing, advisory opinions (Stellungnahmen), periodic safety review
+    assessments and annual oversight reports (Aufsichtsberichte). Documents are
+    enumerated from ENSI's public document database and full text is extracted
+    from the free per-document PDFs. Languages are mostly German with FR/IT/EN
+    editions of the guideline series.
+
+data_model:
+  types:
+    - legislation
+    - doctrine
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: doc_number
+      type: string
+      required: false
+    - name: category
+      type: string
+      required: false
+    - name: pdf_url
+      type: string
+      required: false
+
+license:
+  name: "Swiss Federal Administration terms (Federal Act on Copyright, Art. 5 URG — official works)"
+  url: "https://www.fedlex.admin.ch/eli/cc/1993/1798_1798_1798/de#art_5"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    ENSI is a Swiss federal regulatory body; its regulatory guidelines,
+    requirements and official reports are official works of the Confederation.
+    Under Art. 5 of the Swiss Copyright Act (URG) official texts (laws,
+    ordinances, decisions and other official works) are not protected by
+    copyright. ENSI's terms permit reuse of published content with source
+    attribution.
+
+schedule:
+  full_refresh: quarterly
+  update_check: monthly

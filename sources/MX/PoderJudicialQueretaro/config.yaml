@@ -1,0 +1,104 @@
+# ===================================================================
+# MX/PoderJudicialQueretaro -- Querétaro State Court Decisions
+# ===================================================================
+# The Poder Judicial del Estado de Querétaro publishes full-text court
+# decisions (sentencias en versión pública) via its "Sentencias
+# Públicas" portal. 27,000+ decisions per recent year across Civil,
+# Mercantil, Familiar, Penal, Laboral, and other matters, each as a
+# downloadable full-text PDF.
+# ===================================================================
+
+source:
+  id: "MX/PoderJudicialQueretaro"
+  country: "MX"
+  name: "Querétaro State Court Decisions"
+  url: "https://poderjudicialqro.gob.mx/APP_UT69ii/sentencias-publicas.php"
+  description: |
+    Full-text court decisions (sentencias en versión pública) from the
+    Poder Judicial del Estado de Querétaro. Tens of thousands of decisions
+    covering Civil, Mercantil, Familiar, Penal, Justicia para adolescentes,
+    Laboral, Responsabilidad Administrativa, and Constitucional matters.
+    Accessed via the public Sentencias Públicas search (leeSent.php listing
+    + leeDoc.php full-text PDF download).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "html"
+  base_url: "https://poderjudicialqro.gob.mx/APP_UT69ii"
+  endpoints:
+    listing: "/leeSent.php"
+    document: "/leeDoc.php?cual={key}"
+  response_format: "html"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Unique decision identifier (derived from the document key)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (materia, asunto, expediente)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (extracted from the public PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the full-text PDF document"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "court"
+      description: "Court / juzgado that issued the decision"
+    - name: "judge"
+      description: "Presiding magistrate"
+    - name: "subject_area"
+      description: "Subject area (Civil, Penal, Familiar, etc.)"
+    - name: "case_type"
+      description: "Type of proceeding / asunto"
+    - name: "case_number"
+      description: "Expediente number"
+    - name: "period"
+      description: "Reporting period (e.g. '2024 jul-sep')"
+
+license:
+  name: "Mexican Federal Government Public Data"
+  url: "https://datos.gob.mx/libreusomx"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Public-version court decisions published by a Mexican state judiciary
+    as transparency obligations (versiones públicas). Mexican government
+    public information is freely reusable under the Términos de Libre Uso
+    de la Información (LIBRE USO MX); commercial use permitted with
+    attribution.

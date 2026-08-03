@@ -134,8 +134,16 @@ class UNModelTaxScraper(BaseScraper):
         super().__init__(source_dir)
         self.session = _make_session()
 
-    def _search_documents(self, offset: int = 1, count: int = PAGE_SIZE) -> list:
-        """Search for E/C.18 tax committee documents via Invenio JSON API."""
+    def _search_documents(self, offset: int = 1, count: int = PAGE_SIZE, retries: int = 4):
+        """Search for E/C.18 tax committee documents via Invenio JSON API.
+
+        Returns:
+          - a list of records (possibly empty) when the page was fetched and
+            parsed successfully. An empty list means genuine end-of-pagination.
+          - None on a transient error (non-200, non-JSON/HTML, request error)
+            that persisted across all retries — the caller should skip past this
+            page rather than treat it as end-of-results.
+        """
         params = {
             "p": '"E/C.18"',
             "f": "191__a",
@@ -146,17 +154,33 @@ class UNModelTaxScraper(BaseScraper):
             "so": "d",
         }
 
-        resp = self.session.get(SEARCH_API, params=params, timeout=60)
-        if resp is None or resp.status_code != 200:
-            logger.error(f"Search failed at offset {offset}: {resp.status_code if resp else 'None'}")
-            return []
+        last_err = None
+        for attempt in range(retries):
+            try:
+                resp = self.session.get(SEARCH_API, params=params, timeout=60)
+            except Exception as e:
+                last_err = f"request error: {e}"
+                time.sleep(2.0 * (attempt + 1))
+                continue
 
-        try:
-            data = resp.json()
+            if resp is None or resp.status_code != 200:
+                last_err = f"HTTP {resp.status_code if resp is not None else 'None'}"
+                time.sleep(2.0 * (attempt + 1))
+                continue
+
+            try:
+                data = resp.json()
+            except Exception as e:
+                # A non-JSON body (empty/HTML/202 challenge). Retry — this is
+                # the transient failure that used to abort the whole sweep.
+                last_err = f"JSON parse error: {e}"
+                time.sleep(2.0 * (attempt + 1))
+                continue
+
             return data if isinstance(data, list) else []
-        except Exception as e:
-            logger.error(f"JSON parse error: {e}")
-            return []
+
+        logger.error(f"Search failed at offset {offset} after {retries} attempts: {last_err}")
+        return None
 
     def _download_docx(self, symbol: str) -> Optional[bytes]:
         """Download DOCX from UN ODS for the given document symbol."""
@@ -307,10 +331,24 @@ class UNModelTaxScraper(BaseScraper):
         total_yielded = 0
         total_skipped = 0
         consecutive_failures = 0
+        consecutive_page_errors = 0
 
         while True:
             logger.info(f"Searching offset={offset}, yielded={total_yielded}, skipped={total_skipped}")
             results = self._search_documents(offset=offset, count=PAGE_SIZE)
+
+            if results is None:
+                # Transient error on this page (bad JSON / non-200). Skip past it
+                # and keep sweeping rather than aborting the whole run.
+                consecutive_page_errors += 1
+                if consecutive_page_errors > 5:
+                    logger.error(f"Aborting: {consecutive_page_errors} consecutive page errors")
+                    break
+                logger.warning(f"Skipping bad page at offset {offset}, advancing")
+                offset += PAGE_SIZE
+                time.sleep(3.0)
+                continue
+            consecutive_page_errors = 0
 
             if not results:
                 logger.info(f"No more results at offset {offset}")

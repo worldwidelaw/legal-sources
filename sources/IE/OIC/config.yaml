@@ -1,0 +1,65 @@
+# IE/OIC — Office of the Information Commissioner (Ireland) — Review Decisions
+#
+# Source: Office of the Information Commissioner (OIC)
+# URL: https://oic.ie/en/decisions/
+# Data type: case_law
+# Auth: none
+# License: PSI Licence (Ireland) — re-use free of charge incl. commercial,
+#          attribution required (© Office of the Information Commissioner)
+#
+# The OIC is the independent statutory office that reviews decisions made by
+# public bodies under the Freedom of Information Act 2014 and (for environmental
+# information) the AIE Regulations. Each published review decision is a formal,
+# binding adjudication on a specific access request = case_law.
+#
+# Total: ~3,460 decisions (oic.ie server-rendered decisions listing runs
+# ~346 pages of 10 decisions each).
+#
+# Access:
+#   - Enumerate every decision by paging the server-rendered listing:
+#       https://oic.ie/en/decisions/?page=N
+#     Each page lists 10 /en/ombudsman-decision/{slug}/ links.
+#   - Full text is born-digital HTML in the gov.ie-style main content region
+#     (<div id="main" role="main"> up to the site footer / "Help us improve"
+#     feedback form). No OCR/PDF extraction required.
+#   - Metadata parsed per page: case number (OIC-NNNNNN-XXXXXX), publication
+#     date (<time datetime="...">), and title (applicant & respondent FOI body).
+
+source:
+  id: IE/OIC
+  name: Office of the Information Commissioner (Ireland) — Review Decisions
+  country: IE
+  data_types:
+    - case_law
+  url: https://oic.ie/en/decisions/
+  language: en
+  auth: none
+  license: ogd
+
+license:
+  name: "PSI Licence (Ireland)"
+  url: "https://data.gov.ie/pages/opendatalicence"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "© Office of the Information Commissioner. Re-use permitted free of charge in any format (incl. commercial) under the Irish PSI Licence, subject to accurate reproduction and source acknowledgement."
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: case_reference
+      type: string
+      required: false
+    - name: text
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - case_reference
+    - respondent
+    - applicant
+  date_field: date

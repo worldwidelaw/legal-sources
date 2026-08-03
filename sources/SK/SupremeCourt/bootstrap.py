@@ -49,6 +49,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
     level=logging.INFO,
@@ -58,6 +59,10 @@ logger = logging.getLogger("legal-data-hunter.SK.SupremeCourt")
 
 # API Base
 API_BASE = "https://www.nsud.sk/ws"
+
+# PDF attachment host. The API's `subor` field is a relative path
+# (e.g. "a8a/390161.c57da0.pdf") served under /data/att/.
+PDF_BASE = "https://www.nsud.sk/data/att"
 
 # Checkpoint file for resuming across sessions
 CHECKPOINT_FILE = Path(__file__).parent / "checkpoint.json"
@@ -398,6 +403,20 @@ class SupremeCourtScraper(BaseScraper):
 
         # Clean full text
         full_text = self._clean_text(obsah)
+
+        # Fallback: ~5% of decisions ship an empty `obsah` field but publish the
+        # full text as a born-digital PDF in `subor` (issue #1175). Download and
+        # extract the PDF text when the inline body is empty/missing.
+        if len(full_text) < 50 and subor:
+            pdf_url = f"{PDF_BASE}/{subor.lstrip('/')}"
+            try:
+                pdf_text = extract_pdf_markdown(
+                    "SK/SupremeCourt", decision_id or subor, pdf_url=pdf_url
+                )
+                if pdf_text:
+                    full_text = self._clean_text(pdf_text)
+            except Exception as e:
+                logger.warning(f"PDF fallback failed for {decision_id} ({subor}): {e}")
 
         # Build URL
         if cislo:

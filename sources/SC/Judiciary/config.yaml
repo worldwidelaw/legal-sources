@@ -30,8 +30,9 @@ rate_limit:
   burst: 2
 
 api:
-  type: "html_scraping"
+  type: "wp_rest_media"
   base_url: "https://www.judiciary.sc"
+  media_api: "/wp-json/wp/v2/media?mime_type=application/pdf"
   listing_url: "/resources/court-decisions/"
 
 data_model:
@@ -87,7 +88,10 @@ license:
 
 notes: |
   - Full text from judiciary.sc/wp-content/uploads/{year}/{month}/*.pdf
-  - Discovery: per-court tables on the court-decisions page
+  - Discovery: WordPress media REST API (/wp-json/wp/v2/media, ~1,155 PDFs)
+    filtered to date-prefixed judgment PDFs (~108 after dedup); enriched with
+    neutral-citation/keyword metadata from the court-decisions HTML table.
+    Cause lists, court rolls, legislation and articles are excluded.
   - Fields: neutral_citation, case_number, date, court, decision_type, keywords
   - Courts: Court of Appeal, Constitutional Court, Supreme Court (criminal/civil)
   - Official judiciary source; distinct from SeyLII (blocked)

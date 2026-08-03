@@ -1,0 +1,117 @@
+# ===================================================================
+# US/NV-PUC -- Public Utilities Commission of Nevada (PUCN) Orders
+# ===================================================================
+# Full text of Orders issued by the Public Utilities Commission of
+# Nevada (PUCN) adjudicating utility dockets (electric, gas, water,
+# telecommunications, railroad, renewable/clean-energy rate cases,
+# certificate & resource-plan applications, complaints). Each Order is
+# a final or procedural administrative adjudication of a specific
+# docket = case_law. Public domain (US state government edict).
+# Published via the PUCN public document search (puc-onbase.nv.gov,
+# Hyland OnBase Public Access). No auth.
+# ===================================================================
+
+source:
+  id: "US/NV-PUC"
+  country: "US"
+  name: "Public Utilities Commission of Nevada — Orders"
+  url: "https://puc-onbase.nv.gov/"
+  description: |
+    Orders issued by the Public Utilities Commission of Nevada (PUCN)
+    resolving utility rate cases, certificate/approval and integrated-
+    resource-plan applications, complaints, and renewable/clean-energy
+    dockets across the electric, natural-gas, water, telecommunications
+    and railroad industries. Each Order is a final or procedural
+    administrative adjudication of a specific docket (case_law). Full
+    text is produced by OCR of the scanned Order PDFs (Tesseract).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 3
+
+api:
+  type: "json_api"
+  base_url: "https://puc-onbase.nv.gov"
+  endpoints:
+    search: "/api/CustomQuery/KeywordSearch"
+    document: "/api/Document/{document_id}/?ViewerMode=PDF&ForceDownload=true"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "docket_number"
+      description: "NV PUCN docket id, e.g. '25-02016', '23-08015', '04-11033'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "doc_type"
+      description: "Document category (always 'Order')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Order title (docket + date)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "description"
+      description: "Disposition / agenda note from the search listing (e.g. 'GRANTED', 'GRANTED IN PART')"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "text"
+      description: "Full text of the Order (Tesseract OCR of the scanned PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Filing date of the Order (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Nevada)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "PUCN Orders are official state government edicts in the public domain."
+
+notes: |
+  - puc-onbase.nv.gov is a Hyland OnBase Public Access ("OBPA") Angular
+    single-page app backed by a public JSON API under /api. The app
+    config (/obpa-config.json) sets api.url=./api, queryLimit=1000.
+  - The public built-in custom query "PUC - Public Search - Dockets"
+    (QueryID 125) searches the DOCKETS document type by Docket Number
+    and/or Filing Date. POST /api/CustomQuery/KeywordSearch with
+    {QueryID:125, Keywords:[], FromDate, ToDate (M/D/YYYY), QueryLimit}
+    returns {Data:[{ID, Name, DisplayColumnValues:[Docket Number,
+    Category, Filing Date, Description]}]}. Keep rows whose Category ==
+    "ORDER".
+  - fetch_all() walks the corpus one month at a time (newest first) back
+    to the ~2002 floor (Orders present ~2002-present, ~30/month; a month
+    returns <=~700 docket docs, well under the 1000 limit, so no
+    truncation and no paging needed).
+  - normalize() downloads each Order PDF from
+    /api/Document/{urlencoded-ID}/?ViewerMode=PDF&ForceDownload=true
+    (public, no auth). PUCN Order PDFs are scanned images with no
+    born-digital text layer, so full text is produced by rasterizing
+    each page (fitz/PyMuPDF) and running Tesseract OCR.
+  - The OnBase document ID is an opaque per-document handle; the stable
+    _id is US/NV-PUC/{docket}-{sha1(Name)[:12]}.

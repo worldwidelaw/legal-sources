@@ -1,0 +1,45 @@
+fetch:
+  base_url: https://www.workplacerelations.ie
+  listing: /en/search/?query=&decisions=1&pageNumber={page}
+  case_pattern: /en/cases/{year}/{month}/{ref}.html
+  method: html_scrape
+  per_page: 10
+  rate_limit:
+    delay_seconds: 1.5
+license:
+  name: "PSI Licence / CC BY 4.0"
+  url: "https://www.gov.ie/en/help/re-use-of-public-sector-information/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Irish public sector information; WRC/Labour Court decisions are public quasi-judicial edicts."
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: reference
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: url
+    required: true
+    type: string
+source:
+  auth: none
+  country: IE
+  data_types:
+  - case_law
+  id: IE/WRC
+  license: cc-by-4.0
+  name: Workplace Relations Commission (WRC) — Adjudication & Labour Court Decisions
+  url: https://www.workplacerelations.ie/en/search/?decisions=1

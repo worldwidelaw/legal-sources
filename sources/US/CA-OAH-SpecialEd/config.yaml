@@ -1,0 +1,125 @@
+# ===================================================================
+# US/CA-OAH-SpecialEd -- California Office of Administrative Hearings
+#   Special Education Division — Decisions & Orders
+# ===================================================================
+# Decisions issued by Administrative Law Judges of the California Office
+# of Administrative Hearings (OAH), Special Education Division. OAH is
+# California's central, independent tribunal; its Special Education
+# Division adjudicates special-education due-process disputes between a
+# parent/student and a school district (LEA) under the IDEA and the
+# California Education Code. Each Decision resolves a specific contested
+# case = case_law. The decision library is a Sitecore media folder
+# browsed at dgs.ca.gov/OAH/.../Decisions and paginated by a public
+# MediaSearch API that returns server-rendered HTML fragments; each
+# decision is a born-digital text-layer PDF at /-/media/{guid}.pdf.
+# No CAPTCHA, no auth. Public domain California state government works
+# (government edicts).
+# ===================================================================
+
+source:
+  id: "US/CA-OAH-SpecialEd"
+  country: "US"
+  name: "California Office of Administrative Hearings — Special Education Decisions"
+  url: "https://www.dgs.ca.gov/OAH/Case-Types/Special-Education/Services/Decisions"
+  description: |
+    Special Education due-process Decisions and Orders of the California
+    Office of Administrative Hearings (OAH), Special Education Division.
+    OAH is California's central independent tribunal; its Special
+    Education Division hears disputes between parents/students and school
+    districts under the IDEA and California Education Code, and an ALJ
+    issues a Decision resolving each contested case = case_law.
+    Enumerated from the Sitecore MediaSearch API (server-rendered HTML
+    fragments, 10 results/page) → born-digital text-layer PDFs at
+    /-/media/{guid}.pdf, extracted via common.pdf_extract. No CAPTCHA,
+    no auth. ~1,925 decisions indexed.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.dgs.ca.gov"
+  endpoints:
+    search: "/api/sitecore/MediaSearch/GetSearchResults?page={page}&folderPath={folder}&sortBy=date_desc"
+    document: "/-/media/{guid}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "guid"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CA-OAH-SpecialEd/{media-guid})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "OAH case number (e.g. '2026010984'); first of case_numbers"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "parties"
+      description: "Caption parties (e.g. 'DISTRICT v. PARENTS ON BEHALF OF STUDENT')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (OAH case number + parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the OAH Special Education Decision (PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the body; falls back to listing Document Date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — California state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the California Office of Administrative Hearings are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Enumeration: the decision list is paginated client-side by a Sitecore
+    MediaSearch API. The on-page pagination links use the
+    /sitecore/shell/api/sitecore/MediaSearch/GetSearchResults prefix,
+    which IIS 401-blocks for external clients; the equivalent public
+    /api/sitecore/MediaSearch/GetSearchResults prefix returns the same
+    HTML fragment and is used here (requires the X-Requested-With:
+    XMLHttpRequest header + a Referer). folderPath =
+    "/sitecore/media library/Divisions/OAH/Special Education/SE Decisions".
+  - ~1,925 decisions, 10 per page (page 0..~192). A zero-row page is
+    retried up to 3x (transient empty fragments occur) before the crawl
+    stops, so no page of 10 decisions is silently dropped.
+  - Each result row exposes the PDF url, a result-title with the OAH case
+    number(s), and a listing "Document Date". Documents are born-digital
+    text-layer PDFs; text is extracted via common.pdf_extract (no OCR).
+    A <200-char guard skips any empty/non-PDF response.
+  - date prefers the first real "Month D, YYYY" in the decision body
+    (typically the cover decision date), falling back to the listing
+    Document Date.
+  - Sibling OAH folders on the same Sitecore media host (same MediaSearch
+    mechanism) are easy extensions: General Jurisdiction decisions and
+    the DDS (Lanterman Act) decisions folder.
+  - Public domain California state government data.

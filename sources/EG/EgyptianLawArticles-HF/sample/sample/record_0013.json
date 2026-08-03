@@ -1,0 +1,13 @@
+{
+  "_id": "EG/EgyptianLawArticles-HF:art-١٣",
+  "_source": "EG/EgyptianLawArticles-HF",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-09T06:19:56.726917+00:00",
+  "title": "Egyptian Civil Code — Article ١٣",
+  "text": "(۱) يسري قانون الدولة التي ينتمي إليها الزوج وقت انعقاد الزواج علي\nالآثار التي يرتبها عقد الزواج بما في ذلك من أثر بالنسبة إلي المال.\n(٢) أما الطلاق ويسري علي التطليق والانفصال قانون الدولة التي ينتمي\nإليها الزوج وقت الدعوى.\n\n--- English Translation ---\n\nArticle 13\nThe effects of marriage, including its effects upon the\nproperty of the spouses, are regulated by the law of the\ncountry to which the husband belongs at the time of\nconclusion of the marriage. Repudiation of marriage is\ngoverned by the law of the country to which the\nhusband belongs at the time of repudiation, whereas\ndivorce and separation are governed by the law of the\ncountry to which the husband belongs at the time of the\ncommencement of the legal proceedings.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/TawasulAI/egyptian-law-articles",
+  "article_number": "١٣",
+  "language": "ar",
+  "jurisdiction": "EG"
+}

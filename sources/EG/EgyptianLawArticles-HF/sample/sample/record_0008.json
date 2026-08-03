@@ -1,0 +1,13 @@
+{
+  "_id": "EG/EgyptianLawArticles-HF:art-٨",
+  "_source": "EG/EgyptianLawArticles-HF",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-09T06:19:56.725286+00:00",
+  "title": "Egyptian Civil Code — Article ٨",
+  "text": "(۱) إذا قرر النص الجديد مدة التقادم أقصر مما قرره النص القديم سرت\nالمدة الجديدة من وقت العمل بالنص الجديد ولو كانت المدة القديمة قد بدأت\nقبل ذلك.\n(٢) أما إذا كان الباقي من المدة التي نص عليها القانون القديم أقصر من\nالمدة التي قررها النص الجديد فإن التقادم يتم بانقضاء هذا الباقي.\n\n--- English Translation ---\n\nWhen the new law provides for a period of prescription\nshorter than the period provided for in the former law,\nthe new period will apply from the date the new law\ncame into force, even if the old period of prescription\nhas already commenced to run.\nIf, however, the remaining period still to run under the\nformer law is shorter than that fixed by the new law, the\nprescription shall be completed upon the expiry of such\nremaining period.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/TawasulAI/egyptian-law-articles",
+  "article_number": "٨",
+  "language": "ar",
+  "jurisdiction": "EG"
+}

@@ -1,0 +1,63 @@
+source:
+  id: CA/CNSC
+  name: Canadian Nuclear Safety Commission — Records of Decision
+  country: CA
+  url: https://www.cnsc-ccsn.gc.ca/eng/the-commission/hearings-meetings/search-hearing-documents/
+  description: >
+    Records of Decision issued by the Canadian Nuclear Safety Commission
+    (CNSC), Canada's independent quasi-judicial nuclear regulator/tribunal.
+    Each Record of Decision contains the Commission's reasons on licensing
+    hearings, confidentiality rulings and other adjudicative matters.
+    The document list is enumerated from the CNSC "Search hearing documents"
+    index (rows tagged document-type "Decision"); full text is extracted
+    from the linked PDFs served by api.cnsc-ccsn.gc.ca.
+
+data_model:
+  types:
+    - case_law
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: reference
+      type: string
+      required: false
+    - name: applicant
+      type: string
+      required: false
+    - name: pdf_url
+      type: string
+      required: false
+
+license:
+  name: "Open Government Licence – Canada"
+  url: "https://open.canada.ca/en/open-government-licence-canada"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Government of Canada Crown material published under OGL-Canada."
+
+schedule:
+  full_refresh: monthly
+  update_check: weekly

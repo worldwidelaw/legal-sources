@@ -1,0 +1,78 @@
+# UK/NMC — Nursing and Midwifery Council — Fitness to Practise outcomes.
+#
+# Source: Nursing and Midwifery Council (NMC), the UK statutory regulator for
+#         ~800,000 nurses, midwives and nursing associates.
+# URL: https://www.nmc.org.uk/concerns-nurses-midwives/hearings/hearings-sanctions/
+# Data type: case_law  (UK statutory professional-regulator adjudications —
+#            distinct from UK/GMC doctors, UK/SDT solicitors, UK/BTAS barristers,
+#            UK/HCPTS health & care professions, UK/SocialWorkEngland).
+# Auth: none
+#
+# The NMC's Fitness to Practise Committee and Investigating Committee sit under
+# the Nursing and Midwifery Order 2001 and the NMC (Fitness to Practise) Rules
+# 2004. Each concluded hearing/meeting publishes a "reasons" determination as a
+# born-digital PDF under /globalassets/sitedocuments/ftpoutcomes/{year}/
+# {month-year}/reasons-{name}-{type}-{PIN}-{YYYYMMDD}.pdf: a structured header
+# (committee / hearing type / dates / registrant name / NMC PIN / register part /
+# location / panel), the charges, the reasoned determination and the outcome
+# block (facts proved, fitness to practise impaired?, sanction, interim order).
+# The PDFs are indexed from monthly listing pages hearings-{month}-{year}/. The
+# NMC keeps a rolling window of the most recent months online (older monthly
+# pages are removed), so one run captures ~250 determinations across ~4 months
+# and re-runs accumulate the record (pipeline dedups on _id = the PDF stem).
+# Born-digital text via PyMuPDF, no OCR. nmc.org.uk is excluded from the Wayback
+# Machine so historical enumeration relies on the live rolling window.
+#
+# Total: ~250 full-text determinations in the live window, growing ~40-100/month.
+
+source:
+  id: UK/NMC
+  name: Nursing and Midwifery Council (NMC) — Fitness to Practise Outcomes
+  country: UK
+  data_types:
+    - case_law
+  url: https://www.nmc.org.uk/concerns-nurses-midwives/hearings/hearings-sanctions/
+  language: en
+  auth: none
+  license: custom-terms
+
+license:
+  name: "NMC website terms (no explicit open licence stated)"
+  url: "https://www.nmc.org.uk/terms-and-conditions/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    NMC fitness-to-practise determinations are public professional-regulator
+    adjudication records published under the NMC's publication policy. The site
+    states no explicit open licence (NMC/Crown copyright applies to the
+    underlying records), so commercial re-use is conservatively flagged per
+    project policy, consistent with the sibling UK professional-regulator
+    tribunal sources (UK/GMC, UK/SDT, UK/BTAS, UK/HCPTS).
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: url
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - registrant
+    - registration_number
+    - hearing_type
+    - sanction
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.5
+  estimated_total: 250
+  sample_count: 15

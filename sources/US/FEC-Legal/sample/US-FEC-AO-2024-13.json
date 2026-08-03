@@ -1,0 +1,37 @@
+{
+  "_id": "US-FEC-AO-2024-13",
+  "_source": "US/FEC-Legal",
+  "_type": "doctrine",
+  "_fetched_at": "2026-07-05T19:25:42.331592+00:00",
+  "title": "FEC Advisory Opinion 2024-13: DSCC, Montanans for Tester, and Gallego for Arizona",
+  "text": "FEDERAL ELECTION COMMISSION\nWashington, DC 20463\nOctober 10, 2024\nCERTIFIED MAIL\nRETURN RECEIPT REQUESTED\nJacquelyn Lopez, Esq.\nJonathan Peterson, Esq.\nEmma Anspach, Esq.\nElias Law Group\n250 Massachusetts Ave NW, Suite 400\nWashington, DC 20001\nRE: Advisory Opinion Request 2024-13\nDear Ms. Lopez, Mr. Peterson, and Ms. Anspach:\nThis letter responds to your letter received on September 18, 2024, requesting an\nadvisory opinion on behalf of the Democratic Senatorial Campaign Committee (“DSCC”),\nMontanans for Tester, and Gallego for Arizona. The purpose of this letter is to inform you that\nthe Commission has concluded its consideration of your advisory opinion request without issuing\nan advisory opinion.\nThe Commission publicly released two draft advisory opinions and one revised draft\nadvisory opinion in response to your request. The drafts were identified as Agenda Document\nNos. 24-42-A and 24-42-B (released on October 3, 2024), and Agenda Document No. 24-42-B1\n(released on October 4, 2024). These agenda documents are available on the Commission’s\nwebsite, at www.fec.gov.\nAt its Open Meeting of October 10, 2024, the Commission considered but did not\napprove any of the draft advisory opinions. The Commission voted 3-3 on Agenda Document\nNos. 24-42-A and 24-42-B1. The affirmative vote of four members of the Commission is\nrequired to render an advisory opinion under the Federal Election Campaign Act. See 52 U.S.C\n§§ 30106(c), 30107(a)(7); see also 11 C.F.R. § 112.4(a). Thus, the Commission was unable to\nrender an opinion in this matter.\n\nJacquelyn Lopez, Esq.\nJonathan Peterson, Esq.\nEmma Anspach, Esq.\nOctober 10, 2024\nPage 2\nIf you have any questions, please contact Joanna Waldstreicher or Luis Lipchak,\nAttorneys, or Amy Rothstein, Assistant General Counsel, at 202/694-1650.\nSincerely,\nNeven Stipanovic\nAssociate General Counsel",
+  "date": "2024-10-10",
+  "url": "https://www.fec.gov/data/legal/advisory-opinions/2024-13/",
+  "matter_type": "advisory_opinion",
+  "ao_number": "2024-13",
+  "ao_year": 2024,
+  "status": "Final",
+  "summary": "Payment of costs for television advertisements. (Commission did not reach an agreement, so no AO was issued.)",
+  "requestor_names": [
+    "DSCC",
+    "Gallego for Arizona",
+    "Montanans for Tester"
+  ],
+  "statutory_citations": [
+    {
+      "section": "30106",
+      "title": 52
+    },
+    {
+      "section": "30107",
+      "title": 52
+    }
+  ],
+  "regulatory_citations": [
+    {
+      "part": 112,
+      "section": 4,
+      "title": 11
+    }
+  ]
+}

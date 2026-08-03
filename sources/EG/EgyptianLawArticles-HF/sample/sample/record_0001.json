@@ -1,0 +1,13 @@
+{
+  "_id": "EG/EgyptianLawArticles-HF:art-2",
+  "_source": "EG/EgyptianLawArticles-HF",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-09T06:19:56.722675+00:00",
+  "title": "Egyptian Civil Code — Article 2",
+  "text": "لا يجوز إلغاء نص تشريعي إلا بتشريع لاحق ينص صراحة على هذا\nالإلغاء، أو يشتمل على نص يتعارض مع نص التشريع القديم ، أو ينظم من\nجديد الموضوع الذي سبق أن قرر قواعده ذلك التشريع.\n\n--- English Translation ---\n\nA provision of a law can only be repealed by a\nsubsequent law expressly providing for such repeal, or\ncontaining a provision inconsistent with a provision of\nthe former law or regulating anew a matter previously\nregulated by a former law.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/TawasulAI/egyptian-law-articles",
+  "article_number": "2",
+  "language": "ar",
+  "jurisdiction": "EG"
+}

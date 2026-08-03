@@ -1,0 +1,17 @@
+{
+  "_id": "BR-TJAL-0801729-70.2018.8.02.0000",
+  "_source": "BR/BrazilianCourtDecisionsHF",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-25T15:43:32.966154+00:00",
+  "title": "PROCESSUAL CIVIL. EMBARGOS DE DECLARAÇÃO EM AGRAVO DE INSTRUMENTO. ALEGAÇÃO DE OMISSÃO NÃO ACOLHIDA. TENTATIVA DE REDISCUSSÃO DA MATÉRIA POR MEIO DOS...",
+  "text": "PROCESSUAL CIVIL. EMBARGOS DE DECLARAÇÃO EM AGRAVO DE INSTRUMENTO. ALEGAÇÃO DE OMISSÃO NÃO ACOLHIDA. TENTATIVA DE REDISCUSSÃO DA MATÉRIA POR MEIO DOS ACLARATÓRIOS. VIA INADEQUADA. FIM DIVERSO DAS HIPÓTESES PREVISTAS NO ARTIGO 1.022 DO CPC/2015. ACÓRDÃO MANTIDO NA ÍNTEGRA. - Inexistência dos vícios previstos no art. 1.022 do CPC. Apesar de a embargante afirmar que há omissões no acórdão, não as aponta. Apenas arrola dispositivos legais, argumentos genéricos sem qualquer fundamentação, o que é insuficiente. RECURSO CONHECIDO E REJEITADO. DECISÃO UNÂNIME.\n\nPROCESSUAL CIVIL. EMBARGOS DE DECLARAÇÃO EM AGRAVO DE INSTRUMENTO. ALEGAÇÃO DE OMISSÃO NÃO ACOLHIDA. TENTATIVA DE REDISCUSSÃO DA MATÉRIA POR MEIO DOS ACLARATÓRIOS. VIA INADEQUADA. FIM DIVERSO DAS HIPÓTESES PREVISTAS NO ARTIGO 1022 DO CODIGO DE PROCESSO CIVIL/2015. ACÓRDÃO MANTIDO NA ÍNTEGRA. - Inexistência dos vícios previstos no ARTIGO 1022 do CODIGO DE PROCESSO CIVIL. Apesar de a embargante afirmar que há omissões no acórdão, não as aponta. Apenas arrola dispositivos legais, argumentos genéricos sem qualquer fundamentação, o que é insuficiente.",
+  "date": "2019-02-25",
+  "url": "https://huggingface.co/datasets/joelniklaus/brazilian_court_decisions",
+  "process_number": "0801729-70.2018.8.02.0000",
+  "orgao_julgador": "2ª Câmara Cível",
+  "judge_relator": "Des. Pedro Augusto Mendonça de Araújo",
+  "judgment_text": "RECURSO CONHECIDO E REJEITADO",
+  "judgment_label": "no",
+  "unanimity_text": "DECISÃO UNÂNIME",
+  "unanimity_label": "unanimity"
+}

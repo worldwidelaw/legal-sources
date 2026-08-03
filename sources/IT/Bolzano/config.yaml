@@ -1,0 +1,55 @@
+source:
+  id: IT/Bolzano
+  name: South Tyrol Provincial Legislation (LexBrowser Bolzano/Bozen)
+  country: IT
+  url: https://lexbrowser.provinz.bz.it/
+  data_types:
+    - legislation
+  auth: none
+  description: >
+    Consolidated provincial legislation of the Autonomous Province of
+    Bolzano/Südtirol (Provincia autonoma di Bolzano - Alto Adige) from the
+    official LexBrowser system. Covers provincial laws (leggi provinciali),
+    decrees of the President (decreti del Presidente della Provincia) and
+    regulations (regolamenti) from 1946 to present. Enumerated via the
+    chronological index /chrono/it/{YYYY}/; full consolidated text extracted
+    per act from the /doc/it/{docId}/ page (documentoesteso container).
+    A per-IP request-queue throttle is handled with a warmed session and
+    polite meta-refresh polling.
+
+fetch:
+  max_retries: 3
+  rate_limit: 1.5
+  timeout: 60
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: law_number
+      type: string
+      required: false
+
+license:
+  name: "CC0 1.0 / Art. 5 L. 633/1941 (official acts, not copyright-protected)"
+  url: "https://creativecommons.org/publicdomain/zero/1.0/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    LexBrowser publishes the official consolidated legislation of the
+    Autonomous Province of Bolzano/Südtirol. Under Art. 5 of the Italian
+    Copyright Law (Legge 22 aprile 1941, n. 633) official acts of the State and
+    public administrations are not protected by copyright; the texts are public
+    informational content with no access restriction or authentication.

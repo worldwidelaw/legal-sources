@@ -1,0 +1,18 @@
+{
+  "_id": "US/WA-PERC/decisions-175691",
+  "_source": "US/WA-PERC",
+  "_type": "case_law",
+  "_fetched_at": "2026-07-03T10:30:15.651825+00:00",
+  "item_id": "175691",
+  "collection": "DECISIONS",
+  "case_number": "563-E-76",
+  "decision_maker": "Executive Director",
+  "case_type": "Certification",
+  "statute": "PECB - RCW 41.56",
+  "issuer": "Washington State Public Employment Relations Commission (PERC)",
+  "title": "City of Seattle, Decision 141-A (PECB, 1976)",
+  "text": "City\nof Seattle , Decision 0141-A\n\nCase #   00563-E-76-0108           Decision #   0141-A\n\nEmployer   City\nof Seattle\n\nPetitioner   IFPTE, Local 17\n\nDate Issued   12/23/1976\nMethod   Election\n\nNumber of Eligible\nVoters   659\n\nINCLUDED : ALL CLERICAL EMPLOYEES\nCLASSIFIED AS: OFFICE AIDE; OFFICE ASSISTANT; ADMINISTRATIVE SUPPORT ASSISTANT;\nADMINISTRATIVE SPECIALIST I, II & III; ACCOUNTING SUPPORT TECHNICIAN;\nACCOUNTING TECHNICIAN I, II & III: IN THE FOLLOWING DEPARTMENTS OF THE CITY\nOF SEATTLE, WASHINGTON: BUILDING, COMMUNITY DEVELOPMENT, ENGINEERING, FIRE,\nLIGHTING, GENERAL SERVICES, PARKS & RECREATION, HUMAN RESOURCES, WATER,\nLICENSES & CONSUMER AFFAIRS, BOARD OF PUBLIC WORKS, PUBLIC HEALTH, SEATTLE\nCENTER.\n\nEXCLUDED :\nCLERICAL EMPLOYEES OF ALL OTHER CITY OF SEATTLE\nDEPARTMENTS.\n\nIFPTE, LOCAL 17 CERTIFIED\n\nYou are being directed to the most recent version of the statute which may not be the version considered at the time of the judgment.\n\nContinue\n\nDo not display this message anymore\n\nvar jQueryDecisia = jQuery;\n\n/* */\n\nvar _paq = _paq || [];\n_paq.push([\"trackPageView\"]);\n_paq.push([\"enableLinkTracking\"]);\n_paq.push(['setSecureCookie', true]);\n_paq.push(['setDownloadClasses', \"matomo_download\"]);\n(function()\n{ var u=((\"https:\" == document.location.protocol) ? \"https\" : \"http\") + \"://piwik.lexum.com/\"; _paq.push([\"setTrackerUrl\", u+\"piwik.php\"]); _paq.push([\"setSiteId\", \"49\"]); var d=document, g=d.createElement(\"script\"), s=d.getElementsByTagName(\"script\")[0]; g.type=\"text/javascript\"; g.defer=true; g.async=true; g.src=u+\"piwik.js\"; s.parentNode.insertBefore(g,s); }\n)();\n\nwindow.modalClose = \"Close\";",
+  "url": "https://decisions.perc.wa.gov/waperc/decisions/en/item/175691/index.do",
+  "date": "1976-12-23",
+  "jurisdiction": "US-WA"
+}

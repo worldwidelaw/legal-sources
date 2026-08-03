@@ -1,0 +1,120 @@
+# ===================================================================
+# US/CA-PERB-Digest -- California PERB Decisional-Law Digest (Headnotes)
+# ===================================================================
+# The official decisional-law digest of the California Public Employment
+# Relations Board (PERB). PERB maintains an official annotated digest of
+# its own case law: each Board Decision is broken into one or more
+# headnotes, and every headnote states a discrete legal principle
+# established by that decision, classified under a hierarchical topic
+# code (e.g. 1000.02163 – Work Rules, under 1000.00000 – SCOPE OF
+# REPRESENTATION). This official state-authored digest of public-sector
+# labor-law principles = doctrine. Public domain California
+# state-government works (government edicts).
+#
+# perb.ca.gov is WordPress; headnotes are the custom post type
+# `decision-headnote` (~15,019 posts), enumerable via the public WP
+# REST API. The headnote text is server-rendered on each page (ACF empty
+# over REST), so each page is fetched and the topic classification +
+# holding paragraph are extracted. No CAPTCHA, no auth.
+# ===================================================================
+
+source:
+  id: "US/CA-PERB-Digest"
+  country: "US"
+  name: "California PERB — Decisional-Law Digest (Headnotes)"
+  url: "https://perb.ca.gov/decisions/decisional-law-digest/"
+  description: |
+    The official decisional-law digest of the California Public
+    Employment Relations Board (PERB). Each headnote states a discrete
+    legal principle established by a PERB Board Decision, classified
+    under a hierarchical topic code (e.g. 1000.02163 – Work Rules).
+    This state-authored digest of public-sector labor-law principles =
+    doctrine. Enumerated from the WordPress `decision-headnote` custom
+    post type (~15,019 posts) via the public WP REST API; the headnote
+    text (topic classification + holding statement) is extracted from
+    each server-rendered headnote page. No CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "wp_rest_posttype"
+  base_url: "https://perb.ca.gov"
+  endpoints:
+    post_list: "/wp-json/wp/v2/decision-headnote?per_page=100&page={page}"
+    headnote_page: "{post_link}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "doc_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CA-PERB-Digest/{headnote-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "decision_number"
+      description: "PERB Decision number the headnote is drawn from (e.g. '3017E')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "topic_code"
+      description: "Hierarchical digest topic code (e.g. '1000.02163')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "topic_name"
+      description: "Digest topic name (e.g. 'Work Rules')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Headnote title ('Headnote for {decision}, {code} – {topic}')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full headnote text: topic classification + the holding statement"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Digest-entry post date (ISO 8601); decision_number is the case anchor"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — California state administrative digest)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "The decisional-law digest of the California Public Employment Relations Board is an official state-government work in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Enumeration: /wp-json/wp/v2/decision-headnote?per_page=100&page=N
+    (~15,019 posts). The WP title encodes the decision number, topic code,
+    and topic name ("Headnote for 3017E, 1000.02163 – Work Rules").
+  - The headnote's substantive text is server-rendered on its page (ACF
+    fields are empty over REST). Each page is fetched and the topic
+    classification (<strong> NNNN.NNN lines) + the holding <p> are
+    extracted from the <article>; the two navigation <p>s ("View all
+    topics …", "Full Decision Text …") carry <a> links and are excluded.
+  - Sibling of US/CA-PERB (Board Decisions) and US/CA-PERB-FactFinding.
+    This digest is the official topical index/annotation of PERB precedent.
+  - Public domain California state government data.

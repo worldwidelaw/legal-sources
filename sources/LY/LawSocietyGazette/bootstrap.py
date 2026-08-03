@@ -41,6 +41,58 @@ HEADERS = {
 
 RATE_LIMIT_DELAY = 1.5
 
+# Adaptive throttle shared by every request. lawsociety.ly sits behind
+# Cloudflare and hard-throttles bulk crawls with HTTP 429; when that happens we
+# raise the steady-state pace so subsequent requests self-slow, and relax it
+# back toward the floor after sustained success.
+_ADAPTIVE = {"delay": RATE_LIMIT_DELAY}
+_MAX_DELAY = 12.0
+
+
+def _http_get(session: requests.Session, url: str, timeout: int = 60,
+              max_retries: int = 6) -> Optional[requests.Response]:
+    """GET with 429/5xx backoff (honors Retry-After) and an adaptive pace.
+
+    Returns the successful Response, or None if every retry was throttled/5xx.
+    Connection-level errors are retried and re-raised only if never recovered.
+
+    This is the fix for issue #1165: the per-document fetch previously skipped
+    every 429-throttled document with no retry, truncating the ~20,700-doc
+    corpus to ~1,200. Routing all fetches through here means a throttled request
+    is backed off and retried instead of silently dropped.
+    """
+    last_exc = None
+    for attempt in range(max_retries):
+        time.sleep(_ADAPTIVE["delay"])  # pace every request
+        try:
+            resp = session.get(url, headers=HEADERS, timeout=timeout)
+        except requests.RequestException as e:
+            last_exc = e
+            time.sleep(min(60.0, RATE_LIMIT_DELAY * (2 ** attempt)))
+            continue
+        if resp.status_code == 429 or resp.status_code >= 500:
+            ra = resp.headers.get("Retry-After")
+            wait = None
+            if ra:
+                try:
+                    wait = float(ra)
+                except ValueError:
+                    wait = None
+            if wait is None:
+                wait = min(120.0, RATE_LIMIT_DELAY * (2 ** (attempt + 1)))
+            _ADAPTIVE["delay"] = min(_MAX_DELAY, _ADAPTIVE["delay"] * 1.5)
+            print(f"  HTTP {resp.status_code} on ...{url[-45:]} — backoff "
+                  f"{wait:.1f}s (pace now {_ADAPTIVE['delay']:.1f}s), "
+                  f"attempt {attempt + 1}/{max_retries}")
+            time.sleep(wait)
+            continue
+        # Success — gently relax the pace back toward the floor.
+        _ADAPTIVE["delay"] = max(RATE_LIMIT_DELAY, _ADAPTIVE["delay"] * 0.95)
+        return resp
+    if last_exc is not None:
+        raise last_exc
+    return None
+
 # Map Arabic type labels to normalized types
 TYPE_MAP = {
     "القوانين": "legislation",
@@ -86,10 +138,31 @@ def extract_links_from_list_page(html: str) -> list[str]:
     for link in links:
         if "/page/" in link:
             continue
+        # Skip comment-pagination artifacts like ".../{slug}/2/" whose last
+        # path segment is purely numeric — they are sub-pages of a document,
+        # not distinct documents.
+        last_seg = link.rstrip("/").split("/")[-1]
+        if last_seg.isdigit():
+            continue
         if link not in seen:
             seen.add(link)
             unique.append(link)
     return unique
+
+
+def extract_total_count(html: str) -> Optional[int]:
+    """Parse the total result count from the archive header.
+
+    The archive renders e.g. "عرض 1–20 من 20644 نتيجة" (showing 1-20 of 20644
+    results). Returns the total number of legislation documents, or None.
+    """
+    m = re.search(r"من\s*([\d,]+)\s*نتيجة", html)
+    if m:
+        try:
+            return int(m.group(1).replace(",", ""))
+        except ValueError:
+            return None
+    return None
 
 
 def extract_text_from_page(html: str) -> dict:
@@ -204,35 +277,92 @@ def normalize(url: str, data: dict) -> Optional[dict]:
     }
 
 
-def get_list_page_urls(session: requests.Session, max_pages: int = 1000) -> Generator[str, None, None]:
-    """Iterate through list pages and yield individual legislation URLs."""
-    page = 1
-    while page <= max_pages:
-        if page == 1:
-            url = LIST_URL
-        else:
-            url = f"{LIST_URL}page/{page}/"
+def _fetch_page_links(session: requests.Session, page: int, retries: int = 4) -> list[str]:
+    """Fetch one archive page and return its legislation URLs.
 
+    The archive paginates via the ``?page=N`` query parameter (NOT the WordPress
+    ``/page/N/`` path, which is broken and always returns the 20 most-recent
+    documents — that was the root cause of issue #1126: the same ~20 URLs were
+    re-fetched thousands of times, so ingest only ever saw ~23 unique records).
+
+    The site sits behind Cloudflare and intermittently serves an empty cache
+    variant, so an empty response is retried before being reported as empty.
+    """
+    url = LIST_URL if page == 1 else f"{LIST_URL}?page={page}"
+    for attempt in range(retries):
         try:
-            resp = session.get(url, headers=HEADERS, timeout=60)
-            if resp.status_code == 404:
-                print(f"  Page {page}: 404 — end of pagination")
-                break
-            resp.raise_for_status()
+            resp = _http_get(session, url)
         except requests.RequestException as e:
-            print(f"  Page {page}: ERROR {e}")
-            break
-
+            print(f"  Page {page}: request error ({e}) — attempt {attempt + 1}/{retries}")
+            continue
+        if resp is None:
+            # Exhausted on 429/5xx inside _http_get — treat as a hard throttle
+            # and try again (the adaptive pace has already been raised).
+            print(f"  Page {page}: throttled (429/5xx) — attempt {attempt + 1}/{retries}")
+            continue
         links = extract_links_from_list_page(resp.text)
-        if not links:
-            print(f"  Page {page}: no links found — end of pagination")
-            break
+        if links:
+            return links
+        # Empty response: could be a flaky Cloudflare cache miss — retry.
+        time.sleep(RATE_LIMIT_DELAY * (attempt + 1))
+    return []
 
-        print(f"  Page {page}: {len(links)} links")
-        for link in links:
+
+def get_list_page_urls(session: requests.Session, max_pages: int = 1200) -> Generator[str, None, None]:
+    """Iterate through archive pages and yield individual legislation URLs.
+
+    Pages are bounded by the archive's advertised total result count (parsed
+    from page 1) rather than by "first empty page", because flaky empty pages
+    are common and must not be mistaken for end-of-pagination. Yielded URLs are
+    globally de-duplicated so no document is emitted (or re-fetched) twice.
+    """
+    seen: set[str] = set()
+
+    # Fetch page 1 and derive how many pages to walk from the total count.
+    try:
+        resp = _http_get(session, LIST_URL)
+    except requests.RequestException as e:
+        print(f"  Page 1: ERROR {e}")
+        return
+    if resp is None:
+        print("  Page 1: throttled (429/5xx) after retries — aborting")
+        return
+    first_html = resp.text
+
+    total = extract_total_count(first_html)
+    first_links = extract_links_from_list_page(first_html)
+    per_page = len(first_links) or 20
+    if total:
+        last_page = min(max_pages, (total + per_page - 1) // per_page)
+        print(f"  Archive reports {total} documents → walking {last_page} pages")
+    else:
+        last_page = max_pages
+        print(f"  Total count not found — walking up to {last_page} pages")
+
+    for link in first_links:
+        if link not in seen:
+            seen.add(link)
             yield link
 
-        page += 1
+    empty_streak = 0
+    for page in range(2, last_page + 1):
+        links = _fetch_page_links(session, page)
+        if not links:
+            empty_streak += 1
+            print(f"  Page {page}: empty after retries ({empty_streak} in a row)")
+            # Only treat a long run of empties past the expected end as the true
+            # end of data; within range, skip and continue.
+            if empty_streak >= 15 and page > last_page - 20:
+                print(f"  Page {page}: sustained empties near end — stopping")
+                break
+            time.sleep(RATE_LIMIT_DELAY)
+            continue
+        empty_streak = 0
+        new = [l for l in links if l not in seen]
+        for link in new:
+            seen.add(link)
+            yield link
+        print(f"  Page {page}: {len(links)} links ({len(new)} new)")
         time.sleep(RATE_LIMIT_DELAY)
 
 
@@ -240,7 +370,7 @@ def fetch_all(sample: bool = False) -> Generator[dict, None, None]:
     """Fetch all legislation documents with full text."""
     session = requests.Session()
     max_records = 15 if sample else 999999
-    max_pages = 2 if sample else 1000
+    max_pages = 2 if sample else 1200
     count = 0
     skipped = 0
 
@@ -252,10 +382,16 @@ def fetch_all(sample: bool = False) -> Generator[dict, None, None]:
             break
 
         try:
-            resp = session.get(doc_url, headers=HEADERS, timeout=60)
-            resp.raise_for_status()
+            resp = _http_get(session, doc_url)
         except requests.RequestException as e:
             print(f"    ERROR fetching {doc_url}: {e}")
+            skipped += 1
+            continue
+        if resp is None:
+            # Throttled past all retries — do NOT silently drop the document
+            # (that truncation was issue #1165). Surface it as a skip with a
+            # clear reason so a fleet re-run/resume can pick it up.
+            print(f"    THROTTLED (429/5xx after retries), skipping: {doc_url[-60:]}")
             skipped += 1
             continue
 
@@ -270,8 +406,6 @@ def fetch_all(sample: bool = False) -> Generator[dict, None, None]:
         count += 1
         print(f"    [{count}] {record['title'][:70]}  ({len(record['text'])} chars)")
         yield record
-
-        time.sleep(RATE_LIMIT_DELAY)
 
     print(f"\nTotal: {count} records with full text, {skipped} skipped")
 
@@ -297,9 +431,15 @@ def test_connectivity() -> bool:
         return False
 
 
+DATA_DIR = Path(__file__).parent / "data"
+RECORDS_PATH = DATA_DIR / "records.jsonl"
+
+
 def main():
     parser = argparse.ArgumentParser(description="LY/LawSocietyGazette bootstrap")
-    parser.add_argument("command", choices=["bootstrap", "test"], help="Command to run")
+    # bootstrap-fast is the VPS fleet entrypoint; alias it to the full bootstrap
+    # so it streams the whole corpus to data/records.jsonl (not just sample/).
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "test"], help="Command to run")
     parser.add_argument("--sample", action="store_true", help="Fetch only sample records")
     parser.add_argument("--full", action="store_true", help="Full bootstrap")
     args = parser.parse_args()
@@ -308,22 +448,44 @@ def main():
         ok = test_connectivity()
         sys.exit(0 if ok else 1)
 
-    if args.command == "bootstrap":
-        sample_mode = args.sample or not args.full
+    if args.command in ("bootstrap", "bootstrap-fast"):
+        # bootstrap-fast (fleet) and `bootstrap --full` do the full corpus and
+        # stream to data/records.jsonl; plain `bootstrap` stays a sample run.
+        full_mode = args.command == "bootstrap-fast" or args.full
+        sample_mode = not full_mode
+
         SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
 
-        records = []
-        for record in fetch_all(sample=sample_mode):
-            records.append(record)
-            safe_id = re.sub(r"[^\w-]", "_", record["_id"])
-            out_path = SAMPLE_DIR / f"{safe_id}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
+        records_out = None
+        if full_mode:
+            DATA_DIR.mkdir(parents=True, exist_ok=True)
+            records_out = open(RECORDS_PATH, "w", encoding="utf-8")
 
-        print(f"\nSaved {len(records)} records to {SAMPLE_DIR}/")
+        count = 0
+        text_lens = []
+        try:
+            for record in fetch_all(sample=sample_mode):
+                count += 1
+                text_lens.append(len(record["text"]))
+                if records_out is not None:
+                    records_out.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    # Keep the first 15 as committed samples for validation.
+                    if count > 15:
+                        continue
+                safe_id = re.sub(r"[^\w-]", "_", record["_id"])
+                out_path = SAMPLE_DIR / f"{safe_id}.json"
+                with open(out_path, "w", encoding="utf-8") as f:
+                    json.dump(record, f, ensure_ascii=False, indent=2)
+        finally:
+            if records_out is not None:
+                records_out.close()
 
-        if records:
-            text_lens = [len(r["text"]) for r in records]
+        if full_mode:
+            print(f"\nWrote {count} records to {RECORDS_PATH}")
+        else:
+            print(f"\nSaved {count} records to {SAMPLE_DIR}/")
+
+        if count:
             print(f"Text lengths: min={min(text_lens)}, max={max(text_lens)}, avg={sum(text_lens)//len(text_lens)}")
         else:
             print("WARNING: No records fetched!")

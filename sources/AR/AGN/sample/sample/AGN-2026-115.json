@@ -1,0 +1,22 @@
+{
+  "_id": "AGN-2026-115",
+  "_source": "AR/AGN",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-02T20:07:12.106860+00:00",
+  "title": "Accesibilidad a los servicios TICs - Gestión del ENACOM en cuanto a la accesibilidad a los servicios TICs. Período 2024. Ente Nacional de Comunicaciones (ENACOM)",
+  "text": "ALCANCE El presente examen se llevó a cabo conforme a las Normas de Control Externo Gubernamental aprobadas por las Resoluciones AGN 26/2015, 186/2016 y 187/2016, dictadas en ejercicio de las facultades conferidas por la Ley 24.156, artículo 119, inciso d). En el marco del objeto de auditoría, se examinó el Programa para el desarrollo de infraestructura para Internet destinado a villas y asentamientos inscriptos en el RENABAP, con el propósito de evaluar su implementación y resultados, definiéndose los siguientes objetivos de trabajo: 1. Analizar la evaluación y preselección de proyectos y verificar si se ajustan a lo establecido en el Pliego de Bases y Condiciones; 2. Examinar las acciones implementadas en la ejecución y control de los proyectos; 3. Evaluar el impacto del Programa, en aquellos casos en que se encuentran finalizados los proyectos, y verificar la existencia y uso de herramientas que permitan medir su desempeño. A los fines de cumplir con los objetivos del examen, se efectuaron tareas de relevamiento de la organización administrativa y del marco normativo aplicable, consultas a fuentes oficiales y revisión de informes elaborados por el organismo. Asimismo, se realizaron entrevistas y requerimientos de información a personal responsable, encuestas a beneficiarias de ANR y el relevamiento de la totalidad de los expedientes tramitados en el marco del Programa informados por el auditado, con el propósito de obtener evidencia suficiente y adecuada para sustentar las conclusiones del informe. Los procedimientos aplicados se detallan en el Anexo 10.1. El período auditado comprende desde el 1° de enero al 31 de diciembre de 2024.",
+  "date": "2026-04-30",
+  "url": "https://www.agn.gob.ar/Informe-115-2026",
+  "pdf_url": "https://webagnapi.agn.gob.ar/sites/default/files/informes/2026-115-Informe.pdf",
+  "ano": 2026,
+  "resolucion": 115,
+  "actuacion": "491/2024",
+  "fecha_acta": "2026-04-30",
+  "periodo_auditado": "2024-01-01 / 2024-12-31",
+  "organismo_auditado_ids": [
+    "100"
+  ],
+  "tipo_de_auditoria_ids": [
+    "51"
+  ]
+}

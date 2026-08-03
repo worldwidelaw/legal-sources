@@ -1,0 +1,115 @@
+# ===================================================================
+# US/NJ-PERC-Staff -- NJ PERC Director, Hearing Examiner & Appeal Board Decisions
+# ===================================================================
+# Non-Commission adjudications issued under the New Jersey Public
+# Employment Relations Commission (PERC): decisions of the Director of
+# Representation (D.R.), Director of Unfair Practices (C.O.), Hearing
+# Examiners / Hearing Officers (H.E. / H.O.), and the PERC Appeal Board
+# (A.B.D.). Each resolves a specific contested case under the New Jersey
+# Employer-Employee Relations Act (N.J.S.A. 34:13A) = case_law. These
+# complement the Commission's final decisions (source US/NJ-PERC).
+# Public domain New Jersey state-government works (edicts of a quasi-
+# judicial government body).
+#
+# Same Lotus Domino database as US/NJ-PERC
+# (perc.state.nj.us/percdecisions.nsf) but the "Issued Decisions Non
+# PERC" view. The full set (~920 decisions) is returned by a single
+# expanded view request:
+#   /percdecisions.nsf/Issued%20Decisions%20Non%20PERC?OpenView&Count=5000&ExpandView
+# Each row links a decision PDF /Issued Decisions/{UNID}/$File/{name}.pdf;
+# the citation is read from the first line of the decision body and the
+# issued date from the "ISSUED: <Month DD, YYYY>" stamp. Full text is
+# extracted from the PDF (common.pdf_extract). The PDF host requires a
+# browser User-Agent (plain requests get HTTP 403). No CAPTCHA, no auth.
+# ===================================================================
+
+source:
+  id: "US/NJ-PERC-Staff"
+  country: "US"
+  name: "New Jersey PERC — Director, Hearing Examiner & Appeal Board Decisions"
+  url: "https://www.nj.gov/perc/decisions/abd/"
+  description: |
+    Non-Commission adjudications issued under the New Jersey Public
+    Employment Relations Commission (PERC): decisions of the Director of
+    Representation (D.R.), Director of Unfair Practices (C.O.), Hearing
+    Examiners / Hearing Officers (H.E. / H.O.), and the PERC Appeal Board
+    (A.B.D.). Each resolves a specific contested case under the New Jersey
+    Employer-Employee Relations Act = case_law, complementing the
+    Commission's final decisions (US/NJ-PERC). Enumerated from PERC's
+    official Lotus Domino database via the "Issued Decisions Non PERC"
+    view; citation, issued date, and full decision text are read from
+    each PDF attachment. ~920 decisions. No CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.perc.state.nj.us"
+  endpoints:
+    view: "/percdecisions.nsf/Issued%20Decisions%20Non%20PERC?OpenView&Count=5000&ExpandView"
+    decision_pdf: "/percdecisions.nsf/Issued Decisions/{unid}/$File/{name}.pdf?OpenElement"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/NJ-PERC-Staff/{Domino UNID})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Domino document universal id (32-hex)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "citation"
+      description: "Decision citation (e.g. 'D.R. NO. 2018-6', 'A.B.D. NO. 2008-1')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Decision title (the citation)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (PDF extract)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date issued (ISO 8601), from the decision's 'ISSUED:' stamp"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the decision PDF on perc.state.nj.us"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions issued under the New Jersey Public Employment Relations
+    Commission (Director, Hearing Examiner, Hearing Officer, and Appeal
+    Board) are official works of a quasi-judicial New Jersey state
+    government body and are not subject to copyright under the
+    government-edicts doctrine. Free to use, including commercially.

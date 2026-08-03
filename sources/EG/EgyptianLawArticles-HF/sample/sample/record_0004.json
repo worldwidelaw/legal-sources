@@ -1,0 +1,13 @@
+{
+  "_id": "EG/EgyptianLawArticles-HF:art-5",
+  "_source": "EG/EgyptianLawArticles-HF",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-09T06:19:56.723857+00:00",
+  "title": "Egyptian Civil Code — Article 5",
+  "text": "يكون استعمال الحق غير مشروع في الأحوال الآتية :\n(أ) إذا لم يقصد به سوى الإضرار بالغير.\n(ب) إذا كانت المصالح التي يرمي إلى تحقيقها قليلة الأهمية، بحيث لا\nتتناسب البتة مع ما يصيب الغير من ضرر بسببها.\n(ج) إذا كان المصالح التي يرمي إلى تحقيقها غير مشروعة.\n\n--- English Translation ---\n\nThe exercise of a right is considered unlawful in the\nfollowing cases:\na) if the sole aim thereof is to harm another person;\nb) if the benefit it is desired to realize is out of\nproportion to the harm caused thereby to another\nperson;\nc) if the benefit it is desired to realize is unlawful.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/TawasulAI/egyptian-law-articles",
+  "article_number": "5",
+  "language": "ar",
+  "jurisdiction": "EG"
+}

@@ -1,0 +1,103 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — UK Office of the Schools Adjudicator (OSA)
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/SchoolsAdjudicator"
+  country: "UK"
+  name: "Office of the Schools Adjudicator (OSA) — Determinations"
+  url: "https://www.gov.uk/government/organisations/office-of-the-schools-adjudicator"
+  description: |
+    Determinations of the Office of the Schools Adjudicator (OSA), an
+    independent quasi-judicial office established under the School Standards
+    and Framework Act 1998. Adjudicators rule on objections to the admission
+    arrangements of maintained schools and academies in England, on
+    variations to those arrangements, and on school-organisation disputes
+    (e.g. transfer of land). Their determinations are binding on the
+    admission authority concerned.
+    ~2,240 determinations. Discovery via GOV.UK Search API (filter_format=
+    decision + organisation=office-of-the-schools-adjudicator); full text
+    from the born-digital determination PDF attached to each Content Store
+    entry (extracted via the shared PDF extractor).
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+  endpoints:
+    search:
+      path: "/api/search.json"
+      method: "GET"
+      description: "GOV.UK Search API; filter_format=decision + filter_organisations=office-of-the-schools-adjudicator"
+    content:
+      path: "/api/content/{path}"
+      method: "GET"
+      description: "GOV.UK Content Store API; PDF attachment URL under details.attachments"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "content_id"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "content_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "reference"
+      type: "string"
+      role: "classification"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "pdf_url"
+      type: "string"
+      role: "reference"
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Open Government Licence v3.0"
+  url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Crown copyright; GOV.UK content published under OGL v3.0."
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~2,240 Schools Adjudicator determinations (England)
+  - Full text from the born-digital determination PDF (assets.publishing.service.gov.uk),
+    extracted via common.pdf_extract (no OCR needed)
+  - Content Store details.body holds only a short summary; the determination
+    itself is the PDF attachment
+  - Case references parsed where present (ADA / VAR / STP / REF)
+  - No authentication required
+  - Sibling of the GOV.UK finder scrapers UK/ET, UK/RPT, UK/FTT-Tax, UK/TrafficCommissioner

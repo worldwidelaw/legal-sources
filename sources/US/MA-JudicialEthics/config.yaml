@@ -1,0 +1,109 @@
+# ===================================================================
+# US/MA-JudicialEthics -- Massachusetts Committee on Judicial Ethics
+#                         — CJE Opinions
+# ===================================================================
+# Formal "Letter Opinions" issued by the Massachusetts Committee on
+# Judicial Ethics (CJE), a committee of the Massachusetts Supreme
+# Judicial Court that advises judges on the application of the
+# Massachusetts Code of Judicial Conduct = doctrine. Born-digital HTML
+# full text (no OCR, no CAPTCHA, no auth). Public-domain Massachusetts
+# State government works. Distinct from US/MA-EthicsOpinions (the
+# executive Massachusetts State Ethics Commission, EC-COI conflict-of-
+# interest opinions for public employees); this is the JUDICIAL-branch
+# committee advising judges under the Code of Judicial Conduct.
+# ===================================================================
+
+source:
+  id: "US/MA-JudicialEthics"
+  country: "US"
+  name: "Massachusetts Committee on Judicial Ethics — CJE Opinions"
+  url: "https://www.mass.gov/info-details/chronological-index-of-judicial-ethics-opinions"
+  description: |
+    Judicial ethics opinions ("Letter Opinions") of the Massachusetts
+    Committee on Judicial Ethics (CJE), a committee of the Massachusetts
+    Supreme Judicial Court. The Committee advises judges on the
+    application of the Massachusetts Code of Judicial Conduct in response
+    to written inquiries. Each opinion (numbered "YY-N" / "YYYY-N")
+    states the subject, facts and the Committee's advice. Opinions are
+    published as born-digital HTML pages on mass.gov; the full text is
+    extracted directly (no OCR). A minority of opinions were withheld
+    from publication (redacted) and are skipped.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.mass.gov/"
+  endpoints:
+    index: "info-details/chronological-index-of-judicial-ethics-opinions"
+    opinion: "opinion/cje-opinion-no-{number}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/MA-JudicialEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number (e.g. 89-1, 2021-01)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "CJE Opinion No. {number}: {subject}"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (subject, facts, advice), from the born-digital HTML page"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the page's Date field; fallback to the opinion-number year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (Massachusetts State Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Massachusetts judicial ethics opinions are official public records of the Massachusetts Supreme Judicial Court, published on mass.gov for public use with no copyright restriction."
+
+notes: |
+  - Enumeration: GET the Chronological Index and collect every
+    /opinion/cje-opinion-no-... href (~244 opinions, 1989-present).
+  - Full text: each opinion page holds the body in a div.ma__rich-text
+    container (the longest one on the page); a short subject heading and
+    an "issued on MM/DD/YYYY" note precede it, a disclaimer follows. The
+    issue date comes from the page's "Date: MM/DD/YYYY" field (fallback:
+    opinion-number year).
+  - Withheld opinions: a minority were not published (page contains
+    "decided not to publish"); these are skipped (no full text).
+  - mass.gov (Akamai) serves the full server-side HTML only to a plain
+    (non-browser) User-Agent; a browser UA gets a JS shell. All requests
+    use a plain python-requests UA (same inversion as US/MA-EthicsOpinions).
+  - Type: every published document is a written opinion construing the
+    Code of Judicial Conduct = doctrine.

@@ -1,0 +1,122 @@
+# ===================================================================
+# US/HI-EthicsOpinions -- Hawaii State Ethics Commission
+#                         — Advisory Opinions
+# ===================================================================
+# Formal + informal advisory opinions (and resolutions of charge /
+# investigation) of the Hawaii State Ethics Commission (HSEC) issued
+# under the State Ethics Code, Hawai'i Revised Statutes (HRS) chapter
+# 84 — the conflict-of-interest, gifts, financial-disclosure and
+# lobbying provisions. Advisory / informal advisory opinions interpret
+# the ethics code = doctrine; settlements/resolutions of a charge or
+# investigation resolve a specific enforcement matter = case_law.
+# Born-digital full-text PDFs on files.hawaii.gov (OCR fallback for old
+# scans). Public-domain State of Hawaii government works.
+# ===================================================================
+
+source:
+  id: "US/HI-EthicsOpinions"
+  country: "US"
+  name: "Hawaii State Ethics Commission — Advisory Opinions"
+  url: "https://hawaiiethics.my.site.com/public/s/ethics-advice/"
+  description: |
+    Opinions and resolutions of the Hawaii State Ethics Commission
+    (HSEC). Under HRS chapter 84 (the State Ethics Code) the Commission
+    issues formal advisory opinions and informal advisory opinions
+    interpreting the conflict-of-interest, gifts, financial-disclosure
+    and lobbying provisions, and resolutions of charge / investigation
+    that dispose of specific enforcement matters. Records are stored in
+    the Commission's Salesforce Experience Cloud portal
+    (hawaiiethics.my.site.com) as the custom object Ethics_Advice__c;
+    every record links a born-digital opinion PDF on files.hawaii.gov.
+    Opinion numbers are "AO{YYYY}-{N}", "IAO{YYYY}-{NN}",
+    "ROC{YYYY}-{N}", "ROI{YYYY}-{N}".
+
+data_types:
+  - doctrine
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "salesforce_aura"
+  base_url: "https://hawaiiethics.my.site.com"
+  endpoints:
+    sitemap: "/public/s/sitemap-ethics_advice__c-1.xml"
+    aura: "/public/s/sfsites/aura"
+    pdf_host: "https://files.hawaii.gov/ethics/advice/{file}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/HI-EthicsOpinions/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion/resolution number (e.g. AO2020-2, IAO2020-01, ROC2020-4)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "document_type"
+      description: "Advice_Type__c (Advisory Opinion / Informal Advisory Opinion / Settlement of Charge / Settlement of Investigation)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Issuer + type + opinion number"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion, from the born-digital PDF on files.hawaii.gov"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), from Date_Issued__c"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (State of Hawaii Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Opinions and resolutions of the Hawaii State Ethics Commission are official public records of the State of Hawaii, published for public use with no copyright restriction."
+
+notes: |
+  - Enumeration (zero-fetch): the public Salesforce Experience Cloud sitemap
+    https://hawaiiethics.my.site.com/public/s/sitemap-ethics_advice__c-1.xml
+    lists all ~909 Ethics_Advice__c record URLs of the form
+    /public/s/ethics-advice/{18charRecordId}/{slug}.
+  - Metadata + full-text link: the record page is a Salesforce Aura/LWC shell
+    (plain HTTP returns only a "Loading..." skeleton). The record data is read
+    by replaying the Aura getRecord action (DetailController/ACTION$getRecord)
+    against /public/s/sfsites/aura as a guest. The returned Ethics_Advice__c
+    record carries Name, Advice_Type__c, Date_Issued__c, Public_Keywords__c and
+    Advice_URL__c (direct PDF link on files.hawaii.gov). The fwuid + app markup
+    id in the aura.context are parsed live from a record page each run (they
+    rotate when Salesforce redeploys the site).
+  - Full text: download the Advice_URL__c PDF (born-digital text layer; OCR
+    fallback for older scans) and extract via common.pdf_extract.
+  - Type per record: Advisory Opinion / Informal Advisory Opinion = doctrine;
+    Settlement of Charge / Settlement of Investigation = case_law.
+  - COVERAGE: ~909 records (advisory + informal advisory opinions +
+    charge/investigation resolutions) under HRS ch. 84.

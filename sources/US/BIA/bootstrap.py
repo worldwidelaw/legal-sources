@@ -6,14 +6,23 @@ Fetches BIA precedent decisions from justice.gov EOIR volume pages.
 29 volumes spanning decades of immigration law decisions.
 
 Strategy:
-  - GET /eoir/volume-{N} for volumes 27-29 (modern format)
-  - GET /eoir/vll/intdec/nfvol{N}.html for volumes 1-26 (legacy format)
-  - Parse HTML for decision metadata and PDF URLs
-  - Download PDFs and extract full text via pdfplumber
+  - GET /eoir/volume-{N} for volumes 27-29
+  - GET /eoir/precedent-decisions-volume-{N} for volumes 10-26
+    (the old /eoir/vll/intdec/nfvol{N}.html paths now 301-redirect here;
+     volumes 1-9 are print-only and have no online page)
+  - A single row-based table parser handles every volume and recovers the
+    case name, I&N Dec. page, deciding authority (BIA/A.G./R.C./Comm.) and
+    year from the citation cell — the old legacy parser dropped all of these
+    for volumes 10-26 and its <strong>-anchored modern regex missed ~40% of
+    the rows in volumes 27-29.
+  - Download each decision PDF (/d9/YYYY-MM/NNNN.pdf, /media/N/dl?inline, or
+    /eoir/vll/intdec/vol{N}/{ID}.pdf) and extract full text via the shared
+    common.pdf_extract extractor.
 
 Usage:
   python bootstrap.py bootstrap --sample   # ~15 sample decisions
-  python bootstrap.py bootstrap             # Full extraction
+  python bootstrap.py bootstrap             # Full extraction -> data/records.jsonl
+  python bootstrap.py bootstrap-fast        # Alias for full pull (VPS wrapper)
   python bootstrap.py test-api              # Test connectivity
 """
 
@@ -95,38 +104,80 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
         table="case_law",
     ) or ""
 
-def parse_modern_volume(html: str, volume_num: int) -> list:
-    """Parse decisions from modern volume pages (volumes 27+)."""
+TAG_RE = re.compile(r"<[^>]+>")
+ROW_RE = re.compile(r"<tr[^>]*>(.*?)</tr>", re.IGNORECASE | re.DOTALL)
+CITE_RE = re.compile(
+    r"(\d+)\s*I&(?:amp;)?N\s*Dec\.\s*(\d+)\s*\(([^)]*)\)", re.IGNORECASE)
+STRONG_RE = re.compile(r"<strong>(.*?)</strong>", re.IGNORECASE | re.DOTALL)
+LINK_RE = re.compile(r'<a\s+[^>]*href="([^"]+)"[^>]*>(.*?)</a>',
+                     re.IGNORECASE | re.DOTALL)
+
+
+def _clean(s: str) -> str:
+    """Strip tags, unescape entities, collapse whitespace."""
+    return re.sub(r"\s+", " ", unescape(TAG_RE.sub(" ", s or ""))).strip()
+
+
+def parse_volume(html: str, volume_num: int) -> list:
+    """Parse decisions from a modern EOIR volume table.
+
+    All volume pages (10-29) now share the same layout: a two-column table
+    whose first cell holds the citation
+    ``<strong>NAME</strong>, VOL I&N Dec. PAGE (AUTHORITY YEAR)`` and whose
+    second cell links the decision PDF (``/d9/YYYY-MM/NNNN.pdf`` or
+    ``/media/NNNNNN/dl?inline`` for recent volumes, ``/eoir/vll/intdec/
+    vol{N}/{ID}.pdf`` for older ones). A single row-based parser handles
+    every volume and recovers the case name, page, authority and year that
+    the old legacy parser dropped.
+    """
     decisions = []
+    seen_ids = set()
 
-    # Pattern: <strong>NAME</strong>, VOL I&N Dec. PAGE (AUTHORITY YEAR)
-    # followed by <a href="PDF_URL">ID NNNN</a>
-    pattern = re.compile(
-        r'<strong>([^<]+)</strong>,\s*(\d+)\s*I&amp;N\s*Dec\.\s*(\d+)\s*'
-        r'\(([^)]+)\)'
-        r'.*?<a\s+href="([^"]*(?:/dl\?inline|\.pdf)[^"]*)"[^>]*>\s*ID\s*(\d+)',
-        re.DOTALL | re.IGNORECASE
-    )
+    for row in ROW_RE.findall(html):
+        cm = CITE_RE.search(row)
+        if not cm:
+            continue
 
-    for m in pattern.finditer(html):
-        name = unescape(m.group(1)).strip()
-        vol = int(m.group(2))
-        page = int(m.group(3))
-        authority_year = unescape(m.group(4)).strip()
-        pdf_path = m.group(5)
-        decision_id = m.group(6)
+        # Locate the decision PDF link within this row.
+        pdf_url = None
+        decision_id = None
+        for href, atext in LINK_RE.findall(row):
+            low = href.lower()
+            if low.endswith(".pdf") or ".pdf?" in low or "/dl" in low \
+                    or "/media/" in low:
+                pdf_url = href if href.startswith("http") else f"{BASE_URL}{href}"
+                idm = re.search(r"(\d{2,})", _clean(atext))
+                if idm:
+                    decision_id = idm.group(1)
+                break
+        if not pdf_url:
+            continue
 
-        # Parse year from authority string like "BIA 2026" or "A.G. 2024"
-        year_match = re.search(r'(\d{4})', authority_year)
-        year = int(year_match.group(1)) if year_match else None
+        vol = int(cm.group(1))
+        page = int(cm.group(2))
+        auth_year = _clean(cm.group(3))
+        ym = re.search(r"(\d{4})", auth_year)
+        year = int(ym.group(1)) if ym else None
+        authority = re.sub(r"\d{4}", "", auth_year).strip().rstrip(",").strip() \
+            or "BIA"
 
-        # Parse authority
-        authority = authority_year.replace(str(year), '').strip().rstrip(', ') if year else authority_year
+        # Case name: the bolded party name, else the text before the citation.
+        sm = STRONG_RE.search(row)
+        if sm:
+            name = _clean(sm.group(1)).rstrip(",").strip()
+        else:
+            pre = re.split(r"\d+\s*I&(?:amp;)?N\s*Dec\.", row, maxsplit=1)[0]
+            name = _clean(pre).rstrip(",").strip()
+        name = re.sub(r"(?i)^matter of\s+", "", name).strip()
 
-        pdf_url = pdf_path if pdf_path.startswith('http') else f"{BASE_URL}{pdf_path}"
+        if not decision_id:
+            decision_id = f"{vol}-{page}"
+        if decision_id in seen_ids:
+            continue
+        seen_ids.add(decision_id)
 
         decisions.append({
-            "name": name,
+            "name": name or f"{vol} I&N Dec. {page}",
             "volume": vol,
             "page": page,
             "authority": authority,
@@ -138,59 +189,24 @@ def parse_modern_volume(html: str, volume_num: int) -> list:
     return decisions
 
 
-def parse_legacy_volume(html: str, volume_num: int) -> list:
-    """Parse decisions from legacy volume pages (volumes 1-26)."""
-    decisions = []
-
-    # Legacy pages have simpler HTML with links to PDFs
-    # Pattern: <a href="vol{N}/{ID}.pdf">text</a> or similar
-    for m in re.finditer(
-        r'<a\s+href="([^"]*vol\d+/(\d+)\.pdf)"[^>]*>([^<]+)</a>',
-        html, re.IGNORECASE
-    ):
-        pdf_path = m.group(1)
-        decision_id = m.group(2)
-        link_text = unescape(m.group(3)).strip()
-
-        # Make absolute URL
-        if pdf_path.startswith('/'):
-            pdf_url = f"{BASE_URL}{pdf_path}"
-        elif pdf_path.startswith('http'):
-            pdf_url = pdf_path
-        else:
-            pdf_url = f"{BASE_URL}/eoir/vll/intdec/{pdf_path}"
-
-        decisions.append({
-            "name": link_text,
-            "volume": volume_num,
-            "page": None,
-            "authority": "BIA",
-            "year": None,
-            "decision_id": decision_id,
-            "pdf_url": pdf_url,
-        })
-
-    return decisions
-
-
 def get_volume_decisions(volume_num: int) -> list:
-    """Fetch and parse a volume page to get all decisions."""
+    """Fetch and parse a volume page to get all decisions.
+
+    Volumes 27-29 live at ``/eoir/volume-{N}``; volumes 10-26 at
+    ``/eoir/precedent-decisions-volume-{N}``. Volumes 1-9 have no online page
+    (print-only) and are skipped by the caller.
+    """
     if volume_num >= 27:
         url = f"{BASE_URL}/eoir/volume-{volume_num}"
     else:
-        url = f"{BASE_URL}/eoir/vll/intdec/nfvol{volume_num}.html"
+        url = f"{BASE_URL}/eoir/precedent-decisions-volume-{volume_num}"
 
     html = fetch_url(url)
     if not html:
         logger.warning(f"Failed to fetch volume {volume_num}")
         return []
 
-    if volume_num >= 27:
-        decisions = parse_modern_volume(html, volume_num)
-    else:
-        decisions = parse_legacy_volume(html, volume_num)
-
-    return decisions
+    return parse_volume(html, volume_num)
 
 
 def normalize(raw: dict, text: str) -> dict:
@@ -230,8 +246,8 @@ def normalize(raw: dict, text: str) -> dict:
 def fetch_all() -> Generator[dict, None, None]:
     """Yield all BIA precedent decisions with full text."""
     total = 0
-    # Process volumes from newest to oldest
-    for vol in range(29, 0, -1):
+    # Process volumes from newest to oldest (vols 1-9 are print-only, no page)
+    for vol in range(29, 9, -1):
         logger.info(f"Processing Volume {vol}...")
         decisions = get_volume_decisions(vol)
         time.sleep(CRAWL_DELAY)
@@ -268,8 +284,9 @@ def fetch_sample(count: int = 15) -> list:
     """Fetch sample records from recent volumes."""
     records = []
 
-    # Sample from volumes 29, 28, 27
-    for vol in [29, 28, 27]:
+    # Sample across recent and older volumes to exercise both PDF-URL
+    # formats and confirm the recovered metadata (name/page/year/authority).
+    for vol in [29, 28, 15, 10]:
         if len(records) >= count:
             break
 
@@ -311,7 +328,7 @@ def test_api():
         return False
     logger.info(f"Volume 29 page OK - {len(html)} bytes")
 
-    decisions = parse_modern_volume(html, 29)
+    decisions = parse_volume(html, 29)
     if not decisions:
         logger.error("No decisions parsed from volume 29")
         return False
@@ -366,9 +383,24 @@ def bootstrap_sample():
     return len(records) >= 10 and avg_text > 500
 
 
+def bootstrap_full():
+    """Full pull — stream every decision to data/records.jsonl."""
+    data_dir = SOURCE_DIR / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    out_path = data_dir / "records.jsonl"
+    count = 0
+    with open(out_path, "w", encoding="utf-8") as fh:
+        for record in fetch_all():
+            fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+            count += 1
+    logger.info(f"Processed {count} records -> {out_path}")
+    return count
+
+
 def main():
     parser = argparse.ArgumentParser(description="US/BIA Data Fetcher")
-    parser.add_argument("command", choices=["bootstrap", "test-api"])
+    parser.add_argument(
+        "command", choices=["bootstrap", "bootstrap-fast", "test-api"])
     parser.add_argument("--sample", action="store_true")
     parser.add_argument("--full", action="store_true", help="Fetch all records")
 
@@ -377,21 +409,12 @@ def main():
     if args.command == "test-api":
         success = test_api()
         sys.exit(0 if success else 1)
-    elif args.command == "bootstrap":
+    else:  # bootstrap / bootstrap-fast
         if args.sample:
             success = bootstrap_sample()
             sys.exit(0 if success else 1)
-        else:
-            logger.info("Full bootstrap mode")
-            count = 0
-            SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-            for record in fetch_all():
-                count += 1
-                safe_id = re.sub(r'[^\w\-]', '_', record["_id"])[:80]
-                filepath = SAMPLE_DIR / f"record_{safe_id}.json"
-                with open(filepath, "w", encoding="utf-8") as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-            logger.info(f"Processed {count} records")
+        logger.info("Full bootstrap mode")
+        bootstrap_full()
 
 
 if __name__ == "__main__":

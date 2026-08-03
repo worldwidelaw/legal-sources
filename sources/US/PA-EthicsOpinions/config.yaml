@@ -1,0 +1,148 @@
+# ===================================================================
+# US/PA-EthicsOpinions -- Pennsylvania State Ethics Commission
+# Opinions and Advices of Counsel
+# ===================================================================
+# Formal Opinions of the Commission and Advices of Counsel issued by
+# the Pennsylvania State Ethics Commission interpreting the Public
+# Official and Employee Ethics Act (65 Pa.C.S. Ch. 11) and the
+# Commission's regulations (51 Pa. Code). Each is the Commission's
+# written interpretation of the Ethics Act applied to a requester's
+# facts = doctrine. Public records of a Pennsylvania state agency
+# (government-edict works). Full text via the public "Ethics eLibrary"
+# Laserfiche WebLink portal; imaged documents with an OCR text layer.
+# ===================================================================
+
+source:
+  id: "US/PA-EthicsOpinions"
+  country: "US"
+  name: "Pennsylvania State Ethics Commission — Opinions and Advices of Counsel"
+  url: "https://www.ethicsrulings.pa.gov/WebLink/Browse.aspx?dbid=0&repo=Ethics"
+  description: |
+    Formal Opinions of the Commission and Advices of Counsel of the
+    Pennsylvania State Ethics Commission construing the Public Official
+    and Employee Ethics Act (65 Pa.C.S. Ch. 11) and 51 Pa. Code. An
+    Opinion / Advice is the Commission's written interpretation of the
+    Ethics Act applied to a requester's facts, requested by a public
+    official, public employee, candidate, nominee or their authorized
+    representative = doctrine. Published in the Commission's public
+    "Ethics eLibrary" (Laserfiche WebLink) under Rulings > Ethics >
+    Opinions and Rulings > Ethics > Advices, organized by year folders
+    from 1979 to present. Documents are imaged with an OCR text layer,
+    retrieved page-by-page via the WebLink DocumentService API.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "laserfiche_weblink"
+  base_url: "https://www.ethicsrulings.pa.gov/WebLink"
+  endpoints:
+    session: "/Welcome.aspx?cr=1"
+    folder_ids: "/FolderListingService.aspx/GetFolderListingIds"
+    folder_listing: "/FolderListingService.aspx/GetFolderListing2"
+    doc_info: "/FolderListingService.aspx/GetDocumentInfo"
+    page_text: "/DocumentService.aspx/GetTextHtmlForPage"
+    doc_view: "/DocView.aspx?id={id}&dbid=0&repo=Ethics"
+  repo: "Ethics"
+  root_folders:
+    opinions: 36759
+    advices: 34015
+
+data_model:
+  type: "doctrine"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/PA-EthicsOpinions/{Opinion|Advice}-{entryId})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "doc_id"
+      description: "Laserfiche entry id of the document"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "opinion_number"
+      description: "Commission's ruling number (e.g. '25-001', '79-500')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "series"
+      description: "'Opinion' (Opinion of the Commission) or 'Advice' (Advice of Counsel)"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "title"
+      description: "Document caption from the eLibrary (e.g. '25-001 Confidential')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full OCR text of the ruling (all pages concatenated)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision/issue date (ISO 8601), parsed from 'DATE DECIDED'/'DATE MAILED' or a date in the body; null if none"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "year"
+      description: "Year folder the document was filed under"
+      type: "integer"
+      role: "metadata"
+      required: false
+    - name: "url"
+      description: "WebLink DocView URL for the document"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (Pennsylvania state government edict / public record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "State Ethics Commission Opinions and Advices are official public records of a Pennsylvania state agency interpreting statute; the Ethics Act (65 Pa.C.S. 1108(k)) makes each Opinion/Advice a public record. Government-edict works, published for public use via the Commission's public Ethics eLibrary."
+
+notes: |
+  - Portal: the "Ethics eLibrary" is a Laserfiche WebLink 11 instance at
+    https://www.ethicsrulings.pa.gov/WebLink (repo "Ethics", dbid 0). The
+    old ethics.pa.gov site now redirects to pa.gov; the WebLink host is the
+    live document source.
+  - Session: GET /Welcome.aspx?cr=1 then GET /Browse.aspx to obtain the
+    WebLinkSession + AcceptsCookies cookies (the API 500s / "Cookies are not
+    enabled" without them).
+  - Enumeration: POST FolderListingService.aspx/GetFolderListingIds
+    {repoName, folderId, sortColumn, sortAscending} returns ALL child entry
+    ids uncapped (GetFolderListing2 caps at 40 and ignores start/end). Walk
+    Opinions root 36759 and Advices root 34015 -> year folders -> document
+    ids. Use GetFolderListing2 (asc + desc, dedup by id) to map each id to
+    its name + page count (covers up to ~80 docs/year; falls back to
+    GetDocumentInfo {repoName, dId} for any id without listing metadata).
+  - Full text: POST DocumentService.aspx/GetTextHtmlForPage
+    {repoName, documentId, pageNum, showAnn:false, searchUuid:""} returns the
+    OCR text of one page in .data.text; loop pageNum 1..pageCount and join.
+  - Date: parse 'DATE DECIDED'/'DATE MAILED' (MM/DD/YYYY) first, then any
+    'Month DD, YYYY' or MM/DD/YYYY in the body; null if none.
+  - Both series (Opinions of the Commission, Advices of Counsel) are
+    doctrine. The Rulings > Ethics > Orders folder (enforcement/adjudicative
+    orders = case_law) is a separate document class not covered here.
+  - Reachable from a residential/build vantage; no CAPTCHA on the API (the
+    reCAPTCHA on the pa.gov landing page is only for the request form).

@@ -1,0 +1,138 @@
+# ===================================================================
+# US/CT-SBLR -- Connecticut State Board of Labor Relations Decisions
+# ===================================================================
+# Published decisions of the Connecticut State Board of Labor Relations
+# (SBLR / CSBLR), the tribunal within the Connecticut Department of
+# Labor that adjudicates public- and private-sector labor-relations
+# disputes under the State Employees Relations Act (SERA), the Municipal
+# Employee Relations Act (MERA), and the Connecticut Labor Relations Act
+# (CLRA). The Board decides prohibited-practice complaints, representation
+# / election petitions, and bargaining-unit determinations. Each numbered
+# decision resolves a specific contested case = case_law; the decisions
+# are official Connecticut state-government works in the public domain
+# (government edicts).
+#
+# BUILD RECIPE: the live archive at dolpublicdocumentlibrary.ct.gov sits
+# behind an F5/Shape (TSPD) JavaScript bot-challenge and cannot be
+# enumerated without a browser, and the old ctdol.state.ct.us site now
+# 301-redirects every /csblr/ path to a portal.ct.gov 404. BUT the entire
+# born-digital decision corpus -- decision No. 1 (1945) through the 5300s
+# (2025), ~5,600 numbered PDFs -- was fully preserved by the Internet
+# Archive Wayback Machine at
+#   http://www.ctdol.state.ct.us/csblr/decisions-pdf/{YEAR}/{name}.pdf
+# The scraper enumerates them via the Wayback CDX API (filter
+# statuscode:200, collapse=urlkey) and downloads each preserved PDF via
+# the /web/{timestamp}id_/{url} raw-replay endpoint, extracting full text
+# with common.pdf_extract. Decision number + year come from the file
+# path; case number and decision date are parsed from the body. No auth,
+# no CAPTCHA, no JS challenge.
+# ===================================================================
+
+source:
+  id: "US/CT-SBLR"
+  country: "US"
+  name: "Connecticut State Board of Labor Relations — Decisions"
+  url: "https://portal.ct.gov/dol/divisions/state-board-of-labor-relations"
+  description: |
+    Published decisions of the Connecticut State Board of Labor Relations
+    (SBLR / CSBLR). SBLR adjudicates public- and private-sector labor-
+    relations disputes under SERA (state employees), MERA (municipal
+    employees), and the Connecticut Labor Relations Act -- prohibited-
+    practice complaints, representation / election petitions, and unit-
+    determination cases. Each numbered decision resolves a specific
+    contested case = case_law. The full corpus (~5,600 decisions, 1945-
+    present) is enumerated from the Internet Archive Wayback Machine
+    preservation of the retired ctdol.state.ct.us /csblr/decisions-pdf
+    tree; decision number, case number, decision date, and the full
+    decision text (from the born-digital PDF) are captured. No CAPTCHA,
+    no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://web.archive.org"
+  endpoints:
+    cdx: "http://web.archive.org/cdx/search/cdx?url=ctdol.state.ct.us/csblr/decisions-pdf*"
+    decision_pdf: "/web/{timestamp}id_/http://www.ctdol.state.ct.us/csblr/decisions-pdf/{year}/{name}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/CT-SBLR/{year}-{filename-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Slug derived from the decision PDF path (unique per file)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "decision_number"
+      description: "SBLR decision number (e.g. '5213'), from body or filename"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "case_number"
+      description: "SBLR case number (e.g. 'MPP-34,393', 'SPP-31,001')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "issuer"
+      description: "Issuing body (Connecticut State Board of Labor Relations)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Decision title (Connecticut SBLR — Decision No. N — parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (born-digital PDF extract)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the body; null if absent"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Original decision PDF path (ctdol.state.ct.us)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "archive_url"
+      description: "Wayback Machine raw-replay URL for the preserved PDF"
+      type: "string"
+      role: "reference"
+      required: false
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions of the Connecticut State Board of Labor Relations are
+    official works of Connecticut state government (edicts of a government
+    agency) and are not subject to copyright under the government-edicts
+    doctrine. Free to use, including commercially. Retrieved via the
+    Internet Archive Wayback Machine's preservation of the official
+    ctdol.state.ct.us corpus.

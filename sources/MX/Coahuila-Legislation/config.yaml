@@ -1,0 +1,58 @@
+id: MX/Coahuila-Legislation
+source_id: MX/Coahuila-Legislation
+name: Coahuila State Legislation
+country: MX
+url: https://www.congresocoahuila.gob.mx/portal/leyes-estatales-vigentes/
+description: >
+  Consolidated, currently-in-force laws, codes and the state constitution of
+  the State of Coahuila de Zaragoza, published by the Congreso del Estado
+  ("Leyes Estatales Vigentes"). ~247 documents as PDFs with full text in
+  Spanish, extracted via pdfplumber.
+data_types:
+  - legislation
+auth:
+  type: none
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+license:
+  name: "Public Domain (official legal text)"
+  url: "https://www.congresocoahuila.gob.mx/portal/leyes-estatales-vigentes/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Mexican legislation is official government work in the public domain
+    (Ley Federal del Derecho de Autor, art. 14 fracc. I — laws, decrees and
+    official texts are not subject to copyright protection).
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: _source
+      type: string
+      required: true
+    - name: _type
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: jurisdiction
+      type: string
+      required: false

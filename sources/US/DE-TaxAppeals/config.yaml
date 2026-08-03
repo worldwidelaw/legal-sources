@@ -1,0 +1,102 @@
+# ===================================================================
+# US/DE-TaxAppeals -- Delaware State Tax Appeal Board
+# Opinions / Decisions & Orders (case_law)
+# ===================================================================
+# The Delaware State Tax Appeal Board (29 Del. C. sec. 8306; 30 Del. C.
+# ch. 3 subch. II) is the independent state tribunal that hears appeals
+# from determinations of the Delaware Division of Revenue (personal
+# income, corporate income, franchise, gross-receipts and other state
+# taxes) and from the State Escheator's unclaimed-property
+# determinations. Every published opinion adjudicates a specific
+# contested case -> case_law.
+#
+# Discovery is from one server-rendered page listing the opinions by
+# docket number in PDF form (no JS, no CAPTCHA, no auth):
+#   https://finance.delaware.gov/state-tax-appeal-board/opinions-of-the-tax-appeal-board/
+# Each link points at a PDF on the Department of Finance file server
+# (https://financefiles.delaware.gov/TAB/{filename}.pdf). The opinions
+# are scanned images with no text layer, so full text is read via the
+# OCR fallback in common.pdf_extract (PyMuPDF -> pytesseract), which
+# needs the `tesseract` binary. Public-domain Delaware state works
+# (government edicts).
+# ===================================================================
+
+source:
+  id: "US/DE-TaxAppeals"
+  country: "US"
+  name: "Delaware State Tax Appeal Board — Opinions"
+  url: "https://finance.delaware.gov/state-tax-appeal-board/opinions-of-the-tax-appeal-board/"
+  description: |
+    Published opinions (Decisions & Orders) of the Delaware State Tax Appeal
+    Board, the independent tribunal that adjudicates appeals from Delaware
+    Division of Revenue tax determinations and State Escheator unclaimed-
+    property determinations = case_law. Discovered from one server-rendered
+    page; full text read from the decision PDFs via OCR (the opinions are
+    scanned images). No JavaScript scraping, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://finance.delaware.gov/state-tax-appeal-board/opinions-of-the-tax-appeal-board/"
+  endpoints:
+    index: "https://finance.delaware.gov/state-tax-appeal-board/opinions-of-the-tax-appeal-board/"
+    pdf: "https://financefiles.delaware.gov/TAB/{filename}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/DE-TaxAppeals/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Docket number(s) parsed from the filename (e.g. '1815', '422, 423, 424')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (board + docket + party)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full OCR'd text of the opinion"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), from the filename or opinion body; null if absent"
+      type: "string"
+      role: "temporal"
+      required: false
+    - name: "url"
+      description: "URL of the source PDF"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public domain — 17 U.S.C. § 105 / government edicts"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Opinions of a U.S. state administrative tribunal — public-domain government edicts."

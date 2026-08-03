@@ -1,0 +1,120 @@
+# ===================================================================
+# US/DE-PERB -- Delaware Public Employment Relations Board Decisions
+# ===================================================================
+# Decisions of the Delaware Public Employment Relations Board (PERB), the
+# quasi-judicial state agency that adjudicates public-sector labor-
+# relations disputes in Delaware under the Public Employment Relations
+# Act (19 Del. C. ch. 13), the Police Officers' and Firefighters'
+# Employment Relations Act (19 Del. C. ch. 16), and the Public School
+# Employment Relations Act (14 Del. C. ch. 40). The Board decides
+# unfair-labor-practice charges, representation and unit-clarification
+# petitions, election objections, binding-interest-arbitration disputes,
+# and related contested cases. Each decision resolves a specific case =
+# case_law, and they are official Delaware state-government works in the
+# public domain (government edicts).
+#
+# BUILD RECIPE (no auth, no CAPTCHA, builds locally): the Board publishes
+# its complete run of decisions on a WordPress site as one listing page
+# per year linked from https://perb.delaware.gov/decisions/ . Year pages
+# live at /decisions/{YYYY}-decisions/ (a few recent years at the site
+# root, /{YYYY}-decisions/), each linking one born-digital PDF per
+# decision on the wp-content uploads store. The scraper walks the index,
+# resolves every year page (1984 - present), extracts every PDF link,
+# downloads each PDF once, and extracts full text with
+# common.pdf_extract. The case/charge number ("No. YY-MM-NNNN") and
+# decision date ("DATE: Month D, YYYY") are parsed from the body; the
+# filename supplies the caption/title and a fallback year.
+# ===================================================================
+
+source:
+  id: "US/DE-PERB"
+  country: "US"
+  name: "Delaware Public Employment Relations Board — Decisions"
+  url: "https://perb.delaware.gov/decisions/"
+  description: |
+    Decisions of the Delaware Public Employment Relations Board (PERB).
+    The Board adjudicates public-sector labor-relations disputes in
+    Delaware -- state, school, police, and firefighter employees --
+    under the Public Employment Relations Act (19 Del. C. ch. 13), the
+    Police Officers' and Firefighters' Employment Relations Act (19 Del.
+    C. ch. 16), and the Public School Employment Relations Act (14 Del.
+    C. ch. 40), deciding unfair-labor-practice charges, representation
+    and unit-clarification petitions, election objections, binding-
+    interest-arbitration disputes, and related contested cases. Each
+    decision resolves a specific contested case = case_law. Enumerated
+    from the Board's per-year decision listings (1984 to present); case
+    number, decision date, and full decision text (from the born-digital
+    PDF) are captured. No CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://perb.delaware.gov"
+  endpoints:
+    index_page: "/decisions/"
+    year_page: "/decisions/{YYYY}-decisions/"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/DE-PERB/{decision-filename-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Slug of the decision PDF filename (case number + caption)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "case_no"
+      description: "PERB charge/petition number parsed from the body (e.g. '18-11-1168')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Decision caption (parties/subject), from the PDF filename"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (born-digital PDF extract)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the body signature date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the decision PDF on perb.delaware.gov"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions of the Delaware Public Employment Relations Board are
+    official works of Delaware state government (edicts of a quasi-
+    judicial government body) and are not subject to copyright under the
+    government-edicts doctrine. Free to use, including commercially.

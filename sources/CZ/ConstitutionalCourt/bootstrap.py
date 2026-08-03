@@ -238,7 +238,8 @@ class ConstitutionalCourtFetcher:
             return None
 
     def fetch_all(self, start_year: int = None, end_year: int = 1993,
-                  limit: int = None) -> Iterator[Dict[str, Any]]:
+                  limit: int = None, max_per_senate: int = None,
+                  **kwargs) -> Iterator[Dict[str, Any]]:
         """
         Fetch all decisions using search-based discovery.
 
@@ -381,7 +382,9 @@ class ConstitutionalCourtFetcher:
 def main():
     """Main entry point for testing and bootstrap"""
 
-    if len(sys.argv) > 1 and sys.argv[1] == 'bootstrap':
+    # bootstrap-fast is the VPS fleet entrypoint; treat it as the full bootstrap
+    # (writes data/records.jsonl) rather than falling through to test mode.
+    if len(sys.argv) > 1 and sys.argv[1] in ('bootstrap', 'bootstrap-fast'):
         fetcher = ConstitutionalCourtFetcher()
         sample_dir = Path(__file__).parent / 'sample'
         sample_dir.mkdir(exist_ok=True)

@@ -1,0 +1,88 @@
+# ═══════════════════════════════════════════════════════════════════
+# MW/JudiciaryActs — Malawi Judiciary: Acts of Parliament
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "MW/JudiciaryActs"
+  country: "MW"
+  name: "Malawi Judiciary — Acts of Parliament"
+  url: "https://www.judiciary.mw/resources/legal-instruments/acts-of-parliament"
+  description: |
+    Core consolidated Acts of Parliament of Malawi published by the Malawi
+    Judiciary on judiciary.mw. A curated set of ~15 key statutes (the
+    Constitution, Penal Code, Employment Act, Corrupt Practices Act, etc.),
+    each with a full-text PDF attachment. Language: English. This is the
+    legislation companion to MW/Judiciary (case_law) on the same official
+    domain, distinct from MW/MalawiLII.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.judiciary.mw"
+  selectors:
+    list_page: "https://www.judiciary.mw/resources/legal-instruments/acts-of-parliament"
+    item_selector: "a[href$='.pdf']"
+
+data_model:
+  type: "legislation"
+  source_nature: "consolidated"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "consolidated"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "_id"
+      description: "Unique Act identifier (title slug)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Act"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date derived from the PDF path (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+  secondary_fields:
+    - name: "url"
+      description: "Source PDF URL"
+    - name: "jurisdiction"
+      description: "ISO country code (MW)"
+    - name: "language"
+      description: "Document language (en)"
+  probably_ignorable: []
+
+# ── License ──────────────────────────────────────────────────────
+license:
+  id: "pd-gov"
+  name: "Government Edict — Public Domain"
+  url: "https://www.judiciary.mw/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Acts of Parliament are government edicts of the Republic of Malawi and are
+    not subject to copyright. Published on the official judiciary.mw domain.

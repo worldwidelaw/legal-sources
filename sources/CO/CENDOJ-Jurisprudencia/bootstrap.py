@@ -314,20 +314,33 @@ def bootstrap(sample: bool = False, sample_count: int = 15):
     """Run the bootstrap process."""
     session = requests.Session()
 
+    jsonl_file = None
     if sample:
         SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
         logger.info(f"Sample mode: fetching {sample_count} records")
+    else:
+        # Full corpus streams to data/records.jsonl — this is what the
+        # ingest pipeline consumes. (Previously full mode wrote nothing.)
+        data_dir = SOURCE_DIR / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)
+        jsonl_file = open(data_dir / "records.jsonl", "w", encoding="utf-8")
 
     count = 0
-    for record in fetch_all(session, sample=sample, sample_count=sample_count):
-        if sample:
-            path = SAMPLE_DIR / f"record_{count:04d}.json"
-            with open(path, "w", encoding="utf-8") as f:
-                json.dump(record, f, indent=2, ensure_ascii=False)
+    try:
+        for record in fetch_all(session, sample=sample, sample_count=sample_count):
+            if sample:
+                path = SAMPLE_DIR / f"record_{count:04d}.json"
+                with open(path, "w", encoding="utf-8") as f:
+                    json.dump(record, f, indent=2, ensure_ascii=False)
+            else:
+                jsonl_file.write(json.dumps(record, ensure_ascii=False) + "\n")
 
-        count += 1
-        if sample and count >= sample_count:
-            break
+            count += 1
+            if sample and count >= sample_count:
+                break
+    finally:
+        if jsonl_file is not None:
+            jsonl_file.close()
 
     logger.info(f"Bootstrap complete: {count} records")
 
@@ -359,16 +372,17 @@ if __name__ == "__main__":
 
     sub.add_parser("test-api", help="Test API connectivity")
 
-    bp = sub.add_parser("bootstrap", help="Run bootstrap")
-    bp.add_argument("--sample", action="store_true", help="Fetch sample only")
-    bp.add_argument("--count", type=int, default=15, help="Sample count")
-    bp.add_argument("--full", action="store_true", help="Fetch all records")
+    for _cmd in ("bootstrap", "bootstrap-fast"):
+        bp = sub.add_parser(_cmd, help="Run bootstrap")
+        bp.add_argument("--sample", action="store_true", help="Fetch sample only")
+        bp.add_argument("--count", type=int, default=15, help="Sample count")
+        bp.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
 
     if args.command == "test-api":
         test_api()
-    elif args.command == "bootstrap":
+    elif args.command in ("bootstrap", "bootstrap-fast"):
         bootstrap(sample=args.sample, sample_count=args.count)
     else:
         parser.print_help()

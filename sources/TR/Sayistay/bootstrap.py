@@ -59,6 +59,15 @@ DECISION_BODIES = {
         ],
         "date_field": "KARARTRH",
         "order_column": 1,
+        # Partition the full-corpus scan by fiscal year (HESAPYILI). Each year
+        # holds at most ~900 records, so offset pagination stays shallow (≤10
+        # pages) instead of 223 deep pages. The Sayıştay DataTables endpoint is
+        # session-backed and, on datacenter IPs, intermittently drops the
+        # session/CSRF cookie and ignores deep `start` offsets — repeating page
+        # 1 forever (issue #962). Shallow per-year offsets are far less likely
+        # to be ignored, and missing a dropped session only costs one small
+        # year. Verified: per-year HESAPYILI totals sum to exactly recordsTotal.
+        "year_field": "HESAPYILI",
     },
     "temyiz": {
         "name": "Temyiz",
@@ -81,6 +90,10 @@ DECISION_BODIES = {
         ],
         "date_field": "TEMYIZTUTANAKTARIHI",
         "order_column": 1,
+        # Partition by decision year (YILI); per-year totals sum to exactly
+        # recordsTotal. Max ~2,800 records/year → ≤29 shallow pages. See the
+        # HESAPYILI note above for why this matters (issue #962).
+        "year_field": "YILI",
     },
     "genel_kurul": {
         "name": "GenelKurul",
@@ -102,6 +115,9 @@ DECISION_BODIES = {
         ],
         "date_field": "KARARTARIH",
         "order_column": 2,
+        # General Assembly holds only a handful of decisions — no partition
+        # needed (a single shallow scan never reaches deep offsets).
+        "year_field": None,
     },
 }
 
@@ -162,8 +178,15 @@ class SayistayScraper(BaseScraper):
         logger.info(f"Got CSRF token for {body['name']}")
         return token
 
-    def _build_datatables_request(self, body_key: str, start: int, length: int) -> dict:
-        """Build the DataTables POST parameters for a decision body."""
+    def _build_datatables_request(
+        self, body_key: str, start: int, length: int,
+        extra_filters: Optional[dict] = None,
+    ) -> dict:
+        """Build the DataTables POST parameters for a decision body.
+
+        extra_filters maps form-field names (without the form prefix) to values,
+        e.g. {"HESAPYILI": "2020"} to restrict the result set to a single year.
+        """
         body = DECISION_BODIES[body_key]
 
         if body_key not in self._csrf_tokens:
@@ -182,8 +205,9 @@ class SayistayScraper(BaseScraper):
 
         # Add form fields (empty = no filter)
         prefix = body["form_prefix"]
+        extra_filters = extra_filters or {}
         for field in body["form_fields"]:
-            data[f"{prefix}[{field}]"] = ""
+            data[f"{prefix}[{field}]"] = str(extra_filters.get(field, ""))
 
         # Add column definitions
         for i, (col_data, orderable) in enumerate(body["columns"]):
@@ -196,10 +220,13 @@ class SayistayScraper(BaseScraper):
 
         return data
 
-    def _fetch_list_page(self, body_key: str, start: int, length: int = 100) -> dict:
+    def _fetch_list_page(
+        self, body_key: str, start: int, length: int = 100,
+        extra_filters: Optional[dict] = None,
+    ) -> dict:
         """Fetch a page of decisions from the DataTables API."""
         body = DECISION_BODIES[body_key]
-        data = self._build_datatables_request(body_key, start, length)
+        data = self._build_datatables_request(body_key, start, length, extra_filters)
 
         self.rate_limiter.wait()
         resp = self.client.post(
@@ -218,7 +245,7 @@ class SayistayScraper(BaseScraper):
             # CSRF token may have expired — refresh and retry once
             logger.warning(f"Got 500 from {body['name']} list, refreshing CSRF token")
             self._csrf_tokens[body_key] = self._get_csrf_token(body_key)
-            data = self._build_datatables_request(body_key, start, length)
+            data = self._build_datatables_request(body_key, start, length, extra_filters)
             self.rate_limiter.wait()
             resp = self.client.post(
                 body["list_url"],
@@ -337,97 +364,187 @@ class SayistayScraper(BaseScraper):
                 continue
         return None
 
-    def _fetch_body_decisions(
-        self, body_key: str, sample: bool = False
+    def _process_records(
+        self, body_key: str, records: list, new_ids: set,
     ) -> Generator[dict, None, None]:
-        """Fetch all decisions for a specific decision body."""
+        """Fetch detail text for each new record in a list page and yield raw."""
+        body = DECISION_BODIES[body_key]
+        for rec in records:
+            rec_id = rec.get("Id")
+            if not rec_id or rec_id not in new_ids:
+                continue
+            try:
+                full_text = self._fetch_detail_text(body_key, rec_id)
+                if not full_text or len(full_text) < 50:
+                    logger.warning(
+                        f"Insufficient text for {body['name']} ID {rec_id} "
+                        f"({len(full_text)} chars), skipping"
+                    )
+                    continue
+                raw = {
+                    "_body_key": body_key,
+                    "id": rec_id,
+                    "full_text": full_text,
+                    "date_field": rec.get(body["date_field"], ""),
+                }
+                raw.update(rec)
+                yield raw
+            except Exception as e:
+                logger.warning(f"Failed to process {body['name']} ID {rec_id}: {e}")
+
+    def _fetch_partition(
+        self, body_key: str, extra_filters: Optional[dict], seen_ids: set,
+        global_total: Optional[int] = None,
+    ) -> Generator[dict, None, None]:
+        """Paginate one partition (e.g. a single year) with shallow offsets.
+
+        The Sayıştay DataTables endpoint is session-backed and, on datacenter
+        IPs, intermittently drops the session/CSRF cookie and (a) ignores the
+        `start` offset — silently repeating page 1 — and (b) ignores the year
+        filter, so a single-year partition reports the FULL corpus total and
+        paginates hundreds of deep pages re-fetching duplicates (issue #962,
+        #1060: "49.5K fetched, 100 new"). Guards:
+          1. `seen_ids` (shared across the whole body) drops any repeated rows.
+          2. Filter-ignored detection: if a year-filtered partition's
+             recordsTotal equals the global unfiltered total, the session was
+             dropped and the filter didn't apply — refresh the session and
+             retry; if it stays ignored, skip the partition instead of
+             paginating the whole corpus as duplicates.
+          3. When a page yields 0 new IDs, refresh the session and retry the
+             SAME offset a couple of times before giving up on the partition —
+             a fresh session usually restores correct offset handling.
+        Partitioning keeps offsets shallow so the server rarely ignores them.
+        """
         body = DECISION_BODIES[body_key]
         page_size = 100
         start = 0
         total = None
-        fetched = 0
-        max_records = 6 if sample else None
-        # Track the list-API IDs we've already seen. The DataTables endpoint
-        # is session-backed: if the server ever drops our session/CSRF cookie
-        # (observed on datacenter IPs) it silently ignores the `start` offset
-        # and keeps returning page 1. Without this guard the loop re-fetches
-        # the same 100 records until `start` crosses `recordsTotal` — hours of
-        # wasted work yielding only duplicates (issue #962). Break as soon as
-        # a page contributes no new IDs.
-        seen_ids = set()
-
-        logger.info(f"Starting {body['name']} decision fetch...")
+        refresh_attempts = 0
+        filter_refresh = 0
+        MAX_REFRESH = 2
+        is_filtered = bool(extra_filters)
 
         while True:
             try:
-                result = self._fetch_list_page(body_key, start, page_size)
+                result = self._fetch_list_page(body_key, start, page_size, extra_filters)
             except Exception as e:
-                logger.error(f"Failed to fetch {body['name']} page at offset {start}: {e}")
+                logger.error(
+                    f"Failed to fetch {body['name']} page at offset {start} "
+                    f"({extra_filters}): {e}"
+                )
                 break
 
             if total is None:
                 total = result.get("recordsTotal", 0)
-                logger.info(f"{body['name']}: {total} total decisions")
+                # Detect a dropped session that silently ignored the year
+                # filter: the single-year total should be far below the global
+                # corpus total. If it matches the global total, the filter was
+                # ignored — refresh and retry, then skip rather than paginate
+                # the whole corpus (re-fetching duplicates).
+                if is_filtered and global_total and total >= global_total:
+                    if filter_refresh < MAX_REFRESH:
+                        filter_refresh += 1
+                        logger.warning(
+                            f"{body['name']} {extra_filters}: recordsTotal "
+                            f"{total} == global {global_total} (year filter "
+                            f"ignored — dropped session); refreshing and "
+                            f"retrying ({filter_refresh}/{MAX_REFRESH})"
+                        )
+                        self._csrf_tokens.pop(body_key, None)
+                        self._csrf_tokens[body_key] = self._get_csrf_token(body_key)
+                        total = None
+                        continue
+                    logger.warning(
+                        f"{body['name']} {extra_filters}: year filter still "
+                        f"ignored after {MAX_REFRESH} refreshes — skipping "
+                        f"partition to avoid duplicate re-fetch."
+                    )
+                    return
 
             records = result.get("data", [])
             if not records:
                 break
 
             page_ids = [r.get("Id") for r in records if r.get("Id")]
-            new_ids = [i for i in page_ids if i not in seen_ids]
+            new_ids = {i for i in page_ids if i not in seen_ids}
             if not new_ids:
+                if refresh_attempts < MAX_REFRESH:
+                    refresh_attempts += 1
+                    logger.warning(
+                        f"{body['name']} {extra_filters}: offset {start} returned "
+                        f"0 new IDs — refreshing session and retrying "
+                        f"({refresh_attempts}/{MAX_REFRESH})"
+                    )
+                    self._csrf_tokens.pop(body_key, None)
+                    self._csrf_tokens[body_key] = self._get_csrf_token(body_key)
+                    continue
                 logger.warning(
-                    f"{body['name']}: page at offset {start} returned 0 new IDs "
-                    f"(all {len(page_ids)} already seen) — server is repeating "
-                    f"results, stopping pagination."
+                    f"{body['name']} {extra_filters}: offset {start} still "
+                    f"repeating after {MAX_REFRESH} refreshes — stopping partition."
                 )
                 break
+
+            refresh_attempts = 0
             seen_ids.update(new_ids)
-
-            for rec in records:
-                rec_id = rec.get("Id")
-                if not rec_id or rec_id not in new_ids:
-                    continue
-
-                try:
-                    # Fetch full text from detail page
-                    full_text = self._fetch_detail_text(body_key, rec_id)
-
-                    if not full_text or len(full_text) < 50:
-                        logger.warning(
-                            f"Insufficient text for {body['name']} ID {rec_id} "
-                            f"({len(full_text)} chars), skipping"
-                        )
-                        continue
-
-                    # Build raw record
-                    raw = {
-                        "_body_key": body_key,
-                        "id": rec_id,
-                        "full_text": full_text,
-                        "date_field": rec.get(body["date_field"], ""),
-                    }
-                    # Copy all fields from list API
-                    raw.update(rec)
-
-                    yield raw
-                    fetched += 1
-
-                    if max_records and fetched >= max_records:
-                        logger.info(
-                            f"Sample limit reached for {body['name']} ({fetched} records)"
-                        )
-                        return
-
-                except Exception as e:
-                    logger.warning(f"Failed to process {body['name']} ID {rec_id}: {e}")
+            yield from self._process_records(body_key, records, new_ids)
 
             start += page_size
-
             if start >= (total or 0):
                 break
 
-        logger.info(f"Fetched {fetched} {body['name']} decisions")
+    def _fetch_body_decisions(
+        self, body_key: str, sample: bool = False
+    ) -> Generator[dict, None, None]:
+        """Fetch all decisions for a decision body, partitioned by year.
+
+        Partitioning by year (HESAPYILI / YILI) keeps offset pagination shallow,
+        which is what makes the scan robust to the session-drop / ignored-offset
+        behaviour seen on datacenter IPs (issue #962). `seen_ids` is shared
+        across all partitions so any cross-year duplicates are filtered too.
+        """
+        body = DECISION_BODIES[body_key]
+        year_field = body.get("year_field")
+        max_records = 6 if sample else None
+        fetched = 0
+        seen_ids = set()
+
+        logger.info(f"Starting {body['name']} decision fetch...")
+
+        global_total = None
+        if year_field:
+            current_year = datetime.now(timezone.utc).year
+            partitions = [
+                {year_field: str(y)} for y in range(current_year + 1, 1989, -1)
+            ]
+            # Capture the global unfiltered total once so each year partition
+            # can detect a dropped session that silently ignored its filter
+            # (issue #1060). Best-effort: if this probe fails, the per-partition
+            # check is simply skipped.
+            try:
+                probe = self._fetch_list_page(body_key, 0, 1, {})
+                global_total = probe.get("recordsTotal") or None
+                logger.info(f"{body['name']} global total: {global_total}")
+            except Exception as e:
+                logger.warning(f"Could not probe global total for {body['name']}: {e}")
+        else:
+            partitions = [None]
+
+        for extra_filters in partitions:
+            for raw in self._fetch_partition(
+                body_key, extra_filters, seen_ids, global_total
+            ):
+                yield raw
+                fetched += 1
+                if max_records and fetched >= max_records:
+                    logger.info(
+                        f"Sample limit reached for {body['name']} ({fetched} records)"
+                    )
+                    return
+
+        logger.info(
+            f"Fetched {fetched} {body['name']} decisions "
+            f"({len(seen_ids)} unique list rows seen)"
+        )
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all decisions from all three decision bodies."""

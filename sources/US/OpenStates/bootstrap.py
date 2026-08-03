@@ -35,11 +35,20 @@ SOURCE_ID = "US/OpenStates"
 API_BASE = "https://v3.openstates.org"
 USER_AGENT = "LegalDataHunter/1.0 (Open Data Research; contact@legaldatahunter.com)"
 REQUEST_DELAY = 1.0  # seconds between requests
+PER_PAGE = 20  # Open States API caps bill search at 20 per page
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent
 DATA_DIR = SCRIPT_DIR / "data"
 SAMPLE_DIR = SCRIPT_DIR / "sample"
+CHECKPOINT_PATH = DATA_DIR / "checkpoint.json"
+
+# Make the repo root importable so we can reuse common.storage for the
+# full-corpus path (streams to data/records.jsonl for fleet ingest).
+ROOT_DIR = SCRIPT_DIR.parent.parent.parent
+sys.path.insert(0, str(ROOT_DIR))
+
+from common.storage import StorageManager  # noqa: E402
 
 # US State/Territory codes
 JURISDICTIONS = [
@@ -332,6 +341,161 @@ def fetch_bill_full_text(client: OpenStatesAPI, bill: Dict) -> str:
     return ""
 
 
+BILL_INCLUDES = ["versions", "abstracts", "actions", "sources"]
+
+
+def _load_checkpoint() -> Dict[str, Any]:
+    """Load the resume checkpoint (completed jurisdictions + last page)."""
+    if CHECKPOINT_PATH.exists():
+        try:
+            with open(CHECKPOINT_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError):
+            pass
+    return {"done_jurisdictions": [], "progress": {}}
+
+
+def _save_checkpoint(ckpt: Dict[str, Any]) -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    tmp = CHECKPOINT_PATH.with_suffix(".json.tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(ckpt, f)
+    tmp.replace(CHECKPOINT_PATH)
+
+
+def fetch_all(
+    client: OpenStatesAPI,
+    jurisdictions: Optional[List[str]] = None,
+    updated_since: Optional[str] = None,
+    max_records: Optional[int] = None,
+    checkpoint: Optional[Dict[str, Any]] = None,
+) -> Generator[Dict, None, None]:
+    """Yield normalized, full-text bill records across every jurisdiction.
+
+    Paginates the /bills endpoint per jurisdiction (sorted updated_asc for a
+    stable walk), pulling versions/abstracts/actions/sources inline, then
+    fetches each bill's version document to obtain full text. Bills with no
+    retrievable full text are skipped (metadata-only records are not useful).
+
+    When a ``checkpoint`` dict is supplied, completed jurisdictions are skipped
+    and per-jurisdiction page progress is recorded so a crashed run resumes
+    where it stopped.
+    """
+    jurisdictions = jurisdictions or JURISDICTIONS
+    yielded = 0
+
+    done = set((checkpoint or {}).get("done_jurisdictions", []))
+    progress = (checkpoint or {}).get("progress", {})
+
+    for juris in jurisdictions:
+        if juris in done:
+            print(f"=== {juris.upper()} (already complete, skipping) ===")
+            continue
+
+        start_page = int(progress.get(juris, 0)) + 1
+        print(f"=== {juris.upper()} (from page {start_page}) ===")
+
+        page = start_page
+        max_page = None
+        while True:
+            result = client.search_bills(
+                jurisdiction=juris,
+                updated_since=updated_since,
+                page=page,
+                per_page=PER_PAGE,
+                include=BILL_INCLUDES,
+            )
+            time.sleep(REQUEST_DELAY)
+
+            bills = result.get("results", [])
+            if max_page is None:
+                max_page = result.get("pagination", {}).get("max_page", 1)
+
+            if not bills:
+                break
+
+            for bill in bills:
+                full_text = fetch_bill_full_text(client, bill)
+                if not full_text:
+                    continue
+                yield normalize(bill, full_text)
+                yielded += 1
+                if max_records and yielded >= max_records:
+                    return
+                time.sleep(REQUEST_DELAY)
+
+            # Record page progress for resume, then advance.
+            if checkpoint is not None:
+                progress[juris] = page
+                checkpoint["progress"] = progress
+                _save_checkpoint(checkpoint)
+
+            if max_page and page >= max_page:
+                break
+            page += 1
+
+        # Mark the whole jurisdiction complete.
+        if checkpoint is not None:
+            done.add(juris)
+            checkpoint["done_jurisdictions"] = sorted(done)
+            progress.pop(juris, None)
+            checkpoint["progress"] = progress
+            _save_checkpoint(checkpoint)
+
+
+def fetch_updates(
+    client: OpenStatesAPI, since: str, max_records: Optional[int] = None
+) -> Generator[Dict, None, None]:
+    """Yield bills updated since ``since`` (YYYY-MM-DD) across all jurisdictions."""
+    yield from fetch_all(client, updated_since=since, max_records=max_records)
+
+
+def bootstrap_full(
+    jurisdictions: Optional[List[str]] = None,
+    updated_since: Optional[str] = None,
+    max_records: Optional[int] = None,
+) -> int:
+    """Full corpus fetch that STREAMS every full-text bill to
+    data/records.jsonl via StorageManager.
+
+    This is the path the fleet ingest uses. It is idempotent: re-runs skip
+    bills already written (dedup by _id) and resume from the jurisdiction/page
+    checkpoint, so a crashed run continues where it stopped.
+    """
+    api_key = os.environ.get("OPENSTATES_API_KEY")
+    if not api_key:
+        print("ERROR: OPENSTATES_API_KEY environment variable not set.", file=sys.stderr)
+        return 0
+
+    client = OpenStatesAPI(api_key)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    storage = StorageManager(DATA_DIR)
+    checkpoint = _load_checkpoint()
+
+    written = 0
+    skipped = 0
+    for record in fetch_all(
+        client,
+        jurisdictions=jurisdictions,
+        updated_since=updated_since,
+        max_records=max_records,
+        checkpoint=checkpoint,
+    ):
+        dedup_key = record["_id"]
+        if storage.exists(dedup_key):
+            skipped += 1
+            continue
+        storage.write(dedup_key, record)
+        written += 1
+        if written % 25 == 0:
+            print(f"  Wrote {written} records (skipped {skipped} dupes)...")
+
+    storage.close()
+    print(f"\nFull bootstrap complete: {written} written, {skipped} skipped")
+    print(f"Records at: {storage.records_path}")
+    return written
+
+
 def fetch_sample(client: OpenStatesAPI, count: int = 15) -> List[Dict]:
     """Fetch sample bills from multiple states."""
     print(f"Fetching {count} sample bills from Open States...")
@@ -446,12 +610,18 @@ def main():
     parser = argparse.ArgumentParser(description="US/OpenStates data fetcher")
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 
-    bootstrap_parser = subparsers.add_parser("bootstrap", help="Initial data fetch")
-    bootstrap_parser.add_argument("--sample", action="store_true", help="Fetch sample only")
+    for cmd in ("bootstrap", "bootstrap-fast"):
+        p = subparsers.add_parser(cmd, help="Initial data fetch")
+        p.add_argument("--sample", action="store_true", help="Fetch sample only")
+        p.add_argument("--full", action="store_true", help="Fetch full corpus to data/records.jsonl")
+        p.add_argument("--max-records", type=int, default=None, help="Cap total records (testing)")
+        p.add_argument("--jurisdictions", type=str, default=None,
+                       help="Comma-separated state codes to restrict --full (e.g. ca,ny). "
+                            "Enables per-state fleet parallelism; default = all 52.")
 
     updates_parser = subparsers.add_parser("updates", help="Fetch updates")
     updates_parser.add_argument("--since", required=True, help="Date to fetch from (YYYY-MM-DD)")
-    updates_parser.add_argument("--full", action="store_true", help="Fetch all records")
+    updates_parser.add_argument("--max-records", type=int, default=None, help="Cap total records")
 
     subparsers.add_parser("validate", help="Validate sample records")
 
@@ -474,7 +644,13 @@ def main():
 
     client = OpenStatesAPI(api_key)
 
-    if args.command == "bootstrap":
+    if args.command in ("bootstrap", "bootstrap-fast"):
+        if args.full:
+            juris = None
+            if args.jurisdictions:
+                juris = [j.strip().lower() for j in args.jurisdictions.split(",") if j.strip()]
+            written = bootstrap_full(jurisdictions=juris, max_records=args.max_records)
+            sys.exit(0 if written > 0 else 1)
         if args.sample:
             print("Fetching samples from Open States API...")
             try:
@@ -507,14 +683,26 @@ def main():
                 sys.exit(1)
 
         else:
-            print("Use --sample for sample mode")
+            print("Use --sample for a sample fetch or --full for the full corpus")
             sys.exit(1)
 
     elif args.command == "updates":
         print(f"Fetching updates since {args.since}...")
-        # Would iterate through all states and fetch updated bills
-        print("Full update mode not yet implemented")
-        sys.exit(1)
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        storage = StorageManager(DATA_DIR)
+        written = skipped = 0
+        for record in fetch_updates(client, args.since, max_records=args.max_records):
+            dedup_key = record["_id"]
+            if storage.exists(dedup_key):
+                skipped += 1
+                continue
+            storage.write(dedup_key, record)
+            written += 1
+            if written % 25 == 0:
+                print(f"  Wrote {written} records (skipped {skipped} dupes)...")
+        storage.close()
+        print(f"\nUpdates complete: {written} written, {skipped} skipped")
+        sys.exit(0 if written > 0 else 1)
 
 
 if __name__ == "__main__":

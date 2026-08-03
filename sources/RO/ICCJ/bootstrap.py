@@ -62,6 +62,13 @@ class RoICCJScraper(BaseScraper):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
 
+        # Sequential-ID walks over ~250K IDs cannot finish in one fleet slot
+        # (exit 124 / 100h). Persist progress so reruns resume instead of
+        # restarting at ID 1 (see #1100, mirrors the #961 PK/IHC checkpoint fix).
+        self._sample_mode = False
+        self._ckpt_path = source_dir / "data" / "iccj_checkpoint.json"
+        self._ckpt_last = 0
+
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
@@ -83,6 +90,33 @@ class RoICCJScraper(BaseScraper):
         except Exception as e:
             logger.warning(f"Failed to fetch ID {decision_id}: {e}")
             return None
+
+    # -- Checkpoint / resume --------------------------------------------------
+
+    def _load_checkpoint(self) -> int:
+        """Return the last fully-processed decision ID (0 if none)."""
+        try:
+            data = json.loads(self._ckpt_path.read_text())
+            self._ckpt_last = int(data.get("last_id", 0))
+        except Exception:
+            self._ckpt_last = 0
+        return self._ckpt_last
+
+    def _flush_checkpoint(self):
+        """Persist the current checkpoint position to disk."""
+        try:
+            self._ckpt_path.parent.mkdir(parents=True, exist_ok=True)
+            self._ckpt_path.write_text(json.dumps({"last_id": self._ckpt_last}))
+        except Exception as e:
+            logger.warning(f"Could not write checkpoint: {e}")
+
+    def _advance_checkpoint(self, decision_id: int):
+        """Record progress up to decision_id, flushing every 100 IDs."""
+        if self._sample_mode:
+            return
+        self._ckpt_last = decision_id
+        if decision_id % 100 == 0:
+            self._flush_checkpoint()
 
     def _parse_detail(self, html_content: str, decision_id: int) -> Optional[dict]:
         """Parse a detail page HTML into a raw record dict."""
@@ -200,6 +234,16 @@ class RoICCJScraper(BaseScraper):
                 month = month_map.get(month_name.lower(), "01")
                 decision_date = f"{year}-{month}-{int(day):02d}"
 
+        # Fallback: derive a year-level date from the decision number (nr. N/YYYY).
+        # ICCJ decision numbers embed the ruling year, so a null date (which drops
+        # the record at ingest as a temporal_key with no value) is always avoidable.
+        if not decision_date:
+            year_match = re.search(r"/(\d{4})", decision_number or "") or re.search(
+                r"/(\d{4})", title or ""
+            )
+            if year_match:
+                decision_date = f"{year_match.group(1)}-01-01"
+
         return {
             "decision_id": decision_id,
             "title": title,
@@ -257,18 +301,30 @@ class RoICCJScraper(BaseScraper):
     # -- BaseScraper interface -----------------------------------------------
 
     def fetch_all(self) -> Generator[dict, None, None]:
-        """Yield all decisions by iterating through IDs."""
+        """Yield all decisions by iterating through IDs.
+
+        Resumes from the last checkpointed ID so a fleet rerun (after the 100h
+        timeout) continues forward instead of re-walking from ID 1. Sample runs
+        never read or write the checkpoint.
+        """
         max_id = self._find_max_id()
         consecutive_misses = 0
         max_misses = 50  # Allow gaps in IDs
 
-        for decision_id in range(1, max_id + 1):
+        start_id = 1
+        if not self._sample_mode:
+            start_id = self._load_checkpoint() + 1
+            if start_id > 1:
+                logger.info(f"Resuming from checkpoint at ID {start_id}")
+
+        for decision_id in range(start_id, max_id + 1):
             html = self._fetch_detail(decision_id)
             if not html:
                 consecutive_misses += 1
                 if consecutive_misses > max_misses:
                     logger.warning(f"Too many consecutive misses at ID {decision_id}, skipping ahead")
                     consecutive_misses = 0
+                self._advance_checkpoint(decision_id)
                 continue
 
             record = self._parse_detail(html, decision_id)
@@ -278,8 +334,16 @@ class RoICCJScraper(BaseScraper):
             else:
                 consecutive_misses += 1
 
+            # Safe to checkpoint here: any record yielded above has already been
+            # persisted by the framework loop before control returns to us.
+            self._advance_checkpoint(decision_id)
+
             if decision_id % 1000 == 0:
                 logger.info(f"Progress: ID {decision_id}/{max_id}")
+
+        # Reached the end of the corpus — flush final position.
+        if not self._sample_mode:
+            self._flush_checkpoint()
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """Fetch decisions added since the last run by checking new IDs."""
@@ -335,6 +399,7 @@ if __name__ == "__main__":
     sample_mode = "--sample" in sys.argv
 
     if command == "bootstrap":
+        scraper._sample_mode = sample_mode
         result = scraper.bootstrap(sample_mode=sample_mode, sample_size=15)
         print(json.dumps(result, indent=2, default=str))
 

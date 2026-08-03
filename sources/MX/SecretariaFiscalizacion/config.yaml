@@ -1,0 +1,84 @@
+# ===================================================================
+# MX/SecretariaFiscalizacion -- Secretaría Anticorrupción y Buen
+#   Gobierno (ex Secretaría de la Función Pública) — Normateca Interna
+# ===================================================================
+# Internal administrative norms (ACUERDOs, manuales, lineamientos,
+# disposiciones) of Mexico's federal comptroller / anti-corruption
+# secretariat, published through the SANI register. JSF datatable
+# scrape + per-norm PDF full-text extraction.
+# ===================================================================
+
+source:
+  id: "MX/SecretariaFiscalizacion"
+  country: "MX"
+  name: "Secretaría Anticorrupción y Buen Gobierno (ex SFP) — Normateca Interna"
+  url: "https://normasapf.buengobierno.gob.mx/NORMASAPF/SFP.jsf"
+  description: |
+    Internal normative provisions issued by Mexico's federal comptroller /
+    anti-corruption secretariat — the Secretaría Anticorrupción y Buen Gobierno,
+    formerly the Secretaría de la Función Pública (SFP), the federal office of
+    the Comptroller (audit / accountability). The norms (ACUERDOs, manuales de
+    organización y procedimientos, lineamientos, disposiciones) are published
+    through the SANI system (Sistema de Administración de Normas Internas de la
+    Administración Pública Federal). Each norm exposes a per-document PDF
+    download endpoint; full text is extracted from the norm PDFs that carry a
+    text layer.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 1
+  max_workers: 4
+
+api:
+  type: "html_scrape_pdf"
+  listing_url: "https://normasapf.buengobierno.gob.mx/NORMASAPF/SFP.jsf"
+  download_url: "https://normasapf.buengobierno.gob.mx/NORMASAPF/Descarga?id={id}"
+  base_url: "https://normasapf.buengobierno.gob.mx"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "title"
+      description: "Norm name (from the SANI register row)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the norm PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Emission date (ISO 8601) from the register, else null"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Open Government Data"
+  url: null
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Official internal norms of a Mexican federal secretariat, published for public consultation through the SANI register on buengobierno.gob.mx. No explicit open licence attached; treated as open government data (LGTAIP transparency framework)."
+
+notes: |
+  - SANI register page (SFP.jsf) renders a PrimeFaces datatable; every norm row
+    embeds its id, name, issuer, emission date and Descarga?id= URL in the HTML.
+  - normalize() downloads each norm PDF and extracts text via common/pdf_extract.
+  - PDFs below 500 chars (scanned images, no OCR layer) are skipped.
+  - Date is the register's emission date (YYYY/MM/DD) coerced to ISO 8601.
+  - Classified doctrine: internal administrative norms / guidance of a federal
+    secretariat, not laws of general application.

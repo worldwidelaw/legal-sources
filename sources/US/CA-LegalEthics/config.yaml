@@ -1,0 +1,117 @@
+# ===================================================================
+# US/CA-LegalEthics -- State Bar of California (COPRAC)
+#                      — Formal Ethics Opinions
+# ===================================================================
+# Formal Opinions issued by the State Bar of California's Standing
+# Committee on Professional Responsibility and Conduct (COPRAC). Each
+# opinion applies the California Rules of Professional Conduct and the
+# State Bar Act to a stated question and advises lawyers whether the
+# described conduct is proper = doctrine. One continuous numbered
+# series "CAL {YYYY}-{N}", CAL 1965-1 to present (~188 opinions),
+# published in full by the State Bar of California (calbar.ca.gov):
+# older opinions (1965-2001) as born-digital HTML, newer (2002-present)
+# as born-digital PDFs, no OCR/CAPTCHA/auth. Public-domain California
+# regulatory-agency official records. Distinct from US/CA-FPPC (Fair
+# Political Practices Commission = public officials) and California
+# Attorney General opinions.
+# ===================================================================
+
+source:
+  id: "US/CA-LegalEthics"
+  country: "US"
+  name: "State Bar of California (COPRAC) — Formal Ethics Opinions"
+  url: "https://www.calbar.ca.gov/legal-professionals/ethics-compliance-practice-resources/ethics/ethics-opinions"
+  description: |
+    Formal Opinions of the State Bar of California's Standing Committee
+    on Professional Responsibility and Conduct (COPRAC). The Committee
+    expresses its view on the propriety of professional conduct under
+    the California Rules of Professional Conduct and the State Bar Act.
+    The opinions form one continuous numbered series, "CAL {YYYY}-{N}",
+    from CAL 1965-1 to the present (CAL 2026-210 as of 2026-07). The
+    full text is published by the State Bar of California: opinions from
+    1965-2001 as born-digital HTML pages, opinions from 2002-present as
+    born-digital PDFs.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_listing"
+  base_url: "https://www.calbar.ca.gov"
+  endpoints:
+    listing: "/legal-professionals/ethics-compliance-practice-resources/ethics/ethics-opinions"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CA-LegalEthics/{YYYY-N})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number in the continuous series (e.g. '2020-203')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title (e.g. 'California Formal Ethics Opinion No. 2020-203')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text (Issue / Digest / Authorities / Discussion) from the HTML body or PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Opinion year as ISO 8601 (YYYY-01-01, from the opinion number's year prefix)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "State Bar of California — Standing Committee on Professional Responsibility and Conduct (COPRAC)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (California Regulatory-Agency Official Record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Formal Ethics Opinions of the State Bar of California's Standing Committee on Professional Responsibility and Conduct are official public records of a California regulatory body (the State Bar is a public corporation and administrative arm of the Supreme Court of California), published for public use on calbar.ca.gov with no copyright restriction."
+
+notes: |
+  - Discovery: the single "Ethics Opinions" listing page enumerates
+    EVERY opinion as a direct document link whose anchor text is exactly
+    the opinion number ("CAL YYYY-N"). The scraper extracts (number,
+    href) from every such anchor; the exact href is always taken from
+    the anchor, never constructed (filenames are irregular).
+  - Full text: HTML opinions (1965-2001, .htm) 301-redirect to
+    /sites/default/files/... and the <body> text is sliced out; PDF
+    opinions (2002-present) are downloaded and the text layer extracted
+    with PyMuPDF. Born-digital, no OCR.
+  - Type: every document is a Formal Opinion interpreting the California
+    Rules of Professional Conduct = doctrine.
+  - Date: the opinion number's year prefix is the issuance year, stored
+    as YYYY-01-01 (non-required, best-effort).
+  - Distinct from US/CA-FPPC (Fair Political Practices Commission,
+    public officials) and California Attorney General opinions.

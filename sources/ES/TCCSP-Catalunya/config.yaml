@@ -1,0 +1,74 @@
+source:
+  id: ES/TCCSP-Catalunya
+  name: Tribunal Català de Contractes del Sector Públic (TCCSP)
+  url: https://contractacio.gencat.cat/ca/contacte/tccsp/resolucions-tccsp/
+  country: ES
+  region: Catalunya
+  jurisdiction: ES-CT
+  data_types:
+    - case_law
+  auth:
+    type: none
+  license:
+    name: "Generalitat de Catalunya open data (PSI reuse)"
+    url: "https://web.gencat.cat/ca/menu-ajuda/ajuda/avis_legal/"
+    commercial_use: true
+    attribution_required: true
+    share_alike: false
+    no_derivatives: false
+    notes: "Reutilización de información del sector público (Ley 37/2007)."
+
+api:
+  base_url: https://contractacio.gencat.cat/ca/contacte/tccsp/resolucions-tccsp/
+  pagination: "?page{TOKEN}={N}&googleoff=1 per year page (50/page); TOKEN discovered from the page's own pagination links"
+  page_size: 50
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+    - name: "resolucio_number"
+      type: "string"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 2012-01-01
+    end: present
+  document_types:
+    - Resolució
+  estimated_count: 2000
+
+notes: |
+  Tribunal Català de Contractes del Sector Públic (TCCSP). Resolves the "recurs
+  especial en matèria de contractació" for Catalonia and issues binding
+  resolucions (Catalan). Published on the Generalitat de Catalunya contracting
+  portal, organised by year; each year page paginates 50/page and links directly
+  to born-digital resolució PDFs (extracted with PyMuPDF, no OCR). The Socrata
+  dataset dkrd-id95 (Transparència Catalunya) is metadata-only and stale to 2018,
+  so it is NOT used. Regional sibling of ES/TARCJA-Andalucia, ES/OARC-Euskadi,
+  ES/TACP-Madrid, ES/TACPA-Aragon, ES/TACPN-Navarra, ES/TACPC-Canarias and
+  ES/TARCCyL; open-data alternative to the captcha-blocked central ES/TACRC.

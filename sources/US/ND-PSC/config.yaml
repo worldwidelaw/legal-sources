@@ -1,0 +1,123 @@
+# ===================================================================
+# US/ND-PSC -- North Dakota Public Service Commission Orders
+# ===================================================================
+# Full text of Orders issued (and adopted) by the North Dakota Public
+# Service Commission (NDPSC) in its formal cases -- utility rate and
+# certificate proceedings, grain warehouse / grain buyer matters, coal
+# reclamation permits, pipeline siting, telecom, weights & measures,
+# etc. Each Order is an administrative adjudication of a specific case
+# docket = case_law. Public domain (US state government edict).
+# Published as born-digital PDFs via the public NDPSC case portal
+# (apps.psc.nd.gov/cases + www.psc.nd.gov/webdocs). No auth.
+# ===================================================================
+
+source:
+  id: "US/ND-PSC"
+  country: "US"
+  name: "North Dakota Public Service Commission — Orders"
+  url: "https://www.psc.nd.gov/case-search"
+  description: |
+    Orders issued (and adopted) by the North Dakota Public Service
+    Commission (NDPSC) resolving utility rate/certificate cases, grain
+    warehouse and grain buyer matters, coal reclamation permits, pipeline
+    siting, telecommunications, weights & measures and other regulated
+    proceedings. Each Order is an administrative adjudication of a
+    specific case docket (case_law). Full text is extracted from
+    born-digital Order PDFs (the minority image-only scan is OCR'd with
+    Tesseract).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_form"
+  base_url: "https://apps.psc.nd.gov/cases"
+  endpoints:
+    docket_search: "/psdocketsearch"
+    docket_detail: "/psdocketdetail?getId={yy}&getId2={case}&getId3={docket}"
+    webdocs: "https://www.psc.nd.gov/webdocs/case/{case}/{docket:03d}-{file:03d}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "id"
+      description: "Case number + docket number, e.g. 'PU-26-169-11'"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "NDPSC case number, e.g. 'PU-26-169', 'RC-25-270'"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "docket_number"
+      description: "Docket (filing) number within the case"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "title"
+      description: "Order title (case number + description)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "description"
+      description: "Docket description of the Order"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "on_behalf_of"
+      description: "Filing party ('Public Service Commission' for a genuine Commission Order)"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "text"
+      description: "Full text of the Order extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the Order was filed (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — North Dakota)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "North Dakota Public Service Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - apps.psc.nd.gov/cases is a server-rendered ASP-style search app over the
+    NDPSC document archive; every document is a born-digital PDF under
+    https://www.psc.nd.gov/webdocs/case/{YY-NNNN}/{docket:03d}-{file:03d}.pdf.
+  - POST /cases/psdocketsearch with docketTypeCode=Order and a
+    filedFromDate/filedToDate window returns an HTML results table: one row
+    per Order docket with Case Number, docket number + description, page
+    count, "On Behalf Of", "Filed By" and Date Filed (YYYY.MM.DD). GOTCHA:
+    the date fields are <input type=date> so their value MUST be yyyy-mm-dd;
+    an M/D/YYYY value makes the endpoint return HTTP 500.
+  - The result set is hard-capped at ~100 rows with no pager, so fetch_all()
+    walks month windows newest-first back to ~2000 to stay under the cap.
+  - Each row links to /cases/psdocketdetail?getId=&getId2=&getId3= which
+    embeds the direct webdocs PDF link(s). Primary document is the "-010"
+    file. Full text via fitz/PyMuPDF; Tesseract OCR fallback for the
+    minority of image-only scans.

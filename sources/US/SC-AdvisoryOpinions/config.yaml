@@ -1,0 +1,117 @@
+# ===================================================================
+# US/SC-AdvisoryOpinions -- South Carolina Department of Revenue
+#   Advisory Opinions (Revenue Rulings, Revenue Procedures, Private
+#   Letter Rulings, Information Letters, Technical Advice Memoranda)
+# ===================================================================
+# Official interpretive guidance of the South Carolina Department of
+# Revenue on South Carolina tax law. Published via the SCDOR "Advisory
+# Opinion Search" — a Drupal Views page whose exposed filters accept
+# GET params and render a server-side results table, paginated 10 rows
+# per page via ?page=N (dor.sc.gov/advisory-opinion-search). Each row
+# gives the policy name, Policy # (e.g. RR03-4), tax category, year,
+# opinion type and status; the document PDF lives at a deterministic
+# URL dor.sc.gov/sites/dor/files/policies/{PolicyID}.pdf (born-digital
+# text-layer, owner-password encrypted but extractable). No JavaScript,
+# no CAPTCHA, no auth. Public domain South Carolina state government
+# works (government edicts).
+# ===================================================================
+
+source:
+  id: "US/SC-AdvisoryOpinions"
+  country: "US"
+  name: "South Carolina Department of Revenue — Advisory Opinions"
+  url: "https://dor.sc.gov/advisory-opinion-search"
+  description: |
+    Published advisory opinions of the South Carolina Department of
+    Revenue — official interpretive guidance on SC tax law: Revenue
+    Rulings, Revenue Procedures, Private Letter Rulings, Information
+    Letters and Technical Advice Memoranda (1987-present). Enumerated
+    from the SCDOR Advisory Opinion Search (Drupal Views, paginated 10
+    per page via ?page=N); each opinion's PDF is at a deterministic
+    policies/{PolicyID}.pdf URL. No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://dor.sc.gov"
+  endpoints:
+    search: "/advisory-opinion-search"
+    pdf: "/sites/dor/files/policies/{policy_id}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/SC-AdvisoryOpinions/{policy-id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "policy_id"
+      description: "SCDOR Policy # (e.g. 'RR03-4', 'PLR26-1', 'IL26-14')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "opinion_type"
+      description: "Advisory opinion type (Revenue Ruling, Private Letter Ruling, etc.)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (type + policy # + subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory opinion from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the document head; falls back to listing year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — South Carolina state tax guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Advisory opinions of the South Carolina Department of Revenue are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The SCDOR Advisory Opinion Search is a Drupal Views page; its
+    exposed filters accept GET params and render a server-side results
+    table paginated 10 rows per page via ?page=N. The scraper walks
+    pages until a page yields no rows (~189 pages, ~1,888 opinions,
+    1987-present), parsing each row's policy name, Policy #, tax
+    category, year, type and status from the views-field <td> classes.
+  - Every opinion's PDF is at the deterministic URL
+    dor.sc.gov/sites/dor/files/policies/{PolicyID}.pdf, so no per-row
+    node fetch is needed. PDFs are born-digital text-layer documents
+    (owner-password encrypted, still extractable) — extracted via
+    common.pdf_extract (curl browser UA, ~1 req/s). A <150-char guard
+    auto-skips the occasional scanned attachment (OCR-recoverable).
+  - date prefers a real "Month D, YYYY" from the document head, falling
+    back to the listing year (Jan 1) so the temporal key is set.
+  - Type is doctrine: advisory opinions are interpretive government
+    guidance, not adjudications of a contested case.
+  - Public domain South Carolina state government data.

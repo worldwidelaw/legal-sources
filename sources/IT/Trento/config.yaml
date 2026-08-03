@@ -1,0 +1,52 @@
+source:
+  id: IT/Trento
+  name: Trentino Provincial Legislation (Codice provinciale)
+  country: IT
+  url: https://www.consiglio.provincia.tn.it/leggi-e-archivi/codice-provinciale
+  data_types:
+    - legislation
+  auth: none
+  description: >
+    Provincial laws and regulations (leggi e regolamenti provinciali) of the
+    Autonomous Province of Trento from 1951 to present, from the official
+    "Codice provinciale" of the Consiglio della Provincia autonoma di Trento.
+    Enumerated via the official CC-BY open-data XML index
+    (normattiva.xml, updated daily); full consolidated text fetched per act
+    from the /doc-txt/ plain-text endpoint. Covers both in-force (vigente) and
+    repealed (abrogato) acts. ~2,700 acts.
+
+fetch:
+  max_retries: 3
+  rate_limit: 1.0
+  timeout: 60
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: law_number
+      type: string
+      required: false
+
+license:
+  name: "CC BY (Dati Trentino open data)"
+  url: "https://creativecommons.org/licenses/by/4.0/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    The Codice provinciale open-data XML is published on dati.trentino.it under
+    Creative Commons Attribution (CC BY). The underlying acts are official acts
+    of a public administration and are additionally not protected by copyright
+    under Art. 5 of the Italian Copyright Law (Legge 22 aprile 1941, n. 633).

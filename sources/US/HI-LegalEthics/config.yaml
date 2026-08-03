@@ -1,0 +1,121 @@
+# ===================================================================
+# US/HI-LegalEthics -- Disciplinary Board of the Hawaiʻi Supreme Court
+# — Formal (Ethics) Opinions
+# ===================================================================
+# Formal Opinions of the Disciplinary Board of the Hawaiʻi Supreme
+# Court: each interprets the Hawaiʻi Rules of Professional Conduct as
+# applied to a lawyer's contemplated conduct to advise LAWYERS =
+# doctrine. Hawaiʻi cites its opinions by number ("Formal Opinion No.
+# 44"). ~19 born-digital PDF opinions. The Disciplinary Board and its
+# Office of Disciplinary Counsel are arms of the Hawaiʻi Supreme Court.
+# ===================================================================
+
+source:
+  id: "US/HI-LegalEthics"
+  country: "US"
+  name: "Disciplinary Board of the Hawaiʻi Supreme Court — Formal (Ethics) Opinions"
+  url: "https://dbhawaii.org/legal-ethics-advice-for-hawaii-lawyers/"
+  description: |
+    Formal Opinions issued by the Disciplinary Board of the Hawaiʻi
+    Supreme Court. Each opinion interprets the Hawaiʻi Rules of
+    Professional Conduct as applied to a lawyer's contemplated conduct.
+    ~19 born-digital PDF opinions are published free on dbhawaii.org,
+    listed on a single public page; each carries a "Formal Opinion No.
+    N" citation number and full analysis.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_pdf"
+  base_url: "https://dbhawaii.org"
+  endpoints:
+    index: "/legal-ethics-advice-for-hawaii-lawyers/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/HI-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Citation number N (e.g. 24, 46, 50; combined docs '18-22') — the identifier Hawaiʻi cites"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title (Formal Opinion No. N — topic from the index)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text extracted from the born-digital PDF (PyMuPDF, no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 issue date — first 'Month DD, YYYY' in the opinion body (null if none present)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Disciplinary Board of the Hawaiʻi Supreme Court"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-HI)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain / freely published formal opinions"
+  url: "https://dbhawaii.org/legal-ethics-advice-for-hawaii-lawyers/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Hawaiʻi Disciplinary Board Formal Opinions are published free to the public on dbhawaii.org, listed on an open page, with no login, paywall or terms prohibiting reuse. The Disciplinary Board of the Hawaiʻi Supreme Court and its Office of Disciplinary Counsel are arms of the Hawaiʻi Supreme Court, so the 17 U.S.C. § 105 government-edicts rationale applies fairly directly (like US/SC/LA/WI/GA/MT/DC/NM-LegalEthics). Treated as effectively public domain, consistent with the other state-bar legal-ethics sources — pd-us + commercial-OK."
+
+notes: |
+  - Discovery: the single public page /legal-ethics-advice-for-hawaii-
+    lawyers/ links every Formal Opinion PDF as an anchor (topic title)
+    to a born-digital PDF under /wp-content/uploads/ (WordPress). Two
+    non-opinion PDFs in the list (an ODC procedures memo and a Bar
+    Journal article) are skipped (filename must start FO/Formal-Opinion
+    + digit). ~19 opinions.
+  - Number: preferred from the body header "FORMAL OPINION NO. N"
+    (authoritative; handles FO4603-19-15.pdf -> 46). Falls back to the
+    filename; a combined document (FO_18_and_22.pdf) is keyed "18-22".
+  - Full text: each opinion is a born-digital PDF on dbhawaii.org.
+    Extracted with PyMuPDF (fitz), NO OCR. Records under 200 chars are
+    skipped (one older scanned scan, FO_44, yields 0 chars). The
+    Hawaiian ʻokina, which older PDFs render as "#" (broken ToUnicode),
+    is repaired in "Hawai#i" -> "Hawaiʻi".
+  - Date: the first "Month DD, YYYY" date in the body = the original
+    issue date (ISO). A few opinions carry no in-body date -> null.
+  - Type: every document is the Board's advisory interpretation of the
+    Hawaiʻi Rules of Professional Conduct = doctrine.
+  - Distinct from US/HI-Legislation / US/HI-Courts / US/HI-EthicsOpinions
+    (the latter = Hawaiʻi State Ethics Commission, government officials).
+    This is the attorney professional-conduct Formal Opinion series
+    (lawyers), the HI member of the US/{ST}-LegalEthics vein. Reuses the
+    index -> born-digital-PDF recipe (cf. US/NM-LegalEthics).

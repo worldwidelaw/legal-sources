@@ -1,0 +1,102 @@
+# ===================================================================
+# MX/PoderJudicialTlaxcala -- Tlaxcala State Court Decisions
+# ===================================================================
+# The Poder Judicial del Estado de Tlaxcala publishes full-text court
+# decisions (sentencias en versión pública) via its "Sentencias
+# (Publicación en versión pública)" portal. A single static HTML table
+# lists all decisions, each linking directly to a full-text PDF.
+# ===================================================================
+
+source:
+  id: "MX/PoderJudicialTlaxcala"
+  country: "MX"
+  name: "Poder Judicial del Estado de Tlaxcala"
+  url: "https://tsjtlaxcala.gob.mx/transparencia/sps/sps1.html"
+  description: |
+    Full-text court decisions (sentencias en versión pública) from the
+    Tribunal Superior de Justicia del Estado de Tlaxcala, accessed via the
+    public "Sentencias (Publicación en versión pública)" portal. The
+    listing (tabla1.html) is a single static HTML table of all ~6,560
+    public sentencias; each row carries the expediente, tipo de juicio,
+    año and juzgado plus a direct link to the full-text PDF under
+    sentencias/<file>.pdf. No authentication required.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2.0
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html"
+  base_url: "https://tsjtlaxcala.gob.mx/transparencia/sps"
+  endpoints:
+    listing: "/tabla1.html"
+    document: "/sentencias/{filename}.pdf"
+  response_format: "html+pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Unique decision identifier (MX-TLA-<pdf-slug>)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (tipo de juicio + expediente)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (extracted from the public PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year of the proceeding as YYYY-01-01 (only the año is published)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to the full-text PDF"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "court"
+      description: "Juzgado that issued the decision"
+    - name: "subject_area"
+      description: "Tipo de juicio / materia"
+    - name: "case_number"
+      description: "Número de expediente"
+    - name: "year"
+      description: "Año del expediente"
+    - name: "jurisdiction"
+      description: "ISO 3166-2 subdivision (MX-TLA)"
+
+license:
+  name: "Mexican Government Public Data (LIBRE USO MX)"
+  url: "https://datos.gob.mx/libreusomx"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Public-version court decisions published by the Tlaxcala state
+    judiciary as a transparency obligation (versiones públicas).
+    Mexican government public information is freely reusable under the
+    Términos de Libre Uso de la Información (LIBRE USO MX); commercial
+    use permitted with attribution.

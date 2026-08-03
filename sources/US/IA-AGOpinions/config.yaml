@@ -1,0 +1,95 @@
+# ===================================================================
+# US/IA-AGOpinions -- Iowa Attorney General Opinions
+# ===================================================================
+# Full text of the Iowa Attorney General's opinions, republished openly
+# by the Iowa Legislature as born-digital annual compilation volumes
+# (the AG's own site routes full text through Westlaw). Official state
+# legal interpretations (doctrine). No authentication required.
+# ===================================================================
+
+source:
+  id: "US/IA-AGOpinions"
+  country: "US"
+  name: "Iowa Attorney General Opinions"
+  url: "https://www.legis.iowa.gov/publications/attorneyGeneralOpinions"
+  description: |
+    Opinions of the Iowa Attorney General — authoritative interpretations
+    of Iowa law issued at the request of state officers and county
+    attorneys. The Iowa Legislature republishes them as born-digital
+    annual compilation volumes (Opinions / Report / Unpublished Opinions),
+    one PDF per volume, spanning 1896-present (~98 volumes). Full text is
+    in born-digital / pre-OCR'd PDFs (the rare image-only scan is OCR'd
+    with Tesseract). One record = one annual volume.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.legis.iowa.gov"
+  endpoints:
+    listing: "/publications/attorneyGeneralOpinions"
+    pdf: "/docs/publications/AGO/{id}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "title"
+      description: "Volume name, e.g. 'Iowa Attorney General Opinions 2012'"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "volume_year"
+      description: "Year the volume covers"
+      type: "integer"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the annual opinions volume (all opinions)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Volume year as an ISO date ({YEAR}-01-01)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Iowa)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Iowa Attorney General opinions are official state government edicts in the public domain."
+
+notes: |
+  - Single page /publications/attorneyGeneralOpinions is a server-rendered
+    HTML table listing every volume (1896-present): one row per annual PDF
+    at /docs/publications/AGO/{id}.pdf.
+  - fetch_all() yields raw volume metadata (keyed by the unique numeric doc
+    id, so a year's "Opinions" and "Unpublished Opinions" volumes are kept
+    as distinct records); normalize() downloads each PDF and extracts full
+    text (fitz/PyMuPDF; Tesseract OCR fallback for the rare image-only scan).
+  - One record = one annual compilation volume. Individual opinions are
+    delimited only by inline "#YY-N-N" syllabus markers, not by document
+    boundaries, so the volume is the granular unit the state publishes.
+  - The Iowa AG's own site routes opinion full text through Westlaw
+    (paywalled); the Legislature's compilation volumes are the free
+    full-text source. Public domain Iowa government data.

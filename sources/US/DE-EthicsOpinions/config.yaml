@@ -1,0 +1,111 @@
+# ===================================================================
+# US/DE-EthicsOpinions -- Delaware Public Integrity Commission (PIC)
+#                         — Advisory Opinion Synopses & Case Decisions
+# ===================================================================
+# The Delaware Public Integrity Commission (PIC) publishes its advisory-
+# opinion corpus under the State Employees', Officers' and Officials'
+# Code of Conduct (29 Del. C. ch. 58), the Financial Disclosure law, the
+# Lobbying law, and the dual-compensation policy. Rather than one file
+# per opinion, the PIC publishes topic-consolidated, born-digital PDFs —
+# each compiling every opinion on that topic (1991–2023) with the
+# applicable statute and the facts/holding of each matter. These are the
+# Commission's authoritative published interpretations, released for
+# public use = doctrine. Public-domain State of Delaware government works.
+#
+# DISTINCT from US/DE-AGOpinions, US/DE-PERB, US/DE-Courts.
+# ===================================================================
+
+source:
+  id: "US/DE-EthicsOpinions"
+  country: "US"
+  name: "Delaware Public Integrity Commission — Advisory Opinion Synopses"
+  url: "https://depic.delaware.gov/code-of-conduct/opinion-synopsis/"
+  description: |
+    Advisory-opinion synopses and case decisions of the Delaware Public
+    Integrity Commission (PIC) under the Code of Conduct (29 Del. C. ch.
+    58), Financial Disclosure law, Lobbying law and dual-compensation
+    policy. Published as topic-consolidated born-digital PDFs on
+    depic.delaware.gov, each compiling every opinion on that topic
+    (1991–2023) with the applicable statute and the facts/holding of each
+    matter.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "html_index"
+  base_url: "https://depic.delaware.gov"
+  endpoints:
+    code_of_conduct: "/code-of-conduct/opinion-synopsis/"
+    financial_disclosure: "/financial-disclosure/opinion-synopses/"
+    lobbying: "/lobbying/lobbying-opinion-synopses/"
+    compensation: "/compensation-policy/synopses-opinions/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/DE-EthicsOpinions/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "category"
+      description: "PIC subject area (Code of Conduct, Financial Disclosure, Lobbying, Compensation Policy)"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "title"
+      description: "Issuer + topic title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the topic-consolidated opinion PDF (born-digital)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Coverage/publication year (ISO 8601), the latest year in the topic range"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (State of Delaware Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Advisory opinion synopses and case decisions of the Delaware Public Integrity Commission are official public records of the State of Delaware, released for public use with no copyright restriction."
+
+notes: |
+  - Enumeration: six server-rendered WordPress listing pages on
+    depic.delaware.gov (code-of-conduct/opinion-synopsis, code-of-conduct/
+    pic-casedecisions, financial-disclosure/opinion-synopses, lobbying/
+    lobbying-opinion-synopses, compensation-policy/case-decisions,
+    compensation-policy/synopses-opinions) link the topic PDFs under
+    /wp-content/uploads/. The scraper scans all six, collects every
+    wp-content PDF, dedups by URL (~21 unique), and drops favicon assets.
+  - Full text: each PDF is born-digital (clean text layer; OCR fallback via
+    common.pdf_extract). Topic files are large (tens of KB to >1.4M chars),
+    each compiling all opinions on that topic 1991–2023.
+  - Type: published opinion synopses / case decisions = doctrine.
+  - Date: the latest year in the topic range (e.g. 1991-2023 -> 2023).
+  - COVERAGE: ~21 topic-consolidated PDFs spanning the full PIC opinion
+    corpus, 1991–2023.

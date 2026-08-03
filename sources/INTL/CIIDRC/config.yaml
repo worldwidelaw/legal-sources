@@ -1,0 +1,64 @@
+source:
+  id: "INTL/CIIDRC"
+  country: "INTL"
+  name: "Canadian International Internet Dispute Resolution Centre (CIIDRC) — Domain Name Dispute Decisions"
+  url: "https://ciidrc.org/domain-name-disputes/ciidrc-decisions/"
+  description: |
+    Full-text panel decisions of the Canadian International Internet Dispute
+    Resolution Centre (CIIDRC), operated by the Vancouver International
+    Arbitration Centre (VanIAC, formerly BCICAC). CIIDRC is an ICANN-accredited
+    Uniform Domain-Name Dispute-Resolution Policy (UDRP) provider for gTLDs and
+    the CIRA-approved provider for .CA Canadian Domain Name Dispute Resolution
+    Policy (CDRP) disputes. ~660 decisions (2020-present), published openly as
+    full-text PDFs. English administrative panel decisions resolving disputes
+    over gTLD and .ca domain names.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://ciidrc.org"
+  # Single server-rendered DataTable at /domain-name-disputes/ciidrc-decisions/
+  # lists every decision (~660 rows): listing date, case-number link
+  # (/my-portal/decisions/?casenumber={INTERNAL_ID}&action=view), domain(s),
+  # status. Each view page exposes structured metadata (case number, status,
+  # complainant, respondent, decision date, panelists) plus a documents table
+  # linking the full-text PDF under /wp-content/uploads/YYYY/MM/...-Decision.pdf.
+
+schema:
+  key_fields:
+    _id: "case_number"
+  required_fields:
+    - _id
+    - text
+    - title
+  temporal_key: "date"
+
+update:
+  strategy: "full_rescan"
+  # No incremental endpoint; the index is small enough to re-scan in full and
+  # the loader deduplicates on _id (case_number).
+
+license:
+  name: "Custom terms (publicly published decisions)"
+  url: "https://ciidrc.org/domain-name-disputes/uniform-domain-name-dispute-resolution-policy/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    CIIDRC panel decisions are public records published openly on ciidrc.org
+    pursuant to the UDRP/CDRP Rules (the UDRP requires that the full decision be
+    published over the Internet, save for exceptional redactions). No explicit
+    reuse licence; treated as publicly published decisions, consistent with the
+    project's other domain-dispute sources (INTL/WIPO-UDRP, INTL/CAC-UDRP,
+    INTL/Forum-DomainDecisions, INTL/ADNDRC).

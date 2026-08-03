@@ -1,0 +1,124 @@
+# ===================================================================
+# US/DC-PSC -- Public Service Commission of the District of Columbia
+# ===================================================================
+# Full text of Orders issued by the Public Service Commission of the
+# District of Columbia (DCPSC) adjudicating formal cases and dockets
+# (electric, natural-gas, telecommunications rate cases, certificate /
+# merger applications, complaints, rulemakings). Each Commission Order
+# is a final or procedural administrative adjudication = case_law.
+# Public domain (US government edict). Published as born-digital /
+# OCR'd PDFs via the public e-docket JSON API (edocket.dcpsc.org). No auth.
+# ===================================================================
+
+source:
+  id: "US/DC-PSC"
+  country: "US"
+  name: "Public Service Commission of the District of Columbia — Orders"
+  url: "https://edocket.dcpsc.org/"
+  description: |
+    Orders issued by the Public Service Commission of the District of
+    Columbia (DCPSC) resolving formal cases and utility dockets across the
+    electric, natural-gas and telecommunications industries — rate cases,
+    certificate/merger applications, complaints and rulemakings. Each
+    Commission Order is a numbered administrative adjudication of a specific
+    matter (case_law). The Order series runs from Order No. 1 (1913-03-11)
+    to the present (~22,900 Orders). Full text is extracted from the
+    born-digital Order PDFs (Tesseract OCR fallback for the rare image-only
+    scan in the pre-2001 back-catalogue).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "json_api"
+  base_url: "https://edocket.dcpsc.org/apis/api"
+  endpoints:
+    search: "/Filing/GetFilings"
+    download: "/Filing/download"
+
+data_model:
+  type: "case_law"
+  primary_key: "order_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "order_number"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "order_number"
+      description: "Sequential DCPSC Order number (1 .. present)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "DC PSC formal-case / docket id, e.g. 'FC1119', 'EA11-14'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "doc_type"
+      description: "Document type (always 'Order' for this source)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Order title (order number + date + description)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "description"
+      description: "Filing description / caption from the e-docket record"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "company"
+      description: "Utility / company or individual party from the e-docket record"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "text"
+      description: "Full text of the Order extracted from the PDF (OCR fallback)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order received / issued date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — District of Columbia)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "DCPSC Orders are official government edicts of the District of Columbia and are in the public domain."
+
+notes: |
+  - edocket.dcpsc.org is an Angular SPA ("DCPSC E-Docket System") backed by a
+    public REST API at /apis/api. The public filing search
+    (Filing/GetFilings) and the file download (Filing/download) require no
+    authentication; admin endpoints (Order/GetOrders, Case/GetAllCases) are
+    401-gated and are NOT used.
+  - The Order series is sequentially numbered. fetch_all() first learns the
+    newest Order number by paging Filing/GetFilings (ordered by receivedDate
+    desc) until the first row whose `isOrder` flag is set, then walks every
+    Order number down to 1, querying Filing/GetFilings?orderNumber=N for each.
+  - Each Order row exposes `attachmentId` and `attachment`. Modern Orders use a
+    GUID name (`<guid>.pdf`); the pre-2001 archived Orders use `OA/<n>.pdf`.
+    The PDF streams from Filing/download?attachId=<id>&guidFileName=<attachment>
+    (the literal '/' in archived names must be preserved). Full text via
+    fitz/PyMuPDF; older scans already carry an OCR'd text layer and the rare
+    image-only page falls back to Tesseract.
+  - Confidential filings (attachment == "Confidential" or isConfidential) are
+    skipped — their public PDF is not served.

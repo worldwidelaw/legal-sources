@@ -1,0 +1,55 @@
+fetch:
+  suspended_url: https://aquaticsintegrity.com/suspended-persons/
+  wp_posts_url: https://aquaticsintegrity.com/wp-json/wp/v2/posts
+  method: html_pdf_plus_wp_rest
+  rate_limit_seconds: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: >
+    Aquatics Integrity Unit (AQIU) decisions — the published full-text
+    disciplinary, ethics, competition-manipulation, safe-sport and anti-doping
+    outcomes of the independent body that, since 1 January 2023, handles
+    integrity matters for World Aquatics (formerly FINA) across swimming, water
+    polo, diving, artistic swimming, open-water swimming and high diving. Two
+    corpora: (1) AQIU Adjudicatory Body reasoned decisions (full multi-page
+    rulings on liability, sanction, ineligibility period and legal reasoning,
+    incl. legacy FINA Doping Panel decisions) published as PDFs on the
+    "Suspended Persons" page; and (2) AQIU published case outcomes (suspensions,
+    anti-doping-rule-violation bans, whereabouts-failure bans, reprimands and
+    match-misconduct suspensions) served via the site's WordPress REST API.
+    Anti-doping merits are heard by the CAS Anti-Doping Division; AQIU publishes
+    the resulting outcome. Openly published (no login, no WAF), reachable from
+    any IP. Pure news, statistics roundups and administrative posts are excluded.
+    NOT the Athletics Integrity Unit (INTL/AthleticsIntegrityUnit).
+  id: INTL/AquaticsIntegrityUnit
+  language: en
+  name: Aquatics Integrity Unit (AQIU) Decisions
+  url: https://aquaticsintegrity.com/suspended-persons/
+license:
+  name: "AQIU / World Aquatics Terms (All Rights Reserved)"
+  url: "https://aquaticsintegrity.com/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions are published openly for transparency, but World Aquatics / the AQIU assert copyright with no open licence. Commercial use flagged restricted per project policy (err on flagging)."

@@ -1,0 +1,22 @@
+{
+  "_id": "AGN-2026-113",
+  "_source": "AR/AGN",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-02T20:07:12.108064+00:00",
+  "title": "Programa 63 \"Asistencia Financiera a Agentes del Seguro de Salud” y Programa 50 “Regulación y Control del Sistema de Salud” Gestión de Transferencias.  Período 2020 y 2021. Superintendencia de Servicios de Salud",
+  "text": "ALCANCE El examen se realizará de conformidad con las Normas de Control Externo Gubernamental aprobadas por Resolución 26/2015-AGN “Normas de Control Externo Gubernamental”, Resolución 186/2016-AGN “Normas de Control Externo de la Gestión Gubernamental” y Resolución 187/2016 “Normas de Control de Cumplimiento Gubernamental\", dictadas en virtud de las facultades conferidas por el art, 119 inc. d) de la Ley 24.156. Período auditado: 2020 y 2021.",
+  "date": "2026-04-30",
+  "url": "https://www.agn.gob.ar/Informe-113-2026",
+  "pdf_url": "https://webagnapi.agn.gob.ar/sites/default/files/informes/2026-113-Informe.pdf",
+  "ano": 2026,
+  "resolucion": 113,
+  "actuacion": "236/2022",
+  "fecha_acta": "2026-04-30",
+  "periodo_auditado": "2020-01-01 / 2021-12-31",
+  "organismo_auditado_ids": [
+    "1211"
+  ],
+  "tipo_de_auditoria_ids": [
+    "51"
+  ]
+}

@@ -1,0 +1,73 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — UK Bar Tribunals & Adjudication Service (BTAS)
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "UK/BTAS"
+  country: "UK"
+  name: "UK Bar Tribunals & Adjudication Service (BTAS)"
+  url: "https://www.tbtas.org.uk"
+  description: |
+    Published findings and sanctions of disciplinary tribunals convened by the
+    Bar Tribunals & Adjudication Service (BTAS), which administers independent
+    tribunals hearing professional-misconduct allegations against barristers in
+    England & Wales (prosecuted by the Bar Standards Board). Barrister-side
+    counterpart of UK/SDT. Full text extracted from born-digital findings PDFs.
+    ~200 tribunal findings.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.tbtas.org.uk"
+  endpoints:
+    listing:
+      path: "/hearings/findings-and-sentences-of-past-hearings/page/{n}/"
+      description: "Paginated findings listing (10 hearings/page)"
+
+schema:
+  key_fields:
+    - name: "doc_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      required: false
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "defendant"
+      type: "string"
+      required: false
+      role: "content"
+    - name: "status"
+      type: "string"
+      required: false
+      role: "classification"
+
+license:
+  name: "Custom terms (BTAS web terms & conditions)"
+  url: "https://www.tbtas.org.uk/web-terms-conditions/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    BTAS (Council of the Inns of Court) publishes tribunal findings under its
+    publication policy with its own web terms & conditions; no Open Government
+    Licence statement. Commercial use flagged pending confirmation.

@@ -1,0 +1,96 @@
+# ===================================================================
+# US/MA-SessionLaws -- Massachusetts Session Laws (Acts & Resolves)
+# ===================================================================
+# Full text of the chronological Acts and Resolves enacted by the
+# General Court of Massachusetts, 1692-present, from the State Library
+# of Massachusetts' open DSpace repository. Distinct from
+# US/MA-Legislation (the current consolidated General Laws). No auth.
+# Public domain — edicts of government (US state statutes).
+# ===================================================================
+
+source:
+  id: "US/MA-SessionLaws"
+  country: "US"
+  name: "Massachusetts Session Laws (Acts & Resolves)"
+  url: "https://archives.lib.state.ma.us/"
+  description: |
+    The Massachusetts session laws — the as-enacted, chapter-by-chapter record
+    of Acts and Resolves passed by the General Court since 1692. Served by the
+    State Library of Massachusetts DSpace 7 REST API
+    (archives.lib.state.ma.us/server/api), open and without auth/WAF. ~108k
+    items carry the subject "Session Laws - Massachusetts". Enumeration is
+    partitioned by year (dc.date.issued:YYYY) to stay under DSpace's deep-paging
+    ceiling; embed=bundles/bitstreams returns each item's files inline. Full
+    text comes from the DSpace-extracted plain-text bitstream (TEXT bundle, or
+    an ORIGINAL .txt sibling): modern acts (~1990s-2010) are born-digital and
+    clean, older volumes are readable OCR of print. No local PDF/OCR step.
+
+data_types:
+  - legislation
+
+jurisdictions:
+  - code: US-MA
+    scope: full
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 4
+
+api:
+  type: "dspace7_rest"
+  base_url: "https://archives.lib.state.ma.us/server/api"
+  endpoints:
+    discover: "/discover/search/objects?query=dc.subject.lcsh:\"Session Laws - Massachusetts\""
+    item: "/core/items/{uuid}?embed=bundles/bitstreams"
+    bitstream: "/core/bitstreams/{uuid}/content"
+
+data_model:
+  type: "legislation"
+  primary_key: "url"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "title"
+      description: "Act/Resolve title (year, chapter number, short title)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the act/resolve (DSpace-extracted)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "url"
+      description: "DSpace handle/item URL"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "date"
+      description: "Year of enactment (ISO 8601, Jan 1)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public domain — US state statutes (edicts of government)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Massachusetts session laws (Acts & Resolves) are statutes — edicts of government — in the public domain (Banks v. Manchester; Georgia v. Public.Resource.Org). Digitized and served openly by the State Library of Massachusetts."
+
+notes: |
+  - DSpace 7 REST API at archives.lib.state.ma.us/server/api (open, no auth/WAF)
+  - ~108k items, subject "Session Laws - Massachusetts", 1692-2010
+  - Year-partitioned scan (dc.date.issued:YYYY), 100/page, embed=bundles/bitstreams
+  - Full text from TEXT bundle bitstream (born-digital clean ~1990s-2010, OCR earlier)
+  - One document per Act/Resolve chapter; distinct from US/MA-Legislation (current General Laws)
+  - Public domain MA state statutes

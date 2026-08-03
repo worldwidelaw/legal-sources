@@ -1,0 +1,19 @@
+{
+  "_id": "EC-CC-7973",
+  "_source": "EC/CorteConstitucional",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-01T18:25:08.919806+00:00",
+  "title": "Sentencia 1121-18-EP/23",
+  "text": "Acción extraordinaria de protección presentada en contra de la sentencia de casación, mediante la cual la Sala de lo Contencioso Tributario de la CNJ resolvió no casar la sentencia dictada por el Tribunal de lo Contencioso Tributario al verificar que no se configuraron los vicios invocados. En el proceso de origen, la Sala de la CNJ rechazó el recurso de casación interpuesto por el accionante. Por su parte, el accionante alegó, mediante la EP, que en la sentencia de casación se habría realizado un nuevo examen de admisibilidad y falta de pronunciamiento de fondo. Del análisis realizado, la Corte observó que, respecto del caso cuarto del art. 268 del COGEP, la Sala sí efectuó un razonamiento de fondo, sin embargo, respecto del caso segundo, la Sala manifestó que en la fundamentación del cargo se habría confundido las causales de casación por lo que existía una imposibilidad para pronunciarse sobre dicho caso. La Corte aceptó la EP, al considerar que la sentencia 1252-16-EP/21 ha señalado que un fallo de casación que establece que el recurso no está suficientemente fundamentado no vulnera derechos constitucionales siempre que esta no sea la única razón para justificar su decisión. Sin embargo, en el presente caso se observa que la insuficiente fundamentación fue la única razón para desestimar el recurso, por lo que la sentencia impugnada no se refirió al incumplimiento de algún otro presupuesto procesal para emitir una sentencia válida. Por ello, la Corte declaró la vulneración del derecho al debido proceso en la garantía de cumplimiento de normas y derechos de las partes de la entidad accionante al constatar que el tribunal de casación realizó nuevamente un análisis de admisibilidad respecto del caso segundo del artículo 268 del COGEP.",
+  "date": "2023-08-16",
+  "url": "https://esacc.corteconstitucional.gob.ec/storage/api/v1/10_DWL_FL/eyJjYXJwZXRhIjogInRyYW1pdGUiLCAidXVpZCI6ICI4NzBlMjY1OC1mNzI4LTQ3MjYtYmI0Ny02ZGZkODNjMGU3YmQucGRmIn0=",
+  "numero": "1121-18-EP/23",
+  "numero_causa": "1121-18-EP",
+  "tipo_accion": "ACCIÓN EXTRAORDINARIA DE PROTECCIÓN",
+  "materia": "Tributario",
+  "juez": "ALI VICENTE LOZADA PRADO",
+  "decision": "ACEPTAR",
+  "metadata_sentencia": "",
+  "es_novedad": true,
+  "es_relevante": false
+}

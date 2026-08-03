@@ -1,0 +1,109 @@
+# ===================================================================
+# US/SD-PUC -- South Dakota Public Utilities Commission Orders
+# ===================================================================
+# Full text of Orders issued by the South Dakota Public Utilities
+# Commission adjudicating utility dockets (electric, natural-gas,
+# combined gas/electric, telecommunications). Administrative
+# adjudications of specific dockets = case_law. Public domain (US state
+# government edict). Published openly as born-digital PDFs in the PUC
+# docket archive (puc.sd.gov). No auth.
+# ===================================================================
+
+source:
+  id: "US/SD-PUC"
+  country: "US"
+  name: "South Dakota Public Utilities Commission — Orders"
+  url: "https://puc.sd.gov/Dockets/"
+  description: |
+    Orders issued by the South Dakota Public Utilities Commission (PUC)
+    resolving utility rate cases, certificate applications, complaints
+    and other dockets across the electric, natural-gas, combined
+    gas/electric and telecommunications industries. Each Order is an
+    administrative adjudication of a specific docket (case_law). The
+    corpus spans 2000 to present. Full text is extracted from
+    born-digital Order PDFs (the rare image-only scan is OCR'd with
+    Tesseract).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "html_scraping"
+  base_url: "https://puc.sd.gov"
+  endpoints:
+    type_landing: "/Dockets/{Type}/default.aspx"
+    year_listing: "/Dockets/{Type}/{YYYY}/default.aspx"
+    docket_page: "/Dockets/{Type}/{YYYY}/{DOCKET}.aspx"
+    order_pdf: "/commission/dockets/{type}/{YYYY}/{DOCKET}/{name}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "docket"
+      description: "Docket number, e.g. 'EL24-001' (EL=electric, NG=natural gas, GE=gas/electric, TC=telecom)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "industry"
+      description: "Docket industry: Electric, NaturalGas, GasElectric or Telecom"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "title"
+      description: "Docket number plus the 'In the Matter of' caption and order description"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Order extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order date (ISO 8601), parsed from the docket-page link (Order body fallback)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "pdf_url"
+      description: "Direct URL to the born-digital Order PDF"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — South Dakota)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "SD Public Utilities Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - The PUC publishes every docket at /Dockets/{Type}/{YYYY}/{DOCKET}.aspx
+    for Type in Electric, NaturalGas, GasElectric, Telecom. Each type's
+    landing page lists year sub-pages; each year page lists that year's
+    docket pages (EL24-001.aspx, NG24-003.aspx, TC24-002.aspx, GE24-001.aspx).
+  - Each docket page has an "Orders:" section — an <ul> of
+    <li><a href="/commission/dockets/.../X.pdf">MM/DD/YY - description</a></li>
+    links to born-digital Order PDFs (distinct from "Filed Documents").
+  - fetch_all() walks the four types, newest year first, yields one raw per
+    Order PDF; normalize() downloads the PDF and extracts full text via
+    fitz/PyMuPDF (Tesseract OCR fallback). Order date comes from the link
+    prefix, with an Order-body "this Nth day of Month, YYYY" fallback.
+  - Public domain South Dakota government data.

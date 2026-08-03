@@ -1,0 +1,27 @@
+{
+  "_id": "CV_BO_100501",
+  "_source": "CV/BoletimOficial",
+  "_type": "legislation",
+  "_fetched_at": "2026-03-26T02:36:24.312539+00:00",
+  "title": "Resolução n.º 61/2026",
+  "text": "Ao abrigo do disposto no n.º 6 do artigo 9º da Lei n.º 109/VIII/2016 de 28 de janeiro, conjugado com o n.º 1 do artigo 20º-A dos Estatutos do Fundo Autónomo das Pescas, aprovados pelo Decreto-Regulamentar n.º 44/2022, de 26 de agosto, alterado pelo Decreto-Regulamentar n.º 6/2025 de 10 de dezembro; e\n\nNos termos do n.º 2 do artigo 265º da Constituição, o Governo aprova a seguinte Resolução:\n\nArtigo 1º\n\nRemuneração\n\nÉ fixada em 150.000$00 (cento e cinquenta mil escudos) a remuneração da Gestora Executiva do Fundo Autónomo das Pescas. \n\nArtigo 2º\n\nEntrada em vigor\n\nA presente Resolução entra em vigor no dia seguinte ao da sua publicação e produz efeitos a partir do dia 9 de fevereiro de 2026.\n\nAprovada em Conselho de Ministros, do dia 23 de março de 2026. ― O Primeiro-Ministro, José Ulisses de Pina Correia e Silva.",
+  "date": "2026-03-25",
+  "url": "https://boe.incv.cv/Bulletins/View/100501",
+  "ref_act": 28720,
+  "part": {
+    "id": 19,
+    "code": "",
+    "description": "Resolução do Conselho de Ministros",
+    "hide": false,
+    "refParent": 1,
+    "parent": {
+      "id": 1,
+      "description": "I Série",
+      "hide": false,
+      "order": 0
+    },
+    "order": 0
+  },
+  "entities": [],
+  "language": "pt"
+}

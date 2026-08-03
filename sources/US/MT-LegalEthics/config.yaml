@@ -1,0 +1,122 @@
+# ===================================================================
+# US/MT-LegalEthics -- State Bar of Montana, Ethics Committee —
+# Ethics Opinions
+# ===================================================================
+# Ethics opinions of the State Bar of Montana Ethics Committee: each
+# interprets the Montana Rules of Professional Conduct as applied to a
+# member's contemplated conduct to advise LAWYERS = doctrine. Montana
+# cites its opinions by a six-digit code (e.g. "Ethics Opinion
+# 970717"). ~78 born-digital PDF opinions 1985-present. The State Bar
+# of Montana is an INTEGRATED (mandatory) bar.
+# ===================================================================
+
+source:
+  id: "US/MT-LegalEthics"
+  country: "US"
+  name: "State Bar of Montana — Ethics Committee (Ethics Opinions)"
+  url: "https://www.montanabar.org/For-Attorneys/State-Bar-Resources/Ethics-Opinions"
+  description: |
+    Ethics opinions issued by the State Bar of Montana Ethics Committee.
+    Each opinion interprets the Montana Rules of Professional Conduct as
+    applied to a member's contemplated conduct. ~78 born-digital PDF
+    opinions 1985-present are published free on montanabar.org, indexed
+    on a single public page grouped by rule; each carries a six-digit
+    citation code and full analysis.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_pdf"
+  base_url: "https://www.montanabar.org"
+  endpoints:
+    index: "/For-Attorneys/State-Bar-Resources/Ethics-Opinions"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/MT-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Six-digit citation code (e.g. 970717, 101216) — the identifier Montana cites"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title (generated; includes the descriptive title from the filename when present)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text extracted from the born-digital PDF (PyMuPDF, no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 date decoded from the six-digit code (YYMMDD, or MMDDYY fallback); null if undecodable"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "State Bar of Montana — Ethics Committee"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-MT)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain / freely published advisory opinions"
+  url: "https://www.montanabar.org/For-Attorneys/State-Bar-Resources/Ethics-Opinions"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "State Bar of Montana ethics opinions are published free to the public on montanabar.org, indexed on an open page, with no login, paywall or terms prohibiting reuse. The State Bar of Montana is Montana's INTEGRATED (mandatory) bar (all Montana lawyers must belong, per Montana Supreme Court rule), so the 17 U.S.C. § 105 government-edicts rationale applies fairly directly (like US/SC/LA/WI/GA-LegalEthics). Treated as effectively public domain, consistent with the other state-bar legal-ethics sources — pd-us + commercial-OK."
+
+notes: |
+  - Discovery: the single public page /For-Attorneys/State-Bar-Resources/
+    Ethics-Opinions links every opinion PDF (under /Portals/MONTANA/),
+    grouped by Rule of Professional Conduct. The SAME opinion is often
+    linked under several rules and/or as a "_N" filename variant, so
+    records are de-duplicated on the base six-digit code (the "_N"
+    copies are byte-identical). ~78 unique opinions.
+  - Number: the six-digit citation code that leads the filename (e.g.
+    "970717.pdf" -> 970717, "870522 Candor Toward the Tribunal.pdf" ->
+    870522). This IS the identifier Montana cites ("Ethics Opinion
+    970717"). A few descriptive-only slugs without a code duplicate
+    numbered opinions and are skipped.
+  - Full text: each opinion is a born-digital PDF on montanabar.org
+    (DNN portal; %-encoded spaces + optional ?ver= token preserved).
+    Extracted with PyMuPDF (fitz), NO OCR. Records under 200 chars are
+    skipped.
+  - Date: best-effort decode of the six-digit code — mostly YYMMDD
+    (970717 -> 1997-07-17), a few MMDDYY (112314 -> 2014-11-23); YY>=50
+    -> 19YY else 20YY. Null when undecodable. The opinion bodies carry
+    no separate explicit decision date.
+  - Type: every document is the Committee's advisory interpretation of
+    the Montana Rules of Professional Conduct = doctrine.
+  - Distinct from US/MT-Legislation / US/MT-Courts. This is the attorney
+    professional-conduct advisory-opinion series (lawyers), the MT member
+    of the US/{ST}-LegalEthics vein.

@@ -1,0 +1,139 @@
+# ===================================================================
+# US/MT-BOPA -- Montana Board of Personnel Appeals — Decisions
+# ===================================================================
+# Published decisions of the Montana Board of Personnel Appeals (BOPA),
+# the independent tribunal within the Montana Department of Labor &
+# Industry (Employment Standards Division) that adjudicates public-sector
+# collective-bargaining disputes for the State of Montana, its political
+# subdivisions, and school districts under the Montana Public Employees
+# Collective Bargaining Act (Title 39, Ch. 31, MCA). BOPA resolves
+# interest-arbitration impasses (including firefighter and police
+# interest arbitration under 39-34-101 et seq.), fact-finding
+# recommendations, and employee-classification appeals. Each numbered
+# award/decision resolves a specific contested case = case_law; the
+# decisions are official Montana state-government works in the public
+# domain (government edicts).
+#
+# BUILD RECIPE (builds + validates LOCALLY):
+# The BOPA "Case Decision Index" at erd.dli.mt.gov publishes its
+# born-digital decision PDFs across four HTML category pages under
+#   /labor-standards/collective-bargaining/board-of-personnel-appeals/
+#     case-decision-index/{category}
+# where {category} is one of: Employee-Classification-Decisions,
+# fact-finder-decisions, firefighter-factfinding,
+# police-interest-arbitration-awards. Each page lists decision PDFs whose
+# hrefs resolve to erd.dli.mt.gov/_docs/labor-standards/collective-
+# bargaining/BOPA/{file}.pdf (a handful under /labor-standards/). The
+# scraper fetches the four category pages, extracts + de-duplicates the
+# PDF links (dropping a stray non-decision IT-policy link on mt.gov),
+# downloads each PDF and extracts full text with common.pdf_extract, and
+# parses the case number ("Case No. 2025DRS00184"), decision date, and
+# parties from the body/filename. No auth, no CAPTCHA.
+#
+# NOTE: the bulk board decisions (unfair-labor-practice and unit-
+# determination orders, ~cbdecNNNN legacy PDFs) are only reachable via
+# the ebizws.mt.gov ERD_PUBLICPORTAL search, which sits behind an
+# F5/Shape (TSPD) bot-challenge ("Request Rejected") and cannot be
+# enumerated without a browser; the legacy dli.mt.gov/hearings/decisions
+# tree returns individual PDFs but its directory index is 403 and it has
+# no Wayback preservation. Those are a VPS/browser-only future extension.
+# ===================================================================
+
+source:
+  id: "US/MT-BOPA"
+  country: "US"
+  name: "Montana Board of Personnel Appeals — Decisions"
+  url: "https://erd.dli.mt.gov/labor-standards/collective-bargaining/board-of-personnel-appeals/case-decision-index/"
+  description: |
+    Published decisions of the Montana Board of Personnel Appeals (BOPA),
+    the tribunal in the Montana Department of Labor & Industry that
+    adjudicates public-sector collective-bargaining disputes under the
+    Montana Public Employees Collective Bargaining Act (Title 39, Ch. 31,
+    MCA). Covers interest-arbitration awards (incl. firefighter and police
+    interest arbitration), fact-finding recommendations, and employee-
+    classification decisions. Each award/decision resolves a specific
+    contested case = case_law. Full decision text is extracted from the
+    born-digital PDFs published on the BOPA Case Decision Index. No
+    CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://erd.dli.mt.gov"
+  endpoints:
+    category_index: "/labor-standards/collective-bargaining/board-of-personnel-appeals/case-decision-index/{category}"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/MT-BOPA/{filename-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Slug derived from the decision PDF filename (unique per file)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "case_number"
+      description: "BOPA case number (e.g. '2025DRS00184'), from body; null if absent"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "category"
+      description: "Decision category (interest arbitration / fact finding / classification)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "issuer"
+      description: "Issuing body (Montana Board of Personnel Appeals)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Decision title (Montana BOPA — parties / subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (born-digital PDF extract)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from body/filename; null if absent"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Original decision PDF URL (erd.dli.mt.gov)"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions of the Montana Board of Personnel Appeals are official works
+    of Montana state government (edicts of a government agency) and are not
+    subject to copyright under the government-edicts doctrine. Free to use,
+    including commercially.

@@ -1,0 +1,49 @@
+source:
+  id: "EU/EESC-Opinions"
+  name: "European Economic and Social Committee — Opinions & Information Reports"
+  country: "EU"
+  language: "en"
+
+  # Full text is retrieved from the EU Publications Office (CELLAR / EUR-Lex),
+  # where every adopted EESC opinion is published in the OJ C series with a
+  # CELEX number of the form 5{YYYY}AE{NNNN} (sector 5 = EESC/CoR acts, "AE"
+  # = avis CESE / EESC opinion). Enumeration is via the public CELLAR SPARQL
+  # endpoint; full text via CELLAR content negotiation (bypasses the eur-lex.
+  # europa.eu AWS-WAF that 202-challenges datacenter IPs).
+  endpoints:
+    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
+    cellar_celex: "http://publications.europa.eu/resource/celex/{celex}"
+
+  data_types:
+    - doctrine
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1
+
+  schema:
+    key_fields:
+      _id:
+        type: string
+        required: true
+      title:
+        type: string
+        required: true
+      text:
+        type: string
+        required: true
+      date:
+        type: date
+        required: false
+
+fetch:
+  sample_count: 15
+
+license:
+  name: "EU institutional reuse (Decision 2011/833/EU)"
+  url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "EESC opinions published in the Official Journal are reusable under the Commission's reuse policy (Decision 2011/833/EU). Public domain-equivalent for the OJ text."

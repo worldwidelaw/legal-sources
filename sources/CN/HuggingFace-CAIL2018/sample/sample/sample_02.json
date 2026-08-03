@@ -1,0 +1,25 @@
+{
+  "_id": "CAIL2018-first_stage_train-c721023e29cba222",
+  "_source": "CN/HuggingFace-CAIL2018",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-28T00:29:10.603264+00:00",
+  "title": "李xx盗窃案",
+  "text": "天津市静海县人民检察院指控，2014年5月13日上午8时许，被告人李xx在天津市静海县大邱庄镇伊士登宾馆227房间金某配货站，趁该配货站室内无人之际，盗窃李1某x钱包内人民币2800元。李1某x报警后，公安民警在该配货站内将被告人李xx抓获。\r\n在法庭主持下，公诉人当庭讯问了被告人，宣读了被害人陈述、证人证言，出示了现场勘查笔录等证据，以证实指控被告人犯罪的事实。公诉机关认为，被告人李xx的行为已触犯《中华人民共和国刑法》××之规定，应当以××追究其刑事责任。并提出量刑建议，提请本院依法判处。",
+  "date": "2018-01-01",
+  "url": "https://huggingface.co/datasets/china-ai-law-challenge/cail2018",
+  "split": "first_stage_train",
+  "relevant_articles": [
+    264
+  ],
+  "accusation": [
+    "盗窃"
+  ],
+  "criminals": [
+    "李xx"
+  ],
+  "imprisonment_months": 0.0,
+  "punish_of_money": 0.0,
+  "death_penalty": false,
+  "life_imprisonment": false,
+  "sentence_summary": ""
+}

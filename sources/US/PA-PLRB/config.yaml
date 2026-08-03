@@ -1,0 +1,131 @@
+# ===================================================================
+# US/PA-PLRB -- Pennsylvania Labor Relations Board Final & Proposed Orders
+# ===================================================================
+# Published Final Orders and Proposed Decisions & Orders of the
+# Pennsylvania Labor Relations Board (PLRB), the state agency (within
+# the Department of Labor & Industry) that adjudicates public- and
+# private-sector labor-relations disputes under the Public Employe
+# Relations Act (PERA / Act 195), the Police & Firemen Collective
+# Bargaining Act (Act 111), and the Pennsylvania Labor Relations Act
+# (PLRA). The Board decides unfair-labor-practice charges,
+# representation / certification petitions, and unit-determination
+# cases. Each order resolves a specific contested case = case_law;
+# the orders are official Pennsylvania state-government works in the
+# public domain (government edicts).
+#
+# BUILD RECIPE: PLRB migrated to the AEM site www.pa.gov. Orders are
+# published on per-year pages under plrb-final-orders/ and
+# plrb-proposed-orders/, but the per-year URL slugs are inconsistent
+# (e.g. '2024-final-orders' vs '2023-plrb-final-orders'; a typo
+# '{YEAR}-plrb-proposed-urders' for 2020-2022). The landing-page year
+# navigation is JS-rendered and AEM .model.json is blocked, so the
+# scraper enumerates the year pages from the public XML sitemap
+# https://www.pa.gov/en.sitemap.xml (filtered to the PLRB order paths).
+# Each year page server-renders <a href> links to born-digital decision
+# PDFs under /content/dam/.../plrb/{final|proposed}-orders/{YEAR}/
+# documents/{slug}.pdf; full text via common.pdf_extract. No auth, no
+# CAPTCHA.
+# ===================================================================
+
+source:
+  id: "US/PA-PLRB"
+  country: "US"
+  name: "Pennsylvania Labor Relations Board — Final & Proposed Orders"
+  url: "https://www.pa.gov/agencies/dli/programs-services/labor-management-relations/pennsylvania-labor-relations-board"
+  description: |
+    Published Final Orders and Proposed Decisions & Orders of the
+    Pennsylvania Labor Relations Board (PLRB). PLRB adjudicates public-
+    and private-sector labor-relations disputes under PERA (Act 195),
+    Act 111 (police & fire), and the Pennsylvania Labor Relations Act --
+    unfair-labor-practice charges, representation / certification
+    petitions, and unit-determination cases. Each order resolves a
+    specific contested case = case_law. Enumerated from the pa.gov XML
+    sitemap (per-year Final and Proposed order pages, ~2011-present for
+    final, ~2020-present for proposed); case number, decision date,
+    order type, and the full order text (from the born-digital PDF) are
+    captured. No CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.pa.gov"
+  endpoints:
+    sitemap: "/en.sitemap.xml"
+    final_orders_year: "/agencies/dli/.../pennsylvania-labor-relations-board/plrb-final-orders/{year}-..."
+    proposed_orders_year: "/agencies/dli/.../pennsylvania-labor-relations-board/plrb-proposed-orders/{year}-..."
+    decision_pdf: "/content/dam/copapwp-pagov/.../plrb/{section}-orders/{year}/documents/{name}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/PA-PLRB/{section-year-filename-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Slug derived from the order PDF path (unique per file)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "case_number"
+      description: "PLRB case number (e.g. 'PERA-C-25-149-E', 'PF-C-22-51-E')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "order_type"
+      description: "'Final Order' or 'Proposed Decision and Order'"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "issuer"
+      description: "Issuing body (Pennsylvania Labor Relations Board)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Order title (PLRB {order_type} — {parties} ({case_number}))"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the order (born-digital PDF extract)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order date (ISO 8601), parsed from the order body; null if absent"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the order PDF on www.pa.gov"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Orders of the Pennsylvania Labor Relations Board are official works
+    of Pennsylvania state government (edicts of a government agency) and
+    are not subject to copyright under the government-edicts doctrine.
+    Free to use, including commercially.

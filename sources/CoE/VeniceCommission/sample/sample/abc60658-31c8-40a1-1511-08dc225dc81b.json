@@ -1,0 +1,25 @@
+{
+  "_id": "abc60658-31c8-40a1-1511-08dc225dc81b",
+  "_source": "CoE/VeniceCommission",
+  "_type": "case_law",
+  "_fetched_at": "2026-03-26T03:46:27.532589+00:00",
+  "title": "Law on the reform of national service",
+  "text": "HEADNOTE:\nThe Constitutional Court is not competent to rule on a request contesting the constitutionality of a law after it has been promulgated by the President of the Republic.\n\nSUMMARY:\nThis case raised a novel question of procedure: was it within the Constitutional Council s powers to hear a submission by a group of parliamentarians (in this case, senators) concerning a law that had been passed by Parliament and submitted to the Council within the maximum time limit set by Article 10 of the Constitution for its promulgation (fifteen days), given that the President of the Republic had promulgated the said law in advance of this time limit, the day before the application was filed by the senators, at a time when the law had not yet been published in the Official Gazette? By its decision, the Constitutional Council confirms an accepted premise of administrative law, whereby a distinction is drawn between promulgation and publication, and the former is afforded a specific meaning with legal implications that are different from those of the latter. (For example, promulgation serves as the legal basis for an executive order or, as in the present case, ends the opportunity for the Head of State to ask Parliament for a second reading or to refer a law to the Constitutional Council, and, by extension, makes this impossible for the parliamentarians themselves.) This case, the only one of its kind since 1974, when parliamentarians were given the right to bring cases before the Constitutional Court, reveals a lack of conformity between this procedure and the original text on promulgation in the 1958 Constitution, a shortcoming that had been concealed by ordinary practice until this case.",
+  "date": "1997-11-07",
+  "url": "https://codices.coe.int/codices/detail/abc60658-31c8-40a1-1511-08dc225dc81b",
+  "reference_code": "FRA-1997-3-005",
+  "country": "fra",
+  "country_name": "France",
+  "court_name": "Constitutional Council",
+  "chamber": "",
+  "decision_number": "97-392 DC",
+  "language": "eng",
+  "official_publication": "Journal officiel de la République française - Lois et Décrets (Official Gazette), 08.11.1997, 16255",
+  "keywords": [
+    "Enactment",
+    "Promulgation",
+    "President",
+    "Président"
+  ],
+  "is_published": true
+}

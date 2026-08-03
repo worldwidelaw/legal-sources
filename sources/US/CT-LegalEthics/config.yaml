@@ -1,0 +1,128 @@
+# ===================================================================
+# US/CT-LegalEthics -- Connecticut Bar Association — Informal Ethics Opinions
+# ===================================================================
+# Informal Opinions of the Connecticut Bar Association's Standing
+# Committee on Professional Ethics (now the Committee on Professional
+# Ethics and the Unauthorized Practice of Law), each the Committee's
+# written response to a member inquiry interpreting the Connecticut
+# Rules of Professional Conduct = doctrine (advisory, no weight of law).
+# One numbered series ("YY-NN"), ~74 opinions 2011-present published
+# free as born-digital PDFs on ctbar.org; older Formal & Informal
+# Opinions back to 1986 are only on paywalled Casemaker/vLex and are
+# excluded. Distinct from US/CT-EthicsOpinions (executive Office of
+# State Ethics — public officials) and US/CT-Courts. The CBA is a
+# voluntary bar association, so (unlike an integrated bar) these are
+# published as an educational service; no login/paywall/reuse terms.
+# ===================================================================
+
+source:
+  id: "US/CT-LegalEthics"
+  country: "US"
+  name: "Connecticut Bar Association — Informal Ethics Opinions"
+  url: "https://www.ctbar.org/news/CBAPublications/informal-ethics-opinions"
+  description: |
+    Informal Opinions issued by the Connecticut Bar Association's Standing
+    Committee on Professional Ethics (now the Committee on Professional
+    Ethics and the Unauthorized Practice of Law). Each opinion is the
+    Committee's written response to a member's inquiry interpreting the
+    Connecticut Rules of Professional Conduct (advisory, no weight of
+    law). The publicly posted corpus is one numbered series ("YY-NN")
+    running from 2011 to present (~74 opinions), each published in full
+    as a born-digital PDF carrying the CBA letterhead, opinion number,
+    approved/issue date and full discussion.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_pdf"
+  base_url: "https://www.ctbar.org"
+  endpoints:
+    index: "/news/CBAPublications/informal-ethics-opinions"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CT-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Informal opinion number, canonical 'YYYY-NN' (e.g. 2011-01, 2025-04)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title (from the CBA index anchor text after the number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text from the born-digital PDF (no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Approved/issue date as ISO 8601 (from the header date line; falls back to YYYY-01-01)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Connecticut Bar Association — Committee on Professional Ethics"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-CT)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain / freely published advisory opinions"
+  url: "https://www.ctbar.org/news/CBAPublications/informal-ethics-opinions"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "CBA Informal Ethics Opinions are published free to the public on ctbar.org as an educational service interpreting the Connecticut Rules of Professional Conduct. They are advisory (no weight of law) and carry no login, paywall or terms prohibiting reuse. Treated as effectively public domain, consistent with the other state-bar legal-ethics sources (US/NY-LegalEthics, US/IL-LegalEthics). The CBA is a voluntary bar association (not an integrated/state bar), so the 17 U.S.C. § 105 government-edicts rationale is weaker than for court-arm boards; flagged here as freely-published advisory material with commercial use permitted."
+
+notes: |
+  - Discovery: opinions are listed on the CBA public page
+    /news/CBAPublications/informal-ethics-opinions. Each is a direct
+    born-digital PDF link whose anchor text is "Informal Opinion
+    {YY-NN} | {Title}" — the number and title come straight from the
+    index; the year folder in the PDF path (/…/{YYYY}-opinions/… or
+    /…/{YYYY}/…) gives the authoritative 4-digit year for
+    canonicalisation to 'YYYY-NN'. ~74 opinions 2011-present.
+  - Full text: each opinion PDF is born-digital (text layer) — extracted
+    with PyMuPDF, NO OCR needed. A handful of older PDFs carry stray
+    control-char artifacts (\x01 form markers) which are stripped in
+    _clean.
+  - Date: the "Approved Month DD, YYYY" (or plain issue-date) line in
+    the header region; falls back to the number's year -> YYYY-01-01.
+  - Type: every document is the Committee's advisory interpretation of
+    the Connecticut Rules of Professional Conduct = doctrine.
+  - Scope: only the free 2011-present corpus on ctbar.org. Formal
+    Opinions and pre-2011 Informal Opinions (back to CT's 1986 adoption
+    of the RPC) are on the paywalled Casemaker/vLex service and are
+    excluded (no open-data access).
+  - Distinct from US/CT-EthicsOpinions (executive Connecticut Office of
+    State Ethics — public officials) and US/CT-Courts. This is the
+    attorney professional-conduct advisory-opinion series (lawyers).

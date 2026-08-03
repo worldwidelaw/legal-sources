@@ -1,0 +1,82 @@
+# ===================================================================
+# FR/BulletinsOfficielsSociaux -- Bulletins officiels des ministères
+#   chargés des affaires sociales (Santé / Protection sociale /
+#   Solidarités  &  Travail / Emploi / Formation professionnelle)
+# ===================================================================
+# Drupal node JSON (?_format=json) enumerated via the site sitemap.
+# Full text of each act is in field_body_text — no PDF extraction
+# needed for the binding body.
+# ===================================================================
+
+source:
+  id: "FR/BulletinsOfficielsSociaux"
+  country: "FR"
+  name: "Bulletins officiels des ministères chargés des affaires sociales (Santé & Travail)"
+  url: "https://bulletins-officiels.social.gouv.fr/"
+  description: |
+    Official bulletins of the French social-affairs ministries, published at
+    bulletins-officiels.social.gouv.fr. The site carries the BO Santé -
+    Protection sociale - Solidarités and the BO Travail - Emploi - Formation
+    professionnelle: circulaires, instructions, arrêtés, décisions, notes
+    d'information, avis, conventions, délibérations, etc. Each act is a Drupal
+    node whose full text is exposed via ?_format=json (field_body_text).
+    Covers public-repo source requests #1036 and #1037.
+
+data_types:
+  - legislation
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 1
+  max_workers: 4
+
+api:
+  type: "drupal_json"
+  sitemap_url: "https://bulletins-officiels.social.gouv.fr/sitemap.xml"
+  base_url: "https://bulletins-officiels.social.gouv.fr"
+  node_format: "?_format=json"
+
+data_model:
+  type: "legislation"
+  primary_key: "_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "title"
+      description: "Document title (act type, number, date, subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the act (field_body_text, HTML stripped)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Signature/publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Licence Ouverte 2.0"
+  url: "https://www.etalab.gouv.fr/licence-ouverte-open-licence/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "French public-sector official texts published by the ministères sociaux; covered by the Licence Ouverte / Etalab open licence (commercial use permitted, attribution required)."
+
+notes: |
+  - Sitemap lists ~730 node paths; ~620 are real documents (carry field_institutional)
+  - Utility/section pages (accessibilité, cookies, BO landing) lack field_institutional and are skipped
+  - normalize() fetches <url>?_format=json and reads full text from field_body_text
+  - doc_type taxonomy slug maps to legislation (arrêté/décret/décision/...) or doctrine (circulaire/instruction/note/...)
+  - Date from field_additional_date (signature), falling back to field_publication_date / created
+  - Annexes are linked PDFs (drupal-media); the binding body is in field_body_text

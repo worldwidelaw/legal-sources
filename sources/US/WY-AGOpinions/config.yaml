@@ -1,0 +1,88 @@
+# ===================================================================
+# US/WY-AGOpinions -- Wyoming Attorney General Formal Opinions
+# ===================================================================
+# Full text of the Formal Opinions of the Wyoming Attorney General —
+# authoritative interpretations of Wyoming law (doctrine). Published
+# openly as born-digital text PDFs (Google Drive) linked from
+# attorneygeneral.wyo.gov. No authentication required. Public domain
+# Wyoming government work.
+# ===================================================================
+
+source:
+  id: "US/WY-AGOpinions"
+  country: "US"
+  name: "Wyoming Attorney General Opinions"
+  url: "https://attorneygeneral.wyo.gov/formal-opinions"
+  description: |
+    Formal Opinions of the Wyoming Attorney General, ~1998-2018. The index
+    page (attorneygeneral.wyo.gov/formal-opinions) is server-rendered with no
+    WAF/CAPTCHA; each opinion links to a Google Drive file downloaded directly
+    via the Drive uc?export=download endpoint (resourcekey passed for older
+    0B...-format IDs). The 1998/1999 entries are compiled multi-opinion year
+    volumes; the rest are one numbered formal opinion per entry. Full text
+    extracted from the born-digital PDFs (no OCR). The rare scanned/empty PDF
+    is skipped.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index_plus_drive"
+  base_url: "https://attorneygeneral.wyo.gov"
+  endpoints:
+    index: "/formal-opinions"
+    drive_download: "https://drive.google.com/uc?export=download&id={file_id}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "url"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "url"
+
+schema:
+  total_fields: 7
+  key_fields:
+    - name: "title"
+      description: "Opinion title (incl. opinion number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "url"
+      description: "Google Drive view URL for the source PDF"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "date"
+      description: "Opinion year (ISO 8601, Jan 1)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Wyoming)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Wyoming Attorney General formal opinions are official state government works in the public domain."
+
+notes: |
+  - Formal opinions listed at attorneygeneral.wyo.gov/formal-opinions
+  - Each links to a Google Drive PDF; downloaded via uc?export=download
+  - ~19 entries 1998-2018; 13 carry usable text layers, scanned/empty skipped
+  - Full text via common.pdf_extract.extract_pdf_markdown (OOM-hardened)
+  - Public domain State of Wyoming government data

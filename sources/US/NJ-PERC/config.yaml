@@ -1,0 +1,120 @@
+# ===================================================================
+# US/NJ-PERC -- New Jersey Public Employment Relations Commission
+# ===================================================================
+# Commission decisions of the New Jersey Public Employment Relations
+# Commission (PERC), the state's quasi-judicial agency administering
+# the New Jersey Employer-Employee Relations Act (N.J.S.A. 34:13A).
+# PERC adjudicates public-sector labor-relations disputes -- scope-of-
+# negotiations determinations, restraints of binding arbitration,
+# unfair-practice charges, representation / unit-clarification cases,
+# and related contested matters. Each Commission decision resolves a
+# specific contested case = case_law. Public domain New Jersey state-
+# government works (edicts of a quasi-judicial government body).
+#
+# Source: the official Lotus Domino decision database at
+# https://www.perc.state.nj.us/percdecisions.nsf. Decisions are stored
+# as one PDF attachment each, exposed through the "IssuedDecisions"
+# view, which is categorized by calendar year. The full corpus is
+# enumerated by restricting the view to each year (1980-present):
+#   /percdecisions.nsf/IssuedDecisions?OpenView&RestrictToCategory={YEAR}
+# Each row links to /IssuedDecisions/{UNID}/$File/{citation}.pdf where
+# {UNID} is a stable Domino document universal id and the attachment
+# filename encodes the P.E.R.C. citation. Full decision text is
+# extracted from the PDF (common.pdf_extract); the issued date is
+# parsed from the "ISSUED: <Month DD, YYYY>" stamp. The PDF host
+# requires a browser User-Agent (plain requests get HTTP 403).
+# ~100-160 decisions/year, ~5,000+ total. No CAPTCHA, no auth.
+# ===================================================================
+
+source:
+  id: "US/NJ-PERC"
+  country: "US"
+  name: "New Jersey Public Employment Relations Commission — Decisions"
+  url: "https://www.nj.gov/perc/commission/decisions/"
+  description: |
+    Commission decisions of the New Jersey Public Employment Relations
+    Commission (PERC). PERC administers the New Jersey Employer-Employee
+    Relations Act and adjudicates public-sector labor-relations disputes
+    -- scope-of-negotiations determinations, restraints of binding
+    arbitration, unfair-practice charges, representation and unit-
+    clarification cases, and related contested matters. Each Commission
+    decision resolves a specific contested case = case_law. Enumerated
+    from PERC's official Lotus Domino decision database
+    (perc.state.nj.us/percdecisions.nsf) via the year-categorized
+    "IssuedDecisions" view; the P.E.R.C. citation, issued date, and full
+    decision text are read from each PDF attachment. ~5,000+ decisions,
+    1980-present. No CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.perc.state.nj.us"
+  endpoints:
+    year_view: "/percdecisions.nsf/IssuedDecisions?OpenView&RestrictToCategory={year}&Count=2000"
+    decision_pdf: "/percdecisions.nsf/IssuedDecisions/{unid}/$File/{name}.pdf?OpenElement"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/NJ-PERC/{Domino UNID})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Domino document universal id (32-hex)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "citation"
+      description: "P.E.R.C. citation (e.g. 'P.E.R.C. NO. 2026-46')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Decision title (the P.E.R.C. citation)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Commission decision (PDF extract)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date issued (ISO 8601), from the decision's 'ISSUED:' stamp"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the decision PDF on perc.state.nj.us"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions of the New Jersey Public Employment Relations Commission
+    are official works of New Jersey state government (edicts of a
+    quasi-judicial government body) and are not subject to copyright
+    under the government-edicts doctrine. Free to use, including
+    commercially.

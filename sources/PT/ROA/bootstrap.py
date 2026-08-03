@@ -29,6 +29,7 @@ import json
 import logging
 import re
 import sys
+import threading
 import time
 from datetime import datetime
 from pathlib import Path
@@ -51,6 +52,21 @@ SOURCE_ID = "PT/ROA"
 SOURCE_DIR = Path(__file__).resolve().parent
 SAMPLE_DIR = SOURCE_DIR / "sample"
 
+# (connect, read) timeouts — the read value caps time *between* bytes only.
+DEFAULT_TIMEOUT = (10, 30)
+# Hard wall-clock cap and size cap for a single PDF download so a server that
+# trickles the body slowly can't wedge the whole run (see issue #1148).
+PDF_DEADLINE_SECONDS = 180
+MAX_PDF_BYTES = 60 * 1024 * 1024
+# Hard wall-clock cap for a single article's download+extraction combined
+# (see issue #1168). The #1148 download deadline can't bound PDF *text
+# extraction*: opendataloader's in-process Java parser (and pdfminer) can loop
+# indefinitely on a malformed PDF, wedging the run with no log output ("no
+# activity ~4h, records frozen"). Running each article in a daemon thread lets
+# the main sweep skip a stuck article and keep making progress; a daemon thread
+# also can't block interpreter exit if the underlying native call never returns.
+ARTICLE_DEADLINE_SECONDS = 300
+
 
 class ROAFetcher:
     """Fetcher for Revista da Ordem dos Advogados articles."""
@@ -62,7 +78,7 @@ class ROAFetcher:
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         })
 
-    def _get(self, url: str, retries: int = 2, timeout: int = 30) -> Optional[requests.Response]:
+    def _get(self, url: str, retries: int = 2, timeout=DEFAULT_TIMEOUT) -> Optional[requests.Response]:
         for attempt in range(retries + 1):
             try:
                 resp = self.session.get(url, timeout=timeout)
@@ -75,10 +91,43 @@ class ROAFetcher:
                     logger.error(f"Failed to fetch {url}: {e}")
                     return None
 
-    def _get_pdf_bytes(self, url: str) -> Optional[bytes]:
-        resp = self._get(url, timeout=60)
-        if resp and resp.headers.get("Content-Type", "").startswith("application/pdf"):
-            return resp.content
+    def _get_pdf_bytes(self, url: str, retries: int = 2) -> Optional[bytes]:
+        """Stream-download a PDF with a hard wall-clock deadline and size cap.
+
+        A scalar read timeout only bounds the gap between successive bytes, so a
+        server that dribbles the body can keep a socket alive indefinitely and
+        wedge the whole run (issue #1148). Streaming with an explicit deadline
+        guarantees a single fetch can never stall the sweep for more than
+        PDF_DEADLINE_SECONDS.
+        """
+        for attempt in range(retries + 1):
+            try:
+                with self.session.get(url, timeout=DEFAULT_TIMEOUT, stream=True) as resp:
+                    resp.raise_for_status()
+                    ctype = resp.headers.get("Content-Type", "")
+                    if not ctype.startswith("application/pdf"):
+                        return None
+                    deadline = time.monotonic() + PDF_DEADLINE_SECONDS
+                    chunks = []
+                    total = 0
+                    for chunk in resp.iter_content(chunk_size=65536):
+                        if chunk:
+                            chunks.append(chunk)
+                            total += len(chunk)
+                            if total > MAX_PDF_BYTES:
+                                logger.warning(f"PDF exceeds {MAX_PDF_BYTES} byte cap, skipping: {url}")
+                                return None
+                        if time.monotonic() > deadline:
+                            raise requests.Timeout(
+                                f"PDF download exceeded {PDF_DEADLINE_SECONDS}s deadline"
+                            )
+                    return b"".join(chunks)
+            except requests.RequestException as e:
+                if attempt < retries:
+                    time.sleep(2 * (attempt + 1))
+                else:
+                    logger.error(f"Failed to download PDF {url}: {e}")
+                    return None
         return None
 
     def _extract_text(self, pdf_bytes: bytes) -> str:
@@ -315,6 +364,36 @@ class ROAFetcher:
 
         return {**article, "text": text}
 
+    def fetch_article_guarded(self, article: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Run fetch_article under a hard wall-clock deadline (issue #1168).
+
+        A malformed PDF can hang text extraction (opendataloader's Java parser or
+        pdfminer) with no output, wedging the whole sweep. Running the download +
+        extraction in a daemon thread lets us abandon a stuck article and move on;
+        the daemon thread won't block interpreter exit if the native call never
+        returns.
+        """
+        box: Dict[str, Any] = {}
+
+        def worker():
+            try:
+                box["value"] = self.fetch_article(article)
+            except Exception as e:  # noqa: BLE001 — never let a worker crash wedge the run
+                box["error"] = e
+
+        t = threading.Thread(target=worker, daemon=True)
+        t.start()
+        t.join(ARTICLE_DEADLINE_SECONDS)
+        if t.is_alive():
+            logger.warning(
+                f"Article fetch exceeded {ARTICLE_DEADLINE_SECONDS}s deadline, skipping: {article['pdf_url']}"
+            )
+            return None
+        if "error" in box:
+            logger.error(f"Article fetch failed {article['pdf_url']}: {box['error']}")
+            return None
+        return box.get("value")
+
     def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
         """Normalize a raw article record."""
         year = raw.get("year", "")
@@ -358,7 +437,7 @@ class ROAFetcher:
                     if limit and count >= limit:
                         return
 
-                    result = self.fetch_article(article)
+                    result = self.fetch_article_guarded(article)
                     if result:
                         yield self.normalize(result)
                         count += 1

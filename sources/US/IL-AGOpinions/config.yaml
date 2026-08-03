@@ -1,0 +1,107 @@
+# ===================================================================
+# US/IL-AGOpinions -- Illinois Attorney General Official Opinions
+# ===================================================================
+# Full text of official opinions issued by the Illinois Attorney
+# General. These are official state legal interpretations (doctrine).
+# The 1992-1994 (~77) and 2022-present (4) opinions are born-digital
+# text-layer PDFs in the illinoisattorneygeneral.gov document store and
+# extract cleanly (~81-opinion local corpus). The remaining ~1,388
+# opinions (1971-1991, 1995-2021) are CCITT-fax scanned images with no
+# text layer and are auto-skipped by the text-length guard — an
+# OCR-capable host recovers the full ~1,469-opinion corpus.
+# Public domain US state government works.
+# ===================================================================
+
+source:
+  id: "US/IL-AGOpinions"
+  country: "US"
+  name: "Illinois Attorney General Opinions"
+  url: "https://illinoisattorneygeneral.gov/opinions/"
+  description: |
+    Official opinions issued by the Illinois Attorney General. Each
+    opinion answers a legal question posed by a public official (State's
+    Attorney, state agency, legislator, local government) and constitutes
+    an authoritative interpretation of Illinois law. Listed on a single
+    server-rendered HTML page (/opinions/, recent) plus an archive page
+    (/opinions/opinion-archive, 1971-2009) as direct PDF links in the
+    /dA/{hash}/ document store — no JS, no CAPTCHA, no pagination. Only
+    the most recent opinions (2022-present) carry a real text layer; the
+    rest are scanned images requiring OCR.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://illinoisattorneygeneral.gov"
+  endpoints:
+    index: "/opinions/"
+    archive: "/opinions/opinion-archive"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "slug"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "slug"
+      description: "Stable document slug derived from the PDF filename"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Opinion title (number + subject, from the filename)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date of the opinion (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Illinois)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Illinois Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Official AG opinions at illinoisattorneygeneral.gov, served as PDFs
+    in the /dA/{hash}/{YEAR} {NUM} {SUBJECT}.pdf document store.
+  - The /opinions/ page (recent, 2010-present) and the
+    /opinions/opinion-archive page (1971-2009, ~1,431 links) are
+    server-rendered HTML — no JS, no pagination, no CAPTCHA. The scraper
+    reads BOTH pages and collects every /dA/*.pdf link (~1,469 total).
+  - Year, opinion number and subject are parsed directly from the
+    filename; the issue date is parsed from the spelled-out date near
+    the top of the opinion text, falling back to the filename year.
+  - Each PDF is extracted via common.pdf_extract. The site 403s the
+    default requests UA, so pages/PDFs are fetched via curl with a
+    browser UA and passed to the extractor as bytes. Paces at ~1 req/s.
+  - The text-layer corpus that extracts without OCR is ~81 opinions:
+    1992-1994 (~77, born-digital with real fonts) plus 2022-present (4).
+    The remaining ~1,388 opinions (1971-1991, 1995-2021) are CCITT-fax
+    scanned images (zero text operators) and are auto-skipped by the
+    <150-char guard. An OCR-capable host (tesseract / opendataloader)
+    recovers the full ~1,469-opinion corpus with the same scraper.
+  - Public domain Illinois government data.

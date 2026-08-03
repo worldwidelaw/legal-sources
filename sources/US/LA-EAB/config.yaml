@@ -1,0 +1,123 @@
+# ===================================================================
+# US/LA-EAB -- Louisiana Ethics Adjudicatory Board Decisions
+# ===================================================================
+# Adjudicatory "Decision and Order" rulings of the Louisiana Ethics
+# Adjudicatory Board (EAB), a panel of administrative law judges of the
+# Louisiana Division of Administrative Law (DAL). The EAB hears and
+# decides the ethics charges instituted by the Louisiana Board of Ethics
+# under the Code of Governmental Ethics (La. R.S. 42:1101 et seq.) and
+# the Campaign Finance Disclosure Act. Each decision resolves a specific
+# contested case against a named respondent (public official, employee
+# or candidate) with findings of fact, conclusions of law and any
+# penalty = case_law (government edict). Public-domain Louisiana state-
+# government works. Sibling of the central-panel administrative
+# adjudicators US/MA-DALA, US/FL-DOAH, US/NC-OAH, US/CO-OAC, US/NJ-OAL.
+#
+# Published by the DAL on https://www.adminlaw.la.gov/. The "Ethics
+# Decisions" page is a Solr-backed result list, paginated with
+# ``?_page=N`` (10 per page); each result links directly to the decision
+# PDF on the DAL S3 bucket
+# (redball-la-solr.s3.us-east-2.amazonaws.com/<key>.pdf). Result titles
+# carry the docket number and respondent name. PDFs are born-digital
+# (embedded text layer); full text is extracted via common.pdf_extract.
+# No CAPTCHA, no auth. Reachable locally.
+# ===================================================================
+
+source:
+  id: "US/LA-EAB"
+  country: "US"
+  name: "Louisiana Ethics Adjudicatory Board Decisions"
+  url: "https://www.adminlaw.la.gov/ethics-decisions/"
+  description: |
+    Adjudicatory decisions of the Louisiana Ethics Adjudicatory Board
+    (EAB), the Division of Administrative Law panel that decides the
+    ethics charges brought by the Louisiana Board of Ethics under the
+    Code of Governmental Ethics and the Campaign Finance Disclosure Act.
+    Each "Decision and Order" resolves a specific contested case against
+    a named respondent = case_law. Enumerated from the DAL's Solr-backed
+    "Ethics Decisions" result list (paginated ?_page=N); each result
+    links directly to the decision PDF on the DAL S3 bucket. Docket
+    number and respondent are read from the result title; the decision
+    date is parsed from the body ("Rendered and signed on ..."). Full
+    text is extracted from the born-digital PDFs. No CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html"
+  base_url: "https://www.adminlaw.la.gov"
+  endpoints:
+    list: "/ethics-decisions/?_page={n}"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/LA-EAB/{S3 document key})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "EAB docket number (e.g. 2025-20439-BOE-A)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "respondent"
+      description: "Name of the respondent (parsed from the result title)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "court"
+      description: "Adjudicating body (Louisiana Ethics Adjudicatory Board)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "issuer"
+      description: "Louisiana Division of Administrative Law"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Decision title (board + docket + respondent)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (extracted from the PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the decision was rendered and signed (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the decision PDF"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions of the Louisiana Ethics Adjudicatory Board are official
+    works of Louisiana state government (edicts of government) and are
+    not subject to copyright. Free to use, including commercially.

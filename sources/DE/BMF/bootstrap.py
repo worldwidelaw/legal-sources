@@ -49,13 +49,24 @@ class BMFFetcher:
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+                          'AppleWebKit/537.36 (KHTML, like Gecko) '
+                          'Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'de-DE,de;q=0.9,en;q=0.8',
         })
 
     def _get_listing_page(self, page: int = 1) -> str:
-        """Fetch a specific page of the BMF-Schreiben listing"""
+        """Fetch a specific page of the BMF-Schreiben listing.
+
+        The site throttles rapid requests by returning a small stub page
+        (~15 KB, no ``bmf-entry`` rows) instead of the full ~215 KB listing.
+        If that first stub happened to land on page 1, ``_get_total_pages``
+        would see no pagination links and cap the whole crawl at one page —
+        exactly the "only 8 records" symptom. Retry with backoff when the
+        response looks truncated so a transient throttle can't silently
+        truncate the corpus.
+        """
         if page == 1:
             url = LISTING_URL
         else:
@@ -63,9 +74,20 @@ class BMFFetcher:
             url = f"{LISTING_URL}?gtp=246444_list%3D{page}"
 
         logger.info(f"Fetching listing page {page}")
-        response = self.session.get(url, timeout=60)
-        response.raise_for_status()
-        return response.text
+        last = ""
+        for attempt in range(5):
+            response = self.session.get(url, timeout=60)
+            response.raise_for_status()
+            last = response.text
+            if 'bmf-entry' in last:
+                return last
+            wait = 20 * (attempt + 1)
+            logger.warning(
+                f"Listing page {page} looks throttled/truncated "
+                f"({len(last)} bytes, no entries) — retry in {wait}s"
+            )
+            time.sleep(wait)
+        return last
 
     def _parse_listing_page(self, html_content: str) -> List[Dict[str, Any]]:
         """Parse the HTML listing page to extract document links and metadata"""
@@ -114,21 +136,19 @@ class BMFFetcher:
         return documents
 
     def _get_total_pages(self, html_content: str) -> int:
-        """Extract total number of pages from pagination"""
-        soup = BeautifulSoup(html_content, 'html.parser')
+        """Extract total number of pages from pagination.
 
-        # Look for pagination links
-        page_links = soup.find_all('a', class_='bmf-navIndex-link')
-
+        The pagination hrefs carry the list offset as a (double-)URL-encoded
+        parameter: ``gtp=246444_list%253D55`` (i.e. ``%25`` = an encoded ``%``
+        so ``%253D`` decodes to ``%3D`` = ``=``). The previous regex only
+        matched a single-encoded ``%3D``/``%2D`` and therefore never found any
+        page number, capping the crawl at page 1 (~10 docs). We now match both
+        the single- and double-encoded forms and scan the raw HTML directly so
+        a markup/class change in the nav element cannot silently cap us again.
+        """
         max_page = 1
-        for link in page_links:
-            href = link.get('href', '')
-            # Extract page number from URL
-            match = re.search(r'gtp=246444_list%[23]D(\d+)', href)
-            if match:
-                page_num = int(match.group(1))
-                max_page = max(max_page, page_num)
-
+        for m in re.finditer(r'246444_list%(?:25)?3D(\d+)', html_content):
+            max_page = max(max_page, int(m.group(1)))
         return max_page
 
     def _extract_pdf_text(self, pdf_content: bytes) -> str:

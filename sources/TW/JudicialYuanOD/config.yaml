@@ -1,0 +1,118 @@
+# ===================================================================
+# TW/JudicialYuanOD -- Judicial Yuan Open Data (Taiwan court judgments)
+# ===================================================================
+# Full-text Taiwan court judgments (裁判書) from the Judicial Yuan open
+# data platform. Two complementary sources, both authenticated at
+# runtime from durable ACCOUNT credentials (never a stored token):
+#
+#  1. Historical monthly archives (recovery / bulk backfill)
+#     - opendata.judicial.gov.tw
+#     - POST /api/MemberTokens { memberAccount, pwd } -> JWT (Bearer)
+#     - Catalog GET /api/Datasets?keyword=裁判書 -> monthly datasets
+#       titled "{YYYYMM}裁判書" (+ optional "--(YYYYMMDDUpdate)"),
+#       newest version per month.
+#     - Download GET /api/FilesetLists/{fileSetId}/file  (RAR of judgment JSON)
+#
+#  2. Delta / full-text API (incremental, 00:00-06:00 Asia/Taipei only)
+#     - data.judicial.gov.tw
+#     - POST /jdg/api/Auth { user, password } -> 6-hour token
+#     - GET /jdg/api/JList  (recently corrected/added JIDs, limited window)
+#     - GET /jdg/api/JDoc   (per-judgment full text + deletion/non-public flags)
+#
+# License: Government open data (政府資料開放授權條款 v1) -- CC BY compatible
+# ===================================================================
+
+source:
+  id: "TW/JudicialYuanOD"
+  country: "TW"
+  name: "Judicial Yuan Open Data (Taiwan court judgments)"
+  url: "https://opendata.judicial.gov.tw/"
+  description: |
+    Full-text judgments (裁判書) of all Taiwan courts published by the
+    Judicial Yuan. Historical corpus via monthly archives (1996-present)
+    and incremental corrections/additions via the nightly delta API.
+
+data_types:
+  - case_law
+
+auth:
+  type: "account_credentials"
+  env:
+    account: "TW_JUDICIAL_ACCOUNT"
+    password: "TW_JUDICIAL_PASSWORD"
+  signup: "https://opendata.judicial.gov.tw/"
+  notes: >
+    Membership must be email-reconfirmed roughly every three months to
+    stay active. The delta API only answers during 00:00-06:00 Asia/Taipei.
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  opendata_base: "https://opendata.judicial.gov.tw"
+  member_tokens: "/api/MemberTokens"
+  datasets: "/api/Datasets"
+  file_download: "/api/FilesetLists/{fileSetId}/file"
+  judgment_keyword: "裁判書"
+  jdg_base: "https://data.judicial.gov.tw"
+  jdg_auth: "/jdg/api/Auth"
+  jdg_list: "/jdg/api/JList"
+  jdg_doc: "/jdg/api/JDoc"
+  jdg_window_taipei: "00:00-06:00"
+
+data_model:
+  type: "case_law"
+  primary_key: "jid"
+  update_strategy: "upsert"
+  dedup_key:
+    - "jid"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "jid"
+      description: "Judgment id (e.g. TPSV,110,台上,1234,20211230,1)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Judgment title (JTITLE)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the judgment (JFULL)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601, from JDATE)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Reference URL"
+      type: "string"
+      role: "reference"
+      required: false
+
+license:
+  name: "Government open data (政府資料開放授權條款 v1)"
+  url: "https://data.gov.tw/license"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Taiwan Open Government Data License v1, CC BY 4.0 compatible."
+
+notes: |
+  - Both APIs authenticate at runtime from durable account credentials
+    (TW_JUDICIAL_ACCOUNT / TW_JUDICIAL_PASSWORD); tokens are never stored.
+  - Historical monthly RAR archives require the MemberTokens Bearer.
+    Judgment files inside are JSON (JID/JTITLE/JDATE/JFULL...).
+  - Delta API is night-only (00:00-06:00 Asia/Taipei) and exposes a limited
+    historical window, so monthly archives are the recovery/backfill path.
+  - JDoc deletion / non-public signals remove or withhold the affected JID.
+  - Never commit or log account credentials, JWTs, opaque tokens, or auth bodies.

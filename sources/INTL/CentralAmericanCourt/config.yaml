@@ -1,0 +1,59 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — INTL/CentralAmericanCourt
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "INTL/CentralAmericanCourt"
+  country: "INTL"
+  name: "Central American Court of Justice (Corte Centroamericana de Justicia) — Gaceta Oficial"
+  url: "https://portal.ccj.org.ni/"
+  description: |
+    Official jurisprudence gazette (Gaceta Oficial, Nos 1-19) of the Corte
+    Centroamericana de Justicia (CCJ), the judicial organ of the Central
+    American Integration System (SICA), seated in Managua since 1994. Each
+    issue reproduces the Court's binding, non-appealable sentencias,
+    resoluciones and awards interpreting the SICA treaties/protocols =
+    case_law. Spanish. Sourced from Internet Archive captures (live host
+    portal.ccj.org.ni geo/IP-filters foreign vantages); scanned PDFs OCR'd
+    with tesseract (lang=spa).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "html_scrape"
+  base_url: "http://web.archive.org/"
+
+schema:
+  key_fields:
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+license:
+  name: "Public Domain (government edicts / international tribunal)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions and official gazettes of an international tribunal (organ of
+    SICA); official government-edict works, not subject to copyright.

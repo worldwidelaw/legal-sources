@@ -1,0 +1,121 @@
+# ===================================================================
+# US/NY-LegalEthics -- New York State Bar Association (NYSBA)
+#                      — Committee on Professional Ethics — Opinions
+# ===================================================================
+# Ethics Opinions issued by the New York State Bar Association's
+# Committee on Professional Ethics. Each opinion is advisory and
+# expresses the Committee's interpretation of the New York Rules of
+# Professional Conduct (and, for older opinions, the Code of
+# Professional Responsibility) in response to an attorney's inquiry
+# about their own proposed conduct = doctrine. One continuous numbered
+# series retrospective to 1957 (Opinion #9 to #1295+, ~1,286 opinions),
+# published free to the public on nysba.org as born-digital HTML, no
+# OCR/CAPTCHA/auth. Distinct from US/NY-EthicsOpinions (COELIG/JCOPE,
+# public officials) and New York Attorney General opinions.
+# ===================================================================
+
+source:
+  id: "US/NY-LegalEthics"
+  country: "US"
+  name: "New York State Bar Association (NYSBA) — Committee on Professional Ethics — Ethics Opinions"
+  url: "https://nysba.org/category/ethics-opinions/"
+  description: |
+    Ethics Opinions of the New York State Bar Association's Committee on
+    Professional Ethics. Each opinion is advisory and expresses the
+    Committee's interpretation of the New York Rules of Professional
+    Conduct (and, for older opinions, the Code of Professional
+    Responsibility) in response to an attorney's inquiry about their own
+    proposed conduct. The opinions form one continuous numbered series
+    retrospective to 1957 (Opinion #9 to Opinion #1295+ as of July 2026,
+    ~1,286 opinions), published in full as born-digital HTML pages
+    carrying the Topic / Digest / Code / Question / Opinion text.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_listing"
+  base_url: "https://nysba.org"
+  endpoints:
+    listing: "/category/ethics-opinions/page/{p}/"
+    opinion_old: "/opinion/{n}/"
+    opinion_new: "/ethics-opinion-{n}-{slug}/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NY-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number in the continuous NYSBA series (e.g. '1286', '706')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title (from the page h1, e.g. 'Ethics Opinion 1286: ...')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text (Topic / Digest / Code / Question / Opinion) from the HTML body"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Opinion date as ISO 8601 (YYYY-MM-DD) from the article:published_time meta tag"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "New York State Bar Association — Committee on Professional Ethics"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (NYSBA Ethics Opinions)"
+  url: "https://nysba.org/committees/committee-on-professional-ethics/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "NYSBA Ethics Opinions are published free to all attorneys and to the public on nysba.org (retrospective to 1957) as an educational service interpreting the New York Rules of Professional Conduct; they are advisory and carry no copyright restriction or terms prohibiting reuse. No login or paywall."
+
+notes: |
+  - Discovery: the "Ethics Opinions" category index paginates every
+    opinion as a post at /category/ethics-opinions/page/{p}/ (~129 pages,
+    10 posts each). Each opinion post uses ONE OF TWO permalink schemes:
+    /opinion-{N}/ (older) or /ethics-opinion-{N}[-slug]/ (newer). The
+    scraper reads each <article>'s title link and takes the exact href;
+    the number is parsed from the href, NEVER constructed (a bare
+    /ethics-opinion-1/ wrongly prefix-redirects to /opinion-100/). Walk
+    stops after two consecutive empty pages.
+  - Full text: each opinion page is born-digital HTML; the
+    .single-post-content body carries the Topic / Digest / Code /
+    Question / Opinion text. No OCR. A leading "News Center" / duplicate-
+    title / "View and download as PDF" boilerplate is stripped.
+  - Date: from the <meta property="article:published_time"> tag
+    (backfilled to the real issue date for older opinions).
+  - Type: every document is an advisory ethics opinion interpreting the
+    NY attorney-conduct rules = doctrine.
+  - Distinct from US/NY-EthicsOpinions (COELIG/JCOPE, public officials)
+    and New York Attorney General opinions; this is the state bar's
+    attorney-ethics series.

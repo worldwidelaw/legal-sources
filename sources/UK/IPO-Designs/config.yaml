@@ -1,0 +1,100 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — UK IPO Registered Designs Hearing Decisions
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/IPO-Designs"
+  country: "UK"
+  name: "UK Intellectual Property Office — Registered Design Hearing Decisions"
+  url: "https://www.gov.uk/designs-decisions"
+  description: |
+    Hearing decisions of the UK Intellectual Property Office (IPO) concerning
+    registered designs — invalidation, entitlement and related disputes decided
+    by an IPO Hearing Officer under the Registered Designs Act 1949. Published
+    on GOV.UK (reachable; NOT the Cloudflare-gated ipo.gov.uk site). ~134
+    decisions. Full text from born-digital decision PDFs via the GOV.UK
+    Content Store API.
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+  endpoints:
+    search:
+      path: "/api/search.json"
+      method: "GET"
+      description: "GOV.UK Search API; filter_format=design_decision"
+    content:
+      path: "/api/content/{path}"
+      method: "GET"
+      description: "GOV.UK Content Store API; PDF attachment on assets.publishing.service.gov.uk"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "content_id"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "content_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "reference"
+      type: "string"
+      role: "classification"
+    - name: "hearing_officer"
+      type: "string"
+      role: "classification"
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Open Government Licence v3.0"
+  url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Crown copyright; GOV.UK content published under OGL v3.0."
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~134 IPO registered-design hearing decisions
+  - Full text extracted from the born-digital decision PDF attachment
+    (assets.publishing.service.gov.uk) via common.pdf_extract (no OCR)
+  - Metadata: British Library decision number (e.g. O/0543/26), decision
+    date, hearing officer, litigants
+  - No authentication required
+  - Reachable GOV.UK path; the main IPO decisions DB (ipo.gov.uk) is
+    Cloudflare-gated — see blocked source UK/IPO
+  - Sibling of the GOV.UK finder scrapers UK/SchoolsAdjudicator, UK/ET,
+    UK/RPT, UK/TrafficCommissioner

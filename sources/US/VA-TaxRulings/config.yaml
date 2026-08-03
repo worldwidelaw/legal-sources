@@ -1,0 +1,122 @@
+# ===================================================================
+# US/VA-TaxRulings -- Virginia Department of Taxation
+#   Rulings of the Tax Commissioner + Tax Bulletins
+# ===================================================================
+# Official interpretive guidance of the Virginia Department of Taxation
+# on Virginia tax law. Published via the "Laws, Rules & Decisions"
+# library — a server-rendered Drupal browse listing whose exposed
+# document_type filter accepts GET params and renders a 25-row results
+# table, paginated next-only via ?page=N
+# (tax.virginia.gov/laws-rules-decisions/browse). document_type 70 =
+# Rulings of the Tax Commissioner, 71 = Tax Bulletins. Each row gives
+# the document number (link), public document number, document type,
+# date issued (MM/DD/YYYY) and description. Each document page renders
+# the full body as HTML inside an <article> element (legacy <font>-
+# tagged letter text). No JavaScript, no CAPTCHA, no auth. Public-domain
+# Virginia state-government works (government edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/VA-TaxRulings"
+  country: "US"
+  name: "Virginia Department of Taxation — Rulings of the Tax Commissioner & Tax Bulletins"
+  url: "https://www.tax.virginia.gov/laws-rules-decisions/browse"
+  description: |
+    Published interpretive guidance of the Virginia Department of
+    Taxation — the agency's official position on how Virginia tax law
+    applies. Covers Rulings of the Tax Commissioner (written
+    determinations on appeals, refund claims and ruling requests under
+    Va. Code Sec. 58.1-1821, 1980s-present) and Tax Bulletins (general
+    guidance announcements). Enumerated from the "Laws, Rules &
+    Decisions" browse listing (Drupal Views, paginated next-only via
+    ?page=N); each document's full text is read from the <article> body
+    of its page. No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.tax.virginia.gov"
+  endpoints:
+    browse: "/laws-rules-decisions/browse?document_type={doc_type}&page={page}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/VA-TaxRulings/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "document_number"
+      description: "VA Tax document number (e.g. '26-42', '07-68')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "public_document_number"
+      description: "Public document number from the listing"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "doc_type"
+      description: "Document family (Rulings of the Tax Commissioner / Tax Bulletins)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (type + number + description)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the ruling/bulletin from the page <article> body"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date issued (ISO 8601), parsed from the listing MM/DD/YYYY"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Virginia state tax guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Rulings of the Tax Commissioner and Tax Bulletins of the Virginia Department of Taxation are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The "Laws, Rules & Decisions" library is a Drupal site with a
+    server-rendered browse listing; its document_type exposed filter
+    accepts GET params and renders a 25-row table paginated next-only
+    via ?page=N. The scraper walks pages per document_type (70 =
+    Rulings of the Tax Commissioner, 71 = Tax Bulletins) until a page
+    yields no rows, parsing each row's document number, public number,
+    type, date and description from the views-field <td> classes.
+  - Each document page renders the full body as HTML inside an
+    <article> element (legacy <font>-tagged letter text). The scraper
+    extracts the <article> content, strips tags and decodes entities;
+    a <150-char guard skips the rare empty/placeholder page.
+  - date comes directly from the listing's "Date Issued" cell
+    (MM/DD/YYYY -> ISO), so the temporal key is reliably set.
+  - Type is doctrine: rulings and bulletins are interpretive
+    government guidance, not adjudications of a contested case.
+  - Public-domain Virginia state-government data.

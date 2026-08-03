@@ -1,0 +1,130 @@
+# ===================================================================
+# US/NC-IC -- North Carolina Industrial Commission
+#   Full Commission & Deputy Commissioner workers'-compensation
+#   decisions (OpenText Content Server full-text databases)
+# ===================================================================
+# The N.C. Industrial Commission is the state tribunal that
+# adjudicates workers'-compensation claims (and tort claims against
+# State agencies). It publishes its decisions in four public,
+# full-text-searchable OpenText(TM) Content Server databases: Full
+# Commission decisions, Deputy Commissioner decisions (both since
+# 1994), and N.C. appellate slip opinions. Each decision (an "Opinion
+# and Award") resolves a specific contested case = case_law. These are
+# official North Carolina state-government works in the public domain
+# (government edicts). Access is public: the OpenText login accepts
+# username "public" / password "public".
+# ===================================================================
+
+source:
+  id: "US/NC-IC"
+  country: "US"
+  name: "North Carolina Industrial Commission — Decisions"
+  url: "https://www.ic.nc.gov/database.html"
+  description: |
+    Full-text decisions of the North Carolina Industrial Commission —
+    the state tribunal for workers'-compensation and State tort claims.
+    Covers the Full Commission and Deputy Commissioner opinion-and-award
+    databases (decisions since 1994), served from the Commission's public
+    OpenText(TM) Content Server (ic.nc.gov/livelink). Each decision
+    resolves a specific contested case = case_law. Harvested by logging in
+    as the public/public guest, running the Content Server full-text search
+    across the workers'-compensation slices, and fetching each decision's
+    "View as Web Page" HTML render (full body text). No JavaScript, no
+    CAPTCHA. Public domain North Carolina state-government works.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "opentext_livelink"
+  base_url: "https://ic.nc.gov/livelink/livelink.exe"
+  endpoints:
+    login: "?func=ll.login"
+    searchprompt: "?func=ll&objType=258&objAction=searchprompt"
+    search: "?func=NewSearch"
+    viewdoc: "?func=doc.ViewDoc&nodeid={nodeid}&vernum=1"
+
+data_model:
+  type: "case_law"
+  primary_key: "nodeid"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NC-IC/{nodeid})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "I.C. NO. (Industrial Commission case number, e.g. '22-004758')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "database"
+      description: "Source database slice (Full Commission | Deputy Commissioner | Appellate)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Decision title (case number + parties caption)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (Opinion and Award), HTML render of the source Word document"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision filing date (ISO 8601), parsed from the 'Filed:' line in the body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — North Carolina state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the North Carolina Industrial Commission are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Access recipe (OpenText Content Server 10 SP2, ic.nc.gov/livelink):
+    1. POST func=ll.login with Username=public&Password=public (cookie jar
+       captures the LLCookie session).
+    2. GET the searchprompt page (func=ll&objType=258&objAction=searchprompt)
+       and extract the byte-exact `template` hidden field (an A<...>
+       structured argument; keep it HTML-decoded).
+    3. POST func=NewSearch with a MINIMAL field set — sending the full form
+       triggers "[Pattern of argument was not recognized.]"; the working set
+       is: func, objType=258, template, FullText_value1=<term>, FullText_mode1=And,
+       FullText_content1=All, FullText_RowNum=1, FullText_SubRowNum=1,
+       cbox_FullText=on, collections_search_selected=<sliceId>, cbox_Collections=on,
+       StartAt, Howmany, dspOptsForm. A Referer/Origin header of ic.nc.gov is
+       required or Content Server rejects the request as "potentially unsafe".
+    4. The result page links each decision as
+       func=doc.ViewDoc&nodeid=<N>&vernum=1; the decision full text is the
+       "View as Web Page" render at /livelink/llview.exe/<name>.html?func=doc.View&nodeId=<N>&vernum=1.
+  - Slice (database) IDs: Full Commission=148754, Deputy Commissioner=268779,
+    N.C. Supreme Court & Court of Appeals=149085, Enterprise(all)=147904.
+  - Enumeration: Content Server has no "browse" access for the guest user, so
+    the corpus is enumerated by full-text searching each workers'-comp slice for
+    a set of ubiquitous decision terms (injury, employee, compensation, plaintiff,
+    defendant, hearing, award, commission, ...) and de-duplicating by nodeid.
+    This yields near-complete coverage of the opinion-and-award databases (every
+    decision contains several of these terms); paginate via StartAt until a page
+    returns no new nodeids.
+  - Public domain North Carolina state government data.

@@ -1,0 +1,88 @@
+# ===================================================================
+# US/CO-AGOpinions -- Colorado Attorney General Formal Opinions
+# ===================================================================
+# Full text of formal legal opinions issued by the Colorado Attorney
+# General. These are official state legal interpretations (doctrine).
+# Published openly as text PDFs at coag.gov. No authentication required.
+# Public government data.
+# ===================================================================
+
+source:
+  id: "US/CO-AGOpinions"
+  country: "US"
+  name: "Colorado Attorney General Formal Opinions"
+  url: "https://coag.gov/attorney-general-opinions/"
+  description: |
+    Formal legal opinions issued by the Colorado Department of Law
+    (Office of the Attorney General). Each opinion answers a legal
+    question posed by a public official and constitutes an authoritative
+    (advisory) interpretation of Colorado law. Full text extracted from
+    the official digitally-produced PDFs on the coag.gov CDN. Coverage
+    runs 1994-present, one WordPress year page per year.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://coag.gov"
+  endpoints:
+    pages_api: "/wp-json/wp/v2/pages?search=formal%20ag%20opinions"
+    year_page: "/attorney-general-opinions/{year}-formal-ag-opinions/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 7
+  key_fields:
+    - name: "opinion_number"
+      description: "Official AG opinion number (e.g., 'No. 23-01')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Opinion title (Colorado Attorney General Formal Opinion No. ...)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Colorado)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Colorado Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Formal AG opinions at coag.gov/attorney-general-opinions/
+  - Per-year WordPress pages discovered via the wp-json/wp/v2/pages
+    search API (slug varies: plural/singular/-2 suffix)
+  - Each year page links the opinions as digitally-produced text PDFs
+    on the coag.gov/app/uploads CDN (real text layer, no OCR needed)
+  - Full text via common.pdf_extract.extract_pdf_markdown (OOM-hardened)
+  - coag.gov requires TLS 1.3; bootstrap falls back to a curl subprocess
+  - Coverage 1994-present; public domain Colorado government data

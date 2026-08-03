@@ -1,0 +1,95 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — UK Residential Property Tribunal Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/RPT"
+  country: "UK"
+  name: "UK First-tier Tribunal (Property Chamber) — Residential Property Decisions"
+  url: "https://www.gov.uk/residential-property-tribunal-decisions"
+  description: |
+    Decisions of the First-tier Tribunal (Property Chamber) — Residential
+    Property, published on GOV.UK. The Chamber (successor to the Residential
+    Property Tribunal Service / Rent Assessment Committees) decides disputes
+    about rents, service charges, leasehold enfranchisement, right to manage,
+    park homes, HMO licensing, rent repayment orders, banning orders and civil
+    financial penalties under the Landlord and Tenant Acts, Housing Act 2004
+    and Housing and Planning Act 2016. ~17,200 decisions (England).
+    Full text via GOV.UK Content Store API (hidden_indexable_content).
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+  endpoints:
+    search:
+      path: "/api/search.json"
+      method: "GET"
+      description: "GOV.UK Search API; filter_format=residential_property_tribunal_decision"
+    content:
+      path: "/api/content/{path}"
+      method: "GET"
+      description: "GOV.UK Content Store API for full decision text"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "content_id"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "content_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "decision_date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "categories"
+      type: "list"
+      role: "classification"
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Open Government Licence v3.0"
+  url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Crown copyright; GOV.UK content published under OGL v3.0."
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~17,200 decisions (England)
+  - Full text via Content Store hidden_indexable_content field (born-digital)
+  - Categories: rents, service charges, HMO licensing, rent repayment orders,
+    leasehold reform, park homes, tenant associations, civil financial penalties
+  - No authentication required
+  - Sibling of UK/ET (employment) and UK/FTT-Tax (tax) GOV.UK finder scrapers

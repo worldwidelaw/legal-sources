@@ -1,0 +1,124 @@
+# ===================================================================
+# US/NC-OAH -- North Carolina Office of Administrative Hearings
+#   ALJ Contested Case Decisions (archived, pre-2017)
+# ===================================================================
+# Final Decisions issued by Administrative Law Judges of the North
+# Carolina Office of Administrative Hearings (OAH) — North Carolina's
+# central, independent quasi-judicial tribunal. Each decision resolves
+# a specific contested case between a person and a State agency =
+# case_law. Published via the OAH archive index
+# (oah.nc.gov/administrative-law-judge-decisions), a Drupal page that
+# links to per-agency, per-year listing pages; each decision document
+# is served at a deterministic URL
+# (oah.nc.gov/documents/files/alj/{doc-slug}/download) as either a
+# born-digital text-layer PDF or a legacy Word 97-2003 (.doc/OLE)
+# file. No JavaScript, no CAPTCHA, no auth. Public domain North
+# Carolina state government works (government edicts).
+# ===================================================================
+
+source:
+  id: "US/NC-OAH"
+  country: "US"
+  name: "North Carolina Office of Administrative Hearings — ALJ Decisions"
+  url: "https://www.oah.nc.gov/administrative-law-judge-decisions"
+  description: |
+    Administrative Law Judge contested-case Final Decisions from the
+    North Carolina Office of Administrative Hearings (OAH) online
+    archive (chiefly Alcoholic Beverage Control Commission contested
+    cases, 2000-2016, plus professional-licensing boards). OAH is North
+    Carolina's central independent tribunal that adjudicates disputes
+    between persons and State agencies; each decision resolves a
+    specific contested case = case_law. Enumerated from the OAH archive
+    index (Drupal listing pages) → deterministic document-download
+    URLs; documents are born-digital PDFs or legacy Word .doc files,
+    text extracted via common.pdf_extract (PDF) or a pure-python OLE
+    piece-table reader (.doc). No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.oah.nc.gov"
+  endpoints:
+    index: "/administrative-law-judge-decisions"
+    document: "/documents/files/alj/{doc_slug}/download"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NC-OAH/{doc-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "OAH case number (e.g. '16-ABC-03310'); null for combined-year bundles"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "agency"
+      description: "Respondent State agency (e.g. Alcoholic Beverage Control Commission)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (OAH case number + parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the ALJ decision (PDF text layer or .doc piece table)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the document; falls back to listing year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — North Carolina state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Final Decisions of the North Carolina Office of Administrative Hearings are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The OAH archive index (oah.nc.gov/administrative-law-judge-decisions)
+    is a Drupal page linking to 25 per-agency, per-year listing pages
+    named /{agency-slug}-decisions-{YEAR}. Each listing page
+    server-renders the decision-document links
+    /documents/files/alj/{doc-slug}/download. A literal "blank" slug
+    marks a placeholder with no document and is skipped.
+  - ~162 archive documents total (chiefly ABC contested cases
+    2000-2016). ~20 are born-digital PDFs; ~142 are legacy Word
+    97-2003 (.doc / OLE) files. PDFs are extracted via
+    common.pdf_extract; .doc files via a pure-python OLE piece-table
+    reader (requires the small `olefile` package). A <200-char guard
+    auto-skips placeholders / empty documents.
+  - date prefers a real "Month D, YYYY" from the decision body, falling
+    back to the listing year (Jan 1) so the temporal key is set.
+  - FOLLOW-UP (not covered here): decisions from 2017-present live only
+    in the ASP.NET case-management search portal
+    (encoah.oah.state.nc.us/publicsite/search.aspx), a ViewState/AJAX
+    form not reachable by a plain GET — harvesting it needs a
+    ViewState-driven POST scraper or browser automation.
+  - Public domain North Carolina state government data.

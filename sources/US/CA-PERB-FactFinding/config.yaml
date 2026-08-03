@@ -1,0 +1,113 @@
+# ===================================================================
+# US/CA-PERB-FactFinding -- California PERB Fact-Finding Reports
+# ===================================================================
+# Fact-finding reports of the California Public Employment Relations
+# Board (PERB). When a public employer and a union reach impasse in
+# bargaining under California's public-sector labor statutes (MMBA,
+# EERA, HEERA, etc.), a tripartite fact-finding panel chaired by a
+# neutral factfinder holds hearings, makes written findings of fact on
+# the disputed issues, and issues a report recommending settlement
+# terms for that specific dispute. Each report resolves a specific
+# contested impasse between named parties = case_law. Public domain
+# California state-government works (government edicts).
+#
+# perb.ca.gov is WordPress; each report is a born-digital text-layer
+# PDF attached to a `fact-finder-report` custom post, enumerable via
+# the public WP REST API (~914 posts). No CAPTCHA, no auth.
+# ===================================================================
+
+source:
+  id: "US/CA-PERB-FactFinding"
+  country: "US"
+  name: "California PERB — Fact-Finding Reports"
+  url: "https://perb.ca.gov/fact-finding/"
+  description: |
+    Fact-finding reports of the California Public Employment Relations
+    Board (PERB). Under California's public-sector labor-relations
+    statutes, when a public employer and a union reach impasse in
+    bargaining a tripartite fact-finding panel chaired by a neutral
+    factfinder holds hearings, makes written findings of fact on the
+    disputed issues, and issues a report with recommended settlement
+    terms for that specific dispute = case_law. Enumerated from the
+    WordPress `fact-finder-report` custom post type (~914 posts) via the
+    public WP REST API; each post's single child media PDF (FR####.pdf)
+    is the report body, extracted via common.pdf_extract. No CAPTCHA,
+    no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "wp_rest_posttype"
+  base_url: "https://perb.ca.gov"
+  endpoints:
+    post_list: "/wp-json/wp/v2/fact-finder-report?per_page=100&page={page}"
+    post_media: "/wp-json/wp/v2/media?parent={postId}"
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CA-PERB-FactFinding/{FR-filename-stem})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "report_number"
+      description: "Fact-finding report number (e.g. 'FR0914'), parsed from the PDF filename"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "parties"
+      description: "Employer + union party caption (from the post title)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Document title ('PERB Fact-Finding Report {number}: {parties}')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the fact-finding report (PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Report date (ISO 8601), from the post date (fallback: last date in body)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — California state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Fact-finding reports of the California Public Employment Relations Board are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Enumeration: /wp-json/wp/v2/fact-finder-report?per_page=100&page=N
+    (~914 posts). Each post's single child media attachment (the PDF) is
+    fetched via /wp-json/wp/v2/media?parent={postId}; source_url is
+    /wp-content/uploads/YYYY/MM/FR{NNNN}.pdf.
+  - Documents are born-digital text-layer PDFs; text via common.pdf_extract
+    (no OCR). A <200-char guard skips any empty/non-PDF response.
+  - Sibling of US/CA-PERB (Board Decisions). Fact-finding reports are the
+    impasse-resolution track of the same agency.
+  - Public domain California state government data.

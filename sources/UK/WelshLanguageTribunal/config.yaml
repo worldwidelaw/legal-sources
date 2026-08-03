@@ -1,0 +1,79 @@
+# UK/WelshLanguageTribunal — Welsh Language Tribunal (Tribiwnlys y Gymraeg) —
+# Decisions.
+#
+# Source: Welsh Language Tribunal (WLT, Tribiwnlys y Gymraeg), the independent
+#         statutory tribunal for Wales established under the Welsh Language
+#         (Wales) Measure 2011.
+# URL: https://welshlanguagetribunal.gov.wales/decisions
+# Data type: case_law  (Wales / GB-WLS — NOT covered by UK/CaseLaw, which indexes
+#            England & Wales superior courts + reserved UK tribunals via the
+#            National Archives Find Case Law service; WLT is not on that service)
+# Auth: none
+#
+# WLT determines appeals and applications against decisions of the Welsh Language
+# Commissioner concerning Welsh-language standards imposed on public bodies. Its
+# written, reasoned decisions are binding and appealable on a point of law to the
+# Upper Tribunal. Decisions may be issued in Welsh, English, or both.
+#
+# Total: full-text decisions, April 2017-present (~25 and growing)
+#
+# Access:
+#   - /previous-decisions lists the April-April "tribunal year" windows.
+#   - /decisions/4/{YYYY-04--YYYY-04} lists per-decision detail-page slugs
+#     (/tygwlt{digits}-{party}).
+#   - Each detail page carries the title (case ref TYG/WLT/YY/NN) and one or more
+#     born-digital decision PDFs under /sites/welshlanguage/files/.
+#   - Download each born-digital PDF, extract full text with PyMuPDF (pdfplumber/
+#     pypdf fallback). No OCR needed. Date from a YYMMDD PDF-filename prefix, else
+#     the last date in the body, else the tribunal-year start (YYYY-04-01).
+
+source:
+  id: UK/WelshLanguageTribunal
+  name: Welsh Language Tribunal — Decisions
+  country: UK
+  data_types:
+    - case_law
+  url: https://welshlanguagetribunal.gov.wales/decisions
+  language: cy
+  auth: none
+  license: ogl-3.0
+
+jurisdictions:
+  - code: GB-WLS
+    scope: full
+
+license:
+  name: "Open Government Licence v3.0"
+  url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    Site copyright statement: most material is Crown copyright and may be used
+    and re-used free of charge in any format or medium under the Open Government
+    Licence (must reproduce accurately, not in a misleading context).
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: case_ref
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - case_ref
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.5
+  page_size: 30
+  estimated_total: 25
+  sample_count: 15

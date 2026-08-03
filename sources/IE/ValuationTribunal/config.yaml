@@ -1,0 +1,66 @@
+# IE/ValuationTribunal — Valuation Tribunal of Ireland (An Binse Luachála) Judgments
+#
+# Source: Valuation Tribunal, Ireland
+# URL: https://www.valuationtribunal.ie/judgments/
+# Data type: case_law
+# Auth: none
+# License: PSI Licence / CC BY 4.0 (Irish public sector information)
+#
+# Independent statutory body (Valuation Acts 2001-2015) that determines appeals
+# against valuations of commercial/industrial property fixed by Tailte Éireann
+# (for local-authority commercial rates): revision, revaluation, global, vacant-
+# site and derelict-site appeals. Each written determination adjudicates a
+# specific contested appeal = case_law. Born-digital "Final Determination" PDFs.
+#
+# Total: ~3,000 determinations, 2014-present
+#
+# Access:
+#   - WordPress REST API (admin-ajax filter is AWS-WAF/CAPTCHA-gated; the
+#     read-only REST API answers plain GETs):
+#       GET /wp-json/wp/v2/posts?per_page=100&page=N  (~30 pages)
+#   - Determination PDF linked in post content:
+#       /wp-content/uploads/YYYY/MM/{appeal}-Final-Determination-VT-WEBSITE.pdf
+#   - Full text via PyMuPDF (fitz); born-digital text layer, no OCR.
+
+source:
+  id: IE/ValuationTribunal
+  name: Valuation Tribunal of Ireland (An Binse Luachála) — Judgments
+  country: IE
+  data_types:
+    - case_law
+  url: https://www.valuationtribunal.ie/judgments/
+  language: en
+  auth: none
+  license: cc-by-4.0
+
+license:
+  name: "PSI Licence / CC BY 4.0"
+  url: "https://www.gov.ie/en/help/re-use-of-public-sector-information/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Irish public sector information re-use framework (default CC BY 4.0)."
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: appeal_no
+      type: string
+      required: false
+    - name: text
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - appeal_no
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.5
+  page_size: 100
+  estimated_total: 3000
+  sample_count: 15

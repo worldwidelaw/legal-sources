@@ -391,7 +391,11 @@ def main():
 
     if command == "test":
         scraper.test_connection()
-    elif command == "bootstrap":
+    elif command in ("bootstrap", "bootstrap-fast"):
+        # The fleet invokes `bootstrap-fast`; route it to the full bootstrap
+        # path (streams to data/records.jsonl). Without this alias it fell to
+        # "Unknown command"/exit 1, so only pre-existing samples got ingested
+        # (see #1139).
         if sample_mode:
             stats = scraper.run_sample(n=sample_size)
             print(f"\nSample complete: {stats.get('sample_records_saved', 0)} records saved to sample/")

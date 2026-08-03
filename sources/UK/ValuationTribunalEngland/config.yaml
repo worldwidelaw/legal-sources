@@ -1,0 +1,120 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — Valuation Tribunal for England (VTE) Decisions
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/ValuationTribunalEngland"
+  country: "UK"
+  name: "Valuation Tribunal for England (VTE) — Decisions"
+  url: "https://appealsearch.valuationtribunal.gov.uk/"
+  description: |
+    Published decisions of the Valuation Tribunal for England (VTE), the
+    independent statutory tribunal (Local Government Finance Act 1988; Valuation
+    Tribunal for England (Council Tax and Rating Appeals) (Procedure) Regulations
+    2009) that determines appeals about council tax (valuation/banding, liability,
+    completion notices, penalties, council tax reduction) and non-domestic rating
+    (business rates — rateable value challenges, completion notices, penalties,
+    transitional certificates). Each determination is a full, reasoned written
+    decision, many carrying a neutral citation "[YYYY] VTE {ref}". Full text via
+    born-digital PDFs served by the Appeal & decisions search app
+    (/Home/Download?ApAppealNumber=), extracted with common.pdf_extract (no OCR).
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "html"
+  base_url: "https://appealsearch.valuationtribunal.gov.uk"
+  endpoints:
+    decisions:
+      path: "/Home/Decisions"
+      method: "GET"
+      description: >
+        Server-rendered decided-appeals results view. Params:
+        AppealSearchType={CD|ND}, SearchByType=advanced, Skip, Page, PageSize,
+        SortOn=Date, SortDesc=True, HearingId=00000000-0000-0000-0000-000000000000.
+        Paginates all decided appeals ("Showing X-Y of N results").
+    download:
+      path: "/Home/Download"
+      method: "GET"
+      description: >
+        Born-digital decision PDF. Param ApAppealNumber={id} (link text = stable
+        appeal number; trailing 2 chars are render-time decoration). Appeals with
+        no published written decision return HTTP 404 and are skipped.
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "case_id"
+  update_strategy: "upsert"
+  versioning: "date"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "case_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "citation"
+      type: "string"
+      role: "classification"
+    - name: "appeal_category"
+      type: "string"
+      role: "classification"
+    - name: "property_address"
+      type: "string"
+      role: "metadata"
+    - name: "agent"
+      type: "string"
+      role: "metadata"
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Open Government Licence v3.0"
+  url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    VTE's copyright page (valuationtribunal.gov.uk/copyright/) explicitly grants
+    re-use free of charge in any format under the Open Government Licence v3.0,
+    with attribution to "Valuation Tribunal Service". Logos/photographs/video
+    excluded (not relevant here — text-only decisions).
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~15,600 decided appeals across two families: CD (Council tax, ~11,656) and
+    ND (Non-domestic rating / business rates, ~3,967). Older appeals with no
+    published written decision return 404 and are skipped.
+  - Listing sorted by decision date (newest first) so incremental/sample runs
+    surface the appeals that have published PDFs.
+  - Full text via born-digital PDFs extracted with common.pdf_extract (no OCR).
+  - Many decisions carry a neutral citation "[YYYY] VTE {ref}".
+  - No authentication required; download endpoint is cookieless.
+  - Jurisdiction: England (GB-ENG). Distinct from IE/ValuationTribunal (Ireland).

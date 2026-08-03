@@ -1,0 +1,94 @@
+# ===================================================================
+# US/MO-AGOpinions -- Missouri Attorney General Opinions
+# ===================================================================
+# Full text of legal opinions issued by the Missouri Attorney General.
+# These are official state legal interpretations (doctrine). Published
+# openly as text PDFs at ago.mo.gov. No authentication required.
+# Public government data.
+# ===================================================================
+
+source:
+  id: "US/MO-AGOpinions"
+  country: "US"
+  name: "Missouri Attorney General Opinions"
+  url: "https://ago.mo.gov/other-resources/ag-opinions/"
+  description: |
+    Legal opinions issued by the Missouri Attorney General's Office.
+    Each opinion answers a legal question posed by a public official and
+    constitutes an authoritative (advisory) interpretation of Missouri
+    law. Full text extracted from the official digitally-produced PDFs on
+    the ago.mo.gov CDN. Coverage runs 1933-present, organised as nested
+    WordPress decade/year pages. A minority of older filings are scanned
+    images and are skipped (no extractable text).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://ago.mo.gov"
+  endpoints:
+    index: "/other-resources/ag-opinions/"
+    decade_page: "/other-resources/ag-opinions/{decade}-opinions/"
+    year_page: "/other-resources/ag-opinions/{decade}-opinions/{year}-opinions/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 7
+  key_fields:
+    - name: "opinion_number"
+      description: "Official AG opinion number (e.g., '1-2025')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Opinion title (Missouri Attorney General Opinion No. ...)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Missouri)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Missouri Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Opinions at ago.mo.gov/other-resources/ag-opinions/
+  - Nested WordPress pages: index -> decade landing pages
+    (e.g. /2020-opinions/) -> nested year pages
+    (e.g. /2020-opinions/2024-opinions/)
+  - Breadth-first crawl of every '*-opinions/' page collects the opinion
+    PDF links on the ago.mo.gov/wp-content/uploads CDN
+  - Recent opinions are digitally-produced text PDFs (real text layer,
+    no OCR needed); a minority of older filings are scanned and skipped
+  - Full text via common.pdf_extract.extract_pdf_markdown (OOM-hardened)
+  - ago.mo.gov may require TLS 1.3; bootstrap falls back to a curl subprocess
+  - Coverage 1933-present (~3000 PDFs discovered); public domain Missouri
+    government data

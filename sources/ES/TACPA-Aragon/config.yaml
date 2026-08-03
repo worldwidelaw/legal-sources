@@ -1,0 +1,70 @@
+source:
+  id: ES/TACPA-Aragon
+  name: Tribunal Administrativo de Contratos Públicos de Aragón (TACPA)
+  url: https://www.aragon.es/tacpa
+  country: ES
+  region: Aragón
+  jurisdiction: ES-AR
+  data_types:
+    - case_law
+  auth:
+    type: none
+  license:
+    name: "Gobierno de Aragón open data (PSI reuse)"
+    url: "https://opendata.aragon.es/aviso-legal"
+    commercial_use: true
+    attribution_required: true
+    share_alike: false
+    no_derivatives: false
+    notes: "Reutilización de información del sector público (Ley 37/2007). Acuerdos públicos del tribunal administrativo."
+
+api:
+  base_url: https://gd.aragon.es/cgi-bin/ACTA/BRSCGI
+  list_cmd: VERLST
+  object_cmd: VEROBJ
+  base: ACTA
+  section: ACTA_PUBL
+  page_size: 100
+  date_from: "20110101"
+  date_to: "20261231"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  max_workers: 4
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+    - name: "resolution_number"
+      type: "string"
+      required: false
+    - name: "type_contract"
+      type: "string"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+coverage:
+  estimated_records: 1902
+  date_range: "2011-present"
+  languages:
+    - es
+  full_text: true

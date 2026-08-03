@@ -1,0 +1,100 @@
+# ===================================================================
+# MX/PoderJudicialNayarit -- Nayarit State Court Decisions
+# ===================================================================
+# The Poder Judicial del Estado de Nayarit publishes full-text court
+# decisions (sentencias dictadas, versiones públicas) via its
+# "Tribunal Virtual — Sentencias Dictadas" public portal. The search
+# handler returns all decisions for a given year as JSON, each pointing
+# to a downloadable full-text PDF.
+# ===================================================================
+
+source:
+  id: "MX/PoderJudicialNayarit"
+  country: "MX"
+  name: "Nayarit State Court Decisions"
+  url: "https://tribunalvirtual-tsjnay.gob.mx/publico/sentencias.public.php"
+  description: |
+    Full-text court decisions (sentencias dictadas, versiones públicas)
+    from the Poder Judicial del Estado de Nayarit. Accessed via the public
+    "Tribunal Virtual — Sentencias Dictadas" portal: a search handler at
+    app/sentencias.buscar.public.php returns all decisions for a given year
+    as JSON, and each row's `archivo` field links to a full-text PDF under
+    /publico/documentos/YYYY/. Iterated year by year (2008..present).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1.0
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "json"
+  base_url: "https://tribunalvirtual-tsjnay.gob.mx/publico"
+  endpoints:
+    listing: "/app/sentencias.buscar.public.php"
+    document: "/documentos/{year}/{file}.pdf"
+  response_format: "json"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Unique decision identifier (MX-NAY-<file-slug>)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (materia, tipo, expediente)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (extracted from the public PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (null if source date is invalid)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the full-text PDF document"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "court"
+      description: "Juzgado / court that issued the decision"
+    - name: "subject_area"
+      description: "Subject area / materia"
+    - name: "ruling"
+      description: "Tipo de registro (resolution type)"
+    - name: "case_number"
+      description: "Expediente number"
+
+license:
+  name: "Mexican Federal Government Public Data"
+  url: "https://datos.gob.mx/libreusomx"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Public-version court decisions published by a Mexican state judiciary
+    as transparency obligations (versiones públicas). Mexican government
+    public information is freely reusable under the Términos de Libre Uso
+    de la Información (LIBRE USO MX); commercial use permitted with
+    attribution.

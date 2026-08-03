@@ -1,0 +1,110 @@
+# ===================================================================
+# US/MS-TaxNotices -- Mississippi Department of Revenue:
+#                     Notices & Technical Bulletins
+# ===================================================================
+# Full text of the Mississippi Department of Revenue's published "Notices and
+# Technical Bulletins" -- official interpretive tax guidance (notices, technical
+# bulletins, information bulletins and directives explaining how Mississippi tax
+# statutes and regulations apply). Interpretive doctrine issued by a state tax
+# authority. Public Mississippi state-government works (government-edicts
+# doctrine, public domain).
+#
+# Site: dor.ms.gov (Drupal). The listing page
+#   https://www.dor.ms.gov/forms-resources/notices-technical-bulletins
+# is a server-side-rendered Drupal Views table. Each row carries structured
+# metadata columns (Title, Date, Type, Tax Category, Division) and links
+# directly to a born-digital PDF under /sites/default/files/.... Pagination is
+# the Views param ?items_per_page=25&page=N (page 0 first). Full text extracted
+# from each PDF (born-digital, no OCR). No JavaScript, no CAPTCHA, no auth.
+# The host presents a misordered TLS chain, so bytes are fetched with permissive
+# TLS (verify=False equivalent) -- a server misconfiguration, all docs public.
+# ===================================================================
+
+source:
+  id: "US/MS-TaxNotices"
+  country: "US"
+  name: "Mississippi Department of Revenue — Notices & Technical Bulletins"
+  url: "https://www.dor.ms.gov/forms-resources/notices-technical-bulletins"
+  description: |
+    Official interpretive tax guidance (notices, technical bulletins,
+    information bulletins, directives) published by the Mississippi Department
+    of Revenue = doctrine. The listing is a server-side Drupal Views table;
+    each row links to a born-digital PDF whose full text is extracted. No
+    JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_index"
+  base_url: "https://www.dor.ms.gov"
+  endpoints:
+    listing: "/forms-resources/notices-technical-bulletins"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/MS-TaxNotices/{pdf-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "doc_number"
+      description: "Document number parsed from the file name (e.g. 72-26-13), may be null"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "category"
+      description: "Document type from the listing (Notice, Technical Bulletin, etc.)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title from the listing row"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601) from the listing Date column (may be null)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Mississippi state agency document)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Notices and technical bulletins of the Mississippi Department of Revenue are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery: GET /forms-resources/notices-technical-bulletins?items_per_page=25&page=N
+    (page 0 first); parse the Drupal Views table rows for the PDF href plus the
+    Title / Date / Type / Tax Category / Division columns. Iterate until two
+    consecutive empty pages (~11 pages, ~266 docs as of 2026-07).
+  - Full text: each row links a born-digital PDF under /sites/default/files/...;
+    extracted with common.pdf_extract (pdfplumber), no OCR needed.
+  - Document number (e.g. 72-26-13) parsed from the file name when present.
+  - Host TLS chain is misordered; bytes fetched with curl -k (permissive TLS).
+  - Public domain Mississippi state-government data.

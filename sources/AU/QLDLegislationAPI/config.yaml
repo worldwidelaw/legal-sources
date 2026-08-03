@@ -1,0 +1,106 @@
+# ===================================================================
+# AU/QLDLegislationAPI -- Queensland Legislation (Official REST API)
+# ===================================================================
+# Queensland Acts and subordinate legislation via the official
+# authenticated REST API at api.legislation.qld.gov.au.
+#
+# Auth: durable account credentials exchanged for a short-lived
+#   access/refresh token pair at runtime (NOT a stored JWT).
+#   POST /v1/auth/token  { username, password } -> access + refresh
+#   POST /v1/auth/refresh { refresh_token }      -> new access token
+#   All data calls send  Authorization: Bearer <access token>
+# Discovery: GET /v1/documents?page=N&limit=50 (paginated)
+# Full text: GET /v1/renditions/xml/{id} (QuILLS DTD XML)
+# License: Creative Commons Attribution 4.0
+# ===================================================================
+
+source:
+  id: "AU/QLDLegislationAPI"
+  country: "AU"
+  name: "Queensland Legislation API (Official REST API)"
+  url: "https://www.legislation.qld.gov.au/api"
+  description: |
+    Queensland Acts and subordinate legislation from the official
+    Office of the Queensland Parliamentary Counsel REST API. Full text
+    in structured QuILLS DTD XML. Covers current and point-in-time
+    versions of all Acts and subordinate legislation.
+
+data_types:
+  - legislation
+
+auth:
+  type: "account_credentials"
+  # Runtime token exchange from durable secrets (never store the JWT):
+  env:
+    username: "QLD_LEGISLATION_USERNAME"
+    password: "QLD_LEGISLATION_PASSWORD"
+  signup: "https://api.legislation.qld.gov.au/api/signup"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "rest_json"
+  base_url: "https://api.legislation.qld.gov.au"
+  auth_token: "/v1/auth/token"
+  auth_refresh: "/v1/auth/refresh"
+  documents: "/v1/documents"
+  rendition_xml: "/v1/renditions/xml/{id}"
+  page_limit: 50
+
+data_model:
+  type: "legislation"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "doc_id"
+      description: "API document id (e.g. act-1899-009)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act or subordinate legislation title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the legislation (extracted from QuILLS XML)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication / first-valid date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the human-readable version on the OQPC portal"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "CC BY 4.0"
+  url: "https://creativecommons.org/licenses/by/4.0/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Queensland Government legislation is licensed CC BY 4.0."
+
+notes: |
+  - Official REST API; requires a free account (username/password).
+  - Runtime auth: POST /v1/auth/token to mint a fresh access/refresh
+    pair each run from durable QLD_LEGISLATION_USERNAME/PASSWORD secrets.
+  - Access token is short-lived; refresh via /v1/auth/refresh, and fall
+    back to a full re-login when the refresh token is rejected.
+  - Full text via /v1/renditions/xml/{id} (QuILLS DTD, same as the
+    unauthenticated AU/QLD-Legislation source).
+  - Never commit or log account credentials, JWTs or Authorization headers.

@@ -1,0 +1,19 @@
+{
+  "_id": "118-hr-130",
+  "_source": "US/CongressGov",
+  "_type": "legislation",
+  "_fetched_at": "2026-07-12T20:02:10.695241+00:00",
+  "title": "Thin Blue Line Act",
+  "text": "To amend title 18, United States Code, to provide additional aggravating factors for the imposition of the death penalty based on the status of the victim.\nThin Blue Line Act 1.Short titleThis Act may be cited as the Thin Blue Line Act.\n2.Aggravating factors for death penaltySection 3592(c) of title 18, United States Code, is amended by inserting after paragraph (16) the following: (17)Killing or targeting of law enforcement officer (A)The defendant killed or attempted to kill, in the circumstance described in subparagraph (B), a person who is authorized by law— (i)to engage in or supervise the prevention, detention, investigation, or prosecution, or the incarceration of any person for any criminal violation of law; (ii)to apprehend, arrest, or prosecute an individual for any criminal violation of law; or (iii)to be a firefighter or other first responder.\n(B)The circumstance referred to in subparagraph (A) is that the person was killed or targeted— (i)while he or she was engaged in the performance of his or her official duties; (ii)because of the performance of his or her official duties; or (iii)because of his or her status as a public official or employee..",
+  "date": "2023-01-09",
+  "url": "https://www.congress.gov/bill/118th-congress/house-bill/130",
+  "congress": 118,
+  "bill_type": "HR",
+  "bill_number": "130",
+  "sponsor": "Rep. Buchanan, Vern [R-FL-16]",
+  "cosponsors_count": 56,
+  "policy_area": "Crime and Law Enforcement",
+  "origin_chamber": "House",
+  "latest_action": "Referred to the House Committee on the Judiciary.",
+  "update_date": "2025-12-05T23:57:50Z"
+}

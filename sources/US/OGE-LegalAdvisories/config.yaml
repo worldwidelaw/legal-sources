@@ -1,0 +1,111 @@
+# ===================================================================
+# US/OGE-LegalAdvisories -- U.S. Office of Government Ethics — Legal Advisories
+# ===================================================================
+# Legal Advisories (and legacy DAEOgrams) of the U.S. Office of
+# Government Ethics (OGE), the supervising ethics office for the
+# executive branch (Ethics in Government Act; 5 C.F.R. part 2600).
+# Each advisory is OGE's written, authoritative interpretation of the
+# federal conflict-of-interest statutes (18 U.S.C. §§ 202-209), the
+# Standards of Ethical Conduct (5 C.F.R. part 2635), the financial-
+# disclosure rules and related executive-branch ethics law, addressed
+# to Designated Agency Ethics Officials government-wide and relied on
+# by agencies. Official federal legal interpretation = doctrine.
+# Published as born-digital, full-text PDFs (real text layer, no OCR,
+# no JavaScript, no CAPTCHA, no auth). Public-domain U.S. Government
+# works (17 U.S.C. § 105).
+# ===================================================================
+
+source:
+  id: "US/OGE-LegalAdvisories"
+  country: "US"
+  name: "U.S. Office of Government Ethics — Legal Advisories"
+  url: "https://www.oge.gov/web/oge.nsf/Legal%20Advisories"
+  description: |
+    Legal Advisories (and legacy DAEOgrams) of the U.S. Office of
+    Government Ethics (OGE) — the agency's written interpretations of the
+    federal criminal conflict-of-interest laws (18 U.S.C. §§ 202-209),
+    the Standards of Ethical Conduct (5 C.F.R. part 2635), and the
+    executive-branch financial-disclosure and post-employment rules,
+    addressed to Designated Agency Ethics Officials. Enumerated from the
+    single Lotus Domino (.nsf) web view; each advisory is a born-digital
+    full-text PDF whose text layer is extracted directly (no OCR).
+    doctrine.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.oge.gov"
+  endpoints:
+    view: "/web/oge.nsf/Legal%20Advisories?OpenView&Count=2000"
+    advisory_pdf: "/web/oge.nsf/Legal Advisories/{UNID}/$FILE/{filename}.pdf?open"
+
+data_model:
+  type: "doctrine"
+  primary_key: "document_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/OGE-LegalAdvisories/{document_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "document_number"
+      description: "Advisory number (e.g. LA-25-02, DO-97-028, 97x11)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title ('OGE Legal Advisory {N} — {subject}')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory, extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), from the view's date column (MM/DD/YYYY)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — 17 U.S.C. § 105)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Legal Advisories of the U.S. Office of Government Ethics are works of the U.S. federal government in the public domain under 17 U.S.C. § 105."
+
+notes: |
+  - Enumeration: GET the full Lotus Domino view with an OpenView/Count
+    query — /web/oge.nsf/Legal%20Advisories?OpenView&Count=2000 — which
+    returns ~470 advisories newest-first. Each entry is rendered as an
+    <a href=".../$FILE/{file}.pdf?open"> wrapping a <div id="vt"> title,
+    followed by a <div id="vtxt"> summary and a <div id="vdt"> date
+    (MM/DD/YYYY). The bare view URL only shows the first ~27 rows; the
+    Count=2000 parameter is required for the full corpus.
+  - Full text: each advisory PDF is born-digital with a real text layer;
+    text is extracted via the shared common.pdf_extract backend — no OCR.
+  - document_number parsed from the <div id="vt"> prefix (LA-YY-NN
+    current, DO-YY-NNN and YYxNN legacy DAEOgrams); issue date taken
+    from the <div id="vdt"> column with a fallback to the two-digit year
+    embedded in the number.
+  - Public-domain U.S. Government data (17 U.S.C. § 105).

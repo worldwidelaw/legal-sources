@@ -1,0 +1,108 @@
+# ===================================================================
+# US/WA-JudicialEthics -- Washington State Ethics Advisory Committee
+#                         — Judicial Ethics Advisory Opinions
+# ===================================================================
+# Formal ethics advisory opinions issued by the Washington State Ethics
+# Advisory Committee (EAC), established by the Washington Supreme Court.
+# Each opinion construes the Washington Code of Judicial Conduct (CJC)
+# and answers a specific inquiry about the ethical obligations of judges
+# and judicial officers = doctrine. Born-digital HTML full text (real
+# text, no OCR, no CAPTCHA, no auth). Public-domain Washington State
+# government works. Distinct from US/WA-EthicsOpinions (the Executive
+# Ethics Board, which covers state executive-branch employees).
+# ===================================================================
+
+source:
+  id: "US/WA-JudicialEthics"
+  country: "US"
+  name: "Washington State Ethics Advisory Committee — Judicial Ethics Advisory Opinions"
+  url: "https://www.courts.wa.gov/programs_orgs/pos_ethics/?fa=pos_ethics.byyear"
+  description: |
+    Ethics Advisory Opinions of the Washington State Ethics Advisory
+    Committee (EAC), a committee established by the Washington Supreme
+    Court to advise judges and judicial officers on the Washington Code
+    of Judicial Conduct (CJC). Each opinion answers a specific inquiry
+    and sets out the applicable CJC rules/canons and the Committee's
+    conclusion. Opinions from 1984 to present are published as
+    born-digital HTML pages on the courts.wa.gov site; the full text
+    (Question / Answer / analysis) is extracted directly from the HTML.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.courts.wa.gov/programs_orgs/pos_ethics/"
+  endpoints:
+    index: "?fa=pos_ethics.byyear"
+    opinion: "?fa=pos_ethics.dispopin&mode={mode}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/WA-JudicialEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number in YY-SS form (e.g. 20-01, 84-01)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Washington Ethics Advisory Opinion {number}"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (Question / Answer / CJC analysis), from the HTML page"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the opinion-page footer (MM/DD/YYYY); fallback to opinion-number year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (Washington State Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Ethics Advisory Opinions of the Washington State Ethics Advisory Committee are official public records of the State of Washington, published for public use with no copyright restriction."
+
+notes: |
+  - Enumeration: GET the by-year index
+    (?fa=pos_ethics.byyear) and parse every "mode=NNNN" code, where
+    NNNN is a four-digit "YYSS" code (two-digit year + two-digit
+    sequence). ~468 opinions from 1984 (84-01) to present.
+  - Full text: each opinion page (?fa=pos_ethics.dispopin&mode=NNNN) is
+    born-digital HTML. The opinion body sits between an "Opinion YY-SS"
+    header and a footer that repeats "Opinion YY-SS" then the issue date
+    (MM/DD/YYYY) then the site nav ("RECORDS"). The body is sliced out
+    and de-tagged — no OCR, no PDF.
+  - courts.wa.gov returns HTTP 403 to non-browser User-Agents; all
+    requests carry a desktop-Chrome UA.
+  - Type: every published document is a formal ethics advisory opinion
+    construing the Code of Judicial Conduct = doctrine.
+  - Date: parsed from the opinion-page footer (MM/DD/YYYY), with a
+    fallback to the year embedded in the opinion number.

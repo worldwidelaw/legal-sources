@@ -1,0 +1,128 @@
+# ===================================================================
+# US/RI-LegalEthics -- Rhode Island Supreme Court Ethics Advisory
+#                      Panel Opinions
+# ===================================================================
+# Advisory opinions issued by the Rhode Island Supreme Court Ethics
+# Advisory Panel, which the Supreme Court established in 1986 to give
+# Rhode Island attorneys confidential, prospective advice on the Rhode
+# Island Rules of Professional Conduct = doctrine (advisory). The Panel
+# is an arm of the Supreme Court of Rhode Island (created and governed
+# by the Court's own rules) -> pd-us. Distinct from US/RI-Courts,
+# US/RI-Legislation and the executive RI Ethics Commission
+# (ethics.ri.gov, which advises public OFFICIALS, not lawyers).
+# ===================================================================
+
+source:
+  id: "US/RI-LegalEthics"
+  country: "US"
+  name: "Rhode Island Supreme Court Ethics Advisory Panel — Opinions"
+  url: "https://www.courts.ri.gov/attorney-resources/Pages/Ethics-Advisory-Panel-default.aspx"
+  description: |
+    Advisory opinions of the Rhode Island Supreme Court Ethics Advisory
+    Panel, established by the Supreme Court in 1986 to give Rhode Island
+    attorneys confidential, prospective advice on the Rhode Island Rules
+    of Professional Conduct. Opinions are numbered {YY|YYYY}-{N} (e.g.
+    87-03, 1998-12, 2024-01) and published free as PDFs on the Judiciary
+    website. Those from ~1998 onward are born-digital (full text layer);
+    pre-1998 opinions survive only as scanned image PDFs and are skipped
+    (no OCR). ~221 born-digital, full-text opinions available.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "sharepoint_search_pdf"
+  base_url: "https://www.courts.ri.gov"
+  endpoints:
+    search: "/_api/search/query?querytext='RIJCourt:%22Ethics%20Advisory%20Panel%22'"
+    opinions: "/Opinions/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/RI-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number, year canonicalised to 4 digits (e.g. 1998-12, 2024-01)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion label (RI Ethics Advisory Panel Opinion {number})"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text from the born-digital PDF (PyMuPDF, no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 issue date from the 'Issued <Month DD, YYYY>' header"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Rhode Island Supreme Court — Ethics Advisory Panel"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-RI)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (US government edict — Supreme Court panel advisory opinions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "The Rhode Island Supreme Court Ethics Advisory Panel was established by, and operates under the rules of, the Supreme Court of Rhode Island; its opinions interpret the Rhode Island Rules of Professional Conduct. As the work of a body created and authorized by the state's highest court, the opinions are treated as public domain under the 17 U.S.C. § 105 government-edicts rationale, consistent with the other state-bar/state-court legal-ethics sources. Published free to the public on courts.ri.gov with no login, paywall or terms prohibiting reuse. Commercial use permitted."
+
+notes: |
+  - Discovery: every published opinion PDF is indexed in the Judiciary's
+    SharePoint search index. The public REST endpoint
+    /_api/search/query?querytext='RIJCourt:"Ethics Advisory Panel"'
+    returns one row per opinion PDF (~782 rows), each carrying the direct
+    Path under /Opinions/. Pagination via rowlimit (<=500) + startrow.
+  - Filenames are irregular: older ones use a raw space + 2-digit year
+    ("EAP 87-03.pdf", "EAP 98-12.pdf"), newer ones a hyphen + 4-digit year
+    ("EAP-2024-01.pdf"); a few carry no "EAP" prefix ("2002-03a.pdf").
+    Take the Path verbatim and URL-quote it; parse the number from the
+    filename, canonicalising 2-digit years (98 -> 1998).
+  - Full text: PDFs from ~1998 onward are born-digital (text layer) ->
+    PyMuPDF/fitz get_text, NO OCR. Pre-1998 opinions (1986-1997) survive
+    only as scanned image PDFs with 0 chars and are correctly skipped
+    (~561 scanned, ~221 born-digital full-text).
+  - Body header: "Rhode Island Supreme Court / Ethics Advisory Panel Op.
+    {num}" (or "...Opinion No. {num}") + "Issued {Month DD, YYYY}" +
+    FACTS section + analysis. Date parsed from the 'Issued' header, else
+    the number's 4-digit year prefix -> YYYY-01-01.
+  - Title: opinions are keyed by number, not by descriptive title, so the
+    title is a constructed label "RI Ethics Advisory Panel Opinion {num}".
+  - Type: every document is the Panel's advisory interpretation of the
+    rules governing lawyers = doctrine.
+  - Distinct from US/RI-Courts (RI appellate courts), US/RI-Legislation
+    (General Laws) and the executive Rhode Island Ethics Commission
+    (ethics.ri.gov), which advises public officials, not lawyers.

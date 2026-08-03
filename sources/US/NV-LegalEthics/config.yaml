@@ -1,0 +1,128 @@
+# ===================================================================
+# US/NV-LegalEthics -- State Bar of Nevada — Ethics Opinions
+# ===================================================================
+# Formal ethics opinions issued by the State Bar of Nevada's Standing
+# Committee on Ethics and Professional Responsibility interpreting the
+# Nevada Rules of Professional Conduct to advise LAWYERS = doctrine
+# (advisory). One continuous "Formal Opinion No. N" series (No. 1, 1986
+# -> No. 61, 2025, present). The State Bar of Nevada is the state's
+# INTEGRATED (mandatory) bar, unified under the Supreme Court of Nevada
+# (SCR) -> pd-us. Distinct from US/NV-EthicsOpinions (executive Nevada
+# Commission on Ethics — public officials), US/NV-Courts,
+# US/NV-Legislation and US/NV-AGOpinions.
+# ===================================================================
+
+source:
+  id: "US/NV-LegalEthics"
+  country: "US"
+  name: "State Bar of Nevada — Ethics Opinions"
+  url: "https://nvbar.org/for-lawyers/ethics-discipline/ethics-opinions/"
+  description: |
+    Formal ethics opinions issued by the State Bar of Nevada's Standing
+    Committee on Ethics and Professional Responsibility, interpreting the
+    Nevada Rules of Professional Conduct in response to a stated question to
+    advise lawyers. One continuous "Formal Opinion No. N" series running from
+    No. 1 (1986) to No. 61 (2025, present); all are published free as
+    born-digital PDFs on nvbar.org, each carrying the opinion number, an issue
+    date, a Question Presented and the Committee's analysis.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_pdf"
+  base_url: "https://nvbar.org"
+  endpoints:
+    index: "/for-lawyers/ethics-discipline/ethics-opinions/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NV-LegalEthics/{N})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion label ('Formal Opinion No. {N}')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion label ('State Bar of Nevada Formal Ethics Opinion No. {N}')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text from the born-digital PDF (PyMuPDF, no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 issue date parsed from the opinion header (day defaults to 01 when absent)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "State Bar of Nevada — Standing Committee on Ethics and Professional Responsibility"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-NV)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (US government edict — integrated bar advisory opinions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "State Bar of Nevada ethics opinions interpret the Nevada Rules of Professional Conduct. The State Bar of Nevada is the state's integrated (mandatory) bar, unified under and regulated by the Supreme Court of Nevada (SCR), so the opinions are the work of a government-authorized body — treated as public domain under the 17 U.S.C. § 105 government-edicts rationale, consistent with the other state-bar legal-ethics sources. Published free to the public on nvbar.org with no login, paywall or terms prohibiting reuse. Commercial use permitted."
+
+notes: |
+  - Discovery: the published corpus is indexed on a single listing page,
+    /for-lawyers/ethics-discipline/ethics-opinions/, which links every
+    opinion PDF directly under /wp-content/uploads/. Filenames are irregular
+    (opinion_41.pdf, Ethics_Op_50.pdf, NV-Ethics-Opinion-No.-53.pdf,
+    Finalized-Opinion-Rule-4.2-No-Contact-Rule_1.13.25-1.pdf, ...), so we take
+    the href verbatim and parse the number primarily from the anchor text
+    ("OPINION 61") and, when the anchor text is generic ("complete opinion,
+    PDF"), from the (url-decoded) filename.
+  - Dedup: anchors appear in document order — the canonical modern list first,
+    then a legacy duplicate list and "... Summary.pdf" digests. We keep the
+    FIRST link per opinion number and skip summaries, so we take the full
+    opinion, not its summary.
+  - Full text: each opinion PDF is born-digital (text layer) -> PyMuPDF/fitz
+    get_text, NO OCR. Header = "STATE BAR OF NEVADA / STANDING COMMITTEE ON
+    ETHICS AND PROFESSIONAL RESPONSIBILITY / Formal Opinion No. {N} ..." +
+    "Question Presented" + analysis.
+  - Title: generic "State Bar of Nevada Formal Ethics Opinion No. {N}".
+  - Date: parsed from the header month-day-year ("April 29, 1994";
+    "January __, 2025" with blank day -> day 01) -> YYYY-MM-DD; null if absent.
+  - Type: every document is the Committee's advisory interpretation of the
+    rules governing lawyers = doctrine.
+  - A block of the middle-era opinions (roughly Nos. 37-52) are published only
+    as scanned image PDFs with no text layer (fitz get_text -> 0 chars) and are
+    correctly skipped (< 150 chars); recovering them would need OCR. Nos. 1-36
+    and 53-61 are born-digital, so the full pull yields 41 full-text opinions.
+  - Distinct from US/NV-EthicsOpinions (executive Nevada Commission on Ethics),
+    US/NV-Courts, US/NV-Legislation and US/NV-AGOpinions.

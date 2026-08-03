@@ -1,0 +1,30 @@
+country: US
+data_types:
+- case_law
+language: en
+name: US AAO Non-Precedent Decisions (USCIS Administrative Appeals Office)
+schedule: monthly
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: benefit_code
+    required: false
+    type: string
+  - name: category
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: string
+license:
+  name: "Public domain — 17 U.S.C. § 105"
+  url: https://www.law.cornell.edu/uscode/text/17/105
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "US federal government works — public domain."
+source_id: US/AAO
+url: https://www.uscis.gov/administrative-appeals/aao-decisions/aao-non-precedent-decisions

@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-06-22T05:57:41.804249+00:00",
+  "generated_at": "2026-07-20T00:41:50.565018+00:00",
   "summary": {
-    "total_complete": 1734,
-    "commercial_ok": 1611,
-    "non_commercial": 123,
-    "unverified": 23,
+    "total_complete": 2111,
+    "commercial_ok": 1946,
+    "non_commercial": 165,
+    "unverified": 24,
     "unique_license_ids": 29
   },
   "by_license": {
@@ -12,37 +12,37 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 663
-    },
-    "pd-gov": {
-      "display_name": "Public domain (government works)",
-      "url": null,
-      "commercial_use": true,
-      "count": 345
-    },
-    "custom-terms": {
-      "display_name": "Custom terms of use",
-      "url": null,
-      "commercial_use": null,
-      "count": 135
+      "count": 693
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
       "url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true,
-      "count": 125
+      "count": 363
+    },
+    "pd-gov": {
+      "display_name": "Public domain (government works)",
+      "url": null,
+      "commercial_use": true,
+      "count": 357
+    },
+    "custom-terms": {
+      "display_name": "Custom terms of use",
+      "url": null,
+      "commercial_use": null,
+      "count": 178
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true,
-      "count": 95
+      "count": 108
     },
     "ogl-3.0": {
       "display_name": "OGL v3.0",
       "url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
       "commercial_use": true,
-      "count": 48
+      "count": 63
     },
     "pd-de": {
       "display_name": "Public domain — 5 UrhG",
@@ -50,53 +50,53 @@
       "commercial_use": true,
       "count": 42
     },
-    "odbl-1.0": {
-      "display_name": "ODbL 1.0",
-      "url": "https://opendatacommons.org/licenses/odbl/1-0/",
-      "commercial_use": true,
-      "count": 36
-    },
     "custom-nc": {
       "display_name": "Custom non-commercial terms",
       "url": null,
       "commercial_use": false,
-      "count": 35
+      "count": 40
+    },
+    "odbl-1.0": {
+      "display_name": "ODbL 1.0",
+      "url": "https://opendatacommons.org/licenses/odbl/1-0/",
+      "commercial_use": true,
+      "count": 39
     },
     "licence-ouverte-2.0": {
       "display_name": "Licence Ouverte 2.0",
       "url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
       "commercial_use": true,
-      "count": 34
+      "count": 38
     },
     "eur-lex": {
       "display_name": "EUR-Lex reuse notice",
       "url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
       "commercial_use": true,
-      "count": 31
-    },
-    "unverified": {
-      "display_name": "Unverified — needs research",
-      "url": null,
-      "commercial_use": null,
-      "count": 23
+      "count": 34
     },
     "cc0-1.0": {
       "display_name": "CC0 1.0",
       "url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "commercial_use": true,
-      "count": 21
+      "count": 25
+    },
+    "unverified": {
+      "display_name": "Unverified — needs research",
+      "url": null,
+      "commercial_use": null,
+      "count": 24
     },
     "ogl-canada": {
       "display_name": "Open Government Licence — Canada",
       "url": "https://open.canada.ca/en/open-government-licence-canada",
       "commercial_use": true,
-      "count": 21
+      "count": 23
     },
     "": {
       "display_name": "",
       "url": null,
       "commercial_use": null,
-      "count": 17
+      "count": 18
     },
     "cc-by-nc": {
       "display_name": "CC BY-NC 4.0",
@@ -128,6 +128,12 @@
       "commercial_use": true,
       "count": 5
     },
+    "cc-by-nc-nd": {
+      "display_name": "CC BY-NC-ND 3.0",
+      "url": "https://creativecommons.org/licenses/by-nc-nd/3.0/",
+      "commercial_use": false,
+      "count": 4
+    },
     "cc-by-3.0": {
       "display_name": "CC BY 3.0",
       "url": "https://creativecommons.org/licenses/by/3.0/",
@@ -156,12 +162,6 @@
       "display_name": "pd-dk",
       "url": null,
       "commercial_use": null,
-      "count": 1
-    },
-    "cc-by-nc-nd": {
-      "display_name": "CC BY-NC-ND 3.0",
-      "url": "https://creativecommons.org/licenses/by-nc-nd/3.0/",
-      "commercial_use": false,
       "count": 1
     },
     "pd-intl": {
@@ -406,6 +406,15 @@
       "name": "Qendra e Botimeve Zyrtare - Albanian Official Gazette",
       "license_id": "ogd",
       "license_name": "Open government data — no authentication required, freely accessible.",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "AL/SupremeCourt",
+      "country": "AL",
+      "name": "Albanian Supreme Court (Gjykata e Lartë)",
+      "license_id": "ogd",
+      "license_name": "Open government data. No explicit license specified.",
       "license_url": null,
       "commercial_use": true
     },
@@ -773,6 +782,15 @@
       "id": "AU/QLD-Legislation",
       "country": "AU",
       "name": "Queensland Legislation (legislation.qld.gov.au)",
+      "license_id": "cc-by-4.0",
+      "license_name": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "AU/QLDLegislationAPI",
+      "country": "AU",
+      "name": "Queensland Legislation API (Official REST API)",
       "license_id": "cc-by-4.0",
       "license_name": "CC BY 4.0",
       "license_url": "https://creativecommons.org/licenses/by/4.0/",
@@ -1229,6 +1247,15 @@
       "commercial_use": true
     },
     {
+      "id": "BE/Wallex",
+      "country": "BE",
+      "name": "Wallex — Walloon Region Consolidated Legislation",
+      "license_id": "ogd",
+      "license_name": "Open Data (Service public de Wallonie)",
+      "license_url": "https://www.wallonie.be/fr/conditions-generales-dutilisation",
+      "commercial_use": true
+    },
+    {
       "id": "BF/AssembleeNationale",
       "country": "BF",
       "name": "Burkina Faso Assemblée Nationale — Textes Législatifs",
@@ -1661,6 +1688,15 @@
       "commercial_use": true
     },
     {
+      "id": "BR/STJ",
+      "country": "BR",
+      "name": "Superior Tribunal de Justiça (STJ) — Brazil",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "BR/STJDadosAbertos",
       "country": "BR",
       "name": "STJ Open Data Portal (Superior Court of Justice)",
@@ -1931,6 +1967,15 @@
       "commercial_use": true
     },
     {
+      "id": "BY/PravoBy",
+      "country": "BY",
+      "name": "Belarus National Legal Portal (Codes)",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": "https://pravo.by",
+      "commercial_use": true
+    },
+    {
       "id": "BZ/AGMLaws",
       "country": "BZ",
       "name": "Belize Consolidated Laws (Attorney General)",
@@ -2048,6 +2093,15 @@
       "commercial_use": true
     },
     {
+      "id": "CA/CNSC",
+      "country": "CA",
+      "name": "Canadian Nuclear Safety Commission — Records of Decision",
+      "license_id": "ogl-canada",
+      "license_name": "Open Government Licence - Canada",
+      "license_url": "https://open.canada.ca/en/open-government-licence-canada",
+      "commercial_use": true
+    },
+    {
       "id": "CA/CRA-TaxDoctrine",
       "country": "CA",
       "name": "Canada Revenue Agency Tax Doctrine",
@@ -2080,6 +2134,15 @@
       "name": "Federal Laws and Regulations (Justice Laws Website)",
       "license_id": "ogl-canada",
       "license_name": "Open Government Licence - Canada",
+      "license_url": "https://open.canada.ca/en/open-government-licence-canada",
+      "commercial_use": true
+    },
+    {
+      "id": "CA/HumanRightsTribunal",
+      "country": "CA",
+      "name": "Canadian Human Rights Tribunal — Decisions",
+      "license_id": "ogl-canada",
+      "license_name": "Open Government Licence — Canada",
       "license_url": "https://open.canada.ca/en/open-government-licence-canada",
       "commercial_use": true
     },
@@ -2136,6 +2199,24 @@
       "license_name": "Open Government Licence — Canada",
       "license_url": "https://open.canada.ca/en/open-government-licence-canada",
       "commercial_use": true
+    },
+    {
+      "id": "CA/ON-OSC",
+      "country": "CA",
+      "name": "Ontario Securities Commission — Instruments, Rules & Policies",
+      "license_id": "custom-nc",
+      "license_name": "OSC Website Terms of Use (non-commercial limited licence)",
+      "license_url": "https://www.osc.ca/en/legal",
+      "commercial_use": false
+    },
+    {
+      "id": "CA/ON-OSC",
+      "country": "CA",
+      "name": "Ontario Securities Commission — Instruments, Rules & Policies",
+      "license_id": "custom-nc",
+      "license_name": "OSC Website Terms of Use (non-commercial limited licence)",
+      "license_url": "https://www.osc.ca/en/legal",
+      "commercial_use": false
     },
     {
       "id": "CA/OntarioLaws",
@@ -2307,6 +2388,15 @@
       "license_name": "CAS Jurisprudence",
       "license_url": "https://jurisprudence.tas-cas.org/",
       "commercial_use": false
+    },
+    {
+      "id": "CH/ENSI",
+      "country": "CH",
+      "name": "ENSI — Swiss Federal Nuclear Safety Inspectorate",
+      "license_id": "pd-gov",
+      "license_name": "Swiss official works (Art. 5 URG)",
+      "license_url": "https://www.fedlex.admin.ch/eli/cc/1993/1798_1798_1798/de#art_5",
+      "commercial_use": true
     },
     {
       "id": "CH/ESTV",
@@ -2692,6 +2782,15 @@
       "name": "Cameroon Supreme Court (Cour Supreme)",
       "license_id": "pd-gov",
       "license_name": "Public domain (government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "CN/CICC",
+      "country": "CN",
+      "name": "China International Commercial Court (CICC)",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government)",
       "license_url": null,
       "commercial_use": true
     },
@@ -3661,7 +3760,7 @@
     {
       "id": "DE/NeuRIS",
       "country": "DE",
-      "name": "Germany NeuRIS Federal Legal Information Portal (Rechtsinformationsportal)",
+      "name": "Germany NeuRIS Federal Legal Information Portal (Rechtsinformationen des Bundes)",
       "license_id": "pd-de",
       "license_name": "§ 5 UrhG",
       "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
@@ -4001,6 +4100,15 @@
       "commercial_use": true
     },
     {
+      "id": "DO/RealEstateRegistry",
+      "country": "DO",
+      "name": "Registro Inmobiliario — Jurisdicción Inmobiliaria (Real Estate Courts)",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "DO/SIB-Regulations",
       "country": "DO",
       "name": "Dominican Republic Superintendencia de Bancos — Regulations",
@@ -4025,6 +4133,15 @@
       "license_id": "pd-gov",
       "license_name": "Public domain (government)",
       "license_url": "https://justicia.gob.do/apis-judiciales/",
+      "commercial_use": true
+    },
+    {
+      "id": "DO/TribunalSuperiorElectoral",
+      "country": "DO",
+      "name": "Dominican Republic Tribunal Superior Electoral — Sentencias Contenciosas",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": null,
       "commercial_use": true
     },
     {
@@ -4142,6 +4259,15 @@
       "license_id": "pd-gov",
       "license_name": "Public domain — Estonian government regulatory decisions are publicly available.",
       "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "EE/AllCourts",
+      "country": "EE",
+      "name": "Estonian Court Decisions (Kohtulahendid — All Courts)",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (official documents)",
+      "license_url": "https://www.riigiteataja.ee/en/eli/512122024001/consolide",
       "commercial_use": true
     },
     {
@@ -4433,6 +4559,87 @@
       "commercial_use": true
     },
     {
+      "id": "ES/OARC-Euskadi",
+      "country": "ES",
+      "name": "Órgano Administrativo de Recursos Contractuales de Euskadi (OARC / KEAO)",
+      "license_id": "cc-by-4.0",
+      "license_name": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "ES/TACGal-Galicia",
+      "country": "ES",
+      "name": "Tribunal Administrativo de Contratación Pública de Galicia (TACGal)",
+      "license_id": "ogd",
+      "license_name": "Xunta de Galicia open data (PSI reuse, Ley 37/2007)",
+      "license_url": "https://www.xunta.gal/aviso-legal",
+      "commercial_use": true
+    },
+    {
+      "id": "ES/TACP-Madrid",
+      "country": "ES",
+      "name": "Tribunal Administrativo de Contratación Pública de la Comunidad de Madrid (TACP Madrid)",
+      "license_id": "ogd",
+      "license_name": "Comunidad de Madrid open data (PSI reuse / Licencia tipo)",
+      "license_url": "https://www.comunidad.madrid/gobierno/informacion-institucional/aviso-legal",
+      "commercial_use": true
+    },
+    {
+      "id": "ES/TACPA-Aragon",
+      "country": "ES",
+      "name": "Tribunal Administrativo de Contratos Públicos de Aragón (TACPA)",
+      "license_id": "ogd",
+      "license_name": "Gobierno de Aragón open data (PSI reuse)",
+      "license_url": "https://opendata.aragon.es/informacion/aviso-legal",
+      "commercial_use": true
+    },
+    {
+      "id": "ES/TACPC-Canarias",
+      "country": "ES",
+      "name": "Tribunal Administrativo de Contratos Públicos de la Comunidad Autónoma de Canarias (TACP Canarias)",
+      "license_id": "ogd",
+      "license_name": "Gobierno de Canarias open data (PSI reuse)",
+      "license_url": "https://datos.canarias.es/portal/aviso-legal",
+      "commercial_use": true
+    },
+    {
+      "id": "ES/TACPN-Navarra",
+      "country": "ES",
+      "name": "Tribunal Administrativo de Contratos Públicos de Navarra (TACPN)",
+      "license_id": "ogd",
+      "license_name": "Gobierno de Navarra open data (PSI reuse)",
+      "license_url": "https://gobiernoabierto.navarra.es/es/open-data/informacion-practica/aviso-legal",
+      "commercial_use": true
+    },
+    {
+      "id": "ES/TARCCyL",
+      "country": "ES",
+      "name": "Tribunal Administrativo de Recursos Contractuales de Castilla y León (TARCCYL)",
+      "license_id": "ogd",
+      "license_name": "Junta de Castilla y León open data (PSI reuse)",
+      "license_url": "https://datosabiertos.jcyl.es/web/es/aviso-legal.html",
+      "commercial_use": true
+    },
+    {
+      "id": "ES/TARCJA-Andalucia",
+      "country": "ES",
+      "name": "Tribunal Administrativo de Recursos Contractuales de la Junta de Andalucia (TARCJA)",
+      "license_id": "ogd",
+      "license_name": "Junta de Andalucia open data (PSI reuse)",
+      "license_url": "https://datos.juntadeandalucia.es/aviso-legal",
+      "commercial_use": true
+    },
+    {
+      "id": "ES/TCCSP-Catalunya",
+      "country": "ES",
+      "name": "Tribunal Català de Contractes del Sector Públic (TCCSP)",
+      "license_id": "ogd",
+      "license_name": "Generalitat de Catalunya open data (PSI reuse)",
+      "license_url": "https://web.gencat.cat/ca/menu-ajuda/ajuda/avis_legal/",
+      "commercial_use": true
+    },
+    {
       "id": "ES/TEAC",
       "country": "ES",
       "name": "Spanish Tax Administrative Tribunal (TEAC)",
@@ -4532,6 +4739,15 @@
       "commercial_use": true
     },
     {
+      "id": "EU/COM-Documents",
+      "country": "EU",
+      "name": "European Commission — Proposals & Communications (COM documents)",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
       "id": "EU/CPCS",
       "country": "EU",
       "name": "EU Consumer Protection Cooperation Network",
@@ -4556,6 +4772,15 @@
       "license_id": "eur-lex",
       "license_name": "EUR-Lex legal notice",
       "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/CoR-Opinions",
+      "country": "EU",
+      "name": "European Committee of the Regions — Opinions",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
       "commercial_use": true
     },
     {
@@ -4655,6 +4880,15 @@
       "license_id": "eur-lex",
       "license_name": "EUR-Lex reuse notice",
       "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/EESC-Opinions",
+      "country": "EU",
+      "name": "European Economic and Social Committee — Opinions & Information Reports",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
       "commercial_use": true
     },
     {
@@ -4928,6 +5162,15 @@
       "commercial_use": true
     },
     {
+      "id": "FI/STUK",
+      "country": "FI",
+      "name": "STUK — Radiation and Nuclear Safety Authority YVL / VAL Guides",
+      "license_id": "ogd",
+      "license_name": "Finnish Open Government Data",
+      "license_url": "https://www.avoindata.fi/en",
+      "commercial_use": true
+    },
+    {
       "id": "FI/SupremeAdministrativeCourt",
       "country": "FI",
       "name": "Finnish Supreme Administrative Court",
@@ -5063,6 +5306,15 @@
       "commercial_use": true
     },
     {
+      "id": "FR/ACPR-Sanctions",
+      "country": "FR",
+      "name": "ACPR Commission des sanctions — Décisions (Recueil des sanctions)",
+      "license_id": "licence-ouverte-2.0",
+      "license_name": "Licence Ouverte 2.0 / Open Licence (Etalab)",
+      "license_url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
+      "commercial_use": true
+    },
+    {
       "id": "FR/ADLC",
       "country": "FR",
       "name": "Autorité de la Concurrence (French Competition Authority)",
@@ -5153,6 +5405,15 @@
       "commercial_use": true
     },
     {
+      "id": "FR/AssuranceMaladie",
+      "country": "FR",
+      "name": "Circulaires réseau de l'Assurance Maladie (CNAM)",
+      "license_id": "licence-ouverte-2.0",
+      "license_name": "Licence Ouverte 2.0",
+      "license_url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
+      "commercial_use": true
+    },
+    {
       "id": "FR/BOAMP",
       "country": "FR",
       "name": "French Public Procurement (BOAMP)",
@@ -5171,6 +5432,15 @@
       "commercial_use": true
     },
     {
+      "id": "FR/BulletinsOfficielsSociaux",
+      "country": "FR",
+      "name": "Bulletins officiels des ministères chargés des affaires sociales (Santé & Travail)",
+      "license_id": "licence-ouverte-2.0",
+      "license_name": "Licence Ouverte 2.0",
+      "license_url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
+      "commercial_use": true
+    },
+    {
       "id": "FR/CADA",
       "country": "FR",
       "name": "CADA - Commission d'accès aux documents administratifs",
@@ -5185,6 +5455,15 @@
       "name": "French Court of Cassation Case Law (CASS Database)",
       "license_id": "licence-ouverte-2.0",
       "license_name": "Licence Ouverte 2.0 / Open Licence (Etalab)",
+      "license_url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
+      "commercial_use": true
+    },
+    {
+      "id": "FR/CCAM",
+      "country": "FR",
+      "name": "CCAM en ligne — Classification Commune des Actes Médicaux",
+      "license_id": "licence-ouverte-2.0",
+      "license_name": "Licence Ouverte 2.0",
       "license_url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
       "commercial_use": true
     },
@@ -5342,12 +5621,57 @@
       "commercial_use": true
     },
     {
+      "id": "FR/OrdreChirurgiensDentistes",
+      "country": "FR",
+      "name": "Ordre des Chirurgiens-Dentistes — Jurisprudence disciplinaire",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms (public anonymised jurisprudence)",
+      "license_url": "https://www.ordre-chirurgiens-dentistes.fr/informations-legales/",
+      "commercial_use": true
+    },
+    {
+      "id": "FR/OrdreInfirmiers",
+      "country": "FR",
+      "name": "Ordre des Infirmiers — Jurisprudence disciplinaire",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms (public anonymised jurisprudence)",
+      "license_url": "https://www.ordre-infirmiers.fr/mentions-legales",
+      "commercial_use": true
+    },
+    {
+      "id": "FR/OrdreMasseursKine",
+      "country": "FR",
+      "name": "Ordre des Masseurs-Kinésithérapeutes — Jurisprudence disciplinaire",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms (public anonymised jurisprudence)",
+      "license_url": "https://www.ordremk.fr/mentions-legales/",
+      "commercial_use": true
+    },
+    {
       "id": "FR/OrdreMedecins",
       "country": "FR",
       "name": "Ordre des Médecins — Jurisprudence disciplinaire",
       "license_id": "licence-ouverte-2.0",
       "license_name": "Licence Ouverte 2.0",
       "license_url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
+      "commercial_use": true
+    },
+    {
+      "id": "FR/OrdrePedicuresPodologues",
+      "country": "FR",
+      "name": "Ordre des Pédicures-Podologues — Jurisprudence disciplinaire",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms (public anonymised jurisprudence)",
+      "license_url": "https://www.onpp.fr/mentions-legales.html",
+      "commercial_use": true
+    },
+    {
+      "id": "FR/OrdrePharmaciens",
+      "country": "FR",
+      "name": "Ordre des Pharmaciens — Jurisprudence disciplinaire",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms (public anonymised jurisprudence)",
+      "license_url": "https://www.ordre.pharmacien.fr/mentions-legales",
       "commercial_use": true
     },
     {
@@ -5651,6 +5975,15 @@
       "id": "GM/CBG-Regulations",
       "country": "GM",
       "name": "Central Bank of The Gambia — Guidelines & Regulations",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "GM/Judiciary",
+      "country": "GM",
+      "name": "Judiciary of The Gambia — Law Reports & Judgments",
       "license_id": "pd-gov",
       "license_name": "Public domain (government)",
       "license_url": null,
@@ -6368,12 +6701,30 @@
       "commercial_use": true
     },
     {
+      "id": "IE/ASAI",
+      "country": "IE",
+      "name": "Advertising Standards Authority for Ireland (ASAI) — Complaint Adjudications",
+      "license_id": "custom-nc",
+      "license_name": "© Advertising Standards Authority (all rights reserved)",
+      "license_url": "https://adstandards.ie/",
+      "commercial_use": false
+    },
+    {
       "id": "IE/Acts",
       "country": "IE",
       "name": "Irish Statute Database",
       "license_id": "ogl-3.0",
       "license_name": "Irish Open Government Licence",
       "license_url": "https://www.irishstatutebook.ie/eli/about.html",
+      "commercial_use": true
+    },
+    {
+      "id": "IE/AnBordPleanala",
+      "country": "IE",
+      "name": "An Bord Pleanála (An Coimisiún Pleanála) — Planning Appeal Decisions",
+      "license_id": "cc-by-4.0",
+      "license_name": "PSI Licence / CC BY 4.0",
+      "license_url": "https://www.gov.ie/en/help/re-use-of-public-sector-information/",
       "commercial_use": true
     },
     {
@@ -6386,12 +6737,30 @@
       "commercial_use": true
     },
     {
+      "id": "IE/CBI-Enforcement",
+      "country": "IE",
+      "name": "Central Bank of Ireland — Enforcement Actions / Settlement Notices",
+      "license_id": "cc-by-4.0",
+      "license_name": "CC BY 4.0 (Irish PSI Licence)",
+      "license_url": "https://www.centralbank.ie/fns/re-use-of-public-sector-information",
+      "commercial_use": true
+    },
+    {
       "id": "IE/CCPC",
       "country": "IE",
       "name": "Irish Competition Authority (CCPC)",
       "license_id": "ogl-3.0",
       "license_name": "Irish Open Government Licence",
       "license_url": "https://data.gov.ie/pages/licence",
+      "commercial_use": true
+    },
+    {
+      "id": "IE/CoimisiunNaMean",
+      "country": "IE",
+      "name": "Coimisiún na Meán (Ireland's media regulator) — Broadcasting & Video-on-Demand Complaint Decisions",
+      "license_id": "cc-by-4.0",
+      "license_name": "PSI Licence / CC BY 4.0",
+      "license_url": "https://www.gov.ie/en/help/re-use-of-public-sector-information/",
       "commercial_use": true
     },
     {
@@ -6404,12 +6773,57 @@
       "commercial_use": true
     },
     {
+      "id": "IE/FSPO",
+      "country": "IE",
+      "name": "Financial Services and Pensions Ombudsman of Ireland (Legally Binding Decisions)",
+      "license_id": "cc-by-4.0",
+      "license_name": "PSI Licence / CC BY 4.0",
+      "license_url": "https://www.gov.ie/en/help/re-use-of-public-sector-information/",
+      "commercial_use": true
+    },
+    {
+      "id": "IE/OCEI",
+      "country": "IE",
+      "name": "Commissioner for Environmental Information (Ireland) — Appeal Decisions",
+      "license_id": "ogd",
+      "license_name": "PSI Licence (Ireland)",
+      "license_url": "https://data.gov.ie/pages/opendatalicence",
+      "commercial_use": true
+    },
+    {
+      "id": "IE/OIC",
+      "country": "IE",
+      "name": "Office of the Information Commissioner (Ireland) — Review Decisions",
+      "license_id": "ogd",
+      "license_name": "PSI Licence (Ireland)",
+      "license_url": "https://data.gov.ie/pages/opendatalicence",
+      "commercial_use": true
+    },
+    {
       "id": "IE/Oireachtas",
       "country": "IE",
       "name": "Oireachtas - Irish Parliament",
       "license_id": "cc-by-4.0",
       "license_name": "CC BY 4.0",
       "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "IE/PressOmbudsman",
+      "country": "IE",
+      "name": "Office of the Press Ombudsman & Press Council of Ireland — Published Decisions",
+      "license_id": "custom-nc",
+      "license_name": "© Press Council of Ireland (all rights reserved)",
+      "license_url": "https://pressombudsman.ie/copyright/",
+      "commercial_use": false
+    },
+    {
+      "id": "IE/RTB",
+      "country": "IE",
+      "name": "Residential Tenancies Board of Ireland (Determination Orders)",
+      "license_id": "cc-by-4.0",
+      "license_name": "PSI Licence / CC BY 4.0",
+      "license_url": "https://www.gov.ie/en/help/re-use-of-public-sector-information/",
       "commercial_use": true
     },
     {
@@ -6446,6 +6860,24 @@
       "license_id": "ogl-3.0",
       "license_name": "Irish Open Government Licence",
       "license_url": "https://www.gov.ie/en/policy-information/1e684-open-data-governance/",
+      "commercial_use": true
+    },
+    {
+      "id": "IE/ValuationTribunal",
+      "country": "IE",
+      "name": "Valuation Tribunal of Ireland (An Binse Luachála) — Judgments",
+      "license_id": "cc-by-4.0",
+      "license_name": "PSI Licence / CC BY 4.0",
+      "license_url": "https://www.gov.ie/en/help/re-use-of-public-sector-information/",
+      "commercial_use": true
+    },
+    {
+      "id": "IE/WRC",
+      "country": "IE",
+      "name": "Workplace Relations Commission (WRC) — Adjudication & Labour Court Decisions",
+      "license_id": "cc-by-4.0",
+      "license_name": "PSI Licence / CC BY 4.0",
+      "license_url": "https://www.gov.ie/en/help/re-use-of-public-sector-information/",
       "commercial_use": true
     },
     {
@@ -6764,6 +7196,24 @@
       "commercial_use": true
     },
     {
+      "id": "INTL/ACtHPRJuricaf",
+      "country": "INTL",
+      "name": "African Court on Human and Peoples' Rights (CADHP) Decisions (Juricaf)",
+      "license_id": "odbl-1.0",
+      "license_name": "ODbL 1.0 (Juricaf/AHJUCAF)",
+      "license_url": "https://opendatacommons.org/licenses/odbl/1-0/",
+      "commercial_use": true
+    },
+    {
+      "id": "INTL/ADNDRC",
+      "country": "INTL",
+      "name": "Asian Domain Name Dispute Resolution Centre — Domain Name Dispute Decisions (UDRP)",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms (publicly published decisions)",
+      "license_url": "https://www.adndrc.org/",
+      "commercial_use": true
+    },
+    {
       "id": "INTL/AJUDATA",
       "country": "INTL",
       "name": "African Jurisprudence Database (African Court on Human and Peoples' Rights)",
@@ -6845,6 +7295,15 @@
       "commercial_use": true
     },
     {
+      "id": "INTL/AthleticsIntegrityUnit",
+      "country": "INTL",
+      "name": "Athletics Integrity Unit (AIU) First Instance Decisions",
+      "license_id": "custom-terms",
+      "license_name": "World Athletics / AIU Terms (All Rights Reserved)",
+      "license_url": "https://www.athleticsintegrity.org/",
+      "commercial_use": false
+    },
+    {
       "id": "INTL/BCEAO-Regulations",
       "country": "INTL",
       "name": "BCEAO — Réglementations (UEMOA)",
@@ -6863,12 +7322,30 @@
       "commercial_use": false
     },
     {
+      "id": "INTL/BasketballArbitralTribunal",
+      "country": "INTL",
+      "name": "FIBA Basketball Arbitral Tribunal (BAT) Awards",
+      "license_id": "custom-terms",
+      "license_name": "FIBA Terms (All Rights Reserved)",
+      "license_url": "https://about.fiba.basketball/en/footer/terms-conditions",
+      "commercial_use": false
+    },
+    {
       "id": "INTL/BeneluxCourt",
       "country": "INTL",
       "name": "Benelux Court of Justice (Cour de Justice Benelux)",
       "license_id": "custom-terms",
       "license_name": "Benelux Court Terms",
       "license_url": "https://www.courbeneluxhof.int/",
+      "commercial_use": true
+    },
+    {
+      "id": "INTL/CAC-UDRP",
+      "country": "INTL",
+      "name": "Czech Arbitration Court — Domain Name Dispute Decisions (UDRP / .eu ADR)",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms (publicly published decisions)",
+      "license_url": "https://udrp.adr.eu/",
       "commercial_use": true
     },
     {
@@ -6908,6 +7385,24 @@
       "commercial_use": true
     },
     {
+      "id": "INTL/CCJAJuricaf",
+      "country": "INTL",
+      "name": "OHADA Common Court of Justice and Arbitration (CCJA) Decisions (Juricaf)",
+      "license_id": "odbl-1.0",
+      "license_name": "ODbL 1.0 (Juricaf/AHJUCAF)",
+      "license_url": "https://opendatacommons.org/licenses/odbl/1-0/",
+      "commercial_use": true
+    },
+    {
+      "id": "INTL/CEDEAOJuricaf",
+      "country": "INTL",
+      "name": "ECOWAS Community Court of Justice (CEDEAO) Decisions (Juricaf)",
+      "license_id": "odbl-1.0",
+      "license_name": "ODbL 1.0 (Juricaf/AHJUCAF)",
+      "license_url": "https://opendatacommons.org/licenses/odbl/1-0/",
+      "commercial_use": true
+    },
+    {
       "id": "INTL/CEMACCourt",
       "country": "INTL",
       "name": "CEMAC Court of Justice Decisions",
@@ -6923,6 +7418,15 @@
       "license_id": "ogd",
       "license_name": "CEPAL/ECLAC Open Data",
       "license_url": "https://www.cepal.org/en/about/legal-information",
+      "commercial_use": true
+    },
+    {
+      "id": "INTL/CIIDRC",
+      "country": "INTL",
+      "name": "Canadian International Internet Dispute Resolution Centre — Domain Name Dispute Decisions (UDRP / CDRP)",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms (publicly published decisions)",
+      "license_url": "https://ciidrc.org/domain-name-disputes/uniform-domain-name-dispute-resolution-policy/",
       "commercial_use": true
     },
     {
@@ -6942,6 +7446,15 @@
       "license_name": "Verify terms with source",
       "license_url": null,
       "commercial_use": false
+    },
+    {
+      "id": "INTL/COBAC-Regulations",
+      "country": "INTL",
+      "name": "COBAC/BEAC — CEMAC Banking Regulations",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": null,
+      "commercial_use": true
     },
     {
       "id": "INTL/CODICES",
@@ -7187,12 +7700,30 @@
       "commercial_use": true
     },
     {
+      "id": "INTL/EnergyCharterTreaty",
+      "country": "INTL",
+      "name": "Energy Charter Treaty — Investment Arbitration Documents",
+      "license_id": "custom-terms",
+      "license_name": "Energy Charter Secretariat Terms of Use",
+      "license_url": "https://www.energychartertreaty.org/terms-of-use",
+      "commercial_use": false
+    },
+    {
       "id": "INTL/FAOLEX",
       "country": "INTL",
       "name": "FAO Legislation Database (FAOLEX)",
       "license_id": "cc-by-nc-sa",
       "license_name": "CC BY-NC-SA 3.0 IGO",
       "license_url": "https://creativecommons.org/licenses/by-nc-sa/3.0/igo/",
+      "commercial_use": false
+    },
+    {
+      "id": "INTL/FEI-Tribunal",
+      "country": "INTL",
+      "name": "FEI Tribunal Decisions (international equestrian sport)",
+      "license_id": "custom-terms",
+      "license_name": "FEI Terms of Use (All Rights Reserved)",
+      "license_url": "https://inside.fei.org/fei/about-fei/legal",
       "commercial_use": false
     },
     {
@@ -7203,6 +7734,15 @@
       "license_name": "BIS Terms and Conditions",
       "license_url": "https://www.bis.org/terms_conditions.htm",
       "commercial_use": false
+    },
+    {
+      "id": "INTL/Forum-DomainDecisions",
+      "country": "INTL",
+      "name": "Forum (National Arbitration Forum) — Domain Name Dispute Decisions",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms (publicly published decisions)",
+      "license_url": "https://www.adrforum.com/terms-of-use",
+      "commercial_use": true
     },
     {
       "id": "INTL/GATT-Disputes",
@@ -7286,12 +7826,57 @@
       "commercial_use": false
     },
     {
+      "id": "INTL/IACtHR-Advisory",
+      "country": "INTL",
+      "name": "Inter-American Court of Human Rights — Advisory Opinions (Opiniones Consultivas)",
+      "license_id": "cc-by-nc-nd",
+      "license_name": "CC BY-NC-ND 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-nc-nd/3.0/",
+      "commercial_use": false
+    },
+    {
+      "id": "INTL/IACtHR-Compliance",
+      "country": "INTL",
+      "name": "Inter-American Court of Human Rights — Monitoring Compliance with Judgment (Supervisión de Cumplimiento de Sentencia)",
+      "license_id": "cc-by-nc-nd",
+      "license_name": "CC BY-NC-ND 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-nc-nd/3.0/",
+      "commercial_use": false
+    },
+    {
+      "id": "INTL/IACtHR-ProvisionalMeasures",
+      "country": "INTL",
+      "name": "Inter-American Court of Human Rights — Provisional Measures (Medidas Provisionales)",
+      "license_id": "cc-by-nc-nd",
+      "license_name": "CC BY-NC-ND 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-nc-nd/3.0/",
+      "commercial_use": false
+    },
+    {
+      "id": "INTL/IAEA-Legal",
+      "country": "INTL",
+      "name": "IAEA Information Circulars (INFCIRC) — International Nuclear Law",
+      "license_id": "pd-gov",
+      "license_name": "IAEA official document (IGO government edict)",
+      "license_url": "https://www.iaea.org/about/terms-of-use",
+      "commercial_use": true
+    },
+    {
       "id": "INTL/IAEASafetyStandards",
       "country": "INTL",
       "name": "IAEA Safety Standards Database",
       "license_id": "custom-terms",
       "license_name": "IAEA Terms of Use",
       "license_url": "https://www.iaea.org/about/terms-of-use",
+      "commercial_use": false
+    },
+    {
+      "id": "INTL/ICC-Cricket-AntiCorruption",
+      "country": "INTL",
+      "name": "ICC Cricket Anti-Corruption Tribunal Decisions",
+      "license_id": "custom-terms",
+      "license_name": "ICC Terms of Use (All Rights Reserved)",
+      "license_url": "https://www.icc-cricket.com/terms-of-use",
       "commercial_use": false
     },
     {
@@ -7466,6 +8051,24 @@
       "commercial_use": false
     },
     {
+      "id": "INTL/ITA-AntiDoping",
+      "country": "INTL",
+      "name": "International Testing Agency (ITA) Anti-Doping Rule Violations",
+      "license_id": "custom-terms",
+      "license_name": "ITA Terms of Use (All Rights Reserved)",
+      "license_url": "https://ita.sport/",
+      "commercial_use": false
+    },
+    {
+      "id": "INTL/ITIA",
+      "country": "INTL",
+      "name": "International Tennis Integrity Agency (ITIA) Sanctions & Decisions",
+      "license_id": "custom-terms",
+      "license_name": "ITIA Terms of Use (All Rights Reserved)",
+      "license_url": "https://www.itia.tennis/",
+      "commercial_use": false
+    },
+    {
       "id": "INTL/ITLOS",
       "country": "INTL",
       "name": "International Tribunal for the Law of the Sea",
@@ -7592,6 +8195,15 @@
       "commercial_use": false
     },
     {
+      "id": "INTL/OECD-NEA-NuclearLawBulletin",
+      "country": "INTL",
+      "name": "OECD/NEA Nuclear Law Bulletin",
+      "license_id": "custom-nc",
+      "license_name": "OECD Open Access (free-to-read NEA journal)",
+      "license_url": "https://www.oecd.org/termsandconditions/",
+      "commercial_use": false
+    },
+    {
       "id": "INTL/OECDTribunal",
       "country": "INTL",
       "name": "OECD Administrative Tribunal Judgments",
@@ -7626,6 +8238,15 @@
       "license_name": "OHADA Copyright",
       "license_url": "https://www.ohada.org/en/uniform-acts/",
       "commercial_use": false
+    },
+    {
+      "id": "INTL/OHCHR-Jurisprudence",
+      "country": "INTL",
+      "name": "UN Treaty Body Jurisprudence (Individual Complaints — Views & Decisions)",
+      "license_id": "ogd",
+      "license_name": "United Nations Open Access",
+      "license_url": null,
+      "commercial_use": true
     },
     {
       "id": "INTL/OHCHR-TBInternet",
@@ -7772,6 +8393,24 @@
       "commercial_use": false
     },
     {
+      "id": "INTL/SportResolutions",
+      "country": "INTL",
+      "name": "Sport Resolutions (UK) Published Decisions",
+      "license_id": "custom-terms",
+      "license_name": "Sport Resolutions Terms (All Rights Reserved)",
+      "license_url": "https://www.sportresolutions.com/",
+      "commercial_use": false
+    },
+    {
+      "id": "INTL/UCI-AntiDopingTribunal",
+      "country": "INTL",
+      "name": "UCI Anti-Doping Tribunal Decisions & CAS Appeal Awards",
+      "license_id": "custom-terms",
+      "license_name": "UCI Terms of Use (All Rights Reserved)",
+      "license_url": "https://www.uci.org/disclaimer/6PpA8u6xkUyhTfRkjj9Xqm",
+      "commercial_use": false
+    },
+    {
       "id": "INTL/UEFA-Disciplinary",
       "country": "INTL",
       "name": "UEFA Disciplinary Decisions & Regulations",
@@ -7860,6 +8499,15 @@
       "license_name": "UN Terms of Use",
       "license_url": "https://www.un.org/en/about-us/terms-of-use",
       "commercial_use": true
+    },
+    {
+      "id": "INTL/UNCITRALClout",
+      "country": "INTL",
+      "name": "UNCITRAL CLOUT Case Law Database",
+      "license_id": "unverified",
+      "license_name": "Verify terms with source",
+      "license_url": null,
+      "commercial_use": false
     },
     {
       "id": "INTL/UNCTADInvestment",
@@ -8069,6 +8717,15 @@
       "commercial_use": false
     },
     {
+      "id": "INTL/WorldAquatics-Integrity",
+      "country": "INTL",
+      "name": "Aquatics Integrity Unit (AQIU) Decisions",
+      "license_id": "custom-terms",
+      "license_name": "World Aquatics / AQIU Terms (All Rights Reserved)",
+      "license_url": "https://aquaticsintegrity.com/",
+      "commercial_use": false
+    },
+    {
       "id": "INTL/WorldBank-Documents",
       "country": "INTL",
       "name": "World Bank Open Knowledge Repository",
@@ -8085,6 +8742,15 @@
       "license_name": "CC BY 4.0",
       "license_url": "https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets",
       "commercial_use": true
+    },
+    {
+      "id": "INTL/WorldRugby-Discipline",
+      "country": "INTL",
+      "name": "World Rugby Disciplinary & Judicial Decisions",
+      "license_id": "custom-terms",
+      "license_name": "World Rugby Terms of Use (All Rights Reserved)",
+      "license_url": "https://www.world.rugby/organisation/about-us/terms-conditions",
+      "commercial_use": false
     },
     {
       "id": "IQ/CBI-Regulations",
@@ -8195,6 +8861,15 @@
       "commercial_use": true
     },
     {
+      "id": "IS/Stjornartidindi",
+      "country": "IS",
+      "name": "Iceland Official Gazette (Stjórnartíðindi)",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "IS/SupremeCourt",
       "country": "IS",
       "name": "Icelandic Supreme Court (Hæstiréttur)",
@@ -8276,6 +8951,15 @@
       "commercial_use": true
     },
     {
+      "id": "IT/Bolzano",
+      "country": "IT",
+      "name": "South Tyrol Provincial Legislation (LexBrowser Bolzano/Bozen)",
+      "license_id": "cc0-1.0",
+      "license_name": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercial_use": true
+    },
+    {
       "id": "IT/Calabria",
       "country": "IT",
       "name": "Legislazione Regionale Calabria",
@@ -8315,6 +8999,15 @@
       "id": "IT/ConsiglioDiStato",
       "country": "IT",
       "name": "Council of State (Consiglio di Stato)",
+      "license_id": "cc-by-4.0",
+      "license_name": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "IT/ConsiglioStatoOrdinanze",
+      "country": "IT",
+      "name": "Council of State (Consiglio di Stato) — Ordinanze & Decreti",
       "license_id": "cc-by-4.0",
       "license_name": "CC BY 4.0",
       "license_url": "https://creativecommons.org/licenses/by/4.0/",
@@ -8471,6 +9164,15 @@
       "license_id": "cc-by-3.0",
       "license_name": "CC BY 3.0",
       "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "IT/Trento",
+      "country": "IT",
+      "name": "Trentino Provincial Legislation (Codice provinciale, Provincia autonoma di Trento)",
+      "license_id": "cc-by-4.0",
+      "license_name": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true
     },
     {
@@ -8705,6 +9407,15 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "JP/NRA",
+      "country": "JP",
+      "name": "Nuclear Regulation Authority — Related Laws & Ordinances",
+      "license_id": "cc-by-4.0",
+      "license_name": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true
     },
     {
@@ -10400,6 +11111,15 @@
       "commercial_use": true
     },
     {
+      "id": "MW/JudiciaryActs",
+      "country": "MW",
+      "name": "Malawi Judiciary — Acts of Parliament",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "MW/MalawiLII",
       "country": "MW",
       "name": "Malawi Legal Information Institute",
@@ -10454,6 +11174,15 @@
       "commercial_use": true
     },
     {
+      "id": "MX/Coahuila-Legislation",
+      "country": "MX",
+      "name": "Congreso del Estado de Coahuila de Zaragoza — Leyes Estatales Vigentes",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (official legal text)",
+      "license_url": "https://www.congresocoahuila.gob.mx/portal/leyes-estatales-vigentes/",
+      "commercial_use": true
+    },
+    {
       "id": "MX/IFT",
       "country": "MX",
       "name": "Instituto Federal de Telecomunicaciones (IFT) - Resoluciones",
@@ -10481,9 +11210,90 @@
       "commercial_use": true
     },
     {
+      "id": "MX/PoderJudicialBajaCaliforniaSur",
+      "country": "MX",
+      "name": "Poder Judicial del Estado de Baja California Sur",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://datos.gob.mx",
+      "commercial_use": true
+    },
+    {
+      "id": "MX/PoderJudicialCampeche",
+      "country": "MX",
+      "name": "Poder Judicial del Estado de Campeche",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://datos.gob.mx",
+      "commercial_use": true
+    },
+    {
+      "id": "MX/PoderJudicialHidalgo",
+      "country": "MX",
+      "name": "Poder Judicial del Estado de Hidalgo",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://datos.gob.mx",
+      "commercial_use": true
+    },
+    {
       "id": "MX/PoderJudicialJalisco",
       "country": "MX",
       "name": "Poder Judicial del Estado de Jalisco",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://datos.gob.mx",
+      "commercial_use": true
+    },
+    {
+      "id": "MX/PoderJudicialMorelos",
+      "country": "MX",
+      "name": "Poder Judicial del Estado de Morelos",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://datos.gob.mx",
+      "commercial_use": true
+    },
+    {
+      "id": "MX/PoderJudicialNayarit",
+      "country": "MX",
+      "name": "Poder Judicial del Estado de Nayarit",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://datos.gob.mx",
+      "commercial_use": true
+    },
+    {
+      "id": "MX/PoderJudicialQueretaro",
+      "country": "MX",
+      "name": "Poder Judicial del Estado de Querétaro",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://datos.gob.mx",
+      "commercial_use": true
+    },
+    {
+      "id": "MX/PoderJudicialQuintanaRoo",
+      "country": "MX",
+      "name": "Poder Judicial del Estado de Quintana Roo",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://datos.gob.mx",
+      "commercial_use": true
+    },
+    {
+      "id": "MX/PoderJudicialTabasco",
+      "country": "MX",
+      "name": "Poder Judicial del Estado de Tabasco",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://datos.gob.mx",
+      "commercial_use": true
+    },
+    {
+      "id": "MX/PoderJudicialTlaxcala",
+      "country": "MX",
+      "name": "Poder Judicial del Estado de Tlaxcala",
       "license_id": "ogd",
       "license_name": "Open government data",
       "license_url": "https://datos.gob.mx",
@@ -10523,6 +11333,15 @@
       "license_id": "ogd",
       "license_name": "Open government data",
       "license_url": "https://datos.gob.mx",
+      "commercial_use": true
+    },
+    {
+      "id": "MX/SecretariaFiscalizacion",
+      "country": "MX",
+      "name": "Secretaría Anticorrupción y Buen Gobierno (ex SFP) — Normateca Interna",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": null,
       "commercial_use": true
     },
     {
@@ -10895,6 +11714,15 @@
       "commercial_use": true
     },
     {
+      "id": "NL/CVDR",
+      "country": "NL",
+      "name": "Dutch Decentralized Regulations (CVDR)",
+      "license_id": "cc0-1.0",
+      "license_name": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercial_use": true
+    },
+    {
       "id": "NL/DNB",
       "country": "NL",
       "name": "Dutch Central Bank - Supervision (DNB)",
@@ -10928,6 +11756,15 @@
       "license_id": "ogd",
       "license_name": "Open Government Data",
       "license_url": "https://data.overheid.nl/licenties",
+      "commercial_use": true
+    },
+    {
+      "id": "NL/Tractatenblad",
+      "country": "NL",
+      "name": "Dutch Treaty Series (Tractatenblad)",
+      "license_id": "cc0-1.0",
+      "license_name": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "commercial_use": true
     },
     {
@@ -11723,6 +12560,15 @@
       "commercial_use": true
     },
     {
+      "id": "PT/DGPJ-ClausulasAbusivas",
+      "country": "PT",
+      "name": "Portuguese Unfair Contract Terms case law (DGPJ Cláusulas Abusivas)",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": "https://dados.gov.pt",
+      "commercial_use": true
+    },
+    {
       "id": "PT/DGSI",
       "country": "PT",
       "name": "Portuguese Courts of Appeal (DGSI - all sub-databases)",
@@ -12026,6 +12872,15 @@
       "license_id": "ogd",
       "license_name": "https://pravo.gov.ru/",
       "license_url": "https://pravo.gov.ru/",
+      "commercial_use": true
+    },
+    {
+      "id": "RU/RegionalLegislation",
+      "country": "RU",
+      "name": "Russian Federation Subjects — Regional Legislation (pravo.gov.ru)",
+      "license_id": "pd-gov",
+      "license_name": "Russian official document — public domain (Civil Code art. 1259(6))",
+      "license_url": "http://publication.pravo.gov.ru/",
       "commercial_use": true
     },
     {
@@ -12398,6 +13253,15 @@
       "commercial_use": true
     },
     {
+      "id": "SI/DKOM",
+      "country": "SI",
+      "name": "Državna revizijska komisija (DKOM) — Public Procurement Review Decisions",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://podatki.gov.si",
+      "commercial_use": true
+    },
+    {
       "id": "SI/DrzavniZbor",
       "country": "SI",
       "name": "Slovenian National Assembly (Državni zbor)",
@@ -12475,6 +13339,15 @@
       "name": "Bank of Sierra Leone — Banking Regulations & Guidelines",
       "license_id": "pd-gov",
       "license_name": "Public domain (government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "SL/Parliament",
+      "country": "SL",
+      "name": "Sierra Leone Parliament — Acts of Parliament",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government Acts)",
       "license_url": null,
       "commercial_use": true
     },
@@ -12584,6 +13457,15 @@
       "license_id": "pd-gov",
       "license_name": "Senegal Government Publications",
       "license_url": "https://primature.sn/",
+      "commercial_use": true
+    },
+    {
+      "id": "SN/SenegalLII",
+      "country": "SN",
+      "name": "Senegal Legal Information Institute",
+      "license_id": "cc-by-4.0",
+      "license_name": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true
     },
     {
@@ -13595,6 +14477,42 @@
       "commercial_use": true
     },
     {
+      "id": "UK/AdjudicationPanelWales",
+      "country": "UK",
+      "name": "The Adjudication Panel for Wales — Decision Reports",
+      "license_id": "ogl-3.0",
+      "license_name": "Open Government Licence v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/AgriculturalLandTribunalWales",
+      "country": "UK",
+      "name": "Agricultural Land Tribunal for Wales — Decisions",
+      "license_id": "ogl-3.0",
+      "license_name": "Open Government Licence v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/AsylumSupport",
+      "country": "UK",
+      "name": "First-tier Tribunal (Social Entitlement Chamber) — Asylum Support Decisions",
+      "license_id": "ogl-3.0",
+      "license_name": "OGL v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/BTAS",
+      "country": "UK",
+      "name": "UK Bar Tribunals & Adjudication Service (BTAS) — Findings & Sentences",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms (BTAS web terms & conditions)",
+      "license_url": "https://www.tbtas.org.uk/web-terms-conditions/",
+      "commercial_use": false
+    },
+    {
       "id": "UK/CAA",
       "country": "UK",
       "name": "UK Civil Aviation Authority (CAA)",
@@ -13640,6 +14558,33 @@
       "commercial_use": false
     },
     {
+      "id": "UK/CentralArbitrationCommittee",
+      "country": "UK",
+      "name": "Central Arbitration Committee (CAC) — Decisions",
+      "license_id": "ogl-3.0",
+      "license_name": "OGL v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/CertificationOfficer",
+      "country": "UK",
+      "name": "Certification Officer (Trade Unions & Employers' Associations) — Decisions",
+      "license_id": "ogl-3.0",
+      "license_name": "OGL v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/ComplaintsCommissioner",
+      "country": "UK",
+      "name": "Office of the Complaints Commissioner (Financial Regulators)",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms (All rights reserved)",
+      "license_url": "https://frccommissioner.org.uk/",
+      "commercial_use": false
+    },
+    {
       "id": "UK/EA",
       "country": "UK",
       "name": "UK Environment Agency",
@@ -13667,6 +14612,15 @@
       "commercial_use": true
     },
     {
+      "id": "UK/EducationTribunalWales",
+      "country": "UK",
+      "name": "Education Tribunal for Wales — Decisions",
+      "license_id": "ogl-3.0",
+      "license_name": "Open Government Licence v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
       "id": "UK/FCA",
       "country": "UK",
       "name": "UK Financial Conduct Authority (FCA)",
@@ -13674,6 +14628,15 @@
       "license_name": "Open Government Licence v3.0",
       "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
       "commercial_use": true
+    },
+    {
+      "id": "UK/FRC",
+      "country": "UK",
+      "name": "Financial Reporting Council — Enforcement & Tribunal Decisions",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms — © The Financial Reporting Council Limited",
+      "license_url": "https://www.frc.org.uk/about-us/policies-and-procedures/disclaimer-and-copyright/",
+      "commercial_use": false
     },
     {
       "id": "UK/FSA",
@@ -13694,13 +14657,22 @@
       "commercial_use": true
     },
     {
+      "id": "UK/FinancialOmbudsman",
+      "country": "UK",
+      "name": "Financial Ombudsman Service (FOS) — Ombudsman Decisions",
+      "license_id": "custom-terms",
+      "license_name": "Financial Ombudsman Service website terms (© Financial Ombudsman Service)",
+      "license_url": "https://www.financial-ombudsman.org.uk/",
+      "commercial_use": false
+    },
+    {
       "id": "UK/FindCaseLaw",
       "country": "UK",
       "name": "UK Find Case Law (National Archives)",
-      "license_id": "ogl-3.0",
-      "license_name": "Open Justice Licence",
+      "license_id": "custom-terms",
+      "license_name": "Open Justice Licence v2.0; separate TNA computational-analysis licence required",
       "license_url": "https://caselaw.nationalarchives.gov.uk/open-justice-licence",
-      "commercial_use": true
+      "commercial_use": false
     },
     {
       "id": "UK/GC",
@@ -13710,6 +14682,51 @@
       "license_name": "OGL v3.0",
       "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
       "commercial_use": true
+    },
+    {
+      "id": "UK/GDC",
+      "country": "UK",
+      "name": "General Dental Council (GDC) — Dental Professionals Hearings Service",
+      "license_id": "custom-terms",
+      "license_name": "Dental Professionals Hearings Service / GDC website terms (no explicit open licence stated)",
+      "license_url": "https://www.dentalhearings.org/terms-and-conditions",
+      "commercial_use": false
+    },
+    {
+      "id": "UK/GOC",
+      "country": "UK",
+      "name": "General Optical Council (GOC) — Fitness to Practise determinations",
+      "license_id": "custom-terms",
+      "license_name": "GOC website terms (no explicit open licence stated)",
+      "license_url": "https://optical.org/terms-and-conditions.html",
+      "commercial_use": false
+    },
+    {
+      "id": "UK/GOsC",
+      "country": "UK",
+      "name": "General Osteopathic Council (GOsC) — Fitness to Practise decisions",
+      "license_id": "custom-terms",
+      "license_name": "GOsC website terms (no explicit open licence stated)",
+      "license_url": "https://www.osteopathy.org.uk/terms-and-conditions/",
+      "commercial_use": false
+    },
+    {
+      "id": "UK/GPhC",
+      "country": "UK",
+      "name": "General Pharmaceutical Council (GPhC) — Fitness to Practise determinations",
+      "license_id": "custom-terms",
+      "license_name": "GPhC website terms (no explicit open licence stated)",
+      "license_url": "https://www.pharmacyregulation.org/about-us/website-information/terms-and-conditions",
+      "commercial_use": false
+    },
+    {
+      "id": "UK/HCPTS",
+      "country": "UK",
+      "name": "Health and Care Professions Tribunal Service (HCPTS) — Hearing Decisions",
+      "license_id": "custom-terms",
+      "license_name": "HCPTS / HCPC website terms (no explicit open licence stated)",
+      "license_url": "https://www.hcpts-uk.org/terms-of-use/",
+      "commercial_use": false
     },
     {
       "id": "UK/HMLR",
@@ -13748,6 +14765,15 @@
       "commercial_use": true
     },
     {
+      "id": "UK/HousingOmbudsman",
+      "country": "UK",
+      "name": "Housing Ombudsman Service (England) — Determinations",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms (© Housing Ombudsman Service)",
+      "license_url": "https://www.housing-ombudsman.org.uk/legal/",
+      "commercial_use": false
+    },
+    {
       "id": "UK/IAC",
       "country": "UK",
       "name": "UK Immigration and Asylum Chamber",
@@ -13760,6 +14786,15 @@
       "id": "UK/ICO",
       "country": "UK",
       "name": "UK Information Commissioner (ICO)",
+      "license_id": "ogl-3.0",
+      "license_name": "OGL v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/IPO-Designs",
+      "country": "UK",
+      "name": "UK Intellectual Property Office — Registered Design Hearing Decisions",
       "license_id": "ogl-3.0",
       "license_name": "OGL v3.0",
       "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
@@ -13782,6 +14817,42 @@
       "license_name": "OGL v3.0",
       "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
       "commercial_use": true
+    },
+    {
+      "id": "UK/JudiciaryNI",
+      "country": "UK",
+      "name": "Judiciary of Northern Ireland — Judicial Decisions",
+      "license_id": "ogl-3.0",
+      "license_name": "OGL v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/LGO",
+      "country": "UK",
+      "name": "Local Government & Social Care Ombudsman (LGSCO) — Decisions",
+      "license_id": "custom-terms",
+      "license_name": "Commission for Local Administration in England — custom re-use terms",
+      "license_url": "https://www.lgo.org.uk/copyright",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/LandsTribunalScotland",
+      "country": "UK",
+      "name": "The Lands Tribunal for Scotland — Decisions",
+      "license_id": "custom-terms",
+      "license_name": "SCTS terms (personal / in-house use only)",
+      "license_url": "https://www.scotcourts.gov.uk/terms-of-use",
+      "commercial_use": false
+    },
+    {
+      "id": "UK/LegalOmbudsman",
+      "country": "UK",
+      "name": "Legal Ombudsman (LeO) — Public Interest Decisions",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms (Legal Ombudsman / Office for Legal Complaints)",
+      "license_url": "https://www.legalombudsman.org.uk/information-centre/data-centre/ombudsman-decision-data/policy-statement-publishing-our-decisions/",
+      "commercial_use": false
     },
     {
       "id": "UK/Legislation",
@@ -13836,6 +14907,15 @@
       "license_name": "OGL v3.0",
       "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
       "commercial_use": true
+    },
+    {
+      "id": "UK/NMC",
+      "country": "UK",
+      "name": "Nursing and Midwifery Council (NMC) — Fitness to Practise Outcomes",
+      "license_id": "custom-terms",
+      "license_name": "NMC website terms (no explicit open licence stated)",
+      "license_url": "https://www.nmc.org.uk/terms-and-conditions/",
+      "commercial_use": false
     },
     {
       "id": "UK/NominetDRS",
@@ -13910,6 +14990,15 @@
       "commercial_use": true
     },
     {
+      "id": "UK/PensionsOmbudsman",
+      "country": "UK",
+      "name": "The Pensions Ombudsman (TPO) — Determinations",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms (© The Pensions Ombudsman)",
+      "license_url": "https://www.pensions-ombudsman.org.uk/terms-and-conditions",
+      "commercial_use": false
+    },
+    {
       "id": "UK/RPB",
       "country": "UK",
       "name": "UK Recognised Professional Bodies (Insolvency)",
@@ -13919,6 +15008,33 @@
       "commercial_use": true
     },
     {
+      "id": "UK/RPT",
+      "country": "UK",
+      "name": "UK First-tier Tribunal (Property Chamber) — Residential Property Decisions",
+      "license_id": "ogl-3.0",
+      "license_name": "OGL v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/RPTWales",
+      "country": "UK",
+      "name": "Residential Property Tribunal Wales — Decisions",
+      "license_id": "ogl-3.0",
+      "license_name": "Open Government Licence v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/SDT",
+      "country": "UK",
+      "name": "UK Solicitors Disciplinary Tribunal (SDT) — Judgments",
+      "license_id": "custom-terms",
+      "license_name": "Custom terms (© Solicitors Disciplinary Tribunal)",
+      "license_url": "https://solicitorstribunal.org.uk/terms/",
+      "commercial_use": false
+    },
+    {
       "id": "UK/SRA",
       "country": "UK",
       "name": "UK Solicitors Regulation Authority",
@@ -13926,6 +15042,69 @@
       "license_name": "OGL v3.0",
       "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
       "commercial_use": true
+    },
+    {
+      "id": "UK/SchoolsAdjudicator",
+      "country": "UK",
+      "name": "Office of the Schools Adjudicator (OSA) — Determinations",
+      "license_id": "ogl-3.0",
+      "license_name": "OGL v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/ScotHealthEducationChamber",
+      "country": "UK",
+      "name": "First-tier Tribunal for Scotland (Health and Education Chamber) — Additional Support Needs decisions",
+      "license_id": "custom-terms",
+      "license_name": "SCTS terms (personal / in-house use only)",
+      "license_url": "https://healthandeducationchamber.scot/terms-and-conditions",
+      "commercial_use": false
+    },
+    {
+      "id": "UK/ScotHousingChamber",
+      "country": "UK",
+      "name": "First-tier Tribunal for Scotland (Housing and Property Chamber) — Written Decisions",
+      "license_id": "custom-terms",
+      "license_name": "SCTS terms (personal / in-house use only)",
+      "license_url": "https://www.housingandpropertychamber.scot/terms-and-conditions",
+      "commercial_use": false
+    },
+    {
+      "id": "UK/ScotLocalTaxChamber",
+      "country": "UK",
+      "name": "First-tier Tribunal for Scotland Local Taxation Chamber — Decisions",
+      "license_id": "custom-terms",
+      "license_name": "SCTS terms (personal / in-house use only)",
+      "license_url": "https://www.scotcourts.gov.uk/terms-of-use",
+      "commercial_use": false
+    },
+    {
+      "id": "UK/ScotTaxChamber",
+      "country": "UK",
+      "name": "First-tier Tribunal for Scotland Tax Chamber — Decisions",
+      "license_id": "custom-terms",
+      "license_name": "SCTS terms (personal / in-house use only)",
+      "license_url": "https://www.scotcourts.gov.uk/terms-of-use",
+      "commercial_use": false
+    },
+    {
+      "id": "UK/ScottishLandCourt",
+      "country": "UK",
+      "name": "The Scottish Land Court — Significant Decisions",
+      "license_id": "custom-terms",
+      "license_name": "Scottish Land Court / SCTS terms (personal / in-house use only)",
+      "license_url": "http://www.scottish-land-court.org.uk/",
+      "commercial_use": false
+    },
+    {
+      "id": "UK/SocialWorkEngland",
+      "country": "UK",
+      "name": "Social Work England — Fitness to Practise Hearing Decisions",
+      "license_id": "custom-terms",
+      "license_name": "Social Work England website terms (Crown copyright; no explicit open licence)",
+      "license_url": "https://www.socialworkengland.org.uk/privacy/terms-and-conditions/",
+      "commercial_use": false
     },
     {
       "id": "UK/TPR",
@@ -13942,6 +15121,51 @@
       "name": "UK Trade Remedies Authority",
       "license_id": "ogl-3.0",
       "license_name": "OGL v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/TeachingRegulationAgency",
+      "country": "UK",
+      "name": "Teaching Regulation Agency (TRA) — Teacher Misconduct Panel Decisions",
+      "license_id": "ogl-3.0",
+      "license_name": "OGL v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/TrafficCommissioner",
+      "country": "UK",
+      "name": "Traffic Commissioners for Great Britain — Regulatory Decisions",
+      "license_id": "ogl-3.0",
+      "license_name": "OGL v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/ValuationTribunalEngland",
+      "country": "UK",
+      "name": "Valuation Tribunal for England (VTE) — Decisions",
+      "license_id": "ogl-3.0",
+      "license_name": "OGL v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/ValuationTribunalWales",
+      "country": "UK",
+      "name": "Valuation Tribunal for Wales — Decisions",
+      "license_id": "ogl-3.0",
+      "license_name": "Open Government Licence v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
+      "id": "UK/WelshLanguageTribunal",
+      "country": "UK",
+      "name": "Welsh Language Tribunal (Tribiwnlys y Gymraeg) — Decisions",
+      "license_id": "ogl-3.0",
+      "license_name": "Open Government Licence v3.0",
       "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
       "commercial_use": true
     },
@@ -14036,6 +15260,15 @@
       "commercial_use": false
     },
     {
+      "id": "US/AK-AGOpinions",
+      "country": "US",
+      "name": "Alaska Attorney General Formal Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/AK-Courts",
       "country": "US",
       "name": "Alaska State Courts",
@@ -14045,9 +15278,27 @@
       "commercial_use": true
     },
     {
+      "id": "US/AK-LegalEthics",
+      "country": "US",
+      "name": "Alaska Bar Association — Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published advisory opinions",
+      "license_url": "https://alaskabar.org/ethics-discipline/ethics-opinions/",
+      "commercial_use": true
+    },
+    {
       "id": "US/AK-Legislation",
       "country": "US",
       "name": "Alaska Statutes (akleg.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/AK-OAH",
+      "country": "US",
+      "name": "Alaska Office of Administrative Hearings — Decisions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14063,9 +15314,36 @@
       "commercial_use": true
     },
     {
+      "id": "US/AL-LegalEthics",
+      "country": "US",
+      "name": "Alabama State Bar — Formal Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published advisory opinions",
+      "license_url": "https://www.alabar.org/office-of-general-counsel/formal-opinions/",
+      "commercial_use": true
+    },
+    {
       "id": "US/AL-Legislation",
       "country": "US",
       "name": "Alabama Code of 1975 (ALISON GraphQL)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/AL-TaxTribunal",
+      "country": "US",
+      "name": "Alabama Tax Tribunal — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/AR-AGOpinions",
+      "country": "US",
+      "name": "Arkansas Attorney General Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14081,11 +15359,47 @@
       "commercial_use": true
     },
     {
+      "id": "US/AR-TaxDecisions",
+      "country": "US",
+      "name": "Arkansas DFA — Act 896 Administrative Decisions & Legal Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/ASBCA",
       "country": "US",
       "name": "Armed Services Board of Contract Appeals",
       "license_id": "pd-us",
       "license_name": "US Public Domain",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/AZ-AGOpinions",
+      "country": "US",
+      "name": "Arizona Attorney General Formal Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/AZ-CorpCommission",
+      "country": "US",
+      "name": "Arizona Corporation Commission — Decisions & Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/AZ-LegalEthics",
+      "country": "US",
+      "name": "State Bar of Arizona — Legal (Attorney) Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
@@ -14102,6 +15416,15 @@
       "id": "US/BIA",
       "country": "US",
       "name": "US Board of Immigration Appeals Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/BVA",
+      "country": "US",
+      "name": "Board of Veterans' Appeals — Decisions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14126,9 +15449,27 @@
       "commercial_use": true
     },
     {
+      "id": "US/CA-CPUC",
+      "country": "US",
+      "name": "California Public Utilities Commission — Decisions & Resolutions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/CA-Courts",
       "country": "US",
       "name": "California State Courts",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CA-FPPC",
+      "country": "US",
+      "name": "California Fair Political Practices Commission — Advice Letters & Commission Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14144,9 +15485,81 @@
       "commercial_use": true
     },
     {
+      "id": "US/CA-LegalEthics",
+      "country": "US",
+      "name": "State Bar of California (COPRAC) — Formal Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/CA-Legislation",
       "country": "US",
       "name": "California Legislative Information (LegInfo FTP/MySQL)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CA-OAH-DDS",
+      "country": "US",
+      "name": "California Office of Administrative Hearings — DDS (Lanterman Act) Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CA-OAH-SpecialEd",
+      "country": "US",
+      "name": "California Office of Administrative Hearings — Special Education Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CA-PERB",
+      "country": "US",
+      "name": "California Public Employment Relations Board — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CA-PERB-Digest",
+      "country": "US",
+      "name": "California PERB — Decisional-Law Digest (Headnotes)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CA-PERB-FactFinding",
+      "country": "US",
+      "name": "California PERB — Fact-Finding Reports",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CA-TaxAppeals",
+      "country": "US",
+      "name": "California Office of Tax Appeals — Precedential Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CAAF",
+      "country": "US",
+      "name": "U.S. Court of Appeals for the Armed Forces — Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14180,9 +15593,63 @@
       "commercial_use": true
     },
     {
+      "id": "US/CIT",
+      "country": "US",
+      "name": "U.S. Court of International Trade — Slip Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CO-AGOpinions",
+      "country": "US",
+      "name": "Colorado Attorney General Formal Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/CO-Courts",
       "country": "US",
       "name": "Colorado State Courts",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CO-EthicsOpinions",
+      "country": "US",
+      "name": "Colorado Independent Ethics Commission — Advisory Opinions, Letter Rulings & Position Statements",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CO-OAC",
+      "country": "US",
+      "name": "Colorado Office of Administrative Courts — Workers' Compensation Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CO-PUC",
+      "country": "US",
+      "name": "Colorado Public Utilities Commission — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CO-TaxRulings",
+      "country": "US",
+      "name": "Colorado Department of Revenue — Letter Rulings (PLRs & GILs)",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14198,9 +15665,81 @@
       "commercial_use": true
     },
     {
+      "id": "US/CT-AGOpinions",
+      "country": "US",
+      "name": "Connecticut Attorney General Formal Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CT-EthicsOpinions",
+      "country": "US",
+      "name": "Connecticut Office of State Ethics — Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CT-JudicialEthics",
+      "country": "US",
+      "name": "Connecticut Committee on Judicial Ethics — Informal Opinion Summaries",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CT-LegalEthics",
+      "country": "US",
+      "name": "Connecticut Bar Association — Informal Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published advisory opinions",
+      "license_url": "https://www.ctbar.org/news/CBAPublications/informal-ethics-opinions",
+      "commercial_use": true
+    },
+    {
       "id": "US/CT-Legislation",
       "country": "US",
       "name": "Connecticut General Statutes (cga.ct.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CT-PURA",
+      "country": "US",
+      "name": "Connecticut Public Utilities Regulatory Authority — Final Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CT-SBLR",
+      "country": "US",
+      "name": "Connecticut State Board of Labor Relations — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CT-TaxAppeals",
+      "country": "US",
+      "name": "Connecticut Superior Court — Tax and Administrative Appeals Session (Decisions)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CT-TaxRulings",
+      "country": "US",
+      "name": "Connecticut Department of Revenue Services — Rulings",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14216,12 +15755,39 @@
       "commercial_use": true
     },
     {
+      "id": "US/CongressGov",
+      "country": "US",
+      "name": "Congress.gov (Congressional Bills)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CopyrightReviewBoard",
+      "country": "US",
+      "name": "U.S. Copyright Office Review Board — Registration Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/CornellLII",
       "country": "US",
       "name": "Cornell Legal Information Institute",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CourtListener",
+      "country": "US",
+      "name": "CourtListener (Case Law)",
+      "license_id": "cc0-1.0",
+      "license_name": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "commercial_use": true
     },
     {
@@ -14243,9 +15809,45 @@
       "commercial_use": true
     },
     {
+      "id": "US/DC-LegalEthics",
+      "country": "US",
+      "name": "District of Columbia Bar — Legal Ethics Committee (Ethics Opinions)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published advisory opinions",
+      "license_url": "https://www.dcbar.org/for-lawyers/legal-ethics/ethics-opinions-210-present",
+      "commercial_use": true
+    },
+    {
       "id": "US/DC-Legislation",
       "country": "US",
       "name": "District of Columbia Code (code.dccouncil.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/DC-PSC",
+      "country": "US",
+      "name": "Public Service Commission of the District of Columbia — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/DC-TaxGuidance",
+      "country": "US",
+      "name": "DC Office of Tax and Revenue — Tax Notices, Rulings & Declaratory Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/DE-AGOpinions",
+      "country": "US",
+      "name": "Delaware Attorney General Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14270,9 +15872,90 @@
       "commercial_use": true
     },
     {
+      "id": "US/DE-EthicsOpinions",
+      "country": "US",
+      "name": "Delaware Public Integrity Commission — Advisory Opinion Synopses",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/DE-LegalEthics",
+      "country": "US",
+      "name": "Delaware State Bar Association — Committee on Professional Ethics (Legal Ethics Opinions)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published advisory opinions",
+      "license_url": "https://www.dsba.org/publications/ethics-opinions-index/",
+      "commercial_use": true
+    },
+    {
       "id": "US/DE-Legislation",
       "country": "US",
       "name": "Delaware Code (delcode.delaware.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/DE-PERB",
+      "country": "US",
+      "name": "Delaware Public Employment Relations Board — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/DE-TaxAppeals",
+      "country": "US",
+      "name": "Delaware State Tax Appeal Board — Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/DOI-DirectorsDecisions",
+      "country": "US",
+      "name": "Director's Decisions (U.S. DOI, Office of Hearings and Appeals)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/DOI-HearingsDivision",
+      "country": "US",
+      "name": "Departmental Cases Hearings Division — Decisions (U.S. DOI, Office of Hearings and Appeals)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/DOI-IBIA",
+      "country": "US",
+      "name": "Interior Board of Indian Appeals — Decisions (U.S. DOI, Office of Hearings and Appeals)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/DOI-IBLA",
+      "country": "US",
+      "name": "Interior Board of Land Appeals — Decisions (U.S. DOI, Office of Hearings and Appeals)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/DOI-IBLA-Orders",
+      "country": "US",
+      "name": "Interior Board of Land Appeals — Dispositive Orders (U.S. DOI, Office of Hearings and Appeals)",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14342,9 +16025,27 @@
       "commercial_use": true
     },
     {
+      "id": "US/FEC-Legal",
+      "country": "US",
+      "name": "US Federal Election Commission — Advisory Opinions & Enforcement Matters (MURs)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/FERC",
       "country": "US",
       "name": "US Federal Energy Regulatory Commission Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/FERC-eLibrary",
+      "country": "US",
+      "name": "US Federal Energy Regulatory Commission — eLibrary Orders & Issuances",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14360,6 +16061,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/FL-AGOpinions",
+      "country": "US",
+      "name": "Florida Attorney General Formal Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/FL-Courts",
       "country": "US",
       "name": "Florida State Courts",
@@ -14369,9 +16079,54 @@
       "commercial_use": true
     },
     {
+      "id": "US/FL-DOAH",
+      "country": "US",
+      "name": "Florida Division of Administrative Hearings — Recommended & Final Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/FL-EthicsOpinions",
+      "country": "US",
+      "name": "Florida Commission on Ethics — Advisory Opinions (CEO)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/FL-JudicialEthics",
+      "country": "US",
+      "name": "Florida Judicial Ethics Advisory Committee — Judicial Ethics Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/FL-PERC",
+      "country": "US",
+      "name": "Florida Public Employees Relations Commission — Final Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/FL-Statutes",
       "country": "US",
       "name": "Florida Statutes Download (Online Sunshine)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/FL-TaxAdvisements",
+      "country": "US",
+      "name": "Florida Department of Revenue — Technical Assistance Advisements (TAA)",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14450,9 +16205,54 @@
       "commercial_use": true
     },
     {
+      "id": "US/GA-AGOpinions",
+      "country": "US",
+      "name": "Georgia Attorney General Legal Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/GA-Courts",
       "country": "US",
       "name": "Georgia Supreme Court & Court of Appeals",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/GA-EthicsOpinions",
+      "country": "US",
+      "name": "Georgia Government Transparency and Campaign Finance Commission — Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/GA-LegalEthics",
+      "country": "US",
+      "name": "State Bar of Georgia — Formal Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published advisory opinions",
+      "license_url": "https://www.gabar.org/handbook/?handbook=Formal_Advisory_Opinions",
+      "commercial_use": true
+    },
+    {
+      "id": "US/GA-PSC",
+      "country": "US",
+      "name": "Georgia Public Service Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/GA-TaxTribunal",
+      "country": "US",
+      "name": "Georgia Tax Tribunal",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14477,6 +16277,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/HI-AGOpinions",
+      "country": "US",
+      "name": "Hawaii Attorney General Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/HI-Courts",
       "country": "US",
       "name": "Hawaii State Courts",
@@ -14486,9 +16295,63 @@
       "commercial_use": true
     },
     {
+      "id": "US/HI-EthicsOpinions",
+      "country": "US",
+      "name": "Hawaii State Ethics Commission — Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/HI-HLRB",
+      "country": "US",
+      "name": "Hawaii Labor Relations Board — Decisions and Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/HI-LegalEthics",
+      "country": "US",
+      "name": "Disciplinary Board of the Hawaiʻi Supreme Court — Formal (Ethics) Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published formal opinions",
+      "license_url": "https://dbhawaii.org/legal-ethics-advice-for-hawaii-lawyers/",
+      "commercial_use": true
+    },
+    {
       "id": "US/HI-Legislation",
       "country": "US",
       "name": "Hawaii Revised Statutes (HRS)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/HI-TaxAppealCourt",
+      "country": "US",
+      "name": "Hawaii Tax Appeal Court — Unreported Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/HI-TaxGuidance",
+      "country": "US",
+      "name": "Hawaii Department of Taxation — Tax Information Releases & Letter Rulings",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/IA-AGOpinions",
+      "country": "US",
+      "name": "Iowa Attorney General — Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14504,9 +16367,45 @@
       "commercial_use": true
     },
     {
+      "id": "US/IA-EthicsOpinions",
+      "country": "US",
+      "name": "Iowa Ethics and Campaign Disclosure Board — Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/IA-Legislation",
       "country": "US",
       "name": "Iowa Code",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/IA-PERB",
+      "country": "US",
+      "name": "Iowa Public Employment Relations Board — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/IA-TaxDecisions",
+      "country": "US",
+      "name": "Iowa Department of Revenue — Administrative & Declaratory Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/ID-AGOpinions",
+      "country": "US",
+      "name": "Idaho Attorney General Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14522,12 +16421,102 @@
       "commercial_use": true
     },
     {
+      "id": "US/IL-AGOpinions",
+      "country": "US",
+      "name": "Illinois Attorney General Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/IL-ICC",
+      "country": "US",
+      "name": "Illinois Commerce Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/IL-ILRB",
+      "country": "US",
+      "name": "Illinois Labor Relations Board — Decisions & Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/IL-LegalEthics",
+      "country": "US",
+      "name": "Illinois State Bar Association (ISBA) — Professional Conduct Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/IL-LetterRulings",
+      "country": "US",
+      "name": "Illinois Department of Revenue — Letter Rulings",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/IL-TaxTribunal",
+      "country": "US",
+      "name": "Illinois Independent Tax Tribunal — Decisions & Rulings",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/IN-AGOpinions",
+      "country": "US",
+      "name": "Indiana Attorney General Official Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/IN-Courts",
       "country": "US",
       "name": "Indiana Supreme Court & Court of Appeals",
       "license_id": "cc0-1.0",
       "license_name": "CC0 1.0",
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "US/IN-EthicsOpinions",
+      "country": "US",
+      "name": "Indiana State Ethics Commission — Formal Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/IN-IBTR",
+      "country": "US",
+      "name": "Indiana Board of Tax Review — Final Determinations",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/IN-OEA",
+      "country": "US",
+      "name": "Indiana Office of Environmental Adjudication — IDEM Final Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
     {
@@ -14567,9 +16556,45 @@
       "commercial_use": true
     },
     {
+      "id": "US/KS-AGOpinions",
+      "country": "US",
+      "name": "Kansas Attorney General Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/KS-BOTA",
+      "country": "US",
+      "name": "Kansas Board of Tax Appeals — Decisions & Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/KS-CorpCommission",
+      "country": "US",
+      "name": "Kansas Corporation Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/KS-Courts",
       "country": "US",
       "name": "Kansas State Courts",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/KS-EthicsOpinions",
+      "country": "US",
+      "name": "Kansas Governmental Ethics Commission — Advisory Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14585,6 +16610,51 @@
       "commercial_use": true
     },
     {
+      "id": "US/KY-LegalEthics",
+      "country": "US",
+      "name": "Kentucky Bar Association — Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — US government edict (integrated-bar advisory opinions)",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/KY-PSC",
+      "country": "US",
+      "name": "Kentucky Public Service Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/KY-TaxAppeals",
+      "country": "US",
+      "name": "Kentucky Board of Tax Appeals — Final Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/LA-AGOpinions",
+      "country": "US",
+      "name": "Louisiana Attorney General Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/LA-AdministrativeCode",
+      "country": "US",
+      "name": "Louisiana Administrative Code",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/LA-Courts",
       "country": "US",
       "name": "Louisiana Supreme Court & Courts of Appeal",
@@ -14594,9 +16664,72 @@
       "commercial_use": true
     },
     {
+      "id": "US/LA-EAB",
+      "country": "US",
+      "name": "Louisiana Ethics Adjudicatory Board Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/LA-ExecutiveOrders",
+      "country": "US",
+      "name": "Louisiana Governor Executive Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/LA-LegalEthics",
+      "country": "US",
+      "name": "Louisiana State Bar Association — Rules of Professional Conduct Committee (PUBLIC Ethics Opinions)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published advisory opinions",
+      "license_url": "https://www.lsba.org/members/EthicsAdvisory.aspx",
+      "commercial_use": true
+    },
+    {
       "id": "US/LA-Legislation",
       "country": "US",
       "name": "Louisiana Revised Statutes (legis.la.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/LA-PSC",
+      "country": "US",
+      "name": "Louisiana Public Service Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/LA-Register",
+      "country": "US",
+      "name": "Louisiana Register",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/LA-TaxRulings",
+      "country": "US",
+      "name": "Louisiana Department of Revenue — Policy Documents (Revenue Rulings, PLRs, RIBs)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MA-ATB",
+      "country": "US",
+      "name": "Massachusetts Appellate Tax Board",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14612,9 +16745,54 @@
       "commercial_use": true
     },
     {
+      "id": "US/MA-DALA",
+      "country": "US",
+      "name": "Massachusetts Division of Administrative Law Appeals — General Jurisdiction Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MA-EthicsOpinions",
+      "country": "US",
+      "name": "Massachusetts State Ethics Commission — EC-COI Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MA-JudicialEthics",
+      "country": "US",
+      "name": "Massachusetts Committee on Judicial Ethics — CJE Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/MA-Legislation",
       "country": "US",
       "name": "Massachusetts General Laws (malegislature.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MA-SessionLaws",
+      "country": "US",
+      "name": "Massachusetts Session Laws (Acts & Resolves)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MD-COMAR",
+      "country": "US",
+      "name": "Code of Maryland Regulations (COMAR)",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14630,9 +16808,45 @@
       "commercial_use": true
     },
     {
+      "id": "US/MD-JudicialEthics",
+      "country": "US",
+      "name": "Maryland Judicial Ethics Committee — Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MD-LegalEthics",
+      "country": "US",
+      "name": "Maryland State Bar Association — Committee on Ethics (Ethics Docket Opinions)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published advisory opinions",
+      "license_url": "https://www.msba.org/site/site/content/Resources-and-Tools-Content/Ethics-Opinions-and-Hotline.aspx",
+      "commercial_use": true
+    },
+    {
       "id": "US/MD-Legislation",
       "country": "US",
       "name": "Maryland Code and Statutes (mgaleg.maryland.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MD-TaxCourt",
+      "country": "US",
+      "name": "Maryland Tax Court",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/ME-AGOpinions",
+      "country": "US",
+      "name": "Maine Attorney General Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14648,9 +16862,36 @@
       "commercial_use": true
     },
     {
+      "id": "US/ME-LegalEthics",
+      "country": "US",
+      "name": "Maine Board of Overseers of the Bar — Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/ME-Legislation",
       "country": "US",
       "name": "Maine Revised Statutes (legislature.maine.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/ME-MLRB",
+      "country": "US",
+      "name": "Maine Labor Relations Board — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/ME-PUC",
+      "country": "US",
+      "name": "Maine Public Utilities Commission — Orders & Issuances",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14666,9 +16907,54 @@
       "commercial_use": true
     },
     {
+      "id": "US/MI-LegalEthics",
+      "country": "US",
+      "name": "State Bar of Michigan — Ethics Opinions (Professional & Judicial)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MI-MERC",
+      "country": "US",
+      "name": "Michigan Employment Relations Commission — Decisions & Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MI-PSC",
+      "country": "US",
+      "name": "Michigan Public Service Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MN-CFBOpinions",
+      "country": "US",
+      "name": "Minnesota Campaign Finance & Public Disclosure Board — Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/MN-Courts",
       "country": "US",
       "name": "Minnesota Supreme Court & Court of Appeals",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MN-LegalEthics",
+      "country": "US",
+      "name": "Minnesota Lawyers Professional Responsibility Board — Board Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14684,9 +16970,36 @@
       "commercial_use": true
     },
     {
+      "id": "US/MO-AGOpinions",
+      "country": "US",
+      "name": "Missouri Attorney General Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MO-LegalEthics",
+      "country": "US",
+      "name": "Advisory Committee of the Supreme Court of Missouri — Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published advisory opinions",
+      "license_url": "https://mo-legal-ethics.org/informal-opinions-search/",
+      "commercial_use": true
+    },
+    {
       "id": "US/MO-Legislation",
       "country": "US",
       "name": "Missouri Revised Statutes (revisor.mo.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MS-AGOpinions",
+      "country": "US",
+      "name": "Mississippi Attorney General Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14702,6 +17015,42 @@
       "commercial_use": true
     },
     {
+      "id": "US/MS-EthicsOpinions",
+      "country": "US",
+      "name": "Mississippi Ethics Commission — Ethics Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MS-TaxNotices",
+      "country": "US",
+      "name": "Mississippi Department of Revenue — Notices & Technical Bulletins",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MT-AGOpinions",
+      "country": "US",
+      "name": "Montana Attorney General Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MT-BOPA",
+      "country": "US",
+      "name": "Montana Board of Personnel Appeals — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/MT-Courts",
       "country": "US",
       "name": "Montana State Courts",
@@ -14711,9 +17060,36 @@
       "commercial_use": true
     },
     {
+      "id": "US/MT-LegalEthics",
+      "country": "US",
+      "name": "State Bar of Montana — Ethics Committee (Ethics Opinions)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published advisory opinions",
+      "license_url": "https://www.montanabar.org/For-Attorneys/State-Bar-Resources/Ethics-Opinions",
+      "commercial_use": true
+    },
+    {
       "id": "US/MT-Legislation",
       "country": "US",
       "name": "Montana Code Annotated (leg.mt.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/MT-TaxAppeals",
+      "country": "US",
+      "name": "Montana Tax Appeal Board — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NC-AGOpinions",
+      "country": "US",
+      "name": "North Carolina Attorney General Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14729,9 +17105,54 @@
       "commercial_use": true
     },
     {
+      "id": "US/NC-EthicsOpinions",
+      "country": "US",
+      "name": "North Carolina Ethics Commission — Formal Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NC-IC",
+      "country": "US",
+      "name": "North Carolina Industrial Commission — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NC-LegalEthics",
+      "country": "US",
+      "name": "North Carolina State Bar — Legal (Attorney) Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/NC-Legislation",
       "country": "US",
       "name": "North Carolina General Statutes (ncleg.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NC-OAH",
+      "country": "US",
+      "name": "North Carolina Office of Administrative Hearings — ALJ Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NC-TaxRulings",
+      "country": "US",
+      "name": "North Carolina Department of Revenue — Written Determinations",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14765,6 +17186,42 @@
       "commercial_use": true
     },
     {
+      "id": "US/ND-PSC",
+      "country": "US",
+      "name": "North Dakota Public Service Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/ND-TaxGuidelines",
+      "country": "US",
+      "name": "North Dakota Office of State Tax Commissioner — Tax Guidelines",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NE-AGOpinions",
+      "country": "US",
+      "name": "Nebraska Attorney General — Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NE-CIR",
+      "country": "US",
+      "name": "Nebraska Commission of Industrial Relations — CIR Reporter Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/NE-Courts",
       "country": "US",
       "name": "Nebraska State Courts",
@@ -14774,9 +17231,45 @@
       "commercial_use": true
     },
     {
+      "id": "US/NE-EthicsOpinions",
+      "country": "US",
+      "name": "Nebraska Accountability and Disclosure Commission — Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NE-LegalEthics",
+      "country": "US",
+      "name": "Nebraska Supreme Court — Lawyer Ethics Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105 (government edict)",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/NE-Legislation",
       "country": "US",
       "name": "Nebraska Revised Statutes (nebraskalegislature.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NE-TERC",
+      "country": "US",
+      "name": "Nebraska Tax Equalization and Review Commission — Decisions & Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NE-TaxRulings",
+      "country": "US",
+      "name": "Nebraska Department of Revenue — Revenue Rulings & General Information Letters",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14792,6 +17285,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/NH-LegalEthics",
+      "country": "US",
+      "name": "New Hampshire Bar Association — Ethics Committee Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published advisory opinions",
+      "license_url": "https://www.nhbar.org/list-of-all-nhba-ethics-opinions-and-articles-with-hyperlinks/",
+      "commercial_use": true
+    },
+    {
       "id": "US/NHTSA-Enforcement",
       "country": "US",
       "name": "National Highway Traffic Safety Administration — Enforcement Investigations",
@@ -14801,9 +17303,72 @@
       "commercial_use": true
     },
     {
+      "id": "US/NJ-BPU",
+      "country": "US",
+      "name": "New Jersey Board of Public Utilities — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/NJ-Courts",
       "country": "US",
       "name": "New Jersey State Courts",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NJ-EthicsDecisions",
+      "country": "US",
+      "name": "New Jersey State Ethics Commission — Final Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NJ-OAL",
+      "country": "US",
+      "name": "New Jersey Office of Administrative Law — ALJ Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NJ-PERC",
+      "country": "US",
+      "name": "New Jersey Public Employment Relations Commission — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NJ-PERC-Staff",
+      "country": "US",
+      "name": "New Jersey PERC — Director, Hearing Examiner & Appeal Board Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NJ-SchoolEthics",
+      "country": "US",
+      "name": "New Jersey School Ethics Commission — Public Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NJ-TaxGuidance",
+      "country": "US",
+      "name": "New Jersey Division of Taxation — Technical Bulletins & Letter Rulings",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14819,9 +17384,45 @@
       "commercial_use": true
     },
     {
+      "id": "US/NM-LegalEthics",
+      "country": "US",
+      "name": "State Bar of New Mexico — Ethics Advisory Committee (Ethics Advisory Opinions)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published advisory opinions",
+      "license_url": "https://www.sbnm.org/Leadership/Committees/Ethics-Advisory-Committee/Ethics-Advisory-Opinions",
+      "commercial_use": true
+    },
+    {
       "id": "US/NM-Legislation",
       "country": "US",
       "name": "New Mexico Statutes (nmonesource.com)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NM-PELRB",
+      "country": "US",
+      "name": "New Mexico Public Employee Labor Relations Board — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NM-TaxDecisions",
+      "country": "US",
+      "name": "New Mexico Taxation and Revenue Department — Decisions & Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NM-TaxRulings",
+      "country": "US",
+      "name": "New Mexico Taxation and Revenue Department — Rulings",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14837,6 +17438,24 @@
       "commercial_use": true
     },
     {
+      "id": "US/NV-EthicsOpinions",
+      "country": "US",
+      "name": "Nevada Commission on Ethics — Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NV-LegalEthics",
+      "country": "US",
+      "name": "State Bar of Nevada — Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/NV-Legislation",
       "country": "US",
       "name": "Nevada Revised Statutes (leg.state.nv.us)",
@@ -14846,9 +17465,45 @@
       "commercial_use": true
     },
     {
+      "id": "US/NV-PUC",
+      "country": "US",
+      "name": "Public Utilities Commission of Nevada — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NV-SBE",
+      "country": "US",
+      "name": "Nevada State Board of Equalization — Notices of Decision",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NY-AGOpinions",
+      "country": "US",
+      "name": "New York Attorney General Legal Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/NY-AdminCode",
       "country": "US",
       "name": "New York Codes Rules and Regulations (NYCRR)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NY-AdvisoryOpinions",
+      "country": "US",
+      "name": "New York State Department of Taxation and Finance — Advisory Opinions (TSB-A)",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14873,6 +17528,51 @@
       "commercial_use": true
     },
     {
+      "id": "US/NY-EthicsOpinions",
+      "country": "US",
+      "name": "New York State Commission on Ethics and Lobbying in Government — Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NY-LegalEthics",
+      "country": "US",
+      "name": "New York State Bar Association (NYSBA) — Committee on Professional Ethics — Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NY-TaxAppeals",
+      "country": "US",
+      "name": "New York State Division of Tax Appeals",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NY-WCB",
+      "country": "US",
+      "name": "New York Workers' Compensation Board — Board Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OCAHO",
+      "country": "US",
+      "name": "US OCAHO Decisions (Office of the Chief Administrative Hearing Officer)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/OCC",
       "country": "US",
       "name": "US Office of Comptroller of Currency Enforcement",
@@ -14891,9 +17591,45 @@
       "commercial_use": true
     },
     {
+      "id": "US/OGE-LegalAdvisories",
+      "country": "US",
+      "name": "U.S. Office of Government Ethics — Legal Advisories",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OH-LegalEthics",
+      "country": "US",
+      "name": "Ohio Board of Professional Conduct — Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/OH-Legislation",
       "country": "US",
       "name": "Ohio Revised Code (LAWriter)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OH-SERB",
+      "country": "US",
+      "name": "Ohio State Employment Relations Board — Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OK-AGOpinions",
+      "country": "US",
+      "name": "Oklahoma Attorney General Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14909,9 +17645,27 @@
       "commercial_use": true
     },
     {
+      "id": "US/OK-LegalEthics",
+      "country": "US",
+      "name": "Oklahoma Bar Association — Legal Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/OK-Legislation",
       "country": "US",
       "name": "Oklahoma Statutes (oklegislature.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OK-TaxDecisions",
+      "country": "US",
+      "name": "Oklahoma Tax Commission — Commission Decisions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14927,9 +17681,117 @@
       "commercial_use": true
     },
     {
+      "id": "US/OR-AGOpinions",
+      "country": "US",
+      "name": "Oregon Attorney General Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OR-AGPublicRecords",
+      "country": "US",
+      "name": "Oregon Attorney General — Public Records Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OR-ChiefJusticeOrders",
+      "country": "US",
+      "name": "Oregon Chief Justice Orders & Supreme Court Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OR-CourtOfAppealsOrders",
+      "country": "US",
+      "name": "Oregon Court of Appeals — Orders of Interest",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/OR-Courts",
       "country": "US",
       "name": "Oregon State Courts",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OR-DAPublicRecords",
+      "country": "US",
+      "name": "Oregon District Attorney Public Records Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OR-ERB",
+      "country": "US",
+      "name": "Oregon Employment Relations Board — Board Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OR-EthicsOpinions",
+      "country": "US",
+      "name": "Oregon Government Ethics Commission — Advisory & Staff Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OR-ExecutiveOrders",
+      "country": "US",
+      "name": "Oregon Governor — Executive Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — U.S. state government edict (17 U.S.C. § 105 rationale)",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OR-LUBA",
+      "country": "US",
+      "name": "Oregon Land Use Board of Appeals — Final Orders & Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OR-LegalEthics",
+      "country": "US",
+      "name": "Oregon State Bar — Formal Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OR-MultnomahPresidingJudgeOrders",
+      "country": "US",
+      "name": "Multnomah County Circuit Court — Presiding Judge Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OR-TaxCourt",
+      "country": "US",
+      "name": "Oregon Tax Court — Decisions & Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -14945,11 +17807,74 @@
       "commercial_use": true
     },
     {
+      "id": "US/OpenStates",
+      "country": "US",
+      "name": "Open States (State Legislation)",
+      "license_id": "",
+      "license_name": "",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "US/PA-AGOpinions",
+      "country": "US",
+      "name": "Pennsylvania Attorney General Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/PA-BFR",
+      "country": "US",
+      "name": "Pennsylvania Board of Finance and Revenue — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/PA-Code",
+      "country": "US",
+      "name": "The Pennsylvania Code — State Administrative Regulations",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/PA-Courts",
       "country": "US",
       "name": "Pennsylvania State Courts",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/PA-EthicsOpinions",
+      "country": "US",
+      "name": "Pennsylvania State Ethics Commission — Opinions and Advices of Counsel",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/PA-PLRB",
+      "country": "US",
+      "name": "Pennsylvania Labor Relations Board — Final & Proposed Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/PBGC-OpinionLetters",
+      "country": "US",
+      "name": "PBGC Opinion Letters",
+      "license_id": "pd-us",
+      "license_name": "US Public Domain",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
@@ -14981,11 +17906,47 @@
       "commercial_use": true
     },
     {
+      "id": "US/RI-LegalEthics",
+      "country": "US",
+      "name": "Rhode Island Supreme Court Ethics Advisory Panel — Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — US government edict (Supreme Court panel advisory opinions)",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/RegulationsGov",
       "country": "US",
       "name": "Regulations.gov — Federal Rulemaking Documents and Public Comments",
       "license_id": "pd-us",
       "license_name": "US Public Domain",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/SC-AGOpinions",
+      "country": "US",
+      "name": "South Carolina Attorney General Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/SC-ALC",
+      "country": "US",
+      "name": "South Carolina Administrative Law Court — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/SC-AdvisoryOpinions",
+      "country": "US",
+      "name": "South Carolina Department of Revenue — Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
@@ -14999,9 +17960,36 @@
       "commercial_use": true
     },
     {
+      "id": "US/SC-JudicialEthics",
+      "country": "US",
+      "name": "South Carolina Advisory Committee on Standards of Judicial Conduct — Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/SC-LegalEthics",
+      "country": "US",
+      "name": "South Carolina Bar — Ethics Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published advisory opinions",
+      "license_url": "https://www.scbar.org/for-lawyers/quicklinks/legal-resources/ethics-advisory-opinions/",
+      "commercial_use": true
+    },
+    {
       "id": "US/SC-Legislation",
       "country": "US",
       "name": "South Carolina Code of Laws (scstatehouse.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/SC-PSC",
+      "country": "US",
+      "name": "South Carolina Public Service Commission — Orders",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -15017,6 +18005,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/SD-LegalEthics",
+      "country": "US",
+      "name": "State Bar of South Dakota — Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/SD-Legislation",
       "country": "US",
       "name": "South Dakota Codified Laws (sdlegislature.gov)",
@@ -15026,9 +18023,45 @@
       "commercial_use": true
     },
     {
+      "id": "US/SD-PUC",
+      "country": "US",
+      "name": "South Dakota Public Utilities Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/SEC-AdminProceedings",
+      "country": "US",
+      "name": "SEC Administrative Proceedings",
+      "license_id": "pd-us",
+      "license_name": "US Public Domain",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/TN-LegalEthics",
+      "country": "US",
+      "name": "Board of Professional Responsibility of the Supreme Court of Tennessee — Formal Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — US government edict (Supreme Court of Tennessee board advisory opinions)",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/TN-Legislation",
       "country": "US",
       "name": "Tennessee Code Annotated",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/TN-TaxRulings",
+      "country": "US",
+      "name": "Tennessee Department of Revenue — Letter Rulings",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -15044,6 +18077,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/TX-AGOpinions",
+      "country": "US",
+      "name": "Texas Attorney General — Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/TX-Courts",
       "country": "US",
       "name": "Texas State Courts",
@@ -15053,9 +18095,45 @@
       "commercial_use": true
     },
     {
+      "id": "US/TX-EthicsOpinions",
+      "country": "US",
+      "name": "Texas Ethics Commission — Ethics Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/TX-JudicialEthics",
+      "country": "US",
+      "name": "Texas Committee on Judicial Ethics — Judicial Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/TX-LegalEthics",
+      "country": "US",
+      "name": "Texas Committee on Professional Ethics — Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/TX-Legislation",
       "country": "US",
       "name": "Texas Legislature Online (TLO) + Capitol Data Portal",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/TX-TaxDecisions",
+      "country": "US",
+      "name": "Texas Comptroller — STAR (State Tax Automated Research)",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -15080,9 +18158,63 @@
       "commercial_use": true
     },
     {
+      "id": "US/USDA-AgricultureDecisions",
+      "country": "US",
+      "name": "USDA Agriculture Decisions (OALJ + Judicial Officer)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/UT-JudicialEthics",
+      "country": "US",
+      "name": "Utah Judicial Ethics Advisory Committee — Ethics Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/UT-LegalEthics",
+      "country": "US",
+      "name": "Utah State Bar — Ethics Advisory Opinion Committee Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/UT-Legislation",
       "country": "US",
       "name": "Utah Code (le.utah.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/UT-PSC",
+      "country": "US",
+      "name": "Utah Public Service Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/UT-TaxDecisions",
+      "country": "US",
+      "name": "Utah State Tax Commission — Decisions & Private Letter Rulings",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/VA-AGOpinions",
+      "country": "US",
+      "name": "Virginia Attorney General — Official Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -15098,9 +18230,54 @@
       "commercial_use": true
     },
     {
+      "id": "US/VA-EthicsOpinions",
+      "country": "US",
+      "name": "Virginia Conflict of Interest and Ethics Advisory Council — Formal Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/VA-JudicialEthics",
+      "country": "US",
+      "name": "Virginia Judicial Ethics Advisory Committee (JEAC) — Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/VA-Law",
       "country": "US",
       "name": "Virginia Law Portal (Code of Virginia + Admin Code) REST API",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/VA-LegalEthics",
+      "country": "US",
+      "name": "Virginia State Bar — Standing Committee on Legal Ethics — Legal Ethics Opinions (LEOs)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/VA-TaxRulings",
+      "country": "US",
+      "name": "Virginia Department of Taxation — Rulings of the Tax Commissioner & Tax Bulletins",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/VT-AGOpinions",
+      "country": "US",
+      "name": "Vermont Attorney General Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -15116,9 +18293,54 @@
       "commercial_use": true
     },
     {
+      "id": "US/VT-LRB",
+      "country": "US",
+      "name": "Vermont Labor Relations Board — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/VT-LegalEthics",
+      "country": "US",
+      "name": "Vermont Bar Association — Advisory Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published advisory opinions",
+      "license_url": "https://www.vtbar.org/advisory_ethics/",
+      "commercial_use": true
+    },
+    {
       "id": "US/VT-Legislation",
       "country": "US",
       "name": "Vermont Statutes Online (legislature.vermont.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/VT-TaxDecisions",
+      "country": "US",
+      "name": "Vermont Department of Taxes — Formal Rulings",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WA-AGOpinions",
+      "country": "US",
+      "name": "Washington State Attorney General Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WA-BTA",
+      "country": "US",
+      "name": "Washington State Board of Tax Appeals — Decisions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -15134,11 +18356,128 @@
       "commercial_use": true
     },
     {
+      "id": "US/WA-EthicsOpinions",
+      "country": "US",
+      "name": "Washington State Executive Ethics Board — Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WA-JudicialEthics",
+      "country": "US",
+      "name": "Washington State Ethics Advisory Committee — Judicial Ethics Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WA-LegalEthics",
+      "country": "US",
+      "name": "Washington State Bar Association (WSBA) — Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/WA-Legislation",
       "country": "US",
       "name": "Washington State Legislative Web Services (SOAP API)",
       "license_id": "pd-gov",
       "license_name": "Public domain",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WA-PERC",
+      "country": "US",
+      "name": "Washington State Public Employment Relations Commission — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WA-TaxDecisions",
+      "country": "US",
+      "name": "Washington Department of Revenue — Washington Tax Decisions (WTD)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WA-UTC",
+      "country": "US",
+      "name": "Washington Utilities & Transportation Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WI-EthicsOpinions",
+      "country": "US",
+      "name": "Wisconsin Ethics Commission — Formal Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WI-JudicialEthics",
+      "country": "US",
+      "name": "Wisconsin Judicial Conduct Advisory Committee — Formal Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WI-LegalEthics",
+      "country": "US",
+      "name": "State Bar of Wisconsin — Professional Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — freely published advisory opinions",
+      "license_url": "https://www.wisbar.org/formembers/ethics/Pages/Ethics-Opinions.aspx",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WI-PSC",
+      "country": "US",
+      "name": "Public Service Commission of Wisconsin — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WI-TaxAppeals",
+      "country": "US",
+      "name": "Wisconsin Tax Appeals Commission — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WI-WERC",
+      "country": "US",
+      "name": "Wisconsin Employment Relations Commission — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WV-AGOpinions",
+      "country": "US",
+      "name": "West Virginia Attorney General Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
@@ -15152,9 +18491,45 @@
       "commercial_use": true
     },
     {
+      "id": "US/WV-EthicsOpinions",
+      "country": "US",
+      "name": "West Virginia Ethics Commission — Advisory Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WV-LegalEthics",
+      "country": "US",
+      "name": "West Virginia Legal Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/WV-Legislation",
       "country": "US",
       "name": "West Virginia Code (wvlegislature.gov)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WV-TaxAppeals",
+      "country": "US",
+      "name": "West Virginia Office of Tax Appeals — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WY-AGOpinions",
+      "country": "US",
+      "name": "Wyoming Attorney General Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -15179,12 +18554,30 @@
       "commercial_use": true
     },
     {
+      "id": "US/WY-SBOE",
+      "country": "US",
+      "name": "Wyoming State Board of Equalization — Board Decisions & Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/eCFR",
       "country": "US",
       "name": "eCFR - Electronic Code of Federal Regulations",
       "license_id": "pd-gov",
       "license_name": "Public domain (US government works).",
       "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "UY/CorteElectoral",
+      "country": "UY",
+      "name": "Uruguay Corte Electoral — Sentencias",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": "https://www.impo.com.uy/",
       "commercial_use": true
     },
     {

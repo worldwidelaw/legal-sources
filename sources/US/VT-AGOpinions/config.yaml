@@ -1,0 +1,91 @@
+# ===================================================================
+# US/VT-AGOpinions -- Vermont Attorney General Opinions
+# ===================================================================
+# Full text of formal and informal legal opinions issued by the Vermont
+# Attorney General. These are official state legal interpretations
+# (doctrine). Published openly as text PDFs at ago.vermont.gov. No
+# authentication required. Public government data.
+# ===================================================================
+
+source:
+  id: "US/VT-AGOpinions"
+  country: "US"
+  name: "Vermont Attorney General Opinions"
+  url: "https://ago.vermont.gov/about-attorney-generals-office/attorney-general-opinions"
+  description: |
+    Formal and informal legal opinions issued by the Office of the
+    Vermont Attorney General. Each opinion answers a legal question
+    posed by a public official or agency and constitutes an
+    authoritative (advisory) interpretation of Vermont law. Full text
+    extracted from the official digitally-produced PDFs hosted under
+    ago.vermont.gov/sites/ago/files/. Coverage runs 2000-present for
+    the posted formal and selected informal opinions; a few older
+    formal opinions are scanned images and are skipped.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://ago.vermont.gov"
+  endpoints:
+    listing: "/about-attorney-generals-office/attorney-general-opinions"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "_id"
+      description: "Stable document id derived from the PDF filename slug"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Opinion title (Vermont Attorney General Formal/Informal Opinion ...)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Vermont)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Vermont Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Formal & informal AG opinions listed on a single Drupal page at
+    ago.vermont.gov/about-attorney-generals-office/attorney-general-opinions
+  - Each entry links a digitally-produced text PDF under
+    ago.vermont.gov/sites/ago/files/ (real text layer, no OCR needed)
+  - ago.vermont.gov 403s requests without a same-site Referer header;
+    the scraper sets Referer to the listing page and falls back to curl
+  - A few older formal opinions (e.g. FO 2014-1, FO 2008-1) are scanned
+    images with no text layer and are skipped
+  - Full text via common.pdf_extract.extract_pdf_markdown (OOM-hardened)
+  - Coverage ~2000-present; public domain Vermont government data

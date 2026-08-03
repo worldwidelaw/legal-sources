@@ -1,0 +1,116 @@
+# ===================================================================
+# US/NC-TaxRulings -- North Carolina Department of Revenue
+#                     Written Determinations
+# ===================================================================
+# Official written determinations published by the NC Department of
+# Revenue (NCDOR): Corporate Tax Private Letter Rulings (CPLR YYYY-NN) and
+# Redetermination Letters, Sales & Use Tax Private Letter Rulings
+# (SUPLR YYYY-NNNN), and Personal Tax Private Letter Rulings
+# (PTPLR YYYY-N). Each is a public, taxpayer-identifier-redacted ruling
+# issued by the Secretary of Revenue — the Department's written
+# application of NC tax law to a specific taxpayer's facts. Each tax
+# division publishes a server-rendered Drupal listing page; the full text
+# lives only in the attached born-digital PDF, extracted via the shared
+# OOM-hardened pdf_extract helper. No JavaScript, no CAPTCHA, no auth.
+# Public-domain NC state-government works (government-edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/NC-TaxRulings"
+  country: "US"
+  name: "North Carolina Department of Revenue — Written Determinations"
+  url: "https://www.ncdor.gov/taxes-forms/corporate-income-franchise-tax/determinations/written-determinations"
+  description: |
+    Written determinations published by the North Carolina Department of
+    Revenue: Corporate Tax Private Letter Rulings (CPLR YYYY-NN) and
+    Redetermination Letters, Sales & Use Tax Private Letter Rulings
+    (SUPLR YYYY-NNNN), and Personal Tax Private Letter Rulings
+    (PTPLR YYYY-N). A written determination applies NC tax law to a
+    specific set of facts furnished by a particular taxpayer (redacted of
+    taxpayer identifiers). The full text of each determination is read
+    from its public PDF on ncdor.gov. No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.ncdor.gov"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NC-TaxRulings/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "ruling_number"
+      description: "NC determination number (e.g. 'SUPLR 2025-0006', 'CPLR 2023-02', 'PTPLR 2021-1')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "ruling_type"
+      description: "Corporate / Sales & Use / Personal Tax Private Letter Ruling or Redetermination Letter"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (issuer + ruling type + number + subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the determination, extracted from the published PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601): year from the determination number, refined from the body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — North Carolina state tax guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Written determinations (private letter rulings, redetermination letters) of the NC Department of Revenue are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Three division listing pages (corporate, sales & use, personal) are
+    server-rendered Drupal pages. The scraper follows the site's 301
+    redirects to each canonical listing and parses every anchor whose text
+    matches a determination-number pattern (CPLR/SUPLR/PTPLR YYYY-<seq>) or
+    "Redetermination Letter".
+  - The full text lives only in the attached PDF. Listing hrefs point at a
+    node page (/<slug> or /documents/<slug>) or directly at a download
+    (.../download?attachment). The scraper resolves the file URL — using
+    the href directly when it already points at a file, else fetching the
+    node page and extracting its ".../<slug>/open" or ".../download" anchor.
+  - PDFs are born-digital; text is extracted via common.pdf_extract
+    (OOM-hardened pdfplumber -> pypdf -> OCR). A <200-char guard skips the
+    rare image-only scan.
+  - date is the full year embedded in the determination number (YYYY-...),
+    refined to a month-name date parsed near the top of the body; for
+    Redetermination Letters the listing carries the date ("Dated M/D/YYYY").
+  - Type is doctrine: written determinations are interpretive government
+    guidance, not adjudications of a contested case.
+  - Public-domain NC state-government data.

@@ -1,0 +1,46 @@
+source:
+  id: "INTL/IAEA-Legal"
+  country: "INTL"
+  name: "IAEA Information Circulars (INFCIRC) — International Nuclear Law"
+  url: "https://www.iaea.org/publications/documents/infcircs"
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.33
+  burst: 1
+
+schema:
+  key_fields:
+    - name: "text"
+      description: "Full text of the INFCIRC document (from born-digital PDF extraction)"
+      role: "content"
+      required: true
+    - name: "infcirc_symbol"
+      description: "INFCIRC symbol, e.g. INFCIRC/540, INFCIRC/153/Add.1"
+      role: "identifier"
+      required: true
+    - name: "date"
+      description: "Publication/distribution date of the circular (ISO 8601)"
+      role: "date"
+      required: false
+    - name: "title"
+      description: "Document title"
+      role: "title"
+      required: false
+
+data_model:
+  update_strategy: "upsert"
+
+license:
+  name: "IAEA official document (government/IGO edict)"
+  url: "https://www.iaea.org/about/terms-of-use"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "IAEA Information Circulars are official documents of an intergovernmental organization, published for public distribution (Distr. GENERAL). Treated as public government/IGO edicts."

@@ -1,0 +1,108 @@
+# ===================================================================
+# US/ND-TaxGuidelines -- North Dakota Office of State Tax Commissioner
+# Tax Guidelines (doctrine)
+# ===================================================================
+# The North Dakota Office of State Tax Commissioner publishes interpretive
+# "Guidelines" explaining how each North Dakota tax applies to a particular
+# activity or taxpayer class (alcohol, sales & use, income-tax withholding,
+# property-tax assessment, motor fuel, military service members, etc.). Each
+# guideline is the agency's official explanation of the law -> doctrine
+# (government tax guidance), jurisdiction US-ND.
+#
+# Discovery is a single server-rendered Drupal index page
+# (https://www.tax.nd.gov/guidelines): every guideline is an <a href> to a
+# born-digital PDF under /sites/www/files/documents/guidelines/{category}/...,
+# and the anchor text is a clean human title. No JS, no CAPTCHA, no auth.
+# The PDFs carry a real text layer, so full text is extracted directly via
+# common.pdf_extract (no OCR needed).
+# Public-domain North Dakota state-government works (government-edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/ND-TaxGuidelines"
+  country: "US"
+  name: "North Dakota Office of State Tax Commissioner — Tax Guidelines"
+  url: "https://www.tax.nd.gov/guidelines"
+  description: |
+    Published interpretive Guidelines of the North Dakota Office of State Tax
+    Commissioner — the agency's official explanations of how North Dakota taxes
+    apply to specific activities and taxpayer classes (alcohol, sales & use,
+    income-tax withholding, property-tax assessment, motor fuel, military
+    service members, and more) = doctrine. Discovered from a single
+    server-rendered index page; full text read from the born-digital PDFs. No
+    JavaScript scraping, no CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.tax.nd.gov/"
+  endpoints:
+    index: "https://www.tax.nd.gov/guidelines"
+    document_root: "https://www.tax.nd.gov/sites/www/files/documents/guidelines/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/ND-TaxGuidelines/{filename-stem})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "guideline_title"
+      description: "Human title from the index anchor (e.g. 'Alcohol Carriers')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "category"
+      description: "Guideline category from the URL path (business, individual, property-tax, military, ...)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Composed document title (issuer + category + guideline title)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the guideline, extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — North Dakota state tax guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Guidelines of the North Dakota Office of State Tax Commissioner are official North Dakota state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery parses one server-rendered Drupal index page
+    (https://www.tax.nd.gov/guidelines); every guideline is an <a href> to a
+    born-digital PDF under /documents/guidelines/{category}/..., with the anchor
+    text as the title. ~94 guidelines. Dedup is by resolved PDF URL.
+  - _type is doctrine for all documents (interpretive tax guidance, not
+    adjudications).
+  - The PDFs are born-digital (real text layer); full text is extracted via
+    common.pdf_extract with no OCR required. A <200-char guard skips any PDF
+    that unexpectedly yields no text.
+  - Guidelines carry no per-document publication date on the index; date is left
+    null (revision dates appear inside some PDFs but are not uniformly parseable).

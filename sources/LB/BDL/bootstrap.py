@@ -179,12 +179,45 @@ def extract_pdf_text(pdf_bytes: bytes) -> str:
 
 # ── Fetching ──────────────────────────────────────────────────────
 
+class _LegacyTLSAdapter(requests.adapters.HTTPAdapter):
+    """Permit the legacy TLS/ciphers that www.bdl.gov.lb negotiates.
+
+    Modern OpenSSL 3.x (on the fleet VPS) rejects the server's old
+    cipher/renegotiation with ``SSLV3_ALERT_HANDSHAKE_FAILURE``. Lowering the
+    security level to 1 and allowing legacy server connect lets the handshake
+    complete (macOS LibreSSL already accepts it). Issue #1160.
+    """
+
+    def _ctx(self):
+        import ssl
+        from urllib3.util.ssl_ import create_urllib3_context
+        ctx = create_urllib3_context()
+        # Lower the OpenSSL 3.x security level so the VPS accepts the server's
+        # legacy cipher/key. LibreSSL (local) has no @SECLEVEL concept and
+        # raises — its default already accepts the server, so ignore.
+        try:
+            ctx.set_ciphers("DEFAULT@SECLEVEL=1")
+        except ssl.SSLError:
+            pass
+        ctx.options |= getattr(ssl, "OP_LEGACY_SERVER_CONNECT", 0x4)
+        return ctx
+
+    def init_poolmanager(self, *args, **kwargs):
+        kwargs["ssl_context"] = self._ctx()
+        return super().init_poolmanager(*args, **kwargs)
+
+    def proxy_manager_for(self, *args, **kwargs):
+        kwargs["ssl_context"] = self._ctx()
+        return super().proxy_manager_for(*args, **kwargs)
+
+
 def _session() -> requests.Session:
     s = requests.Session()
     s.headers.update({
         "User-Agent": "LegalDataHunter/1.0 (legal research; open data)",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     })
+    s.mount("https://", _LegacyTLSAdapter())
     return s
 
 
@@ -456,8 +489,10 @@ def main():
     # bootstrap-fast is the VPS pipeline alias for a full streaming run
     boot = sub.add_parser("bootstrap", help="Fetch circulars")
     boot.add_argument("--sample", action="store_true", help="Fetch ~20 sample records")
+    boot.add_argument("--full", action="store_true", help="Full run (default; accepted for pipeline compat)")
     fast = sub.add_parser("bootstrap-fast", help="Fetch circulars (VPS pipeline alias)")
     fast.add_argument("--sample", action="store_true", help="Fetch ~20 sample records")
+    fast.add_argument("--full", action="store_true", help="Full run (default; accepted for pipeline compat)")
     args = parser.parse_args()
 
     if args.command not in ("bootstrap", "bootstrap-fast"):

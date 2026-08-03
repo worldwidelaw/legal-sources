@@ -1,0 +1,13 @@
+{
+  "_id": "EG/EgyptianLawArticles-HF:art-4",
+  "_source": "EG/EgyptianLawArticles-HF",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-09T06:19:56.723485+00:00",
+  "title": "Egyptian Civil Code — Article 4",
+  "text": "من استعمل حقه استعمالاً مشروعاً لا يكون مسئولاً عما ينشأ عن ذلك من\nضرر.\n\n--- English Translation ---\n\nA person legitimately exercises his rights is not\nresponsible for prejudice resulting thereby.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/TawasulAI/egyptian-law-articles",
+  "article_number": "4",
+  "language": "ar",
+  "jurisdiction": "EG"
+}

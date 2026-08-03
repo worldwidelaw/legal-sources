@@ -1,0 +1,25 @@
+{
+  "_id": "CAIL2018-first_stage_train-0025e469c4ed831b",
+  "_source": "CN/HuggingFace-CAIL2018",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-28T00:29:10.603375+00:00",
+  "title": "周某盗窃案",
+  "text": "公诉机关起诉书指控：\r\n2016年11月17日凌晨1时许，被告人周某在本县武康街道营盘小区131幢南侧过道处，采用拉车门的方式在被害人林某浙Ｅ×××××的白色越野车内窃得黑色苹果7PLUS手机一部、白色苹果5手机1部、金色苹果6PLUS手机一部、金色苹果6SPLUS手机1部、外币8张（含10000日元纸币1张、5000韩元纸币1张、10美元纸币1张、5美元纸币2张、50美元纸币2张、10加拿大元纸币1张）以及人民币20元。经鉴定，涉案财物共计价值人民币12159.44元。\r\n案发后，部分赃物已被公安机关追回并发还被害人林某。",
+  "date": "2018-01-01",
+  "url": "https://huggingface.co/datasets/china-ai-law-challenge/cail2018",
+  "split": "first_stage_train",
+  "relevant_articles": [
+    264
+  ],
+  "accusation": [
+    "盗窃"
+  ],
+  "criminals": [
+    "周某"
+  ],
+  "imprisonment_months": 6.0,
+  "punish_of_money": 5000.0,
+  "death_penalty": false,
+  "life_imprisonment": false,
+  "sentence_summary": "有期徒刑6.0个月；罚金5000.0元"
+}

@@ -1,0 +1,23 @@
+{
+  "_id": "AGN-2026-112",
+  "_source": "AR/AGN",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-02T20:07:12.108690+00:00",
+  "title": "Gestión del Instituto Nacional de Alimentos en el control, la fiscalización y vigilancia de la inocuidad y calidad de los alimentos en el marco de la promoción de la alimentación saludable. Período 2023 y 2024. INAL. ANMAT",
+  "text": "ALCANCE La presente auditoría examinará las acciones referidas a la gestión del INAL en el control, la fiscalización y vigilancia de la inocuidad y calidad de los alimentos en el marco de la Ley 27.642 de Promoción de la Alimentación Saludable, desde el 01/01/23 al 31/12/24, de conformidad con las Normas de Control Externo Gubernamental de la AUDITORÍA GENERAL DE LA NACIÓN, aprobadas por las Res. 26/15 - AGN y Res. 186/16 - AGN, dictadas en virtud de las facultades conferidas por la Ley 24.156, Art. 119, Inc. d. Para la presente auditoría se practicaron los siguientes procedimientos para obtener las evidencias necesarias: • Entrevistas a funcionarios. • Relevamiento y análisis de las respuestas a las notas de pedido de información y documentación adjunta. • Revisión de páginas web oficiales. • Relevamiento de los informes de la Unidad de Auditoría Interna. • Relevamiento de expedientes y manuales de procedimiento. • Análisis de informes de gestión. • Análisis de las planificaciones e informes de resultados. • Análisis de la Cuenta de Inversión y de las leyes de presupuesto. • Identificación de las partidas presupuestarias asignadas. • Verificación in situ Tareas de campo: 14/02/2025 – 30/08/2025.",
+  "date": "2026-04-30",
+  "url": "https://www.agn.gob.ar/Informe-112-2026",
+  "pdf_url": "https://webagnapi.agn.gob.ar/sites/default/files/informes/2026-112-Informe.pdf",
+  "ano": 2026,
+  "resolucion": 112,
+  "actuacion": "6/2025",
+  "fecha_acta": "2026-04-30",
+  "periodo_auditado": "2023-01-01 / 2024-12-31",
+  "organismo_auditado_ids": [
+    "1754",
+    "3422"
+  ],
+  "tipo_de_auditoria_ids": [
+    "51"
+  ]
+}

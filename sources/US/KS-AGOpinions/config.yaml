@@ -1,0 +1,93 @@
+# ===================================================================
+# US/KS-AGOpinions -- Kansas Attorney General Opinions
+# ===================================================================
+# Full text of formal legal opinions issued by the Kansas Attorney
+# General. These are official state legal interpretations (doctrine).
+# The KS AG's own site (ag.ks.gov) bot-blocks automated access (403),
+# but Washburn University School of Law Library mirrors the complete
+# corpus as an open, static, full-text archive of text PDFs.
+# No authentication required. Public government data.
+# ===================================================================
+
+source:
+  id: "US/KS-AGOpinions"
+  country: "US"
+  name: "Kansas Attorney General Opinions"
+  url: "https://ksag.washburnlaw.edu/"
+  description: |
+    Formal legal opinions issued by the Kansas Attorney General. Each
+    opinion answers a legal question posed by a public official and
+    constitutes an authoritative (advisory) state legal interpretation.
+    Full text extracted from digitally-produced text PDFs hosted in the
+    open Washburn University School of Law archive, one directory per
+    year. Coverage 1974-present (several thousand opinions).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://ksag.washburnlaw.edu"
+  endpoints:
+    year_index: "/opinions/{year}/"
+    opinion_pdf: "/opinions/{year}/{year}-{num}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 7
+  key_fields:
+    - name: "opinion_number"
+      description: "Official AG opinion number (e.g., '2020-1')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Opinion title (derived from the opinion number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Kansas)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Kansas Attorney General opinions are official state government works in the public domain (government edicts doctrine). The Washburn archive is an open full-text host, not a rights holder."
+
+notes: |
+  - Kansas AG opinions mirrored at ksag.washburnlaw.edu (Washburn Law).
+  - One directory per year: /opinions/{YEAR}/ lists {YEAR}-NNN.pdf
+    files. Opinions are digitally-produced text PDFs (real text layer,
+    no OCR needed).
+  - Walk YEAR = current..1974, parse the year index for {YEAR}-NNN.pdf
+    links, download each PDF and extract text via common.pdf_extract.
+  - Date parsed from the opinion's opening line ('Month D, YYYY');
+    falls back to year-only.
+  - The official ag.ks.gov site 403-blocks automated access; Washburn
+    is the open full-text source.
+  - Public domain Kansas government data.

@@ -1,0 +1,16 @@
+{
+  "_id": "US/NM-TaxRulings/225-98-01-620724cc",
+  "_source": "US/NM-TaxRulings",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-30T15:10:06.234283+00:00",
+  "slug": "225-98-01-620724cc",
+  "ruling_number": "225-98-01",
+  "ruling_type": "Ruling",
+  "tax_category": "200-Income Taxes General",
+  "issuer": "New Mexico Taxation and Revenue Department",
+  "title": "New Mexico TRD Ruling 225-98-1 Spouses With Different States of Residency: Allocation of Income",
+  "text": "Ruling No. 225-98-1\nIssued: April 21, 1998\nEffective: April 21, 1998\nA ruling has been requested concerning application of certain provisions of the Income\nTax Act to the following facts:\nT has been a New Mexico resident for several years. In September 1997, T takes a\njob in another state, with the intention of moving to that state. T’s spouse,\nhowever, remains in New Mexico to sell their New Mexico residence. Eventually\nthe spouse decides against moving. T is able to secure a transfer from T’s\nemployer to a New Mexico location near T’s New Mexico residence. T moves\nback to New Mexico in January 1998.\nBoth New Mexico and the other state are community property states.\nT asks whether T may allocate to the other state the income T earned from employment\nin the other state in 1997.\nT is married. T’s spouse never left New Mexico and apparently had no intention of\nchanging domicile at the end of the 1997 taxable year. Thus, assuming T can demonstrate\nevidence of an intent at the end of the 1997 taxable year to make the other state T’s domicile, T\nis a nonresident for New Mexico income tax purposes and T’s spouse is a resident.\nBecause T’s spouse is a resident and New Mexico is a community property state, all of\nT’s income is subject to the Income Tax Act.\nSection 7-2-11 NMSA 1978 of the Income Tax Act, however, states in part:\n7-2-11. TAX CREDIT--INCOME ALLOCATION AND APPORTIONMENT.--\nA. Net income of any individual having income that is taxable both\nwithin and without this state shall be apportioned and allocated as follows:\n...\n(4) compensation of a nonresident taxpayer shall be allocated\nto this state to the extent that such compensation is for activities, labor or personal\nservices within this state; provided, if the activities, labor or services are\nperformed in this state for fifteen or fewer days during the taxpayer's taxable year,\nthe compensation may be allocated to the taxpayer's state of residence....\nTherefore, T’s compensation from T’s employment in the other state from September\n1997 through the end of that year may be allocated to the state in which T was employed.",
+  "url": "https://klvg4oyd4j.execute-api.us-west-2.amazonaws.com/prod/PublicFiles/34821a9573ca43e7b06dfad20f5183fd/620724cc-0d39-4363-a7e9-27b000df6b92/225-98-01.pdf",
+  "date": "2013-12-19",
+  "jurisdiction": "US-NM"
+}

@@ -1,0 +1,38 @@
+{
+  "_id": "BD-act-XXXIX-1983",
+  "_source": "BD/BangladeshActs-HuggingFace",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-02T16:21:54.812276+00:00",
+  "title": "The National Archives Ordinance, 1983",
+  "text": "",
+  "date": "1983-01-01",
+  "url": "http://bdlaws.minlaw.gov.bd/act-print-647.html",
+  "act_number": "XXXIX",
+  "act_year": "1983",
+  "language": "unknown",
+  "is_repealed": false,
+  "token_count": 142,
+  "government_context": {
+    "government_name": "",
+    "govt_system": "Military Rule",
+    "period_years": "1982-1990"
+  },
+  "legal_system_context": {
+    "legal_framework": {
+      "primary_laws": [
+        "Martial Law Proclamations",
+        "5th Amendment (1979)",
+        "7th Amendment (1986)"
+      ],
+      "court_system": [
+        "Supreme Court (limited powers)",
+        "Martial Law Courts",
+        "Civil Courts"
+      ],
+      "legal_basis": "Military decrees with constitutional validation",
+      "enforcement_mechanism": "Military tribunals and civil courts"
+    },
+    "period": "",
+    "description": ""
+  }
+}

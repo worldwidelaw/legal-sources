@@ -1,0 +1,134 @@
+# ===================================================================
+# US/NE-LegalEthics -- Nebraska Supreme Court Lawyer Ethics
+#                      Advisory Opinions
+# ===================================================================
+# Advisory opinions of the "Nebraska Ethics Advisory Opinion for
+# Lawyers" series, issued by the Advisory Committee of the Nebraska
+# Supreme Court (the Lawyers' Advisory Committee). Under Rule of
+# Discipline 5 the Committee renders advisory opinions interpreting the
+# Nebraska Rules of Professional Conduct as to a requesting attorney's
+# anticipatory conduct = doctrine (advisory guidance to LAWYERS). The
+# Committee is created by, and its members appointed by, the Nebraska
+# Supreme Court -> pd-us. Distinct from US/NE-EthicsOpinions (the
+# Nebraska Accountability and Disclosure Commission, which advises
+# public OFFICIALS), US/NE-Courts and US/NE-Legislation.
+# ===================================================================
+
+source:
+  id: "US/NE-LegalEthics"
+  country: "US"
+  name: "Nebraska Supreme Court — Lawyer Ethics Advisory Opinions"
+  url: "https://supremecourt.nebraska.gov/administration/professional-ethics/attorney-discipline-ethics/lawyer-ethics-opinions"
+  description: |
+    Advisory opinions of the Advisory Committee of the Nebraska Supreme
+    Court (Lawyers' Advisory Committee), published as the "Nebraska
+    Ethics Advisory Opinion for Lawyers" series. Each opinion interprets
+    the Nebraska Rules of Professional Conduct with respect to a
+    requesting attorney's anticipatory conduct. Opinions are numbered
+    {YY}-{N} (e.g. 68-1, 06-08, 25-01) and published free as PDFs on the
+    Nebraska Judicial Branch website. Every PDF is born-digital (full
+    text layer, verified back to 1968) -> extracted with PyMuPDF, no OCR.
+    ~288 opinions, 1968-present.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "drupal_view_pdf"
+  base_url: "https://nebraskajudicial.gov"
+  endpoints:
+    listing: "/administration/professional-ethics/attorney-discipline-ethics/lawyer-ethics-opinions?page={page}"
+    opinions: "/sites/default/files/opinions/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NE-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number, year canonicalised to 4 digits (e.g. 1968-1, 2025-01)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion label (Nebraska Ethics Advisory Opinion for Lawyers No. {number})"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text from the born-digital PDF (PyMuPDF, no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 date derived from the opinion's Year field (YYYY-01-01)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "question_presented"
+      description: "Question-presented snippet from the listing row"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "issuer"
+      description: "Advisory Committee of the Nebraska Supreme Court (Lawyers' Advisory Committee)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-NE)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (US government edict — Supreme Court committee advisory opinions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "The Advisory Committee is created by, and its members appointed by, the Nebraska Supreme Court, and its opinions interpret the Nebraska Rules of Professional Conduct (adopted by the Court). As the work of a body authorized by the state's highest court, the opinions are treated as public domain under the 17 U.S.C. § 105 government-edicts rationale, consistent with the other state-court/state-bar legal-ethics sources. Published free to the public on nebraskajudicial.gov with no login, paywall or terms prohibiting reuse. Commercial use permitted."
+
+notes: |
+  - Discovery: the opinions are listed in a paginated Drupal view at
+    /administration/professional-ethics/attorney-discipline-ethics/lawyer-ethics-opinions?page=N
+    (0..14, ~20 rows/page, ~288 opinions 1968-present). Each row is a
+    div.views-row-inner carrying labelled fields: Number
+    (views-field-title), Year (views-field-field-year), Question Presented
+    (views-field-body) and a "Download PDF" link (views-field-field-opinion).
+    supremecourt.nebraska.gov redirects to nebraskajudicial.gov.
+  - Full text: every opinion PDF under /sites/default/files/opinions/ is
+    born-digital (text layer present for all eras, verified back to No. 68-1
+    of 1968) -> PyMuPDF/fitz get_text, NO OCR.
+  - Filenames are irregular (25-01.pdf, Formal-Opinion-%2324-03.pdf,
+    Opinion-24-01.pdf, 68-1_0.pdf), so the href is taken verbatim from the
+    row and the opinion number is read from the row's Number field (not the
+    filename). Number canonicalised to YYYY-NN using the authoritative Year
+    field (68 -> 1968, 25 -> 2025).
+  - Date: derived from the Year field -> YYYY-01-01 (the opinions do not
+    consistently print a full issue date in the body).
+  - Title: opinions are keyed by number; title is a constructed label
+    "Nebraska Ethics Advisory Opinion for Lawyers No. {num}".
+  - Type: every document is the Committee's advisory interpretation of the
+    rules governing lawyers = doctrine.
+  - Distinct from US/NE-EthicsOpinions (NADC — advice to public officials),
+    US/NE-Courts (appellate courts) and US/NE-Legislation.

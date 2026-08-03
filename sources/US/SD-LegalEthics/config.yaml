@@ -1,0 +1,119 @@
+# ===================================================================
+# US/SD-LegalEthics -- State Bar of South Dakota — Ethics Opinions
+# ===================================================================
+# Ethics Opinions issued by the State Bar of South Dakota's Ethics
+# Committee, applying the South Dakota Rules of Professional Conduct to
+# a stated question to advise LAWYERS = doctrine (advisory). Per-year
+# numbered series "{year}-{N}" (four-digit year, e.g. 1995-01, 2006-01,
+# 2020-07, 2025-01), ~145 opinions listed 1986-present. The State Bar of
+# South Dakota is the state's INTEGRATED (unified/mandatory) bar under
+# SDCL ch. 16-17 and the authority of the South Dakota Supreme Court ->
+# pd-us. Distinct from US/SD-Courts and US/SD-Legislation.
+# ===================================================================
+
+source:
+  id: "US/SD-LegalEthics"
+  country: "US"
+  name: "State Bar of South Dakota — Ethics Opinions"
+  url: "https://www.statebarofsouthdakota.com/ethics-opinions/"
+  description: |
+    Ethics Opinions issued by the State Bar of South Dakota's Ethics
+    Committee, applying the South Dakota Rules of Professional Conduct
+    to a stated question to advise lawyers. A per-year numbered series
+    "{year}-{N}", ~145 opinions listed 1986-present. The newer opinions
+    (~1995-present) are published free as born-digital PDFs served from
+    the Bar's website and Azure CDN; the oldest opinions (1986-1994) are
+    scanned images with no text layer.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+  max_workers: 2
+
+api:
+  type: "html_index_pdf"
+  base_url: "https://www.statebarofsouthdakota.com"
+  endpoints:
+    index: "/ethics-opinions/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/SD-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number '{year}-{N}' (zero-padded seq; e.g. 1995-01, 2006-01, 2000-05a)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion subject line (from the index anchor, after the number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text from the born-digital PDF (PyMuPDF, no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 issue date (in-body date, else YYYY-01-01 from the number's year)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "State Bar of South Dakota — Ethics Committee"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-SD)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (US government edict — integrated bar advisory opinions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "State Bar of South Dakota ethics opinions interpret the South Dakota Rules of Professional Conduct. The State Bar of South Dakota is the state's INTEGRATED (unified/mandatory) bar under SDCL ch. 16-17, operating under the authority of the South Dakota Supreme Court to regulate the legal profession, so the opinions are the work of a government-authorized body — treated as public domain under the 17 U.S.C. § 105 government-edicts rationale, consistent with the other integrated state-bar legal-ethics sources. Published free to the public on statebarofsouthdakota.com with no login, paywall or terms prohibiting reuse. Commercial use permitted."
+
+notes: |
+  - Discovery: a single public index page, /ethics-opinions/, lists every
+    opinion as an anchor whose TEXT is "{number}: {subject} (Rules ...)".
+    The href is either an on-site URL /{a}_{b}_{slug}/ (which serves the
+    opinion PDF directly) or a born-digital PDF on the Bar's Azure CDN
+    (growthzonecmsprodeastus.azureedge.net/.../{number}.pdf). Both resolve
+    to a %PDF. A handful of 2021-2023 opinions live only behind the members'
+    GrowthZone portal (login) and are skipped by host filter.
+  - Full text: each PDF is extracted with PyMuPDF/fitz get_text, NO OCR.
+    The newer opinions (~1995-present) are born-digital; the oldest (1986-
+    1994, listed as a bare number with no subject) are scanned images with
+    no text layer -> they yield no text and are skipped (<150-char guard).
+  - Number: the "{year}-{N}" token from the anchor text, sequence zero-padded
+    to two digits (2006-1 -> 2006-01), trailing letter preserved (2000-05a).
+  - Title: the subject text after the "{number}:" prefix in the anchor.
+  - Date: an in-body "Month DD, YYYY" date within +/-1 year of the number's
+    year when present, else YYYY-01-01.
+  - Type: every document is the Ethics Committee's advisory interpretation of
+    the rules governing lawyers = doctrine.
+  - Distinct from US/SD-Courts and US/SD-Legislation.

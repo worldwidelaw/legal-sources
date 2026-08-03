@@ -1,0 +1,76 @@
+# UK/ScottishLandCourt — The Scottish Land Court — Significant decisions.
+#
+# Source: The Scottish Land Court (An Cùirt Fearainn)
+# URL: http://www.scottish-land-court.org.uk/decisions/recent-decisions
+# Data type: case_law  (Scotland / GB-SCT — not covered by UK/CaseLaw, which is
+#            England & Wales + reserved UK tribunals only; distinct from
+#            UK/LandsTribunalScotland)
+# Auth: none
+#
+# The Scottish Land Court is a court of record that determines disputes about
+# agricultural tenancies, crofting, common grazings and related land matters
+# (Crofters (Scotland) Act 1993, Agricultural Holdings (Scotland) Acts, Land
+# Reform (Scotland) Acts, etc.). Its "Significant decisions 2007 to date" are
+# published on the Court's own website as one server-rendered HTML table; each
+# row links to a standalone HTML decision document (/decisions/{slug}) holding
+# the FULL opinion text. Two clean born-digital layouts occur (modern
+# <header>+<main>; older '.rub' rubric reports) — both parsed via <body> text.
+#
+# Total: ~303 significant decisions, 2007-present (full text)
+#
+# Access note: the site's HTTPS certificate does not match the hostname, so
+# requests use plain HTTP. Content is public; no auth.
+
+source:
+  id: UK/ScottishLandCourt
+  name: The Scottish Land Court — Significant Decisions
+  country: UK
+  data_types:
+    - case_law
+  url: http://www.scottish-land-court.org.uk/decisions/recent-decisions
+  language: en
+  auth: none
+  license: custom-terms
+
+jurisdictions:
+  - code: GB-SCT
+    scope: full
+
+license:
+  name: "Scottish Land Court / SCTS terms (personal / in-house use only)"
+  url: "http://www.scottish-land-court.org.uk/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    The Scottish Land Court is administered alongside the Scottish Courts and
+    Tribunals Service; its published decisions are public judicial records
+    (Crown copyright). No explicit open licence is stated on the site, so
+    commercial re-use is conservatively flagged per project policy, consistent
+    with the sibling GB-SCT sources (UK/ScotHousingChamber, UK/ScotTaxChamber).
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: case_ref
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - case_ref
+    - citation
+    - parties
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.5
+  estimated_total: 303
+  sample_count: 15

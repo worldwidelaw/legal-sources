@@ -206,19 +206,78 @@ class DiavgeiaScraper(BaseScraper):
             year += 1
         return windows
 
+    def _checkpoint_path(self) -> Path:
+        """Location of the resume checkpoint (under data/ so it survives reruns)."""
+        data_dir = self.source_dir / "data"
+        data_dir.mkdir(exist_ok=True)
+        return data_dir / "diavgeia_checkpoint.json"
+
+    def _load_checkpoint(self) -> Dict[str, Any]:
+        """Load resume state: set of completed windows + last page of the in-progress window."""
+        path = self._checkpoint_path()
+        if path.exists():
+            try:
+                with open(path, encoding="utf-8") as f:
+                    data = json.load(f)
+                return {
+                    "completed": set(data.get("completed", [])),
+                    "current_window": data.get("current_window"),
+                    "current_page": int(data.get("current_page", 0)),
+                }
+            except Exception as e:
+                logger.warning(f"Could not read checkpoint ({e}); starting fresh")
+        return {"completed": set(), "current_window": None, "current_page": 0}
+
+    def _save_checkpoint(self, completed: set, current_window: Optional[str],
+                         current_page: int) -> None:
+        """Persist resume state atomically."""
+        path = self._checkpoint_path()
+        tmp = path.with_suffix(".json.tmp")
+        try:
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump({
+                    "completed": sorted(completed),
+                    "current_window": current_window,
+                    "current_page": current_page,
+                }, f, ensure_ascii=False, indent=2)
+            tmp.replace(path)
+        except Exception as e:
+            logger.warning(f"Could not write checkpoint: {e}")
+
     def fetch_all(self) -> Generator[dict, None, None]:
         """
         Yield all documents from Diavgeia by iterating 6-month windows.
 
         The API caps date ranges to 6 months, so we iterate from 2010 to present.
-        Note: With 71M+ decisions, this takes a very long time.
+        Note: With 71M+ decisions, this takes a very long time — far longer than a
+        single fleet slot. To let successive relaunches monotonically advance
+        (and complete the pre-2025 backfill, issue #1083), progress is checkpointed
+        to data/diavgeia_checkpoint.json: fully-scanned windows are skipped with NO
+        network calls on restart, and the in-progress window resumes from its last
+        page. The loader dedups on write, so a crash mid-page only re-fetches the
+        current page.
         """
         page_size = 500
         windows = self._generate_date_windows(start_year=2010)
 
+        ckpt = self._load_checkpoint()
+        completed = ckpt["completed"]
+        resume_window = ckpt["current_window"]
+        resume_page = ckpt["current_page"]
+
+        if completed:
+            logger.info(f"Resuming: {len(completed)} windows already complete; "
+                        f"in-progress window={resume_window} page={resume_page}")
+
         for from_date, to_date in windows:
-            logger.info(f"Window {from_date} to {to_date}...")
-            page = 0
+            window_key = f"{from_date}:{to_date}"
+            if window_key in completed:
+                continue  # already fully scanned in a prior run — no network calls
+
+            # Resume the in-progress window from its last checkpointed page.
+            page = resume_page if window_key == resume_window else 0
+            logger.info(f"Window {from_date} to {to_date} (from page {page})...")
+
             while True:
                 result = self._search_decisions(
                     page=page, size=page_size,
@@ -234,6 +293,12 @@ class DiavgeiaScraper(BaseScraper):
                     if processed:
                         yield processed
                 page += 1
+                # Flush progress within the window so a teardown resumes here.
+                self._save_checkpoint(completed, window_key, page)
+
+            # Window exhausted — mark complete and reset in-progress pointer.
+            completed.add(window_key)
+            self._save_checkpoint(completed, None, 0)
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """

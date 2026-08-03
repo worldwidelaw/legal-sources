@@ -1,0 +1,14 @@
+{
+  "_id": "US/CT-TaxRulings/ruling-2016-1---sales-and-use-taxes-testing-services",
+  "_source": "US/CT-TaxRulings",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-30T02:30:48.936638+00:00",
+  "slug": "ruling-2016-1---sales-and-use-taxes-testing-services",
+  "ruling_number": "2016-1",
+  "issuer": "Connecticut Department of Revenue Services",
+  "title": "Ruling 2016-1 - Sales and Use Taxes Testing Services",
+  "text": "Ruling 2016-1 - Sales and Use Taxes Testing Services \n\nFACTS: \nThe Company provides testing services to medical marijuana growers.  The testing services are meant to determine and measure various chemical components of marijuana (the “Product”) in order to determine the safety and potency of the Product for use as a medical drug by humans.  Once the tests are performed, the Company documents the results for the Product and generates a report summarizing the test results.  This report is then sent to its customer, the medical marijuana grower. \nISSUE: \nAre the Product testing services provided by the Company subject to sales and use taxes? \n\nRULING: \nThe Product testing services provided by the Company are not subject to sales and use taxes. \nDISCUSSION: \nConnecticut generally imposes sales tax on retail sales of tangible personal property, unless specifically exempt.  Conn. Gen. Stat. § 12-408.  In contrast, sales of services are exempt from sales tax unless specifically enumerated as taxable in Conn. Gen. Stat. § 12-407.  Testing services are not currently included in the list of enumerated services in Conn. Gen. Stat. § 12-407.  For this reason, the Product testing services provided by the Company to its customers are not subject to sales and use taxes. \nMoreover, there is an exemption for sales of services used to determine the probable consequences in relation to human health of the consumption or other use of any product, substance or element that would be applicable even if such services were enumerated as taxable.  Conn. Gen. Stat. § 12-412(41).  This exemption would provide an alternate basis for the determination that the service of testing marijuana in order to determine its safety and potency for use as a medical drug by humans is not subject to sales and use taxes. \nOFFICE OF COUNSEL \nJanuary 22, 2016",
+  "url": "https://portal.ct.gov/drs/publications/rulings/2016/ruling-2016-1---sales-and-use-taxes-testing-services",
+  "date": "2016-01-22",
+  "jurisdiction": "US-CT"
+}

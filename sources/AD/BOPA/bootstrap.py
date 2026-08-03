@@ -31,8 +31,8 @@ Usage:
   python bootstrap.py test               # Quick connectivity test
 """
 
-import sys
 import os
+import sys
 import json
 import logging
 import re

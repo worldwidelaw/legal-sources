@@ -1,0 +1,123 @@
+# ===================================================================
+# US/NY-EthicsOpinions -- New York State Commission on Ethics and
+# Lobbying in Government (COELIG) + predecessors -- Formal Advisory Opinions
+# ===================================================================
+# Formal advisory opinions of the New York State ethics regulator
+# interpreting the Public Officers Law (ss 73, 73-a, 74), the Legislative
+# Law and the ethics/lobbying provisions administered by COELIG (2022-),
+# JCOPE (2011-2022), the Commission on Public Integrity (2007-2011) and the
+# NYS Ethics Commission (1988-2007). Each opinion is the Commission's
+# written interpretation of statute = doctrine. Born-digital PDFs (clean
+# text layer), spanning 1988-present.
+# ===================================================================
+
+source:
+  id: "US/NY-EthicsOpinions"
+  country: "US"
+  name: "New York State Commission on Ethics and Lobbying in Government — Formal Advisory Opinions"
+  url: "https://ethics.ny.gov/ethics-advisory-opinions"
+  description: |
+    Formal advisory opinions of the New York State Commission on Ethics and
+    Lobbying in Government (COELIG) and its predecessor bodies — the Joint
+    Commission on Public Ethics (JCOPE, 2011-2022), the Commission on Public
+    Integrity (2007-2011) and the NYS Ethics Commission / Temporary State
+    Commission on Lobbying (1988-2007). An advisory opinion is the
+    Commission's written interpretation of the Public Officers Law (ss 73,
+    73-a, 74), the Legislative Law and the ethics/lobbying statutes it
+    administers, requested by a State officer, employee, agency or lobbyist.
+    All opinions are doctrine. The corpus (~180 opinions, 1988-present) is
+    enumerated on the Drupal advisory-opinions Views listing and served as
+    born-digital PDFs with a clean text layer.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "html_listing"
+  base_url: "https://ethics.ny.gov"
+  endpoints:
+    listing: "/ethics-advisory-opinions?page={page}"
+    document: "/system/files/documents/{YYYY}/{MM}/advisory-opinion-{code}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NY-EthicsOpinions/{YYYY}-{NN})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number (e.g. 'Advisory Opinion 24-01')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion caption (listing link text)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (born-digital PDF text layer; inline HTML fallback for the oldest opinions)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601); first 'Month DD, YYYY' in the body, falls back to Jan 1 of the opinion-number year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Issuing body (NYS Commission on Ethics and Lobbying in Government)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 subdivision (US-NY)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (New York state government edict / public record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Formal advisory opinions of the New York State ethics regulator are official public records of a New York State agency interpreting statute; government-edict works, published (and by statute made public) for public use."
+
+notes: |
+  - Index: ethics.ny.gov is Drupal. The advisory-opinions Views listing
+    /ethics-advisory-opinions?page=N (N=0..~35) enumerates every opinion as a
+    node link whose text is the caption ("Advisory Opinion No. 25-03").
+  - Full text: each opinion node page carries a subject/summary and a
+    "Download" link that redirects to the full born-digital PDF at
+    /system/files/documents/YYYY/MM/advisory-opinion-{code}.pdf. Text via
+    common.pdf_extract._extract (pdfplumber/pypdf; OCR fallback for the oldest
+    scans). Oldest HTML-only opinions fall back to inline node text.
+  - Opinion number parsed from the caption (NN-NN). The 2-digit year maps
+    88-99 -> 19xx (the Commission started 1988), 00-87 -> 20xx.
+  - Date: first "Month DD, YYYY" in the body; falls back to Jan 1 of the
+    opinion-number year.
+  - Covers the successive NY ethics regulators: COELIG (2022-present), JCOPE
+    (2011-2022), Commission on Public Integrity (2007-2011), NYS Ethics
+    Commission / Temporary Lobbying Commission (1988-2007). All doctrine.
+  - Distinct from US/NY-AGOpinions (Attorney General opinions) — a different
+    issuer and statute base.
+  - UA: ethics.ny.gov serves a browser User-Agent fine (no CAPTCHA/JS).

@@ -1,0 +1,111 @@
+# ===================================================================
+# US/CT-PURA -- Connecticut Public Utilities Regulatory Authority
+#               (PURA) Final Decisions
+# ===================================================================
+# Full text of Final Decisions issued by the Connecticut Public
+# Utilities Regulatory Authority (PURA, formerly DPUC) adjudicating
+# utility dockets across the electric, gas, water, telecom, CATV, CBYD
+# and related industries. Each Final Decision is an administrative
+# adjudication of a specific docket (case_law). Public domain (US state
+# government edict). Published openly as born-digital PDFs via the
+# public "Final Decision Database" (a Lotus Domino app at
+# www.dpuc.state.ct.us/FINALDEC.NSF). No auth.
+# ===================================================================
+
+source:
+  id: "US/CT-PURA"
+  country: "US"
+  name: "Connecticut Public Utilities Regulatory Authority — Final Decisions"
+  url: "https://portal.ct.gov/pura/docket/final-decision-database"
+  description: |
+    Final Decisions issued by the Connecticut Public Utilities Regulatory
+    Authority (PURA) resolving utility rate cases, certificate/qualification
+    applications, complaints, restructuring, renewables and procedural +
+    final decisions across the electric, gas, water, telecommunications,
+    CATV, CBYD and related industries. Each Final Decision is an
+    administrative adjudication of a specific docket (case_law). The corpus
+    is ~24,000 decisions. Full text is extracted from born-digital decision
+    PDFs (Tesseract OCR fallback for the rare image-only scan).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+  max_workers: 4
+
+api:
+  type: "lotus_domino_readviewentries"
+  base_url: "https://www.dpuc.state.ct.us"
+  endpoints:
+    view_entries: "/FINALDEC.NSF/UtilityByDecisionDateView?ReadViewEntries"
+    category_page: "/FINALDEC.NSF/UtilityByDecisionDateView?ReadViewEntries&RestrictToCategory={cat}&Start={n}&Count={c}"
+    open_document: "/FINALDEC.NSF/0/{unid}?OpenDocument"
+    attachment: "/FINALDEC.NSF/0/{unid}/$FILE/{name}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "docket"
+      description: "PURA docket number, e.g. '26-05-12' (from view column DocketNumber)"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "title"
+      description: "Docket number plus the decision title (AbbrevDckTitle)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Final Decision extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), from the view column Decision_Date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "pdf_url"
+      description: "Domino $FILE attachment URL for the born-digital decision PDF"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Connecticut)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "CT PURA Final Decisions are official state government edicts in the public domain."
+
+notes: |
+  - The public "Final Decision Database" is a Lotus Domino app at
+    www.dpuc.state.ct.us/FINALDEC.NSF. Domino exposes the categorized view
+    "UtilityByDecisionDateView" as XML via ?ReadViewEntries. A plain call
+    lists ~20 industry categories with descendant counts; per-category
+    pagination (&RestrictToCategory={cat}&Start={n}&Count={c}) walks every
+    leaf document (Domino caps one response at 1000 entries, so we page 200
+    at a time). Each leaf viewentry carries the document unid + columns
+    AbbrevDckTitle, Decision_Date (YYYYMMDD) and DocketNumber. ~24,000 docs.
+  - normalize() opens the Domino document (/FINALDEC.NSF/0/{unid}?OpenDocument),
+    parses the attached born-digital decision PDF href (.../$FILE/{name}.pdf),
+    downloads it and extracts full text via fitz/PyMuPDF (Tesseract OCR
+    fallback). fetch_all() is checkpointed to data/ct_pura_checkpoint.json so
+    fleet reruns advance monotonically (completed categories skipped, an
+    in-progress category resumes at its last Start offset; loader dedups _id).
+  - No auth; the Domino host serves ReadViewEntries + $FILE attachments to
+    anonymous clients. Public domain Connecticut government data.

@@ -1,0 +1,119 @@
+# ===================================================================
+# US/LA-PSC -- Louisiana Public Service Commission Orders
+# ===================================================================
+# Full text of Orders issued by the Louisiana Public Service Commission
+# (LPSC) adjudicating utility and motor-carrier dockets (electric, gas,
+# water, telecommunications, transportation). Each Order is an
+# administrative adjudication of a specific docket = case_law. Public
+# domain (US state government edict). Published as born-digital PDFs via
+# the public LPSC "STAR" portal (lpscpubvalence.lpsc.louisiana.gov). No
+# auth.
+# ===================================================================
+
+source:
+  id: "US/LA-PSC"
+  country: "US"
+  name: "Louisiana Public Service Commission — Orders"
+  url: "https://lpscpubvalence.lpsc.louisiana.gov/"
+  description: |
+    Orders issued by the Louisiana Public Service Commission (LPSC)
+    resolving utility rate cases, certificate/approval applications,
+    complaints, fuel-adjustment and motor-carrier (transportation)
+    matters across the electric, natural-gas, water, telecommunications
+    and transportation industries. Each Order is an administrative
+    adjudication of a specific docket (case_law). Full text is extracted
+    from born-digital Order PDFs (the rare image-only scan is OCR'd with
+    Tesseract).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "json_api"
+  base_url: "https://lpscpubvalence.lpsc.louisiana.gov"
+  endpoints:
+    order_search: "/portal/PSC/OrderSearch"
+    document_details: "/portal/PSC/DocumentDetails?documentId={order_id}"
+    view_file: "/portal/PSC/ViewFile?fileId={file_id}"
+
+data_model:
+  type: "case_law"
+  primary_key: "order_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "order_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "order_id"
+      description: "LPSC internal OrderId (also the DocumentDetails documentId), e.g. 179711"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "order_number"
+      description: "LPSC Order number, e.g. 'U-37595', '02-2020', 'S-37857'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "docket_numbers"
+      description: "Associated LPSC docket/matter numbers (Dockets[].MatterNumber)"
+      type: "array"
+      role: "reference"
+      required: false
+    - name: "title"
+      description: "Order title (Order No. + description)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "synopsis"
+      description: "Commission-authored synopsis of the Order"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "text"
+      description: "Full text of the Order extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order/decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Louisiana)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Louisiana Public Service Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - lpscpubvalence.lpsc.louisiana.gov is the public face of the LPSC "STAR"
+    case-management system — an ASP.NET MVC app whose Kendo UI grids are
+    backed by plain JSON endpoints under /portal/PSC/.
+  - POST /portal/PSC/OrderSearch (a Kendo aspnetmvc-ajax grid read) with a
+    date window (paramSet[StartDate] / paramSet[EndDate] as M/D/YYYY) plus
+    the standard grid paging params (sort= page= pageSize= group= filter=)
+    returns {"Data": [...], "Total": N}: one row per Order with OrderId,
+    DocumentNumber (the Order number), OrderDate ("/Date(ms)/"),
+    Description, Synopsis and Dockets [{MatterNumber, MatterId}]. NOTE: the
+    grid's sort must be sent as an empty scalar (sort=), not bracket-indexed
+    (sort[0][field]=…) — the latter 500s the endpoint.
+  - fetch_all() walks month windows newest-first to the ~1990 floor, paging
+    pageSize=100 until Total is reached (~400-700 Orders/year).
+  - Each Order's document page is /portal/PSC/DocumentDetails?documentId=
+    {OrderId}; it embeds /portal/PSC/ViewFile?fileId={opaque-encoded-id}.
+    GET that link streams the born-digital Order PDF; full text via
+    fitz/PyMuPDF (Tesseract OCR fallback).

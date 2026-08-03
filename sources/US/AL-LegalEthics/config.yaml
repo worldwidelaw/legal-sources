@@ -1,0 +1,126 @@
+# ===================================================================
+# US/AL-LegalEthics -- Alabama State Bar — Formal Ethics Opinions
+# ===================================================================
+# Formal Opinions of the Alabama State Bar's Office of General Counsel /
+# Disciplinary Commission, each the Bar's written interpretation of the
+# Alabama Rules of Professional Conduct in response to a member's inquiry
+# about contemplated attorney conduct = doctrine (advisory; lawyer
+# discipline itself is administered by the Bar's Disciplinary Board and
+# the Alabama Supreme Court). One continuous series numbered "RO YYYY-NN"
+# (Retained/formal Opinion) historically, renamed "FO YYYY-NN" (Formal
+# Opinion) in recent years, ~134 opinions, published free as clean HTML
+# on alabar.org. The Alabama State Bar is the state's integrated bar.
+# Distinct from US/AL-AGOpinions (Attorney General), US/AL-Courts and
+# US/AL-Legislation.
+# ===================================================================
+
+source:
+  id: "US/AL-LegalEthics"
+  country: "US"
+  name: "Alabama State Bar — Formal Ethics Opinions"
+  url: "https://www.alabar.org/office-of-general-counsel/formal-opinions/"
+  description: |
+    Formal Opinions issued by the Alabama State Bar's Office of General
+    Counsel / Disciplinary Commission. Each opinion is the Bar's written
+    interpretation of the Alabama Rules of Professional Conduct in
+    response to a member's inquiry about contemplated attorney conduct
+    (advisory). One continuous series numbered "RO YYYY-NN" historically,
+    renamed "FO YYYY-NN" in recent years (~134 opinions), each rendered in
+    full as clean HTML carrying the opinion number and the QUESTION /
+    ANSWER / DISCUSSION structure.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_html"
+  base_url: "https://www.alabar.org"
+  endpoints:
+    index: "/office-of-general-counsel/formal-opinions/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/AL-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number: 'RO-YYYY-NN', 'FO-YYYY-NN', or bare 'YYYY-NN' as printed in the opinion header"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion topic title (from the listing anchor)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text extracted from the detail-page HTML (no PDF/OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 date; explicit in-range date from the body, else the number's year -> YYYY-01-01"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Alabama State Bar — Office of General Counsel / Disciplinary Commission"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-AL)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain / freely published advisory opinions"
+  url: "https://www.alabar.org/office-of-general-counsel/formal-opinions/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Alabama State Bar Formal Opinions are published free to the public on alabar.org as an educational service interpreting the Alabama Rules of Professional Conduct. They are advisory and carry no login, paywall or terms prohibiting reuse. Treated as effectively public domain, consistent with the other state-bar legal-ethics sources. The Alabama State Bar is the state's integrated (mandatory) bar, so the 17 U.S.C. § 105 government-edicts rationale applies directly."
+
+notes: |
+  - Discovery: opinions are listed on the public page
+    /office-of-general-counsel/formal-opinions/, paginated via /page/N/
+    (20 per page, ~8 pages, ~134 opinions). Each row links to a detail
+    page /office-of-general-counsel/formal-opinions/{slug}/ where {slug}
+    is either the opinion number (e.g. 2013-01) or a topic slug (e.g.
+    fee-splitting). The scraper walks pages until one surfaces no new slugs.
+  - Full text: each detail page renders the opinion body in clean HTML
+    inside <div class="content__inner"> — extracted directly with
+    BeautifulSoup, NO PDF/OCR. The linked PDF copies on alabar.org/assets/
+    are SCANNED images (no text layer), so the HTML detail page is the only
+    clean-text path — and it is complete.
+  - Number: parsed from the body header "ETHICS OPINION {RO|FO} YYYY-NN"
+    (O/0 OCR-style variants normalised). When the body carries no number
+    (a few newest topic-slug opinions), it is taken from the linked PDF
+    filename (…/FO-YYYY-NN.pdf); numeric-only slugs are a last resort.
+  - Date: opinions are dated by year (in the number) -> YYYY-01-01, unless
+    the body carries an explicit in-range "Month DD, YYYY".
+  - Type: every document is the Bar's advisory interpretation of the
+    Alabama Rules of Professional Conduct = doctrine.
+  - Distinct from US/AL-AGOpinions (Attorney General opinions),
+    US/AL-Courts and US/AL-Legislation. This is the attorney
+    professional-conduct advisory-opinion series (lawyers).

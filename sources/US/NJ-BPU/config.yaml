@@ -1,0 +1,117 @@
+# ===================================================================
+# US/NJ-BPU -- New Jersey Board of Public Utilities Orders
+# ===================================================================
+# Full text of Board Orders issued by the New Jersey Board of Public
+# Utilities (NJBPU) adjudicating utility dockets (electric, gas, water,
+# telecommunications, cable, clean energy). Each Order is a final
+# administrative adjudication of a specific docket = case_law. Public
+# domain (US state government edict). Published as born-digital PDFs via
+# the public document search (publicaccess.bpu.state.nj.us). No auth.
+# ===================================================================
+
+source:
+  id: "US/NJ-BPU"
+  country: "US"
+  name: "New Jersey Board of Public Utilities — Orders"
+  url: "https://publicaccess.bpu.state.nj.us/Search.aspx"
+  description: |
+    Board Orders issued by the New Jersey Board of Public Utilities
+    (NJBPU) resolving utility rate cases, certificate/approval
+    applications, complaints, clean-energy and cable-television dockets
+    across the electric, natural-gas, water, telecommunications and cable
+    industries. Each Order is a final administrative adjudication of a
+    specific docket (case_law). Full text is extracted from born-digital
+    Order PDFs (the rare image-only scan is OCR'd with Tesseract).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 3
+
+api:
+  type: "html_scraping"
+  base_url: "https://publicaccess.bpu.state.nj.us"
+  endpoints:
+    search: "/Search.aspx"
+    results: "/SearchDocResults.aspx"
+    document: "/DocumentHandler.ashx?document_id={document_id}"
+
+data_model:
+  type: "case_law"
+  primary_key: "document_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "document_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "document_id"
+      description: "NJBPU internal document id (DocumentHandler document_id), e.g. '1355621'"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "NJ BPU docket id, e.g. 'CE24010011', 'EO20020128', 'WR21030243'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "doc_type"
+      description: "Document type (always 'Order' — ORDERS folder)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Order title (docket + date)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "description"
+      description: "Document description / agenda item from the search listing"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "text"
+      description: "Full text of the Order extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Posted date of the Order (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — New Jersey)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "NJ Board of Public Utilities Orders are official state government edicts in the public domain."
+
+notes: |
+  - publicaccess.bpu.state.nj.us is an ASP.NET WebForms document search
+    behind Imperva/Incapsula. GET /Search.aspx establishes the session
+    (Incapsula + ASP.NET_SessionId cookies) and provides the hidden
+    __VIEWSTATE / __EVENTVALIDATION.
+  - A POST Advanced Search (searchType=Advanced, AdvanceDocumentTitle=
+    "ORDER" which matches the "ORDERS" document folder, ListType=Document,
+    OpenDateFrom/OpenDateTo as M/D/YYYY) returns /SearchDocResults.aspx: a
+    server-rendered GridView (30 rows/page) with the Docket #, Document
+    Title, Folder, Description, Posted Date and a
+    DocumentHandler.ashx?document_id={id} link. The pager is a __doPostBack
+    on lbtnNext reposting the results-page viewstate.
+  - fetch_all() walks the corpus one month at a time (newest first) back to
+    the ~2000 floor; only rows in the ORDERS folder are kept.
+  - normalize() downloads each Order PDF from DocumentHandler.ashx (same
+    session) and extracts full text via fitz/PyMuPDF (Tesseract fallback).
+  - The search endpoint intermittently 500s (Error.aspx); every search
+    re-GETs fresh tokens and retries.

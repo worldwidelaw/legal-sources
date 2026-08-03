@@ -1,0 +1,106 @@
+# ===================================================================
+# MX/PoderJudicialBajaCaliforniaSur -- Baja California Sur Court Decisions
+# ===================================================================
+# The Poder Judicial del Estado de Baja California Sur publishes
+# full-text court decisions (sentencias en versión pública) via its
+# "Acceso Libre" public sentences search (ASP.NET WebForms). A single
+# year-filtered search returns the full corpus for that year; each row
+# resolves to a streamed full-text PDF.
+# ===================================================================
+
+source:
+  id: "MX/PoderJudicialBajaCaliforniaSur"
+  country: "MX"
+  name: "Poder Judicial del Estado de Baja California Sur"
+  url: "https://e-tribunalbcs.mx/AccesoLibre/SentenciasPublicasBusqueda.aspx"
+  description: |
+    Full-text court decisions (sentencias en versión pública) from the
+    Tribunal Superior de Justicia del Estado de Baja California Sur,
+    accessed via the public "Acceso Libre" Sentencias Públicas search at
+    e-tribunalbcs.mx/AccesoLibre/. The ASP.NET WebForms search posts back
+    with the publication-year filter to render the full result set for
+    each year (2013+) across all materias; each result row exposes an
+    encrypted document token resolved through Documento.aspx →
+    SentenciasPublicasPDF.aspx, which streams the full-text PDF.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1.0
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html"
+  base_url: "https://e-tribunalbcs.mx/AccesoLibre"
+  endpoints:
+    search: "/SentenciasPublicasBusqueda.aspx"
+    document: "/Documento.aspx?cadena={token}"
+  response_format: "html+pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Unique decision identifier (MX-BCS-<expediente>)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (tipo de juicio / materia + expediente)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (extracted from the public PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date of the versión pública (null if invalid)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the public sentences search portal"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "court"
+      description: "Juzgado / sala that issued the decision"
+    - name: "subject_area"
+      description: "Materia (subject area)"
+    - name: "case_type"
+      description: "Tipo de juicio"
+    - name: "case_number"
+      description: "Número de expediente"
+    - name: "result"
+      description: "Tipo de resultado / resolución"
+    - name: "jurisdiction"
+      description: "ISO 3166-2 subdivision (MX-BCS)"
+
+license:
+  name: "Mexican Government Public Data (LIBRE USO MX)"
+  url: "https://datos.gob.mx/libreusomx"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Public-version court decisions published by the Baja California Sur
+    state judiciary as a transparency obligation (versiones públicas).
+    Mexican government public information is freely reusable under the
+    Términos de Libre Uso de la Información (LIBRE USO MX); commercial
+    use permitted with attribution.

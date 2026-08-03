@@ -1,0 +1,107 @@
+# ===================================================================
+# US/OR-ExecutiveOrders -- Oregon Governor Executive Orders
+# ===================================================================
+# Executive Orders issued by the Governor of Oregon -- directives with
+# the force of law issued under the Governor's constitutional and
+# statutory authority (declaring states of emergency / drought,
+# directing state agencies, establishing task forces, setting policy).
+# A form of subordinate law-making = legislation. Public domain Oregon
+# state-government works (government edicts).
+#
+# Published as a CONTENTdm digital collection (alias p17027coll11) on
+# the OCLC-hosted instance at cdm17027.contentdm.oclc.org. The public
+# dmwebservices JSON API is used: dmQuery enumerates item pointers,
+# dmGetItemInfo returns each item's Dublin-Core fields including the
+# full-text "transc" (Transcript) field. No PDF extraction, no CAPTCHA,
+# no auth.
+# ===================================================================
+
+source:
+  id: "US/OR-ExecutiveOrders"
+  country: "US"
+  name: "Oregon Governor — Executive Orders"
+  url: "https://cdm17027.contentdm.oclc.org/digital/collection/p17027coll11"
+  description: |
+    Executive Orders issued by the Governor of Oregon. Executive Orders
+    are directives with the force of law issued under the Governor's
+    constitutional and statutory authority -- declaring states of
+    emergency or drought, directing state agencies, establishing task
+    forces and boards, and setting executive policy. They are a form of
+    subordinate law-making = legislation. Enumerated from the Oregon
+    State Library's CONTENTdm collection (alias p17027coll11) via the
+    public dmwebservices JSON API; the EO number, subject, signing date,
+    and full order text are read from each item's Dublin-Core fields
+    (title / descri / date / transc). No CAPTCHA, no auth. ~732
+    executive orders.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://cdm17027.contentdm.oclc.org"
+  endpoints:
+    query: "/digital/bl/dmwebservices/index.php?q=dmQuery/p17027coll11/0/dmrecord!date/dmrecord/{max}/{start}/0/0/0/0/json"
+    item: "/digital/bl/dmwebservices/index.php?q=dmGetItemInfo/p17027coll11/{rec}/json"
+
+data_model:
+  type: "legislation"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/OR-ExecutiveOrders/{CONTENTdm dmrecord})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "eo_number"
+      description: "Executive Order number (e.g. '20-57')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "subject"
+      description: "Executive Order subject / title"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Order title (EO number + subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Executive Order (CONTENTdm transcript field)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Signing date (ISO 8601), from the CONTENTdm date field"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the CONTENTdm item page"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Executive Orders of the Governor of Oregon are official edicts of
+    Oregon state government (government edicts) and are not subject to
+    copyright. Free to use, including commercially.

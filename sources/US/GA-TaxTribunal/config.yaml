@@ -1,0 +1,115 @@
+# ===================================================================
+# US/GA-TaxTribunal -- Georgia Tax Tribunal (Decisions & Orders)
+# ===================================================================
+# Full text of the decisions and orders of the Georgia Tax Tribunal —
+# Georgia's independent quasi-judicial tribunal (created by the Georgia
+# Tax Tribunal Act of 2012, operative Jan 1 2013) that hears appeals of
+# tax matters administered by the Georgia Department of Revenue (income
+# tax, sales/use tax, property-tax digests, motor-fuel tax, penalty and
+# refund disputes, etc.). Disputes are between taxpayers and the
+# Commissioner of the Georgia Department of Revenue, so the corpus is
+# case_law.
+#
+# The Tribunal publishes its decisions on a server-rendered Drupal
+# listing (gataxtribunal.georgia.gov/decisions), paginated 10 per page
+# via ?page=N. Each list item links the document under
+# /document/decisions/{slug}/download and carries a clean data-text
+# caption. PDFs are born-digital text-layer documents. No JavaScript, no
+# CAPTCHA, no auth. Public domain Georgia government works (government
+# edicts).
+# ===================================================================
+
+source:
+  id: "US/GA-TaxTribunal"
+  country: "US"
+  name: "Georgia Tax Tribunal — Decisions"
+  url: "https://gataxtribunal.georgia.gov/decisions"
+  description: |
+    Decisions and orders of the Georgia Tax Tribunal, Georgia's
+    independent quasi-judicial tribunal (operative 2013) for appeals of
+    tax matters administered by the Georgia Department of Revenue
+    (income, sales/use, property-tax digest, motor-fuel and related
+    state taxes; taxpayer v. Commissioner of the Georgia Department of
+    Revenue). Published on a paginated server-rendered Drupal listing;
+    each item links a born-digital text-layer decision PDF with a
+    data-text caption giving the parties, citation and date. No
+    JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://gataxtribunal.georgia.gov"
+  endpoints:
+    index: "/decisions"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/GA-TaxTribunal/{pdf-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "citation"
+      description: "Tribunal citation parsed from the caption (e.g. '2025-3 Ga. Tax Tribunal')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "case_name"
+      description: "Case caption (parties), parsed from the listing data-text"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Full caption (parties, document type, citation, date)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the 'Month D, YYYY' tail of the caption"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Georgia tribunal decision)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Georgia Tax Tribunal are official quasi-judicial government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The /decisions listing is paginated 10 per page via ?page=N (page 0
+    is the first page). The scraper walks pages until a page yields no
+    new rows (~8 pages, ~80 decisions, 2014-present), newest-first.
+  - Each row: <a href="/document/decisions/{slug}/download"
+    data-text="<parties> - <doc type>, <YYYY-N> Ga. Tax Tribunal,
+    <Month D, YYYY>">. The scraper parses the case name, citation and
+    decision date from the caption and the PDF url from the href.
+  - PDFs live under /document/decisions/{slug}/download and are
+    born-digital text layers; extracted via common.pdf_extract (curl
+    browser UA, ~1 req/s).
+  - Public domain Georgia state government data.

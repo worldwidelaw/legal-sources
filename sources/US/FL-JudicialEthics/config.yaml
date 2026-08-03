@@ -1,0 +1,122 @@
+# ===================================================================
+# US/FL-JudicialEthics -- Florida Judicial Ethics Advisory Committee
+#                         (JEAC) — Judicial Ethics Advisory Opinions
+# ===================================================================
+# Written advisory opinions issued by the Florida Supreme Court's
+# Judicial Ethics Advisory Committee (JEAC). Each opinion interprets
+# the Florida Code of Judicial Conduct as applied to specific
+# circumstances confronting a judge or judicial candidate = doctrine.
+# Born-digital HTML full text via the site's public Ibexa content API
+# (real text, no OCR, no CAPTCHA, no auth). Public-domain Florida
+# government works. Distinct from US/FL-EthicsOpinions (the Florida
+# Commission on Ethics, which covers executive-branch public officers).
+# ===================================================================
+
+source:
+  id: "US/FL-JudicialEthics"
+  country: "US"
+  name: "Florida Judicial Ethics Advisory Committee — Judicial Ethics Advisory Opinions"
+  url: "https://jeac.flcourts.gov/All-Opinions"
+  description: |
+    Advisory opinions of the Florida Supreme Court's Judicial Ethics
+    Advisory Committee (JEAC). The JEAC renders written opinions
+    interpreting the application of the Florida Code of Judicial Conduct
+    to specific circumstances confronting or affecting a judge or
+    judicial candidate. Each opinion states the issue(s), facts, the
+    Committee's answer, the applicable Canons, and its discussion.
+    Opinions from 1972 to present are published as born-digital HTML on
+    jeac.flcourts.gov; the full text is retrieved from the site's public
+    Ibexa (eZ Platform) JSON content API — no OCR, no PDF, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "json_api"
+  base_url: "https://flcourts-media.ccplatform.net/api/data/fetch"
+  endpoints:
+    year_containers: "?loadContent=false&limit=200&parentLocationID=846113&classFilter=folder"
+    year_opinions: "?loadContent=true&limit=200&parentLocationID={year_location}&sortClause[0]=opinion&sortClause[1]=disposition_date&sortClause[2]=DESC"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/FL-JudicialEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number in YYYY-NN form (e.g. 2026-01, 2000-14)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Florida JEAC Opinion {number}"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (Issue / Answer / Facts / Discussion / Canons), from the site's Ibexa content API"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "canons"
+      description: "Code of Judicial Conduct Canons cited (semicolon-separated)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "subject"
+      description: "One-line subject/summary of the opinion"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "date"
+      description: "Issue date (ISO 8601), from date_of_issue; fallback to opinion-number year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (Florida State Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Advisory opinions of the Florida Judicial Ethics Advisory Committee are official public records of the State of Florida, published for public use with no copyright restriction."
+
+notes: |
+  - Enumeration: the JEAC site (jeac.flcourts.gov) is a Next.js front-end
+    backed by an Ibexa (eZ Platform) DXP whose public JSON content API is
+    served from https://flcourts-media.ccplatform.net/api/data/fetch.
+    List the per-year folders under the "Opinions by Year" container
+    (location 846113, classFilter=folder) — 1972 to present — then list
+    each year's opinions with loadContent=true.
+  - Full text: each jeac_opinion item carries a `migrated_html` rich-text
+    field holding the born-digital opinion body (Issue / Answer / Facts /
+    Discussion / Canons). When empty, the structured issue/facts/
+    discussion/references/subject fields are assembled instead. All text
+    is de-tagged HTML — no OCR, no PDF.
+  - Type: every published document is a formal judicial-ethics advisory
+    opinion construing the Code of Judicial Conduct = doctrine.
+  - Date: from date_of_issue (YYYY-MM-DD), fallback to the year embedded
+    in the opinion number.
+  - ~1,391 opinions (1972-present). DISTINCT from US/FL-EthicsOpinions
+    (Florida Commission on Ethics = executive-branch officers); this is
+    the JUDICIAL branch (Supreme Court's advisory committee for judges).

@@ -1,0 +1,94 @@
+# ===================================================================
+# US/NY-AGOpinions -- New York Attorney General Legal Opinions
+# ===================================================================
+# Full text of formal and informal legal opinions issued by the New
+# York State Attorney General. These are official state legal
+# interpretations (doctrine). Published openly as text PDFs at
+# ag.ny.gov. No authentication required. Public government data.
+# ===================================================================
+
+source:
+  id: "US/NY-AGOpinions"
+  country: "US"
+  name: "New York Attorney General Legal Opinions"
+  url: "https://ag.ny.gov/libraries-documents/opinions"
+  description: |
+    Formal and informal legal opinions issued by the New York State
+    Department of Law (Office of the Attorney General). Each opinion
+    answers a legal question posed by a public official and constitutes
+    an authoritative (advisory) interpretation of New York law. Full
+    text extracted from the official digitally-produced PDFs on the
+    ag.ny.gov CDN. Coverage runs 1995-present via a paginated HTML index.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://ag.ny.gov"
+  endpoints:
+    index: "/libraries-documents/opinions/opinions-year?page={page}"
+    opinion_pdf: "/sites/default/files/opinions/{slug}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "opinion_number"
+      description: "Official AG opinion number (e.g., '2023-F1', 'I 2001-3')"
+      type: "string"
+      role: "primary_key"
+      required: false
+    - name: "opinion_kind"
+      description: "'formal' or 'informal'"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Opinion title (New York Attorney General Formal/Informal Opinion No. ...)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — New York)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "New York Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Formal + informal AG opinions at ag.ny.gov/libraries-documents/opinions
+  - Paginated HTML index at /libraries-documents/opinions/opinions-year?page=N
+    (~22 pages, newest-first); walk until two consecutive empty pages
+  - Each opinion is a digitally-produced text PDF on the ag.ny.gov CDN
+    at /sites/default/files/opinions/{slug}.pdf (real text layer, no OCR)
+  - Slug encodes the opinion: 'YYYY-F#' formal, 'YYYY-#'/'I_YY-#' informal
+  - Full text via common.pdf_extract.extract_pdf_markdown (OOM-hardened)
+  - ag.ny.gov requires TLS 1.3; bootstrap falls back to a curl subprocess
+  - Coverage 1995-present; public domain New York government data

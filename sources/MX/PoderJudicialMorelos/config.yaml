@@ -1,0 +1,106 @@
+# ===================================================================
+# MX/PoderJudicialMorelos -- Morelos State Court Decisions
+# ===================================================================
+# The Poder Judicial del Estado de Morelos publishes full-text court
+# decisions (sentencias, versiones públicas) via its "Buscador Temático
+# de Versiones Públicas de Sentencias" (SISEMOR). A JSON API lists all
+# sentencias and serves each one's full-text PDF.
+# ===================================================================
+
+source:
+  id: "MX/PoderJudicialMorelos"
+  country: "MX"
+  name: "Poder Judicial del Estado de Morelos"
+  url: "https://tsjmorelos.gob.mx/sentencias/"
+  description: |
+    Full-text court decisions (sentencias, versiones públicas) from the
+    Poder Judicial del Estado de Morelos, accessed via the SISEMOR
+    "Buscador Temático de Versiones Públicas de Sentencias" API
+    (http://sisemor.tsjmorelos2.gob.mx:8080/): buscador/listarEstadistica
+    returns all ~32,800 public sentencias as JSON; sentencia/verDocumento
+    resolves each to a downloadable full-text PDF under archivos/. Catalog
+    endpoints map numeric ids (materia, juzgado, distrito, resolución) to
+    human-readable labels.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1.0
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "json"
+  base_url: "http://sisemor.tsjmorelos2.gob.mx:8080"
+  endpoints:
+    listing: "/buscador/listarEstadistica"
+    document_meta: "/sentencia/verDocumento?idSentencia={id}"
+    document: "/archivos/{nombre_documento}"
+  response_format: "json"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Unique decision identifier (MX-MOR-<id_sentencia>)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (materia, resolución, expediente)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (extracted from the public PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (fecha_sentencia; null if invalid)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL to the public sentencias portal"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "court"
+      description: "Juzgado / court that issued the decision"
+    - name: "district"
+      description: "Distrito judicial"
+    - name: "venue"
+      description: "Sede (city)"
+    - name: "subject_area"
+      description: "Materia (subject area)"
+    - name: "ruling"
+      description: "Tipo de resolución"
+    - name: "case_number"
+      description: "Número de expediente"
+
+license:
+  name: "Mexican Government Public Data"
+  url: "https://datos.gob.mx/libreusomx"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Public-version court decisions published by the Morelos state judiciary
+    as transparency obligations (versiones públicas). Mexican government
+    public information is freely reusable under the Términos de Libre Uso
+    de la Información (LIBRE USO MX); commercial use permitted with
+    attribution.

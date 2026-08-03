@@ -46,8 +46,16 @@ SEARCH_URL = f"{BASE_URL}/api/search"
 RULING_URL = f"{BASE_URL}/api/ruling"
 STATS_URL = f"{BASE_URL}/api/stat/lastupdate"
 
-# Common broad search term that matches nearly all rulings
-BROAD_SEARCH_TERM = "tariff"
+# CROSS full-text search requires a non-empty term (an empty term returns 0
+# hits, and single common stopwords like "a"/"the" are ignored). No single
+# term covers the whole corpus: "merchandise" (~214K) beats "tariff" (~206K)
+# but both fall short of the ~221K total. We therefore sweep a union of broad
+# terms and dedup by ruling number so coverage approaches 100% of the corpus.
+BROAD_SEARCH_TERM = "merchandise"
+BROAD_SEARCH_TERMS = [
+    "merchandise", "tariff", "classification", "duty", "origin",
+    "country", "value", "marking", "protest", "NAFTA", "USMCA", "drawback",
+]
 
 
 def clean_text(raw: str) -> str:
@@ -164,34 +172,54 @@ class CBPRulingsScraper(BaseScraper):
         records, so the framework double-normalized them: normalize() read the raw
         key ``rulingNumber`` which the normalized record lacks, producing an empty
         ``_id`` for every record and collapsing them all to one dedup key.
+
+        Coverage: no single search term returns the whole corpus, so we sweep a
+        union of broad terms (BROAD_SEARCH_TERMS) and dedup ruling numbers with a
+        ``seen`` set — each ruling detail is fetched at most once no matter how
+        many term-searches surface it.
         """
         total = 0
-        page = 1
-        while True:
-            data = self.search_rulings(page=page)
-            if not data:
-                logger.warning(f"Page {page} returned HTML, stopping")
-                break
-            rulings = data.get("rulings", [])
-            total_hits = data.get("totalHits", 0)
-            if not rulings:
-                break
-            for r in rulings:
-                ruling_num = r.get("rulingNumber", "")
-                if not ruling_num:
-                    continue
-                detail = self.fetch_ruling_detail(ruling_num)
-                if not detail:
-                    logger.warning(f"Skipping {ruling_num}: detail returned HTML")
-                    continue
-                yield detail
-                total += 1
-                if total % 100 == 0:
-                    logger.info(f"  Progress: {total}/{total_hits} rulings fetched")
-            page += 1
-            if total >= total_hits:
-                break
-        logger.info(f"Total rulings fetched: {total}")
+        seen = set()
+        any_search_ok = False
+        for term in BROAD_SEARCH_TERMS:
+            page = 1
+            term_total_hits = None
+            while True:
+                data = self.search_rulings(term=term, page=page)
+                if not data:
+                    logger.warning(f"[{term}] page {page} returned HTML, stopping this term")
+                    break
+                any_search_ok = True
+                rulings = data.get("rulings", [])
+                term_total_hits = data.get("totalHits", 0)
+                if not rulings:
+                    break
+                for r in rulings:
+                    ruling_num = r.get("rulingNumber", "")
+                    if not ruling_num or ruling_num in seen:
+                        continue
+                    seen.add(ruling_num)
+                    detail = self.fetch_ruling_detail(ruling_num)
+                    if not detail:
+                        logger.warning(f"Skipping {ruling_num}: detail returned HTML")
+                        continue
+                    yield detail
+                    total += 1
+                    if total % 100 == 0:
+                        logger.info(f"  Progress: {total} unique rulings fetched (on term '{term}')")
+                page += 1
+            logger.info(f"[{term}] swept {term_total_hits} hits; running unique total {total}")
+        if not any_search_ok:
+            # Every broad term's search came back as HTML rather than JSON — the
+            # CROSS API rejected us wholesale (datacenter-IP block / WAF). Fail
+            # loud instead of returning 0 rulings on exit 0, which the fleet
+            # would silently accept as an empty corpus and ingest samples only.
+            raise RuntimeError(
+                "CROSS search API returned no JSON for any broad term "
+                "(HTML block page?) — aborting so the run fails loud instead of "
+                "reporting a false-empty corpus; needs a non-datacenter vantage"
+            )
+        logger.info(f"Total unique rulings fetched: {total}")
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
         """Fetch rulings from a given date onwards."""

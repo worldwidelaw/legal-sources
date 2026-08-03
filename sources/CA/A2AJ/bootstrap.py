@@ -32,8 +32,11 @@ from typing import Generator, Optional
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from requests.exceptions import RequestException, RetryError, HTTPError
+
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
+from common.rate_limiter import AdaptiveRateLimiter
 
 logging.basicConfig(
     level=logging.INFO,
@@ -67,23 +70,91 @@ class A2AJScraper(BaseScraper):
             timeout=60,
         )
 
+        # api.a2aj.ca enforces a sustained rate limit and returns hard 429s
+        # under load (#1135). Replace BaseScraper's fixed limiter with a
+        # self-tuning one that halves the base rate on every 429 and only
+        # ramps back up after long stretches of success, so the worker stops
+        # hammering the same throttled citations and makes steady progress.
+        self.rate_limiter = AdaptiveRateLimiter(
+            start_rate=2.0,
+            min_rate=0.2,
+            max_rate=4.0,
+            burst=4,
+            ramp_after=200,
+            backoff_factor=0.5,
+        )
+
     # -- API helpers --------------------------------------------------------
+
+    def _api_get(self, path, params, max_attempts=12):
+        """
+        GET a JSON endpoint with adaptive 429 handling.
+
+        Honors Retry-After, backs the base rate off on every 429 (via the
+        AdaptiveRateLimiter), and retries with exponential backoff instead of
+        abandoning the request after urllib3's 3 internal retries. Returns the
+        parsed JSON on success, or None once all attempts are exhausted / a
+        non-retryable HTTP error occurs.
+        """
+        backoff = 5.0
+        for attempt in range(1, max_attempts + 1):
+            self.rate_limiter.wait()
+            try:
+                resp = self.client.get(path, params=params)
+            except RetryError:
+                # urllib3 exhausted its own 429/5xx retries — treat as a rate
+                # limit hit: drop the base rate and back off before retrying.
+                self.rate_limiter.record_429()
+                wait = min(backoff * attempt, 120)
+                logger.warning(
+                    f"429/RetryError on {path} (attempt {attempt}/{max_attempts}); "
+                    f"backing off {wait:.0f}s, base rate now "
+                    f"{self.rate_limiter.rate:.2f} req/s"
+                )
+                time.sleep(wait)
+                continue
+            except RequestException as e:
+                wait = min(backoff * attempt, 60)
+                logger.warning(
+                    f"Request error on {path} (attempt {attempt}/{max_attempts}): "
+                    f"{e}; retrying in {wait:.0f}s"
+                )
+                time.sleep(wait)
+                continue
+
+            if resp.status_code == 429:
+                retry_after = int(resp.headers.get("Retry-After", 0)) or None
+                # record_429 drops the rate and sleeps retry_after (if given).
+                self.rate_limiter.record_429(retry_after)
+                if not retry_after:
+                    time.sleep(min(backoff * attempt, 120))
+                continue
+
+            try:
+                resp.raise_for_status()
+            except HTTPError as e:
+                logger.error(f"HTTP {resp.status_code} on {path}: {e}")
+                return None
+
+            self.rate_limiter.record_success()
+            return resp.json()
+
+        logger.error(
+            f"Giving up on {path} after {max_attempts} attempts (sustained 429/errors)"
+        )
+        return None
 
     def _get_coverage(self, doc_type="cases"):
         """Get available datasets and document counts."""
-        self.rate_limiter.wait()
-        try:
-            resp = self.client.get("/coverage", params={"doc_type": doc_type})
-            resp.raise_for_status()
-            data = resp.json()
-            if isinstance(data, list):
-                return data
-            # Handle both 'results' and 'caseDatabases' keys (#584)
-            return (data.get("results") or data.get("caseDatabases")
-                    or data.get("databases") or [])
-        except Exception as e:
-            logger.error(f"Failed to get coverage: {e}")
+        data = self._api_get("/coverage", {"doc_type": doc_type})
+        if data is None:
+            logger.error("Failed to get coverage")
             return []
+        if isinstance(data, list):
+            return data
+        # Handle both 'results' and 'caseDatabases' keys (#584)
+        return (data.get("results") or data.get("caseDatabases")
+                or data.get("databases") or [])
 
     def _search(self, query="*", dataset=None, start_date=None, end_date=None,
                 sort="oldest_first", size=50, doc_type="cases"):
@@ -101,39 +172,31 @@ class A2AJScraper(BaseScraper):
         if end_date:
             params["end_date"] = end_date
 
-        self.rate_limiter.wait()
-        try:
-            resp = self.client.get("/search", params=params)
-            resp.raise_for_status()
-            data = resp.json()
-            return data.get("results", []) if isinstance(data, dict) else data
-        except Exception as e:
-            logger.error(f"Search failed (dataset={dataset}, {start_date}-{end_date}): {e}")
+        data = self._api_get("/search", params)
+        if data is None:
+            logger.error(f"Search failed (dataset={dataset}, {start_date}-{end_date})")
             return []
+        return data.get("results", []) if isinstance(data, dict) else data
 
     def _fetch_document(self, citation, doc_type="cases"):
         """Fetch full text for a single document by citation."""
-        self.rate_limiter.wait()
-        try:
-            resp = self.client.get("/fetch", params={
-                "citation": citation,
-                "doc_type": doc_type,
-                "output_language": "en",
-            })
-            resp.raise_for_status()
-            data = resp.json()
-            # API wraps results in {"results": [...]}
-            if isinstance(data, dict) and "results" in data:
-                results = data["results"]
-                return results[0] if results else None
-            elif isinstance(data, list) and data:
-                return data[0]
-            elif isinstance(data, dict):
-                return data
+        data = self._api_get("/fetch", {
+            "citation": citation,
+            "doc_type": doc_type,
+            "output_language": "en",
+        })
+        if data is None:
+            logger.error(f"Fetch failed for citation '{citation}'")
             return None
-        except Exception as e:
-            logger.error(f"Fetch failed for citation '{citation}': {e}")
-            return None
+        # API wraps results in {"results": [...]}
+        if isinstance(data, dict) and "results" in data:
+            results = data["results"]
+            return results[0] if results else None
+        elif isinstance(data, list) and data:
+            return data[0]
+        elif isinstance(data, dict):
+            return data
+        return None
 
     def _search_date_window(self, dataset, start_date, end_date):
         """

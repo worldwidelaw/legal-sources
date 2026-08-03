@@ -1,0 +1,134 @@
+# ===================================================================
+# US/OR-ChiefJusticeOrders -- Oregon Chief Justice Orders &
+#                             Supreme Court Orders
+# ===================================================================
+# Administrative orders of the Oregon Supreme Court / Chief Justice --
+# "Chief Justice Orders" (CJO) and "Supreme Court Orders" (SCO). Under
+# ORS 1.002 the Chief Justice is the administrative head of the Oregon
+# Judicial Department; these orders are the instrument by which the
+# judiciary adopts and amends binding court rules (Uniform Trial Court
+# Rules, State Bar / Board of Bar Examiners rules, court fee and
+# procedure rules) and issues administrative directives (departmental
+# appointments, pro tem / presiding-judge designations, court-register
+# procedures). As the regulatory / administrative-rule instruments of
+# the Oregon judiciary they are classed as legislation (which includes
+# regulations). Public domain Oregon state-government works (edicts).
+#
+# Published as a CONTENTdm digital collection (alias p17027coll10,
+# "Oregon Chief Justice Orders") on the OCLC-hosted instance at
+# cdm17027.contentdm.oclc.org. The public dmwebservices JSON API is
+# used: dmQuery enumerates item pointers, dmGetItemInfo returns each
+# item's Dublin-Core fields including the full-text "transc"
+# (Transcript) field. No PDF extraction, no CAPTCHA, no auth.
+# ===================================================================
+
+source:
+  id: "US/OR-ChiefJusticeOrders"
+  country: "US"
+  name: "Oregon Chief Justice Orders & Supreme Court Orders"
+  url: "https://cdm17027.contentdm.oclc.org/digital/collection/p17027coll10"
+  description: |
+    Administrative orders of the Oregon Supreme Court / Chief Justice
+    -- "Chief Justice Orders" (CJO) and "Supreme Court Orders" (SCO).
+    The Chief Justice, as administrative head of the Oregon Judicial
+    Department (ORS 1.002), issues these orders to adopt and amend
+    binding court rules -- the Uniform Trial Court Rules, Oregon State
+    Bar and Board of Bar Examiners rules, court fee, register and
+    procedure rules -- and to make administrative directives such as
+    departmental appointments and pro tem / presiding-judge
+    designations. As the regulatory / administrative-rule instruments
+    of the judiciary they are classed as legislation. Enumerated from
+    the Oregon Judicial Department's CONTENTdm collection (alias
+    p17027coll10) via the public dmwebservices JSON API; order number,
+    subject, description, type, date signed, effective date, and the
+    full order text are read from each item's Dublin-Core fields
+    (title / subjec / descri / type / date / langua / transc). No
+    CAPTCHA, no auth. ~2,610 orders, 1985–present.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://cdm17027.contentdm.oclc.org"
+  endpoints:
+    query: "/digital/bl/dmwebservices/index.php?q=dmQuery/p17027coll10/0/dmrecord!date/dmrecord/{max}/{start}/0/0/0/0/json"
+    item: "/digital/bl/dmwebservices/index.php?q=dmGetItemInfo/p17027coll10/{rec}/json"
+
+data_model:
+  type: "legislation"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 16
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/OR-ChiefJusticeOrders/{CONTENTdm dmrecord})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "order_number"
+      description: "Order number (e.g. '2013-005')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "order_type"
+      description: "Order type code (CJO = Chief Justice Order, SCO = Supreme Court Order)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "subject"
+      description: "Subject keyword string (e.g. 'Rules, Uniform Trial Court Rules')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "description"
+      description: "Short caption of what the order does"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Order title (type label + order number + caption)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the order (CONTENTdm transcript field)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date signed (ISO 8601), from the CONTENTdm date field"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "effective_date"
+      description: "Effective date (ISO 8601), from the CONTENTdm langua field"
+      type: "date"
+      role: "metadata"
+      required: false
+    - name: "url"
+      description: "Link to the CONTENTdm item page"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Chief Justice Orders and Supreme Court Orders of the Oregon
+    judiciary are official works of Oregon state government (edicts of
+    government) and are not subject to copyright. Free to use,
+    including commercially.

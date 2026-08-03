@@ -1,0 +1,69 @@
+source:
+  id: ES/TACPC-Canarias
+  name: Tribunal Administrativo de Contratos Públicos de la Comunidad Autónoma de Canarias (TACP Canarias)
+  url: https://www.gobiernodecanarias.org/hacienda/contratacion/tacp/resoluciones/Buscador-de-Resoluciones.html
+  country: ES
+  region: Canarias
+  jurisdiction: ES-CN
+  data_types:
+    - case_law
+  auth:
+    type: none
+  license:
+    name: "Gobierno de Canarias open data (PSI reuse)"
+    url: "https://datos.canarias.es/portal/aviso-legal"
+    commercial_use: true
+    attribution_required: true
+    share_alike: false
+    no_derivatives: false
+    notes: "Reutilización de información del sector público (Ley 37/2007). Resoluciones públicas del tribunal administrativo."
+
+api:
+  visor_url: https://www.gobiernodecanarias.org/hacienda/contratacion/tacp/visor_resoluciones/index.jsp
+  method: POST
+  param_accion: buscar
+  date_from_field: chpae_resolucion_fecharesolucion_es_dt_d
+  date_to_field: chpae_resolucion_fecharesolucion_es_dt
+  display_cap: 200
+  first_year: 2015
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+  max_workers: 4
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+    - name: "resolution_number"
+      type: "string"
+      required: false
+    - name: "case_number"
+      type: "string"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+coverage:
+  estimated_records: 1146
+  date_range: "2020-present (full-text PDFs); metadata index back to 2015"
+  languages:
+    - es
+  full_text: true

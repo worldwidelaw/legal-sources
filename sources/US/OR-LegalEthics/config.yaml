@@ -1,0 +1,124 @@
+# ===================================================================
+# US/OR-LegalEthics -- Oregon State Bar — Formal Ethics Opinions
+# ===================================================================
+# Formal Ethics Opinions of the Oregon State Bar's Legal Ethics
+# Committee / Board of Governors, applying the Oregon Rules of
+# Professional Conduct (ORPC) to a stated fact situation to advise
+# lawyers whether the described conduct is proper = doctrine. One
+# continuous globally-numbered series: the 1991-2004 opinions were
+# re-issued in Sept 2005 as "2005-{N}" (2005-1 .. 2005-175) conformed
+# to the ORPC, and opinions issued since continue the same sequential
+# number with the issue year as prefix (2011-188 ... 2026-208), ~208
+# opinions. Born-digital PDFs, no OCR/CAPTCHA/auth. Distinct from
+# US/OR-EthicsOpinions (Oregon Govt Ethics Commission — officials) and
+# US/OR-AGOpinions (Attorney General).
+# ===================================================================
+
+source:
+  id: "US/OR-LegalEthics"
+  country: "US"
+  name: "Oregon State Bar — Formal Ethics Opinions"
+  url: "https://www.osbar.org/ethics/toc.html"
+  description: |
+    Formal Ethics Opinions issued by the Oregon State Bar's Legal Ethics
+    Committee and adopted by the Board of Governors. Each opinion applies
+    the Oregon Rules of Professional Conduct (ORPC) to a stated fact
+    situation and advises lawyers whether the described conduct is
+    proper. The corpus is one continuous globally-numbered series
+    ("{YYYY}-{N}", 2005-1 through 2026-208, ~208 opinions), each
+    published in full as a born-digital PDF carrying "FORMAL OPINION NO
+    {number}", the topical title, and Facts / Discussion / Conclusion
+    sections.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_listing"
+  base_url: "https://www.osbar.org"
+  endpoints:
+    toc: "/ethics/toc.html"
+    opinion: "/_docs/ethics/{number}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/OR-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Formal opinion number ('YYYY-N', e.g. 2005-1, 2013-189, 2026-208)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title (topical, from the TOC anchor text)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text (Facts / Discussion / Conclusion) from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Opinion date as ISO 8601 (YYYY-01-01 from the 'YYYY Revision' line or the number's year prefix)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Oregon State Bar — Legal Ethics Committee / Board of Governors"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-OR)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (Oregon State Bar Formal Ethics Opinions)"
+  url: "https://www.osbar.org/ethics/ethicsops.html"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Oregon State Bar Formal Ethics Opinions are published free to the public on osbar.org as an educational service interpreting the Oregon Rules of Professional Conduct; they are advisory (no weight of law) and carry no copyright restriction or paywall on the opinion text. No login or terms prohibiting reuse."
+
+notes: |
+  - Discovery: the "Formal Ethics Opinion Library – Table of Contents"
+    (/ethics/toc.html) lists EVERY opinion as a direct PDF link whose
+    anchor text is "{number}: {title}"; the scraper regex-extracts and
+    de-duplicates all /_docs/ethics/{YYYY-NNN}.pdf hrefs (208 as of
+    2026-07) and takes the title from the anchor text after the colon.
+  - Full text: each opinion PDF is born-digital (text layer) — extracted
+    with PyMuPDF, NO OCR. Body carries "FORMAL OPINION NO {number}", the
+    topical title, and Facts / Discussion / Conclusion sections. A few
+    superseded opinions are short official stubs ("This opinion has been
+    superseded and replaced by OSB Formal Ethics Opinion No ...").
+  - Date: taken from the "YYYY Revision" line in the body when present,
+    else the number's year prefix -> YYYY-01-01.
+  - Type: every document is a formal opinion interpreting the ORPC =
+    doctrine.
+  - Distinct from US/OR-EthicsOpinions (Oregon Government Ethics
+    Commission — public officials) and US/OR-AGOpinions (Attorney
+    General); this is the state bar's attorney-ethics formal-opinion
+    series.

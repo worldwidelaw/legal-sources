@@ -1,0 +1,117 @@
+# ===================================================================
+# RU/RegionalLegislation -- Official regional legislation of the
+# subjects of the Russian Federation (publication.pravo.gov.ru)
+# ===================================================================
+# The sub-national ("oblast-level") companion to RU/PravoGovRu (federal
+# laws). Covers officially-published legal acts of every federal subject
+# (republics, krais, oblasts, autonomous okrugs, federal cities):
+# regional laws, decrees/ordinances of the head of region, government
+# resolutions and orders, and regional ministerial acts. ~1.5M acts.
+# Machine-readable JSON API (/api/Documents?block=subjects) + signed PDF
+# full text (scanned images -> per-page embedded-image OCR, lang=rus).
+# Official government-edict works = legislation.
+# ===================================================================
+
+source:
+  id: "RU/RegionalLegislation"
+  country: "RU"
+  name: "Russian Federation Subjects — Regional Legislation (pravo.gov.ru)"
+  url: "http://publication.pravo.gov.ru/documents/block/subjects"
+  description: |
+    Official legal acts of the subjects of the Russian Federation published
+    on the Official Internet Portal of Legal Information
+    (publication.pravo.gov.ru), "subjects" block. Includes regional laws
+    (законы субъекта РФ), decrees and ordinances of the head of the region
+    (указы / постановления главы), resolutions and orders of regional
+    governments (постановления / распоряжения правительства) and acts of
+    regional ministries/agencies. Enumerated newest-first via the public
+    JSON API GET /api/Documents?block=subjects&PageSize=200&Index=N
+    (~1.5M documents); issuing-authority names resolved via
+    /api/SignatoryAuthorities?blockCode=subjects. Full text from the signed
+    act PDF at /file/pdf?eoNumber={eo} — these are scanned/signed images
+    with no text layer, so each page's embedded image object is extracted
+    and OCR'd with tesseract (lang=rus); rare born-digital acts use their
+    text layer. All acts are legislation.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "json_api_plus_pdf_ocr"
+  base_url: "http://publication.pravo.gov.ru"
+  endpoints:
+    documents: "/api/Documents?block=subjects&PageSize=200&Index={index}"
+    authorities: "/api/SignatoryAuthorities?blockCode=subjects"
+    pdf: "/file/pdf?eoNumber={eo}"
+    document: "/document/{eo}"
+
+data_model:
+  type: "legislation"
+  primary_key: "eo_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (RU/RegionalLegislation/{eoNumber})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "eo_number"
+      description: "Official publication number (eoNumber), e.g. 0300202607080001"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Act caption / complex name (Russian)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the act (text layer / OCR rus)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "issuer"
+      description: "Issuing regional authority (signatory authority name)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "region_code"
+      description: "4-digit region/authority block prefix of eoNumber"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "date"
+      description: "Document (enactment/signature) date, ISO 8601"
+      type: "string"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Canonical document page on publication.pravo.gov.ru"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Russian official document — public domain (Civil Code art. 1259(6))"
+  url: "http://publication.pravo.gov.ru/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Official documents of state bodies (laws, other normative acts),
+    including of the subjects of the Russian Federation, are not objects of
+    copyright under art. 1259(6) of the Civil Code of the Russian Federation.

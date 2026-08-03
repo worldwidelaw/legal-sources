@@ -1,0 +1,19 @@
+{
+  "_id": "EC-CC-9881",
+  "_source": "EC/CorteConstitucional",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-01T18:25:08.919844+00:00",
+  "title": "Sentencia 40-22-IN/26",
+  "text": "La Corte Constitucional desestima la acción pública de inconstitucionalidad\npresentada contra el artículo 89 del Código Orgánico de las Entidades de Seguridad Ciudadana y\nOrden Público, así como contra las resoluciones MDT-2022-002 y MDT-2022-003, mediante las\ncuales se regula la clasificación por nivel de gestión, rol, grado, tiempo de servicio, escala de\nremuneraciones mensuales y valores a percibir por concepto de compensaciones de las y los\nservidores policiales. En su análisis, esta Corte concluye que las normas impugnadas no\ntransgreden el artículo 11 numeral 8, de la Constitución, relativo al principio de no regresividad\ndel derecho al trabajo en sus componentes de remuneración y compensación.",
+  "date": "2026-03-19",
+  "url": "https://esacc.corteconstitucional.gob.ec/storage/api/v1/10_DWL_FL/eyJjYXJwZXRhIjogInRyYW1pdGUiLCAidXVpZCI6ICI1YWQ1Y2IwZS02ZjE3LTQ2YjUtYmNkNy0wYzY0ZjBlNTgxNDMucGRmIn0=",
+  "numero": "40-22-IN/26",
+  "numero_causa": "40-22-IN",
+  "tipo_accion": "ACCIÓN PÚBLICA DE INCONSTITUCIONALIDAD",
+  "materia": "Constitucional",
+  "juez": "XIMENA ALEJANDRA CARDENAS REYES",
+  "decision": "DESESTIMAR",
+  "metadata_sentencia": "Remuneraciones y compensaciones en la carrera policial;",
+  "es_novedad": false,
+  "es_relevante": false
+}

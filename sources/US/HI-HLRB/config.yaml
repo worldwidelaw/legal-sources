@@ -1,0 +1,115 @@
+# ===================================================================
+# US/HI-HLRB -- Hawaii Labor Relations Board Decisions and Orders
+# ===================================================================
+# Decisions and orders of the Hawaii Labor Relations Board (HLRB),
+# the state's quasi-judicial agency administering Hawaii's public-
+# sector collective-bargaining law (HRS chapter 89) and the Hawaii
+# Employment Relations Act (HRS chapter 377). The Board adjudicates
+# prohibited-practice complaints, bargaining-unit / representation and
+# clarification petitions, declaratory rulings, impasse and other
+# contested cases. Each numbered Decision and Order resolves a specific
+# case = case_law, and they are official Hawaii state-government works
+# in the public domain (government edicts).
+#
+# BUILD RECIPE (no auth, no CAPTCHA): the Board publishes its entire
+# corpus on a single server-rendered index page,
+#   https://labor.hawaii.gov/hlrb/decisions/
+# with HTML tables of Board Decisions (No. 1, 1971 -> ~530) and Board
+# Orders (numbered in the thousands). Each row: Decision/Order No. |
+# Case Name | Case No. | Date | [PDF] [ADA]. The PDF cells link directly
+# to decision PDFs at
+#   https://labor.hawaii.gov/hlrb/files/{YYYY}/{MM}/Decision-No.-{N}.pdf
+#   https://labor.hawaii.gov/hlrb/files/{YYYY}/{MM}/Order-No.-{N}.pdf
+# (each entry has a standard PDF plus an "-ADA" accessible copy of the
+# same document; the scraper prefers the standard copy). The scraper
+# reads every row, downloads the PDF, and extracts full text with
+# common.pdf_extract (older scans go through OCR). record_id is the PDF
+# filename stem (e.g. Decision-No.-530), which is stable and unique.
+# ===================================================================
+
+source:
+  id: "US/HI-HLRB"
+  country: "US"
+  name: "Hawaii Labor Relations Board — Decisions and Orders"
+  url: "https://labor.hawaii.gov/hlrb/decisions/"
+  description: |
+    Decisions and orders of the Hawaii Labor Relations Board (HLRB),
+    the state's quasi-judicial agency administering Hawaii's public-
+    sector collective-bargaining law (HRS ch. 89) and the Hawaii
+    Employment Relations Act (HRS ch. 377). The Board adjudicates
+    prohibited-practice complaints, bargaining-unit / representation
+    and clarification petitions, declaratory rulings, impasse and other
+    contested cases. Each numbered Decision (No. 1 in 1971 to the
+    present) and Order resolves a specific contested case = case_law.
+    Enumerated from the Board's single decisions/orders index page;
+    decision/order number, case name, case number, date issued, and the
+    full text (from the born-digital or scanned PDF) are captured.
+    No CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://labor.hawaii.gov"
+  endpoints:
+    index_page: "/hlrb/decisions/"
+    decision_pdf: "/hlrb/files/{YYYY}/{MM}/{filename}"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/HI-HLRB/{filename-stem-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "PDF filename stem (e.g. 'Decision-No-530', 'Order-No-4050')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Case name + decision/order number (from the index row)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision/order (PDF extract; OCR for older scans)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date issued (ISO 8601), from the index 'Date' column"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the decision/order PDF on labor.hawaii.gov"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions and orders of the Hawaii Labor Relations Board are
+    official works of Hawaii state government (edicts of a quasi-
+    judicial government body) and are not subject to copyright under the
+    government-edicts doctrine. Free to use, including commercially.

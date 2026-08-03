@@ -1,0 +1,116 @@
+# ===================================================================
+# US/SC-ALC -- South Carolina Administrative Law Court Decisions
+# ===================================================================
+# Orders and final decisions of the South Carolina Administrative Law
+# Court (ALC, formerly the Administrative Law Judge Division), the
+# state's centralized court of record for contested cases and agency
+# appeals. The ALC hears matters from most South Carolina state agencies
+# -- Department of Revenue (state tax appeals), DHEC, Department of
+# Insurance, DMV, Department of Labor Licensing and Regulation, DSS,
+# alcoholic-beverage licensing, and others. Each order resolves a
+# specific contested case = case_law, and they are official South
+# Carolina state-government works in the public domain (government
+# edicts).
+#
+# BUILD RECIPE (no auth, no CAPTCHA): decisions are published through a
+# Kendo/Telerik search portal at https://www.decisions.scalc.net/ . The
+# search grid is JavaScript-driven, but every decision document is served
+# DIRECTLY by a plain sequential integer id, with no cookie/session:
+#   https://www.decisions.scalc.net/Home/ViewPdf/{id}
+# The response is either an HTML fragment (UTF-16LE, mislabelled
+# application/pdf) whose body is the full decision text, or a genuine
+# born-digital %PDF (newer decisions). The scraper walks id = 1..N
+# (N > 14,000 in 2026), skipping HTTP 500 gaps, decodes the HTML or
+# extracts the PDF via common.pdf_extract, and pulls the order type,
+# docket number (YY-ALJ-NN-NNNN-XX) and decision date out of the body.
+# ===================================================================
+
+source:
+  id: "US/SC-ALC"
+  country: "US"
+  name: "South Carolina Administrative Law Court — Decisions"
+  url: "https://www.decisions.scalc.net/"
+  description: |
+    Orders and final decisions of the South Carolina Administrative Law
+    Court (ALC), the state's centralized court of record that hears
+    contested cases and appeals from most South Carolina state agencies
+    (Department of Revenue state-tax appeals, DHEC, Insurance, DMV, LLR,
+    DSS, alcoholic-beverage licensing, and others). Each order resolves a
+    specific contested case = case_law. Enumerated directly by sequential
+    document id from the court's decision portal
+    (/Home/ViewPdf/{id}); order type, docket number, decision date, and
+    the full decision text (HTML fragment for older orders, PDF extract
+    for newer ones) are captured. No CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.decisions.scalc.net"
+  endpoints:
+    decision: "/Home/ViewPdf/{id}"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/SC-ALC/{doc_id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "ALC portal document id (sequential integer)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Order caption / type + docket (e.g. 'ORDER OF DISMISSAL (05-ALJ-17-0123-CC)')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (HTML fragment decode or PDF extract)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "docket"
+      description: "ALC docket number YY-ALJ-NN-NNNN-XX (parsed from body, may be null)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the body text"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the decision document on decisions.scalc.net"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions of the South Carolina Administrative Law Court are official
+    works of South Carolina state government (edicts of a state court of
+    record) and are not subject to copyright under the government-edicts
+    doctrine. Free to use, including commercially.

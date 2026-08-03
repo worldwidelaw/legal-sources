@@ -1,0 +1,119 @@
+# ===================================================================
+# US/OK-TaxDecisions -- Oklahoma Tax Commission, Commission Decisions
+# ===================================================================
+# Final determinations by the Oklahoma Tax Commissioners in an
+# adversarial hearing on a taxpayer's tax protest or claim (case_law).
+# Decisions are classified Precedential (relied upon prospectively by the
+# Commission and the public) or Non-precedential; both are published as
+# public, taxpayer-identity-redacted, born-digital PDFs on oklahoma.gov.
+# The Commission Decisions page (an AEM site) is backed by a master CSV
+# index exposed in the page's data-csv-table-api attribute; each CSV row
+# gives the cite/date (TITLE), tax type (CATEGORY), precedential flag, and
+# the decision PDF's absolute /content/dam/ path. Full text is extracted
+# from each PDF via the shared OOM-hardened pdf_extract helper. No auth,
+# no CAPTCHA. Public-domain OK state-government works (government edicts).
+# ===================================================================
+
+source:
+  id: "US/OK-TaxDecisions"
+  country: "US"
+  name: "Oklahoma Tax Commission — Commission Decisions"
+  url: "https://oklahoma.gov/tax/reporting-resources/rules-policies/commission-decisions.html"
+  description: |
+    Commission Decisions of the Oklahoma Tax Commission — final
+    determinations by the Tax Commissioners in an adversarial hearing on a
+    taxpayer's tax protest or claim. Each decision (Precedential or
+    Non-precedential) is a public, taxpayer-identity-redacted, born-digital
+    PDF captioned "(PRECEDENTIAL) DECISION OKLAHOMA TAX COMMISSION" with a
+    structured header (JURISDICTION, CITE, ID, DATE, DISPOSITION, TAX TYPE,
+    APPEAL) followed by the ORDER body. Enumerated from the master CSV
+    index backing the Commission Decisions page. ~1,800 decisions.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "csv_index"
+  base_url: "https://oklahoma.gov"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/OK-TaxDecisions/{cite}), cite = YYYY-MM-DD-NN"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "cite"
+      description: "Decision cite/number (YYYY-MM-DD-NN), also the filename"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "tax_type"
+      description: "Tax category (Income, Corporate Income, Sales, Electric, ...)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "precedential"
+      description: "True if the decision is designated Precedential"
+      type: "boolean"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (issuer + cite + tax type)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision, extracted from the published PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601) parsed from the cite's leading YYYY-MM-DD"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Oklahoma state tax adjudications)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Commission Decisions of the Oklahoma Tax Commission are official state-government adjudicative works, published for public inspection after redaction of taxpayer identity, in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The Commission Decisions page (oklahoma.gov, AEM) exposes a master CSV
+    index URL in its `data-csv-table-api` attribute. The scraper reads that
+    URL (falling back to the last-known CSV path), downloads the CSV
+    (UTF-8 BOM stripped), and iterates its rows.
+  - Each row: TITLE (cite/date YYYY-MM-DD-NN), CATEGORY (tax type),
+    PRECEDENTIAL ("Precedential" or blank), DOWNLOAD (an Excel
+    =DOWNLOAD("/content/dam/.../<file>.pdf") formula wrapping the decision
+    PDF's absolute path), Keyword. The PDF path is unwrapped from the
+    DOWNLOAD formula and resolved against oklahoma.gov.
+  - PDFs are born-digital; text is extracted via common.pdf_extract
+    (OOM-hardened pdfplumber -> pypdf -> OCR). A <200-char guard skips the
+    rare image-only scan.
+  - date is parsed from the cite's leading YYYY-MM-DD (reliable temporal
+    key); the same date also appears in the PDF header.
+  - Type is case_law: Commission Decisions are final adjudications of a
+    contested taxpayer protest/claim (Precedential ones carry prospective
+    interpretive weight but remain adjudications).
+  - Public-domain OK state-government data.

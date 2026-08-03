@@ -1,0 +1,122 @@
+# ===================================================================
+# US/NM-LegalEthics -- State Bar of New Mexico, Ethics Advisory
+# Committee — Ethics Advisory Opinions
+# ===================================================================
+# Formal ethics advisory opinions of the State Bar of New Mexico Ethics
+# Advisory Committee: each interprets the New Mexico Rules of
+# Professional Conduct as applied to a lawyer's contemplated conduct to
+# advise LAWYERS = doctrine. New Mexico cites its opinions by a
+# "{year}-{n}" number (e.g. "Advisory Opinion 1987-5"). ~94
+# born-digital PDF opinions 1983-present. The State Bar of New Mexico
+# is an INTEGRATED (mandatory) bar.
+# ===================================================================
+
+source:
+  id: "US/NM-LegalEthics"
+  country: "US"
+  name: "State Bar of New Mexico — Ethics Advisory Committee (Ethics Advisory Opinions)"
+  url: "https://www.sbnm.org/Leadership/Committees/Ethics-Advisory-Committee/Ethics-Advisory-Opinions"
+  description: |
+    Formal ethics advisory opinions issued by the State Bar of New
+    Mexico Ethics Advisory Committee. Each opinion interprets the New
+    Mexico Rules of Professional Conduct as applied to a lawyer's
+    contemplated conduct. ~94 born-digital PDF opinions 1983-present are
+    published free on sbnm.org, indexed on a single public page grouped
+    by year; each carries a "{year}-{n}" citation number and full
+    analysis.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_pdf"
+  base_url: "https://www.sbnm.org"
+  endpoints:
+    index: "/Leadership/Committees/Ethics-Advisory-Committee/Ethics-Advisory-Opinions"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NM-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Citation number {year}-{n} (e.g. 1987-5, 2021-1) — the identifier New Mexico cites"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title (generated)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text extracted from the born-digital PDF (PyMuPDF, no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 date — the year from the opinion number (YYYY-01-01); bodies carry no separate machine-readable decision date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "State Bar of New Mexico — Ethics Advisory Committee"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-NM)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain / freely published advisory opinions"
+  url: "https://www.sbnm.org/Leadership/Committees/Ethics-Advisory-Committee/Ethics-Advisory-Opinions"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "State Bar of New Mexico ethics advisory opinions are published free to the public on sbnm.org, indexed on an open page, with no login, paywall or terms prohibiting reuse. The State Bar of New Mexico is New Mexico's INTEGRATED (mandatory) bar (all NM lawyers must belong, per New Mexico Supreme Court rule), so the 17 U.S.C. § 105 government-edicts rationale applies fairly directly (like US/SC/LA/WI/GA/MT/DC-LegalEthics). Treated as effectively public domain, consistent with the other state-bar legal-ethics sources — pd-us + commercial-OK."
+
+notes: |
+  - Discovery: the single public page /Leadership/Committees/
+    Ethics-Advisory-Committee/Ethics-Advisory-Opinions links every
+    opinion PDF (under /Portals/NMBAR/AboutUs/committees/Ethics/), a DNN
+    portal, grouped by year-folder. Records are de-duplicated on the
+    canonical opinion number. ~94 unique opinions 1983-present.
+  - Number: the filename stem is the opinion number {YYYY-N} (e.g.
+    "1987-5.pdf" -> 1987-5, "2021-001.pdf" -> 2021-1). The sequence is
+    canonicalised by dropping zero-padding; an optional trailing letter
+    is preserved. This IS the identifier New Mexico cites ("Advisory
+    Opinion 1987-5").
+  - Full text: each opinion is a born-digital PDF on sbnm.org (DNN
+    portal; %-encoded path + ?ver= token preserved). Extracted with
+    PyMuPDF (fitz), NO OCR. Records under 200 chars are skipped.
+  - Date: the year from the opinion number -> YYYY-01-01 (the number
+    year is authoritative; the PDF bodies carry no separate
+    machine-readable decision date).
+  - Type: every document is the Committee's advisory interpretation of
+    the New Mexico Rules of Professional Conduct = doctrine.
+  - Distinct from US/NM-Legislation / US/NM-Courts. This is the attorney
+    professional-conduct advisory-opinion series (lawyers), the NM member
+    of the US/{ST}-LegalEthics vein. Reuses the DNN-portal index ->
+    born-digital-PDF recipe (cf. US/MT-LegalEthics on montanabar.org).

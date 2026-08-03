@@ -1,0 +1,137 @@
+# ===================================================================
+# US/MO-LegalEthics -- Advisory Committee of the Supreme Court of
+# Missouri / Office of Legal Ethics Counsel — Ethics Opinions
+# ===================================================================
+# Informal and Formal ethics advisory opinions issued to Missouri
+# lawyers pursuant to Missouri Supreme Court Rule 5.30(c). Each opinion
+# interprets the Missouri Rules of Professional Conduct (Rule 4), the
+# discipline rules (Rule 5) and the fees-to-practice rule (Rule 6) in
+# response to a lawyer's inquiry about contemplated conduct = doctrine
+# (advisory; not binding). Informal opinions are numbered "YYYY-NN"
+# (modern) or "YYnnnn" (legacy, from 1993); formal opinions carry a
+# plain running integer. ~1,046 informal + ~13 formal opinions,
+# published free as clean HTML on mo-legal-ethics.org. Distinct from
+# US/MO-Courts and US/MO-Legislation.
+# ===================================================================
+
+source:
+  id: "US/MO-LegalEthics"
+  country: "US"
+  name: "Advisory Committee of the Supreme Court of Missouri — Ethics Opinions"
+  url: "https://mo-legal-ethics.org/informal-opinions-search/"
+  description: |
+    Informal and Formal ethics advisory opinions issued to Missouri
+    lawyers by the Office of Legal Ethics Counsel and the Advisory
+    Committee of the Supreme Court of Missouri (Mo. Sup. Ct. R. 5.30(c)).
+    Each interprets the Missouri Rules of Professional Conduct in response
+    to a lawyer's inquiry about contemplated conduct (advisory). Full text
+    is rendered as clean HTML on each opinion page (Question/Answer for
+    informal opinions; the numbered FORMAL OPINION text for formal ones).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "sitemap_html"
+  base_url: "https://mo-legal-ethics.org"
+  endpoints:
+    informal_sitemap: "/informalopinions-sitemap.xml"
+    informal_sitemap2: "/informalopinions-sitemap2.xml"
+    formal_sitemap: "/formalopinions-sitemap.xml"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/MO-LegalEthics/{SERIES}-{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number as printed: informal 'YYYY-NN' or legacy 'YYnnnn'; formal a running integer"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "series"
+      description: "'Informal' or 'Formal'"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "title"
+      description: "Opinion subject/topic (from the Subject block)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text extracted from the detail-page HTML (no PDF/OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 date; explicit Adoption Date if present, else the number's year -> YYYY-01-01"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "rules_cited"
+      description: "Missouri Rules of Professional Conduct cited by the opinion"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "issuer"
+      description: "Advisory Committee of the Supreme Court of Missouri / Office of Legal Ethics Counsel"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-MO)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain / freely published advisory opinions"
+  url: "https://mo-legal-ethics.org/informal-opinions-search/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Missouri informal and formal ethics opinions are published free to the public on mo-legal-ethics.org by the Office of Legal Ethics Counsel and the Advisory Committee of the Supreme Court of Missouri as an educational service interpreting the Missouri Rules of Professional Conduct. They carry no login, paywall or terms prohibiting reuse. The Advisory Committee is an arm of the Supreme Court of Missouri, so the 17 U.S.C. § 105 government-edicts rationale applies directly. Treated as public domain, consistent with the other state-bar legal-ethics sources."
+
+notes: |
+  - Discovery: opinion permalinks are enumerated exhaustively from the
+    site's Yoast XML sitemaps — /informalopinions-sitemap.xml (+ ...2) and
+    /formalopinions-sitemap.xml. Informal permalinks are
+    /informal-opinion/{YYYY-NN|YYnnnn}/, formal are /formal-opinion/{N}/.
+    (~1,046 informal + ~13 formal.) The handful of formal opinions are
+    interleaved through the informal list so both series are represented
+    up front.
+  - Full text: each page is a Divi layout in which every field is a
+    <div class="et_pb_text_inner"> block. The scraper reads the labelled
+    "Opinion Number:", "Adoption Date:", "Rules:" and "Subject:" blocks and
+    takes the longest remaining non-boilerplate block as the body
+    (Question/Answer for informal, numbered FORMAL OPINION text for formal).
+    Clean HTML, NO PDF/OCR. A screen-reader " dash" artefact inside
+    <span class="sr-only"> is stripped so cited rules read "4-1.15".
+  - Number: printed opinion number; legacy informal numbers "YYnnnn" carry
+    the 2-digit year (93 -> 1993). Formal numbers are plain integers.
+  - Date: the explicit Adoption Date if present, else an in-body month-date,
+    else the number's year -> YYYY-01-01.
+  - Type: every document is the Committee's advisory interpretation of the
+    Missouri Rules of Professional Conduct = doctrine.
+  - Distinct from US/MO-Courts and US/MO-Legislation. This is the attorney
+    professional-conduct advisory-opinion series (lawyers).

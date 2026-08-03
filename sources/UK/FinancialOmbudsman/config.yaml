@@ -1,0 +1,75 @@
+# UK/FinancialOmbudsman — Financial Ombudsman Service (FOS) — Ombudsman Decisions.
+#
+# Source: Financial Ombudsman Service (statutory scheme under Part XVI of the
+#         Financial Services and Markets Act 2000)
+# URL: https://www.financial-ombudsman.org.uk/decisions-case-studies/ombudsman-decisions
+# Data type: case_law  (UK — final binding decisions of a statutory ombudsman)
+# Auth: none
+#
+# Since 1 April 2013 the FCA's DISP rules require FOS to publish every final
+# ombudsman decision. The Service publishes them, anonymised, on its website as
+# born-digital PDFs. The public "Ombudsman decisions" search is a server-rendered
+# listing (10/page, ?Start=N step 10, Sort=date); each result carries the
+# Decision Reference (DRN-NNNNNNN), decision date, business name, outcome and a
+# link to the decision PDF at /decision/{DRN}.pdf.
+#
+# Total: 404,000+ final decisions, 2013-present (404,560 reported at build time)
+#
+# Access:
+#   - Page the ombudsman-decisions search listing to enumerate every DRN + its
+#     listing metadata (date, business, outcome, sector tag).
+#   - Download each born-digital decision PDF and extract full text with PyMuPDF
+#     (pdfplumber/pypdf fallback). No OCR needed.
+
+source:
+  id: UK/FinancialOmbudsman
+  name: Financial Ombudsman Service (FOS) — Ombudsman Decisions
+  country: UK
+  data_types:
+    - case_law
+  url: https://www.financial-ombudsman.org.uk/decisions-case-studies/ombudsman-decisions
+  language: en
+  auth: none
+  license: custom-terms
+
+license:
+  name: "Financial Ombudsman Service website terms (© Financial Ombudsman Service)"
+  url: "https://www.financial-ombudsman.org.uk/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    Published decisions are © Financial Ombudsman Service. FOS is a statutory
+    ombudsman (company limited by guarantee) established under FSMA 2000, not a
+    Crown body, and publishes no explicit Open Government Licence / Creative
+    Commons grant for the decision corpus. Commercial re-use is therefore not
+    clearly permitted and is flagged per project policy. Decisions are public
+    records, free to access, no login/paywall; robots.txt permits crawling.
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: decision_reference
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - decision_reference
+    - business
+    - outcome
+    - category
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.5
+  page_size: 10
+  estimated_total: 404560
+  sample_count: 15

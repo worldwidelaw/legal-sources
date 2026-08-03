@@ -1,0 +1,15 @@
+{
+  "_id": "US/MO-LegalEthics/INF-930078",
+  "_source": "US/MO-LegalEthics",
+  "_type": "doctrine",
+  "_fetched_at": "2026-07-11T13:11:56.613627+00:00",
+  "opinion_number": "930078",
+  "series": "Informal",
+  "issuer": "Advisory Committee of the Supreme Court of Missouri / Office of Legal Ethics Counsel",
+  "title": "Missouri Informal Ethics Opinion 930078",
+  "text": "QUESTION: Attorney prepared a will for client A. During some will drafting conferences, A´s adult child was present. The will is being contested. Does the attorney client privilege apply to the conversations if the child or others were present or could hear the conversations. If the court determines the privilege has been waived, is attorney obligated to seek review. ANSWER: The attorney client privilege is a statutory privilege not within Rule 4. However, Rule 1.6 also relates to the question. That rule requires attorney to assert the confidentiality of any information relating to representation of a client. If ordered by a court to testify, attorney would not violate the rule by testifying as long as attorney had adequately presented the issue to the court.",
+  "rules_cited": "1.6",
+  "url": "https://mo-legal-ethics.org/informal-opinion/930078/",
+  "date": "1993-01-01",
+  "jurisdiction": "US-MO"
+}

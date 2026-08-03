@@ -1,0 +1,132 @@
+# ===================================================================
+# US/OK-AGOpinions -- Oklahoma Attorney General Opinions
+# ===================================================================
+# Official written Opinions of the Attorney General of Oklahoma (74 O.S.
+# § 18b), rendered upon questions of law submitted by the Legislature,
+# its members and state executive/administrative officers, binding on the
+# officers addressed until superseded = official government edicts,
+# classified case_law (specific-question official determination). Opinion
+# numbers run "YY-NNN"; cited "___ OK AG ___". Corpus 1948-current via the
+# Oklahoma Public Legal Research System (OU Law School, oklegal.onenet.net).
+# Distinct from US/OK-LegalEthics, US/OK-Courts, US/OK-Legislation,
+# US/OK-TaxDecisions.
+# ===================================================================
+
+source:
+  id: "US/OK-AGOpinions"
+  country: "US"
+  name: "Oklahoma Attorney General Opinions"
+  url: "https://oklegal.onenet.net/agopinions.basic.html"
+  description: |
+    Official written Opinions of the Attorney General of Oklahoma, rendered
+    under 74 O.S. § 18b upon questions of law submitted by the Legislature,
+    its members and the officers of the state's executive and administrative
+    departments. The opinions are binding on the officers to whom they are
+    directed until superseded by a court or the Attorney General, and are
+    published and cited "___ OK AG ___" (numbered "YY-NNN"). Full text is
+    served by the Oklahoma Public Legal Research System (OPLRS), operated by
+    the University of Oklahoma Law School at oklegal.onenet.net, over the
+    "okag" database (1948-current).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "html_search"
+  base_url: "https://oklegal.onenet.net"
+  endpoints:
+    search: "/oklegal-cgi/isearch"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/OK-AGOpinions/{opinion_number|filename})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number 'YY-NNN' parsed from the CITATIONS field"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "'Oklahoma Attorney General Opinion No. {number}'"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text (TEXT_OF_RULE field, HTML stripped via BeautifulSoup; no PDF/OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 issue date parsed from the HEARING_DATE field"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "requested_by"
+      description: "Requesting official (APPELLANT field)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "issuer"
+      description: "Attorney General of Oklahoma"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-OK)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (US government edict — 17 U.S.C. § 105)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official Opinions of the Attorney General of Oklahoma are works of the state government, edicts of government produced in the course of official duty, and are in the public domain (17 U.S.C. § 105 government-edicts rationale). Published free to the public by the Oklahoma Public Legal Research System (University of Oklahoma Law School) with no login, paywall or terms prohibiting reuse. Commercial use permitted. The OPLRS site disclaims warranty of correctness but imposes no reuse restriction."
+
+notes: |
+  - Host: Oklahoma Public Legal Research System (OPLRS), oklegal.onenet.net,
+    a CNIDR Isearch-cgi (1.47j) full-text engine run by the OU Law School over
+    the "okag" database (OK Attorney General Opinions, 1948-current).
+  - Search: POST /oklegal-cgi/isearch with SEARCH_TYPE=SIMPLE, DATABASE=okag,
+    FIELD_1=HEARING_DATE, TERM_1=<year>, ELEMENT_SET=F (return FULL TEXT inline),
+    MAXHITS=100, START=<offset>. The results page carries per-opinion fields
+    inline: Filename, ENTRY_DATE, APPELLANT (requestor), JURISDICTION,
+    HEARING_DATE (issue date), TEXT_OF_RULE (full text), CITATIONS (number+year).
+  - Enumeration: sweep HEARING_DATE year by year 1948..current; each year query
+    returns that year's opinions with full text (>100/year paged via START).
+    Records deduped on internal Filename (unique per document).
+  - Full text: TEXT_OF_RULE is HTML (<p> paragraphs, <a> statute links);
+    BeautifulSoup get_text keeps the statute-citation link text and drops tags.
+    NO PDF, NO OCR.
+  - opinion_number: from the CITATIONS field ("03-018 (2003) ag" -> "03-018").
+  - date: from HEARING_DATE ("April 5, 2002" -> 2002-04-05).
+  - Type: binding AG opinions on specific submitted questions = case_law,
+    consistent with the other US/*-AGOpinions sources.
+  - The per-document ifetch CGI is server-side broken for okag ("Database okag
+    does not exist or is corrupted"); ELEMENT_SET=F makes ifetch unnecessary.
+  - The OSCN mirror (oscn.net, ftdb=STOKAG) datacenter-IP-blocks non-Oklahoma
+    vantages; OPLRS is the reachable route.
+  - Distinct from US/OK-LegalEthics (Oklahoma Bar Association attorney ethics),
+    US/OK-Courts, US/OK-Legislation, US/OK-TaxDecisions.

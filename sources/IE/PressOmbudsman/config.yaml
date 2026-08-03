@@ -1,0 +1,70 @@
+# IE/PressOmbudsman — Office of the Press Ombudsman & Press Council of Ireland — Decisions
+#
+# Source: Office of the Press Ombudsman / Press Council of Ireland
+# URL: https://pressombudsman.ie/
+# Data type: case_law
+# Auth: none
+# License: © Press Council of Ireland — all rights reserved (commercial use restricted)
+#
+# The Office of the Press Ombudsman and the Press Council of Ireland operate
+# Ireland's independent press-regulation system. The Press Ombudsman decides
+# public complaints that a member publication breached the industry Code of
+# Practice; decisions may be appealed to the Press Council or referred to it.
+# Each published decision (Ombudsman decision, Council appeal decision, or
+# decision on referral) is a quasi-judicial adjudication applying the Code of
+# Practice = case_law.
+#
+# Total: ~825 published decisions (2008-present) —
+#   ~577 Press Ombudsman decisions
+#   ~231 Press Council appeal decisions
+#   ~17  decisions on referral to the Press Council.
+#
+# Access:
+#   - WordPress site; decisions are posts under categories 37 (decisions),
+#     32 (appeals-to-the-press-council), 33 (decisions-on-referral).
+#   - Public WP REST API: /wp-json/wp/v2/posts?categories={id}&per_page=100
+#     returns full body in content.rendered (born-digital HTML, no OCR/PDF).
+
+source:
+  id: IE/PressOmbudsman
+  name: Office of the Press Ombudsman & Press Council of Ireland — Published Decisions
+  country: IE
+  data_types:
+    - case_law
+  url: https://pressombudsman.ie/
+  language: en
+  auth: none
+  license: custom-nc
+
+license:
+  name: "© Press Council of Ireland — all rights reserved"
+  url: "https://pressombudsman.ie/copyright/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "The Press Council of Ireland is a private independent regulator (not a public sector body, so the Irish PSI Licence does not apply). Its website asserts full copyright over all materials. Decisions are published for public information; commercial re-use is restricted."
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: decision_type
+      type: string
+      required: false
+  indexed_fields:
+    - title
+    - text
+    - case_reference
+    - decision_type
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.5
+  page_size: 100
+  estimated_total: 825
+  sample_count: 15

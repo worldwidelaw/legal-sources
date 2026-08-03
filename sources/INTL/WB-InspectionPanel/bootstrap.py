@@ -157,36 +157,58 @@ class WBInspectionPanelScraper(BaseScraper):
     # Full text fetching
     # ------------------------------------------------------------------ #
 
+    @staticmethod
+    def _text_url_candidates(txturl: str) -> list:
+        """Build ordered candidate text URLs.
+
+        The WDS API returns txturl on the WAF-protected documents.worldbank.org
+        host under a /text/ path, which returns 403 to most vantages. The actual
+        document CDN is documents1.worldbank.org and the path segment is /txt/
+        (documents.worldbank.org/.../text/x.txt -> documents1.../txt/x.txt).
+        Try the open CDN form first, then fall back to the original.
+        """
+        txturl = txturl.replace("http://", "https://")
+        candidates = []
+        cdn = txturl.replace(
+            "://documents.worldbank.org/", "://documents1.worldbank.org/"
+        ).replace("/text/", "/txt/")
+        candidates.append(cdn)
+        if txturl not in candidates:
+            candidates.append(txturl)
+        return candidates
+
     def _fetch_full_text(self, doc: dict) -> Optional[str]:
-        """Fetch full text from the txturl endpoint."""
+        """Fetch full text from the txturl endpoint (CDN-rewritten first)."""
         txturl = doc.get("txturl")
         if not txturl:
             return None
 
-        # Ensure HTTPS
-        txturl = txturl.replace("http://", "https://")
+        last_err = None
+        for url in self._text_url_candidates(txturl):
+            try:
+                time.sleep(DELAY)
+                r = self.session.get(url, timeout=60, allow_redirects=True)
+                r.raise_for_status()
 
-        try:
-            time.sleep(DELAY)
-            r = self.session.get(txturl, timeout=60, allow_redirects=True)
-            r.raise_for_status()
+                text = r.text.strip()
+                if len(text) < 100:
+                    logger.warning("Text too short (%d chars) for doc %s",
+                                   len(text), doc.get("display_title", "?"))
+                    continue
 
-            text = r.text.strip()
-            if len(text) < 100:
-                logger.warning("Text too short (%d chars) for doc %s",
-                               len(text), doc.get("display_title", "?"))
-                return None
+                # Clean up OCR artifacts and excessive whitespace
+                text = re.sub(r'\n{3,}', '\n\n', text)
+                text = re.sub(r' {3,}', ' ', text)
 
-            # Clean up OCR artifacts and excessive whitespace
-            text = re.sub(r'\n{3,}', '\n\n', text)
-            text = re.sub(r' {3,}', ' ', text)
+                return text
 
-            return text
+            except Exception as e:
+                last_err = e
+                continue
 
-        except Exception as e:
-            logger.warning("Failed to fetch text for %s: %s",
-                           doc.get("display_title", "?"), e)
-            return None
+        logger.warning("Failed to fetch text for %s: %s",
+                       doc.get("display_title", "?"), last_err)
+        return None
 
     # ------------------------------------------------------------------ #
     # Normalization

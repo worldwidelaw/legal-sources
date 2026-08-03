@@ -1,0 +1,129 @@
+# ===================================================================
+# US/LA-AGOpinions -- Louisiana Attorney General Opinions
+# ===================================================================
+# Formal advisory legal opinions of the Louisiana Attorney General.
+# Under La. R.S. 49:251-253 the Attorney General renders written legal
+# opinions, on request, to state and local public officials and bodies,
+# construing the constitution, statutes and regulations of Louisiana.
+# Each opinion is an authoritative statement of the state's legal
+# position on a question of law = doctrine (official advisory opinion
+# of the state; cf. sibling US/OR-AGOpinions, US/CA-AGOpinions,
+# US/NC-AGOpinions). Public domain Louisiana state-government works.
+#
+# Published by the State Library of Louisiana as part of its CONTENTdm
+# "Louisiana Public Documents Digital Archive" (alias p267101coll4) on
+# the OCLC-hosted instance at cdm16313.contentdm.oclc.org. The public
+# dmwebservices JSON API enumerates items (dmQuery) and returns their
+# Dublin-Core metadata (dmGetItemInfo). A server-side title search
+# isolates the AG opinions from the ~44,700-item archive; the exact-
+# title records ("Attorney General's Opinions") are the individual
+# opinions (1,163), separated from the weekly opinion summaries and the
+# monthly press columns. The transc field is empty, so the full opinion
+# text is extracted from each item's PDF (born-digital / State-Library
+# OCR text layer) via the shared common.pdf_extract helper. No CAPTCHA,
+# no auth. Reachable locally (the AG's own site is WAF-gated, but this
+# State Library CONTENTdm route is open).
+# ===================================================================
+
+source:
+  id: "US/LA-AGOpinions"
+  country: "US"
+  name: "Louisiana Attorney General Opinions"
+  url: "https://cdm16313.contentdm.oclc.org/digital/collection/p267101coll4"
+  description: |
+    Formal advisory legal opinions of the Louisiana Attorney General
+    (La. R.S. 49:251-253), construing the constitution, statutes and
+    regulations of Louisiana on request of state and local public
+    officials and bodies. Each opinion is an authoritative statement of
+    the state's legal position on a question of law = doctrine.
+    Enumerated from the State Library of Louisiana's CONTENTdm
+    "Louisiana Public Documents Digital Archive" (alias p267101coll4)
+    via the public dmwebservices JSON API; a server-side title search
+    isolates the ~1,163 individual opinions from the archive's weekly
+    summaries and press columns. Opinion number, subject headings,
+    caption and date are read from each item's Dublin-Core fields, and
+    the full opinion text is extracted from the item PDF. No CAPTCHA,
+    no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://cdm16313.contentdm.oclc.org"
+  endpoints:
+    query: "/digital/bl/dmwebservices/index.php?q=dmQuery/p267101coll4/title^Attorney General^all^and/dmrecord!title!date/date/{max}/{start}/1/0/0/0/json"
+    item: "/digital/bl/dmwebservices/index.php?q=dmGetItemInfo/p267101coll4/{rec}/json"
+    download: "/digital/api/collection/p267101coll4/id/{rec}/download"
+
+data_model:
+  type: "doctrine"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/LA-AGOpinions/{CONTENTdm dmrecord})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "AG opinion number (e.g. 13-0075), parsed from caption/body"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "caption"
+      description: "Item caption (date + opinion number)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "subject"
+      description: "Subject headings (Dublin-Core subjec)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "issuer"
+      description: "Issuing authority (Louisiana Attorney General)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Opinion title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (extracted from the item PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of opinion (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the CONTENTdm item page"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Louisiana Attorney General opinions are official works of Louisiana
+    state government (edicts of government) and are not subject to
+    copyright. Free to use, including commercially.

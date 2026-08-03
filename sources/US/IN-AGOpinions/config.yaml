@@ -1,0 +1,101 @@
+# ===================================================================
+# US/IN-AGOpinions -- Indiana Attorney General Official Opinions
+# ===================================================================
+# Full text of Official Opinions issued by the Indiana Attorney
+# General. These are formal, authoritative interpretations of Indiana
+# law (doctrine), published openly as text-based PDFs at in.gov. No
+# authentication required. Public domain US state government works.
+# ===================================================================
+
+source:
+  id: "US/IN-AGOpinions"
+  country: "US"
+  name: "Indiana Attorney General Official Opinions"
+  url: "https://www.in.gov/attorneygeneral/about-the-office/advisory/opinions/"
+  description: |
+    Official Opinions issued by the Office of the Indiana Attorney
+    General. An Official Opinion is a formal, written legal
+    interpretation answering a question of Indiana law posed by a public
+    official, and constitutes an authoritative state legal
+    interpretation. Full text extracted from the text-based PDFs hosted
+    on the in.gov file store. Coverage runs ~2006-present.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 4
+
+api:
+  type: "file_store_enumeration"
+  base_url: "https://www.in.gov/attorneygeneral/files"
+  endpoints:
+    opinion_modern: "/Official-Opinion-{year}-{n}.pdf"   # 2009-present
+    opinion_legacy: "/OfficialOpinion{year}-{n}.pdf"      # 2006-2008
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "opinion_number"
+      description: "AG opinion number (e.g., '2023-1')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_kind"
+      description: "Always 'official' for Indiana"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Opinion title (Indiana Attorney General Official Opinion No. ...)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "syllabus"
+      description: "One-line subject summary (the opinion's 'RE:' line)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Indiana)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Indiana Attorney General Official Opinions are official state government works in the public domain."
+
+notes: |
+  - Official Opinions hosted as text-based PDFs at in.gov/attorneygeneral/files
+  - The on-site index is a Cloudflare-gated Tableau dashboard
+    (datavizpublic.in.gov) and cannot be scraped; enumeration instead
+    probes the predictable, year-keyed PDF filename schemes:
+      * 2009-present : Official-Opinion-{YYYY}-{N}.pdf
+      * 2006-2008    : OfficialOpinion{YYYY}-{N}.pdf
+  - Opinion numbers are non-contiguous within a year (gaps occur);
+    discovery probes n=1..18 with a miss-streak cutoff.
+  - Full text extracted via common.pdf_extract (real text layer, no OCR).
+  - Issue date and 'RE:' syllabus parsed from the opening lines.
+  - Coverage ~2006-present; public domain Indiana government data.

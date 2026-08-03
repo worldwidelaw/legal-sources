@@ -191,8 +191,29 @@ class AlbanianSupremeCourtFetcher:
                 except Exception:
                     pass
 
+            # Pure-python .doc fallbacks (no external tool needed — the VPS
+            # image lacks antiword/textutil, see issue #1178). olefile is a
+            # declared dependency; the raw-bytes recovery needs nothing at all.
+            if (text is None or not text.strip()) and ext == '.doc':
+                try:
+                    ole_text = self._extract_doc_ole(content)
+                    if ole_text and ole_text.strip():
+                        text = ole_text
+                except Exception:
+                    pass
+            if (text is None or not text.strip()) and ext == '.doc':
+                try:
+                    raw_text = self._extract_doc_rawbytes(content)
+                    if raw_text and raw_text.strip():
+                        text = raw_text
+                except Exception:
+                    pass
+
             # Clean up text
             if text:
+                # Normalize carriage returns (legacy .doc uses \r line breaks;
+                # the bundle splitter keys on \n between header lines).
+                text = text.replace('\r\n', '\n').replace('\r', '\n')
                 # Remove excessive whitespace
                 text = re.sub(r'\n{3,}', '\n\n', text)
                 text = text.strip()
@@ -201,6 +222,49 @@ class AlbanianSupremeCourtFetcher:
 
         finally:
             os.unlink(tmp_path)
+
+    @staticmethod
+    def _extract_doc_ole(content: bytes) -> str:
+        """Pure-python .doc text recovery via the OLE WordDocument stream.
+
+        Legacy binary .doc (OLE2/CFB) files store the body in a WordDocument
+        stream; we pull readable character runs out of it. Works without any
+        external converter. Requires the `olefile` package (declared dep).
+        """
+        import io as _io
+        import olefile
+
+        if not olefile.isOleFile(_io.BytesIO(content)):
+            return ''
+        ole = olefile.OleFileIO(_io.BytesIO(content))
+        if not ole.exists('WordDocument'):
+            return ''
+        raw = ole.openstream('WordDocument').read()
+        text = raw.decode('latin-1', 'ignore')
+        chunks = re.findall(
+            r"[A-Za-zÀ-ÿ0-9\s\.,;:%°\-\(\)/\"'¿?¡!N°]{6,}", text)
+        return '\n'.join(c.strip() for c in chunks if len(c.strip()) > 5)
+
+    @staticmethod
+    def _extract_doc_rawbytes(content: bytes) -> str:
+        """Last-resort .doc recovery with no external dependency.
+
+        Decodes the whole OLE container as latin-1, keeps runs of readable
+        characters, and drops chunks that are mostly non-letter binary noise.
+        """
+        text = content.decode('latin-1', 'ignore')
+        chunks = re.findall(
+            r"[A-Za-zÀ-ÿ0-9\s\.,;:%°\-\(\)/\"'¿?¡!N°]{6,}", text)
+        out = []
+        for c in chunks:
+            c = c.strip()
+            if len(c) < 6:
+                continue
+            ascii_letters = sum(ch.isalpha() and ch.isascii() for ch in c)
+            if ascii_letters < len(c) * 0.5:
+                continue
+            out.append(c)
+        return '\n'.join(out)
 
     def _parse_decision_from_bundle(self, text: str, doc_info: dict) -> list[dict]:
         """Parse individual decisions from a bundle document.
@@ -444,9 +508,16 @@ class AlbanianSupremeCourtFetcher:
                                 'type': 'archive'
                             }
 
-    def _get_bulletin_slugs(self, max_pages: int = 5) -> list[dict]:
-        """Get bulletin slugs from paginated list using pageContext.articles."""
+    def _get_bulletin_slugs(self, max_pages: int = 5,
+                            max_consecutive_misses: int = 4) -> list[dict]:
+        """Get bulletin slugs from paginated list using pageContext.articles.
+
+        Bulletin list pages are contiguous today, but a single 404 (a gap or a
+        transient error) must NOT end the crawl (issue #1178). We skip a missing
+        page and keep going, stopping only after several consecutive misses.
+        """
         slugs = []
+        consecutive_misses = 0
         for page in range(1, max_pages + 1):
             if page == 1:
                 url = f"{self.API_BASE}/sq/lajme/buletini/page-data.json"
@@ -454,23 +525,27 @@ class AlbanianSupremeCourtFetcher:
                 url = f"{self.API_BASE}/sq/lajme/buletini/{page}/page-data.json"
 
             data = self._fetch_json(url)
-            if not data:
-                break
 
-            # New API: articles in pageContext
-            articles = (data.get('result', {}).get('pageContext', {})
-                        .get('articles', []))
-            # Fallback to old API structure
-            if not articles:
-                try:
-                    result = data['result']['data']['api']
-                    articles = (result.get('newsList', {}).get('news', [])
-                                or result.get('news', []))
-                except (KeyError, TypeError):
-                    pass
+            articles = []
+            if data:
+                # New API: articles in pageContext
+                articles = (data.get('result', {}).get('pageContext', {})
+                            .get('articles', []))
+                # Fallback to old API structure
+                if not articles:
+                    try:
+                        result = data['result']['data']['api']
+                        articles = (result.get('newsList', {}).get('news', [])
+                                    or result.get('news', []))
+                    except (KeyError, TypeError):
+                        pass
 
             if not articles:
-                break
+                consecutive_misses += 1
+                if consecutive_misses >= max_consecutive_misses:
+                    break
+                continue
+            consecutive_misses = 0
 
             for item in articles:
                 slug = item.get('slug')
@@ -615,7 +690,7 @@ class AlbanianSupremeCourtFetcher:
         # Fetch from bulletins first (inline HTML — works without .doc tools)
         print("Fetching from bulletins (inline text)...", file=sys.stderr)
         for decision in self.fetch_bulletin_decisions(
-                max_pages=2 if sample_only else 10):
+                max_pages=2 if sample_only else 40):
             if record_count >= max_sample:
                 break
             did = decision['_id']
@@ -730,7 +805,8 @@ class AlbanianSupremeCourtFetcher:
 
 def main():
     parser = argparse.ArgumentParser(description='Albanian Supreme Court case law fetcher')
-    parser.add_argument('command', choices=['bootstrap', 'fetch_updates'],
+    parser.add_argument('command',
+                       choices=['bootstrap', 'bootstrap-fast', 'fetch_updates'],
                        help='Command to run')
     parser.add_argument('--sample', action='store_true',
                        help='Only fetch sample records')
@@ -744,7 +820,9 @@ def main():
 
     fetcher = AlbanianSupremeCourtFetcher(sample_dir=args.output)
 
-    if args.command == 'bootstrap':
+    if args.command in ('bootstrap', 'bootstrap-fast'):
+        # bootstrap-fast is the fleet's full-corpus entry point; --sample still
+        # limits to a small validation set.
         fetcher.bootstrap(sample_only=args.sample)
     elif args.command == 'fetch_updates':
         since = args.since or (datetime.now(timezone.utc).isoformat())

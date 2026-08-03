@@ -1,0 +1,77 @@
+# EE/AllCourts — Estonian Court Decisions (Kohtulahendid, all courts)
+#
+# Source: Riigi Teataja (State Gazette of Estonia) — court decisions section
+# URL: https://www.riigiteataja.ee/kohtulahendid/
+# Data type: case_law
+# Auth: none
+# License: Public domain (Estonian Copyright Act §5 excludes court decisions)
+#
+# Riigi Teataja publishes the full text of decisions of all Estonian courts:
+# county courts (maakohus), administrative courts (halduskohus), circuit courts
+# of appeal (ringkonnakohus) and older Supreme Court (Riigikohus) material. Each
+# published decision (kohtuotsus/kohtumäärus) finally adjudicates a case =
+# case_law.
+#
+# Access (open public JSON API backing the Angular SPA):
+#   - Search: POST /public-api/api/v1/kohtuteave/otsing/kohtulahendid
+#       body {"general":{"searchText":"","sort":"LahendiKuulutamiseAeg",
+#             "sortAscending":<bool>,"searchAfter":<offset>},"precise":{}}
+#       -> {"kokku":722556,"tulemused":[ ...30 per page... ]}
+#     `searchAfter` is a numeric offset (increments of 30); walked ascending
+#     (oldest first) with a checkpoint so fleet reruns resume + complete.
+#   - Full text: GET /public-api/api/v1/kohtuteave/kohtulahendid/{fileId}/file
+#     (born-digital PDF; Accept: application/pdf — the API 406s on application/json)
+#     extracted with PyMuPDF (fitz), no OCR needed.
+#
+# Note: previously blocked (no_full_text_access) because the OLD site gated full
+# text behind Cloudflare-JS fail.html; the rebuilt SPA exposes this open API.
+
+source:
+  id: EE/AllCourts
+  name: Estonian Court Decisions (Kohtulahendid — All Courts)
+  country: EE
+  data_types:
+    - case_law
+  url: https://www.riigiteataja.ee/kohtulahendid/
+  language: et
+  auth: none
+  license: pd-gov
+
+license:
+  name: "Public Domain (official documents)"
+  url: "https://www.riigiteataja.ee/en/eli/512122024001/consolide"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Estonian Copyright Act (Autoriõiguse seadus) §5 excludes court decisions and other official documents from copyright protection — public domain. Published on the official Riigi Teataja."
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: case_number
+      type: string
+      required: false
+    - name: court
+      type: string
+      required: false
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+  indexed_fields:
+    - title
+    - text
+    - case_number
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.0
+  page_size: 30
+  estimated_total: 722556
+  sample_count: 15

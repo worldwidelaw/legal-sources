@@ -1,0 +1,57 @@
+endpoints:
+  base_url: https://www.ordre-chirurgiens-dentistes.fr/decisions/
+  index_page: https://www.ordre-chirurgiens-dentistes.fr/decisions/
+  category_page: https://www.ordre-chirurgiens-dentistes.fr/decisions/decision.php?categorie={categorie}
+notes: 'Disciplinary jurisprudence of the French National Order of Dental Surgeons
+  (Ordre National des Chirurgiens-Dentistes).
+
+  Covers decisions from:
+  - Chambre disciplinaire nationale (national appeal)
+  - Chambres disciplinaires de première instance (regional)
+  - Section des assurances sociales du CNO
+
+  Decisions are browsed by theme (45 categories) via decision.php?categorie=.
+  Each decision card exposes the dossier number, decision date, instance type and
+  a relative link to the full anonymised decision PDF under decisions/Fichiers/.
+  Full text is extracted from that PDF with pdfplumber. Records are de-duplicated
+  by dossier number across themes.
+
+  '
+rate_limit:
+  delay_between_requests: 1.5
+  requests_per_second: 0.66
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: dossier_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: date
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - url
+source:
+  auth: none
+  country: FR
+  data_types:
+  - case_law
+  id: FR/OrdreChirurgiensDentistes
+  name: "Ordre des Chirurgiens-Dentistes — Jurisprudence disciplinaire"
+  url: https://www.ordre-chirurgiens-dentistes.fr/decisions/
+license:
+  name: "Custom terms (public anonymised jurisprudence)"
+  url: "https://www.ordre-chirurgiens-dentistes.fr/informations-legales/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Public anonymised disciplinary decisions of a body with a public service mission. The site declares no explicit open-data reuse licence; treated as public jurisprudence (comparable to French court decisions)."

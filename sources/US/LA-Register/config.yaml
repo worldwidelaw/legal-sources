@@ -1,0 +1,120 @@
+# ===================================================================
+# US/LA-Register -- Louisiana Register
+# ===================================================================
+# The official monthly publication of the Louisiana Office of the State
+# Register (La. R.S. 49:954.1) -- the state's counterpart of the
+# Federal Register. Each issue publishes the rulemaking record:
+# gubernatorial Executive Orders, Emergency Rules, adopted Rules,
+# Notices of Intent (proposed rules), Potpourri, committee reports and
+# Attorney General opinion summaries. Adopted rules are later codified
+# into the Louisiana Administrative Code. The rulemaking record is
+# legally operative secondary legislation = legislation. Public domain
+# Louisiana state-government works (edicts of government).
+#
+# Published by the State Library of Louisiana as part of its CONTENTdm
+# "Louisiana Public Documents Digital Archive" (alias p267101coll4) on
+# the OCLC-hosted instance at cdm16313.contentdm.oclc.org -- the same
+# archive as siblings US/LA-AGOpinions, US/LA-ExecutiveOrders and
+# US/LA-AdministrativeCode. The public dmwebservices JSON API
+# enumerates the 640 monthly issues (1975-present) via a server-side
+# title search; full text is extracted from each issue's born-digital
+# PDF (pre-digital scanned issues yield 0 chars and are skipped). No
+# CAPTCHA, no auth. Reachable locally.
+# ===================================================================
+
+source:
+  id: "US/LA-Register"
+  country: "US"
+  name: "Louisiana Register"
+  url: "https://cdm16313.contentdm.oclc.org/digital/collection/p267101coll4"
+  description: |
+    The Louisiana Register -- the official monthly publication of the
+    Louisiana Office of the State Register (La. R.S. 49:954.1), the
+    state's counterpart of the Federal Register. Each issue publishes
+    the rulemaking record: Executive Orders, Emergency Rules, adopted
+    Rules, Notices of Intent, Potpourri and AG opinion summaries.
+    Enumerated from the State Library of Louisiana's CONTENTdm
+    "Louisiana Public Documents Digital Archive" (alias p267101coll4)
+    via the public dmwebservices JSON API; a server-side title search
+    isolates the 640 monthly issues. Issue month, subject headings and
+    date are read from each item's Dublin-Core fields, and the full
+    text is extracted from the issue PDF (born-digital for modern
+    issues). No CAPTCHA, no auth.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://cdm16313.contentdm.oclc.org"
+  endpoints:
+    query: "/digital/bl/dmwebservices/index.php?q=dmQuery/p267101coll4/title^Louisiana Register^all^and/dmrecord!title!date/date/{max}/{start}/1/0/0/0/json"
+    item: "/digital/bl/dmwebservices/index.php?q=dmGetItemInfo/p267101coll4/{rec}/json"
+    download: "/digital/api/collection/p267101coll4/id/{rec}/download"
+
+data_model:
+  type: "legislation"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/LA-Register/{CONTENTdm dmrecord})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "issue"
+      description: "Issue month / edition label"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "subject"
+      description: "Subject headings (Dublin-Core subjec)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "issuer"
+      description: "Publishing authority (Louisiana Office of the State Register)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Issue title (Louisiana Register — Month YYYY)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Register issue (extracted from PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601; first of month for YYYY-MM values)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the CONTENTdm item page"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    The Louisiana Register is an official work of Louisiana state
+    government (edicts of government) and is not subject to copyright.
+    Free to use, including commercially.

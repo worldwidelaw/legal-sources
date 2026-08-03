@@ -1,0 +1,91 @@
+# ===================================================================
+# US/AK-AGOpinions -- Alaska Attorney General Formal Opinions
+# ===================================================================
+# Full text of formal legal opinions issued by the Alaska Attorney
+# General (Alaska Department of Law). These are official state legal
+# interpretations (doctrine). Published openly as text PDFs at
+# law.alaska.gov. No authentication required. Public government data.
+# ===================================================================
+
+source:
+  id: "US/AK-AGOpinions"
+  country: "US"
+  name: "Alaska Attorney General Formal Opinions"
+  url: "https://law.alaska.gov/doclibrary/opinions-index/opinions_chron.html"
+  description: |
+    Formal legal opinions issued by the Alaska Department of Law
+    (Office of the Attorney General). Each opinion answers a legal
+    question posed by a public official and constitutes an authoritative
+    (advisory) interpretation of Alaska law. Full text extracted from the
+    official digitally-produced PDFs hosted under law.alaska.gov/pdf/
+    opinions/. Coverage runs from 1990 (and older) to present, one static
+    HTML year index page per year.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://law.alaska.gov"
+  endpoints:
+    chron_index: "/doclibrary/opinions-index/opinions_chron.html"
+    year_page: "/doclibrary/opinions-index/opinions{year}.html"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 7
+  key_fields:
+    - name: "opinion_number"
+      description: "Official AG opinion number (e.g., '23-006')"
+      type: "string"
+      role: "primary_key"
+      required: false
+    - name: "title"
+      description: "Opinion title (Alaska Attorney General Opinion No. ...)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Alaska)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Alaska Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Formal AG opinions index at law.alaska.gov/doclibrary/opinions-index/
+  - Chronological master page (opinions_chron.html) links one static HTML
+    page per year (opinions{YYYY}.html, 1990-present)
+  - Each year page lists opinions as <li>MM/DD/YY - <a>Title</a> rows;
+    PDF hrefs are relative ("../../pdf/opinions/opinions_{YYYY}/...") and
+    resolved against the year page URL
+  - PDFs are digitally-produced text (real text layer, no OCR needed)
+  - Full text via common.pdf_extract.extract_pdf_markdown (OOM-hardened)
+  - curl subprocess fallback for macOS LibreSSL TLS negotiation
+  - Coverage 1990-present; public domain Alaska government data

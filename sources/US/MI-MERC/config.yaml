@@ -1,0 +1,127 @@
+# ===================================================================
+# US/MI-MERC -- Michigan Employment Relations Commission Decisions
+# ===================================================================
+# Published decisions and orders of the Michigan Employment Relations
+# Commission (MERC), the state's quasi-judicial agency administering
+# Michigan's labor-relations statutes -- the Public Employment
+# Relations Act (PERA, 1965 PA 379), the Labor Mediation Act, and Act
+# 312 compulsory arbitration for police and fire. MERC decides unfair-
+# labor-practice (ULP) charges, representation / election petitions,
+# and unit-clarification petitions. Each decision resolves a specific
+# contested case = case_law; the decisions are official Michigan state-
+# government works in the public domain (government edicts).
+#
+# BUILD RECIPE: MERC's historical corpus (1994/1998-2015) is published
+# as born-digital text-layer PDFs on an IIS directory-browse file store
+# at https://gsaindexed.apps.lara.state.mi.us/MERC/ . The tree layout
+# is inconsistent across years (flat /MERC/{YEAR}/, month-nested
+# /MERC/{YEAR}/{MM}/, and extra-nested variants), so the scraper
+# RECURSIVELY WALKS the /MERC/ tree, collecting every *.pdf. Full text
+# via common.pdf_extract; case number, parties, and (where present) the
+# decision date are parsed from the decision body. No auth, no CAPTCHA.
+# The michigan.gov LEO index page is Akamai/WAF-gated (403) but the
+# gsaindexed store serves 200 to any browser UA.
+# ===================================================================
+
+source:
+  id: "US/MI-MERC"
+  country: "US"
+  name: "Michigan Employment Relations Commission — Decisions & Orders"
+  url: "https://gsaindexed.apps.lara.state.mi.us/MERC/"
+  description: |
+    Published decisions and orders of the Michigan Employment Relations
+    Commission (MERC). MERC administers Michigan's public- and private-
+    sector labor-relations statutes -- the Public Employment Relations
+    Act (PERA, 1965 PA 379), the Labor Mediation Act, and Act 312
+    compulsory arbitration -- deciding unfair-labor-practice charges,
+    representation / election petitions, and unit-clarification
+    petitions. Each decision resolves a specific contested case =
+    case_law. Enumerated by recursively walking the MERC IIS directory-
+    browse PDF store (gsaindexed.apps.lara.state.mi.us/MERC/, covering
+    roughly 1994/1998-2015); case number, parties, decision date, and
+    the full decision text (from the born-digital PDF) are captured.
+    No CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://gsaindexed.apps.lara.state.mi.us"
+  endpoints:
+    directory_root: "/MERC/"
+    year_dir: "/MERC/{year}/"
+    decision_pdf: "/MERC/{year}/{...}/{name}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/MI-MERC/{store-path-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Slug derived from the decision PDF store path (unique per file)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "case_number"
+      description: "MERC case number (e.g. 'C10 I-220', 'R11 A-001', 'UC03 C-13')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "parties"
+      description: "Public employer / union / individual charging party from the caption"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "issuer"
+      description: "Issuing body (Michigan Employment Relations Commission)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Decision title (MERC Case {number} — parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (born-digital PDF extract)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the decision body; null if absent"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the decision PDF on gsaindexed.apps.lara.state.mi.us"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions of the Michigan Employment Relations Commission are
+    official works of Michigan state government (edicts of a quasi-
+    judicial government body) and are not subject to copyright under the
+    government-edicts doctrine. Free to use, including commercially.

@@ -1,0 +1,101 @@
+# ===================================================================
+# US/OR-AGOpinions -- Oregon Attorney General Opinions
+# ===================================================================
+# Full text of formal opinions issued by the Oregon Attorney General
+# (Oregon Department of Justice). These are official state legal
+# interpretations (doctrine), published openly as text-layer PDFs at
+# doj.state.or.us. No authentication required. Public domain.
+# ===================================================================
+
+source:
+  id: "US/OR-AGOpinions"
+  country: "US"
+  name: "Oregon Attorney General Opinions"
+  url: "https://www.doj.state.or.us/oregon-department-of-justice/office-of-the-attorney-general/attorney-general-opinions/"
+  description: |
+    Formal opinions issued by the Oregon Attorney General (Oregon DOJ).
+    Each opinion answers a legal question posed by a state official and
+    constitutes an authoritative interpretation of Oregon law. A single
+    server-rendered index page lists every published opinion
+    (1997-present) as a structured block (designation, requestor, date,
+    summary) linking a text-layer PDF. Most opinions carry a real text
+    layer; a minority of recent ones are image-only scans and are skipped
+    pending OCR.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.doj.state.or.us"
+  endpoints:
+    index: "/oregon-department-of-justice/office-of-the-attorney-general/attorney-general-opinions/"
+    opinion_pdf: "/wp-content/uploads/{year}/{month}/{file}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "opinion_number"
+      description: "AG opinion designation (e.g., 'OP-2013-2', 'OP8297')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "requestor"
+      description: "Official / agency that requested the opinion"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "summary"
+      description: "One-line topic summary from the index page"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Opinion title (Oregon Attorney General Opinion No. ...)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Oregon)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Oregon Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Formal AG opinions at doj.state.or.us (Oregon DOJ), 1997-present.
+  - The index is a single server-rendered HTML page; each opinion block
+    carries designation, requestor, issue date and a one-line summary,
+    plus a direct /wp-content/uploads/YYYY/MM/*.pdf link. No pagination,
+    no JS, no CAPTCHA.
+  - Most opinion PDFs are text-layer (real text, no OCR), extracted via
+    common.pdf_extract. A minority of recent opinions are image-only
+    scans (0 extractable chars) and are skipped pending OCR.
+  - Public domain Oregon government works.

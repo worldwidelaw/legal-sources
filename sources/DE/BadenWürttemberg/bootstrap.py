@@ -227,11 +227,23 @@ def extract_base_law_id(doc_id: str) -> str:
     base = re.sub(r'prahmen$', '', base)
     # Also strip trailing paragraph-only: P<num>
     base = re.sub(r'P\d+$', '', base)
+    # Strip a trailing 'rahmen' framework marker so an already-rahmen-level
+    # docId normalizes to the same base as its norm-level siblings. Without
+    # this, make_rahmen_id() re-appends 'rahmen' and produces an invalid
+    # '...rahmenrahmen' docId that the Langtext endpoint rejects with HTTP 500
+    # (see issue #1062).
+    base = re.sub(r'rahmen$', '', base)
     return base
 
 
 def make_rahmen_id(base_id: str) -> str:
-    """Create the 'rahmen' (framework) document ID for a law."""
+    """Create the 'rahmen' (framework) document ID for a law.
+
+    Idempotent: never double-appends 'rahmen' (a doubled suffix yields an
+    invalid docId that the API answers with HTTP 500 — see issue #1062).
+    """
+    if base_id.endswith("rahmen"):
+        return base_id
     return base_id + "rahmen"
 
 

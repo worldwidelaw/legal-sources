@@ -1,0 +1,106 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — Office of the Complaints Commissioner Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/ComplaintsCommissioner"
+  country: "UK"
+  name: "Office of the Complaints Commissioner"
+  url: "https://frccommissioner.org.uk/"
+  description: |
+    Final Reports of the Office of the Complaints Commissioner (The Financial
+    Regulators Complaints Commissioner), the independent statutory reviewer of
+    complaints about the UK financial regulators (FCA, PRA, Bank of England,
+    PSR) under the Complaints Scheme established by the Financial Services Act
+    2012 (ss. 84-87). Each report investigates an individual complaint and sets
+    out the Commissioner's findings and recommendations. ~1,000 reports.
+    Full text via born-digital PDFs on frccommissioner.org.uk.
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "html_pdf"
+  base_url: "https://frccommissioner.org.uk"
+  endpoints:
+    fca_archive:
+      path: "/final-reports/fca-the-financial-conduct-authority/"
+      method: "GET"
+      description: "Archive of FCA complaint final reports (PDF links)"
+    pra_archive:
+      path: "/final-reports/pra-the-prudential-regulation-authority/"
+      method: "GET"
+      description: "Archive of PRA complaint final reports"
+    boe_archive:
+      path: "/final-reports/boe-the-bank-of-england/"
+      method: "GET"
+      description: "Archive of Bank of England complaint final reports"
+    psr_archive:
+      path: "/final-reports/psr-the-payment-systems-regulator/"
+      method: "GET"
+      description: "Archive of PSR complaint final reports"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "case_reference"
+  update_strategy: "upsert"
+  versioning: "issued_date"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "case_reference"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "regulator"
+      type: "string"
+      role: "classification"
+    - name: "regulator_code"
+      type: "string"
+      role: "classification"
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Custom terms — © The Financial Regulators Complaints Commissioner"
+  url: "https://frccommissioner.org.uk/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Site footer states "© The Financial Regulators Complaints Commissioner.
+    All rights reserved." No Open Government Licence. Public reports published
+    for transparency; commercial reuse restricted absent explicit permission.
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~1,000 final reports (FCA ~1000, PRA ~22, BoE ~3, PSR ~3)
+  - Full text via born-digital PDFs on frccommissioner.org.uk/wp-content/uploads
+  - Case reference + issued/published dates parsed from archive-page anchors
+  - No authentication required

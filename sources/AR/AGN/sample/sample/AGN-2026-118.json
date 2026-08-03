@@ -1,0 +1,22 @@
+{
+  "_id": "AGN-2026-118",
+  "_source": "AR/AGN",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-02T20:07:08.423350+00:00",
+  "title": "Fondo de Garantía de Sustentabilidad (FGS) Período 2020-2021. Administración Nacional de la Seguridad Social (ANSES)",
+  "text": "Alcance de la auditoría El examen se desarrolla de conformidad con las Normas de Control Externo Gubernamental para la Auditoría General de la Nación, aprobadas por Resolución 26/15 y por su norma complementaria, de Control Externo de la Gestión Gubernamental (Res. 186/16), dictadas en virtud de las facultades conferidas por la Ley 24.156, de Administración Financiera y de los Sistemas de Control del Sector Público Nacional, en su Art. 119, inc. d). La presente auditoría, en orden al Objeto y Objetivo previamente expuestos, revisten el carácter de “Auditoría de Gestión” y, por tal razón, la AGN ha centrado la obtención de evidencias en la observancia de lo prescripto en el marco normativo aplicable para cada caso, realizando el análisis de la información disponible, considerando el enfoque por resultados. El período auditado comprende entre el 01/01/2020 y el 31/12/2021. El mismo se encontró afectado por un contexto mundial de caracterización del Coronavirus SARS-CoV-2 (COVID 19) como pandemia por parte de la Organización Mundial de la Salud. Las tareas de campo en sede del Organismo se desarrollaron desde el 05/06/2023 al 11/10/2024. El proyecto de informe fue comunicado al auditado para que formule las observaciones y/o comentarios que estime pertinentes (cfr. Res. 77/02-AGN, Art. 22), habiéndose recibido los comentarios que han sido incorporados como Anexo VIII, mientras que el análisis efectuado sobre los mismos se incluye en el Anexo IX del presente, no habiendo implicado modificaciones al Proyecto de Informe remitido a descargo.",
+  "date": "2026-04-30",
+  "url": "https://www.agn.gob.ar/Informe-118-2026",
+  "pdf_url": "https://webagnapi.agn.gob.ar/sites/default/files/informes/2026-118-Informe.pdf",
+  "ano": 2026,
+  "resolucion": 118,
+  "actuacion": "151/2023",
+  "fecha_acta": "2026-04-30",
+  "periodo_auditado": "2020-01-01 / 2021-12-31",
+  "organismo_auditado_ids": [
+    "185"
+  ],
+  "tipo_de_auditoria_ids": [
+    "51"
+  ]
+}

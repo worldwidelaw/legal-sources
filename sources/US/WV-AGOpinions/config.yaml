@@ -1,0 +1,98 @@
+# ===================================================================
+# US/WV-AGOpinions -- West Virginia Attorney General Opinions
+# ===================================================================
+# Full text of legal opinions issued by the West Virginia Attorney
+# General. These are official state legal interpretations (doctrine).
+# Published openly as text PDFs at ago.wv.gov. No authentication
+# required. Public government data.
+# ===================================================================
+
+source:
+  id: "US/WV-AGOpinions"
+  country: "US"
+  name: "West Virginia Attorney General Opinions"
+  url: "https://ago.wv.gov/attorney-general-opinions"
+  description: |
+    Legal opinions issued by the West Virginia Office of the Attorney
+    General. Each opinion answers a legal question posed by a public
+    official and constitutes an authoritative (advisory) interpretation
+    of West Virginia law. Full text extracted from the official
+    digitally-produced PDFs served via Drupal media download URLs
+    (/media/{id}/download) under ago.wv.gov. A hub page links several
+    date-range archive pages spanning roughly 2000-present; a minority
+    of older (pre-2010) opinions are scanned images and are skipped.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://ago.wv.gov"
+  endpoints:
+    hub: "/attorney-general-opinions"
+    archive: "/page/attorney-general-opinions-{start}-{end}"
+    media: "/media/{id}/download?inline"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 7
+  key_fields:
+    - name: "title"
+      description: "Opinion title (descriptive subject of the opinion)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to the opinion PDF"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — West Virginia)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "West Virginia Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Opinions hub at ago.wv.gov/attorney-general-opinions
+  - The hub lists recent opinions and links date-range archive pages in
+    two URL shapes: /page/attorney-general-opinions-2024-2020 and
+    /attorney-general-opinions-2014-2010 (no /page/ prefix); coverage
+    spans roughly 2000-present
+  - Opinions are linked as Drupal media downloads (/media/{id}/download)
+    and a few direct /sites/default/files/*.pdf links; anchor text is the
+    descriptive subject with a trailing "(Month D, YYYY)" issued date
+  - PDFs are digitally-produced text (no OCR); a minority of older
+    (pre-2010) opinions are scanned images and are skipped (0 chars)
+  - Full text via common.pdf_extract.extract_pdf_markdown (OOM-hardened)
+  - Issued date derived from the title's trailing date, falling back to
+    the opinion's opening lines
+  - curl subprocess fallback for macOS LibreSSL TLS negotiation
+  - Public domain West Virginia government data

@@ -1,0 +1,134 @@
+# ===================================================================
+# US/FL-OFR -- Florida Office of Financial Regulation (OFR)
+#   Final Orders (2015-present, via DOAH FLAIO static index)
+# ===================================================================
+# Final Orders of the Florida Office of Financial Regulation (OFR), the
+# state agency that licenses and regulates Florida's financial services
+# industry (state-chartered banks & credit unions, securities dealers
+# and investment advisers, mortgage lenders/brokers/loan originators,
+# money services businesses, consumer finance & collection agencies).
+# Under Ch. 120, Fla. Stat. (APA) OFR resolves contested licensing,
+# registration, rule-waiver and enforcement matters by issuing a Final
+# Order; each resolves a specific contested case = case_law. Per
+# s. 120.53, Fla. Stat., every agency Final Order after 1 Jul 2015 is
+# published on the Division of Administrative Hearings' "Florida Agency
+# Indexed Orders" (FLAIO) database; OFR uniquely exposes a single
+# static index page (doah.state.fl.us/FLAIO/OFR/) listing all its
+# orders as born-digital text-layer PDFs. No JavaScript, no CAPTCHA,
+# no auth, no session. Public domain Florida state government works.
+# ===================================================================
+
+source:
+  id: "US/FL-OFR"
+  country: "US"
+  name: "Florida Office of Financial Regulation — Final Orders"
+  url: "https://www.doah.state.fl.us/FLAIO/OFR/"
+  description: |
+    Final Orders of the Florida Office of Financial Regulation (OFR),
+    which licenses and regulates Florida's financial services industry
+    (banks, credit unions, securities dealers/advisers, mortgage
+    licensees, money services businesses, consumer finance). Under
+    Ch. 120, Fla. Stat. OFR resolves contested licensing, registration,
+    rule-waiver and enforcement matters by Final Order; each resolves a
+    specific contested case = case_law. Enumerated from the Division of
+    Administrative Hearings' "Florida Agency Indexed Orders" (FLAIO)
+    static index page at doah.state.fl.us/FLAIO/OFR/ (~6,885 orders
+    2015-present); each row links a born-digital text-layer PDF on the
+    DOAH file host (doah.state.fl.us/FLAID/OFR/{YEAR}/...). Text is
+    extracted via common.pdf_extract; the case number, order number,
+    doc type, subject and issue date come from the index row. No
+    JavaScript, no CAPTCHA, no auth, no session.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.doah.state.fl.us"
+  endpoints:
+    index: "/FLAIO/OFR/"
+    document: "/FLAID/OFR/{year}/{filename}"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/FL-OFR/{pdf-filename-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "OFR agency case/filing number (e.g. '135132-SR')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "order_number"
+      description: "OFR/FLAIO order number (e.g. '2026-329')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "order_type"
+      description: "Document type from the index (Final Order, Consent Order, etc.)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "subject"
+      description: "OFR subject category, when present in the index row"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (case number + doc type + subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the OFR order (born-digital PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order issue date (ISO 8601), parsed from the FLAIO index row"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Florida state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Orders of the Florida Office of Financial Regulation are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery is a single GET of the DOAH FLAIO OFR static index page
+    (doah.state.fl.us/FLAIO/OFR/), which lists ALL ~6,885 OFR orders
+    2015-present in one HTML table (no session, unlike most FLAIO
+    agencies which require the stateful searchAction.asp flow).
+  - Each row carries the agency case number, order number, issue date,
+    document type and subject; the linked PDF is a born-digital
+    text-layer order at doah.state.fl.us/FLAID/OFR/{YEAR}/OFR_...pdf.
+  - Full text is extracted from the PDF via common.pdf_extract; the
+    issue date and identifiers come from the reliable index row. A
+    <200-char guard auto-skips empty/placeholder documents.
+  - OFR only publishes Final Orders after 1 Jul 2015 on FLAIO (per
+    s. 120.53, Fla. Stat.); earlier orders are not in this database.
+  - Sibling of US/FL-PERC (same FLAIO database, agency code OFR vs PER);
+    distinct from US/FL-DOAH (ALJ Recommended Orders in /ROS/).
+  - Public domain Florida state government data.

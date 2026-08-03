@@ -1,0 +1,50 @@
+# SI/DKOM -- Slovenian National Review Commission for Public Procurement
+source:
+  id: "SI/DKOM"
+  name: "Državna revizijska komisija (DKOM) — Public Procurement Review Decisions"
+  url: "https://www.dkom.si/"
+  country: "SI"
+  data_types:
+    - case_law
+  auth:
+    type: none
+  license: "Open Government Data (podatki.gov.si)"
+
+license:
+  name: "Open government data"
+  url: "https://podatki.gov.si"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "DKOM decisions published as open data on Slovenia's OPSI portal (podatki.gov.si)."
+
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: date
+      type: string
+      required: false
+    - name: url
+      type: string
+      required: true
+    - name: case_number
+      type: string
+      required: false
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id

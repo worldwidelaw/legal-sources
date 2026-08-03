@@ -1,0 +1,100 @@
+# ===================================================================
+# US/MA-TaxRulings -- Massachusetts Department of Revenue — Letter Rulings
+# ===================================================================
+# Letter Rulings issued by the Massachusetts Department of Revenue (DOR):
+# the Commissioner's written statements, in response to a specific
+# taxpayer's request, applying the Massachusetts tax statutes and
+# regulations to that taxpayer's stated facts. Official DOR interpretation
+# of state tax law = doctrine. Full-text HTML pages (no OCR, no CAPTCHA,
+# no auth). Public-domain State of Massachusetts government works.
+# ===================================================================
+
+source:
+  id: "US/MA-TaxRulings"
+  country: "US"
+  name: "Massachusetts Department of Revenue — Letter Rulings"
+  url: "https://www.mass.gov/lists/dor-letter-rulings"
+  description: |
+    Letter Rulings of the Massachusetts Department of Revenue (DOR) — the
+    Commissioner's written interpretations, requested by a specific
+    taxpayer, applying the Massachusetts tax statutes and regulations to
+    that taxpayer's stated facts. Enumerated from the single Mass.gov list
+    page; each ruling's full body text is extracted from its own HTML page
+    (a "Date:" field plus the ma__rich-text body). doctrine.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.mass.gov"
+  endpoints:
+    list: "/lists/dor-letter-rulings"
+    ruling: "/letter-ruling/{slug}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "document_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/MA-TaxRulings/{document_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "document_number"
+      description: "Ruling number (e.g. 24-1, 22-1, 85-3)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Ruling title (e.g. 'Letter Ruling 24-1: Taxability of ...')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the letter ruling, extracted from the HTML page"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), from the page's Date: field or ruling-number year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (State of Massachusetts Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Letter Rulings of the Massachusetts Department of Revenue are official public records of the Commonwealth of Massachusetts, published for public use with no copyright restriction."
+
+notes: |
+  - Enumeration: GET https://www.mass.gov/lists/dor-letter-rulings — the
+    page server-renders an <a href="/letter-ruling/{slug}">Letter Ruling
+    NN-N: {subject}</a> link for every ruling (~995).
+  - Full text: each ruling's own HTML page holds the body in ma__rich-text
+    blocks (extracted with balanced-div matching) plus a "Date:" table row
+    (MM/DD/YYYY). No OCR — the text is native HTML.
+  - AKAMAI UA NOTE: www.mass.gov is behind Akamai Bot Manager, which
+    returns HTTP 403 to browser-*claiming* UAs (Mozilla/...) that fail its
+    JS/TLS fingerprint challenge. A plain non-browser UA (python-requests/
+    curl token) passes with 200 for both the list and the ruling pages.
+    The scraper's self._ua is set accordingly — do NOT use a Mozilla UA.
+  - Public-domain State of Massachusetts data.

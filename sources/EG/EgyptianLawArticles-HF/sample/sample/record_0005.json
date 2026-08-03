@@ -1,0 +1,13 @@
+{
+  "_id": "EG/EgyptianLawArticles-HF:art-6",
+  "_source": "EG/EgyptianLawArticles-HF",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-09T06:19:56.724236+00:00",
+  "title": "Egyptian Civil Code — Article 6",
+  "text": "(۱) النصوص المتعلقة بالأهلية تسري علي جميع الأشخاص الذين تنطبق\nعليهم الشروط المقررة في هذه النصوص.\n\n--- English Translation ---\n\nLegislative provisions as regards the legal capacity of a\nperson are applicable to all persons who fulfill the\nconditions embodied in such provisions.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/TawasulAI/egyptian-law-articles",
+  "article_number": "6",
+  "language": "ar",
+  "jurisdiction": "EG"
+}

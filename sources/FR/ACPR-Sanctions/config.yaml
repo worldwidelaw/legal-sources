@@ -1,0 +1,83 @@
+# FR/ACPR-Sanctions — Autorité de contrôle prudentiel et de résolution (ACPR),
+# Commission des sanctions — Décisions.
+#
+# Source: ACPR — the French prudential supervisor for banking & insurance, an
+#         independent administrative authority backed by the Banque de France
+#         (Code monétaire et financier, art. L.612-1 et seq.). Its Commission
+#         des sanctions imposes disciplinary sanctions after adversarial
+#         proceedings for breaches of prudential, AML/CFT (LCB-FT), governance
+#         and customer-protection obligations.
+# URL: https://acpr.banque-france.fr/fr/reglementation/recueil-des-sanctions
+# Data type: case_law  (reasoned adjudications by a statutory office-holder)
+# Auth: none
+#
+# Access:
+#   - The "Recueil des sanctions" listing links every decision to a publication
+#     page; each publication page has a "Télécharger le document" paragraph with
+#     the born-digital decision PDF under /system/files/... .
+#   - Download each PDF and extract full text with PyMuPDF (pdfplumber/pypdf
+#     fallback). No OCR needed. Parse decision number (n° YYYY-NN) and date from
+#     the page title, PDF body, and file path.
+#
+# Total: ~110 decisions, 2010-present (banking, insurance, payment/e-money
+#        institutions, intermediaries). Companion to FR/AMF_Sanctions.
+
+source:
+  id: FR/ACPR-Sanctions
+  name: ACPR Commission des sanctions — Décisions (Recueil des sanctions)
+  country: FR
+  data_types:
+    - case_law
+  url: https://acpr.banque-france.fr/fr/reglementation/recueil-des-sanctions
+  language: fr
+  auth: none
+  license: licence-ouverte-2.0
+
+license:
+  name: "Licence Ouverte / Open Licence 2.0 (Etalab)"
+  url: "https://www.etalab.gouv.fr/licence-ouverte-open-licence/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    Decisions of the ACPR Commission des sanctions are official acts of a French
+    independent administrative authority (public information). Like the sibling
+    FR/AMF_Sanctions financial-regulator corpus, they fall under the French open
+    public-information regime (Licence Ouverte / Etalab 2.0): free re-use
+    including commercial, attribution to the ACPR required. Public access, no
+    login/paywall. Decisions are anonymised by the ACPR where required.
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: decision_number
+      type: string
+      required: false
+    - name: date
+      type: date
+      required: false
+  indexed_fields:
+    - title
+    - text
+    - decision_number
+    - court
+  date_field: date
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+
+fetch:
+  rate_limit_delay: 1.5
+  estimated_total: 110
+  sample_count: 15

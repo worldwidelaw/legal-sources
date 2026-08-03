@@ -1,0 +1,116 @@
+# ===================================================================
+# US/NE-CIR -- Nebraska Commission of Industrial Relations — Decisions
+# ===================================================================
+# Published decisions ("CIR Reporter") of the Nebraska Commission of
+# Industrial Relations (CIR), formerly the Court of Industrial
+# Relations — Nebraska's independent quasi-judicial tribunal that
+# adjudicates public-sector labor disputes: wage/benefit comparability
+# determinations, bargaining-unit determination and clarification,
+# representation controversies, and prohibited / unfair labor
+# practices under Neb. Rev. Stat. Ch. 48, art. 8. Each decision
+# resolves a specific contested case = case_law. Reporter volumes 1..19
+# (1948–2007) are published online as born-digital, full-text HTML
+# files (no OCR, no JavaScript, no CAPTCHA, no auth). Public-domain
+# Nebraska state-government works.
+# ===================================================================
+
+source:
+  id: "US/NE-CIR"
+  country: "US"
+  name: "Nebraska Commission of Industrial Relations — CIR Reporter Decisions"
+  url: "https://www.nebraska.gov/ncir/reporter_and_appeals_search/"
+  description: |
+    Published decisions of the Nebraska Commission of Industrial
+    Relations (CIR), formerly the Court of Industrial Relations —
+    Nebraska's independent quasi-judicial labor tribunal resolving
+    public-sector wage/benefit comparability, bargaining-unit
+    determination and clarification, representation controversies, and
+    prohibited/unfair labor practice cases. Enumerated from the CIR
+    Reporter online index (bound volumes 1..19, 1948–2007); each
+    decision is a born-digital full-text HTML file whose text is
+    extracted directly (no OCR). case_law.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.nebraska.gov"
+  endpoints:
+    volume_index: "/ncir/reporter_and_appeals_search/index.cgi?dir={vol}_CIR_xx&type=reporter"
+
+data_model:
+  type: "case_law"
+  primary_key: "citation"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NE-CIR/{volume}-CIR-{page})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "citation"
+      description: "CIR Reporter citation, e.g. '15 CIR 84 (2005)'"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "case_number"
+      description: "CIR case number(s) parsed from the decision body ('CASE NO. 1084')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (party caption + reporter citation)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision, extracted from the born-digital HTML"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the body (fallback: reporter year)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Nebraska state tribunal decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Nebraska Commission of Industrial Relations are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Enumeration: for each reporter volume V in 1..20, GET
+    https://www.nebraska.gov/ncir/reporter_and_appeals_search/index.cgi?dir={V}_CIR_xx&type=reporter
+    and collect the decision .html links under
+    /ncir/reporter_and_appeals_search/data/reporter/{V}_CIR_xx/.
+    Volumes 1..19 hold the corpus (~650 decisions, 1948–2007); 18–20
+    are sparse (bulk migrated to the modern filings-opinions page).
+  - Full text: each decision is a born-digital FrontPage HTML file
+    (pure decision body, no site chrome); text extracted by stripping
+    tags — no OCR, no PDF.
+  - citation/volume/page/year parsed from the filename
+    ({V}_CIR_{page}_({year})_{caption}.html); case_number and decision
+    date parsed from the body ('CASE NO. ...', 'Month D, YYYY').
+  - Recent decisions (2008–present) are posted as scanned-image PDFs on
+    ncir.nebraska.gov/content/filings-opinions and would require OCR;
+    out of scope for this born-digital HTML index scrape.
+  - Public-domain Nebraska state-government data.

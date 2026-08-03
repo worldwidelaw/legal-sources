@@ -49,6 +49,21 @@ from common.http_client import HttpClient
 
 from common.pdf_extract import extract_pdf_markdown
 
+# PyPDF2 is used directly below (page-count + text extraction) but was never
+# imported — bootstrap_fast died with `NameError: HAS_PYPDF2 is not defined`.
+# Guard the import and fall back to pypdf, the maintained successor whose
+# PdfReader API is compatible; fleet VPS environments install pypdf, not the
+# legacy PyPDF2 distribution name.
+try:
+    import PyPDF2
+    HAS_PYPDF2 = True
+except ImportError:
+    try:
+        import pypdf as PyPDF2
+        HAS_PYPDF2 = True
+    except ImportError:
+        HAS_PYPDF2 = False
+
 
 logging.basicConfig(
     level=logging.INFO,

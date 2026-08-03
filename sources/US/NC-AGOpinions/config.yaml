@@ -1,0 +1,94 @@
+# ===================================================================
+# US/NC-AGOpinions -- North Carolina Attorney General Opinions
+# ===================================================================
+# Full text of official legal opinions issued by the North Carolina
+# Department of Justice / Office of the Attorney General. These are
+# authoritative (advisory) state legal interpretations (doctrine).
+# Served by the public WordPress REST API backing the official opinions
+# archive at ncdoj.gov. No authentication required. Public domain
+# government data.
+# ===================================================================
+
+source:
+  id: "US/NC-AGOpinions"
+  country: "US"
+  name: "North Carolina Attorney General Opinions"
+  url: "https://ncdoj.gov/legal-services/archived-opinions/"
+  description: |
+    Official legal opinions (advisory opinions and opinion letters) issued
+    by the North Carolina Department of Justice / Office of the Attorney
+    General. Each opinion answers a legal question posed by a public
+    official or agency and constitutes an authoritative (advisory)
+    interpretation of North Carolina law. Full text comes from the public
+    WordPress REST API (custom post type `opinions`) on ncdoj.gov.
+    ~1,135 opinions, full text in the content.rendered field (no PDF
+    download required).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 4
+
+api:
+  type: "json_api"
+  base_url: "https://ncdoj.gov/wp-json/wp/v2"
+  endpoints:
+    opinions: "/opinions?per_page={limit}&page={page}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "opinion_id"
+      description: "WordPress post ID uniquely identifying the opinion"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Opinion title (subject matter)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (cleaned content.rendered)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was published (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public domain — 17 U.S.C. § 105"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "North Carolina Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - ncdoj.gov is WordPress; opinions are a custom post type `opinions`
+    exposed via the public WP REST API at /wp-json/wp/v2/opinions.
+  - fetch_all pages GET /wp-json/wp/v2/opinions?per_page=100&page=N; each
+    post carries title.rendered, content.rendered (full body), the
+    published date, and the canonical link.
+  - The per-opinion front-end pages (ncdoj.gov/opinions/{slug}/)
+    intermittently return HTTP 500, so the scraper reads the REST endpoint
+    instead — content.rendered holds the full text layer; HTML is stripped.
+  - ~1,135 opinions as of 2026-06-28 (X-WP-Total); full text ~2K-36K
+    chars/doc. Rows with no usable full text are skipped.
+  - Public domain North Carolina government data.

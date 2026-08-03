@@ -1,0 +1,124 @@
+# ===================================================================
+# US/LA-AdministrativeCode -- Louisiana Administrative Code (LAC)
+# ===================================================================
+# The official codification of the rules and regulations adopted by
+# Louisiana state agencies under the Administrative Procedure Act
+# (La. R.S. 49:950 et seq.). The LAC is organized into ~50 numbered
+# Titles (e.g. Title 37 Insurance, Title 61 Revenue and Taxation,
+# Title 76 Wildlife and Fisheries), each split into Parts. Agency
+# regulations are legally binding secondary legislation = legislation.
+# Public domain Louisiana state-government works (edicts of government).
+#
+# Published by the State Library of Louisiana as part of its CONTENTdm
+# "Louisiana Public Documents Digital Archive" (alias p267101coll4) on
+# the OCLC-hosted instance at cdm16313.contentdm.oclc.org. The public
+# dmwebservices JSON API enumerates items (dmQuery) and returns their
+# Dublin-Core metadata (dmGetItemInfo). A server-side title search
+# isolates the 736 LAC volumes from the ~44,700-item archive; the full
+# regulatory text is extracted from each item's born-digital PDF via
+# the shared common.pdf_extract helper. No CAPTCHA, no auth. Reachable
+# locally (sibling of US/LA-AGOpinions, US/LA-ExecutiveOrders which use
+# the same cdm16313 archive).
+# ===================================================================
+
+source:
+  id: "US/LA-AdministrativeCode"
+  country: "US"
+  name: "Louisiana Administrative Code"
+  url: "https://cdm16313.contentdm.oclc.org/digital/collection/p267101coll4"
+  description: |
+    The Louisiana Administrative Code (LAC) -- the official codification
+    of the rules and regulations adopted by Louisiana state agencies
+    under the Administrative Procedure Act (La. R.S. 49:950 et seq.),
+    organized into ~50 numbered Titles and their Parts. Agency
+    regulations are legally binding secondary legislation.
+    Enumerated from the State Library of Louisiana's CONTENTdm
+    "Louisiana Public Documents Digital Archive" (alias p267101coll4)
+    via the public dmwebservices JSON API; a server-side title search
+    isolates the 736 LAC volume PDFs (all Titles/Parts across dated
+    editions). Title number, edition, subject headings and date are
+    read from each item's Dublin-Core fields, and the full regulatory
+    text is extracted from the item PDF. No CAPTCHA, no auth.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "json_api"
+  base_url: "https://cdm16313.contentdm.oclc.org"
+  endpoints:
+    query: "/digital/bl/dmwebservices/index.php?q=dmQuery/p267101coll4/title^Louisiana Administrative Code^all^and/dmrecord!title!date/title/{max}/{start}/1/0/0/0/json"
+    item: "/digital/bl/dmwebservices/index.php?q=dmGetItemInfo/p267101coll4/{rec}/json"
+    download: "/digital/api/collection/p267101coll4/id/{rec}/download"
+
+data_model:
+  type: "legislation"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/LA-AdministrativeCode/{CONTENTdm dmrecord})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "lac_title_number"
+      description: "LAC Title number (e.g. 37, 61), parsed from the item title"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "edition"
+      description: "Edition / publication month (Dublin-Core descri)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "subject"
+      description: "Subject headings (Dublin-Core subjec)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "issuer"
+      description: "Publishing authority (Louisiana Office of the State Register)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Volume title (Title/Part name + edition month)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full regulatory text of the LAC volume (extracted from PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Edition date (ISO 8601; first of month for YYYY-MM values)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the CONTENTdm item page"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    The Louisiana Administrative Code is an official work of Louisiana
+    state government (edicts of government) and is not subject to
+    copyright. Free to use, including commercially.

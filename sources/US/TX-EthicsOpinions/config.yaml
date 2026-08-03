@@ -1,0 +1,109 @@
+# ===================================================================
+# US/TX-EthicsOpinions -- Texas Ethics Commission — Ethics Advisory Opinions
+# ===================================================================
+# Formal Ethics Advisory Opinions of the Texas Ethics Commission (TEC),
+# issued under Tex. Gov't Code ch. 571. Each opinion is the Commission's
+# written, authoritative interpretation of the laws it administers —
+# campaign finance and political contributions (Election Code title 15),
+# personal financial disclosure, lobby registration, conflict-of-interest
+# and standards-of-conduct statutes, and the bribery/gift provisions of
+# the Penal Code — applied to the facts presented in a request. A person
+# who acts in reliance on an advisory opinion has a defense to
+# prosecution. Official state legal interpretation = doctrine.
+# Published as born-digital, full-text HTML pages (no OCR, no JavaScript,
+# no CAPTCHA, no auth). Public-domain Texas state-government works.
+# ===================================================================
+
+source:
+  id: "US/TX-EthicsOpinions"
+  country: "US"
+  name: "Texas Ethics Commission — Ethics Advisory Opinions"
+  url: "https://www.ethics.state.tx.us/opinions/"
+  description: |
+    Formal Ethics Advisory Opinions of the Texas Ethics Commission
+    (TEC), issued under Tex. Gov't Code ch. 571 — the Commission's
+    written interpretations of Texas campaign-finance, political-
+    contribution, personal-financial-disclosure, lobby-registration,
+    conflict-of-interest, standards-of-conduct and bribery/gift laws,
+    applied to the facts presented in each request. Enumerated from the
+    eight topical digest pages (partI..partVIII); each opinion is a
+    born-digital full-text HTML page whose text is extracted directly
+    (no OCR). doctrine.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.ethics.state.tx.us"
+  endpoints:
+    digest: "/opinions/part{ROMAN}/digest_{letter}.php"
+    opinion: "/opinions/part{ROMAN}/{number}.html"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/TX-EthicsOpinions/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Ethics Advisory Opinion number (e.g. 116)"
+      type: "integer"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title ('Texas Ethics Advisory Opinion No. N')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory opinion, extracted from the born-digital HTML"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the opinion body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Texas state agency opinions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Ethics Advisory Opinions of the Texas Ethics Commission are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Enumeration: GET the 8 topic-digest pages
+    /opinions/part{I..VIII}/digest_{a..h}.php and collect the unique
+    /opinions/part{X}/{N}.html opinion links (~644 opinions, 1992–present).
+    The digests are the authoritative index of which opinion numbers
+    exist and in which part directory they live (numbers are NOT
+    contiguous within a part; the partI digest links via a /bwilson/
+    mirror subpath, canonicalised to /opinions/partI/{N}.html).
+  - Full text: each opinion is a born-digital, standalone full-text HTML
+    page (opinion body only, no site chrome); text extracted by
+    stripping tags — no OCR, no PDF.
+  - opinion_number parsed from the filename; issue date parsed from the
+    body ('Month D, YYYY').
+  - Public-domain Texas state-government data.

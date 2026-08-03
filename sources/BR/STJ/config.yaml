@@ -1,0 +1,52 @@
+fetch:
+  base_url: https://scon.stj.jus.br/SCON
+  method: html_search_pdf
+  rate_limit_seconds: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: process_number
+    required: false
+    type: string
+  - name: numero_registro
+    required: false
+    type: string
+  - name: orgao_julgador
+    required: false
+    type: string
+  - name: judge_relator
+    required: false
+    type: string
+license:
+  name: Open Government Data
+  url: https://scon.stj.jus.br/SCON/
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Brazilian public-body judicial decisions; STJ jurisprudence is public information under Lei de Acesso à Informação (Lei 12.527/2011)."
+source:
+  auth: none
+  country: BR
+  data_types:
+  - case_law
+  description: 'Superior Tribunal de Justiça (STJ), Brazil — full inteiro-teor
+    acórdãos from the official SCON jurisprudence search. Retrieves the complete
+    decision PDF (relatório + votos + certidão), not just the ementa. Enumerated by
+    publication date; access requires a primed BIG-IP/Cloudflare session. Distinct
+    from BR/STJDadosAbertos which carries only ementa/espelhos from May 2022 onward.'
+  id: BR/STJ
+  language: pt
+  name: Superior Tribunal de Justiça (STJ) — Brazil
+  url: https://scon.stj.jus.br/SCON/

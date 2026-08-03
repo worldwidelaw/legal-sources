@@ -1,0 +1,98 @@
+# ===================================================================
+# INTL/CAC-UDRP -- Czech Arbitration Court domain-name disputes
+# ===================================================================
+# UDRP (gTLD) + .eu ADR panel decisions, ~6,000 with full text (HTML).
+# ===================================================================
+
+source:
+  id: "INTL/CAC-UDRP"
+  country: "INTL"
+  name: "Czech Arbitration Court — Domain Name Dispute Decisions (UDRP / .eu ADR)"
+  url: "https://udrp.adr.eu/decisions/list"
+  description: |
+    Panel decisions of the Arbitration Court attached to the Czech Chamber
+    of Commerce and the Agricultural Chamber of the Czech Republic ("CAC",
+    operating as adr.eu). CAC is an ICANN-accredited UDRP provider for gTLD
+    disputes and the dispute-resolution provider designated by the European
+    Commission for ".eu" / ".ею" domain disputes. The decisions portal
+    publishes ~6,000 panel decisions with complete reasoning (full text).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.67
+  burst: 1
+  delay_seconds: 1.5
+
+api:
+  type: "html_scrape"
+  list_url: "https://udrp.adr.eu/decisions/list?grid-perPage=100&grid-page={page}"
+  detail_url: "https://udrp.adr.eu/decisions/detail?id={id}"
+
+data_model:
+  type: "case_law"
+  primary_key: "case_number"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "Case number (e.g., CAC-UDRP-108678)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "text"
+      description: "Full text of the panel decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601); falls back to publication date"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "domain_names"
+      description: "Disputed domain name(s)"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "complainant"
+      description: "Complainant name"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "respondent"
+      description: "Respondent name"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "decision_result"
+      description: "Outcome (Accepted, Rejected, etc.)"
+      type: "string"
+      role: "content"
+      required: false
+
+license:
+  name: "Custom terms (publicly published decisions)"
+  url: "https://udrp.adr.eu/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    CAC publishes UDRP and .eu ADR panel decisions openly on udrp.adr.eu as
+    a public record of the dispute-resolution proceedings it administers
+    under ICANN's UDRP and the EU .eu ADR rules. No login required.
+
+notes: |
+  - Server-rendered Ublaboo/Nette datagrid: each <tr data-id> row carries
+    case number, process, domains, parties, panelist, published date, result.
+  - Enumerate with /decisions/list?grid-perPage=100&grid-page=N (~61 pages).
+  - /decisions/detail?id={id} returns full decision HTML; <section class="content">
+    holds the body; "Date of Panel Decision" gives the ISO decision date.
+  - Text extracted with BeautifulSoup. Rate limited to 1 req / 1.5s.

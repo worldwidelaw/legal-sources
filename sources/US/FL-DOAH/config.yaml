@@ -1,0 +1,129 @@
+# ===================================================================
+# US/FL-DOAH -- Florida Division of Administrative Hearings (DOAH)
+#   Recommended / Final Orders (1975-present)
+# ===================================================================
+# Orders issued by Administrative Law Judges of the Florida Division of
+# Administrative Hearings (DOAH) — Florida's central, independent
+# administrative tribunal (the "central panel"). Under the
+# Administrative Procedure Act (Ch. 120, Fla. Stat.) an ALJ hears a
+# contested case between a person and a State agency and issues a
+# Recommended Order (adopted by the agency as a Final Order), a Summary
+# Final Order, or a Final Order directly. Each order resolves a
+# specific contested case = case_law. The order archive is served as
+# browsable IIS directory listings, one per year
+# (doah.state.fl.us/ROS/{YEAR}/), covering 1975-present; each order is
+# a born-digital text-layer PDF. No JavaScript, no CAPTCHA, no auth.
+# Public domain Florida state government works (government edicts).
+# ===================================================================
+
+source:
+  id: "US/FL-DOAH"
+  country: "US"
+  name: "Florida Division of Administrative Hearings — Recommended & Final Orders"
+  url: "https://www.doah.state.fl.us/ROS/"
+  description: |
+    Recommended Orders, Final Orders and Summary Final Orders issued by
+    Administrative Law Judges of the Florida Division of Administrative
+    Hearings (DOAH), Florida's central independent administrative
+    tribunal. DOAH adjudicates contested cases between persons and
+    State agencies under Chapter 120, Florida Statutes; each order
+    resolves a specific contested case = case_law. Enumerated from the
+    browsable IIS per-year directory listings at
+    doah.state.fl.us/ROS/{YEAR}/ (1975-present, ~41,570 order PDFs);
+    each order is a born-digital PDF whose text is extracted via
+    common.pdf_extract, with the DOAH case number, order type,
+    decision date and parties parsed from the order body. No
+    JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.doah.state.fl.us"
+  endpoints:
+    year_listing: "/ROS/{year}/"
+    document: "/ROS/{year}/{filename}"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/FL-DOAH/{year}-{filename})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "DOAH case number (e.g. '26-1139PL'); trailing letters encode the case type"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "order_type"
+      description: "Recommended Order / Final Order / Summary Final Order / Order (parsed from the heading)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "agency"
+      description: "The Florida State agency party (petitioner or respondent), when identifiable"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (DOAH case number + order type + parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the ALJ order (born-digital PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order date (ISO 8601), parsed from 'DONE AND ENTERED this ... day of Month, YYYY'; falls back to listing year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Florida state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Orders of the Florida Division of Administrative Hearings are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery walks the browsable IIS directory listings
+    doah.state.fl.us/ROS/{YEAR}/ for every year 1975..present and
+    collects the *.pdf order filenames (~41,570 total across the
+    archive; e.g. 2025 alone has ~584 orders, 2005 ~1,053).
+  - Filenames start with the 8-digit DOAH case number YYNNNNNN
+    (25000021.pdf == case 25-000021). A duplicate electronically-signed
+    copy sometimes exists as {digits}_282_<date>_<n>_e.pdf; when a
+    plain copy of the same case exists the "_e" duplicate is skipped.
+    "Amended" revisions are kept as distinct records.
+  - The full DOAH case number (with its type-suffix letters, e.g.
+    "26-1139PL"), the order type, the decision date and the parties are
+    parsed from the order body; date prefers "DONE AND ENTERED this ...
+    day of Month, YYYY" and falls back to the last "Month D, YYYY" in
+    the document, then to the listing year (Jan 1).
+  - Orders are born-digital text-layer PDFs (verified back to 1975);
+    a small minority are scanned and fall through to OCR via
+    common.pdf_extract. A <200-char guard auto-skips empty/placeholder
+    documents.
+  - Public domain Florida state government data.

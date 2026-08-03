@@ -1,0 +1,19 @@
+{
+  "_id": "118-hr-146",
+  "_source": "US/CongressGov",
+  "_type": "legislation",
+  "_fetched_at": "2026-07-12T20:02:44.244025+00:00",
+  "title": "Old Glory Only Act",
+  "text": "To prohibit the flying of any flag other than the United States flag over United States diplomatic and consular posts, and for other purposes.\nOld Glory Only Act 1.Short titleThis Act may be cited as the Old Glory Only Act.\n2.Prohibition on flying of certain flags over United States diplomatic and consular postsThe Secretary of State shall ensure that no United States diplomatic or consular post flies any flag other than the United States flag over such post.",
+  "date": "2023-01-09",
+  "url": "https://www.congress.gov/bill/118th-congress/house-bill/146",
+  "congress": 118,
+  "bill_type": "HR",
+  "bill_number": "146",
+  "sponsor": "Rep. Duncan, Jeff [R-SC-3]",
+  "cosponsors_count": 46,
+  "policy_area": "International Affairs",
+  "origin_chamber": "House",
+  "latest_action": "Referred to the House Committee on Foreign Affairs.",
+  "update_date": "2024-07-24T15:24:12Z"
+}

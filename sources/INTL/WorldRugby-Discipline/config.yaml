@@ -1,0 +1,48 @@
+fetch:
+  list_url: https://www.world.rugby/organisation/governance/discipline/decisions?lang=en
+  method: html_listing_pdf
+  rate_limit_seconds: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: >
+    World Rugby disciplinary & judicial decisions — the published full-text
+    rulings of World Rugby's independent disciplinary process. Covers Judicial
+    Committee / Judicial Officer decisions, Disciplinary Committee decisions,
+    Foul Play Review Committee (FPRC) decisions, anti-doping decisions, appeal
+    decisions, and CAS awards rendered on appeal, including Rugby World Cup and
+    international-window matters. Each adjudicated case is published as a full
+    redacted written decision PDF (the panel's findings, reasoning, sanction and
+    period of suspension). The decisions hub server-renders direct links to
+    every decision PDF; no login or WAF.
+  id: INTL/WorldRugby-Discipline
+  language: en
+  name: World Rugby Disciplinary & Judicial Decisions
+  url: https://www.world.rugby/organisation/governance/discipline/decisions
+license:
+  name: "World Rugby Terms of Use (All Rights Reserved)"
+  url: "https://www.world.rugby/organisation/about-us/terms-conditions"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions published openly for transparency, but World Rugby asserts copyright with no open licence. Commercial use flagged restricted per project policy (err on flagging)."

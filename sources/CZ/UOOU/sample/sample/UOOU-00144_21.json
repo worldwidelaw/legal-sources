@@ -1,0 +1,14 @@
+{
+  "_id": "UOOU-00144_21",
+  "_source": "CZ/UOOU",
+  "_type": "regulatory_decision",
+  "_fetched_at": "2026-03-17T19:07:09.942407",
+  "title": "Společnost zabývající se doručováním jídel a potravin (UOOU-00144/21)",
+  "case_number": "00144/21",
+  "text": "Kontrola v návaznosti na zneužití údajů z platebních karet Během roku 2024 Úřad prověřoval porušení povinností spojených se zpracováním osobních údajů na platebních kartách. Toho se měla dopustit společnost zabývající se online objednávkami a doručováním jídla. Důvodem pro provedení kontroly bylo několik stížností na zneužití osobních údajů uvedených na platebních kartách, které měli stěžovatelé uložené v systému společnosti. Údaje zneužil útočník, který jejich prostřednictvím prováděl objednávky. ÚOOÚ shledal, že společnost nejméně v období, kdy mělo dojít k incidentům, nedisponovala dostatečnými technickými a organizačními opatřeními pro zabezpečení osobních údajů uživatelů. Konkrétně po zadání správné kombinace přístupových údajů (e-mailové adresy a hesla, u něhož nebyly kladeny nároky na obtížnost, navíc bez dvoufaktorového ověření) bylo možné získat některé osobní údaje a objednávat potraviny. Zjištěné nedostatky Úřad vyhodnotil jako porušení čl. 32 odst. 1 GDPR. Kontrolovaná osoba využila možnosti podat proti kontrolním zjištěním uvedeným v kontrolním protokolu ve stanovené lhůtě námitky. Námitky byly v plném rozsahu zamítnuty. Popsaný případ ilustruje vysokou důležitost spolehlivých technických opatření ve vztahu ke klientům, přičemž tato mají zabránit zneužití osobních údajů, ale i majetkové škodě.",
+  "date": "2026-03-09",
+  "year": 2024,
+  "category": "personal_data",
+  "url": "https://uoou.gov.cz/cinnost/ochrana-osobnich-udaju/ukoncene-kontroly/kontroly-za-rok-2024-1/kontrolni-cinnost-v-oblasti-ochrany-osobnich-udaju-2024/spolecnost-zabyvajici-se-dorucovanim-jidel-a-potravin-uoou-0014421",
+  "language": "cs"
+}

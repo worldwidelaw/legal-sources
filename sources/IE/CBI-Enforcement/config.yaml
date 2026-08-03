@@ -1,0 +1,72 @@
+# IE/CBI-Enforcement — Central Bank of Ireland — Enforcement Actions / Settlement Notices
+#
+# Source: Central Bank of Ireland (An Banc Ceannais na hÉireann)
+# URL: https://www.centralbank.ie/news-media/legal-notices/enforcement-actions
+# Data type: case_law
+# Auth: none
+# License: CC BY 4.0 (Irish PSI Licence, Circular 12/2016)
+#
+# The Central Bank of Ireland is the financial-services regulator and central
+# bank of Ireland. Under the Administrative Sanctions Procedure (Part IIIC of
+# the Central Bank Act 1942, as amended) it investigates and sanctions regulated
+# firms and individuals for breaches of financial-services law. Each concluded
+# enforcement action is published in full as a "Settlement Notice" / "Public
+# Statement relating to Enforcement Action" (from 19 April 2023 sanctions are
+# additionally confirmed by the High Court) — a reasoned, quasi-judicial
+# administrative determination = case_law.
+#
+# Total: ~140 enforcement notices (2004–present).
+#
+# Access:
+#   - The full index of every notice is embedded in the server-rendered
+#     enforcement-actions listing page as a JavaScript data array:
+#       { "type": "pdf", "date": "DD/MM/YYYY",
+#         "documentName": decodeTitle("..."),
+#         "url": decodeTitle("/docs/default-source/.../<slug>.pdf?sfvrsn=...") }
+#     No pagination, no API key.
+#   - Each notice is a born-digital PDF under /docs/default-source/news-and-media/
+#     legal-notices/settlement-agreements/. Full text via the shared PDF
+#     extractor (text layer; no OCR required).
+
+source:
+  id: IE/CBI-Enforcement
+  name: Central Bank of Ireland — Enforcement Actions / Settlement Notices
+  country: IE
+  data_types:
+    - case_law
+  url: https://www.centralbank.ie/news-media/legal-notices/enforcement-actions
+  language: en
+  auth: none
+  license: cc-by-4.0
+
+license:
+  name: "CC BY 4.0 (Irish PSI Licence)"
+  url: "https://www.centralbank.ie/fns/re-use-of-public-sector-information"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Central Bank of Ireland re-uses public sector information under the Irish PSI Licence (Creative Commons Attribution 4.0 International, per DPER Circular 12/2016). Attribution to the Central Bank of Ireland required. Third-party material excepted."
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: title
+      type: string
+      required: false
+    - name: text
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - authority
+    - document_type
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.0
+  estimated_total: 140
+  sample_count: 12

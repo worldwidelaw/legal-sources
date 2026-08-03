@@ -1,0 +1,122 @@
+# ===================================================================
+# US/NJ-EthicsDecisions -- New Jersey State Ethics Commission
+#                          — Final Decisions
+# ===================================================================
+# Final agency actions of the New Jersey State Ethics Commission (SEC,
+# in the Dept. of Law & Public Safety) under the Conflicts of Interest
+# Law (N.J.S.A. 52:13D-12 et seq.) and Executive Order 14 — final
+# orders, consent orders, penalty-waiver determinations, casino/cannabis
+# post-employment waivers, Section 19 / EO-14 exceptions, plus a handful
+# of advisory opinions, adopted codes of ethics and a rule adoption.
+# Each is a case-specific final agency action on a named respondent /
+# requester = case_law (advisory opinions / codes / rule adoptions =
+# doctrine). Born-digital full-text PDFs on nj.gov.
+# Public-domain State of New Jersey government works.
+#
+# DISTINCT from the NJ *School* Ethics Commission (US/NJ-SchoolEthics),
+# US/NJ-PERC, US/NJ-OAL and US/NJ-AGOpinions.
+#
+# ENUMERATION: the official NJ open-data (Socrata) dataset
+#   https://data.nj.gov/resource/54br-q95u.json  (dataset id 54br-q95u,
+#   "State Ethics Commission Final Decisions") lists every decision with
+#   a direct PDF URL under https://nj.gov/ethics/docs/final/.
+# ===================================================================
+
+source:
+  id: "US/NJ-EthicsDecisions"
+  country: "US"
+  name: "New Jersey State Ethics Commission — Final Decisions"
+  url: "https://www.nj.gov/ethics/final/"
+  description: |
+    Final agency actions of the New Jersey State Ethics Commission (SEC)
+    under the Conflicts of Interest Law (N.J.S.A. 52:13D-12 et seq.) and
+    Executive Order 14. Includes final orders, consent orders, penalty-
+    waiver determinations, casino/cannabis post-employment waivers,
+    Section 19 and EO-14 exceptions, advisory opinions and adopted codes
+    of ethics. Enumerated via the official NJ open-data (Socrata) dataset
+    54br-q95u; each record links a born-digital PDF on nj.gov.
+
+data_types:
+  - case_law
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "socrata"
+  base_url: "https://data.nj.gov"
+  endpoints:
+    dataset: "/resource/54br-q95u.json"
+    pdf: "https://nj.gov/ethics/docs/final/{file}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "case_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NJ-EthicsDecisions/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "Agency case/docket number (e.g. 016-07); 000-00 when none assigned"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "decision_type"
+      description: "Decision category from the dataset (Decision, Waiver - Casino, EO 14 Exception, Advisory Opinion, Code Of Ethics, ...)"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "title"
+      description: "Party name + final agency action"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision, from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the PDF body; falls back to the dataset year/month"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (State of New Jersey Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Final decisions of the New Jersey State Ethics Commission are official public records of the State of New Jersey, released as open data with no copyright restriction."
+
+notes: |
+  - Enumeration: the official NJ open-data Socrata dataset 54br-q95u
+    (https://data.nj.gov/resource/54br-q95u.json) returns all ~695 rows in one
+    call ($limit=1000). Each row has file_type.url = a direct PDF on
+    https://nj.gov/ethics/docs/final/, plus type, firstname/lastname,
+    agency_department, case_number, final_agency_action, year, month.
+  - Full text: each PDF is born-digital (clean text layer; OCR fallback via
+    common.pdf_extract for any scan). A few rows link .zip archives (skipped).
+  - Type: case-specific final agency actions (Decision, Waiver, Exception,
+    Consent Order, Penalty Waiver) = case_law; Advisory Opinion / Code Of
+    Ethics / Rule Adoption = doctrine.
+  - Date: parsed from the PDF body ("Month DD, YYYY"); falls back to the
+    dataset year/month (portal posting date).
+  - COVERAGE: ~695 final decisions (case numbers back to the 2000s;
+    posted 2014–present).

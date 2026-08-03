@@ -1,0 +1,106 @@
+# ===================================================================
+# US/CopyrightReviewBoard -- U.S. Copyright Office Review Board — Registration Decisions
+# ===================================================================
+# Final decisions of the Review Board of the United States Copyright
+# Office (Library of Congress). On a second request for reconsideration
+# of a refusal to register a work, the Review Board — the Office's
+# highest-level adjudicative body — issues a written decision affirming
+# or reversing the refusal (37 C.F.R. § 202.5), applying the Copyright
+# Act's originality/copyrightability standards to a specific work.
+# Adjudicative decision on a specific matter = case_law. Published as
+# born-digital, full-text PDFs (real text layer, no OCR, no JavaScript,
+# no CAPTCHA, no auth). Public-domain U.S. Government works
+# (17 U.S.C. § 105).
+# ===================================================================
+
+source:
+  id: "US/CopyrightReviewBoard"
+  country: "US"
+  name: "U.S. Copyright Office Review Board — Registration Decisions"
+  url: "https://www.copyright.gov/rulings-filings/review-board/"
+  description: |
+    Final decisions of the Review Board of the U.S. Copyright Office on
+    second requests for reconsideration of registration refusals. Each
+    decision applies the Copyright Act's copyrightability standards to a
+    specific work and affirms or reverses the Registration Program's
+    refusal. Enumerated from the single HTML listing table; each decision
+    is a born-digital full-text PDF whose text layer is extracted
+    directly (no OCR). case_law.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.copyright.gov"
+  endpoints:
+    listing: "/rulings-filings/review-board/"
+    decision_pdf: "/rulings-filings/review-board/docs/{slug}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CopyrightReviewBoard/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title ('Copyright Office Review Board — {work title}')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision, extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "outcome"
+      description: "Disposition (e.g. 'Refusal Affirmed', 'Refusal Reversed')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "categories"
+      description: "Work categories at issue (semicolon-separated)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the decision letter head"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — 17 U.S.C. § 105)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the U.S. Copyright Office Review Board are works of the U.S. federal government in the public domain under 17 U.S.C. § 105."
+
+notes: |
+  - Enumeration: GET the single HTML listing table at
+    /rulings-filings/review-board/ — one <tr> per decision with the PDF
+    anchor (title), then year, categories and outcome columns (~745 rows).
+  - Full text: each decision PDF is born-digital with a real text layer;
+    text is extracted via the shared common.pdf_extract backend — no OCR.
+  - Decision date parsed from the "Month DD, YYYY" head of the letter,
+    with a fallback to the listing table's year column.
+  - Public-domain U.S. Government data (17 U.S.C. § 105).

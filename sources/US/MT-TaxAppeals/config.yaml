@@ -1,0 +1,107 @@
+# ===================================================================
+# US/MT-TaxAppeals -- Montana Tax Appeal Board (MTAB)
+# Final Decisions & Orders (case_law)
+# ===================================================================
+# The Montana Tax Appeal Board is the independent quasi-judicial state agency
+# that hears and decides all Montana state tax appeals -- income, corporation,
+# natural-resource, centrally assessed, motor-fuels, cigarette, and every class
+# of property tax (residential, commercial, agricultural, timber, etc.). Every
+# published document (Final Decision, Findings of Fact / Conclusions of Law,
+# Order on Summary Judgment, Opportunity for Judicial Review) adjudicates a
+# specific taxpayer appeal -> case_law.
+#
+# Discovery is from the server-rendered decisions index (no JS, no CAPTCHA, no
+# auth): https://mtab.mt.gov/decisions/ which links out to ~24 subject-matter
+# category pages. Each category page is a <ul> whose <li> items ship a
+# <a href="{FILE}.pdf">Case Name v. MDOR</a> followed by the docket number(s).
+# The decision date is encoded in the PDF filename; the PDFs are born-digital
+# and full text is read directly via common.pdf_extract. Public-domain Montana
+# state works (government-edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/MT-TaxAppeals"
+  country: "US"
+  name: "Montana Tax Appeal Board — Decisions"
+  url: "https://mtab.mt.gov/decisions/"
+  description: |
+    Published decisions of the Montana Tax Appeal Board (MTAB), the independent
+    quasi-judicial state agency adjudicating all Montana state tax appeals
+    (income, corporation, natural-resource, centrally assessed, motor-fuels,
+    cigarette, and all classes of property tax) = case_law. Discovered from the
+    server-rendered decisions index and its ~24 category pages; full text read
+    directly from the born-digital decision PDFs. No JavaScript scraping, no
+    CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://mtab.mt.gov/"
+  endpoints:
+    index: "https://mtab.mt.gov/decisions/"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/MT-TaxAppeals/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Docket number(s) from the listing (e.g. 'IT-2024-18')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Case name plus docket number"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (born-digital PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the PDF filename"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Montana state tax adjudications)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Montana Tax Appeal Board are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery crawls the decisions index at mtab.mt.gov/decisions/ for its ~24
+    category subpages (incometax, residential-property, corptax, New-Decisions,
+    ...), then parses each category page's <li> items for the PDF href, case
+    name, and docket number(s).
+  - _type is case_law for all documents (tax-tribunal adjudications).
+  - The decision date is derived from the PDF filename (M.D.YY / M.D.YYYY /
+    MM-DD-YYYY, or a year-only token for the oldest Final Decisions).
+  - PDFs are born-digital; common.pdf_extract reads the full text directly. A
+    <200-char guard skips the rare scanned image-only PDF (OCR fallback via
+    tesseract if present).

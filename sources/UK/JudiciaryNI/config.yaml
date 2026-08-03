@@ -1,0 +1,84 @@
+# UK/JudiciaryNI — Judiciary of Northern Ireland — Judicial Decisions.
+#
+# Source: Judiciary of Northern Ireland (Lady Chief Justice's Office /
+#         Northern Ireland Courts and Tribunals Service, NICTS)
+# URL: https://www.judiciaryni.uk/judicial-decisions
+# Data type: case_law  (Northern Ireland / GB-NIR — not covered by UK/CaseLaw
+#            or UK/FindCaseLaw, which are England & Wales + reserved UK-wide
+#            tribunals only, nor by the Scotland sources)
+# Auth: none
+#
+# judiciaryni.uk publishes the full text of the judgments of the Northern
+# Ireland superior courts (Court of Appeal; High Court — King's/Queen's Bench,
+# Chancery, Family; Crown Court) together with the reserved NI tribunals (Lands
+# Tribunal, NI Valuation Tribunal, Charity Tribunal, Care Tribunal, NI Health &
+# Safety Tribunal). Each decision is a server-rendered Drupal listing card that
+# links to a detail page carrying a single born-digital decision PDF under
+# /files/judiciaryni/.
+#
+# Total: ~7,700 full-text decisions, 2001-present
+#   Judgments (courts) ~6,600 | Summary judgments ~310 | NI Valuation Tribunal ~370 |
+#   Lands Tribunal ~300 | Charity Tribunal ~106 | Care Tribunal ~43 | H&S Tribunal ~2
+#
+# Access:
+#   - For each "type" listing at /judicial-decisions/type/{slug}, page ?page=N
+#     (Drupal 0-indexed) and parse each <article class="search-result decisions">
+#     card for the detail-page slug, title, neutral citation, date, judge.
+#   - Fetch the detail page, extract the /files/judiciaryni/*.pdf link(s).
+#   - Download each born-digital PDF, extract full text with PyMuPDF (pdfplumber/
+#     pypdf fallback). No OCR needed.
+#   - Dedup by detail slug (a decision can appear under >1 category listing).
+
+source:
+  id: UK/JudiciaryNI
+  name: Judiciary of Northern Ireland — Judicial Decisions
+  country: UK
+  data_types:
+    - case_law
+  url: https://www.judiciaryni.uk/judicial-decisions
+  language: en
+  auth: none
+  license: ogl-3.0
+
+jurisdictions:
+  - code: GB-NIR
+    scope: full
+
+license:
+  name: "Open Government Licence v3.0"
+  url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    judiciaryni.uk /crown-copyright: "The material featured on this website is
+    subject to Crown copyright protection and licensed for use under the Open
+    Government Licence unless otherwise indicated." Commercial use permitted with
+    attribution.
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: citation
+      type: string
+      required: false
+  indexed_fields:
+    - title
+    - text
+    - citation
+    - judge
+    - category
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.5
+  page_size: 20
+  estimated_total: 7700
+  sample_count: 15

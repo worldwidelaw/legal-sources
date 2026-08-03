@@ -1,0 +1,138 @@
+# ===================================================================
+# CA/HumanRightsTribunal -- Canadian Human Rights Tribunal (CHRT)
+# ===================================================================
+# Decisions, rulings and reasons of the Canadian Human Rights Tribunal
+# (Tribunal canadien des droits de la personne), the independent
+# quasi-judicial body that adjudicates complaints of discrimination
+# referred to it by the Canadian Human Rights Commission under the
+# Canadian Human Rights Act, the Employment Equity Act and the Pay
+# Equity Act. Each decision/ruling resolves a specific contested case =
+# case_law. Official Government of Canada works, reproducible under the
+# Open Government Licence — Canada.
+#
+# Served by Lexum's "Decisia" platform at decisions.chrt-tcdp.gc.ca
+# under the "decisions" collection (same platform + access pattern as
+# CA/TCC and US/WA-PERC). Browses by year 1979-present; the ?iframe=true
+# view of every item renders a metadata table + full decision text in
+# HTML (no PDF-only, no CAPTCHA, no auth).
+# ===================================================================
+
+source:
+  id: "CA/HumanRightsTribunal"
+  country: "CA"
+  name: "Canadian Human Rights Tribunal — Decisions"
+  url: "https://decisions.chrt-tcdp.gc.ca/chrt-tcdp/en/nav.do"
+  description: |
+    Decisions, rulings and reasons of the Canadian Human Rights Tribunal
+    (CHRT). The CHRT adjudicates complaints of discrimination referred by
+    the Canadian Human Rights Commission under the Canadian Human Rights
+    Act, the Employment Equity Act and the Pay Equity Act. Each decision
+    resolves a specific contested case = case_law. Enumerated from the
+    Lexum Decisia site (decisions.chrt-tcdp.gc.ca) by browsing the
+    "decisions" collection's per-year listing; full text and metadata
+    (neutral citation, file number(s), decision-maker, decision type,
+    grounds, date) are parsed from the ?iframe=true HTML of each item.
+    No CAPTCHA, no auth. ~4,000+ decisions, 1979–present, bilingual
+    (English collection scraped here).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://decisions.chrt-tcdp.gc.ca"
+  endpoints:
+    year_index: "/chrt-tcdp/decisions/en/{year}/nav_date.do?page={page}&iframe=true"
+    item: "/chrt-tcdp/decisions/en/item/{id}/index.do?iframe=true"
+
+data_model:
+  type: "case_law"
+  primary_key: "item_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "_id"
+      description: "Stable id (CA/HumanRightsTribunal/{Decisia item id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "neutral_citation"
+      description: "Neutral citation (e.g. '2024 CHRT 140')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "file_numbers"
+      description: "Tribunal file number(s) (e.g. 'T2201/2317')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "decision_maker"
+      description: "Tribunal member(s) who decided the case"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "decision_type"
+      description: "Decision type (e.g. 'Ruling', 'Decision')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "grounds"
+      description: "Discrimination ground(s) at issue (e.g. 'Disability Sex')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Decision title (party style of cause)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (HTML document-content -> plain text)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the metadata Date field"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Open Government Licence — Canada"
+  url: "https://open.canada.ca/en/open-government-licence-canada"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "CHRT decisions are Government of Canada works, reproducible under the Open Government Licence — Canada (attribution to the source required)."
+
+notes: |
+  - Platform: Lexum Decisia at decisions.chrt-tcdp.gc.ca, "decisions"
+    collection. Same platform/recipe as CA/TCC (Tax Court of Canada).
+  - Enumeration: browse by year at
+    /chrt-tcdp/decisions/en/{YYYY}/nav_date.do?page={N}&iframe=true
+    (25 items/page, years 1979–present, 47 years). Item links are
+    /chrt-tcdp/decisions/en/item/{id}/index.do .
+    IMPORTANT: the path needs the "/decisions/" collection segment —
+    /chrt-tcdp/en/nav_date.do (without it) 404s.
+  - Full text: the ?iframe=true item view is the raw Decisia content (the
+    same URL without the flag is wrapped in the WET-BOEW site theme).
+    Metadata is a <td class="label">/<td class="metadata"> table; the
+    decision body is <div id="document-content">. The scraper converts
+    that HTML fragment to plain text (paragraph/line breaks preserved,
+    tags stripped, entities decoded). A <200-char guard skips empty
+    items. No OCR needed (born-digital HTML).
+  - The site's default search UI is JS/AJAX (browser-bound), but the
+    per-year nav_date.do listing + iframe item view are fully static and
+    curl-scrapable — that is the path used here.

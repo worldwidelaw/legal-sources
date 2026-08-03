@@ -1,0 +1,19 @@
+{
+  "_id": "BR-CVM-PAS-19957000260202147",
+  "_source": "BR/CVM",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-03T12:10:36.373962+00:00",
+  "title": "PAS 19957000260202147",
+  "text": "Objeto: Termo de Acusação em face de Sefer Investimentos Distribuidora de Títulos e Valores Mobiliários Ltda., na qualidade de Administradora do Ativitá FIP (denominação atual da Foco DTVM) e Sérgio Paulino Ferreira, na qualidade de diretor responsável pela prestação de serviços de administração de carteiras da Foco DTVM Ltda., no período de 20 de fevereiro de 2017 a 6 de dezembro de 2018, por infração ao disposto (i) à alínea \"e\" do inciso I e aos incisos IX e XII do artigo 39 da Instrução CVM nº 578/16 (ii) aos incisos I, II e III do artigo 46 da Instrução CVM nº 578/16 (iii) ao artigo 38-A, ao inciso VII do artigo 65 e inciso I do artigo 65-A da Instrução CVM nº 409/04, aplicados ao Ativitá FIP por força do artigo 119-A desta mesma Instrução e (iv) ao inciso I do § 1° do artigo 40, ao inciso I do artigo 92 e aos parágrafos 1º, 4º, 6º e caput do artigo 139 da Instrução CVM nº 555/14, aplicados ao Ativitá FIP por força do artigo 1º desta última Instrução.",
+  "date": "2024-04-19",
+  "url": "https://sistemas.cvm.gov.br/?PAS",
+  "language": "pt",
+  "process_number": "19957000260202147",
+  "phase": "Julgamento",
+  "subphase": "Colegiado sorteia Relator",
+  "accused": [
+    "SEFER INVESTIMENTOS DISTRIBUIDORA DE TÍTULOS E VALORES MOBILIÁRIOS LTDA.",
+    "SÉRGIO PAULINO FERREIRA"
+  ],
+  "instruction_unit": "GSR-2"
+}

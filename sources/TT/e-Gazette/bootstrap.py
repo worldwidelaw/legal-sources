@@ -45,7 +45,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("legal-data-hunter")
 
-BASE = "https://printery.gov.tt/e-gazette/"
+BASE = "https://www.printery.gov.tt/e-gazette/"
 
 # Minimum extracted characters for a PDF to count as "full text" (filters
 # out scanned-image documents that yield little/no text).
@@ -102,11 +102,15 @@ class SourceScraper(BaseScraper):
     # ── Enumeration ───────────────────────────────────────────────
 
     def _list_years(self) -> list:
+        # The /e-gazette/ index now 302-redirects to the printery homepage,
+        # whose year links are ABSOLUTE URLs (e.g. ".../e-gazette/2026/") rather
+        # than the relative "2026/" of the old Apache listing. Match both forms
+        # so a redesign of the index page can't silently yield 0 years (#1130).
         resp = self._get(BASE)
         if not resp:
             return []
         years = sorted(
-            {int(m) for m in re.findall(r'href="(\d{4})/"', resp.text)},
+            {int(m) for m in re.findall(r'href="(?:[^"]*/e-gazette/)?(\d{4})/"', resp.text)},
             reverse=True,
         )
         return years
@@ -303,8 +307,11 @@ def main():
         idx = sys.argv.index("--sample-size")
         sample_size = int(sys.argv[idx + 1])
 
-    if command == "bootstrap":
-        if sample_mode:
+    # bootstrap-fast is the VPS fleet entrypoint; alias it to the full bootstrap
+    # path so it runs the full corpus (streamed to data/records.jsonl by
+    # BaseScraper) instead of erroring out and falling back to samples (#1130).
+    if command in ("bootstrap", "bootstrap-fast"):
+        if sample_mode and command != "bootstrap-fast":
             stats = scraper.run_sample(n=sample_size)
             print(f"\nSample complete: {stats.get('sample_records_saved', 0)} records saved to sample/")
         else:

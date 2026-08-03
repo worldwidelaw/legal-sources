@@ -1,0 +1,120 @@
+# ===================================================================
+# US/AZ-CorpCommission -- Arizona Corporation Commission Decisions & Orders
+# ===================================================================
+# Full text of Decisions and Procedural Orders issued by the Arizona
+# Corporation Commission (ACC) adjudicating utility dockets (electric,
+# natural-gas, water/sewer, telecommunications, pipeline/railroad safety):
+# rate cases, certificates of convenience & necessity, complaints,
+# financings and other matters. Administrative adjudications of specific
+# cases = case_law. Public domain (US state government edict). Served
+# openly as born-digital PDFs via the public eDocket JSON API. No auth.
+# ===================================================================
+
+source:
+  id: "US/AZ-CorpCommission"
+  country: "US"
+  name: "Arizona Corporation Commission — Decisions & Orders"
+  url: "https://edocket.azcc.gov/"
+  description: |
+    Decisions and Procedural Orders issued by the Arizona Corporation
+    Commission (ACC) resolving utility rate cases, certificate (CC&N)
+    applications, complaints, financings and other dockets across the
+    electric, natural-gas, water/sewer and telecommunications industries.
+    Each Decision/Order is an administrative adjudication of a specific
+    case (case_law). The corpus spans the early 1990s to present
+    (~380-400 Decisions/year plus Procedural Orders). Full text is
+    extracted from born-digital Decision PDFs (older image-only scans are
+    OCR'd with Tesseract).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 5
+
+api:
+  type: "json_api"
+  base_url: "https://efiling.azcc.gov/api/edocket"
+  endpoints:
+    document_search: "POST /documentSearchRequest (documentCodeID 723=Decision, 727=Procedural Order; filing-date range)"
+    document_pdf: "https://docket.images.azcc.gov/{imageNumber}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "decision_number"
+      description: "ACC Decision number, e.g. '81974' (parsed from the Decision body; null for Procedural Orders)"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "docket_number"
+      description: "Docket number, e.g. 'W-20446A-22-0059' (from eDocket docketSummaries metadata)"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "document_type"
+      description: "'Decision' or 'Procedural Order'"
+      type: "string"
+      role: "category"
+      required: true
+    - name: "title"
+      description: "Decision/Order number plus docket number and party/company caption"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Decision/Order extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Filing/issue date (ISO 8601), from the eDocket filedDate"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "pdf_url"
+      description: "Direct URL to the born-digital Decision/Order PDF"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Arizona)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "ACC Decisions and Orders are official state government edicts in the public domain."
+
+notes: |
+  - The eDocket Angular app (edocket.azcc.gov) is backed by a PUBLIC
+    (no-auth) JSON API at https://efiling.azcc.gov/api/edocket/. The
+    document search endpoint POST /documentSearchRequest accepts a
+    filing-date range plus a document code and returns document metadata
+    including imageNumber and docketSummaries[{docketNumber, companyName,
+    description, caseType}]. The full field set must be present in the
+    request body (currentPageIndex/rowsToSkip page through totalRowCount).
+  - Adjudicative documents = document codes 723 (Decision) and 727
+    (Procedural Order); both are Commission orders resolving specific
+    dockets = case_law.
+  - Each document's born-digital PDF is served openly at
+    https://docket.images.azcc.gov/{imageNumber}.pdf. fetch_all() walks
+    filing years newest-first (~1990 floor, empty-year streak stop);
+    normalize() downloads the PDF and extracts full text via fitz/PyMuPDF
+    (Tesseract OCR fallback for older image-only scans). The Decision
+    number is parsed from the body; the docket number comes from the
+    authoritative eDocket metadata.
+  - Public domain Arizona government data.

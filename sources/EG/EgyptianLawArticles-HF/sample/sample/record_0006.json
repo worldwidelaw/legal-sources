@@ -1,0 +1,13 @@
+{
+  "_id": "EG/EgyptianLawArticles-HF:art-٢",
+  "_source": "EG/EgyptianLawArticles-HF",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-09T06:19:56.724596+00:00",
+  "title": "Egyptian Civil Code — Article ٢",
+  "text": "وإذا عاد شخص توافرت فيه الأهلية بحسب نصوص قديمة ناقص\nالأهلية بحسب نصوص جديدة فإن ذلك لا يؤثر في تصرفاته السابقة.\n\n--- English Translation ---\n\nWhen a person, who was deemed to possess legal\ncapacity in accordance with the provisions of a former\nlaw, becomes legally incapable in accordance with the\nprovisions of a new law, such legal incapacity does not\naffect the validity of acts previously done by him.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/TawasulAI/egyptian-law-articles",
+  "article_number": "٢",
+  "language": "ar",
+  "jurisdiction": "EG"
+}

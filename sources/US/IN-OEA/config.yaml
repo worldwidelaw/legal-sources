@@ -1,0 +1,128 @@
+# ===================================================================
+# US/IN-OEA -- Indiana Office of Environmental Adjudication (OEA)
+#   IDEM Final Orders (environmental contested-case adjudications)
+# ===================================================================
+# Final Orders issued by the Indiana Office of Environmental
+# Adjudication (OEA) — Indiana's independent administrative tribunal
+# that adjudicates appeals of permits, orders and other actions of the
+# Indiana Department of Environmental Management (IDEM). An
+# Environmental Law Judge hears the contested case and issues Findings
+# of Fact, Conclusions of Law and a Final Order resolving that specific
+# dispute between a party and IDEM = case_law. Published via the Office
+# of Administrative Law Proceedings (OALP) Final Orders index
+# (in.gov/oalp/final-decisions/idem/final-orders/), a server-rendered
+# page linking to one listing page per year (1996-present); each
+# decision document is a born-digital text-layer PDF at Indiana's
+# document store (in.gov/dA/{hash}/{filename}.pdf). No JavaScript, no
+# CAPTCHA, no auth. Public domain Indiana state government works
+# (government edicts).
+# ===================================================================
+
+source:
+  id: "US/IN-OEA"
+  country: "US"
+  name: "Indiana Office of Environmental Adjudication — IDEM Final Orders"
+  url: "https://www.in.gov/oalp/final-decisions/idem/final-orders/"
+  description: |
+    Final Orders of the Indiana Office of Environmental Adjudication
+    (OEA), Indiana's independent tribunal for appeals of IDEM permits
+    and enforcement actions. Each order (Findings of Fact, Conclusions
+    of Law and Final Order, plus related judicial-review orders)
+    resolves a specific environmental contested case between a party and
+    the Indiana Department of Environmental Management = case_law.
+    Enumerated from the OALP Final Orders index (per-year listing pages,
+    1996-present) -> Indiana document-store PDF URLs; documents are
+    born-digital PDFs, text extracted via common.pdf_extract. No
+    JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.in.gov"
+  endpoints:
+    index: "/oalp/final-decisions/idem/final-orders/"
+    year_page: "/oalp/final-decisions/idem/final-orders/{year}-decisions/"
+    document: "/dA/{hash}/{filename}.pdf?language_id=1"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/IN-OEA/{filename-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "cause_number"
+      description: "OEA/OALP cause number (e.g. '2020 OEA 1', '2025 OALP 74'); null for descriptive-filename orders"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "party"
+      description: "Party / facility name from the listing anchor (e.g. 'NIPSCO R.M. Schahfer Generating Station')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (OEA cause number + party)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the OEA Final Order (born-digital PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order date (ISO 8601), parsed from the body (anchored to listing year); falls back to listing year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Indiana state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Final Orders of the Indiana Office of Environmental Adjudication are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The OALP Final Orders index
+    (in.gov/oalp/final-decisions/idem/final-orders/) is a server-rendered
+    page linking to one listing page per year
+    (/oalp/final-decisions/idem/final-orders/{YEAR}-decisions/,
+    1996-present, ~31 years). Each year page server-renders anchors to
+    the decision PDFs at the Indiana document store
+    (in.gov/dA/{hash}/{filename}.pdf?language_id=1); the anchor text is
+    the party/facility name and the filename encodes the cause number.
+  - ~389 documents total (final orders + related judicial-review
+    orders). All born-digital text-layer PDFs, extracted via
+    common.pdf_extract (pdfplumber/pypdf, no OCR); a <200-char guard
+    auto-skips empty/scanned documents.
+  - Cause numbers: older orders use the "OEA" tag (2020OEA1); since ~2024
+    OEA files carry the parent office's "OALP" tag (2025OALP001).
+  - date prefers a real "Month D, YYYY" from the order body whose year
+    matches the listing year (the ELJ signature date), falling back to
+    the listing year (Jan 1) so the temporal key is set.
+  - FOLLOW-UP (not covered here): the sibling DNR/CADDNAR
+    natural-resources adjudications (in.gov/oalp/final-decisions/dnr/caddnar)
+    are a separate structure (citation-index PDF + volume set) and could
+    extend this source with hundreds more Indiana administrative cases.
+  - Public domain Indiana state government data.

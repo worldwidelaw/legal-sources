@@ -1,0 +1,61 @@
+source:
+  id: JP/NRA
+  name: Nuclear Regulation Authority — Related Laws & Ordinances
+  country: JP
+  url: https://www.nra.go.jp/activity/ri_kisei/kanrenhourei/index.html
+  description: >
+    Binding legal instruments issued by Japan's Nuclear Regulation Authority
+    (NRA / 原子力規制委員会), the country's independent post-Fukushima nuclear and
+    radiation-safety regulator. The "Related Laws & Ordinances" (関連法令) index
+    lists NRA official notices (告示), enforcement orders and regulations
+    (施行令/施行規則), and binding regulatory/inspection guides
+    (審査ガイド/立入検査ガイド) under the Radioisotope Regulation Law. Full text is
+    extracted from the born-digital PDFs served at nra.go.jp/data/.
+
+data_model:
+  types:
+    - legislation
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: pdf_url
+      type: string
+      required: false
+
+license:
+  name: "CC BY 4.0"
+  url: "https://creativecommons.org/licenses/by/4.0/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    NRA content is published under the Government of Japan Standard Terms of Use
+    v2.0, which the NRA states is compatible with CC BY 4.0. Reuse, translation,
+    adaptation and commercial use are permitted with attribution
+    (出典：原子力規制委員会ホームページ).
+
+schedule:
+  full_refresh: monthly
+  update_check: monthly

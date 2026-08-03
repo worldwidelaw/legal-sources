@@ -1,0 +1,118 @@
+# ===================================================================
+# US/WA-UTC -- Washington Utilities & Transportation Commission Orders
+# ===================================================================
+# Full text of Orders issued by the Washington Utilities and
+# Transportation Commission (UTC) adjudicating utility dockets
+# (electric, gas, water, telecommunications, transportation). Each
+# Order is the Commission's administrative adjudication of a specific
+# docket = case_law. Public domain (US state government edict).
+# Published openly as born-digital PDFs via the UTC case-docket system
+# (utc.wa.gov + apiproxy.utc.wa.gov). No authentication required.
+# ===================================================================
+
+source:
+  id: "US/WA-UTC"
+  country: "US"
+  name: "Washington Utilities & Transportation Commission — Orders"
+  url: "https://www.utc.wa.gov/casedocket/"
+  description: |
+    Orders issued by the Washington Utilities and Transportation
+    Commission (UTC) resolving utility rate, tariff, complaint, penalty
+    and rulemaking dockets across the electric, gas, water,
+    telecommunications and transportation industries. Each Order is the
+    Commission's administrative adjudication of a specific docket
+    (case_law). Full text is in born-digital Order PDFs served by the
+    apiproxy.utc.wa.gov document API (Tesseract OCR fallback for the
+    rare image-only scan).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 5
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.utc.wa.gov"
+  endpoints:
+    docket_list: "/documents-and-proceedings/dockets?page={n}"   # 50 dockets/page
+    orders: "/casedocket/{year}/{docket}/orders"                 # server-rendered order table
+    file: "https://apiproxy.utc.wa.gov/cases/GetDocument?docID={id}&year={y}&docketNumber={d}"
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "doc_id"
+      description: "UTC document API docID (stable primary key)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "UTC docket number, e.g. '230172'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "doc_type"
+      description: "Order type (Order - Open Meeting Final, Order - Other, ...)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "filename"
+      description: "Original document filename from the orders listing"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Docket number plus order type and description"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "summary"
+      description: "Short order description from the docket listing"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "text"
+      description: "Full text of the Order extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Service date of the Order (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Washington)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "WA UTC Orders are official Washington state government edicts in the public domain."
+
+notes: |
+  - The docket universe is a Drupal Views listing at
+    /documents-and-proceedings/dockets, paginated 50 dockets/page (newest
+    docket first, ~729 pages). Each row links to /casedocket/{year}/{docket}.
+  - Each docket's Orders tab /casedocket/{year}/{docket}/orders is a
+    server-rendered <table> of every Order (service date, filename, order
+    type, description, document link). The document link is
+    https://apiproxy.utc.wa.gov/cases/GetDocument?docID={id}&year={y}&docketNumber={d}.
+  - fetch_all() walks list pages newest-first, then each docket's Orders tab,
+    yielding raw metadata. normalize() downloads the GetDocument PDF and
+    extracts full text (fitz/PyMuPDF; Tesseract OCR fallback). No auth/token.
+  - Public domain Washington government data.

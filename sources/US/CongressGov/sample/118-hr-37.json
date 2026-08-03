@@ -1,0 +1,19 @@
+{
+  "_id": "118-hr-37",
+  "_source": "US/CongressGov",
+  "_type": "legislation",
+  "_fetched_at": "2026-07-12T20:01:54.674832+00:00",
+  "title": "David Dorn Act of 2023",
+  "text": "To amend title 18, United States Code, to increase the maximum term of imprisonment for rioting, and for other purposes.\nDavid Dorn Act of 2023 1.Short titleThis Act may be cited as the David Dorn Act of 2023.\n2.Increased penalties for riotingSection 2101(a) of title 18, United States Code, is amended by striking Shall be fined under this title, or imprisoned not more than five years, or both and inserting Shall be fined under this title, but in no event less than $1,000, or imprisoned not more than ten years, or both.",
+  "date": "2023-01-09",
+  "url": "https://www.congress.gov/bill/118th-congress/house-bill/37",
+  "congress": 118,
+  "bill_type": "HR",
+  "bill_number": "37",
+  "sponsor": "Rep. Arrington, Jodey C. [R-TX-19]",
+  "cosponsors_count": 3,
+  "policy_area": "Crime and Law Enforcement",
+  "origin_chamber": "House",
+  "latest_action": "Referred to the House Committee on the Judiciary.",
+  "update_date": "2024-07-24T15:24:13Z"
+}

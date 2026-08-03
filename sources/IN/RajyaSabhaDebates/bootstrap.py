@@ -335,7 +335,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="IN/RajyaSabhaDebates bootstrap")
-    parser.add_argument("command", choices=["bootstrap", "update", "test"])
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "update", "test"])
     parser.add_argument("--sample", action="store_true", help="Fetch only 15 sample records")
     parser.add_argument("--since", type=str, help="ISO date for incremental update")
     args = parser.parse_args()
@@ -346,23 +346,42 @@ def main():
         ok = scraper.test()
         sys.exit(0 if ok else 1)
 
+    # Sample mode: write to sample/ for validation.
+    if args.command in ("bootstrap", "bootstrap-fast") and args.sample:
+        sample_dir = Path(__file__).parent / "sample"
+        sample_dir.mkdir(exist_ok=True)
+        count = 0
+        for record in scraper.fetch_all(sample=True):
+            count += 1
+            out_file = sample_dir / f"{record['_id']}.json"
+            with open(out_file, "w", encoding="utf-8") as f:
+                json.dump(record, f, ensure_ascii=False, indent=2)
+        logger.info("Done. Saved %d sample records to %s", count, sample_dir)
+        if count == 0:
+            logger.error("No records fetched!")
+            sys.exit(1)
+        return
+
+    # Full corpus (bootstrap / bootstrap-fast) and updates stream to
+    # data/records.jsonl — this is what the ingest pipeline consumes.
     if args.command == "update":
         since = args.since or (datetime.now(timezone.utc) - timedelta(days=90)).date().isoformat()
         records = scraper.fetch_updates(since)
     else:
-        records = scraper.fetch_all(sample=args.sample)
+        records = scraper.fetch_all(sample=False)
 
-    sample_dir = Path(__file__).parent / "sample"
-    sample_dir.mkdir(exist_ok=True)
+    data_dir = Path(__file__).parent / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    jsonl_path = data_dir / "records.jsonl"
     count = 0
+    with open(jsonl_path, "w", encoding="utf-8") as f:
+        for record in records:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+            count += 1
+            if count % 100 == 0:
+                logger.info("Progress: %d records written", count)
 
-    for record in records:
-        count += 1
-        out_file = sample_dir / f"{record['_id']}.json"
-        with open(out_file, "w", encoding="utf-8") as f:
-            json.dump(record, f, ensure_ascii=False, indent=2)
-
-    logger.info("Done. Saved %d records to %s", count, sample_dir)
+    logger.info("Done. Wrote %d records to %s", count, jsonl_path)
     if count == 0:
         logger.error("No records fetched!")
         sys.exit(1)

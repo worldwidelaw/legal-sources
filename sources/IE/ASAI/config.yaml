@@ -1,0 +1,74 @@
+# IE/ASAI — Advertising Standards Authority for Ireland (ASAI) — Complaint Adjudications
+#
+# Source: Advertising Standards Authority for Ireland (ASAI)
+# URL: https://adstandards.ie/complaints-decisions/
+# Data type: case_law
+# Auth: none
+# License: © Advertising Standards Authority (all rights reserved) — commercial use restricted
+#
+# The ASAI is the independent self-regulatory body for advertising in Ireland.
+# It adjudicates complaints that specific advertisements breached the ASAI Code
+# of Standards for Advertising and Marketing Communications. Each published
+# adjudication (Advertisement / Complaint / Response / Conclusion / Action
+# Required) is a quasi-judicial determination on a specific case = case_law.
+#
+# Total: ~1,066 adjudications (adstandards.ie WordPress `complaint` custom post
+# type; X-WP-Total header).
+#
+# Access:
+#   - Enumerate every adjudication via the public WordPress REST API:
+#       /wp-json/wp/v2/complaint?per_page=100&page=N
+#     (id, publish date, slug, canonical link, category title, class_list with
+#      advertiser/medium/bulletin taxonomy slugs). ~11 pages.
+#   - Full text is NOT in REST content.rendered; it is server-rendered on each
+#     canonical page in the Elementor single-post region (isolated between
+#     data-elementor-type="single-post" and the footer). Born-digital HTML,
+#     no OCR/PDF extraction required.
+
+source:
+  id: IE/ASAI
+  name: Advertising Standards Authority for Ireland (ASAI) — Complaint Adjudications
+  country: IE
+  data_types:
+    - case_law
+  url: https://adstandards.ie/complaints-decisions/
+  language: en
+  auth: none
+  license: custom-nc
+
+license:
+  name: "© Advertising Standards Authority (all rights reserved)"
+  url: "https://adstandards.ie/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Self-regulatory body; adjudications published publicly on adstandards.ie with no open-data licence. Copyright © Advertising Standards Authority. Commercial re-use restricted — flagged pending clarification."
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: case_reference
+      type: string
+      required: false
+    - name: text
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - case_reference
+    - advertiser
+    - product
+    - medium
+    - codes
+    - outcome
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.0
+  page_size: 100
+  estimated_total: 1066
+  sample_count: 15

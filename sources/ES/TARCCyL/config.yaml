@@ -1,0 +1,75 @@
+source:
+  id: ES/TARCCyL
+  name: Tribunal Administrativo de Recursos Contractuales de Castilla y León (TARCCYL)
+  url: https://www.cccyl.es/es/tribunal-administrativo-recursos-contractuales-castilla-leo/resoluciones
+  country: ES
+  region: Castilla y León
+  jurisdiction: ES-CL
+  data_types:
+    - case_law
+  auth:
+    type: none
+  license:
+    name: "Junta de Castilla y León open data (PSI reuse)"
+    url: "https://datosabiertos.jcyl.es/web/es/aviso-legal.html"
+    commercial_use: true
+    attribution_required: true
+    share_alike: false
+    no_derivatives: false
+    notes: "Reutilización de información del sector público (Ley 37/2007)."
+
+api:
+  base_url: https://www.cccyl.es/es/tribunal-administrativo-recursos-contractuales-castilla-leo/resoluciones
+  pagination: ".nodos,{offset},10 suffix per year page (offset 0,10,20,...)"
+  page_size: 10
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+    - name: "resolucion_number"
+      type: "string"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 2017-01-01
+    end: present
+  document_types:
+    - Resolución
+  estimated_count: 900
+
+notes: |
+  Tribunal Administrativo de Recursos Contractuales de Castilla y León
+  (TARCCYL), hosted by the Consejo Consultivo de Castilla y León (cccyl.es).
+  Resolves the "recurso especial en materia de contratación pública" for
+  Castilla y León and issues binding resoluciones. The public resoluciones
+  section is organised by year; each year page paginates via a
+  ".nodos,{offset},10" suffix and links directly to born-digital resolución
+  PDFs (extracted with PyMuPDF, no OCR). Regional sibling of ES/TARCJA-Andalucia,
+  ES/OARC-Euskadi, ES/TACP-Madrid, ES/TACPA-Aragon, ES/TACPN-Navarra and
+  ES/TACPC-Canarias; open-data alternative to the captcha-blocked central
+  tribunal (ES/TACRC).

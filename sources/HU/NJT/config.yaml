@@ -1,10 +1,10 @@
 # HU/NJT - Hungarian National Legislation Database (Nemzeti Jogszabálytár)
-# https://njt.hu/
+# https://njt.jog.gov.hu/
 
 source_id: "HU/NJT"
 name: "Nemzeti Jogszabálytár - Hungarian National Legislation Database"
 country: "HU"
-url: "https://njt.hu"
+url: "https://njt.jog.gov.hu"
 
 auth:
   type: none
@@ -49,7 +49,7 @@ rate_limit:
   burst: 3
 
 notes: |
-  Nemzeti Jogszabálytár (njt.hu) is Hungary's official legislation database.
+  Nemzeti Jogszabálytár (njt.jog.gov.hu) is Hungary's official legislation database.
   Hungary has ELI (European Legislation Identifier) implementation since 2023.
 
   Document types (ELI codes):

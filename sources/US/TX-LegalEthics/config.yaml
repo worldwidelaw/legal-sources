@@ -1,0 +1,120 @@
+# ===================================================================
+# US/TX-LegalEthics -- Texas Committee on Professional Ethics
+#                      — Ethics Opinions
+# ===================================================================
+# Ethics opinions issued by the Professional Ethics Committee for the
+# State Bar of Texas (a nine-member committee appointed by the Supreme
+# Court of Texas). Each opinion interprets the Texas Disciplinary Rules
+# of Professional Conduct and advises lawyers on the propriety of
+# professional conduct = doctrine. One continuous numbered series,
+# Opinion 1 (1966) to present, published as born-digital HTML by the
+# Texas Center for Legal Ethics (the official repository). No OCR, no
+# CAPTCHA, no auth. Public-domain Texas regulatory-agency official
+# records. Distinct from the Texas Ethics Commission (public officials)
+# and Texas Attorney General opinions.
+# ===================================================================
+
+source:
+  id: "US/TX-LegalEthics"
+  country: "US"
+  name: "Texas Committee on Professional Ethics — Ethics Opinions"
+  url: "https://www.legalethicstexas.com/resources/opinions/"
+  description: |
+    Ethics opinions of the Professional Ethics Committee for the State
+    Bar of Texas. The Committee, appointed by the Supreme Court of
+    Texas, expresses its view on the propriety of professional conduct
+    under the Texas Disciplinary Rules of Professional Conduct, either
+    on its own initiative or in response to a request from a member of
+    the bar. The opinions form one continuous numbered series from
+    Opinion 1 to the present (Opinion 710 as of 2026-07), published as
+    born-digital HTML pages by the Texas Center for Legal Ethics; the
+    full text (Question Presented, Statement of Facts, Discussion,
+    Conclusion) is extracted directly from the HTML.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_sequential"
+  base_url: "https://www.legalethicstexas.com"
+  endpoints:
+    listing: "/resources/opinions/"                 # newest-first index (ceiling discovery)
+    opinion: "/resources/opinions/opinion-{n}/"      # per-opinion HTML page
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/TX-LegalEthics/opinion-{N})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number in the continuous series (e.g. '705')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title (e.g. 'Texas Ethics Opinion 705')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text (Question Presented / Statement of Facts / Discussion / Conclusion) from div.resourcesDetail"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Opinion date (ISO 8601); from the <time> element, else the Bluebook citation year. Best-effort for older opinions."
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Texas Committee on Professional Ethics (State Bar of Texas)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (Texas Regulatory-Agency Official Record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Ethics opinions of the Professional Ethics Committee for the State Bar of Texas are official public records of a Texas regulatory body (the Committee is appointed by the Supreme Court of Texas), published for public use by the Texas Center for Legal Ethics with no copyright restriction."
+
+notes: |
+  - Discovery: each opinion is a static HTML page at a sequential URL
+    /resources/opinions/opinion-{N}/. The current highest number is
+    read from the newest-first index page (/resources/opinions/, which
+    exposes opinion-{N} links); the scraper walks opinion-1 ..
+    opinion-{max} (+5 buffer) and skips any 404 (withdrawn) number.
+  - Full text: the body sits in <div class="resourcesDetail">; the
+    Question Presented block plus the Statement of Facts / Discussion /
+    Conclusion tab panels are all present in the HTML and are de-tagged
+    after removing the search widget, tab buttons and social links.
+    Born-digital, no OCR, no PDF.
+  - Type: every document is an ethics opinion interpreting the Texas
+    Disciplinary Rules of Professional Conduct = doctrine.
+  - Date: taken from the page's <time> element when present (modern
+    opinions), else from the Bluebook citation "(YYYY)" or the first
+    year in the body. Best-effort and non-required for the oldest
+    opinions (whose only date is the Baylor Law Review publication year).
+  - Distinct from the Texas Ethics Commission (public officials) and
+    Texas Attorney General opinions.

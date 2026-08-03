@@ -1,0 +1,114 @@
+# ===================================================================
+# US/CT-TaxAppeals -- Connecticut Superior Court, Tax and Administrative
+# Appeals Session (Decisions)
+# ===================================================================
+# Full text of the published decisions of the Tax and Administrative
+# Appeals Session of the Connecticut Superior Court — the specialized
+# session (sitting at the judicial district of New Britain) that hears
+# municipal property-tax appeals (Conn. Gen. Stat. §§ 12-117a / 12-119),
+# state tax appeals against the Commissioner of Revenue Services, and
+# related administrative appeals. Each "Memorandum of Decision" resolves a
+# specific tax controversy (taxpayer v. town / Commissioner of Revenue
+# Services), so the corpus is case_law.
+#
+# The Judicial Branch publishes these decisions as born-digital text-layer
+# PDFs. A single static index page,
+#   https://www.jud.ct.gov/external/super/Tax/recent.htm
+# groups every published decision (2001-2016) by year as <li> entries
+# carrying the case caption, court, docket number, decision date and judge,
+# each linking to a "Decisions/<docket>.pdf" file. The www host
+# 302-redirects the PDF path to the info.jud.ct.gov content host. No
+# JavaScript, no CAPTCHA, no auth. Decisions of a Connecticut state court
+# are public domain government works (government-edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/CT-TaxAppeals"
+  country: "US"
+  name: "Connecticut Superior Court — Tax and Administrative Appeals Session (Decisions)"
+  url: "https://www.jud.ct.gov/external/super/Tax/recent.htm"
+  description: |
+    Published decisions of the Tax and Administrative Appeals Session of
+    the Connecticut Superior Court — the specialized session that hears
+    municipal property-tax appeals (Conn. Gen. Stat. §§ 12-117a / 12-119),
+    state tax appeals against the Commissioner of Revenue Services, and
+    related administrative appeals. Born-digital text-layer Memoranda of
+    Decision served as PDFs from info.jud.ct.gov, indexed by year on a
+    single static HTML page. No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.jud.ct.gov"
+  endpoints:
+    index: "/external/super/Tax/recent.htm"
+    pdf_base: "https://info.jud.ct.gov/external/super/Tax/"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CT-TaxAppeals/{pdf-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket"
+      description: "Docket number parsed from the index entry (e.g. 'CV 14-5016146')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "case_name"
+      description: "Case caption parsed from the index anchor text (e.g. 'Arora v. Redding')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Synthesized caption (case_name, court, docket)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Memorandum of Decision from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601) parsed from the index entry parenthetical (fallback: latest in-document date)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Connecticut state court decision)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Connecticut Superior Court are official judicial government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery: GET /external/super/Tax/recent.htm and parse each <li> entry
+    (grouped under <h2> year headers, 2001-2016) for its PDF href, case
+    caption (anchor text), docket number, decision date and judge.
+  - PDFs are referenced relative to the index as "Decisions/<docket>.pdf";
+    the www.jud.ct.gov host 302-redirects the path to info.jud.ct.gov, so the
+    scraper builds the absolute URL against info directly.
+  - PDFs are born-digital text layers; extracted via common.pdf_extract.
+  - Public domain Connecticut state judicial data.

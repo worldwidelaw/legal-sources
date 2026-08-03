@@ -1,0 +1,109 @@
+# ===================================================================
+# US/HI-TaxAppealCourt -- Hawaii Tax Appeal Court (Unreported Decisions)
+# ===================================================================
+# Redacted, unreported decisions of the Hawaii Tax Appeal Court — the
+# specialized state trial court that hears appeals from the Department
+# of Taxation and the Board of Review under HRS ch. 232 (income, general
+# excise, use, conveyance and other tax appeals). Published by the
+# Hawaii Department of Taxation at tax.hawaii.gov/legal/a4_5crtcases/
+# as a server-rendered HTML table linking born-digital text-layer PDFs
+# on files.hawaii.gov. These are adjudications of contested cases, so
+# the corpus is case_law (distinct from US/HI-TaxGuidance = doctrine).
+# No JavaScript, no CAPTCHA, no auth. Public domain state government
+# works (government-edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/HI-TaxAppealCourt"
+  country: "US"
+  name: "Hawaii Tax Appeal Court — Unreported Decisions"
+  url: "https://tax.hawaii.gov/legal/a4_5crtcases/"
+  description: |
+    Redacted, unreported decisions of the Hawaii Tax Appeal Court, the
+    specialized state trial court hearing tax appeals under HRS ch. 232.
+    Published by the Hawaii Department of Taxation on a server-rendered
+    HTML index table linking born-digital text-layer PDFs. No
+    JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://tax.hawaii.gov"
+  endpoints:
+    decisions: "/legal/a4_5crtcases/"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/HI-TaxAppealCourt/{pdf-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "Tax Appeal Court case number(s) (e.g. '96-5208')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "tax_law"
+      description: "Tax type at issue (e.g. GENERAL EXCISE, INCOME, USE)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Case caption (In the Matter of the Tax Appeal of ...)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the index table"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Hawaii state court decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Hawaii Tax Appeal Court are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Single server-rendered index page (/legal/a4_5crtcases/) whose HTML
+    tables share one column layout: Date | Case No.(s) | Tax Law |
+    Party/Description. Rows with a linked born-digital PDF on
+    files.hawaii.gov are the retrievable decisions; index-only rows
+    without a document link are skipped.
+  - Dates are MM/DD/YY in the table; the scraper expands two-digit years
+    (40-99 -> 19xx, 00-39 -> 20xx). Corpus currently spans 1968-1997.
+  - PDFs are extracted via common.pdf_extract (curl browser UA, ~1
+    req/s). The <150-char guard auto-skips any scanned attachment with
+    no text layer, recoverable on an OCR host.
+  - Type is case_law: these are adjudications of specific contested tax
+    appeals, distinct from US/HI-TaxGuidance (TIRs/Letter Rulings =
+    doctrine), US/HI-Courts (general appellate judiciary) and
+    US/HI-Legislation (statutes).
+  - Public domain Hawaii state government data.

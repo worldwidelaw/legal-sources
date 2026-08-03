@@ -1,0 +1,125 @@
+# ===================================================================
+# US/MI-LegalEthics -- State Bar of Michigan
+#                      — Ethics Opinions (Professional & Judicial)
+# ===================================================================
+# Ethics opinions issued by the State Bar of Michigan's Standing
+# Committees on Professional Ethics and on Judicial Ethics. Each
+# opinion interprets the Michigan Rules of Professional Conduct (MRPC)
+# or the Michigan Code of Judicial Conduct in response to a stated
+# fact situation and advises lawyers/judges whether the described
+# conduct is proper = doctrine. One continuous online archive combining
+# six series (R/RI professional + C/CI legacy professional + J/JI
+# judicial), spanning C-210 (1972) through RI-394 (2026), ~1,280
+# opinions, born-digital HTML, no OCR/CAPTCHA/auth. Distinct from
+# US/MI-MERC (labor board), US/MI-Courts and US/MI-Legislation.
+# ===================================================================
+
+source:
+  id: "US/MI-LegalEthics"
+  country: "US"
+  name: "State Bar of Michigan — Ethics Opinions (Professional & Judicial)"
+  url: "https://www.michbar.org/opinions/ethics/search"
+  description: |
+    Ethics opinions of the State Bar of Michigan's Standing Committees
+    on Professional Ethics and on Judicial Ethics. The Committees
+    interpret the Michigan Rules of Professional Conduct (MRPC) and the
+    Michigan Code of Judicial Conduct in response to a stated fact
+    situation and advise whether the described conduct is proper. The
+    online archive is one continuous corpus combining six opinion series
+    — R and RI (formal/informal professional, post-Oct-1988), C and CI
+    (legacy professional), and J and JI (formal/informal judicial) —
+    spanning C-210 (1972) through the current RI series (RI-394, 2026),
+    ~1,280 opinions, each published in full as born-digital HTML.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_listing"
+  base_url: "https://www.michbar.org"
+  endpoints:
+    detail: "/opinions/ethics/numbered_opinions?OpinionID={id}"
+    slug: "/opinions/ethics/numbered_opinions/{prefix}-{number}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/MI-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Series-prefixed opinion number (e.g. RI-394, CI-1188, C-210, JI-150)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title (State Bar of Michigan Ethics Opinion {number})"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text (SYLLABUS / References / TEXT) from the HTML detail body"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Opinion date as ISO 8601 (parsed from the date following the opinion number)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "State Bar of Michigan — issuing standing committee (professional or judicial)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-MI)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (State Bar of Michigan Ethics Opinions)"
+  url: "https://www.michbar.org/opinions/ethics/search"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "State Bar of Michigan ethics opinions are published free to the public on michbar.org as an educational service interpreting the Michigan Rules of Professional Conduct and Code of Judicial Conduct; they are advisory (no weight of law) and carry no copyright restriction or paywall on the opinion text. No login or terms prohibiting reuse."
+
+notes: |
+  - Discovery: the michbar.org DNN site renders every opinion detail at
+    a stable internal-primary-key route
+    /opinions/ethics/numbered_opinions?OpinionID={id}. The OpinionID
+    space is contiguous (1 .. ~1282); enumerating it in order walks the
+    entire corpus without needing the JavaScript search box. Enumeration
+    stops after 30 consecutive empty ids (default ceiling probe 1400).
+  - Full text: the body renders inside the
+    #dnn_ctr14174_EthicsOpinionsSearchDetail_divEOWholeOpinion div as
+    born-digital HTML "{NUMBER} {DATE} SYLLABUS ... References: ... TEXT".
+    A missing/superseded id renders only the "SBM - State Bar of
+    Michigan" header (~27 chars) and is skipped.
+  - Number & date are parsed from the body: the series-prefixed number
+    (RI/CI/JI/R/C/J-N) is immediately followed by the issue date.
+  - Type: every document is an advisory opinion interpreting the MRPC or
+    the Code of Judicial Conduct = doctrine. Six series are combined:
+    R/RI (professional), C/CI (legacy professional), J/JI (judicial).
+  - Distinct from US/MI-MERC (Michigan labor board), US/MI-Courts and
+    US/MI-Legislation; this is the state bar's ethics advisory series.

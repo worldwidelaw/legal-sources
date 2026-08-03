@@ -1,0 +1,115 @@
+# ═══════════════════════════════════════════════════════════════════
+# CA/ON-OSC — Ontario Securities Commission: Instruments, Rules & Policies
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "CA/ON-OSC"
+  country: "CA"
+  name: "Ontario Securities Commission — Instruments, Rules & Policies"
+  url: "https://www.osc.ca/en/securities-law/instruments-rules-policies"
+  description: |
+    Ontario securities-law instruments, rules, companion policies and staff
+    notices published by the Ontario Securities Commission (OSC). Covers the
+    national/multilateral and Ontario-local instruments that govern Ontario's
+    capital markets, grouped by the Canadian Securities Administrators (CSA)
+    numbering system (categories 0-9). Each instrument page lists its current
+    consolidation plus the historical amendments, notices and policies; full
+    text comes from the linked PDFs. English. Sub-jurisdiction: CA-ON.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.osc.ca"
+  selectors:
+    index: "/en/securities-law/instruments-rules-policies"
+    category: "/en/securities-law/instruments-rules-policies/{N}"
+    instrument: "/en/securities-law/instruments-rules-policies/{N}/{number}"
+    leaf: "/en/securities-law/instruments-rules-policies/{N}/{number}/{slug}"
+
+data_model:
+  type: "legislation"
+  source_nature: "consolidated"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "temporal"
+  dedup_key:
+    - "url"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "Stable id: category/instrument/leaf-slug path"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title (h1 of the leaf node page)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the document PDF(s)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Effective/publication date of the document"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Canonical OSC URL of the leaf document node"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "instrument_number"
+      description: "CSA instrument number (e.g. 31-103, 13-101)"
+    - name: "csa_category"
+      description: "CSA subject category 0-9"
+    - name: "pdf_urls"
+      description: "Source PDF download URLs"
+    - name: "issuing_body"
+      description: "Ontario Securities Commission"
+    - name: "jurisdiction"
+      description: "CA-ON"
+    - name: "language"
+      description: "en"
+  probably_ignorable: []
+
+# ── License ──────────────────────────────────────────────────────
+license:
+  id: "custom-nc"
+  name: "OSC Website Terms of Use (non-commercial limited licence)"
+  url: "https://www.osc.ca/en/legal"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: true
+  notes: |
+    OSC Terms of Use grant only a limited non-exclusive licence to view, print
+    and download Site Content "solely for non-commercial, educational or
+    informational purposes". Adapting, modifying, copying, publishing or
+    distributing the content beyond that requires the OSC's written permission.
+    Commercial use is restricted. Note: the underlying securities instruments
+    are public law, but reproduction of the osc.ca content is governed by these
+    terms — flagged accordingly.
+
+notes: |
+  English. Drupal CMS; no modified-since index, so updates re-scan all
+  categories and gate on the leaf date. Full text is in PDFs under
+  /sites/default/files/pdfs/... (text-based, not scanned). Each leaf node
+  (consolidation / amendment / notice / companion policy) is one record.
+  OSC adjudicative decisions are NOT here — they moved to the Capital Markets
+  Tribunal (capitalmarketstribunal.ca) and would be a separate case_law source.

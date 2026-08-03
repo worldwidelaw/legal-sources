@@ -13,12 +13,40 @@ Storage layout:
 
 import json
 import os
+import re
 import logging
 from pathlib import Path
 from typing import Optional
 from datetime import datetime, timezone
 
 logger = logging.getLogger("legal-data-hunter")
+
+# Lone UTF-16 surrogate code points (U+D800..U+DFFF) can leak in from malformed
+# source HTML/RTF. json.dumps(ensure_ascii=False) happily emits them, but encoding
+# the resulting str to UTF-8 for a file write raises
+#   UnicodeEncodeError: 'utf-8' codec can't encode characters ...: surrogates not allowed
+# and one poisoned record would otherwise abort the whole batch (see issue #1112).
+_SURROGATE_RE = re.compile("[\ud800-\udfff]")
+
+
+def scrub_surrogates(text: str) -> str:
+    """Replace lone UTF-16 surrogate code points with U+FFFD.
+
+    The result is always safe to encode as UTF-8. Cheap no-op when the common
+    case (no surrogates) applies.
+    """
+    if text and _SURROGATE_RE.search(text):
+        return _SURROGATE_RE.sub("�", text)
+    return text
+
+
+def _record_to_line(record: dict) -> str:
+    """Serialize a record to a single JSONL line, scrubbing lone surrogates.
+
+    Surrogate code points are replaced with U+FFFD so the line is always safe to
+    encode as UTF-8. This keeps one malformed record from killing an entire batch.
+    """
+    return scrub_surrogates(json.dumps(record, ensure_ascii=False, default=str))
 
 
 class StorageManager:
@@ -106,7 +134,7 @@ class StorageManager:
         record["_stored_at"] = datetime.now(timezone.utc).isoformat()
 
         with open(self.records_path, "a", encoding="utf-8") as f:
-            line = json.dumps(record, ensure_ascii=False, default=str)
+            line = _record_to_line(record)
             f.write(line + "\n")
 
         # O(1) index update using in-memory line counter
@@ -139,8 +167,13 @@ class StorageManager:
             for dedup_key, record in records:
                 record["_dedup_key"] = dedup_key
                 record["_stored_at"] = now
-                line = json.dumps(record, ensure_ascii=False, default=str)
-                f.write(line + "\n")
+                try:
+                    line = _record_to_line(record)
+                    f.write(line + "\n")
+                except (UnicodeEncodeError, TypeError, ValueError) as e:
+                    # Never let one malformed record abort the whole batch.
+                    logger.warning(f"Skipping unserializable record {dedup_key}: {e}")
+                    continue
                 self._index[dedup_key] = self._line_count
                 self._line_count += 1
                 written += 1
@@ -193,7 +226,7 @@ class StorageManager:
         # Rewrite file with only latest records
         with open(self.records_path, "w", encoding="utf-8") as f:
             for record in latest.values():
-                f.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
+                f.write(_record_to_line(record) + "\n")
 
         # Rebuild index
         self._index = {}

@@ -1,0 +1,47 @@
+fetch:
+  list_url: https://www.itia.tennis/news/sanctions/
+  method: html_listing_detail
+  rate_limit_seconds: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: >
+    International Tennis Integrity Agency (ITIA) published sanctions and
+    disciplinary decisions — the independent body safeguarding professional
+    tennis worldwide, administering the Tennis Anti-Corruption Program (TACP)
+    and the Tennis Anti-Doping Programme (TADP). Each published article carries
+    the full substantive findings (breaches, sanction, period of ineligibility,
+    fines, reasoning summary) of an Anti-Corruption Hearing Officer / Independent
+    Tribunal decision or agreed sanction; tribunal cases also link the full
+    redacted decision PDF. Openly published on itia.tennis (no login, no WAF).
+  id: INTL/ITIA
+  language: en
+  name: International Tennis Integrity Agency (ITIA) Sanctions & Decisions
+  url: https://www.itia.tennis/news/sanctions/
+license:
+  name: "ITIA Terms of Use (All Rights Reserved)"
+  url: "https://www.itia.tennis/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions are published openly for transparency, but the ITIA asserts copyright with no open licence. Commercial use flagged restricted per project policy (err on flagging)."

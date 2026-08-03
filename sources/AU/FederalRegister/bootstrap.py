@@ -137,17 +137,24 @@ class AustraliaFederalRegisterScraper(BaseScraper):
             return []
 
     def _get_total_count(self, filter_str: str = None) -> int:
-        """Get total count of titles matching the filter."""
+        """Get total count of titles matching the filter.
+
+        The dedicated ``/v1/titles/$count`` endpoint returns a bogus
+        Int64.MinValue for filtered queries, so read the ``@odata.count``
+        field embedded in a regular titles response instead.
+        """
         try:
             self.rate_limiter.wait()
 
-            url = "/v1/titles/$count"
+            params = "$top=1&$count=true"
             if filter_str:
-                url += f"?$filter={filter_str}"
+                params += f"&$filter={filter_str}"
 
-            resp = self.client.get(url)
+            resp = self.client.get(f"/v1/titles?{params}")
             resp.raise_for_status()
-            return int(resp.text.strip())
+            count = resp.json().get("@odata.count", 0)
+            # Guard against the broken sentinel value some endpoints still emit.
+            return count if isinstance(count, int) and count >= 0 else 0
 
         except Exception as e:
             logger.error(f"Failed to get title count: {e}")
@@ -623,7 +630,9 @@ def main():
     if command == "test":
         scraper.test_connection()
 
-    elif command == "bootstrap":
+    # bootstrap-fast is the VPS fleet entrypoint; alias it to the full bootstrap
+    # path so it runs the full corpus instead of falling back to sample mode.
+    elif command in ("bootstrap", "bootstrap-fast"):
         if sample_mode:
             stats = scraper.run_sample(n=sample_size)
             print(

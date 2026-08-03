@@ -1,0 +1,112 @@
+# ===================================================================
+# US/CO-OAC -- Colorado Office of Administrative Courts
+#   Workers' Compensation ALJ Decisions & Orders
+# ===================================================================
+# Decisions issued by Administrative Law Judges of the Colorado Office
+# of Administrative Courts (OAC), the state's central independent
+# administrative tribunal. OAC's Workers' Compensation unit adjudicates
+# contested workers'-compensation claims; each ALJ decision resolves a
+# specific contested case = case_law. Published as monthly/annual
+# compilation PDFs on oac.colorado.gov (born-digital text layer). We
+# split each compilation into individual decision records. No
+# JavaScript, no CAPTCHA, no auth. Public domain Colorado state
+# government works (government edicts).
+# ===================================================================
+
+source:
+  id: "US/CO-OAC"
+  country: "US"
+  name: "Colorado Office of Administrative Courts — Workers' Compensation Decisions"
+  url: "https://oac.colorado.gov/case-types/workers-compensation/decisions-and-orders-wc"
+  description: |
+    Administrative Law Judge decisions and orders of the Colorado Office
+    of Administrative Courts (OAC) Workers' Compensation unit — the
+    state's central independent administrative tribunal. Each decision
+    resolves a specific contested workers'-compensation claim between an
+    injured worker and an employer/insurer = case_law. Published as
+    redacted monthly/annual compilation PDFs (2015-present); each
+    compilation is split on the fixed per-decision header
+    ("Office of Administrative Courts / State of Colorado / Workers'
+    Compensation No. WC ...") into individual decision records. Text
+    extracted via common.pdf_extract. No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_listing"
+  base_url: "https://oac.colorado.gov"
+  endpoints:
+    listing: "/case-types/workers-compensation/decisions-and-orders-wc"
+    document: "/sites/oac/files/documents/{compilation}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CO-OAC/{wc}-{texthash})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "OAC Workers' Compensation number (e.g. 'WC 5-262-272-001'); null if unparseable"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (issuer + WC number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the individual ALJ decision (PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601); prefers a 'Signed/Dated:' line, falls back to compilation period"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Colorado state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Colorado Office of Administrative Courts are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The OAC listing page (oac.colorado.gov/case-types/workers-compensation/
+    decisions-and-orders-wc) server-renders ~34 links to born-digital
+    compilation PDFs under /sites/oac/files/documents/*.pdf, spanning
+    2015-present. Each compilation concatenates many individual decisions.
+  - Decisions are split on a fixed header: "Office of Administrative
+    Courts / State of Colorado / Workers' Compensation No. WC ...". The
+    apostrophe in "Workers'" varies (straight vs curly), so the splitter
+    matches any 0-3 glyphs between "Workers" and "Compensation".
+  - _id = US/CO-OAC/{wc-number}-{sha1(text)[:10]} — the text hash keeps
+    re-posted/identical decisions from duplicating and disambiguates the
+    rare case where a WC number recurs across compilations.
+  - date prefers a "Signed/Dated: <Month D, YYYY>" line near the end of
+    the decision, then any Month D, YYYY, then the compilation period.
+  - PDFs are born-digital text-layer; extracted via common.pdf_extract
+    (pdfplumber). A <400-char guard skips fragments; if a compilation has
+    no per-decision header it is kept whole (no full text lost).
+  - Public domain Colorado state government data.

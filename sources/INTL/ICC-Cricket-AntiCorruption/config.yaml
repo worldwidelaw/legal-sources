@@ -1,0 +1,52 @@
+fetch:
+  list_url: https://www.icc-cricket.com/about/integrity/anti-corruption/acu-publications
+  method: html_listing_pdf
+  rate_limit_seconds: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: >
+    ICC (International Cricket Council) Anti-Corruption decisions — the published
+    full-text rulings issued under the ICC's Anti-Corruption Code for
+    Participants. When the ICC Anti-Corruption Tribunal, a sole adjudicator or an
+    appeal panel determines a charge brought by the ICC Integrity Unit against a
+    player, official or other participant (match-fixing, spot-fixing, failure to
+    report a corrupt approach, etc.), the ICC publishes the full redacted
+    decision — findings on liability, sanction, period of ineligibility, and full
+    legal reasoning — as a PDF on its "ACU publications" page (~38 named-matter
+    decisions, reverse-chronological). This is the cricket world governing body,
+    NOT the International Criminal Court (INTL/ICCCaseLaw) nor ICC arbitration
+    (INTL/JusMundi-ICC). Openly published (no login, no WAF), reachable from any
+    IP; a small minority of legacy PDFs on resources.pulse.icc-cricket.com may be
+    unavailable and are skipped.
+  id: INTL/ICC-Cricket-AntiCorruption
+  language: en
+  name: ICC Cricket Anti-Corruption Tribunal Decisions
+  url: https://www.icc-cricket.com/about/integrity/anti-corruption/acu-publications
+license:
+  name: "ICC Terms of Use (All Rights Reserved)"
+  url: "https://www.icc-cricket.com/terms-of-use"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions are published openly for transparency, but the ICC asserts copyright with no open licence. Commercial use flagged restricted per project policy (err on flagging)."

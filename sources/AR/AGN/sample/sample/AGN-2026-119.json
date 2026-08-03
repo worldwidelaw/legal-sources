@@ -1,0 +1,22 @@
+{
+  "_id": "AGN-2026-119",
+  "_source": "AR/AGN",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-02T20:07:08.422840+00:00",
+  "title": "Gestión del otorgamiento/denegación de beneficios previsionales en el marco de la pandemia COVID-19. Gestión. Período 2020 y 2021.  Administración Nacional de la Seguridad Social (ANSES)",
+  "text": "Alcance del examen especial 3.1 Alcance del examen especial El examen se desarrolló de conformidad con las normas de control externo gubernamental aprobadas por Resolución AGN 26/15, como marco general, y la norma complementaria de control externo de la gestión gubernamental (Res. AGN 186/16, Apartado IV – “Otros Trabajos”), como marco particular, dictadas en virtud de las facultades conferidas por la Ley 24.156, de Administración Financiera y de los Sistemas de Control del Sector Público Nacional, en su artículo 119, inc. d). La realización de un examen especial comprende todos aquellos trabajos sobre determinados aspectos o las transacciones de la gestión, a los que se aplican procedimientos de naturaleza de auditoría, cuyo alcance no fue definido para brindar una opinión o conclusión sobre la materia a la que se refiere pero que contribuyen a mejorar la administración y gestión gubernamental. El período examinado comprende desde el 01/04/20 al 31/12/21. A su vez, las tareas de campo se llevaron a cabo entre el 16/11/23 y el 01/09/25. El proyecto de informe de examen especial fue comunicado al auditado para que formule las observaciones y/o comentarios que estime pertinentes (cfr. Res. 77/02-AGN, Art. 22), habiéndose recibido los comentarios que han sido incorporados como Anexo II, no habiendo implicado modificaciones al mismo.",
+  "date": "2026-04-30",
+  "url": "https://www.agn.gob.ar/Informe-119-2026",
+  "pdf_url": "https://webagnapi.agn.gob.ar/sites/default/files/informes/2026-119-Informe.pdf",
+  "ano": 2026,
+  "resolucion": 119,
+  "actuacion": "374/2023",
+  "fecha_acta": "2026-04-30",
+  "periodo_auditado": "2020-01-01 / 2021-12-31",
+  "organismo_auditado_ids": [
+    "185"
+  ],
+  "tipo_de_auditoria_ids": [
+    "64"
+  ]
+}

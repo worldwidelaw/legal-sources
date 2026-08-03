@@ -1,0 +1,22 @@
+{
+  "_id": "AGN-2026-122",
+  "_source": "AR/AGN",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-02T20:07:08.421577+00:00",
+  "title": "Proyecto de Restitución Ambiental de la Minería del Uranio. Gestión. Período 2023 y 2024. Comisión Nacional de Energía Atómica",
+  "text": "Objetivo general Examinar el desempeño de la CNEA en la implementación del PRAMU y el cumplimiento de los objetivos establecidos. Objetivos específicos 1) Analizar la gobernanza y capacidad operativa de la CNEA para garantizar el desarrollo del PRAMU de forma eficiente 2) Evaluar las acciones realizadas por la CNEA en el marco del PRAMU y el grado de eficacia alcanzado",
+  "date": "2026-05-21",
+  "url": "https://www.agn.gob.ar/Informe-122-2026",
+  "pdf_url": "https://webagnapi.agn.gob.ar/sites/default/files/informes/2026-122-Informe.pdf",
+  "ano": 2026,
+  "resolucion": 122,
+  "actuacion": "13/2025",
+  "fecha_acta": "2026-05-21",
+  "periodo_auditado": "2023-01-01 / 2024-12-31",
+  "organismo_auditado_ids": [
+    "592"
+  ],
+  "tipo_de_auditoria_ids": [
+    "51"
+  ]
+}

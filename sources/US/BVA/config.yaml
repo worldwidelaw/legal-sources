@@ -1,0 +1,113 @@
+# ===================================================================
+# US/BVA -- Board of Veterans' Appeals: Decisions
+# ===================================================================
+# Full text of the decisions of the Board of Veterans' Appeals (BVA) -- the
+# body within the U.S. Department of Veterans Affairs that issues the final
+# agency decision on appeals of VA benefit claims (service connection,
+# disability ratings, effective dates, etc.). Each decision adjudicates a
+# specific veteran's contested appeal => case_law. Public U.S. federal
+# government works (public domain, 17 U.S.C. Sec. 105).
+#
+# Source: www.va.gov. Every decision since ~1992 is published as a plain-text
+# file, enumerated by a public sitemap index:
+#   https://www.va.gov/sitemap_bva.xml
+#     -> https://www.va.gov/vetapp{YY}/sitemap.xml   (one per year)
+#         -> https://www.va.gov/vetapp{YY}/Files{N}/{CITATION}.txt
+# Each per-year sitemap lists tens of thousands of decision URLs (~1.5M+
+# total). Each .txt is Windows-1252 plain text with a structured header
+# (Citation Nr / Decision Date / DOCKET NO. / DATE) then the ORDER, FINDING
+# OF FACT, CONCLUSIONS OF LAW and REASONS AND BASES sections. No PDF
+# extraction, no JavaScript, no CAPTCHA, no auth. va.gov serves 200 only for
+# a browser User-Agent, so bytes are fetched via curl + Chrome UA.
+# ===================================================================
+
+source:
+  id: "US/BVA"
+  country: "US"
+  name: "Board of Veterans' Appeals — Decisions"
+  url: "https://www.va.gov/sitemap_bva.xml"
+  description: |
+    Decisions of the U.S. Board of Veterans' Appeals — the final agency
+    adjudicator of appeals of VA benefit claims. Each decision resolves a
+    specific veteran's contested appeal (case_law). Enumerated via the public
+    BVA sitemap index (per-year sitemaps of plain-text decision files, 1992
+    to present, ~1.5M+ decisions); full text read directly from each .txt.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "sitemap"
+  base_url: "https://www.va.gov"
+  endpoints:
+    sitemap_index: "/sitemap_bva.xml"
+    year_sitemap: "/vetapp{YY}/sitemap.xml"
+    decision: "/vetapp{YY}/Files{N}/{CITATION}.txt"
+
+data_model:
+  type: "case_law"
+  primary_key: "citation"
+  update_strategy: "incremental"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/BVA/{citation})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "citation"
+      description: "BVA citation number (Citation Nr, e.g. A25087406 / 19167246)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "BVA Decision {citation}: issue summarised from the ORDER section"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full decision text (plain-text file, cp1252-decoded)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601) parsed from the Decision Date / DATE header"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — 17 U.S.C. § 105)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Board of Veterans' Appeals are works of the U.S. federal government and are in the public domain under 17 U.S.C. § 105."
+
+notes: |
+  - Discovery: GET /sitemap_bva.xml (a sitemap index) -> ~35 per-year
+    sitemaps /vetapp{YY}/sitemap.xml (1992..present); each lists every
+    decision .txt URL for that year (tens of thousands; ~1.5M+ total).
+  - Full text is read directly from each plain-text decision file; no PDF
+    extraction / OCR needed. Files are Windows-1252 encoded (§ = 0xA7) and
+    decoded with cp1252.
+  - va.gov returns 200 only for a browser UA, so bytes are fetched via curl
+    with a Chrome UA. Older years use lowercase /files{N}/ and an http://
+    scheme in the sitemap; the URL is used as-listed and normalised to https.
+  - Decision date parsed from the "Decision Date: MM/DD/YY" header, falling
+    back to the long-form "DATE: Month D, YYYY" line.
+  - Citation number (Citation Nr) is the stable id; docket number captured
+    when present.
+  - Public domain U.S. federal government data.

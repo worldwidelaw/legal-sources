@@ -1,0 +1,48 @@
+fetch:
+  rate_limit_delay: 2
+  sample_size: 12
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: sentencia_number
+    required: false
+    type: string
+source:
+  auth: none
+  country: UY
+  data_types:
+  - case_law
+  description: 'Jurisprudence (Sentencias) of Uruguay''s Corte Electoral, the
+    constitutional-rank electoral authority. Full text served as public per-document
+    pages on IMPO''s official "Base de Datos de la Corte Electoral"
+    (impo.com.uy/bases/sentencias-corte-electoral/{num}-{year}/1). The search UI is
+    login-gated but every individual sentencia document URL is public; enumerated by
+    walking the dense, sequential per-base sentencia counter (anchored on the verified
+    27220/2014 pair) up and down with a sliding year window. Free public access.
+
+    '
+  id: UY/CorteElectoral
+  name: Uruguay Corte Electoral — Sentencias
+  url: https://www.impo.com.uy/basecorteelectoral/
+license:
+  name: "Texto Oficial — IMPO (dominio público / public records)"
+  url: "https://www.impo.com.uy/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official Uruguayan state legal texts (sentencias of the Corte Electoral) published by IMPO, the Centro de Información Oficial. Official legal texts of the State are in the public domain under Uruguayan law."

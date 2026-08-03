@@ -1,0 +1,100 @@
+# ===================================================================
+# US/VA-AGOpinions -- Virginia Attorney General Official Opinions
+# ===================================================================
+# Full text of official advisory opinions issued by the Attorney General
+# of Virginia under Va. Code sec. 2.2-505. Official state legal
+# interpretations (doctrine). Published openly as born-digital PDFs at
+# www.oag.state.va.us. No authentication required.
+# ===================================================================
+
+source:
+  id: "US/VA-AGOpinions"
+  country: "US"
+  name: "Virginia Attorney General Official Opinions"
+  url: "https://www.oag.state.va.us/annual-reports-opinions/official-opinions"
+  description: |
+    Official advisory opinions issued by the Attorney General of Virginia
+    at the request of the Governor, members of the General Assembly,
+    constitutional officers and other officials named in Va. Code sec.
+    2.2-505. Each opinion is an authoritative interpretation of Virginia
+    law. The published online corpus spans 2008-present (~1,180 opinions
+    with a large 1990s/2000s backfill). Full text is in born-digital PDFs
+    (the rare image-only scan is OCR'd with Tesseract).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 5
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.oag.state.va.us"
+  endpoints:
+    listing: "/annual-reports-opinions/official-opinions"
+    year_page: "/annual-reports-opinions/official-opinions?view=article&id={id}&catid=30"
+    pdf: "/files/Opinions/{year}/{file}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "opinion_number"
+      description: "Canonical opinion number 'YY-NNN' (e.g., '22-058')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Opinion number plus the requester line"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "requester"
+      description: "Requester surname(s) parsed from the PDF filename"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Virginia)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Virginia Attorney General official opinions are official state government edicts in the public domain."
+
+notes: |
+  - The listing /annual-reports-opinions/official-opinions links a per-year
+    "article" page (Joomla view=article) for each year; a few years carry
+    more than one article page.
+  - Each year page links every opinion's born-digital PDF at
+    /files/Opinions/{YEAR}/{file}.pdf. The opinion number ('YY-NNN') and
+    the requester surname are encoded in the filename.
+  - fetch_all() discovers PDFs (listing + year pages) and yields raw
+    metadata; normalize() downloads each PDF and extracts full text
+    (fitz/PyMuPDF; Tesseract OCR fallback for the rare image-only scan).
+  - Issue date parsed from the "Month DD, YYYY" line in the PDF body,
+    falling back to the /Opinions/{YEAR}/ folder year.
+  - Public domain Virginia government data.

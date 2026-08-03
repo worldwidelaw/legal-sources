@@ -1,0 +1,136 @@
+# ===================================================================
+# US/FERC-eLibrary -- FERC eLibrary Commission issuances (orders/decisions)
+# ===================================================================
+# Adjudicatory issuances from the U.S. Federal Energy Regulatory
+# Commission's eLibrary — the Commission's full docket/issuance
+# repository. This source targets the DECISIONAL issuances that
+# resolve specific proceedings (electric/gas rate filings, hydropower
+# and natural-gas certificates, complaints, enforcement, rulemaking
+# dockets): Commission Orders/Opinions, Delegated (letter) Orders,
+# Procedural Orders, ALJ Initial Decisions, Compliance Directives,
+# Protective Orders and rehearing orders = case_law.
+#
+# DISTINCT from the existing US/FERC source, which only ingests FERC
+# rulemakings/notices published in the Federal Register (~legislation).
+#
+# Access is a public JSON API behind the eLibrary Angular SPA (no auth):
+#   POST /eLibrarywebapi/api/Search/AdvancedSearch   -> accession + metadata
+#   POST /eLibrarywebapi/api/File/DownloadP8File     -> raw transmittal bytes
+# Full text is born-digital: text-layer PDF or DOCX (extracted pure-python).
+# Public domain U.S. Government works (17 U.S.C. § 105 / government edicts).
+# ===================================================================
+
+source:
+  id: "US/FERC-eLibrary"
+  country: "US"
+  name: "FERC eLibrary — Commission Orders & Decisions"
+  url: "https://elibrary.ferc.gov/eLibrary/search"
+  description: |
+    Decisional issuances from the U.S. Federal Energy Regulatory
+    Commission's eLibrary docket repository: Commission Orders and
+    Opinions, Delegated (letter) Orders, Procedural Orders, ALJ Initial
+    Decisions, Compliance Directives, Protective Orders and rehearing
+    orders resolving specific proceedings (electric/gas rate cases,
+    hydropower & natural-gas certificates, complaints, enforcement,
+    rulemaking dockets) = case_law. Enumerated via the public
+    AdvancedSearch JSON API (category "Issuance", filtered to
+    order/opinion/decision/directive/ruling document types), month by
+    month from the present back to 2000; each issuance's text is
+    extracted from its born-digital transmittal files (text-layer PDF
+    via common.pdf_extract, DOCX/TXT via a pure-python extractor) and
+    concatenated. No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "json_api"
+  base_url: "https://elibrary.ferc.gov/eLibrarywebapi/api"
+  endpoints:
+    search: "/Search/AdvancedSearch"
+    download: "/File/DownloadP8File"
+    docinfo: "https://elibrary.ferc.gov/eLibrary/docinfo?accession_Number={acc}"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/FERC-eLibrary/{accession_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "accession_number"
+      description: "eLibrary accession number (e.g. '20260702-3083'); YYYYMMDD-NNNN"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "docket_numbers"
+      description: "FERC docket numbers the issuance resolves (e.g. 'ER26-1655-001')"
+      type: "array"
+      role: "identifier"
+      required: false
+    - name: "document_type"
+      description: "FERC document type (Commission Order/Opinion, Delegated Order, ALJ Initial Decision, ...)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (doc type + docket numbers + description)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the issuance (born-digital PDF/DOCX text)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issued date (ISO 8601), from the eLibrary issuedDate"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — FERC issuances)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Orders and decisions of the Federal Energy Regulatory Commission are official U.S. Government works in the public domain under 17 U.S.C. § 105 and the government-edicts doctrine."
+
+notes: |
+  - Discovery pages the AdvancedSearch endpoint month-by-month (newest
+    first) over category "Issuance"; each month is drained with
+    resultsPerPage=250 + curPage paging (deep paging works, no 1000-hit
+    cap observed). Hits are filtered to decisional document types
+    (documentType/documentClass matching
+    order|opinion|decision|directive|ruling|rehearing), dropping
+    transcripts, correspondence, notices, inspection reports and memos.
+  - Corpus is large: category "Issuance" alone runs ~20-37K docs/year;
+    the decisional subset is a large multi-year case_law corpus. Full
+    pulls are VPS/long-run territory; sample mode grabs ~12 recent.
+  - Full text: each accession's transmittal files are downloaded via
+    File/DownloadP8File and extracted — text-layer PDF through
+    common.pdf_extract, DOCX/TXT through a dependency-free pure-python
+    extractor (avoids the python-docx VPS gap). Multiple files under one
+    accession are concatenated. A <200-char guard skips scanned/empty
+    issuances (pre-~2000 filings are scanned images and are excluded by
+    FIRST_YEAR=2000).
+  - Modern FERC Commission orders are frequently served as DOCX
+    ("Notational Order") rather than PDF, so both formats are handled.
+  - Public domain U.S. Government data.

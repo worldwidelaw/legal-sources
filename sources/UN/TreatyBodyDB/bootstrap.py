@@ -38,6 +38,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
     level=logging.INFO,
@@ -218,8 +219,10 @@ class TreatyBodyDBScraper(BaseScraper):
             if title_decoded == "english html":
                 return html_module.unescape(url)
 
-        # Fallback: any English format (prefer docx over doc)
-        for preferred in ["english docx", "english doc"]:
+        # Fallback: any English format. Prefer docx, then PDF (we extract PDFs
+        # reliably), and only fall back to legacy binary .doc last — an OLE .doc
+        # cannot be cleaned as HTML and would leave binary garbage in the text.
+        for preferred in ["english docx", "english pdf", "english doc"]:
             for title, url in link_pattern.findall(download_html):
                 title_decoded = html_module.unescape(title).strip().lower()
                 if title_decoded == preferred:
@@ -261,8 +264,33 @@ class TreatyBodyDBScraper(BaseScraper):
             logger.warning(f"Could not fetch HTML content for {symbol}")
             return None
 
-        # Handle UTF-16 encoding (common for OHCHR HTML documents)
         content = resp.content
+
+        # Some documents (e.g. older annual reports like A/53/44) are only
+        # offered as PDF via the FilesHandler endpoint. Detect the PDF magic
+        # bytes and extract real text instead of running _clean_html over raw
+        # binary (which previously left multi-MB blobs of %PDF bytes in the
+        # text field).
+        ctype = (resp.headers.get("Content-Type") or "").lower()
+        if content[:5] == b"%PDF-" or "application/pdf" in ctype:
+            pdf_text = extract_pdf_markdown(
+                "UN/TreatyBodyDB", symbol,
+                pdf_bytes=content, table="doctrine", force=True,
+            )
+            if pdf_text and pdf_text.strip():
+                return pdf_text.strip()
+            logger.warning(f"PDF text extraction empty for {symbol}")
+            return None
+
+        # Guard: legacy binary Word .doc (OLE2 compound-file magic) served as
+        # application/msword cannot be stripped as HTML — return None instead of
+        # storing thousands of replacement chars. The format selector now
+        # prefers docx/pdf, so this only fires when .doc is the sole format.
+        if content[:4] == b"\xd0\xcf\x11\xe0" or "msword" in ctype:
+            logger.warning(f"Only legacy binary .doc available for {symbol}; skipping")
+            return None
+
+        # Handle UTF-16 encoding (common for OHCHR HTML documents)
         try:
             if content[:2] in (b'\xff\xfe', b'\xfe\xff'):
                 text = content.decode('utf-16')

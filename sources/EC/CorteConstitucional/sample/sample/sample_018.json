@@ -1,0 +1,19 @@
+{
+  "_id": "EC-CC-9873",
+  "_source": "EC/CorteConstitucional",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-01T18:25:08.920006+00:00",
+  "title": "Sentencia 2512-23-EP/26",
+  "text": "La Corte acepta la acción extraordinaria de protección presentada por EP\nPetroecuador contra las sentencias y auto de aclaración y ampliación dictadas en el marco de\nuna acción de protección, por constatar que los jueces vulneraron el derecho a la seguridad\njurídica. Esto ocurrió porque aceptaron la demanda pese a que ella era manifiestamente\nimprocedente, pues no procede una acción de protección para reclamar exclusivamente la\nhomologación salarial y la reliquidación de haberes laborales de trabajadores.",
+  "date": "2026-02-26",
+  "url": "https://esacc.corteconstitucional.gob.ec/storage/api/v1/10_DWL_FL/eyJjYXJwZXRhIjogInRyYW1pdGUiLCAidXVpZCI6ICJkOGIzMDI3Zi0xOWUxLTQzY2ItOTE2Yy00YmFmMTNjMzUwNmYucGRmIn0=",
+  "numero": "2512-23-EP/26",
+  "numero_causa": "2512-23-EP",
+  "tipo_accion": "ACCIÓN EXTRAORDINARIA DE PROTECCIÓN",
+  "materia": "Constitucional",
+  "juez": "ALI VICENTE LOZADA PRADO",
+  "decision": "ACEPTAR",
+  "metadata_sentencia": "",
+  "es_novedad": true,
+  "es_relevante": false
+}

@@ -1,0 +1,133 @@
+# ===================================================================
+# US/OH-LegalEthics -- Ohio Board of Professional Conduct — Advisory Opinions
+# ===================================================================
+# Nonbinding Advisory Opinions of the Ohio Board of Professional
+# Conduct (formerly the Board of Commissioners on Grievances &
+# Discipline), issued in response to a prospective or hypothetical
+# question and interpreting the ethics rules applicable to Ohio judges
+# AND lawyers — the Ohio Rules of Professional Conduct, the Ohio Code
+# of Judicial Conduct, the Rules for the Government of the Bar and (for
+# pre-2007 opinions) the former Code of Professional Responsibility =
+# doctrine. One continuous per-year numbered series ("YYYY-NNN",
+# 1986-present, ~458 opinions). Born-digital PDFs, no OCR/CAPTCHA/auth.
+# Ohio issues both lawyer- and judge-ethics opinions from a single
+# Board, so (unlike other states, where we split {ST}-LegalEthics and
+# {ST}-JudicialEthics) they are combined here. Distinct from the Ohio
+# Ethics Commission (public officials) and the Attorney General.
+# ===================================================================
+
+source:
+  id: "US/OH-LegalEthics"
+  country: "US"
+  name: "Ohio Board of Professional Conduct — Advisory Opinions"
+  url: "https://ohioadvop.org/"
+  description: |
+    Advisory Opinions issued by the Ohio Board of Professional Conduct
+    (formerly the Board of Commissioners on Grievances & Discipline).
+    Each opinion is the Board's nonbinding written interpretation, issued
+    in response to a prospective or hypothetical question, of the ethics
+    rules applicable to Ohio judges and lawyers (Ohio Rules of
+    Professional Conduct, Ohio Code of Judicial Conduct, Rules for the
+    Government of the Bar, and pre-2007 Code of Professional
+    Responsibility). The corpus is one continuous per-year numbered
+    series ("YYYY-NNN", 1986-present, ~458 opinions), each published in
+    full as a born-digital PDF carrying the Board letterhead, opinion
+    number, issue date, a SYLLABUS summary and full discussion.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "wordpress_rest"
+  base_url: "https://ohioadvop.org"
+  endpoints:
+    pages: "/wp-json/wp/v2/pages?per_page=100&_fields=id,title,content"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/OH-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Advisory opinion number, canonical 'YYYY-NNN' (e.g. 1986-001, 2022-001)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title (first sentence of the PDF SYLLABUS summary)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text from the born-digital PDF (SYLLABUS + discussion)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date as ISO 8601 (from the header 'Month DD, YYYY' line; falls back to YYYY-01-01)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Ohio Board of Professional Conduct"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-OH)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Advisory Opinions of the Ohio Board of Professional Conduct are official written interpretations issued by an arm of the Supreme Court of Ohio and published free to the public on ohioadvop.org (and the Board's site bpc.ohio.gov) with no login, paywall or terms prohibiting reuse. As edicts of a U.S. state government body they carry no copyright (17 U.S.C. § 105 government-edicts doctrine)."
+
+notes: |
+  - Discovery: opinions are published on the Board's dedicated public
+    WordPress site ohioadvop.org. Its REST API
+    (/wp-json/wp/v2/pages?per_page=100&_fields=id,title,content) returns
+    one page per year (title = 4-digit year); each page's content lists
+    every opinion issued that year as an <a href="...pdf">Op. YY-NNN</a>
+    link. The scraper filters year-titled pages, parses the opinion
+    number from the anchor text (falling back to the PDF filename),
+    normalises it to canonical 'YYYY-NNN', and de-duplicates (some
+    prior-year opinions are cross-listed). ~458 opinions 1986-present.
+  - Full text: each opinion PDF is born-digital (text layer) — extracted
+    with PyMuPDF, NO OCR needed, back to 1986. Body carries the Board
+    letterhead, "OPINION {num}", the issue date, a SYLLABUS summary and
+    full discussion.
+  - Title: first sentence of the SYLLABUS line (the Board's topical
+    summary); falls back to "Ohio Advisory Opinion {num}".
+  - Date: the "Month DD, YYYY" line in the header region under the
+    opinion number; falls back to the number's year -> YYYY-01-01.
+  - Type: every document is the Board's official interpretation of the
+    attorney/judicial-conduct rules = doctrine.
+  - Ohio issues BOTH lawyer-ethics and judge-ethics advisory opinions
+    from a single Board, so this one source combines what other states
+    split into US/{ST}-LegalEthics and US/{ST}-JudicialEthics. Distinct
+    from the executive Ohio Ethics Commission (public officials) and the
+    Ohio Attorney General opinions.

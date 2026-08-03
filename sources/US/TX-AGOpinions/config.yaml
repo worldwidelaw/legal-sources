@@ -1,0 +1,96 @@
+# ===================================================================
+# US/TX-AGOpinions -- Texas Attorney General Opinions
+# ===================================================================
+# Full text of written opinions issued by the Texas Attorney General
+# under Tex. Gov't Code ch. 402. Official state legal interpretations
+# (doctrine). Published openly as born-digital PDFs at
+# texasattorneygeneral.gov. No authentication required.
+# ===================================================================
+
+source:
+  id: "US/TX-AGOpinions"
+  country: "US"
+  name: "Texas Attorney General Opinions"
+  url: "https://www.texasattorneygeneral.gov/opinions"
+  description: |
+    Written opinions issued by the Texas Attorney General at the request
+    of authorized public officials (Tex. Gov't Code ch. 402). Each
+    opinion is an authoritative interpretation of Texas law. The corpus
+    spans the lettered series by AG -- KP- (Paxton 2015-present), GA-
+    (Abbott 2002-15), JC- (Cornyn 1999-2002), DM- (Morales 1991-99) and
+    the older letter series back to O-0001 (Gerald Mann, 1939). Full
+    text is in born-digital PDFs (older scans pre-OCR'd by the AG office).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.texasattorneygeneral.gov"
+  endpoints:
+    ag_index: "/opinions"
+    ag_page: "/opinions/{ag_slug}"
+    detail: "/node/{id}"
+    pdf: "/sites/default/files/opinion-files/opinion/{year}/{file}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "opinion_number"
+      description: "Official opinion number (e.g., 'KP-0520', 'GA-1096', 'O-0001')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Opinion number plus 'Re:' subject line"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "summary"
+      description: "Short abstract from the opinion detail page"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "text"
+      description: "Full text of the opinion extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Texas)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Texas Attorney General opinions are official state government edicts in the public domain."
+
+notes: |
+  - Landing page /opinions links one page per AG: /opinions/{ag-slug}
+  - Each AG page embeds all opinions as <select name="opinion_selectYYYY">
+    options -> (year, /node/{id}, opinion number)
+  - Detail /node/{id} carries the born-digital PDF href (filename format
+    varies per series so it is read from the page, not guessed) + Summary
+  - PDF full text via PyMuPDF (fitz); older scans are pre-OCR'd
+  - Issue date + "Re:" subject parsed from the PDF body
+  - Public domain Texas government data

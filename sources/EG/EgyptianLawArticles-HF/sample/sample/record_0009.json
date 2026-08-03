@@ -1,0 +1,13 @@
+{
+  "_id": "EG/EgyptianLawArticles-HF:art-٩",
+  "_source": "EG/EgyptianLawArticles-HF",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-09T06:19:56.725616+00:00",
+  "title": "Egyptian Civil Code — Article ٩",
+  "text": "تسرى في شأن الأدلة التي تعد مقدماً النصوص المعمول بها في الوقت\nالذي كان ينبغي فيه إعداده .\n\n--- English Translation ---\n\nProof established in advance is governed by provisions of\nthe law in force at the time when the proof was\nestablished or at the time when such proof should have\nbeen established.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/TawasulAI/egyptian-law-articles",
+  "article_number": "٩",
+  "language": "ar",
+  "jurisdiction": "EG"
+}

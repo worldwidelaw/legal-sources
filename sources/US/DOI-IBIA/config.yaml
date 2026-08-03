@@ -1,0 +1,130 @@
+# ===================================================================
+# US/DOI-IBIA -- Interior Board of Indian Appeals (U.S. DOI, OHA)
+# ===================================================================
+# Full-text decisions of the Interior Board of Indian Appeals (IBIA), the
+# appellate body within the U.S. Department of the Interior's Office of
+# Hearings and Appeals that decides appeals in Indian-affairs matters:
+# appeals from Bureau of Indian Affairs decisions, Indian probate (estates
+# of deceased Indians), tribal enrollment and trust-land disputes,
+# tribal-government and election matters, Indian Self-Determination Act
+# contract disputes, and related questions. Each decision resolves a
+# docketed appeal (e.g. "IBIA 09-5-A") -> case_law. Published in a public
+# ISYS/Perceptive full-text search database at https://www.oha.doi.gov:8080/
+# (plain HTTP GET, no auth, no CAPTCHA). Federal-government works, public
+# domain (17 U.S.C. § 105).
+# ===================================================================
+
+source:
+  id: "US/DOI-IBIA"
+  country: "US"
+  name: "Interior Board of Indian Appeals — Decisions (U.S. DOI, Office of Hearings and Appeals)"
+  url: "https://www.oha.doi.gov:8080/"
+  description: |
+    Decisions of the Interior Board of Indian Appeals (IBIA), the U.S.
+    Department of the Interior appellate board that reviews Bureau of Indian
+    Affairs and other Interior decisions in Indian-affairs matters — probate
+    of Indian estates, trust land and allotment disputes, tribal enrollment
+    and membership, tribal-government and election challenges, and Indian
+    Self-Determination Act contract disputes. Full text is read from the
+    born-digital decision PDFs served by Interior's OHA ISYS search database
+    (oha.doi.gov:8080). The database is queried with broad seed terms, paged
+    through, and de-duplicated by reporter citation (the PDF filename, e.g.
+    48ibia279.pdf == "48 IBIA 279").
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "isys_search"
+  base_url: "https://www.oha.doi.gov:8080"
+  endpoints:
+    search: "/search/?IW_FIELD_NATURAL_LANGUAGE={query}&IW_DATABASE=IBIA Decisions 1970-Present"
+    hit_list: "/isysquery/{guid}/{start}-{end}/list/"
+    document: "/isysquery/{guid}/{rank}/doc/{citation}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/DOI-IBIA/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "citation"
+      description: "Reporter citation, e.g. '48 IBIA 279'"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "docket_number"
+      description: "IBIA docket, e.g. 'IBIA 09-5-A' (parsed from the body)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Party caption + citation"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision, extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the citation header (MM/DD/YYYY) or body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (U.S. Government Work — 17 U.S.C. § 105)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Interior Board of Indian Appeals are works of the U.S. federal government and are in the public domain under 17 U.S.C. § 105 (government edicts)."
+
+notes: |
+  - Corpus is enumerated from Interior OHA's ISYS/Perceptive full-text
+    search (oha.doi.gov:8080). The flow is stateless once a query is
+    issued: GET /search/?IW_FIELD_NATURAL_LANGUAGE=<q>&IW_DATABASE=IBIA
+    Decisions 1970-Present returns a results page carrying a server-cached
+    query GUID and a total document count; /isysquery/<GUID>/<start>-<end>/list/
+    pages the hits (PAGE=50); each hit links its PDF at
+    /isysquery/<GUID>/<rank>/doc/<citation>.pdf. The GUID persists
+    server-side, so no cookies are needed. NOTE: ISYS 403s on POST to
+    /search/ but serves the identical query over GET.
+  - There is no stable direct PDF path (guessed paths 404); the
+    GUID-scoped /isysquery/.../doc/ URL is required.
+  - The single seed "Bureau of Indian Affairs" returns ~3,962 documents and
+    effectively covers the whole IBIA database (every IBIA decision reviews
+    a BIA action); additional subject seeds in SEED_QUERIES (probate, trust
+    land, enrollment, tribal government, etc.) widen coverage and everything
+    is de-duplicated by citation (the PDF filename).
+  - Decision date is parsed from the parenthetical after the citation in the
+    header, e.g. "48 IBIA 279 (02/13/2009)", falling back to a "Decided
+    <date>" or bare "Month D, YYYY" near the top of the body.
+  - Full text lives only in the PDF; extraction uses the shared
+    common.pdf_extract helper (pdfplumber -> pypdf -> OCR). A <200-char
+    guard skips the rare image-only scan. Born-digital PDFs extract clean.
+  - Sibling to US/DOI-IBLA (Land Appeals); same recipe with a different
+    IW_DATABASE. Other Interior boards remain easy extensions: "Directors
+    Decisions 1996-Present", "Hearings Division Decisions 2000-Present",
+    "A and M Decisions 1920-1970", "Land Decisions and Interior Decisions",
+    "IBLA Dispositive Orders".
+  - Public-domain U.S. federal-government works.

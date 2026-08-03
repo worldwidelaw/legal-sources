@@ -34,6 +34,14 @@ from datetime import datetime, timezone, timedelta
 from typing import Generator, Optional, Dict, Any
 
 import requests
+import urllib3
+
+# www.cci.gov.in serves an incomplete TLS certificate chain (missing intermediate),
+# so strict verification fails on hosts without the intermediate cached (e.g. the
+# fleet VPS -> "CERTIFICATE_VERIFY_FAILED, unable to get local issuer certificate",
+# issue #1137). Verification is disabled for this single government host and the
+# resulting warning is suppressed. Same class as the KR/NTS-TaxLaw fix.
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -65,6 +73,8 @@ class CCIScraper(BaseScraper):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
         self.session = requests.Session()
+        # cci.gov.in ships an incomplete cert chain; verify disabled (see note at top).
+        self.session.verify = False
         self.session.headers.update({
             "User-Agent": "LegalDataHunter/1.0 (legal research)",
             "Accept": "application/json, text/javascript, */*; q=0.01",
@@ -201,11 +211,25 @@ class CCIScraper(BaseScraper):
         return None
 
     def _download_pdf_text(self, url: str) -> Optional[str]:
-        """Extract text from PDF using centralized extractor."""
+        """Extract text from a PDF.
+
+        The PDF is downloaded through the session (verify=False) rather than
+        letting the shared extractor fetch it, because cci.gov.in's incomplete
+        cert chain would otherwise fail SSL verification inside pdf_extract.
+        """
+        try:
+            resp = self.session.get(url, timeout=(15, 90), stream=True)
+            resp.raise_for_status()
+            content = resp.content
+        except Exception as e:
+            logger.warning("PDF download failed %s: %s", url, e)
+            return ""
+        if not content or content[:4] != b"%PDF":
+            return ""
         return extract_pdf_markdown(
             source="IN/CCI",
             source_id="",
-            pdf_url=url,
+            pdf_bytes=content,
             table="case_law",
         ) or ""
 

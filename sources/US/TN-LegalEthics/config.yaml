@@ -1,0 +1,122 @@
+# ===================================================================
+# US/TN-LegalEthics -- Board of Professional Responsibility of the
+# Supreme Court of Tennessee — Formal Ethics Opinions
+# ===================================================================
+# Formal Ethics Opinions issued by the Board of Professional
+# Responsibility (BPR) of the Supreme Court of Tennessee — the Board's
+# written interpretation of the Tennessee Rules of Professional Conduct
+# in response to an inquiry from an attorney, issued as guidance to
+# LAWYERS statewide = doctrine (advisory). One continuous series numbered
+# "{YY|YYYY}-F-{N}" from 80-F-1 (1980) to the present (~171 opinions),
+# published free as clean HTML on tbpr.org. The Board is an arm of the
+# Supreme Court of Tennessee (Tenn. Sup. Ct. R. 9). Distinct from
+# US/TN-Courts and US/TN-Legislation.
+# ===================================================================
+
+source:
+  id: "US/TN-LegalEthics"
+  country: "US"
+  name: "Board of Professional Responsibility of the Supreme Court of Tennessee — Formal Ethics Opinions"
+  url: "https://www.tbpr.org/for-legal-professionals/formal-ethics-opinions"
+  description: |
+    Formal Ethics Opinions issued by the Board of Professional
+    Responsibility of the Supreme Court of Tennessee. Each opinion is the
+    Board's written interpretation of the Tennessee Rules of Professional
+    Conduct in response to an inquiry from an attorney, issued as guidance
+    to lawyers statewide (advisory). One continuous series numbered
+    "{YY|YYYY}-F-{N}" from 80-F-1 (1980) to the present (~171 opinions),
+    each rendered in full as clean HTML.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_html"
+  base_url: "https://www.tbpr.org"
+  endpoints:
+    index: "/for-legal-professionals/formal-ethics-opinions"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/TN-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Canonical opinion number: 'YYYY-F-N' with an optional parenthesised revision suffix (e.g. '2002-F-91(a)')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion topic title (from the detail-page heading, number token removed)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text extracted from the detail-page HTML (no PDF/OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 date; explicit in-range date from the body, else the number's year -> YYYY-01-01"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Board of Professional Responsibility of the Supreme Court of Tennessee"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-TN)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain / freely published advisory opinions"
+  url: "https://www.tbpr.org/for-legal-professionals/formal-ethics-opinions"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Tennessee Formal Ethics Opinions are published free to the public on tbpr.org, interpreting the Tennessee Rules of Professional Conduct. They carry no login, paywall or terms prohibiting reuse. The Board of Professional Responsibility is an arm of the Supreme Court of Tennessee (Tenn. Sup. Ct. R. 9) with authority over attorney licensure and discipline, so the 17 U.S.C. § 105 government-edicts rationale applies directly. Treated as effectively public domain, consistent with the other state-bar legal-ethics sources."
+
+notes: |
+  - Discovery: opinions are listed on the single public page
+    /for-legal-professionals/formal-ethics-opinions. Each row links to a
+    detail page /ethic_opinions/{slug} where {slug} is the opinion number
+    (e.g. 80-f-1, 2002-f-91a) optionally followed by a topic slug. Several
+    opinions are linked twice (bare-number slug + topic slug); they are
+    de-duplicated on the canonical opinion number (fullest text kept).
+  - Full text: each detail page renders the opinion body in clean HTML
+    inside <main>, starting at an <h2> carrying the printed number + topic;
+    everything from that <h2> onward is extracted with BeautifulSoup, NO
+    PDF/OCR.
+  - Number: parsed from the detail-page heading. Newest opinions prefix the
+    heading with "Formal Ethics Opinion"; revision/supplement suffixes are
+    always parenthesised there (e.g. "2002-F-91(a)"). Two-digit years
+    (80-99) expand to 19xx.
+  - Date: opinions are dated by year (in the number) -> YYYY-01-01, unless
+    the body carries an explicit in-range "Month [DD,] YYYY".
+  - Type: every document is the Board's advisory interpretation of the
+    Tennessee Rules of Professional Conduct = doctrine.
+  - Distinct from US/TN-Courts and US/TN-Legislation. This is the attorney
+    professional-conduct advisory-opinion series (lawyers).

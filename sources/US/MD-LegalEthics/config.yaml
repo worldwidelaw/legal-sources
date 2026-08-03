@@ -1,0 +1,138 @@
+# ===================================================================
+# US/MD-LegalEthics -- Maryland State Bar Association, Committee on
+# Ethics — Ethics Docket Opinions
+# ===================================================================
+# Advisory opinions of the Maryland State Bar Association (MSBA)
+# Committee on Ethics — each the Committee's written response, upon a
+# member's request, interpreting the Maryland Attorneys' Rules of
+# Professional Conduct as applied to the inquirer's contemplated
+# conduct = doctrine (advisory; not binding on the Maryland Supreme
+# Court or the Attorney Grievance Commission, which administers lawyer
+# discipline). One numbered series "YYYY-NN", ~498 opinions
+# 1987-present, published free as clean HTML on msba.org.
+# Distinct from US/MD-EthicsOpinions (Maryland State Ethics Commission
+# — public officials; blocked), the Maryland Judiciary's Judicial
+# Ethics Committee (judges), US/MD-COMAR (regulations) and
+# US/MD-Legislation (statutes). The MSBA is Maryland's *voluntary*
+# bar.
+# ===================================================================
+
+source:
+  id: "US/MD-LegalEthics"
+  country: "US"
+  name: "Maryland State Bar Association — Committee on Ethics (Ethics Docket Opinions)"
+  url: "https://www.msba.org/site/site/content/Resources-and-Tools-Content/Ethics-Opinions-and-Hotline.aspx"
+  description: |
+    Ethics Docket opinions issued by the Maryland State Bar Association
+    (MSBA) Committee on Ethics. Each opinion is the Committee's written
+    response, upon a member's request, interpreting the Maryland
+    Attorneys' Rules of Professional Conduct as applied to the
+    inquirer's contemplated conduct (advisory, not binding on the
+    Maryland Supreme Court or the Attorney Grievance Commission). One
+    numbered series "YYYY-NN" running from 1987 to present (~498
+    opinions), each rendered in full as clean HTML carrying the docket
+    number, subject, the inquiry and the Committee's conclusion.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_html"
+  base_url: "https://www.msba.org"
+  endpoints:
+    index: "/site/site/content/Resources-and-Tools-Content/Ethics-Opinions-and-Hotline.aspx"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/MD-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Ethics Docket number, canonical 'YYYY-NN' (e.g. 1987-34, 2016-07, 2025-02)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title ('MSBA Ethics Docket No. {number}' plus subject when parseable)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text extracted from the detail-page HTML (no PDF/OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 date; MSBA dockets are numbered by year -> YYYY-01-01 unless the body carries an explicit date"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "subject"
+      description: "Short subject line following the docket-number header, when present"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "issuer"
+      description: "Maryland State Bar Association — Committee on Ethics"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-MD)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain / freely published advisory opinions"
+  url: "https://www.msba.org/site/site/content/Resources-and-Tools-Content/Ethics-Opinions-and-Hotline.aspx"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "MSBA Ethics Docket opinions are published free to the public on msba.org as an educational service interpreting the Maryland Attorneys' Rules of Professional Conduct. They are advisory (the Committee has no disciplinary authority; discipline is administered by the Maryland Supreme Court through the Attorney Grievance Commission) and carry no login, paywall or terms prohibiting reuse. Treated as effectively public domain, consistent with the other state-bar legal-ethics sources. Note the MSBA is Maryland's VOLUNTARY bar, so the 17 U.S.C. § 105 government-edicts rationale is weaker here than for an integrated bar — caveated like US/NY-LegalEthics, US/IL-LegalEthics, US/CT-LegalEthics and US/VT-LegalEthics."
+
+notes: |
+  - Discovery: a single public index page lists every opinion —
+    /site/site/content/Resources-and-Tools-Content/Ethics-Opinions-and-Hotline.aspx —
+    each as a link into /Ethics-Opinions/{YEAR}/{YEAR}-{NN}.aspx (~498
+    unique opinions, 1987-present). No pagination; all links are on the
+    one page. Relative hrefs are resolved with urljoin.
+  - Number: parsed from the detail page's "ETHICS DOCKET NO. YYYY-NN"
+    header/title (authoritative), falling back to the URL filename.
+    Canonical 'YYYY-NN' (zero-padded; any trailing letter preserved).
+  - Full text: each detail page renders the opinion body in clean HTML
+    inside the Decisis/SmartBar content panel
+    <div id="ste_container_ciOpinionTextBody_..."> — extracted directly
+    with BeautifulSoup, NO PDF/OCR needed. Falls back to
+    #mainContentWrapper if the panel id is absent. Records under 150
+    chars are skipped.
+  - Date: MSBA dockets are numbered by year, so date defaults to
+    YYYY-01-01; if the body carries an explicit in-range "Month DD,
+    YYYY" it is used instead.
+  - Type: every document is the Committee's advisory interpretation of
+    the Maryland Attorneys' Rules of Professional Conduct = doctrine.
+  - Distinct from US/MD-EthicsOpinions (Maryland State Ethics
+    Commission — public officials; blocked, dsd.maryland.gov), the
+    Maryland Judiciary's Judicial Ethics Committee (judges),
+    US/MD-COMAR (regulations) and US/MD-Legislation (statutes). This is
+    the attorney professional-conduct advisory-opinion series
+    (lawyers).

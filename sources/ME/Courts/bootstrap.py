@@ -103,7 +103,10 @@ def strip_html(html: str) -> str:
 class MontenegroCourtscraper(BaseScraper):
     """Scraper for Montenegro Court Decisions API."""
 
-    def __init__(self, source_dir: str):
+    def __init__(self, source_dir: str = None):
+        # source_dir is optional: the fleet harness instantiates the scraper with
+        # no arguments, while main() passes the explicit source directory. When
+        # None, BaseScraper resolves it from the module location.
         super().__init__(source_dir)
         self.client = HttpClient(
             headers={
@@ -367,7 +370,9 @@ def main():
             logger.info(f"Preview: {text[:200]}...")
         print("API test passed!")
 
-    elif cmd == "bootstrap":
+    # bootstrap-fast is the VPS fleet entrypoint; alias it to the full bootstrap
+    # path so it runs the full corpus instead of falling back to sample mode.
+    elif cmd in ("bootstrap", "bootstrap-fast"):
         is_sample = "--sample" in sys.argv
         if is_sample:
             stats = scraper.bootstrap(sample_mode=True, sample_size=15)

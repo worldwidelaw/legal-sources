@@ -1,0 +1,111 @@
+# ===================================================================
+# US/CAAF -- United States Court of Appeals for the Armed Forces
+# ===================================================================
+# Full-text precedential opinions of the U.S. Court of Appeals for the
+# Armed Forces (CAAF), the Article I civilian appellate court that sits
+# atop the military-justice system and reviews decisions of the service
+# Courts of Criminal Appeals (Army, Navy-Marine Corps, Air Force, Coast
+# Guard). Each opinion decides a specific court-martial appeal -> case_law.
+# Opinions are published as born-digital PDFs on the court's website
+# (armfor.uscourts.gov) over plain HTTP GET, no auth, no CAPTCHA.
+# Federal-government works, public domain (17 U.S.C. § 105).
+# ===================================================================
+
+source:
+  id: "US/CAAF"
+  country: "US"
+  name: "U.S. Court of Appeals for the Armed Forces — Opinions"
+  url: "https://www.armfor.uscourts.gov/newcaaf/opinions.htm"
+  description: |
+    Precedential opinions of the United States Court of Appeals for the
+    Armed Forces (CAAF), the highest court in the military-justice system.
+    CAAF exercises worldwide appellate jurisdiction over members of the
+    armed forces on active duty and reviews the decisions of the four
+    service Courts of Criminal Appeals. The court publishes each opinion as
+    a born-digital PDF, indexed by "term of court" (an October–September
+    term year). Full text is read from the opinion PDFs; case name, docket
+    number, decision date and Military Justice Reporter citation are parsed
+    from the per-term index table.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.armfor.uscourts.gov/newcaaf"
+  endpoints:
+    index: "/opinions.htm"
+    term: "/opinions/{term}.htm"
+    opinion: "/opinions/{term}/{docket}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CAAF/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "CAAF docket, e.g. '24-0093/MC'"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "citation"
+      description: "Military Justice Reporter citation, e.g. '85 MJ 163'"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Case name, e.g. 'United States v. Flanner'"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion, extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Opinion date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (U.S. Government Work — 17 U.S.C. § 105)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Opinions of the U.S. Court of Appeals for the Armed Forces are works of the U.S. federal government and are in the public domain under 17 U.S.C. § 105 (government edicts)."
+
+notes: |
+  - Enumeration: GET /opinions.htm lists every "term of court" index page
+    (opinions/{term}.htm, e.g. 2023OctTerm, 2015SepTerm). Each term page is
+    an HTML table with columns CASE NAME | DOCKET # | OPINION DATE | MJ
+    CITATION, where the docket cell links the opinion PDF at
+    /opinions/{term}/{docket}.pdf (filename is the docket digits, e.g.
+    240093.pdf == docket 24-0093).
+  - Metadata (case name, docket, date, MJ citation) is parsed from the term
+    table row; full text comes from the PDF via the shared common.pdf_extract
+    helper. A <200-char guard skips the rare non-opinion/scan.
+  - Digitised coverage runs ~2001 term to present (~40–60 opinions/term).
+    Pre-2001 term pages carry no PDF links and yield nothing (skipped).
+  - Born-digital PDFs; armfor.uscourts.gov serves a browser User-Agent.
+    Federal .gov, generally not datacenter-IP-gated.

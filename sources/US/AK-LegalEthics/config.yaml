@@ -1,0 +1,126 @@
+# ===================================================================
+# US/AK-LegalEthics -- Alaska Bar Association — Ethics Opinions
+# ===================================================================
+# Ethics Opinions adopted by the Alaska Bar Association's Ethics
+# Committee / Board of Governors, applying the Alaska Rules of
+# Professional Conduct — and, for the older opinions, the predecessor
+# Code of Professional Responsibility / Canons — to a stated question
+# to advise LAWYERS = doctrine (advisory). Per-year numbered series
+# "{year}-{N}" (older use a 2-digit year, e.g. 73-1, 98-2; 2000-on use
+# a 4-digit year, e.g. 2003-3, 2012-3, 2025-1), ~150 opinions
+# 1968-present. The Alaska Bar is the state's INTEGRATED (mandatory)
+# bar under the authority of the Alaska Supreme Court -> pd-us. Distinct
+# from US/AK-Courts and US/AK-Legislation.
+# ===================================================================
+
+source:
+  id: "US/AK-LegalEthics"
+  country: "US"
+  name: "Alaska Bar Association — Ethics Opinions"
+  url: "https://alaskabar.org/ethics-discipline/ethics-opinions/"
+  description: |
+    Ethics Opinions adopted by the Alaska Bar Association's Ethics
+    Committee and Board of Governors, applying the Alaska Rules of
+    Professional Conduct (and, for older opinions, the predecessor Code
+    of Professional Responsibility / Canons) to a stated question to
+    advise lawyers. A per-year numbered series "{year}-{N}" (older
+    opinions use a two-digit year; opinions from 2000 on use a four-digit
+    year), ~150 opinions spanning 1968-present, each published free as a
+    born-digital PDF on alaskabar.org.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+  max_workers: 2
+
+api:
+  type: "html_chronological_index_pdf"
+  base_url: "https://alaskabar.org"
+  endpoints:
+    index: "/ethics-discipline/ethics-opinions/adopted-ethics-opinions-chronological/"
+    opinion: "/wp-content/uploads/{file}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/AK-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number / filename token ('{year}-{N}'; e.g. 73-1, 98-2, 2025-1)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion subject line (from the PDF header, after the opinion number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text from the born-digital PDF (PyMuPDF, no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 issue date (YYYY-01-01 from the year in the opinion number)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Alaska Bar Association — Ethics Committee"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-AK)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (US government edict — integrated bar advisory opinions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Alaska Bar Association ethics opinions interpret the Alaska Rules of Professional Conduct. The Alaska Bar is the state's INTEGRATED (mandatory) bar under the Alaska Integrated Bar Act, operating under the authority of the Alaska Supreme Court to regulate the legal profession, so the opinions are the work of a government-authorized body — treated as public domain under the 17 U.S.C. § 105 government-edicts rationale, consistent with the other integrated state-bar legal-ethics sources. Published free to the public on alaskabar.org with no login, paywall or terms prohibiting reuse. Commercial use permitted."
+
+notes: |
+  - Discovery: the /ethics-discipline/ethics-opinions/ library page renders
+    its opinion list client-side (JS) and the WP REST API is locked down
+    (Solid Security 401), so the list is not available as static HTML.
+    However every opinion PDF is published at a fully deterministic URL,
+    /wp-content/uploads/{number}.pdf (confirmed for 73-1, 98-2, 2012-3,
+    2025-1, ...). The scraper ENUMERATES the number space: for each year
+    1968..current, probe "{yy|yyyy}-{n}" for n=1..15 (HEAD), stopping a
+    year after 3 consecutive misses past a hit, and downloads each PDF that
+    resolves (HTTP 200, %PDF).
+  - Full text: each PDF is born-digital (text layer) -> PyMuPDF/fitz
+    get_text, NO OCR. Header = "ALASKA BAR ASSOCIATION / ETHICS OPINION
+    [NO.] {number}" followed by the subject title paragraph and a
+    Question/Issue/Facts block.
+  - Number: the filename token "{year}-{N}"; older opinions carry a
+    two-digit year (68-99 -> 1968-1999), 2000-on a four-digit year.
+  - Title: the subject paragraph immediately after the opinion-number
+    header line, terminated by a blank line; falls back to a generic
+    "Alaska Bar Association Ethics Opinion {number}".
+  - Date: derived from the year in the opinion number -> YYYY-01-01.
+  - Type: every document is the Ethics Committee's advisory interpretation
+    of the rules governing lawyers = doctrine.
+  - Distinct from US/AK-Courts and US/AK-Legislation.

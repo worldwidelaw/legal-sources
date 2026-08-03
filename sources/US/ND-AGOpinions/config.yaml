@@ -1,0 +1,99 @@
+# ===================================================================
+# US/ND-AGOpinions -- North Dakota Attorney General Opinions
+# ===================================================================
+# Full text of Legal, Advisory, and Open Records & Meetings opinions
+# issued by the North Dakota Attorney General. These are official state
+# legal interpretations (doctrine). Published openly as text-layer PDFs
+# at attorneygeneral.nd.gov. No authentication required. Public data.
+# ===================================================================
+
+source:
+  id: "US/ND-AGOpinions"
+  country: "US"
+  name: "North Dakota Attorney General Opinions"
+  url: "https://attorneygeneral.nd.gov/opinions-search/"
+  description: |
+    Opinions issued by the North Dakota Attorney General — Legal
+    opinions, Advisory opinions, and Open Records & Meetings opinions.
+    Each answers a legal question posed by a public official and
+    constitutes an authoritative interpretation of North Dakota law.
+    The full index is a single server-rendered table at
+    /opinions-search/; each opinion links to a text-layer PDF.
+    Coverage runs 1942-present (~6,800 opinions).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://attorneygeneral.nd.gov"
+  endpoints:
+    index: "/opinions-search/"
+    opinion_pdf: "/wp-content/uploads/{year}/{month}/{number}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "opinion_number"
+      description: "AG opinion number (e.g., '2026-O-11', '82-21')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_kind"
+      description: "'legal', 'advisory', or 'open records & meetings'"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "issued_to"
+      description: "Public official / entity the opinion was issued to"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Opinion title (North Dakota Attorney General Opinion No. ...)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — North Dakota)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "North Dakota Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Legal + Advisory + Open Records & Meetings opinions at
+    attorneygeneral.nd.gov/opinions-search/
+  - The index is a single server-rendered Ninja Table; one GET returns
+    every opinion row (date issued, requestor, type, opinion #) with a
+    direct PDF link. No pagination, no JS, no CAPTCHA.
+  - Each opinion is a text-layer PDF (real text, no OCR needed),
+    extracted via common.pdf_extract.
+  - Coverage 1942-present (~6,800 opinions); public domain ND gov data.

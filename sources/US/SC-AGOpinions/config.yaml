@@ -1,0 +1,85 @@
+# ===================================================================
+# US/SC-AGOpinions -- South Carolina Attorney General Opinions
+# ===================================================================
+# Full text of legal opinions issued by the South Carolina Attorney
+# General. These are official state legal interpretations (doctrine).
+# Published openly at scag.gov; full text in linked PDFs.
+# No authentication required. Public government data.
+# ===================================================================
+
+source:
+  id: "US/SC-AGOpinions"
+  country: "US"
+  name: "South Carolina Attorney General Opinions"
+  url: "https://www.scag.gov/opinions/opinions-archive/"
+  description: |
+    Legal opinions issued by the South Carolina Office of the Attorney
+    General. Each opinion answers a legal question posed by a public
+    official and constitutes an authoritative (advisory) state legal
+    interpretation. Full text extracted from the official opinion PDFs
+    linked from the public opinions archive. Year-partitioned archive
+    covers 1972-present; the historical corpus (~1972-2018) is
+    text-based PDF, while the most recent opinions are image-only scans.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.scag.gov"
+  endpoints:
+    archive: "/opinions/opinions-archive/?year={year}&page={page}"
+    detail: "/opinions/opinions-archive/{slug}/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "title"
+      description: "Opinion title (subject of the question presented)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — South Carolina)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "South Carolina Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Opinions archive at scag.gov/opinions/opinions-archive/, paginated by
+    year: ?year=YYYY&page=N (up to 50 opinions/page; year filter 1972-present)
+  - Each detail page (/opinions/opinions-archive/{slug}/) carries metadata
+    (title, <span class="date">) and a link to the opinion PDF
+    (/wp-content/uploads/... or /media/...)
+  - Full text extracted from the PDF via common.pdf_extract (pdfplumber ->
+    pypdf -> OCR fallback); historical corpus ~1972-2018 is text-based,
+    recent opinions are image-only scans (skipped without OCR)
+  - Public domain South Carolina government data

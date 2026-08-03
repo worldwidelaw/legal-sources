@@ -1,0 +1,92 @@
+# ===================================================================
+# US/PA-AGOpinions -- Pennsylvania Attorney General Official Opinions
+# ===================================================================
+# Full text of the official opinions of the Pennsylvania Attorney
+# General — authoritative (advisory) interpretations of Pennsylvania
+# law (doctrine). Published openly as born-digital text PDFs at
+# attorneygeneral.gov. No authentication required. Public domain
+# Commonwealth government work.
+# ===================================================================
+
+source:
+  id: "US/PA-AGOpinions"
+  country: "US"
+  name: "Pennsylvania Attorney General Opinions"
+  url: "https://www.attorneygeneral.gov/resources/official-ag-opinions/"
+  description: |
+    Official opinions of the Pennsylvania Attorney General. Two groups:
+    (1) biennial bound VOLUMES, 1895-1992 — each PDF is the full "Opinions
+    of the Attorney General of Pennsylvania" report for a two-year span
+    containing every formal opinion of that period; (2) individual modern
+    opinions, 1994-2019. Full text extracted from the official born-digital
+    PDFs in the attorneygeneral.gov WordPress media store. The HTML index is
+    WAF/JS-fronted and the WP REST API is disabled, so the canonical list of
+    direct PDF URLs is embedded in bootstrap.py (every URL verified HTTP 200
+    application/pdf). The rare scanned/empty PDF is skipped.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "static_pdf_list"
+  base_url: "https://www.attorneygeneral.gov"
+  endpoints:
+    media_store: "/wp-content/uploads/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "url"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "url"
+
+schema:
+  total_fields: 7
+  key_fields:
+    - name: "title"
+      description: "Opinion / volume title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "url"
+      description: "Direct URL to the source PDF"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "date"
+      description: "Opinion / volume date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Pennsylvania)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Pennsylvania Attorney General opinions are official Commonwealth government works in the public domain."
+
+notes: |
+  - Official opinions listed at attorneygeneral.gov/resources/official-ag-opinions/
+  - HTML index is WAF/JS-fronted and WP REST API disabled; direct PDF URLs
+    embedded in bootstrap.py (harvested from the official page)
+  - Biennial volumes 1895-1992 (each = a full two-year opinion report) +
+    individual modern opinions 1994-2019
+  - All PDFs are born-digital (real text layer, no OCR needed); scanned/empty
+    PDFs skipped
+  - Full text via common.pdf_extract.extract_pdf_markdown (OOM-hardened)
+  - Public domain Commonwealth of Pennsylvania government data

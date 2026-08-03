@@ -1,0 +1,101 @@
+# ===================================================================
+# US/KY-PSC -- Kentucky Public Service Commission Orders
+# ===================================================================
+# Full text of Orders issued by the Kentucky Public Service Commission
+# adjudicating utility dockets (electric, natural-gas, water/sewer,
+# telecommunications). Administrative adjudications of specific cases =
+# case_law. Public domain (US state government edict). Published openly
+# as born-digital PDFs in the PSC "Order Vault" (psc.ky.gov). No auth.
+# ===================================================================
+
+source:
+  id: "US/KY-PSC"
+  country: "US"
+  name: "Kentucky Public Service Commission — Orders"
+  url: "https://psc.ky.gov/order_vault/"
+  description: |
+    Orders issued by the Kentucky Public Service Commission (PSC)
+    resolving utility rate cases, certificate applications, complaints
+    and other dockets across the electric, natural-gas, water/sewer and
+    telecommunications industries. Each Order is an administrative
+    adjudication of a specific case (case_law). The corpus spans the late
+    1980s to present (~1,500-1,800 Orders/year). Full text is extracted
+    from born-digital Order PDFs (the rare image-only scan is OCR'd with
+    Tesseract).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 5
+
+api:
+  type: "html_scraping"
+  base_url: "https://psc.ky.gov"
+  endpoints:
+    year_listing: "/order_vault/Orders_{YYYY}/"
+    order_pdf: "/order_vault/Orders_{YYYY}/{casecode}_{MMDDYYYY}[_NN].pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "case_number"
+      description: "Case number, e.g. '2026-00097' (parsed from Order body, filename fallback)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "title"
+      description: "Case number plus the 'In the Matter of' caption"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Order extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order date (ISO 8601), parsed from the PDF filename"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "pdf_url"
+      description: "Direct URL to the born-digital Order PDF"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Kentucky)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "KY Public Service Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - The PSC publishes every Order as a born-digital PDF under
+    /order_vault/Orders_{YYYY}/, each an IIS directory listing (a <pre> of
+    <a href> links, one per Order PDF).
+  - The PDF filename encodes the case number and order date:
+    "{CCCCNNNNN}_{MMDDYYYY}[_NN].pdf" — first 9 digits = case number
+    (4-digit case-year + 5-digit sequence), next 8 = order date, optional
+    _NN = multiple orders same case same day.
+  - fetch_all() walks the year folders newest-first (back to ~1989) and
+    yields one raw per Order PDF; normalize() downloads the PDF and extracts
+    full text via fitz/PyMuPDF (Tesseract OCR fallback). The authoritative
+    case number is parsed from the Order body ("CASE NO. ...").
+  - Public domain Kentucky government data.

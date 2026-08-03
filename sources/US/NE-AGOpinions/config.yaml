@@ -1,0 +1,96 @@
+# ===================================================================
+# US/NE-AGOpinions -- Nebraska Attorney General Opinions
+# ===================================================================
+# Full text of official written opinions issued by the Nebraska
+# Attorney General under Neb. Rev. Stat. sec. 84-205. Official state
+# legal interpretations (doctrine). Published openly as born-digital
+# PDFs at ago.nebraska.gov. No authentication required.
+# ===================================================================
+
+source:
+  id: "US/NE-AGOpinions"
+  country: "US"
+  name: "Nebraska Attorney General Opinions"
+  url: "https://ago.nebraska.gov/opinions"
+  description: |
+    Official written opinions issued by the Nebraska Attorney General at
+    the request of the Legislature, a state officer or a county attorney
+    (Neb. Rev. Stat. sec. 84-205). Each opinion is an authoritative
+    interpretation of Nebraska law. The corpus spans 1990-present
+    (~1,190 opinions). Full text is in born-digital PDFs (a few older
+    scans were pre-OCR'd by the AG office; the rare image-only scan is
+    OCR'd with Tesseract).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 5
+
+api:
+  type: "html_scraping"
+  base_url: "https://ago.nebraska.gov"
+  endpoints:
+    archive: "/opinions/archive"
+    pdf: "/sites/default/files/docs/opinions/{file}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "opinion_number"
+      description: "Canonical opinion number 'YY-NNN' (e.g., '26-003', '90-003')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Opinion number plus the subject/title line"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "subject"
+      description: "Subject line from the archive listing"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "text"
+      description: "Full text of the opinion extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Nebraska)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Nebraska Attorney General opinions are official state government edicts in the public domain."
+
+notes: |
+  - Single archive page /opinions/archive is a server-rendered HTML table
+    listing every opinion (1990-present) with number, date, title, detail
+    (node) link and a born-digital PDF link.
+  - fetch_all() yields raw metadata; normalize() downloads each PDF and
+    extracts full text (fitz/PyMuPDF; Tesseract OCR fallback for the rare
+    image-only scan). This overlaps downloads under bootstrap-fast.
+  - Numbers canonicalised to 'YY-NNN' (old 5-digit '90003' and modern
+    '26-003' both map to the same value).
+  - Public domain Nebraska government data.

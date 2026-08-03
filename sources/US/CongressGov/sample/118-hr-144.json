@@ -1,0 +1,19 @@
+{
+  "_id": "118-hr-144",
+  "_source": "US/CongressGov",
+  "_type": "legislation",
+  "_fetched_at": "2026-07-12T20:02:35.850956+00:00",
+  "title": "Adjusting Davis-Bacon for Inflation Act",
+  "text": "To amend the provisions of title 40, United States Code, commonly known as the Davis-Bacon Act, to raise the threshold dollar amount of contracts subject to the prevailing wage requirements of such provisions.\nAdjusting Davis-Bacon for Inflation Act 1.Short titleThis Act may be cited as the Adjusting Davis-Bacon for Inflation Act.\n2.Threshold of contracts subject to Davis-BaconSection 3142(a) of chapter 31 of title 40, United States Code is amended by striking $2,000 and inserting $50,000.",
+  "date": "2023-01-09",
+  "url": "https://www.congress.gov/bill/118th-congress/house-bill/144",
+  "congress": 118,
+  "bill_type": "HR",
+  "bill_number": "144",
+  "sponsor": "Rep. Duncan, Jeff [R-SC-3]",
+  "cosponsors_count": 1,
+  "policy_area": "Labor and Employment",
+  "origin_chamber": "House",
+  "latest_action": "Referred to the House Committee on Education and the Workforce.",
+  "update_date": "2025-07-21T19:44:15Z"
+}

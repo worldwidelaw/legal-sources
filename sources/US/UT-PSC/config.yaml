@@ -1,0 +1,113 @@
+# ===================================================================
+# US/UT-PSC -- Utah Public Service Commission Orders
+# ===================================================================
+# Full text of Orders issued by the Public Service Commission of Utah
+# (PSC) adjudicating utility dockets (electric, natural gas, water,
+# telecommunications). Each Order is an administrative adjudication of a
+# specific docket = case_law. Public domain (US state government edict).
+# Published as born-digital PDFs via the public PSC WordPress site
+# (psc.utah.gov) whose document store is the pscdocs.utah.gov bucket.
+# No auth.
+# ===================================================================
+
+source:
+  id: "US/UT-PSC"
+  country: "US"
+  name: "Utah Public Service Commission — Orders"
+  url: "https://psc.utah.gov/"
+  description: |
+    Orders issued by the Public Service Commission of Utah (PSC)
+    resolving utility dockets — rate cases, certificate/approval
+    applications, complaints, tariff and procedural matters — across the
+    electric, natural-gas, water and telecommunications industries. Each
+    Order is an administrative adjudication of a specific docket
+    (case_law). Full text is extracted from born-digital Order PDFs (the
+    rare image-only scan is OCR'd with Tesseract).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://psc.utah.gov"
+  endpoints:
+    sitemap: "/wp-sitemap-posts-post-{n}.xml"
+    docket_page: "/{YYYY}/{MM}/{DD}/docket-no-{docket}/"
+    document_store: "https://pscdocs.utah.gov/{industry}/{yy}docs/{docket}/{file}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_id"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "doc_id"
+      description: "pscdocs PDF filename stem (unique document id), e.g. 33588523264301ogm10-8-2024"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Utah PSC docket number, e.g. 24-035-01 (year-utilitytype-sequence)"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "industry"
+      description: "Regulated industry folder (electric, gas, water, telecom)"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "title"
+      description: "Order title (filing description + docket number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Order extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order/decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Utah)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Utah Public Service Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - psc.utah.gov is a WordPress site; every docket is a post at
+    /YYYY/MM/DD/docket-no-{NN-NNN-NN}/ (~4,700 dockets). The full docket
+    list is enumerated from the WordPress sitemap index
+    (wp-sitemap-posts-post-{1,2,3}.xml).
+  - Each docket page lists every filing as an anchor whose text is the
+    document description and whose href is a born-digital PDF on
+    pscdocs.utah.gov. Order-type filings are the anchors whose text matches
+    a whole-word "order" (Order Approving..., Scheduling Order...,
+    Order Granting...). Full text via fitz/PyMuPDF (Tesseract OCR fallback).
+  - doc_id is the PDF filename stem; the leading digits are Utah's internal
+    document id. date parsed from the trailing M-D-YYYY in the filename,
+    falling back to the docket post date in the URL.
+  - VANTAGE: pscdocs.utah.gov (S3) serves objects publicly to residential
+    clients but returns 403 to cloud/datacenter IP ranges. _download() tries
+    the live URL first, then falls back to the Internet Archive Wayback
+    Machine (~20k pscdocs PDFs captured, reachable from any vantage), so the
+    scraper works from both residential and datacenter vantages.

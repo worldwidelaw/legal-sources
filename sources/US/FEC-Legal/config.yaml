@@ -1,0 +1,41 @@
+auth: none
+country: US
+data_types:
+- case_law
+- doctrine
+fetch:
+  delay: 1.5
+  api_base: https://api.open.fec.gov/v1/legal/search/
+  doc_base: https://www.fec.gov
+  hits_per_page: 20
+name: US Federal Election Commission — Advisory Opinions & Enforcement Matters (MURs)
+license:
+  name: Public Domain (U.S. Government Work)
+  url: https://www.law.cornell.edu/uscode/text/17/105
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Works of the U.S. federal government are not subject to copyright (17 U.S.C. 105)."
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: text
+    required: true
+    type: string
+  - name: matter_type
+    required: false
+    type: string
+  - name: url
+    required: true
+    type: string
+source_id: US/FEC-Legal
+url: https://www.fec.gov/legal-resources/

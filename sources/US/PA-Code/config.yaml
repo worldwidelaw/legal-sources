@@ -1,0 +1,140 @@
+# ===================================================================
+# US/PA-Code -- The Pennsylvania Code (state administrative regulations)
+# ===================================================================
+# The Pennsylvania Code is the official codification of the rules and
+# regulations of the Commonwealth of Pennsylvania's executive-branch
+# agencies (adopted under the Commonwealth Documents Law and published
+# by the Legislative Reference Bureau). It is organized by numbered
+# Titles -> Parts -> Chapters -> Sections and is the state analogue of
+# the federal CFR. Codified agency regulations = legislation. These are
+# official Pennsylvania state-government works in the public domain
+# (government edicts).
+#
+# BUILD RECIPE (builds + validates LOCALLY, no CAPTCHA / JS / auth):
+# The official full-text database is served as static HTML at
+# www.pacodeandbulletin.gov. The list of Titles is embedded as <option>
+# tags on the /Home/Pacode page (value="/{NNN}/{NNN}toc.html"). For each
+# Title the scraper fetches the Title TOC
+#   /secure/pacode/data/{NNN}/{NNN}toc.html
+# and extracts the per-Chapter TOC links (chapter{N}/chap{N}toc.html);
+# each Chapter TOC lists the individual Section HTML files (sX.Y.html).
+# Every Section HTML page carries clean born-digital full text plus
+# <meta> tags (title2, chapter2, section2) used to build stable ids and
+# titles. The effective/amendment date is parsed from the "Source" note
+# in the section body when present, else null. No auth, no CAPTCHA.
+# ===================================================================
+
+source:
+  id: "US/PA-Code"
+  country: "US"
+  name: "The Pennsylvania Code — State Administrative Regulations"
+  url: "https://www.pacodeandbulletin.gov/Home/Pacode"
+  description: |
+    The Pennsylvania Code, the official codification of the rules and
+    regulations of Commonwealth of Pennsylvania executive-branch
+    agencies (the state analogue of the federal CFR), published by the
+    Legislative Reference Bureau. Organized by numbered Titles, Parts,
+    Chapters and Sections. Each Section is a codified regulation =
+    legislation. The scraper enumerates all Titles from the Pacode page,
+    walks each Title -> Chapter table of contents, and fetches every
+    born-digital Section HTML page for its full text. Section number,
+    Title/Chapter, and (when a Source note is present) the latest
+    effective date are captured. No CAPTCHA, no auth.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 3
+  burst: 4
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.pacodeandbulletin.gov"
+  endpoints:
+    title_index: "/Home/Pacode"
+    title_toc: "/secure/pacode/data/{title}/{title}toc.html"
+    chapter_toc: "/secure/pacode/data/{title}/chapter{n}/chap{n}toc.html"
+    section_html: "/secure/pacode/data/{title}/chapter{n}/s{section}.html"
+
+data_model:
+  type: "legislation"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/PA-Code/{title}-{section})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Title-Section identifier (e.g. '34-31.1')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "citation"
+      description: "Official citation (e.g. '34 Pa. Code § 31.1')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title_number"
+      description: "Pennsylvania Code Title number (e.g. '34')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title_name"
+      description: "Title name (e.g. 'LABOR AND INDUSTRY')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "chapter"
+      description: "Chapter number (e.g. '31')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "section"
+      description: "Section number (e.g. '31.1')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Section heading (e.g. '34 Pa. Code § 31.1. Definitions.')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the codified regulation section (HTML extract)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Latest effective/amendment date (ISO 8601) from the Source note; null if absent"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the Section HTML page on pacodeandbulletin.gov"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    The Pennsylvania Code is the official codification of Commonwealth of
+    Pennsylvania agency regulations — official works of state government
+    (edicts of government) — and is not subject to copyright under the
+    government-edicts doctrine. The publisher's notice states the text
+    may not be "reproduced for profit or sold for profit"; this is a
+    non-copyright republishing notice on the compilation, not a
+    restriction on the underlying public-domain legal text.

@@ -1,0 +1,105 @@
+# ===================================================================
+# MX/PoderJudicialHidalgo -- Hidalgo State Court Decisions
+# ===================================================================
+# The Poder Judicial del Estado de Hidalgo publishes full-text court
+# decisions (sentencias en versión pública) via its "Observatorio de
+# Sentencias" portal. A single static HTML page groups the public
+# sentencias into tabbed materias, each linking directly to a
+# full-text PDF.
+# ===================================================================
+
+source:
+  id: "MX/PoderJudicialHidalgo"
+  country: "MX"
+  name: "Poder Judicial del Estado de Hidalgo"
+  url: "https://www.pjhidalgo.gob.mx/transparencia/observatorio/sentencias.html"
+  description: |
+    Full-text court decisions (sentencias en versión pública) from the
+    Tribunal Superior de Justicia del Estado de Hidalgo, accessed via the
+    public "Observatorio de Sentencias" portal. The listing page
+    (sentencias.html) groups the published sentencias into tabbed
+    materias — Civil, Familiar, Mercantil, Penal (Sistema Acusatorio)
+    and Penal (Sistema Tradicional) — each row linking directly to a
+    full-text PDF under sentencias/<MATERIA>/<file>.pdf. This is the
+    public Observatorio subset; the full sentencia-publication system is
+    staff-login-gated. No authentication required for the public subset.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2.0
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html"
+  base_url: "https://www.pjhidalgo.gob.mx/transparencia/observatorio"
+  endpoints:
+    listing: "/sentencias.html"
+    document: "/sentencias/{materia}/{filename}.pdf"
+  response_format: "html+pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Unique decision identifier (MX-HID-<pdf-path-slug>)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Decision title (materia + expediente + asunto)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (extracted from the public PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Year of the expediente as YYYY-01-01 (only the año is published)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Direct URL to the full-text PDF"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "subject_area"
+      description: "Materia (Civil, Familiar, Mercantil, Penal ...)"
+    - name: "asunto"
+      description: "Tipo de asunto derived from the PDF filename"
+    - name: "case_number"
+      description: "Número de expediente"
+    - name: "year"
+      description: "Año del expediente"
+    - name: "jurisdiction"
+      description: "ISO 3166-2 subdivision (MX-HID)"
+
+license:
+  name: "Mexican Government Public Data (LIBRE USO MX)"
+  url: "https://datos.gob.mx/libreusomx"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Public-version court decisions published by the Hidalgo state
+    judiciary as a transparency obligation (versiones públicas).
+    Mexican government public information is freely reusable under the
+    Términos de Libre Uso de la Información (LIBRE USO MX); commercial
+    use permitted with attribution.

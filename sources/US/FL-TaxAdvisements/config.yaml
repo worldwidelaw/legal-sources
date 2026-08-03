@@ -1,0 +1,118 @@
+# ===================================================================
+# US/FL-TaxAdvisements -- Florida DOR Technical Assistance Advisements
+# ===================================================================
+# Official Technical Assistance Advisements (TAAs) issued by the Florida
+# Department of Revenue's Office of Technical Assistance under s. 213.22,
+# F.S. and Rule 12-11, F.A.C.: written determinations on the taxability of
+# a specific transaction or the applicability of a tax to a specific set of
+# facts, binding on the Department as to the requesting taxpayer. Published
+# versions are public records with confidential taxpayer information
+# redacted. Enumerated via the anonymously-readable SharePoint Search REST
+# API backing the "Tax Law Library"; full text read from each public PDF
+# via the shared OOM-hardened pdf_extract helper. No login, no CAPTCHA.
+# Public-domain Florida state-government works (government edicts doctrine).
+# ===================================================================
+
+source:
+  id: "US/FL-TaxAdvisements"
+  country: "US"
+  name: "Florida Department of Revenue — Technical Assistance Advisements (TAA)"
+  url: "https://floridarevenue.com/taxes/taxlaw"
+  description: |
+    Technical Assistance Advisements (TAAs) of the Florida Department of
+    Revenue — binding written determinations issued by the Office of
+    Technical Assistance (s. 213.22, F.S.; Rule 12-11, F.A.C.) on the
+    taxability of specific transactions, published as public records with
+    confidential taxpayer information redacted. The Tax Law Library is a
+    SharePoint site; TAAs are enumerated through its anonymously-readable
+    Search REST API (Filename:TAA* under /TaxLaw/Documents/) and the full
+    text is read from each public PDF. No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "sharepoint_search_rest"
+  base_url: "https://floridarevenue.com"
+  endpoints:
+    search: "/TaxLaw/_api/search/query"
+    document: "/TaxLaw/Documents/TAA {id}.pdf"
+  query: "path:https://floridarevenue.com/TaxLaw/Documents/ IsDocument:1 Filename:TAA*"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/FL-TaxAdvisements/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "taa_id"
+      description: "FL TAA number (e.g. '21A-004', '96C2-121R')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "tax_type"
+      description: "Readable tax type derived from the TAA ID letter code"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (TAA number + subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisement, extracted from the published PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the body or the TAA ID year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Florida state tax guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Technical Assistance Advisements of the Florida Department of Revenue are official state-government works in the public domain under the government-edicts doctrine; published as public records per s. 213.22, F.S."
+
+notes: |
+  - Enumeration uses the standard SharePoint Search REST API at
+    /TaxLaw/_api/search/query, anonymously readable, paged via rowlimit
+    (500) + startrow. The KQL restricts to the Documents library and
+    Filename:TAA* (~2,860 TAAs). The Path property is the public PDF URL
+    (TAA filenames contain a space, URL-encoded before download); Title is
+    the advisement subject; Write is the library timestamp.
+  - Full text lives only in the PDF; extraction uses the shared
+    common.pdf_extract helper (OOM-hardened pdfplumber -> pypdf -> OCR).
+    A <200-char guard skips retracted/empty stubs (some old TAAs are a
+    one-line "retracted" notice).
+  - date is parsed from a month-name date near the top of the body, else
+    derived from the 2-digit year prefix of the TAA ID (YY<=30 -> 20YY,
+    else 19YY).
+  - A minority of older TAAs are stored under a bare-ID filename
+    (e.g. 14C1-010.pdf) without the "TAA " prefix and are not captured by
+    Filename:TAA*; this is a small completeness gap, not a blocker.
+  - Type is doctrine: TAAs are interpretive government guidance, not
+    adjudications of a contested case.
+  - Public-domain Florida state-government data.

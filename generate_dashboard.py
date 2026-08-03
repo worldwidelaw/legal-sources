@@ -208,11 +208,29 @@ def _query_neon_live(database_url):
             # is index-bound — querying the live tables directly with
             # COUNT(*) GROUP BY exceeded Neon's statement_timeout once
             # case_law crossed ~25M rows, which silently zeroed this script.
-            cur.execute("""
-                SELECT table_name, source, doc_count, min_year, max_year
-                FROM mv_discover_country_source
-            """)
-            for table, source, doc_count, min_yr, max_yr in cur.fetchall():
+            try:
+                cur.execute("""
+                    SELECT table_name, source, doc_count, min_year, max_year,
+                           latest_document_date, latest_ingested_at
+                    FROM mv_discover_country_source
+                """)
+                mv_rows = cur.fetchall()
+            except Exception as e:
+                # Backward-compatible fallback while the pipeline MV migration is
+                # rolling out. Do not fail the whole dashboard just because the
+                # freshness columns are not available yet.
+                print(f"  MV freshness columns unavailable, using legacy columns: {e}", file=sys.stderr)
+                conn.rollback()
+                cur.execute("""
+                    SELECT table_name, source, doc_count, min_year, max_year
+                    FROM mv_discover_country_source
+                """)
+                mv_rows = cur.fetchall()
+
+            for row in mv_rows:
+                table, source, doc_count, min_yr, max_yr, *freshness = row
+                latest_document_date = freshness[0] if len(freshness) > 0 else None
+                latest_ingested_at = freshness[1] if len(freshness) > 1 else None
                 if source not in lookup:
                     lookup[source] = {
                         "legislation_rows": 0,
@@ -222,6 +240,16 @@ def _query_neon_live(database_url):
                         "status": "pending",
                     }
                 lookup[source][f"{table}_rows"] = doc_count
+                if latest_document_date:
+                    latest_doc = latest_document_date.isoformat() if hasattr(latest_document_date, "isoformat") else str(latest_document_date)
+                    existing_doc = lookup[source].get("latest_indexed_document_date")
+                    if not existing_doc or latest_doc > existing_doc:
+                        lookup[source]["latest_indexed_document_date"] = latest_doc
+                if latest_ingested_at:
+                    latest_ing = latest_ingested_at.isoformat() if hasattr(latest_ingested_at, "isoformat") else str(latest_ingested_at)
+                    existing_ing = lookup[source].get("last_ingested")
+                    if not existing_ing or latest_ing > existing_ing:
+                        lookup[source]["last_ingested"] = latest_ing
                 if min_yr is not None or max_yr is not None:
                     existing = lookup[source].get("date_range")
                     if existing:
@@ -251,28 +279,6 @@ def _query_neon_live(database_url):
                     data["data_type"] = "case_law"
                 else:
                     data["data_type"] = "doctrine"
-
-            # `last_ingested` requires MAX(ingested_at) GROUP BY source on the
-            # live tables — no MV. It's best-effort: if it times out, leave
-            # the field unset rather than zero out the per-source counts that
-            # the MV already gave us.
-            try:
-                cur.execute("SET LOCAL statement_timeout = '60s'")
-                for table in ("legislation", "case_law", "doctrine"):
-                    cur.execute(f"""
-                        SELECT source, MAX(ingested_at) FROM {table} GROUP BY source
-                    """)
-                    for source, ts in cur.fetchall():
-                        if source in lookup and ts:
-                            existing = lookup[source].get("last_ingested")
-                            if existing:
-                                if ts.isoformat() > existing:
-                                    lookup[source]["last_ingested"] = ts.isoformat()
-                            else:
-                                lookup[source]["last_ingested"] = ts.isoformat()
-            except Exception as e:
-                print(f"  last_ingested query skipped: {e}", file=sys.stderr)
-                conn.rollback()
 
     except Exception as e:
         print(f"  Neon query error: {e}", file=sys.stderr)
@@ -618,6 +624,7 @@ def generate():
                 "data_type": pi.get("data_type"),
                 "data_source": pi.get("data_source"),
                 "last_ingested": pi.get("last_ingested"),
+                "latest_indexed_document_date": pi.get("latest_indexed_document_date"),
                 "date_range": pi.get("date_range"),
             }
         # Add contributors from community

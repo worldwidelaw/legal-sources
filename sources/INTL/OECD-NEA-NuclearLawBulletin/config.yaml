@@ -1,0 +1,65 @@
+source:
+  id: INTL/OECD-NEA-NuclearLawBulletin
+  name: OECD/NEA Nuclear Law Bulletin
+  country: INTL
+  url: https://www.oecd-nea.org/jcms/pl_21586/nuclear-law-bulletin-nlb
+  description: >
+    The Nuclear Law Bulletin (ISSN 1609-7378), the OECD Nuclear Energy
+    Agency's international nuclear-law journal, published free online twice a
+    year. Each issue contains topical articles by legal experts, national
+    legislative and regulatory digests, case-law notes and updates on
+    international nuclear-law instruments. Enumerated from the NLB landing and
+    archive pages; full text extracted from the free per-issue PDFs.
+
+data_model:
+  types:
+    - doctrine
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: issue_number
+      type: integer
+      required: false
+    - name: year
+      type: string
+      required: false
+    - name: pdf_url
+      type: string
+      required: false
+
+license:
+  name: "OECD Open Access (free-to-read NEA journal)"
+  url: "https://www.oecd.org/termsandconditions/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Nuclear Law Bulletin is published free-to-read by the OECD Nuclear Energy
+    Agency. OECD terms permit personal/non-commercial use and reproduction with
+    attribution; commercial redistribution requires OECD permission.
+
+schedule:
+  full_refresh: quarterly
+  update_check: monthly

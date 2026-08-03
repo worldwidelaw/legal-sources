@@ -1,0 +1,98 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — UK First-tier Tribunal (Asylum Support) Decisions
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/AsylumSupport"
+  country: "UK"
+  name: "First-tier Tribunal (Social Entitlement Chamber) — Asylum Support Decisions"
+  url: "https://www.gov.uk/asylum-support-tribunal-decisions"
+  description: |
+    Decisions of the First-tier Tribunal (Social Entitlement Chamber) — Asylum
+    Support, published on GOV.UK. The tribunal hears appeals by asylum seekers
+    and failed asylum seekers against Home Office decisions to refuse or
+    discontinue asylum support and accommodation under sections 95, 98 and 4 of
+    the Immigration and Asylum Act 1999. ~101 decisions. Full text via GOV.UK
+    Content Store API (hidden_indexable_content).
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+  endpoints:
+    search:
+      path: "/api/search.json"
+      method: "GET"
+      description: "GOV.UK Search API; filter_format=asylum_support_decision"
+    content:
+      path: "/api/content/{path}"
+      method: "GET"
+      description: "GOV.UK Content Store API; full text in details.metadata.hidden_indexable_content"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "content_id"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "content_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "reference_number"
+      type: "string"
+      role: "classification"
+    - name: "categories"
+      type: "list"
+      role: "classification"
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Open Government Licence v3.0"
+  url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Crown copyright; GOV.UK content published under OGL v3.0."
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~101 First-tier Tribunal (Asylum Support) decisions
+  - Full text in Content Store details.metadata.hidden_indexable_content
+    (born-digital, clean plain text, no OCR)
+  - Rich metadata: categories, sub_categories, judges, reference_number,
+    decision_date
+  - No authentication required
+  - Sibling of the GOV.UK finder scrapers UK/ET, UK/RPT, UK/FTT-Tax,
+    UK/TrafficCommissioner

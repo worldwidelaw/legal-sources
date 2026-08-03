@@ -1,0 +1,118 @@
+# ===================================================================
+# US/IL-LetterRulings -- Illinois Department of Revenue
+#   Private Letter Rulings (PLR) + General Information Letters (GIL)
+# ===================================================================
+# Official interpretive guidance of the Illinois Department of Revenue
+# on Illinois tax law. Published as born-digital PDFs on the Illinois
+# tax archive site (taxarchive.illinois.gov), organized into two tax
+# families (income-tax, sales-tax) and partitioned by year. Each year's
+# index page links the individual rulings at a deterministic AEM "dam"
+# path: /content/dam/.../letter-rulings/{tax-type}/{YEAR}/{DOCID}.pdf
+# (DOCID e.g. IT24-0001-PLR, ST24-0007-GIL). No JavaScript, no CAPTCHA,
+# no auth. Public domain Illinois state government works.
+# ===================================================================
+
+source:
+  id: "US/IL-LetterRulings"
+  country: "US"
+  name: "Illinois Department of Revenue — Letter Rulings"
+  url: "https://taxarchive.illinois.gov/research/legal/letter-rulings.html"
+  description: |
+    Published letter rulings of the Illinois Department of Revenue —
+    official interpretive guidance on Illinois tax law: Private Letter
+    Rulings (PLR, binding to the requesting taxpayer) and General
+    Information Letters (GIL, non-binding interpretations), covering
+    income tax and sales/use tax (2010-present). Enumerated from the
+    year-partitioned index pages on the Illinois tax archive site; each
+    ruling's PDF is at a deterministic dam path. No JavaScript, no
+    CAPTCHA, no auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://taxarchive.illinois.gov"
+  endpoints:
+    index: "/research/legal/letter-rulings/{tax_type}/{year}.html"
+    pdf: "/content/dam/soi/en/web/taxarchive/research/legal/letter-rulings/{tax_type}/{year}/{docid}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/IL-LetterRulings/{docid})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "document_number"
+      description: "IDOR ruling number (e.g. 'IT24-0001-PLR', 'ST24-0007-GIL')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "ruling_type"
+      description: "Private Letter Ruling or General Information Letter"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "tax_type"
+      description: "Tax family (Income Tax / Sales Tax)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (tax type + ruling type + number + subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the ruling from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the document head; falls back to the partition year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Illinois state tax guidance)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Letter rulings of the Illinois Department of Revenue are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - IDOR's legal-rulings library is published on the Illinois tax archive
+    site (taxarchive.illinois.gov) as year-partitioned, server-rendered
+    index pages: /research/legal/letter-rulings/{income-tax|sales-tax}/{YEAR}.html
+    (years 2010-present). The scraper iterates both tax families and each
+    year, regexing the dam PDF hrefs from the index HTML.
+  - Every ruling's PDF is at a deterministic dam URL ending in
+    {DOCID}.pdf (e.g. IT24-0001-PLR.pdf). PDFs are born-digital with a
+    clean text layer — extracted via common.pdf_extract (curl browser UA,
+    ~1 req/s). A <150-char guard auto-skips any occasional scanned/empty
+    attachment.
+  - date prefers a real "M/D/YYYY" from the document head, falling back to
+    the partition year (Jan 1) so the temporal key is set.
+  - Type is doctrine: letter rulings are interpretive government guidance,
+    not adjudications of a contested case (those go to the Illinois
+    Independent Tax Tribunal, US/IL-TaxTribunal).
+  - Public domain Illinois state government data.

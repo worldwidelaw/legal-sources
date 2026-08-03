@@ -1,0 +1,88 @@
+# ===================================================================
+# INTL/IACtHR-Advisory -- Inter-American Court of Human Rights
+#                         Advisory Opinions (Opiniones Consultivas)
+# ===================================================================
+# 32 Advisory Opinions (Series A), OC-1/82 through OC-32/25.
+# Full text from born-digital PDF (text layer, no OCR).
+# Distinct from INTL/IACtHR (contentious judgments, Series C).
+# ===================================================================
+
+source:
+  id: "INTL/IACtHR-Advisory"
+  country: "INTL"
+  name: "Inter-American Court of Human Rights — Advisory Opinions (Opiniones Consultivas)"
+  url: "https://corteidh.or.cr/opiniones_consultivas.cfm"
+  description: |
+    Advisory Opinions (Opiniones Consultivas, Series A) of the Inter-American
+    Court of Human Rights (Corte IDH), the autonomous judicial organ of the
+    Organization of American States (OAS). Advisory opinions interpret the
+    American Convention on Human Rights and other inter-American human-rights
+    treaties at the request of OAS member states and organs. Landmark opinions
+    include OC-5/85 (compulsory membership of journalists / freedom of
+    expression) and OC-32/25 (Climate Emergency and Human Rights).
+    Series A, OC-1/82 through OC-32/25. Born-digital PDFs with full text.
+    Distinct from INTL/IACtHR (contentious case judgments, Series C).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "ajax_post"
+  base_url: "https://corteidh.or.cr"
+  listing_url: "https://corteidh.or.cr/get_jurisprudencia_search_tipo.cfm"
+  document_base: "https://corteidh.or.cr/docs/opiniones/"
+
+data_model:
+  type: "case_law"
+  primary_key: "series_a_number"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "title"
+      description: "Advisory opinion citation (OC-N/YY + subject)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory opinion extracted from PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the advisory opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "series_a_number"
+      description: "Series A number (equals the OC number)"
+      type: "integer"
+      role: "identifier"
+      required: true
+
+license:
+  name: "CC BY-NC-ND 3.0"
+  url: "https://creativecommons.org/licenses/by-nc-nd/3.0/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: true
+  notes: "Matches sibling INTL/IACtHR (Corte IDH jurisprudence). Commercial use restricted; attribution required, no derivatives."
+
+notes: |
+  - AJAX POST get_jurisprudencia_search_tipo.cfm with nId_Tipo_Jurisprudencia=OC,
+    nId_estado_NUM=T, lang=es returns an HTML fragment listing all 32 opinions.
+  - Main document per opinion is the Spanish born-digital PDF
+    (docs/opiniones/seriea_{NN}_esp.pdf or _es.pdf); resumen_* summaries and
+    votos/vsa_* separate votes are excluded.
+  - OC number and issue date parsed from the PDF header
+    ("OPINIÓN CONSULTIVA OC-N/YY DE(L) DD DE MES DE YYYY").
+  - Born-digital text layer, no OCR required.

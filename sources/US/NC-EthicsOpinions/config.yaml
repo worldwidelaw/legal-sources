@@ -1,0 +1,121 @@
+# ===================================================================
+# US/NC-EthicsOpinions -- North Carolina Ethics Commission
+# Formal Advisory Opinions
+# ===================================================================
+# The formal advisory opinions of the North Carolina Ethics Commission
+# construing the State Government Ethics Act (N.C.G.S. Ch. 138A), the
+# legislative ethics provisions, and the Lobbying Law (Ch. 120C). Each
+# is the Commission's authoritative written interpretation of those
+# statutes = doctrine. Born-digital PDFs (clean text layer), enumerated
+# from the three per-series Drupal listing pages.
+# ===================================================================
+
+source:
+  id: "US/NC-EthicsOpinions"
+  country: "US"
+  name: "North Carolina Ethics Commission — Formal Advisory Opinions"
+  url: "https://ethics.nc.gov/advisory-opinions"
+  description: |
+    The formal advisory opinions of the North Carolina Ethics Commission,
+    the independent state body that administers the State Government Ethics
+    Act (N.C.G.S. Chapter 138A) and the Lobbying Law (Chapter 120C). The
+    Commission publishes three series of formal opinions, all doctrine:
+    Formal Ethics Advisory Opinions ("E-YY-NNN"), Formal Legislative
+    Advisory Opinions ("L-YY-NNN") and Formal Lobbying Advisory Opinions
+    ("LB-YY-NNN"). Each opinion is the Commission's written interpretation
+    of the ethics/lobbying statutes, adopted by the Commission and published
+    with the requester's identity edited out. Served as born-digital PDFs.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "html_listing"
+  base_url: "https://ethics.nc.gov"
+  endpoints:
+    series: "/advisory-opinions/{series-slug}"
+    document: "/media/{id}/open  |  /aos/{slug}/download?attachment"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NC-EthicsOpinions/{opinion number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number (e.g. 'E-16-001', 'L-15-003', 'LB-...')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "document_type"
+      description: "Formal Ethics | Legislative | Lobbying Advisory Opinion"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Document type + opinion number"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory opinion (born-digital PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601); parsed from the PDF body, falls back to Jan 1 of the number's year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Issuing body (North Carolina Ethics Commission)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 subdivision (US-NC)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (North Carolina state government edict / public record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Formal advisory opinions of the North Carolina Ethics Commission are official public records of a North Carolina state agency interpreting statute (government-edict works), adopted by the Commission and published for public use under the State Government Ethics Act (N.C.G.S. Ch. 138A)."
+
+notes: |
+  - Index: ethics.nc.gov is Drupal. Each of the three formal-opinion series
+    has a listing page /advisory-opinions/{formal-ethics|formal-legislative|
+    formal-lobbying}-advisory-opinions whose rows are anchors whose text is the
+    opinion number ("E-15-004") and whose href is the opinion PDF, either a
+    media entity /media/{id}/open or /aos/{slug}/download?attachment.
+  - ~80 distinct formal opinions across the three series (the legislative and
+    lobbying opinions are co-listed; dedup is by opinion number).
+  - Full text: born-digital PDF text layer via common.pdf_extract
+    (opendataloader -> pdfplumber -> pypdf -> OCR fallback). The <200-char
+    guard skips any unreadable scan.
+  - Year derived from the 2-digit number token; issue date parsed from the
+    first "Month DD, YYYY" in the body, falling back to Jan 1 of that year.
+  - UA: ethics.nc.gov serves a browser User-Agent fine (no CAPTCHA/JS for the
+    listing HTML or the PDF downloads).

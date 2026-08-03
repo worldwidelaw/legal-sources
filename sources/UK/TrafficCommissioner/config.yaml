@@ -1,0 +1,101 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — UK Traffic Commissioners Regulatory Decisions
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/TrafficCommissioner"
+  country: "UK"
+  name: "Traffic Commissioners for Great Britain — Regulatory Decisions"
+  url: "https://www.gov.uk/traffic-commissioner-regulatory-decisions"
+  description: |
+    Regulatory decisions of the Traffic Commissioners for Great Britain,
+    published on GOV.UK. The Traffic Commissioners are the independent
+    regulators of the heavy goods vehicle (HGV) and public service vehicle
+    (PSV / bus & coach) industries and of local bus service registration.
+    Their quasi-judicial decisions cover operator licence revocations,
+    curtailments, suspensions, formal warnings, transport-manager repute
+    findings, disqualifications and conditions imposed on licences.
+    ~185 decisions. Full text via GOV.UK Content Store API (body field).
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 2
+  burst: 5
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "json_api"
+  base_url: "https://www.gov.uk"
+  endpoints:
+    search:
+      path: "/api/search.json"
+      method: "GET"
+      description: "GOV.UK Search API; filter_format=traffic_commissioner_regulatory_decision"
+    content:
+      path: "/api/content/{path}"
+      method: "GET"
+      description: "GOV.UK Content Store API; full text in details.body"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "content_id"
+  update_strategy: "upsert"
+  versioning: "public_updated_at"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "content_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "outcome_type"
+      type: "list"
+      role: "classification"
+    - name: "decision_subject"
+      type: "list"
+      role: "classification"
+    - name: "regions"
+      type: "list"
+      role: "classification"
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Open Government Licence v3.0"
+  url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Crown copyright; GOV.UK content published under OGL v3.0."
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - ~185 regulatory decisions (Great Britain traffic areas)
+  - Full text in Content Store details.body (hidden_indexable_content is empty
+    for this format) — HTML stripped to clean plain text
+  - Rich metadata: case_type, decision_subject, outcome_type, regions
+  - No authentication required
+  - Sibling of the GOV.UK finder scrapers UK/ET, UK/RPT, UK/FTT-Tax

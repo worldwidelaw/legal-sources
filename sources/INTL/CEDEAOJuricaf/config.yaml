@@ -1,0 +1,35 @@
+source:
+  id: INTL/CEDEAOJuricaf
+  country: INTL
+  name: "ECOWAS Community Court of Justice (CEDEAO) Decisions (Juricaf)"
+  url: https://juricaf.org/recherche/+/facet_pays:CEDEAO
+  data_types:
+    - case_law
+  language: fr
+license:
+  name: "ODbL 1.0 (Juricaf/AHJUCAF)"
+  url: https://opendatacommons.org/licenses/odbl/1-0/
+  commercial_use: true
+  attribution_required: true
+  share_alike: true
+  no_derivatives: false
+  notes: "ECOWAS Community Court of Justice decisions published on Juricaf by AHJUCAF."
+fetcher:
+  type: api_json
+  pagination: page_number
+  rate_limit: 2.0
+schema:
+  key_fields:
+    - name: _id
+      required: true
+      type: string
+  date_fields:
+    - date
+    - _fetched_at
+  text_fields:
+    - text
+    - title
+notes: >
+  ECOWAS Community Court of Justice (Cour de justice de la CEDEAO) decisions
+  via Juricaf. Full judgment text (often trilingual EN/FR/PT). ODbL 1.0.
+  Reachable full-text alternative to INTL/ECOWASCJ (africanlii.org).

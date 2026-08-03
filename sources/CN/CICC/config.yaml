@@ -1,0 +1,46 @@
+fetch:
+  base_url: https://cicc.court.gov.cn
+  method: html_wzws
+  rate_limit_seconds: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: process_number
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+license:
+  name: Public Domain (Government)
+  url: http://cicc.court.gov.cn/
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Judgments and typical cases published by the Supreme People's Court of China (CICC division). Chinese court judgments are official state legal texts in the public domain."
+source:
+  auth: none
+  country: CN
+  data_types:
+  - case_law
+  description: 'China International Commercial Court (国际商事法庭, CICC) — a special
+    division of the Supreme People''s Court hearing cross-border commercial disputes.
+    Full judgment text (判决书/裁判文书) plus guiding/typical cases (典型案例), server-rendered
+    HTML at cicc.court.gov.cn. Access requires the WZWS two-step (first request 302s
+    and sets wzws_cid cookie, retry returns 200). Small but high-value corpus.'
+  id: CN/CICC
+  language: zh
+  name: China International Commercial Court (CICC)
+  url: https://cicc.court.gov.cn/

@@ -1,0 +1,109 @@
+# ===================================================================
+# US/NV-SBE -- Nevada State Board of Equalization: Notices of Decision
+# ===================================================================
+# Full text of the adjudicative Notices of Decision issued by the Nevada
+# State Board of Equalization (SBE) -- Nevada's central property-tax appeal
+# board, which hears petitions for review of property valuations (county
+# assessor v. taxpayer, and direct taxpayer appeals) under NRS ch. 361.
+# Each decision resolves a specific contested valuation case => case_law.
+# Public Nevada state-government works (government-edicts, public domain).
+#
+# Source: tax.nv.gov (Nevada Department of Taxation, WordPress). The legacy
+# /Boards/State_Board_of_Equalization_Forms/SBE_Decision_Letters/ tree was
+# retired in the WordPress migration (those paths 302 to the homepage);
+# decisions are now born-digital PDF attachments under /wp-content/uploads/
+# YYYY/MM/, enumerated via the WordPress REST media API
+# (/wp-json/wp/v2/media?media_type=application&per_page=100&page=N). Each
+# SBE Notice of Decision attachment has a slug that is its case number
+# (YY-NNN). The scraper sweeps all media pages, keeps case-number slugs,
+# downloads each PDF (curl + Chrome UA; the CDN 403s bare requests UAs) and
+# extracts its born-digital text layer. No JavaScript, no CAPTCHA, no auth.
+# ===================================================================
+
+source:
+  id: "US/NV-SBE"
+  country: "US"
+  name: "Nevada State Board of Equalization — Notices of Decision"
+  url: "https://tax.nv.gov/boards-meetings/"
+  description: |
+    Notices of Decision of the Nevada State Board of Equalization — the
+    state property-tax appeal board that reviews property valuations under
+    NRS ch. 361 (county assessor v. taxpayer and direct taxpayer appeals).
+    Each decision resolves a specific contested valuation case (case_law).
+    Enumerated via the WordPress REST media API and filtered to case-number
+    slugs; full text extracted from each born-digital PDF.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "wp_rest_media"
+  base_url: "https://tax.nv.gov"
+  endpoints:
+    media: "/wp-json/wp/v2/media?media_type=application&per_page=100&page={page}"
+
+data_model:
+  type: "case_law"
+  primary_key: "case_no"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NV-SBE/{case_no})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_no"
+      description: "SBE case number (YY-NNN)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Case caption / parties parsed from the decision"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the decision PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision/hearing date (ISO 8601) parsed from the body; falls back to media upload date or case-year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Nevada state agency document)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Notices of Decision of the Nevada State Board of Equalization are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery: sweep GET /wp-json/wp/v2/media?media_type=application&
+    per_page=100&page=0..N; keep attachments whose slug matches the SBE
+    case-number pattern YY-NNN (optionally with a lowercase suffix) and
+    whose guid is a .pdf under /wp-content/uploads/.
+  - Full text via common.pdf_extract on the born-digital PDF text layer;
+    PDFs and the wp-json API return 200 only for a browser UA (bare
+    requests UAs get 403), so bytes are fetched via curl + Chrome UA.
+  - Decision date parsed from the body (Month D, YYYY / MM/DD/YYYY), with
+    the media upload date and case-year (20YY) as fallbacks.
+  - The legacy /Boards/.../SBE_Decision_Letters/ directory tree is dead
+    (302 -> homepage) after the site's WordPress migration.
+  - Public domain Nevada state-government data.

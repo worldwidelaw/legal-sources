@@ -1,0 +1,87 @@
+# ===================================================================
+# INTL/IACtHR-ProvisionalMeasures -- Inter-American Court of Human
+#   Rights: Provisional Measures (Medidas Provisionales) resolutions
+# ===================================================================
+# ~779 resoluciones ordering, monitoring or lifting provisional
+# measures. Full text from born-digital PDF (text layer, no OCR).
+# Distinct from INTL/IACtHR (Series C judgments) and
+# INTL/IACtHR-Advisory (Series A opinions).
+# ===================================================================
+
+source:
+  id: "INTL/IACtHR-ProvisionalMeasures"
+  country: "INTL"
+  name: "Inter-American Court of Human Rights — Provisional Measures (Medidas Provisionales)"
+  url: "https://corteidh.or.cr/medidas_provisionales.cfm"
+  description: |
+    Provisional-measures resolutions (Resoluciones de Medidas Provisionales) of
+    the Inter-American Court of Human Rights (Corte IDH), the autonomous judicial
+    organ of the Organization of American States (OAS). Under Article 63(2) of
+    the American Convention, the Court orders provisional measures in cases of
+    extreme gravity and urgency to avoid irreparable harm to persons; it issues
+    resolutions granting, monitoring, expanding, or lifting such measures. These
+    resolutions are binding on the states concerned = case_law. ~779 resolutions.
+    Born-digital PDFs with full text (Spanish). Distinct from INTL/IACtHR
+    (contentious judgments, Series C) and INTL/IACtHR-Advisory (Series A).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 0.5
+  burst: 2
+
+api:
+  type: "ajax_post"
+  base_url: "https://corteidh.or.cr"
+  listing_url: "https://corteidh.or.cr/get_jurisprudencia_search_tipo.cfm"
+  document_base: "https://corteidh.or.cr/docs/medidas/"
+
+data_model:
+  type: "case_law"
+  primary_key: "resolution_id"
+  update_strategy: "upsert"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "title"
+      description: "Resolution citation (case/matter name + resolution type)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the resolution extracted from PDF/DOCX"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the resolution was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "resolution_id"
+      description: "Document stem identifier (e.g. urrutia_se_02)"
+      type: "string"
+      role: "identifier"
+      required: true
+
+license:
+  name: "CC BY-NC-ND 3.0"
+  url: "https://creativecommons.org/licenses/by-nc-nd/3.0/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: true
+  notes: "Matches sibling INTL/IACtHR (Corte IDH jurisprudence). Commercial use restricted; attribution required, no derivatives."
+
+notes: |
+  - AJAX POST get_jurisprudencia_search_tipo.cfm with nId_Tipo_Jurisprudencia=MP,
+    nId_estado_NUM=T, lang=es returns an HTML fragment listing all resolutions.
+  - Main document per resolution is the born-digital PDF under docs/medidas/
+    (prefer PDF, fall back to DOCX); votos/vsa_* separate votes are excluded.
+  - Issue date parsed from the PDF header ("... DE DD DE MES DE YYYY").
+  - Born-digital text layer, no OCR required.

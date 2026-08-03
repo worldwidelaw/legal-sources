@@ -1,0 +1,119 @@
+# ===================================================================
+# US/WA-BTA -- Washington State Board of Tax Appeals (Decisions)
+# ===================================================================
+# Full text of the decisions of the Washington State Board of Tax
+# Appeals (BTA) — Washington's independent, quasi-judicial administrative
+# forum (RCW 82.03) that hears appeals from county Boards of Equalization
+# and the Washington Department of Revenue: property-tax valuation and
+# exemption, excise/use tax, forest-land, and related state and local tax
+# disputes (taxpayer v. Department of Revenue / county assessor). Each
+# Final Decision or Order resolves a specific tax controversy, so the
+# corpus is case_law.
+#
+# The Board publishes its decisions as born-digital text-layer PDFs served
+# from apps.bta.wa.gov under "/Decision PDF/..." folders (numeric docket
+# ranges plus a "Formal Dockets" folder). The full corpus (~19,500 docs)
+# is indexed by a dtSearch Web engine at /dtSearch/dtisapi6.dll; a single
+# POST (cmd=search) using a universal term ("board") with a high maxFiles
+# returns the direct PDF URL of every indexed decision. No JavaScript, no
+# CAPTCHA, no auth. Decisions of a Washington state agency are public
+# domain government works.
+# ===================================================================
+
+source:
+  id: "US/WA-BTA"
+  country: "US"
+  name: "Washington State Board of Tax Appeals — Decisions"
+  url: "https://bta.wa.gov/index.php/decisions-3/"
+  description: |
+    Decisions of the Washington State Board of Tax Appeals (BTA),
+    Washington's independent quasi-judicial administrative forum (RCW
+    82.03) for appeals from county Boards of Equalization and the
+    Washington Department of Revenue (property-tax valuation/exemption,
+    excise/use tax, forest-land and related state/local tax disputes;
+    taxpayer v. Department of Revenue / county assessor). Born-digital
+    text-layer decision PDFs served from apps.bta.wa.gov and indexed by a
+    dtSearch Web engine; the full ~19,500-document corpus is enumerable
+    via a single dtSearch query. No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "dtsearch"
+  base_url: "https://apps.bta.wa.gov"
+  endpoints:
+    search: "/dtSearch/dtisapi6.dll"
+    form: "/dtSearch_form.html"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/WA-BTA/{pdf-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket"
+      description: "Board docket number parsed from the PDF filename (e.g. '19-069' or '94095')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "case_name"
+      description: "Appellant / case caption parsed from the PDF first-page caption (fallback: dtSearch index title)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Synthesized caption (appellant v. Washington Dept. of Revenue, BTA Docket No. N)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601): latest in-document 'Month D, YYYY' (fallback: dtSearch file date)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Washington state agency decision)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Washington State Board of Tax Appeals are official quasi-judicial government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Discovery: a single POST to /dtSearch/dtisapi6.dll with cmd=search,
+    request=board (a token present in every decision), the live "Decision
+    PDF" index alias, and maxFiles=25000 returns the direct PDF URL of all
+    ~19,476 indexed decisions in one result page (~15 MB). The result rows
+    also carry the indexed Title and file Date, but the decision date is
+    derived from the PDF text (latest 'Month D, YYYY'), since the dtSearch
+    file date is the re-indexing date for older documents.
+  - The index fingerprint in the dtSearch alias can change if the index is
+    rebuilt; the scraper re-reads the alias from the live /dtSearch_form.html
+    at runtime and falls back to the known value.
+  - PDFs live under apps.bta.wa.gov/Decision%20PDF/{range|Formal%20Dockets}/
+    and are born-digital text layers; extracted via common.pdf_extract.
+  - Public domain Washington State government data.

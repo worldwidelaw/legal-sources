@@ -1,0 +1,120 @@
+# ===================================================================
+# US/WI-WERC -- Wisconsin Employment Relations Commission Decisions
+# ===================================================================
+# Labor-relations decisions of the Wisconsin Employment Relations
+# Commission (WERC), the state's quasi-judicial agency that administers
+# Wisconsin's labor-relations statutes -- the Municipal Employment
+# Relations Act (MERA), the State Employment Labor Relations Act
+# (SELRA), and the Wisconsin Employment Peace Act (WEPA). The Commission
+# decides representation / election petitions, unit clarifications,
+# prohibited-practice (unfair-labor-practice) complaints, declaratory
+# rulings, and related contested cases. Each decision resolves a
+# specific case = case_law, and they are official Wisconsin state-
+# government works in the public domain (government edicts).
+#
+# BUILD RECIPE (no auth, no CAPTCHA): decisions are indexed by date
+# range on a set of HTML tables linked from
+# https://werc.wi.gov/labor-relations-decisions-2/ , covering
+# July 1989 to present:
+#   /DOAroot/decisions_july-89_dec-98.htm ... decisions_pdf_2014_on.htm
+# Each index page is an HTML table, one row per decision:
+#   Date Issued | Decision Docket Identification | Decision Type |
+#   Decision Author | PDF Filename
+# The filename (older pages hyperlink it, e.g. "29094-A"; modern pages
+# show plain text "41400-A.pdf") names a born-digital decision PDF at
+# https://werc.wi.gov/decisions/{filename}. The scraper parses every
+# index table (dates in MM/DD/YYYY on modern pages, MM-DD-YY on older
+# ones), downloads each PDF, and extracts full text with
+# common.pdf_extract (older scans go through OCR). ~2,835 decisions.
+# NOTE: the /decisions/ directory listing 403s, but individual PDFs
+# under it serve 200; index pages must be reached via the
+# labor-relations-decisions-2 landing (the bare /decisions/ path 403s).
+# ===================================================================
+
+source:
+  id: "US/WI-WERC"
+  country: "US"
+  name: "Wisconsin Employment Relations Commission — Decisions"
+  url: "https://werc.wi.gov/labor-relations-decisions-2/"
+  description: |
+    Labor-relations decisions of the Wisconsin Employment Relations
+    Commission (WERC). WERC administers Wisconsin's public- and
+    private-sector labor-relations statutes -- the Municipal Employment
+    Relations Act (MERA), the State Employment Labor Relations Act
+    (SELRA), and the Wisconsin Employment Peace Act (WEPA) -- deciding
+    representation and election petitions, unit clarifications,
+    prohibited-practice (unfair-labor-practice) complaints, declaratory
+    rulings, and related contested cases. Each decision resolves a
+    specific contested case = case_law. Enumerated from the Commission's
+    date-range HTML decision indexes; date issued, docket caption, and
+    the full decision text (from the born-digital PDF) are captured.
+    ~2,835 decisions, July 1989–present. No CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://werc.wi.gov"
+  endpoints:
+    index_list: "/labor-relations-decisions-2/"
+    index_page: "/DOAroot/decisions_pdf_{range}.htm"
+    decision_pdf: "/decisions/{filename}"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/WI-WERC/{decision-number-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "WERC decision number (from the PDF filename, e.g. '41400-A')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Docket caption / decision identification (from the index row)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (PDF extract; OCR for older scans)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date issued (ISO 8601), from the index 'Date Issued' column"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the decision PDF on werc.wi.gov"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions of the Wisconsin Employment Relations Commission are
+    official works of Wisconsin state government (edicts of a quasi-
+    judicial government body) and are not subject to copyright under the
+    government-edicts doctrine. Free to use, including commercially.

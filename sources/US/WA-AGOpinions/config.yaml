@@ -1,0 +1,85 @@
+# ===================================================================
+# US/WA-AGOpinions -- Washington State Attorney General Opinions
+# ===================================================================
+# Full text of formal opinions issued by the Washington State Attorney
+# General. These are official state legal interpretations (doctrine).
+# Published openly as HTML at atg.wa.gov/ago-opinions.
+# No authentication required. Public government data.
+# ===================================================================
+
+source:
+  id: "US/WA-AGOpinions"
+  country: "US"
+  name: "Washington State Attorney General Opinions"
+  url: "https://www.atg.wa.gov/ago-opinions"
+  description: |
+    Formal opinions ("AGOs") issued by the Washington State Office of the
+    Attorney General. Each opinion answers a legal question posed by a
+    public official and constitutes an authoritative (advisory) state legal
+    interpretation. Full text rendered inline in HTML. Coverage from 1949
+    to present via per-year indexes.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.atg.wa.gov"
+  endpoints:
+    year_index: "/ago-opinions/year/{year}"
+    detail: "/ago-opinions/{slug}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "opinion_number"
+
+schema:
+  total_fields: 7
+  key_fields:
+    - name: "opinion_number"
+      description: "Official AG opinion number (e.g., 'AGO 2024 No. 4')"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Opinion title (subject of the question presented)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion extracted from the HTML body"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the opinion was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Washington)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Washington Attorney General opinions are official state government works in the public domain."
+
+notes: |
+  - Formal AG opinions ("AGOs") at atg.wa.gov/ago-opinions
+  - Per-year indexes at /ago-opinions/year/{YYYY}, 1949-present (~10/year)
+  - Detail pages /ago-opinions/{slug}; full text rendered inline in the
+    `container no-sidebars` region (HTML, no PDFs)
+  - AGO number parsed from page text; date from <time datetime>
+  - Public domain Washington government data

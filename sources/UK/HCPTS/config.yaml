@@ -1,0 +1,77 @@
+# UK/HCPTS — Health and Care Professions Tribunal Service — Hearing decisions.
+#
+# Source: Health and Care Professions Tribunal Service (HCPTS), the fitness to
+#         practise adjudication service of the Health and Care Professions
+#         Council (HCPC).
+# URL: https://www.hcpts-uk.org/hearings/search/
+# Data type: case_law  (UK statutory professional-regulator tribunal — distinct
+#            from UK/GMC doctors, UK/SDT solicitors, UK/BTAS barristers)
+# Auth: none
+#
+# HCPC regulates 15 health & care professions (paramedics, physiotherapists,
+# dietitians, occupational therapists, radiographers, chiropodists/podiatrists,
+# biomedical scientists, practitioner psychologists, etc.). HCPTS panels sit
+# under the Health and Social Work Professions Order 2001 and publish one
+# decision page per registrant hearing at
+# https://www.hcpts-uk.org/hearings/hearings/{year}/{month}/{slug}/ — final
+# hearings, interim order applications/reviews and substantive order reviews.
+# Each page is clean server-rendered HTML: a metadata block (Profession /
+# Registration Number / Hearing Type / Date / Panel / Outcome) plus tabbed
+# content divs holding the FULL allegation, the panel's reasoned determination
+# (often 10k-40k chars for final hearings) and the order made. Born-digital
+# HTML, no OCR. The complete catalogue is enumerated from sitemap.xml; some
+# entries are unpublished/removed (fixed error page) and are skipped.
+#
+# Total: ~3,000+ full-text decisions (2024-present in the live sitemap).
+
+source:
+  id: UK/HCPTS
+  name: Health and Care Professions Tribunal Service (HCPTS) — Hearing Decisions
+  country: UK
+  data_types:
+    - case_law
+  url: https://www.hcpts-uk.org/hearings/search/
+  language: en
+  auth: none
+  license: custom-terms
+
+license:
+  name: "HCPTS / HCPC website terms (no explicit open licence stated)"
+  url: "https://www.hcpts-uk.org/terms-of-use/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    HCPTS decisions are public fitness-to-practise adjudication records
+    published by the HCPC under its Publications Policy. The site states no
+    explicit open licence (Crown copyright applies to the underlying records),
+    so commercial re-use is conservatively flagged per project policy,
+    consistent with the sibling UK professional-regulator tribunal sources
+    (UK/GMC, UK/SDT, UK/BTAS).
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: url
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - registrant
+    - profession
+    - hearing_type
+    - outcome
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.5
+  estimated_total: 3277
+  sample_count: 15

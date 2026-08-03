@@ -1,0 +1,122 @@
+# ===================================================================
+# US/NY-WCB -- New York Workers' Compensation Board — Board Decisions
+# ===================================================================
+# Openly-published decisions of the New York State Workers' Compensation
+# Board, the quasi-judicial agency that adjudicates workers'-compensation,
+# disability-benefits and paid-family-leave claims under the New York
+# Workers' Compensation Law. On administrative appeal from a Workers'
+# Compensation Law Judge, a three-member Board Panel (and, on Full Board
+# Review, the entire Board) issues a written Memorandum of Decision
+# resolving the contested case = case_law. These are official New York
+# state-government works in the public domain (government edicts).
+#
+# BUILD RECIPE (no auth, no CAPTCHA): two openly-browsable decision sets
+# on wcb.ny.gov:
+#   * "Select Board Panel Decisions" — an index at
+#     /content/main/Decisions/board-panel-decisions.jsp linking one
+#     server-rendered HTML page per decision under
+#     /content/main/Decisions/board-panel-decisions/{Matter...}.jsp ;
+#     the full decision body is inside <div id="mainContent">.
+#   * "Significant Full Board Decisions" — an index at
+#     /content/main/Decisions/board-decisions.jsp linking born-digital
+#     decision PDFs under /content/main/Decisions/{YYYYMon}/*.pdf .
+# The Board's complete corpus is served only through the case-number-keyed
+# "eCase" system (not openly enumerable); these curated Board Panel and
+# Full Board decision sets are the openly-published full-text decisions.
+# ===================================================================
+
+source:
+  id: "US/NY-WCB"
+  country: "US"
+  name: "New York Workers' Compensation Board — Board Decisions"
+  url: "https://www.wcb.ny.gov/content/main/Decisions/board-panel-decisions.jsp"
+  description: |
+    Openly-published decisions of the New York State Workers' Compensation
+    Board (WCB). On administrative appeal from a Workers' Compensation Law
+    Judge, a three-member Board Panel — and, on Mandatory or discretionary
+    Full Board Review, the entire Board — issues a written Memorandum of
+    Decision resolving the contested workers'-compensation, disability-
+    benefits or paid-family-leave case. Each decision resolves a specific
+    contested case = case_law. Captured from the Board's "Select Board
+    Panel Decisions" (per-decision HTML pages) and "Significant Full Board
+    Decisions" (born-digital PDFs) indexes; matter caption, WCB case
+    number, NY Wrk Comp citation, decision date and full decision text are
+    captured. No CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.wcb.ny.gov"
+  endpoints:
+    panel_index: "/content/main/Decisions/board-panel-decisions.jsp"
+    fullboard_index: "/content/main/Decisions/board-decisions.jsp"
+
+data_model:
+  type: "case_law"
+  primary_key: "record_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable id (US/NY-WCB/{matter-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "record_id"
+      description: "Matter slug derived from the decision page/PDF name"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Matter caption (e.g. 'Matter of Postmates Inc.')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (mainContent HTML or PDF extract)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "case_number"
+      description: "WCB case number (e.g. 'G1917469'), parsed from the body"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "citation"
+      description: "NY Wrk Comp neutral citation (e.g. '2019 NY Wrk Comp G1917469')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the decision body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Link to the decision page or PDF on wcb.ny.gov"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (U.S. state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Decisions of the New York State Workers' Compensation Board are
+    official works of New York state government (edicts of a quasi-judicial
+    government body) and are not subject to copyright under the government-
+    edicts doctrine. Free to use, including commercially.

@@ -1,0 +1,113 @@
+# ===================================================================
+# US/GA-EthicsOpinions -- Georgia Government Transparency and Campaign
+# Finance Commission (formerly State Ethics Commission) -- Advisory Opinions
+# ===================================================================
+# Formal advisory opinions issued by the Georgia Government Transparency
+# and Campaign Finance Commission construing the Georgia Government
+# Transparency and Campaign Finance Act (O.C.G.A. Title 21, ch. 5) and the
+# Commission's rules. An advisory opinion is the Commission's written
+# interpretation of those statutes, requested by a candidate, public
+# officer, committee, lobbyist or agency = doctrine. Born-digital HTML
+# (WordPress REST API), no OCR. Public record of a Georgia state agency,
+# spanning 1987-present.
+# ===================================================================
+
+source:
+  id: "US/GA-EthicsOpinions"
+  country: "US"
+  name: "Georgia Government Transparency and Campaign Finance Commission — Advisory Opinions"
+  url: "https://ethics.ga.gov/category/legal/advisory-opinions/"
+  description: |
+    Formal advisory opinions of the Georgia Government Transparency and
+    Campaign Finance Commission (formerly the Georgia State Ethics
+    Commission) interpreting the Georgia Government Transparency and
+    Campaign Finance Act (O.C.G.A. Title 21, ch. 5) — campaign finance,
+    financial disclosure, lobbyist registration and conflicts of interest
+    — and the Commission's administrative rules. The Commission's site is
+    WordPress; the "Advisory Opinions" category (id 23) enumerates the full
+    corpus (~90 opinions, 1987-present) through the public WP REST API, and
+    each post's content.rendered carries the full born-digital opinion text
+    inline. All opinions are doctrine.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "wordpress_rest"
+  base_url: "https://ethics.ga.gov"
+  endpoints:
+    posts: "/wp-json/wp/v2/posts?categories=23&per_page=100"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/GA-EthicsOpinions/AO-{YYYY-NN})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Advisory opinion number (e.g. 'Advisory Opinion 2023-01')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion caption (e.g. 'Georgia Advisory Opinion 2023-01')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory opinion (WP content.rendered, HTML stripped)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), first 'Month DD, YYYY' in the body; falls back to Jan 1 of the opinion year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Issuing body (Georgia Government Transparency and Campaign Finance Commission)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (Georgia state government edict / public record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Advisory opinions of the Georgia Government Transparency and Campaign Finance Commission are official public records of a Georgia state agency interpreting statute; government-edict works, published for public use."
+
+notes: |
+  - Index + full text: the site is WordPress. The "Advisory Opinions"
+    category is id 23. GET /wp-json/wp/v2/posts?categories=23&per_page=100
+    returns every opinion post in one page; content.rendered holds the full
+    born-digital opinion text inline (the lead "PDF Copy of the Advisory
+    Opinion" link line is stripped).
+  - Opinion number parsed from title.rendered ("Advisory Opinion: 2023-01").
+    Dedup by number keeping the longest body — a few posts are duplicated
+    re-publishes (e.g. duplicated-advisory-opinion-2023-02-*).
+  - Date: first "Month DD, YYYY" in the body (issue date); falls back to
+    Jan 1 of the opinion year when the body has no explicit date.
+  - UA: ethics.ga.gov serves a browser User-Agent fine (no CAPTCHA/JS).
+  - All advisory opinions are doctrine. The Commission also issues
+    enforcement orders / consent decrees — a separate document class not
+    covered here.

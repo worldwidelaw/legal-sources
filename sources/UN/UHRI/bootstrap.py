@@ -211,9 +211,11 @@ class UHRIScraper(BaseScraper):
                 except json.JSONDecodeError:
                     break
 
+                # Yield the RAW record — the framework calls normalize() once.
+                # Use normalize() here only as a validity gate (drops empty text).
                 normalized = self.normalize(record)
                 if normalized:
-                    yield normalized
+                    yield record
                     count += 1
                     logger.info(f"  [{count}/{sample_limit}] {normalized['symbol']} — {normalized['countries']}")
 
@@ -234,9 +236,10 @@ class UHRIScraper(BaseScraper):
             logger.info(f"Parsed {total:,} records, normalizing...")
             count = 0
             for i, record in enumerate(records):
-                normalized = self.normalize(record)
-                if normalized:
-                    yield normalized
+                # Yield RAW; the framework normalizes once. normalize() here is
+                # just a validity gate (skips records with no AnnotationId/text).
+                if self.normalize(record):
+                    yield record
                     count += 1
                 if (i + 1) % 10000 == 0:
                     logger.info(f"  Progress: {i+1:,}/{total:,} processed, {count:,} yielded")
@@ -247,9 +250,12 @@ class UHRIScraper(BaseScraper):
         """Fetch records updated since a given date."""
         since_dt = datetime.fromisoformat(since)
         for record in self.fetch_all():
-            if record.get("date"):
+            # fetch_all yields RAW records; derive the date via normalize().
+            normalized = self.normalize(record)
+            date_str = normalized.get("date") if normalized else None
+            if date_str:
                 try:
-                    rec_dt = datetime.fromisoformat(record["date"])
+                    rec_dt = datetime.fromisoformat(date_str)
                     if rec_dt >= since_dt:
                         yield record
                 except (ValueError, TypeError):
@@ -278,7 +284,12 @@ def main():
         sample_dir.mkdir(exist_ok=True)
 
         count = 0
-        for record in scraper.fetch_all(sample=args.sample):
+        for raw in scraper.fetch_all(sample=args.sample):
+            # fetch_all yields RAW records (framework contract); normalize for
+            # the on-disk sample so it matches what ingestion will store.
+            record = scraper.normalize(raw)
+            if not record:
+                continue
             out_path = sample_dir / f"{record['_id'][:50]}.json"
             with open(out_path, "w", encoding="utf-8") as f:
                 json.dump(record, f, ensure_ascii=False, indent=2)

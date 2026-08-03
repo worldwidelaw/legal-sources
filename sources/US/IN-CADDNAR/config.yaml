@@ -1,0 +1,126 @@
+# ===================================================================
+# US/IN-CADDNAR -- Indiana Natural Resources Commission decisions
+#   (CADDNAR — the NRC's official reporter of administrative decisions)
+# ===================================================================
+# Administrative decisions of the Indiana Natural Resources Commission
+# (NRC), collected in CADDNAR. An Administrative Law Judge of the Office
+# of Administrative Law Proceedings (OALP) hears an appeal of a
+# Department of Natural Resources action (floodway construction permits,
+# surface-coal-mining reclamation, public-freshwater-lake disputes, oil
+# & gas, fish & wildlife, boating, state-park matters, etc.) and issues
+# Findings of Fact, Conclusions of Law and a Final Order resolving that
+# specific contested case = case_law. Distinct from US/IN-OEA (IDEM
+# environmental final orders) though published by the same office (OALP).
+# Enumerated from the CADDNAR Citation Index PDF
+# (in.gov/nrc/files/caddnar_index.pdf), with each decision's full text a
+# standalone born-digital HTML document at
+# in.gov/oalp/files/decisions/dnr/{cause}.v{vol}.html. No JavaScript, no
+# CAPTCHA, no auth. Public domain Indiana state government works
+# (government edicts).
+# ===================================================================
+
+source:
+  id: "US/IN-CADDNAR"
+  country: "US"
+  name: "Indiana Natural Resources Commission Decisions (CADDNAR)"
+  url: "https://www.in.gov/oalp/final-decisions/dnr/caddnar/"
+  description: |
+    Administrative decisions of the Indiana Natural Resources Commission
+    (NRC), the state's reviewing body for appeals of Department of
+    Natural Resources actions, collected in CADDNAR (the NRC's official
+    decisional reporter). An OALP Administrative Law Judge issues
+    Findings of Fact, Conclusions of Law and a Final Order resolving a
+    specific natural-resources contested case = case_law. Enumerated
+    from the CADDNAR Citation Index PDF (Volumes 1-17, 1977-present);
+    each decision's full text is a born-digital standalone HTML document
+    at in.gov/oalp/files/decisions/dnr/{cause}.v{vol}.html (some served
+    as .htm, Windows-1252 encoded). No JavaScript, no CAPTCHA, no auth.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.in.gov"
+  endpoints:
+    index: "/nrc/files/caddnar_index.pdf"
+    document: "/oalp/files/decisions/dnr/{cause}.v{vol}.html"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/IN-CADDNAR/{cause}-v{volume})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "cause_number"
+      description: "NRC/OALP cause number (e.g. '77-003W', '22-036W')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "caption"
+      description: "Case caption / party names (e.g. 'Historic Fort Wayne v. DNR')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "citation"
+      description: "CADDNAR citation (e.g. '1 CADDNAR 1 (1978)')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "volume"
+      description: "CADDNAR volume number (1-17)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "date"
+      description: "Decision date (ISO 8601; body date, else volume-index year Jan 1)"
+      type: "string"
+      role: "temporal_key"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (Findings, Conclusions, Order)"
+      type: "string"
+      role: "content"
+      required: true
+
+license:
+  name: "Public Domain (US Government Work — Indiana state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Indiana Natural Resources Commission (CADDNAR) are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The CADDNAR Citation Index PDF (in.gov/nrc/files/caddnar_index.pdf)
+    is a born-digital table of every decision: CAUSE# CAPTION YEAR ALJ
+    VOLUME CITE LAST-PG (~761 rows, Volumes 1-17, 1977-2024). Parsed
+    row-by-row; deduped by (cause, volume).
+  - Each decision's full text is a standalone Word-to-HTML export at
+    in.gov/oalp/files/decisions/dnr/{cause}.v{vol}.html (lower-cased
+    cause). Some are served as .htm (the .html name returns an Apache
+    content-negotiation HTTP 300); the scraper falls back to .htm and
+    decodes utf-8 -> cp1252. Body sliced from the "CADDNAR [CITE: ...]"
+    marker; a <200-char guard skips empties.
+  - date prefers a real "Month D, YYYY" from the decision body, falling
+    back to the volume-index year (Jan 1) so the temporal key is set.
+  - Sibling to US/IN-OEA (IDEM environmental final orders). Supplemental
+    per-cause variants (e.g. "(Stay)" orders that share a cause+volume)
+    are not separately enumerated by the index and may be omitted.

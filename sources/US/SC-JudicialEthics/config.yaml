@@ -1,0 +1,109 @@
+# ===================================================================
+# US/SC-JudicialEthics -- South Carolina Advisory Committee on
+#                         Standards of Judicial Conduct — Advisory Opinions
+# ===================================================================
+# Written advisory opinions issued by the South Carolina Advisory
+# Committee on Standards of Judicial Conduct, a committee created by the
+# Supreme Court of South Carolina (Rule 503, SCACR) to advise inquiring
+# judges on the propriety of contemplated judicial and nonjudicial
+# conduct under the South Carolina Code of Judicial Conduct = doctrine.
+# Born-digital PDF full text (no OCR, no CAPTCHA, no auth). Public-domain
+# South Carolina State government works. Distinct from US/SC-EthicsOpinions
+# (the executive State Ethics Commission, which advises public officials
+# and employees); this is the JUDICIAL-branch committee advising judges
+# under the Code of Judicial Conduct.
+# ===================================================================
+
+source:
+  id: "US/SC-JudicialEthics"
+  country: "US"
+  name: "South Carolina Advisory Committee on Standards of Judicial Conduct — Advisory Opinions"
+  url: "https://www.sccourts.org/opinions-orders/judicial-advisory-opinions/"
+  description: |
+    Advisory opinions of the South Carolina Advisory Committee on
+    Standards of Judicial Conduct, a committee of the Supreme Court of
+    South Carolina (Rule 503, SCACR). The Committee renders written
+    advisory opinions to inquiring judges on the propriety of contemplated
+    judicial and nonjudicial conduct under the South Carolina Code of
+    Judicial Conduct. Each opinion (numbered "NN-YYYY") states the subject
+    ("RE:"), facts, the applicable canons and the Committee's conclusion.
+    Opinions are published as born-digital PDFs on sccourts.org; the full
+    text is extracted directly with PyMuPDF (no OCR). The requesting
+    judge's identity is kept confidential; upon filing with the Clerk of
+    the Supreme Court the opinions become a matter of public record.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.sccourts.org/"
+  endpoints:
+    index: "opinions-orders/judicial-advisory-opinions/?year={year}"
+    opinion: "media/advisoryOpinions/html/{number}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/SC-JudicialEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number (e.g. 11-2025, 01-2026)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Advisory Opinion No. {number}: {subject}"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (subject, facts, canons, conclusion), from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), best-effort from the PDF signature block; fallback to the opinion-number year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (South Carolina State Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "South Carolina judicial advisory opinions are official public records of the Supreme Court of South Carolina, published on sccourts.org for public use with no copyright restriction."
+
+notes: |
+  - Enumeration: iterate the years 1989..present, GET the per-year index
+    (?year=YYYY) and collect every /media/advisoryOpinions/html/NN-YYYY.pdf
+    link plus its subject (the sibling p.subtitle in each .result block).
+    ~500+ opinions, 1989-present (8-26 per year).
+  - Full text: each opinion is a born-digital PDF (text layer); extracted
+    directly with PyMuPDF (fitz), no OCR required.
+  - Date: parsed best-effort from the signature block ("Mon. D, YYYY" /
+    "M/D/YYYY"); the year is always the second half of the opinion number,
+    used as a YYYY-01-01 fallback.
+  - Type: every document is a written opinion construing the Code of
+    Judicial Conduct = doctrine.

@@ -1,0 +1,119 @@
+# ===================================================================
+# US/IA-TaxDecisions -- Iowa Department of Revenue, Administrative &
+# Declaratory Orders (Iowa Revenue Research Library)
+# ===================================================================
+# Published administrative documents of the Iowa Department of Revenue:
+# Declaratory Orders (binding rulings on a petitioner's specific facts,
+# Iowa Code 17A.9), contested-case Orders (final adjudications of a
+# taxpayer protest, case_law), Director Orders (e.g. annual rate
+# certifications, doctrine), and petition-for-rulemaking rulings. All are
+# public, taxpayer-facing, born-digital PDFs served by the state's
+# DocsIowaGov portal (documents.iowa.gov), an OpenText-backed library.
+# The Revenue subset (organization IDR, OpenText category 10350462) is
+# enumerated via the portal's server-side DataTables search endpoint
+# POST /home/search filtered by (OTDCategory:10350462); full text is
+# downloaded per document from /home/download/{id} and extracted via the
+# shared OOM-hardened pdf_extract helper. No auth; reCAPTCHA gates only
+# the ADA-remediation request form, not search or download. ~1,400 docs.
+# Public-domain IA state-government works (government edicts).
+# ===================================================================
+
+source:
+  id: "US/IA-TaxDecisions"
+  country: "US"
+  name: "Iowa Department of Revenue — Administrative & Declaratory Orders"
+  url: "https://revenue.iowa.gov/resources/law-policy-information/administrative-orders"
+  description: |
+    Published administrative documents of the Iowa Department of Revenue —
+    Declaratory Orders (binding rulings on a petitioner's specific facts
+    under Iowa Code 17A.9), contested-case Orders (final adjudications of a
+    taxpayer protest), Director Orders (e.g. annual corporate-rate
+    certifications), and petition-for-rulemaking rulings. Enumerated from
+    the DocsIowaGov portal's Revenue category via its OpenText-backed
+    DataTables search endpoint; full text extracted from each born-digital
+    PDF. ~1,400 documents.
+
+data_types:
+  - case_law
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "datatables_search"
+  base_url: "https://documents.iowa.gov"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/IA-TaxDecisions/{doc_id})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "doc_id"
+      description: "DocsIowaGov OpenText document id"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "cite"
+      description: "Document caption (e.g. 'VERTEX INC (DO) 2026')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (issuer + caption)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the order/document, extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication/create date (ISO 8601) from DocsIowaGov"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Iowa state tax administrative orders)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Declaratory orders, contested-case orders and director orders of the Iowa Department of Revenue are official state-government works published for public inspection, in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Documents live in the DocsIowaGov portal (documents.iowa.gov), an
+    OpenText document library shared by six Iowa agencies. The Revenue (IDR)
+    subset is OpenText category 10350462.
+  - Discovery: POST /home/search (server-side DataTables) with
+    query=(OTDCategory:10350462), paginated start/length (length max 100).
+    recordsTotal ~1,400. Each row: id, name (caption), mime_type,
+    create_date (M/D/YYYY), short_summary.
+  - Full text: GET /home/download/{id} returns the raw PDF
+    (application/octet-stream; verified via %PDF- magic). PDFs are
+    born-digital; text extracted via common.pdf_extract (OOM-hardened
+    pdfplumber -> pypdf -> OCR). A <200-char guard skips rare image scans.
+    The rare non-PDF (.docx) rows are skipped.
+  - reCAPTCHA on the portal gates only the ADA-remediation request form;
+    search and download endpoints are open and need no token.
+  - _type per document: Director Orders / rulemaking petitions / policy
+    captions -> doctrine; declaratory & contested-case orders -> case_law.
+  - date = create_date parsed to ISO 8601.
+  - Public-domain IA state-government data.

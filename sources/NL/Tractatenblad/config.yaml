@@ -1,0 +1,74 @@
+source:
+  id: NL/Tractatenblad
+  name: Dutch Treaty Series (Tractatenblad)
+  country: NL
+  url: https://repository.overheid.nl/
+  description: >
+    Full-text corpus of the Tractatenblad van het Koninkrijk der Nederlanden —
+    the official Dutch treaty gazette in which every treaty, convention and
+    international agreement to which the Kingdom of the Netherlands is a party
+    (with their authentic Dutch texts, ratification and entry-into-force notices)
+    is published. ~15,970 publications since 1951, fetched via the official KOOP
+    SRU 2.0 API (repository.overheid.nl). Full text from born-digital XML where
+    present, with a born-digital PDF (PyMuPDF) fallback for older publications.
+    Distinct from NL/Staatsblad (national laws & royal decrees) and
+    NL/wetten.overheid.nl (consolidated national legislation).
+
+data_model:
+  types:
+    - legislation
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: doc_type
+      type: string
+      required: false
+    - name: creator
+      type: string
+      required: false
+    - name: subject
+      type: string
+      required: false
+    - name: date
+      type: string
+      required: false
+    - name: date_concluded
+      type: string
+      required: false
+
+license:
+  name: "CC0 1.0"
+  url: "https://creativecommons.org/publicdomain/zero/1.0/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Dutch legislation, treaties and official government publications carry no
+    copyright (art. 11 Auteurswet). The KOOP official-publications data
+    (repository.overheid.nl) is provided as open government data under CC0.
+
+schedule:
+  full_refresh: quarterly
+  update_check: monthly

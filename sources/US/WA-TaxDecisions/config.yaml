@@ -1,0 +1,101 @@
+# ===================================================================
+# US/WA-TaxDecisions -- Washington State Department of Revenue
+#   Washington Tax Decisions (WTD)
+# ===================================================================
+# The appeals-division Determinations published by the Washington State
+# Department of Revenue as Washington Tax Decisions (WTD) under RCW
+# 82.32.410. These are the Department's published quasi-adjudicative
+# rulings on taxpayer appeals — formal interpretive guidance applying
+# Washington's excise tax law (B&O tax, retail sales tax, use tax, etc.)
+# to contested facts. Each carries a "<vol> WTD <page>" citation.
+#
+# The official index at dor.wa.gov/washington-tax-decisions is a set of
+# server-rendered HTML tables (one block per volume), each row being
+# [Title (Det. No. + citation + year), Date, Document (PDF link),
+# Description] linking a born-digital text-layer PDF on
+# /sites/default/files/<yyyy-mm>/<vol>WTD<page>.pdf. No JavaScript, no
+# CAPTCHA, no auth.
+#
+# Distinct from US/WA-BTA (independent Board of Tax Appeals) — these are
+# the DOR's OWN appeals-division determinations. Public domain
+# Washington state government works.
+# ===================================================================
+
+source:
+  id: "US/WA-TaxDecisions"
+  country: "US"
+  name: "Washington State Department of Revenue — Washington Tax Decisions (WTD)"
+  url: "https://dor.wa.gov/washington-tax-decisions"
+  description: |
+    Appeals-division Determinations of the Washington State Department
+    of Revenue, published as Washington Tax Decisions (WTD) under RCW
+    82.32.410. Quasi-adjudicative rulings on taxpayer appeals applying
+    Washington's excise tax law (B&O tax, retail sales/use tax, etc.),
+    each cited "<vol> WTD <page>". Server-rendered HTML index tables
+    link born-digital text-layer PDFs. No JavaScript, no CAPTCHA, no
+    auth.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+schema:
+  key_fields:
+    - name: "_id"
+      description: "Unique identifier (US/WA-TaxDecisions/<slug>)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "citation"
+      description: "Washington Tax Decision citation, e.g. '45 WTD 080'"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Determination number + citation + year"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the determination from the PDF text layer"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601), parsed from the index table"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Washington state tax decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Washington Tax Decisions are official Washington state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The index at /washington-tax-decisions is one set of server-rendered
+    HTML tables (one block per published volume). Each row is
+    [Title (Det. No. + '<vol> WTD <page>' citation + year), Date,
+    Document (PDF link), Description]. The scraper parses each row's
+    citation, date (from the <time datetime> attribute), title and
+    one-line description, and dedups PDF URLs.
+  - PDFs are born-digital text-layer documents at
+    /sites/default/files/<yyyy-mm>/<vol>WTD<page>.pdf, extracted via
+    common.pdf_extract (curl browser UA, ~1 req/s, per-page flush_cache
+    to avoid OOM). The occasional scanned attachment with no text layer
+    is auto-skipped (<150-char guard).
+  - The public index lists volumes ~30-45 (~775 determinations); the
+    paginated /tax-research-source-types/wtd route is retired (404).
+  - Type is doctrine: WTDs are the Department's published interpretive
+    determinations, distinct from US/WA-BTA (independent Board of Tax
+    Appeals). Public domain Washington state government data.

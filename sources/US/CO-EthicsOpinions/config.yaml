@@ -1,0 +1,129 @@
+# ===================================================================
+# US/CO-EthicsOpinions -- Colorado Independent Ethics Commission (IEC)
+# Advisory Opinions, Letter Rulings and Position Statements
+# ===================================================================
+# The published ethics guidance of the Colorado Independent Ethics
+# Commission, issued under Article XXIX of the Colorado Constitution
+# ("Amendment 41") and Title 24, Article 18.5, C.R.S. The Commission
+# issues three document classes -- Advisory Opinions (to covered public
+# officials), Letter Rulings (to non-covered persons) and Position
+# Statements (general policy) -- each being the Commission's written
+# interpretation of the constitutional/statutory standards of conduct =
+# doctrine. Born-digital PDFs (clean text layer, no OCR), spanning
+# 2008-present. Public record of a Colorado state agency.
+# ===================================================================
+
+source:
+  id: "US/CO-EthicsOpinions"
+  country: "US"
+  name: "Colorado Independent Ethics Commission — Advisory Opinions, Letter Rulings & Position Statements"
+  url: "https://iec.colorado.gov/opinions"
+  description: |
+    The formal ethics guidance of the Colorado Independent Ethics
+    Commission (IEC), the constitutional body created by Article XXIX of
+    the Colorado Constitution ("Amendment 41") to interpret and enforce
+    the standards of conduct for state and local public officials and
+    employees. The IEC publishes three document classes on its Drupal
+    site, each the Commission's written construction of Article XXIX and
+    Title 24, Article 18.5, C.R.S.: Advisory Opinions (AO), Letter Rulings
+    (LR) and Position Statements (PS). All are doctrine. The corpus (~170
+    documents, 2008-present) is enumerated on per-year listing pages and
+    served as born-digital PDFs with a clean text layer (no OCR needed).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "html_listing"
+  base_url: "https://iec.colorado.gov"
+  endpoints:
+    year_listing: "/opinions/iec-opinions-{year}"
+    document: "/sites/iec/files/documents/{code} FR.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CO-EthicsOpinions/{AO|LR|PS}-{YYYY}-{NN})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Document number (e.g. 'Advisory Opinion 23-01', 'Letter Ruling 14-02')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "document_type"
+      description: "Advisory Opinion | Letter Ruling | Position Statement"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Opinion caption (listing link text, e.g. 'Advisory Opinion 23-01: Acceptance of Gifts')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (born-digital PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601); first 'Month DD, YYYY' in the body, falls back to Jan 1 of the code year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Issuing body (Colorado Independent Ethics Commission)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 subdivision (US-CO)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (Colorado state government edict / public record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Opinions, rulings and position statements of the Colorado Independent Ethics Commission are official public records of a Colorado constitutional state agency interpreting the constitution and statute; government-edict works, published by the IEC for public use (C.R.S. 24-18.5-101, IEC Rules of Procedure require publication)."
+
+notes: |
+  - Index: the IEC site is Drupal. Opinions are listed on per-year pages
+    /opinions/iec-opinions-{YEAR} for 2008-present. Each anchor points to a
+    born-digital PDF under /sites/iec/files/documents/ named
+    "{AO|LR|PS} NN-NN FR.pdf"; the link text is a descriptive caption.
+  - Document code (type + NN-NN) is parsed from the filename (fallback: the
+    caption). The 2-digit year in the code is 20YY. Records are deduped by
+    code across all year pages (a few opinions are cross-linked on more than
+    one year page, e.g. an LR referenced from an earlier AO's year).
+  - Full text: born-digital PDF text layer via common.pdf_extract._extract
+    (opendataloader -> pdfplumber -> pypdf -> OCR fallback). Verified clean,
+    no OCR needed for the modern corpus.
+  - Date: first "Month DD, YYYY" in the body; falls back to Jan 1 of the code
+    year when the body has no explicit date.
+  - Three document classes, all doctrine: Advisory Opinions (to covered
+    officials), Letter Rulings (to non-covered persons), Position Statements
+    (general policy). The IEC's complaint/enforcement decisions are a separate
+    document class not covered here.
+  - UA: iec.colorado.gov serves a browser User-Agent fine (no CAPTCHA/JS).

@@ -1,0 +1,108 @@
+# ===================================================================
+# US/NJ-SchoolEthics -- New Jersey School Ethics Commission (SEC)
+#                       — Public Advisory Opinions
+# ===================================================================
+# Public advisory opinions of the New Jersey School Ethics Commission
+# (SEC, in the Dept. of Education) interpreting the School Ethics Act
+# (N.J.S.A. 18A:12-21 et seq.) — the conflict-of-interest and
+# prohibited-acts code for local board of education members and school
+# administrators. Each public advisory opinion is the Commission's
+# authoritative written interpretation, released for public use =
+# doctrine. Born-digital full-text PDFs (OCR fallback for any scan).
+# Public-domain State of New Jersey government works.
+#
+# DISTINCT from the NJ State Ethics Commission (browser-bound JS DB),
+# US/NJ-PERC and US/NJ-OAL.
+# ===================================================================
+
+source:
+  id: "US/NJ-SchoolEthics"
+  country: "US"
+  name: "New Jersey School Ethics Commission — Public Advisory Opinions"
+  url: "https://www.nj.gov/education/legal/ethics/advisory/"
+  description: |
+    Public advisory opinions of the New Jersey School Ethics Commission
+    (SEC). Interpreting the School Ethics Act (N.J.S.A. 18A:12-21 et
+    seq.), the Commission issues advisory opinions on conflict-of-
+    interest and prohibited-acts questions for local board of education
+    members and school administrators. Each opinion is released for
+    public use as a born-digital PDF on nj.gov. Opinion numbers are
+    "A{NN}-{YY}" (advisory number - year).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "html_index"
+  base_url: "https://www.nj.gov"
+  endpoints:
+    index: "/education/legal/ethics/advisory/"
+    pdf_by_year: "/education/legal/ethics/advisory/{YYYY}/{file}.pdf"
+    pdf_by_category: "/education/legal/ethics/advisory/cat{1-7}/{file}.pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NJ-SchoolEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Advisory opinion number (e.g. A12-26, A01-98)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Issuer + opinion number"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion, from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the 'Month DD, YYYY' line near the top of the opinion"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (State of New Jersey Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Public advisory opinions of the New Jersey School Ethics Commission are official public records of the State of New Jersey, released for public use with no copyright restriction."
+
+notes: |
+  - Enumeration: the single index page
+    https://www.nj.gov/education/legal/ethics/advisory/ links every opinion PDF.
+    Two path shapes: recent opinions under /advisory/{YYYY}/, older opinions
+    under /advisory/cat{1-7}/ (by subject). Filenames are irregular
+    (A13-20.pdf, a2804pub.pdf, a0198opn.pdf) so the href is read directly from
+    each anchor and the opinion number is taken from the anchor text ("A12-26"),
+    falling back to the filename.
+  - Full text: each PDF is born-digital (clean text layer; OCR fallback via
+    common.pdf_extract for any scan). The issue date is parsed from the
+    "Month DD, YYYY" line near the top of the opinion.
+  - Type: every opinion is a public advisory opinion = doctrine.
+  - COVERAGE: ~187 public advisory opinions (1998–present).

@@ -1,0 +1,103 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — Financial Reporting Council Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Source Identity ───────────────────────────────────────────────
+source:
+  id: "UK/FRC"
+  country: "UK"
+  name: "Financial Reporting Council — Enforcement & Tribunal Decisions"
+  url: "https://www.frc.org.uk/library/enforcement/enforcement-cases/"
+  description: |
+    Enforcement and disciplinary tribunal decisions of the Financial Reporting
+    Council (FRC) against auditors, audit firms, accountants and actuaries under
+    the Audit Enforcement Procedure, the Accountancy Scheme and the Actuarial
+    Scheme. Decision documents (Disciplinary Tribunal Reports, Executive Counsel
+    Final Decision Notices, Final Settlement Decision Notices) are born-digital
+    PDFs on frc.org.uk. Full text via PyMuPDF (no OCR).
+
+# ── Data Types ────────────────────────────────────────────────────
+data_types:
+  - case_law
+
+# ── Authentication ────────────────────────────────────────────────
+auth:
+  type: "none"
+
+# ── Rate Limiting ─────────────────────────────────────────────────
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+# ── API / Scraping Configuration ──────────────────────────────────
+api:
+  type: "html_pdf"
+  base_url: "https://www.frc.org.uk"
+  endpoints:
+    enforcement_cases:
+      path: "/library/enforcement/enforcement-cases/"
+      method: "GET"
+      description: "Server-rendered index of all enforcement cases"
+    accountancy_scheme:
+      path: "/library/enforcement/accountancy-scheme/"
+      method: "GET"
+      description: "Accountancy Scheme case index"
+    actuarial_scheme:
+      path: "/library/enforcement/actuarial-scheme/"
+      method: "GET"
+      description: "Actuarial Scheme case index"
+    audit_enforcement:
+      path: "/library/enforcement/audit-enforcement-procedure/"
+      method: "GET"
+      description: "Audit Enforcement Procedure case index"
+
+# ── Data Model ────────────────────────────────────────────────────
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "date"
+
+# ── Schema ────────────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      role: "primary_key"
+    - name: "title"
+      type: "string"
+      role: "content"
+    - name: "text"
+      type: "string"
+      role: "content"
+    - name: "date"
+      type: "date"
+      role: "temporal_key"
+    - name: "url"
+      type: "string"
+      role: "reference"
+    - name: "document_kind"
+      type: "string"
+      role: "classification"
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Custom terms — © The Financial Reporting Council Limited"
+  url: "https://www.frc.org.uk/about-us/policies-and-procedures/disclaimer-and-copyright/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    The FRC is a company limited by guarantee (Registered in England no. 2486368),
+    not a Crown body; no Open Government Licence applies to its content. Decision
+    documents are published for transparency; commercial reuse restricted absent
+    permission.
+
+# ── Notes ─────────────────────────────────────────────────────────
+notes: |
+  - Language: English
+  - Full-text FRC enforcement / disciplinary tribunal decisions
+  - Born-digital PDFs at frc.org.uk/documents/{id}/{name}.pdf via PyMuPDF
+  - 2-level crawl: enforcement index pages -> per-case outcome pages -> PDF
+  - No authentication required

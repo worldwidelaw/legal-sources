@@ -52,6 +52,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
     level=logging.INFO,
@@ -141,31 +142,27 @@ class NICTAGazettesScraper(BaseScraper):
             return None
 
     def _extract_text_from_pdf_bytes(self, pdf_bytes: bytes) -> Optional[str]:
-        """Extract text from PDF bytes using pdfplumber."""
-        try:
-            import pdfplumber
-        except ImportError:
-            logger.error("pdfplumber not available")
-            return None
+        """Extract text from PDF bytes via the shared extractor.
 
-        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=True) as tmp:
-            tmp.write(pdf_bytes)
-            tmp.flush()
-            try:
-                with pdfplumber.open(tmp.name) as pdf:
-                    pages_text = []
-                    for page in pdf.pages:
-                        text = page.extract_text()
-                        if text:
-                            pages_text.append(text)
-                        try:
-                            page.flush_cache(); page.get_textmap.cache_clear()
-                        except Exception:
-                            pass
-                    return "\n\n".join(pages_text) if pages_text else None
-            except Exception as e:
-                logger.warning(f"pdfplumber extraction failed: {e}")
-                return None
+        Delegates to common.pdf_extract.extract_pdf_markdown, which cascades
+        text-layer backends (opendataloader → pdfplumber → pypdf) and then falls
+        back to Tesseract image-OCR for scanned image-only gazettes (issue
+        #1133). OCR is gated on the tesseract binary being present; where it is
+        absent the cascade behaves exactly like the previous pdfplumber path.
+        """
+        source_id = hashlib.md5(pdf_bytes[:4096]).hexdigest()[:16]
+        try:
+            text = extract_pdf_markdown(
+                source=SOURCE_ID,
+                source_id=source_id,
+                pdf_bytes=pdf_bytes,
+                table="legislation",
+                force=True,
+            )
+        except Exception as e:
+            logger.warning(f"PDF extraction failed: {e}")
+            return None
+        return text or None
 
     def normalize(self, raw: dict) -> dict:
         """Transform raw document into standard schema."""

@@ -1,0 +1,22 @@
+{
+  "_id": "AGN-2026-116",
+  "_source": "AR/AGN",
+  "_type": "doctrine",
+  "_fetched_at": "2026-06-02T20:07:12.105628+00:00",
+  "title": "Atención a usuarios de servicios de TICs - Acciones del ENACOM referidas a evaluar la calidad de servicio y la atención a usuarios de telefonía móvil e internet. Período 2024. Ente Nacional de Comunicaciones (ENACOM)",
+  "text": "ALCANCE DEL EXAMEN El presente examen se llevó a cabo conforme a las Normas de Control Externo Gubernamental aprobadas por las Resoluciones AGN 26/2015, 186/2016 y 187/2016, dictadas en ejercicio de las facultades conferidas por la Ley 24.156, artículo 119, inciso d). En el marco del objeto de auditoría, se definieron los siguientes objetivos de trabajo: 1) Verificar las acciones de planificación, control y fiscalización del ente regulador tendientes a asegurar la calidad de los servicios de internet y telefonía móvil por parte de las prestadoras conforme a las pautas prestablecidas. 2) Evaluar la gestión del ente regulador en materia de atención y protección de los derechos de los usuarios de servicios de internet y telefonía móvil.A los fines de cumplir con los objetivos del examen, se efectuaron tareas de relevamiento de la organización administrativa y del marco normativo aplicable, la recopilación y análisis de información presupuestaria y de mercado, consultas a fuentes oficiales y revisión de informes elaborados por el organismo. Asimismo, se realizaron entrevistas y requerimientos de información a personal responsable, encuestas a asociaciones de consumidores y el relevamiento de expedientes con aplicación de técnicas de muestreo, con el propósito de obtener evidencia suficiente y adecuada para sustentar las conclusiones del informe. Los procedimientos aplicados se detallan en el Anexo 1. El período sujeto a auditoría comprende desde el 1° de enero hasta el 31 de diciembre de 2024.",
+  "date": "2026-04-30",
+  "url": "https://www.agn.gob.ar/Informe-116-2026",
+  "pdf_url": "https://webagnapi.agn.gob.ar/sites/default/files/informes/2026-116-Informe.pdf",
+  "ano": 2026,
+  "resolucion": 116,
+  "actuacion": "69/2025",
+  "fecha_acta": "2026-04-30",
+  "periodo_auditado": "2024-01-01 / 2024-12-31",
+  "organismo_auditado_ids": [
+    "100"
+  ],
+  "tipo_de_auditoria_ids": [
+    "51"
+  ]
+}

@@ -5,8 +5,9 @@
 # CC-BY-4.0 license. Covers 25 High Courts across India.
 #
 # Primary: AWS S3 bucket (indian-high-court-judgments) in ap-south-1
-# Structure: metadata/json/year=YYYY/court=X_Y/bench=ZZZ/*.json
-#            data/pdf/year=YYYY/court=X_Y/bench=ZZZ/*.pdf
+# Structure: derived/landlit-v2/texts/*.jsonl.gz (primary full-text layer)
+#            metadata/json/year=YYYY/court=X_Y/bench=ZZZ/*.json (metadata join)
+#            data/pdf/year=YYYY/court=X_Y/bench=ZZZ/*.pdf (fallback only)
 # ===================================================================
 
 source:
@@ -18,7 +19,8 @@ source:
     Indian High Court judgments from 25 High Courts (45 benches), dating
     back to 1950. Approximately 16.7 million judgments totaling ~1.11 TB.
     Sourced from the eCourts website and hosted on AWS Open Data Registry.
-    Full text extracted from PDF judgments. Updated quarterly.
+    Full text is read from the derived/landlit-v2 pre-extracted layer when
+    available; PDF extraction is fallback-only for text-layer gaps. Updated quarterly.
 
 data_types:
   - case_law
@@ -36,6 +38,7 @@ api:
   region: "ap-south-1"
   base_url: "https://s3.ap-south-1.amazonaws.com/indian-high-court-judgments"
   metadata_prefix: "metadata/json/"
+  text_prefix: "derived/landlit-v2/texts/"
   pdf_prefix: "data/pdf/"
 
 data_model:
@@ -81,8 +84,10 @@ schema:
 
 notes: |
   - Uses AWS S3 REST API (no credentials needed, public bucket)
+  - Primary full-text path streams derived/landlit-v2/texts/*.jsonl.gz
   - JSON metadata contains court info, case parties, judges, PDF path
-  - Full text extracted from PDFs using pdfplumber
+  - PDF + pdfplumber/opendataloader extraction is fallback-only for text-layer gaps
+  - Shard full runs with --year-range YYYY or YYYY-YYYY and --court X_Y
   - 16.7M judgments across 25 High Courts from 1950 to present
   - Updated quarterly by dataset maintainers
-  - PDF text is primarily in English (Indian court language)
+  - Judgment text is primarily in English (Indian court language)

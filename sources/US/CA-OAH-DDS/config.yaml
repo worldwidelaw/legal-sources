@@ -1,0 +1,124 @@
+# ===================================================================
+# US/CA-OAH-DDS -- California Office of Administrative Hearings
+#   General Jurisdiction Division — DDS / Lanterman Act Decisions
+# ===================================================================
+# Decisions issued by Administrative Law Judges of the California Office
+# of Administrative Hearings (OAH), General Jurisdiction Division, in
+# "fair hearing" appeals brought by a consumer (or their family) against
+# a regional center under the Lanterman Developmental Disabilities
+# Services Act, when the regional center denies, reduces, or terminates
+# a service or support. Each Decision resolves a specific contested case
+# = case_law. The decision library is a Sitecore "search list" page
+# paginated server-side by a plain ?page=N query parameter; each
+# decision is a born-digital text-layer PDF in the DDS-Decisions media
+# folder. No CAPTCHA, no auth. Public domain California state government
+# works (government edicts).
+# ===================================================================
+
+source:
+  id: "US/CA-OAH-DDS"
+  country: "US"
+  name: "California Office of Administrative Hearings — DDS (Lanterman Act) Decisions"
+  url: "https://www.dgs.ca.gov/OAH/Case-Types/General-Jurisdiction/Resources/DDS-Decisions"
+  description: |
+    DDS / Lanterman Act "fair hearing" Decisions of the California Office
+    of Administrative Hearings (OAH), General Jurisdiction Division. OAH
+    is California's central independent tribunal; it hears appeals by a
+    consumer/family against a regional center under the Lanterman
+    Developmental Disabilities Services Act (denial/reduction/termination
+    of a service or support), and an ALJ issues a Decision resolving each
+    contested case = case_law. Enumerated from the ?page=N HTML listing
+    (~25 rows/page, ~102 pages) → born-digital text-layer PDFs at
+    /-/media/Divisions/OAH/General-Jurisdiction/DDS-Decisions/<name>.pdf,
+    extracted via common.pdf_extract. No CAPTCHA, no auth. ~2,550
+    decisions indexed.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.dgs.ca.gov"
+  endpoints:
+    listing: "/OAH/Case-Types/General-Jurisdiction/Resources/DDS-Decisions?page={page}"
+    document: "/-/media/Divisions/OAH/General-Jurisdiction/DDS-Decisions/{file}"
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CA-OAH-DDS/{media-filename-stem})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "OAH case number (10-digit YYYYMMNNNN, e.g. '2019030401')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "parties"
+      description: "Caption parties (e.g. 'CLAIMANT v. SAN GABRIEL/POMONA REGIONAL CENTER')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (OAH case number + parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the OAH DDS (Lanterman Act) Decision (PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the body (last date = signature/issue date)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — California state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the California Office of Administrative Hearings are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Enumeration: the decision list is a Sitecore "search list" page
+    paginated server-side by a plain ?page=N query parameter (NOT the
+    MediaSearch AJAX API used by the sibling Special Education folder —
+    on this page the folderPath param is silently ignored, so the HTML
+    listing is authoritative). Each page renders ~25 result rows, each
+    linking to a DDS decision PDF at
+    /-/media/Divisions/OAH/General-Jurisdiction/DDS-Decisions/<name>.pdf.
+  - ~102 pages, ~25 per page → ~2,550 decisions (oldest→newest). Two
+    consecutive genuinely-empty pages end the crawl; a single empty page
+    is retried (transient empties occur) so no page is silently dropped.
+  - PDF filenames begin with the 10-digit OAH case number followed by
+    the "084" DDS agency code and optional suffixes (Acc = accessibility
+    remediated, Adopted, Revised, or a consolidated "<case1>-<case2>084").
+    Documents are born-digital text-layer PDFs; text is extracted via
+    common.pdf_extract (no OCR). A <200-char guard skips any empty/non-PDF
+    response.
+  - date prefers the LAST real "Month D, YYYY" in the decision body
+    (typically the cover/signature decision date; the first date is
+    usually the hearing date).
+  - Companion source: US/CA-OAH-SpecialEd (Special Education Division).
+  - Public domain California state government data.

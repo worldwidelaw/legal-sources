@@ -1,0 +1,45 @@
+fetch:
+  list_url: https://www.athleticsintegrity.org/disciplinary-process/first-instance-decisions
+  method: html_table_pdf
+  rate_limit_seconds: 2
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: respondent
+    required: false
+    type: string
+source:
+  auth: none
+  country: INTL
+  data_types:
+  - case_law
+  description: >
+    Athletics Integrity Unit (AIU) First Instance Decisions — disciplinary
+    decisions of the independent Disciplinary Tribunal established by World
+    Athletics, covering doping and non-doping (integrity / competition
+    manipulation) violations in the sport of athletics under the World Athletics
+    Anti-Doping Rules and Integrity Code of Conduct. Born-digital, full-text
+    decision PDFs hosted openly on athleticsintegrity.org (no login, no WAF).
+  id: INTL/AthleticsIntegrityUnit
+  language: en
+  name: Athletics Integrity Unit (AIU) First Instance Decisions
+  url: https://www.athleticsintegrity.org/disciplinary-process/first-instance-decisions
+license:
+  name: "World Athletics / AIU Terms (All Rights Reserved)"
+  url: "https://www.athleticsintegrity.org/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions are openly published for transparency, but World Athletics / AIU asserts copyright with no open licence. Commercial use flagged restricted per project policy (err on flagging)."

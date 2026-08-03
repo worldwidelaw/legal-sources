@@ -1,0 +1,77 @@
+# UK/SocialWorkEngland — Social Work England — Fitness-to-practise hearing decisions.
+#
+# Source: Social Work England (SWE), the specialist statutory regulator of social
+#         workers in England (Children and Social Work Act 2017; operational since
+#         Dec 2019, taking over from the HCPC).
+# URL: https://www.socialworkengland.org.uk/concerns/hearings-and-decisions/
+# Data type: case_law  (UK statutory professional-regulator tribunal — distinct
+#            from UK/HCPTS, UK/GMC doctors, UK/SDT solicitors, UK/BTAS barristers)
+# Auth: none
+#
+# SWE adjudicators sit in fitness-to-practise final hearings, interim-order
+# hearings and substantive-order review hearings under the Social Workers
+# Regulations 2018. Each concluded hearing has a server-rendered detail page at
+# /umbraco/surface/hearingdetails/details/{id} carrying the registrant name +
+# registration number, outcome and (for upcoming hearings) full allegations, plus
+# a "Hearing details" block. The full written determination is linked as one or
+# more "Outcome documents" — born-digital PDFs at
+# /umbraco/surface/hearingdetails/download?docid={docid}&hearingid={id}. Final
+# hearings run ~10-30 pages of reasoned decision (findings of fact, impairment,
+# sanction). Born-digital PDF text layer, no OCR. Old decisions are removed under
+# SWE's publication policy, so the live corpus is a rolling window of recently
+# published hearings, enumerated over a sliding integer-id window.
+#
+# Total: ~400-600 full-text determinations live at any time (rolling window).
+
+source:
+  id: UK/SocialWorkEngland
+  name: Social Work England — Fitness to Practise Hearing Decisions
+  country: UK
+  data_types:
+    - case_law
+  url: https://www.socialworkengland.org.uk/concerns/hearings-and-decisions/
+  language: en
+  auth: none
+  license: custom-terms
+
+license:
+  name: "Social Work England website terms (Crown copyright; no explicit open licence)"
+  url: "https://www.socialworkengland.org.uk/privacy/terms-and-conditions/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    SWE fitness-to-practise decisions are public professional-regulator
+    adjudication records published by Social Work England (a statutory
+    non-departmental public body) under its publication policy. The site states
+    no explicit open licence (Crown copyright applies to the underlying
+    records), so commercial re-use is conservatively flagged per project policy,
+    consistent with the sibling UK professional-regulator tribunal sources
+    (UK/HCPTS, UK/GMC, UK/SDT, UK/BTAS).
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: url
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - registrant
+    - registration_number
+    - hearing_type
+    - outcome
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.0
+  estimated_total: 500
+  sample_count: 12

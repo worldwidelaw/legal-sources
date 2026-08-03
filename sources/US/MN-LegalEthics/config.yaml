@@ -1,0 +1,119 @@
+# ===================================================================
+# US/MN-LegalEthics -- Minnesota Lawyers Professional Responsibility
+# Board (LPRB) — Board Opinions
+# ===================================================================
+# Opinions promulgated by the Minnesota Lawyers Professional
+# Responsibility Board interpreting the Minnesota Rules of Professional
+# Conduct to advise LAWYERS = doctrine. Cited "LPRB Opinion No. N".
+# ~26 born-digital PDF opinions. The LPRB is established by the
+# Minnesota Supreme Court (Rules on Lawyers Professional
+# Responsibility) and its opinions bind Minnesota lawyers.
+# Distinct from the Director's/OLPR ethics-hotline "Advisory
+# Opinions" and from US/MN-CFBOpinions (Campaign Finance Board).
+# ===================================================================
+
+source:
+  id: "US/MN-LegalEthics"
+  country: "US"
+  name: "Minnesota Lawyers Professional Responsibility Board — Board Opinions"
+  url: "https://lprb.mncourts.gov/lawyers-professional-responsibility-board-opinions/"
+  description: |
+    Opinions promulgated by the Minnesota Lawyers Professional
+    Responsibility Board (LPRB) interpreting the Minnesota Rules of
+    Professional Conduct. ~26 born-digital PDF opinions are published
+    free on lprb.mncourts.gov, listed on a single public page; each
+    carries the opinion number, adoption date and full analysis.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index_pdf"
+  base_url: "https://lprb.mncourts.gov"
+  endpoints:
+    index: "/lawyers-professional-responsibility-board-opinions/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/MN-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Board opinion number (e.g. 1, 21, 26)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Opinion title ('LPRB Opinion No. {n} — {subject}')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text extracted from the born-digital PDF (PyMuPDF, no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 adoption date from the index anchor or opinion body; null if none"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Minnesota Lawyers Professional Responsibility Board"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 sub-jurisdiction code (US-MN)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain — 17 U.S.C. § 105 / freely published board opinions"
+  url: "https://lprb.mncourts.gov/lawyers-professional-responsibility-board-opinions/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "LPRB Board Opinions are published free to the public on lprb.mncourts.gov (a Minnesota Judicial Branch domain), with no login, paywall or terms prohibiting reuse. The LPRB is a body of the Minnesota Supreme Court established under the Rules on Lawyers Professional Responsibility, and its opinions bind Minnesota lawyers, so the 17 U.S.C. § 105 government-edicts rationale applies fairly directly — pd-us + commercial-OK."
+
+notes: |
+  - Discovery: the single public page
+    /lawyers-professional-responsibility-board-opinions/ lists every
+    Board opinion as an anchor "Opinion N - [Month DD, YYYY -] Title",
+    linking to a born-digital PDF under /wp-content/uploads/ (the upload
+    month in the path varies, e.g. 2024/10/ vs 2025/05/, so the href is
+    taken verbatim, NEVER constructed). ~26 opinions.
+  - Number: parsed from the anchor "Opinion N" (a lone "Option 15 …"
+    source typo is tolerated by matching Op\w+ N). De-duplicated on num.
+  - Full text: PyMuPDF (fitz) text layer, NO OCR. Records under 200
+    chars are skipped.
+  - Date: taken from the anchor "Month DD, YYYY" when present, else the
+    first such date in the opinion body (e.g. Opinion 1 -> 1972-10-27);
+    null when neither.
+  - Type: every document is the Board's interpretation of the Minnesota
+    Rules of Professional Conduct = doctrine.
+  - Distinct from the Director's/OLPR ethics-hotline "Advisory Opinions"
+    (informal, not published one-per-file), US/MN-CFBOpinions (Campaign
+    Finance & Public Disclosure Board — public officials), US/MN-Courts
+    and US/MN-Legislation. This is the MN member of the
+    US/{ST}-LegalEthics vein (lawyers).

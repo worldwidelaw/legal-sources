@@ -1,0 +1,19 @@
+{
+  "_id": "EC-CC-7974",
+  "_source": "EC/CorteConstitucional",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-01T18:25:08.919917+00:00",
+  "title": "Sentencia 2536-19-EP/23",
+  "text": "Acción extraordinaria de protección presentada en contra del auto que inadmitió el recurso de casación, dentro de un proceso penal por el presunto delito de muerte culposa. En el proceso de origen, la Sala de la CNJ, inadmitió a trámite el recurso de casación interpuesto por el procesado. La Corte aceptó la acción y señaló que se vulneró el derecho a la defensa en la garantía a recurrir el fallo ya que: (i) el auto de inadmisión se fundamentó en la Resolución 10-2015 de la CNJ, (ii) la demanda de EP se encontraba pendiente de resolución cuando se publicó la sentencia 8- 19-IN y acumulado/21 y, (iii) el derecho a recurrir del accionante se vio afectado debido a que la Sala Nacional empleó la Resolución 10 2015, que fue declarada inconstitucional.",
+  "date": "2023-08-16",
+  "url": "https://esacc.corteconstitucional.gob.ec/storage/api/v1/10_DWL_FL/eyJjYXJwZXRhIjogInRyYW1pdGUiLCAidXVpZCI6ICI2Njk0NjVmYi1kMmZjLTRkMjItODYxOS02Y2U0NGNiZDllODkucGRmIn0=",
+  "numero": "2536-19-EP/23",
+  "numero_causa": "2536-19-EP",
+  "tipo_accion": "ACCIÓN EXTRAORDINARIA DE PROTECCIÓN",
+  "materia": "Penal",
+  "juez": "CARMEN FAVIOLA CORRAL PONCE",
+  "decision": "ACEPTAR",
+  "metadata_sentencia": "",
+  "es_novedad": false,
+  "es_relevante": false
+}

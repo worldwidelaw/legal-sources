@@ -1,0 +1,82 @@
+# UK/EducationTribunalWales — Education Tribunal for Wales (Tribiwnlys Addysg
+# Cymru) — Decisions.
+#
+# Source: Education Tribunal for Wales (ETW), formerly the Special Educational
+#         Needs Tribunal for Wales (SENTW); an independent statutory tribunal
+#         funded by the Welsh Government.
+# URL: https://educationtribunal.gov.wales/decisions
+# Data type: case_law  (Wales / GB-WLS — NOT covered by UK/CaseLaw, which indexes
+#            England & Wales superior courts + reserved UK tribunals via the
+#            National Archives Find Case Law service; ETW is not on that service)
+# Auth: none
+#
+# ETW determines Additional Learning Needs (ALN) appeals under the Additional
+# Learning Needs and Education Tribunal (Wales) Act 2018 (and legacy Special
+# Educational Needs appeals under the Education Act 1996), plus disability
+# discrimination claims in education under the Equality Act 2010. Its written,
+# reasoned decisions are binding on the parties and appealable on a point of law
+# to the Upper Tribunal. Decisions are published anonymised.
+#
+# Total: full-text anonymised decisions, September 2020-present (~50 and growing)
+#
+# Access:
+#   - /previous-decisions lists the September-September "school year" windows.
+#   - /decisions/3/{YYYY-09--YYYY-09} lists per-decision detail-page slugs.
+#   - Each detail page carries the title and one born-digital decision PDF under
+#     /sites/educationtribunal/files/.
+#   - Download each born-digital PDF, extract full text with PyMuPDF (pdfplumber/
+#     pypdf fallback). No OCR needed. Decisions are anonymised, so the date is the
+#     start of the school-year window (YYYY-09-01).
+
+source:
+  id: UK/EducationTribunalWales
+  name: Education Tribunal for Wales — Decisions
+  country: UK
+  data_types:
+    - case_law
+  url: https://educationtribunal.gov.wales/decisions
+  language: en
+  auth: none
+  license: ogl-3.0
+
+jurisdictions:
+  - code: GB-WLS
+    scope: full
+
+license:
+  name: "Open Government Licence v3.0"
+  url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    Site copyright statement: most material is Crown copyright and may be used
+    and re-used free of charge in any format or medium under the Open Government
+    Licence (must reproduce accurately, not in a misleading context).
+
+schema:
+  key_fields:
+    - name: _id
+      type: string
+      required: true
+    - name: text
+      type: string
+      required: true
+    - name: case_ref
+      type: string
+      required: true
+  indexed_fields:
+    - title
+    - text
+    - case_ref
+    - series
+    - school_year
+    - court
+  date_field: date
+
+fetch:
+  rate_limit_delay: 1.5
+  page_size: 30
+  estimated_total: 50
+  sample_count: 15

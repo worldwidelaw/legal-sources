@@ -1,0 +1,13 @@
+{
+  "_id": "EG/EgyptianLawArticles-HF:art-3",
+  "_source": "EG/EgyptianLawArticles-HF",
+  "_type": "legislation",
+  "_fetched_at": "2026-06-09T06:19:56.723106+00:00",
+  "title": "Egyptian Civil Code — Article 3",
+  "text": "تحسب المواعيد بالتقويم الميلادي، ما لم ينص هذا القانون على غير ذلك.\n\n--- English Translation ---\n\nPeriods of limitation will be calculated according to the\nGregorian calendar, unless expressly provided otherwise\nby a law.",
+  "date": null,
+  "url": "https://huggingface.co/datasets/TawasulAI/egyptian-law-articles",
+  "article_number": "3",
+  "language": "ar",
+  "jurisdiction": "EG"
+}

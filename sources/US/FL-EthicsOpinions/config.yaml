@@ -1,0 +1,108 @@
+# ===================================================================
+# US/FL-EthicsOpinions -- Florida Commission on Ethics — Advisory Opinions (CEO)
+# ===================================================================
+# Formal advisory opinions ("CEO" opinions) of the Florida Commission on
+# Ethics, issued under Part III, ch. 112, Fla. Stat. (the Code of Ethics
+# for Public Officers and Employees) and § 112.322(3). Each opinion is
+# the Commission's written, authoritative interpretation of Florida's
+# conflict-of-interest, voting-conflict, gift, honoraria, financial-
+# disclosure and standards-of-conduct laws, applied to the facts a
+# public officer/employee/candidate presents in a request; the requestor
+# may rely on the opinion. Official state legal interpretation =
+# doctrine. Published as born-digital, full-text HTML pages (no OCR, no
+# JavaScript, no CAPTCHA, no auth). Public-domain Florida state works.
+# ===================================================================
+
+source:
+  id: "US/FL-EthicsOpinions"
+  country: "US"
+  name: "Florida Commission on Ethics — Advisory Opinions (CEO)"
+  url: "https://www.ethics.state.fl.us/Research/Opinions.aspx"
+  description: |
+    Formal advisory opinions ("CEO" opinions) of the Florida Commission
+    on Ethics, issued under Part III, ch. 112, Fla. Stat. — the
+    Commission's authoritative interpretations of Florida's
+    conflict-of-interest, voting-conflict, gift, financial-disclosure
+    and standards-of-conduct laws applied to the facts in each request.
+    Enumerated from the per-year list pages (List74..List99, List00..now)
+    linked from /Research/Opinions.aspx; each opinion is a born-digital
+    full-text HTML page whose text is extracted directly (no OCR).
+    doctrine.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.ethics.state.fl.us"
+  endpoints:
+    index: "/Research/Opinions.aspx"
+    year_list: "/Research/OpinionsLists/List{YY}.aspx"
+    opinion: "/Documents/Opinions/{YY}/CEO {YY}-{NNN}.htm"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/FL-EthicsOpinions/{YY-NNN})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "CEO opinion number (e.g. 'CEO 24-001')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (CEO number + subject heading)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advisory opinion, extracted from the born-digital HTML"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the opinion body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Florida state agency opinions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Advisory opinions of the Florida Commission on Ethics are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Enumeration: GET /Research/Opinions.aspx, collect the per-year list
+    pages /Research/OpinionsLists/List{YY}.aspx (List74..List99 for
+    1974–1999, List00..List{current} for 2000–present); GET each and
+    collect the /Documents/Opinions/{YY}/CEO {YY}-{NNN}.htm opinion links
+    (dozens per year, ~50 years, ~2,500+ opinions total).
+  - Full text: each opinion is a born-digital, standalone full-text HTML
+    page (opinion body only); text extracted by stripping tags — no OCR,
+    no PDF. Opinion filenames contain a literal space (percent-encoded on
+    fetch); some carry a letter suffix (e.g. CEO 76-002A).
+  - opinion_number parsed from the filename; issue date parsed from the
+    body ('Month D, YYYY').
+  - Public-domain Florida state-government data.

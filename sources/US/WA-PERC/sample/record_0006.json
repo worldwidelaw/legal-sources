@@ -1,0 +1,18 @@
+{
+  "_id": "US/WA-PERC/decisions-174017",
+  "_source": "US/WA-PERC",
+  "_type": "case_law",
+  "_fetched_at": "2026-07-03T10:30:19.830464+00:00",
+  "item_id": "174017",
+  "collection": "DECISIONS",
+  "case_number": "721-E-76",
+  "decision_maker": "Executive Director",
+  "case_type": "Certification",
+  "statute": "PECB - RCW 41.56",
+  "issuer": "Washington State Public Employment Relations Commission (PERC)",
+  "title": "City of South Bend, Decision 150 (PECB, 1976)",
+  "text": "City\nof South Bend , Decision 0150\n\nCase #   00721-E-76-0131           Decision #   0150\n\nEmployer   City\nof South Bend\n\nPetitioner   Teamsters, Local 252\n\nDate Issued   12/17/1976\nMethod   Cross-check\n\nNumber of Eligible\nVoters   6\n\nALL PUBLIC WORKS EMPLOYEES AND\nSANITATION EMPLOYEES OF THE CITY OF SOUTH BEND , WASHINGTON .\n\nEXCLUDED: CITY SUPERVISORS\n\nTEAMSTERS, LOCAL 252 CERTIFIED\n\nYou are being directed to the most recent version of the statute which may not be the version considered at the time of the judgment.\n\nContinue\n\nDo not display this message anymore\n\nvar jQueryDecisia = jQuery;\n\n/* */\n\nvar _paq = _paq || [];\n_paq.push([\"trackPageView\"]);\n_paq.push([\"enableLinkTracking\"]);\n_paq.push(['setSecureCookie', true]);\n_paq.push(['setDownloadClasses', \"matomo_download\"]);\n(function()\n{ var u=((\"https:\" == document.location.protocol) ? \"https\" : \"http\") + \"://piwik.lexum.com/\"; _paq.push([\"setTrackerUrl\", u+\"piwik.php\"]); _paq.push([\"setSiteId\", \"49\"]); var d=document, g=d.createElement(\"script\"), s=d.getElementsByTagName(\"script\")[0]; g.type=\"text/javascript\"; g.defer=true; g.async=true; g.src=u+\"piwik.js\"; s.parentNode.insertBefore(g,s); }\n)();\n\nwindow.modalClose = \"Close\";",
+  "url": "https://decisions.perc.wa.gov/waperc/decisions/en/item/174017/index.do",
+  "date": "1976-12-17",
+  "jurisdiction": "US-WA"
+}

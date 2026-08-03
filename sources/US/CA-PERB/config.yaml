@@ -1,0 +1,128 @@
+# ===================================================================
+# US/CA-PERB -- California Public Employment Relations Board — Decisions
+# ===================================================================
+# Board Decisions of the California Public Employment Relations Board
+# (PERB), the state's quasi-judicial agency that adjudicates unfair-
+# practice charges, representation disputes and related matters under
+# California's public-sector labor-relations statutes (EERA, HEERA,
+# Dills Act, MMBA, TEERA, Trial Court Act, etc.). Each Board Decision
+# resolves a specific contested case = case_law. Public domain
+# California state-government works (government edicts).
+#
+# perb.ca.gov is WordPress; every decision is a born-digital text-layer
+# PDF in the media library under /wp-content/uploads/decisionbank/,
+# enumerable via the public WP REST API (~3,900 PDFs). Rich per-decision
+# metadata (issue date, summary, canonical page) comes from the
+# `decision` custom post type (~4,005 posts). No CAPTCHA, no auth.
+# ===================================================================
+
+source:
+  id: "US/CA-PERB"
+  country: "US"
+  name: "California Public Employment Relations Board — Decisions"
+  url: "https://perb.ca.gov/decisions/"
+  description: |
+    Board Decisions of the California Public Employment Relations Board
+    (PERB). PERB adjudicates unfair-practice charges, representation
+    matters and related disputes under California's public-sector labor
+    statutes (EERA public schools/community colleges, HEERA higher
+    education, the Dills Act state employees, the MMBA local government,
+    the Trial Court and Court Interpreter Acts, TEERA, etc.). Each Board
+    Decision resolves a specific contested case = case_law. Enumerated
+    from the WordPress media REST API (~3,900 born-digital PDFs under
+    /wp-content/uploads/decisionbank/), extracted via common.pdf_extract,
+    and enriched from the `decision` custom post type (issue date,
+    Description/Disposition summary, canonical decision-page URL).
+    No CAPTCHA, no auth. ~4,005 decisions, 1976–present.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "wp_rest_media"
+  base_url: "https://perb.ca.gov"
+  endpoints:
+    media_list: "/wp-json/wp/v2/media?search=decisionbank&per_page=100&page={page}"
+    decision_meta: "/wp-json/wp/v2/decision?per_page=100&page={page}"
+    document: "/wp-content/uploads/decisionbank/{file}"
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_id"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CA-PERB/{decisionbank-filename-stem})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "decision_number"
+      description: "PERB Decision number + sector suffix (e.g. '2995E', '2422H', 'J025')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "sector"
+      description: "Statute/sector implied by the number suffix (E=EERA, H=HEERA, M=MMBA, S=Dills Act, C=court)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Document title ('California PERB Decision No. {number}')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "summary"
+      description: "Description/Disposition summary from the decision post (may be null)"
+      type: "string"
+      role: "content"
+      required: false
+    - name: "text"
+      description: "Full text of the PERB Board Decision (PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision issue date (ISO 8601), from the decision post (fallback: last date in body)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — California state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the California Public Employment Relations Board are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Enumeration: /wp-json/wp/v2/media?search=decisionbank&per_page=100&page=N
+    returns ~3,900 PDFs, 100% under /wp-content/uploads/decisionbank/.
+    Filenames are decision-<NUM>.pdf (e.g. decision-2995e.pdf,
+    decision-2422H.pdf) plus a few order-<num>.pdf / <NUM>.pdf "J"-series
+    items. <NUM> = PERB Decision number + one-letter sector suffix.
+  - Metadata: the `decision` custom post type (~4,005 posts) is joined by
+    slug == <NUM>.lower(); it provides the official issue date, a
+    Description/Disposition summary, and the canonical /decision/{num}/
+    page URL. Recent decisions may exist as a post before the PDF is
+    posted (and vice-versa); text always comes from the PDF.
+  - Documents are born-digital text-layer PDFs; text via common.pdf_extract
+    (no OCR). A <200-char guard skips any empty/non-PDF response.
+  - Public domain California state government data.
+  - FOLLOW-UP EXTENSIONS: perb.ca.gov also publishes `alj-decision`
+    (proposed decisions of Administrative Law Judges) and
+    `fact-finder-report` custom post types on the same WP REST API — same
+    media/decisionbank mechanics, easy adds.

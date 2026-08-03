@@ -1,0 +1,33 @@
+country: US
+data_types:
+- case_law
+language: en
+name: US OCAHO Decisions (Office of the Chief Administrative Hearing Officer)
+schedule: monthly
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: volume
+    required: false
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: date
+    required: false
+    type: string
+license:
+  name: "Public domain — 17 U.S.C. § 105"
+  url: https://www.law.cornell.edu/uscode/text/17/105
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "US federal government works — public domain."
+source_id: US/OCAHO
+url: https://www.justice.gov/eoir/office-of-the-chief-administrative-hearing-officer-decisions

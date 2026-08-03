@@ -1,0 +1,127 @@
+# ===================================================================
+# US/CA-FPPC -- California Fair Political Practices Commission
+# Advice Letters and Commission Opinions
+# ===================================================================
+# The two published classes of the FPPC's written interpretations of
+# California's Political Reform Act (Cal. Gov. Code sec. 81000 et seq.):
+# Advice Letters (formal "A-" letters conferring immunity and informal
+# "I-" letters under Gov. Code sec. 83114) and Commission Opinions
+# (formal opinions adopted under sec. 83114(a)). Both are the Commission's
+# authoritative construction of the Act = doctrine. Born-digital PDFs
+# (clean text layer), enumerated via the site's faceted search.
+# ===================================================================
+
+source:
+  id: "US/CA-FPPC"
+  country: "US"
+  name: "California Fair Political Practices Commission — Advice Letters & Commission Opinions"
+  url: "https://www.fppc.ca.gov/the-law/advice-letters-and-commission-opinions/"
+  description: |
+    The written interpretations of California's Political Reform Act by
+    the Fair Political Practices Commission (FPPC), the independent state
+    body that administers and enforces the Act (campaign finance, lobbying,
+    conflicts of interest, gifts, and governmental ethics). The FPPC
+    publishes two document classes, both doctrine: Advice Letters (formal
+    "A-" letters, which confer immunity, and informal "I-" letters, which
+    provide guidance, issued under Gov. Code sec. 83114) and Commission
+    Opinions (formal opinions adopted by the Commission under sec.
+    83114(a)). The corpus (~13,000+ advice letters from the 1970s to
+    present, plus ~150 opinions) is served as born-digital PDFs and
+    enumerated through the site's faceted search.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "html_search"
+  base_url: "https://www.fppc.ca.gov"
+  endpoints:
+    search: "/search/?FacetPublicationType={type}&FacetPageType=Document&page={page}&sortBy=relevance"
+    document: "/siteassets/documents/..."
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/CA-FPPC/{pdf filename stem})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "file_number"
+      description: "FPPC file number (e.g. 'A-88-060', 'I-99-123', or opinion no. '75-173')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "document_type"
+      description: "Advice Letter | Commission Opinion"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Result caption ('{Requester} - {File No} - {Month DD, YYYY}')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the advice letter or opinion (born-digital PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601); parsed from the title, falls back to first date in the body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Issuing body (California Fair Political Practices Commission)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "jurisdiction"
+      description: "ISO 3166-2 subdivision (US-CA)"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (California state government work / public record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Advice letters and opinions of the California Fair Political Practices Commission are official public records of a California state agency interpreting state law; government-edict works published by the FPPC for public use under the Political Reform Act (Cal. Gov. Code sec. 81000 et seq.) and the California Public Records Act."
+
+notes: |
+  - Index: the FPPC site (Optimizely/EPiServer) exposes a server-rendered
+    faceted search. Each publication type is enumerated by paginating
+    /search/?FacetPublicationType={Advice+Letters|Commission+Opinions}
+    &FacetPageType=Document&page={N}&sortBy=relevance (10 results/page).
+    Each result card links a born-digital PDF under /siteassets/documents/
+    with a title "{Requester} - {File No} - {Month DD, YYYY}".
+  - Advice Letters: ~13,372 results (the site caps deep pagination well
+    above ~1,000 pages of results). Commission Opinions: ~149.
+  - Full text: born-digital PDF text layer via common.pdf_extract
+    (opendataloader -> pdfplumber -> pypdf -> OCR fallback). A minority of
+    the oldest scanned letters need OCR; the <200-char guard skips
+    unreadable scans.
+  - File number ([AIO]-YY-NNN or an opinion number) and date are parsed
+    from the card title, falling back to the body for the date.
+  - _id = the PDF filename stem (stable, unique across both series).
+  - UA: www.fppc.ca.gov serves a browser User-Agent fine (no CAPTCHA/JS
+    required for the search HTML or the PDF downloads).

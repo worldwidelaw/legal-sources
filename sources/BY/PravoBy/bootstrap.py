@@ -301,10 +301,20 @@ class PravoByScraper(BaseScraper):
         """
         logger.info(f"Fetching code: {name_ru} ({regnum})")
 
-        # Try etalonline.by first (primary -- works from VPS/datacenter IPs)
+        # Try etalonline.by first (primary -- works from VPS/datacenter IPs).
+        # Code pages are large (100K-1M chars) and the host is bandwidth
+        # throttled, so a single fetch can time out transiently -- retry a few
+        # times before giving up (this is what dropped Hk0900071 to 25/26 on the
+        # VPS, issue #1179).
         etalon_url = f"{ETALON_BASE}{ETALON_DOC_ENDPOINT}{regnum}"
-        html_content = self._try_fetch_document(etalon_url, regnum)
         source_url = etalon_url
+        html_content = None
+        for attempt in range(3):
+            html_content = self._try_fetch_document(etalon_url, regnum)
+            if html_content:
+                break
+            if attempt < 2:
+                logger.info(f"Retry {attempt + 1}/2 for {regnum} on etalonline.by...")
 
         # Fall back to pravo.by if etalonline.by failed
         if not html_content:

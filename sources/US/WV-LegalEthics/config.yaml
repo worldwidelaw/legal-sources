@@ -1,0 +1,103 @@
+# ===================================================================
+# US/WV-LegalEthics -- West Virginia Legal Ethics Opinions (L.E.O.)
+# ===================================================================
+# Official attorney-ethics advisory opinions ("Legal Ethics Opinions",
+# L.E.O.) of the Lawyer Disciplinary Board of the West Virginia Office of
+# Disciplinary Counsel, an arm of the Supreme Court of Appeals of West
+# Virginia. They interpret the WV Rules of Professional Conduct and advise
+# members of the Bar on the ethical propriety of contemplated conduct =
+# doctrine (official government advisory opinion), public domain.
+# Distinct from US/WV-EthicsOpinions (WV Ethics Commission advisory
+# opinions for public officials/employees), US/WV-Courts, US/WV-Legislation.
+# ===================================================================
+
+source:
+  id: "US/WV-LegalEthics"
+  country: "US"
+  name: "West Virginia Legal Ethics Opinions"
+  url: "https://wvodc.org/Legal-Ethics-Opinion"
+  description: |
+    Official Legal Ethics Opinions (L.E.O.) issued by the Lawyer Disciplinary
+    Board of the West Virginia Office of Disciplinary Counsel (an arm of the
+    Supreme Court of Appeals of West Virginia). The opinions interpret the West
+    Virginia Rules of Professional Conduct and advise members of the Bar on the
+    ethical propriety of contemplated conduct. The series runs from the
+    mid-1970s "Legal Ethics Inquiry" numbers (76-1 ...) through the modern
+    "L.E.O. YYYY-NN" numbering (e.g. L.E.O. 2024-01, Artificial Intelligence).
+    The opinions are listed on a single public page and served as scanned PDFs
+    on Google Cloud Storage; full text is recovered by OCR.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 1
+
+api:
+  type: "html_listing"
+  base_url: "https://wvodc.org"
+  endpoints:
+    listing: "/Legal-Ethics-Opinion"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/WV-LegalEthics/{opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Canonical opinion number 'YYYY-NN' (2-digit years expanded)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "'West Virginia Legal Ethics Opinion {number}: {subject}'"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full opinion text (OCR of scanned PDF via common.pdf_extract)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "ISO 8601 issue date (year from opinion number, YYYY-01-01)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "issuer"
+      description: "Lawyer Disciplinary Board of West Virginia"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "url"
+      description: "Direct URL to the source PDF (Google Cloud Storage)"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (US government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Official advisory opinions of a West Virginia government body (the Lawyer
+    Disciplinary Board of the Supreme Court of Appeals of West Virginia). Edicts
+    of government are in the public domain and not subject to copyright.

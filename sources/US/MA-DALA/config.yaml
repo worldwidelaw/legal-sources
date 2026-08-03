@@ -1,0 +1,132 @@
+# ===================================================================
+# US/MA-DALA -- Massachusetts Division of Administrative Law Appeals
+#   General Jurisdiction Decisions
+# ===================================================================
+# Written decisions of the Massachusetts Division of Administrative Law
+# Appeals (DALA), the Commonwealth's central, independent administrative
+# tribunal. DALA magistrates hear contested adjudicatory proceedings
+# between a person and a state agency and issue a written decision that
+# resolves each specific case = case_law. The dominant category is
+# contributory-retirement appeals (CR-*), followed by Fair Labor
+# Division citations (LB-*), Department of Environmental Protection
+# (DEP-*), Veterans' Services (VS-*), Public Health (PH/PHET-*),
+# Disabled Persons Protection Commission (DPPC-*), and others.
+# Published via two Mass.gov "list" pages that link deterministic
+# /doc/{slug}/download document URLs (born-digital text-layer PDFs;
+# a minority of older enforcement scans are image-only and skipped).
+# Public domain Massachusetts state-government works (government edicts).
+# ===================================================================
+
+source:
+  id: "US/MA-DALA"
+  country: "US"
+  name: "Massachusetts Division of Administrative Law Appeals — General Jurisdiction Decisions"
+  url: "https://www.mass.gov/general-jurisdiction-decisions"
+  description: |
+    General Jurisdiction decisions of the Massachusetts Division of
+    Administrative Law Appeals (DALA). DALA is the Commonwealth's central
+    independent administrative tribunal; its magistrates adjudicate
+    contested cases between persons and state agencies (public-employee
+    retirement appeals, Fair Labor Division citations, environmental
+    enforcement, veterans' services, public health, disabled-persons
+    protection, and more) and issue written decisions = case_law.
+    Enumerated from two Mass.gov listing pages (2016-to-present and
+    through-2010) that server-render the /doc/{slug}/download URLs;
+    documents are born-digital PDFs whose text is extracted via
+    common.pdf_extract. No JavaScript, no CAPTCHA, no auth on the listing
+    pages, but the document CDN is Akamai bot-managed (see notes).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_index"
+  base_url: "https://www.mass.gov"
+  endpoints:
+    list_recent: "/lists/general-jurisdiction-decisions-2016-to-present"
+    list_archive: "/lists/general-jurisdiction-decisions-through-2010"
+    document: "/doc/{slug}/download"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 13
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/MA-DALA/{safe-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "DALA docket (e.g. 'CR-23-0184', 'DEP-05-1845'); null when the slug carries no parseable docket"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "category"
+      description: "DALA category code (CR, LB, DEP, VS, PH, PHET, DPPC, RM, ...)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "parties"
+      description: "Party caption derived from the slug (e.g. 'Amaral v. State Bd Of Ret')"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (docket + parties)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the DALA decision (PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the body; falls back to docket year (Jan 1)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Massachusetts state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the Massachusetts Division of Administrative Law Appeals are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - Two Mass.gov "list" pages server-render every decision link:
+    /lists/general-jurisdiction-decisions-2016-to-present (~592 docs) and
+    /lists/general-jurisdiction-decisions-through-2010 (~27 docs). Each
+    decision document is at /doc/{slug}/download; {slug} is a party-name +
+    docket slug, docket format {CATEGORY}-{YY}-{NNNN}.
+  - Discovery + metadata (party caption, docket, category, year) are
+    parsed from the slug and were verified locally: 597 unique documents,
+    544 with a parseable docket; CR (retirement) dominates (~421), then LB
+    (Fair Labor ~32), DEP (~20), VS (~16), PHET (~14), DPPC, RM, ...
+  - VANTAGE: the Mass.gov document CDN is Akamai bot-managed. Listing
+    pages load fine, but /doc/*/download returns a 403 "This page is
+    forbidden" page (rendered as a tiny 2-page PDF) to datacenter /
+    bursty clients; after a few requests Akamai also 403s the listing
+    pages for that IP. The scraper detects the 403-as-PDF sentinel and
+    the <200-char scanned guard. Launch from a residential / less-
+    throttled vantage (or browser automation) that can pull
+    /doc/*/download, confirm full text, then mark complete.
+  - A minority of older Public-Health enforcement documents are image-
+    only scans (0 text) and are auto-skipped by the <200-char guard.
+  - Public domain Massachusetts state-government data.

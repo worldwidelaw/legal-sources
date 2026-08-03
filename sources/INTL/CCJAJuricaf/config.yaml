@@ -1,0 +1,35 @@
+source:
+  id: INTL/CCJAJuricaf
+  country: INTL
+  name: "OHADA Common Court of Justice and Arbitration (CCJA) Decisions (Juricaf)"
+  url: https://juricaf.org/recherche/+/facet_pays:OHADA
+  data_types:
+    - case_law
+  language: fr
+license:
+  name: "ODbL 1.0 (Juricaf/AHJUCAF)"
+  url: https://opendatacommons.org/licenses/odbl/1-0/
+  commercial_use: true
+  attribution_required: true
+  share_alike: true
+  no_derivatives: false
+  notes: "OHADA CCJA decisions published on Juricaf by AHJUCAF."
+fetcher:
+  type: api_json
+  pagination: page_number
+  rate_limit: 2.0
+schema:
+  key_fields:
+    - name: _id
+      required: true
+      type: string
+  date_fields:
+    - date
+    - _fetched_at
+  text_fields:
+    - text
+    - title
+notes: >
+  OHADA Cour commune de justice et d'arbitrage (CCJA) decisions via Juricaf.
+  Full judgment text in French. ODbL 1.0. Distinct from INTL/OHADA-CCJA
+  (ohada.com), which carries only short abstracts.

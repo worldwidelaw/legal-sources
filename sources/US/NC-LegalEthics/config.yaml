@@ -1,0 +1,120 @@
+# ===================================================================
+# US/NC-LegalEthics -- North Carolina State Bar
+#                      — Legal (Attorney) Ethics Opinions
+# ===================================================================
+# Formal ethics opinions adopted by the Council of the North Carolina
+# State Bar (the agency that licenses and regulates lawyers in NC).
+# The Bar's Ethics Committee interprets the North Carolina Rules of
+# Professional Conduct and advises lawyers on their professional-
+# responsibility obligations = doctrine. Three series: CPR (pre-1985
+# Code), RPC (1985 Rules), and Formal Ethics Opinions (Revised Rules
+# 1997+). Born-digital HTML full text (real text, no OCR, no CAPTCHA,
+# no auth). Public-domain North Carolina State Bar official records.
+# Distinct from US/NC-EthicsOpinions (the State Ethics Commission,
+# which covers public officials/employees, not attorneys) and from
+# US/NC-AGOpinions (Attorney General legal opinions).
+# ===================================================================
+
+source:
+  id: "US/NC-LegalEthics"
+  country: "US"
+  name: "North Carolina State Bar — Legal (Attorney) Ethics Opinions"
+  url: "https://www.ncbar.gov/for-lawyers/ethics-and-governing-rules/ethics-opinions/"
+  description: |
+    Ethics opinions adopted by the Council of the North Carolina State
+    Bar on the recommendation of its Ethics Committee. Each opinion
+    answers a specific inquiry about a lawyer's obligations under the
+    North Carolina Rules of Professional Conduct and states the
+    Committee's conclusion. The corpus spans three series — CPR
+    (opinions under the pre-1985 Code of Professional Responsibility),
+    RPC (opinions under the 1985 Rules), and Formal Ethics Opinions
+    (Revised Rules, 1997-present) — published as born-digital HTML
+    pages; the full text is extracted directly from the HTML.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "json_search + html_detail"
+  base_url: "https://www.ncbar.gov"
+  endpoints:
+    listing: "/for-lawyers/ethics-and-governing-rules/ethics-opinions/"
+    search: "/myethicsopinions/search/"   # POST JSON, paginated (PageNumber, 20/page)
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NC-LegalEthics/{slug of opinion_number})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion designation (e.g. 'CPR 2', 'RPC 45', '2024 Formal Ethics Opinion 1')"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "title"
+      description: "Full opinion headline (designation + topic)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the opinion (Inquiry / Opinion / analysis + footnotes), from the HTML page (div.ethicsContent)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Adoption date (ISO 8601), parsed from the index dateString"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "categories"
+      description: "Topical categories assigned by the State Bar (may be empty for older opinions)"
+      type: "array"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (North Carolina State Bar Official Record)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Ethics opinions adopted by the North Carolina State Bar are official public records of a North Carolina state regulatory agency, published on the State Bar website for public use with no copyright restriction."
+
+notes: |
+  - Discovery: the listing page is a Lit web component backed by a
+    public JSON search endpoint. POST /myethicsopinions/search/ with
+    {IndexGuid, Term:[], Status:["adopted"], StartDate:"", EndDate:"",
+    Categories:[], PageNumber:<0-based>, SortBy:"date-asc"} returns
+    data.results[] (headline, dateString, statusValue, url) plus
+    totalCount/totalPages; 20 results per page. ~578 adopted opinions
+    (CPR + RPC + Formal Ethics Opinions), 1974-present, 29 pages.
+  - IndexGuid is read live from the listing page's
+    <ethics-opinions-index-page-sidebar-lit indexGuid="..."> attribute,
+    with a hard-coded fallback.
+  - Full text: each result "url" is a born-digital HTML opinion page;
+    the body sits in <div class="ethicsContent"> (Inquiry / Opinion /
+    analysis + footnotes) and is de-tagged — no OCR, no PDF.
+  - Type: every document is a formal ethics opinion interpreting the
+    Rules of Professional Conduct = doctrine.
+  - Date: parsed from the index dateString (e.g. "November 1, 2024").
+  - Distinct from US/NC-EthicsOpinions (State Ethics Commission,
+    public officials) and US/NC-AGOpinions (Attorney General opinions).

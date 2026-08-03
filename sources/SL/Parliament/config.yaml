@@ -1,0 +1,89 @@
+# ═══════════════════════════════════════════════════════════════════
+# SL/Parliament — Sierra Leone Parliament: Acts of Parliament
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "SL/Parliament"
+  country: "SL"
+  name: "Sierra Leone Parliament — Acts of Parliament"
+  url: "https://www.parliament.gov.sl/acts.html"
+  description: |
+    Acts of Parliament of Sierra Leone published by the national Parliament
+    on parliament.gov.sl. The static index at /acts.html lists per-year pages
+    (acts-{YEAR}-{NN}.html) from 1920 to the present, each linking directly to
+    full-text Act PDFs under /uploads/acts/{Title}.pdf (born-digital). Language:
+    English. This is the official Parliament legislation source, superseding the
+    geo/IP-blocked SL/SierraLII LII aggregator.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.parliament.gov.sl"
+  selectors:
+    list_page: "https://www.parliament.gov.sl/acts.html"
+    item_selector: "a[href$='.pdf']"
+
+data_model:
+  type: "legislation"
+  source_nature: "primary"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "as_enacted"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 8
+  key_fields:
+    - name: "_id"
+      description: "Unique Act identifier (title slug)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Act"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Enactment year derived from the Act title (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+  secondary_fields:
+    - name: "url"
+      description: "Source PDF URL"
+    - name: "jurisdiction"
+      description: "ISO country code (SL)"
+    - name: "language"
+      description: "Document language (en)"
+  probably_ignorable: []
+
+# ── License ──────────────────────────────────────────────────────
+license:
+  id: "pd-gov"
+  name: "Government Edict — Public Domain"
+  url: "https://www.parliament.gov.sl/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Acts of Parliament are government edicts of the Republic of Sierra Leone and
+    are not subject to copyright. Published on the official parliament.gov.sl
+    domain.

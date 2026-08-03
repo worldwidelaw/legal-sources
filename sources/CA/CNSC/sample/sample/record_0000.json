@@ -1,0 +1,16 @@
+{
+  "_id": "CA/CNSC/a8cfde6331bd59eb",
+  "_source": "CA/CNSC",
+  "_type": "case_law",
+  "_fetched_at": "2026-07-06T05:55:29.206223+00:00",
+  "title": "Record of Decision - Cameco Corporation - Request to protect confidential information",
+  "text": "Record of Decision\nCommission Ruling on\nRequest to Protect Confidential Information\nRequestor: Cameco Corporation\nMatter: CMD 23-H107—Cameco's Port Hope Conversion Facility - Financial\nGuarantee\nDate of proceeding: Written Hearing, to be held in December 2023\nWith respect to the matter noted above, the Commission has considered Cameco Corporation’s\nrequest for confidentiality for the following documents for the December 2023 Commission hearing\nin writing. This request was made pursuant to rule 12 of the Canadian Nuclear Safety Commission\nRules of Procedure (the Rules).\nThe Commission’s ruling on this request is that, for the purposes of this proceeding:\nRULING\nDOCUMENT TITLE INFORMATION WILL MEASURE(S) TO BE TAKEN\nBE PROTECTED\nYES NO\n1. Port Hope Conversion Facility ✓ ☐ Only the non-confidential (redacted) version or\nPreliminary Decommissioning Plan 2022 summary shall be disclosed (see note, if\napplicable).\nWhere the Commission has ruled in favour of confidentiality, the Commission is satisfied that\n▪ as per subrule 12(1) (b) of the Rules, the information is confidential information of a financial,\ncommercial, scientific, technical, personal or other nature that is treated consistently as\nconfidential and the person affected has not consented to the disclosure;\n▪ as per 12(2)(a) and 12(2)(b) of the Rules, protection of the information outweighs in\nimportance the public interest in public hearings and disclosure of evidence, and the measures\nare designed so as not to affect the public nature of the proceeding except to the extent\nnecessary to adequately protect the information; and\n▪ as per subrule 12(3) (b) of the Rules, the publication of information given to the Commission\nor designated officer be restricted or prohibited.\nTEMPLATE: e-Doc 7050588\ne-Doc 7155269 (Word)\ne-Doc 7170565 (PDF)",
+  "date": "2024-01-12",
+  "url": "https://api.cnsc-ccsn.gc.ca/dms/digital-medias/Decision-CommissionRuling-RequestforConfidentiality-CMD23-H107-e.pdf/object",
+  "doc_id": "a8cfde6331bd59eb",
+  "reference": "2023-H-107",
+  "applicant": "Cameco Corporation",
+  "facility": "Port Hope Uranium Conversion Facility",
+  "hearing_type": "Hearing in writing",
+  "pdf_url": "https://api.cnsc-ccsn.gc.ca/dms/digital-medias/Decision-CommissionRuling-RequestforConfidentiality-CMD23-H107-e.pdf/object"
+}

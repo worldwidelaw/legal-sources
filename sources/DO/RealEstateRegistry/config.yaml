@@ -1,0 +1,91 @@
+# ═══════════════════════════════════════════════════════════════════
+# DO/RealEstateRegistry — Registro Inmobiliario / Jurisdicción Inmobiliaria
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "DO/RealEstateRegistry"
+  country: "DO"
+  name: "Registro Inmobiliario — Jurisdicción Inmobiliaria (Real Estate Courts)"
+  url: "https://ri.gob.do/?page_id=3929"
+  description: |
+    Resoluciones sobre Recursos Jerárquicos issued by the Dirección Nacional de
+    Registro de Títulos (DNRT) of the Dominican Real Estate Jurisdiction —
+    adjudicatory decisions resolving hierarchical administrative appeals against
+    acts of the title registry. Full-text PDFs, Spanish, 2019–present.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://ri.gob.do"
+  selectors:
+    list_page: "https://ri.gob.do/?page_id=3929"
+    item_selector: "a[href*='DNRT-R-']"
+
+data_model:
+  type: "case_law"
+  source_nature: "gazette"
+  primary_key: "resolution_number"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "resolution_number"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "resolution_number"
+      description: "DNRT resolution identifier, e.g. DNRT-R-2025-00250"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Human-readable title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the resolution"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the resolution was issued (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+  secondary_fields:
+    - name: "expediente"
+      description: "Case file (expediente) number, e.g. DNRT-E-2025-1928"
+    - name: "court"
+      description: "Issuing authority"
+    - name: "url"
+      description: "Link to the source PDF"
+  probably_ignorable: []
+
+license:
+  id: "pd-gov"
+  name: "Public Domain (Government)"
+  url: null
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official acts of the Dominican Real Estate Jurisdiction, published under the publicity mandate of Ley No. 108-05 de Registro Inmobiliario."
+
+notes: |
+  Spanish-language adjudicatory resolutions (recursos jerárquicos) from the DNRT.
+  ~1,200 full-text PDFs indexed by year/month at ri.gob.do/?page_id=3929 (2019–present).
+  The Jurisdicción Inmobiliaria's judicial sentencias themselves are NOT openly
+  browsable (the Unidad de Consulta requires property identifiers / in-person access),
+  so these DNRT resolutions are the openly accessible decision corpus from ri.gob.do.
+  ri.gob.do serves a cert chain some clients reject; the scraper disables TLS verify.

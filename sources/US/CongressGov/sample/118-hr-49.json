@@ -1,0 +1,19 @@
+{
+  "_id": "118-hr-49",
+  "_source": "US/CongressGov",
+  "_type": "legislation",
+  "_fetched_at": "2026-07-12T20:01:07.291350+00:00",
+  "title": "REVIEW Act of 2023",
+  "text": "To amend title 5, United States Code, to postpone the effective date of high-impact rules pending judicial review.\nRequire Evaluation before Implementing Executive Wishlists Act of 2023 REVIEW Act of 2023 1.Short titleThis Act may be cited as the Require Evaluation before Implementing Executive Wishlists Act of 2023 or the REVIEW Act of 2023.\n2.Relief pending reviewSection 705 of title 5, United States Code, is amended— (1)by striking When and inserting the following: (a)In generalWhen; and (2)by adding at the end the following: (b)High-Impact rules (1)DefinitionsIn this subsection— (A)the term Administrator means the Administrator of the Office of Information and Regulatory Affairs of the Office of Management and Budget; and (B)the term high-impact rule means any rule that the Administrator determines may impose an annual cost on the economy of not less than $1,000,000,000.\n(2)IdentificationA final rule may not be published or take effect until— (A)the agency making the rule submits the rule to the Administrator; and (B)the Administrator makes a determination as to whether the rule is a high-impact rule, which shall be published by the agency with the final rule.\n(3)Relief (A)In generalExcept as provided in subparagraph (B), an agency shall postpone the effective date of a high-impact rule of the agency until the final disposition of all actions seeking judicial review of the rule.\n(B)Failure to timely seek judicial reviewNotwithstanding section 553(d), if no person seeks judicial review of a high-impact rule— (i)during any period explicitly provided for judicial review under the statute authorizing the making of the rule; or (ii)if no such period is explicitly provided for, during the 60-day period beginning on the date on which the high-impact rule is published in the Federal Register,the high-impact rule may take effect as early as the date on which the applicable period ends.\n(4)Rule of constructionNothing in this subsection may be construed to impose any limitation under law on any court against the issuance of any order enjoining the implementation of any rule..",
+  "date": "2023-01-09",
+  "url": "https://www.congress.gov/bill/118th-congress/house-bill/49",
+  "congress": 118,
+  "bill_type": "HR",
+  "bill_number": "49",
+  "sponsor": "Rep. Bergman, Jack [R-MI-1]",
+  "cosponsors_count": 7,
+  "policy_area": "Government Operations and Politics",
+  "origin_chamber": "House",
+  "latest_action": "Referred to the House Committee on the Judiciary.",
+  "update_date": "2025-12-05T08:17:44Z"
+}

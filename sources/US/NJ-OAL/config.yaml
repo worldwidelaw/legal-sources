@@ -1,0 +1,122 @@
+# ===================================================================
+# US/NJ-OAL -- New Jersey Office of Administrative Law
+#   ALJ Initial & Final Decisions
+# ===================================================================
+# Decisions issued by Administrative Law Judges of the New Jersey
+# Office of Administrative Law (OAL) — New Jersey's central, independent
+# tribunal that adjudicates contested cases between persons and State
+# agencies. Each Initial Decision (and adopted Final Decision) resolves
+# a specific contested case = case_law. Published via the Rutgers Law
+# full-text OAL archive (njlaw.rutgers.edu/OAL), whose search backend
+# server-renders links to born-digital text-layer PDFs at deterministic
+# URLs (/OAL/NJLAW-pdfs/{initial,final}/{docket}.pdf). No JavaScript, no
+# CAPTCHA, no auth. Public domain New Jersey state government works
+# (government edicts).
+# ===================================================================
+
+source:
+  id: "US/NJ-OAL"
+  country: "US"
+  name: "New Jersey Office of Administrative Law — ALJ Decisions"
+  url: "https://njlaw.rutgers.edu/OAL/"
+  description: |
+    Administrative Law Judge Initial and Final Decisions of the New
+    Jersey Office of Administrative Law (OAL), New Jersey's central
+    independent tribunal for contested cases between persons and State
+    agencies (Education/special-education due process, Medicaid/Medical
+    Assistance, Civil Service, Children & Families, Banking & Insurance,
+    Public Utilities, Labor, Environmental Protection, and more). Each
+    decision resolves a specific contested case = case_law. Enumerated
+    from the Rutgers Law OAL full-text search backend
+    (njlaw.rutgers.edu/OAL/search.php?q=&limit=5000) → deterministic
+    born-digital PDF URLs; text extracted via common.pdf_extract. No
+    JavaScript, no CAPTCHA, no auth. Coverage October 1997-present,
+    10k+ decisions.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_search"
+  base_url: "https://njlaw.rutgers.edu"
+  endpoints:
+    search: "/OAL/search.php?q={term}&limit=5000"
+    document: "/OAL/NJLAW-pdfs/{sub}/{docket}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "slug"
+  update_strategy: "full_replace"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/NJ-OAL/{sub}-{docket})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "case_number"
+      description: "OAL docket (e.g. 'EDU 00255-21'); null if unparseable"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "agency"
+      description: "Transmitting State agency (from the docket prefix)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Document title (decision kind + OAL docket)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the ALJ decision (PDF text layer)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601); prefers 'Decided:' in body, falls back to docket year"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — New Jersey state administrative decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the New Jersey Office of Administrative Law are official state-government works in the public domain under the government-edicts doctrine."
+
+notes: |
+  - The Rutgers Law OAL archive (njlaw.rutgers.edu/OAL) exposes a
+    full-text search backend whose undocumented `limit` param removes
+    the default result cap: /OAL/search.php?q={term}&limit=5000 returns
+    HTML with one <a> per matching decision, href
+    /OAL/NJLAW-pdfs/{initial|final}/{docket}.pdf. `q` matches decision
+    body text and docket codes, so querying every agency transmittal
+    code (edu, hma, csv, eds, caf, ...) plus a handful of broad legal
+    terms and unioning the hrefs enumerates the whole corpus.
+  - Docket stems come in two forms: unsuffixed (edu13804-24.pdf) and
+    per-transmittal (edu00255-21_1.pdf). The first 2-4 letters encode
+    the transmitting agency; the trailing "-YY" gives the docket year
+    (fallback date; 90-99 => 19xx else 20xx).
+  - initial/ = ALJ Initial Decision; final/ = the adopted Final Decision
+    of the agency head where present. Both are kept (distinct _id).
+  - PDFs are born-digital text-layer; extracted via common.pdf_extract
+    (pdfplumber). A <200-char guard auto-skips empty/placeholder docs.
+  - date prefers an explicit "Decided: <Month D, YYYY>" in the body,
+    then any Month D, YYYY, then the docket year (Jan 1).
+  - Public domain New Jersey state government data.

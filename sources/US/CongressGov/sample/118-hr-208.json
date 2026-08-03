@@ -1,0 +1,19 @@
+{
+  "_id": "118-hr-208",
+  "_source": "US/CongressGov",
+  "_type": "legislation",
+  "_fetched_at": "2026-07-12T20:01:23.066459+00:00",
+  "title": "Pet Safety and Protection Act of 2023",
+  "text": "To amend the Animal Welfare Act to ensure that all dogs and cats used by research facilities are obtained legally.\nPet Safety and Protection Act of 2023 1.Short titleThis Act may be cited as the Pet Safety and Protection Act of 2023.\n2.Protection of pets (a)Research facilitiesSection 7 of the Animal Welfare Act (7 U.S.C.\n2137) is amended to read as follows: 7.Sources of dogs and cats for research facilities (a)Definition of personIn this section, the term person means any individual, partnership, firm, joint stock company, corporation, association, trust, estate, pound, shelter, or other legal entity.\n(b)Use of dogs and catsNo research facility or Federal research facility may use a dog or cat for research or educational purposes if the dog or cat was obtained from a person other than a person described in subsection (d).\n(c)Selling, donating, or offering dogs and catsNo person, other than a person described in subsection (d), may sell, donate, or offer a dog or cat to any research facility or Federal research facility.\n(d)Permissible sourcesA person from whom a research facility or a Federal research facility may obtain a dog or cat for research or educational purposes under subsection (b), and a person who may sell, donate, or offer a dog or cat to a research facility or a Federal research facility under subsection (c), shall be— (1)a dealer licensed under section 3 that has bred and raised the dog or cat; (2)a publicly owned and operated pound or shelter that— (A)is registered with the Secretary; (B)is in compliance with section 28(a)(1) and with the requirements for dealers in subsections (b) and (c) of section 28; and (C)obtained the dog or cat from its legal owner, other than a pound or shelter; (3)a person that is donating the dog or cat and that— (A)bred and raised the dog or cat; or (B)owned the dog or cat for not less than 1 year immediately preceding the donation; (4)a research facility licensed by the Secretary; and (5)a Federal research facility licensed by the Secretary.\n(e)Penalties (1)In generalA person that violates this section shall be fined $1,000 for each violation.\n(2)Additional penaltyA penalty under this subsection shall be in addition to any other applicable penalty.\n(f)No required sale or donationNothing in this section requires a pound or shelter to sell, donate, or offer a dog or cat to a research facility or Federal research facility..\n(b)Federal research facilitiesSection 8 of the Animal Welfare Act (7 U.S.C.\n2138) is amended— (1)by striking Sec.\n8.\nNo department and inserting the following: 8.Federal research facilitiesExcept as provided in section 7, no department; (2)by striking research or experimentation or; and (3)by striking such purposes and inserting that purpose.\n(c)CertificationSection 28(b)(1) of the Animal Welfare Act (7 U.S.C.\n2158(b)(1)) is amended by striking individual or entity and inserting research facility or Federal research facility.\n3.Effective dateThe amendments made by section 2 take effect on the date that is 90 days after the date of enactment of this Act.",
+  "date": "2023-01-09",
+  "url": "https://www.congress.gov/bill/118th-congress/house-bill/208",
+  "congress": 118,
+  "bill_type": "HR",
+  "bill_number": "208",
+  "sponsor": "Rep. Smith, Christopher H. [R-NJ-4]",
+  "cosponsors_count": 33,
+  "policy_area": "Animals",
+  "origin_chamber": "House",
+  "latest_action": "Referred to the House Committee on Agriculture.",
+  "update_date": "2025-05-27T14:16:16Z"
+}

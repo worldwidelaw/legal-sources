@@ -1,0 +1,25 @@
+{
+  "_id": "CAIL2018-first_stage_train-e52f5a08f8a77386",
+  "_source": "CN/HuggingFace-CAIL2018",
+  "_type": "case_law",
+  "_fetched_at": "2026-04-28T00:29:10.603838+00:00",
+  "title": "孙某盗窃案",
+  "text": "酒泉市肃州区人民检察院指控，1、2015年5月15日18时许，被告人孙某窜至酒泉市肃州区南大街蚂蚁服装店内，趁被害人沈某某不备，盗窃沈某某装在上衣口袋内的白色三星7109型手机一部，后将该手机以200元价格出售给一陌生男子。该手机价值1500元；\r\n2、2015年5月16日22时许，被告人孙某窜至酒泉市肃州区大明步行街贝某地婴童坊内，趁被害人马某某不备，盗窃马某某放在吧台旁的黄色女式包内的绿色钱包一个。钱包内装有人民币4000元、身份证、银行卡等物品，损失价值合计4000元。",
+  "date": "2018-01-01",
+  "url": "https://huggingface.co/datasets/china-ai-law-challenge/cail2018",
+  "split": "first_stage_train",
+  "relevant_articles": [
+    264
+  ],
+  "accusation": [
+    "盗窃"
+  ],
+  "criminals": [
+    "孙某"
+  ],
+  "imprisonment_months": 10.0,
+  "punish_of_money": 0.0,
+  "death_penalty": false,
+  "life_imprisonment": false,
+  "sentence_summary": "有期徒刑10.0个月"
+}

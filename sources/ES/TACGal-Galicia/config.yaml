@@ -1,0 +1,85 @@
+source:
+  id: ES/TACGal-Galicia
+  name: Tribunal Administrativo de Contratación Pública de Galicia (TACGal)
+  url: https://tacgal.xunta.gal/sixtacweb/resolucions/?locale=es
+  country: ES
+  region: Galicia
+  jurisdiction: ES-GA
+  data_types:
+    - case_law
+  auth:
+    type: none
+  license:
+    name: "Xunta de Galicia open data (PSI reuse, Ley 37/2007)"
+    url: "https://www.xunta.gal/aviso-legal"
+    commercial_use: true
+    attribution_required: true
+    share_alike: false
+    no_derivatives: false
+    notes: "Reutilización de información del sector público (Ley 37/2007)."
+
+api:
+  base_url: https://tacgal.xunta.gal/sixtacweb/resolucions/
+  list_url: "https://tacgal.xunta.gal/sixtacweb/resolucions/?locale=es&page={page}&size=100"
+  download_url: "https://tacgal.xunta.gal/sixtacweb/resolucions/download/{doc_id}"
+  page_size: 100
+  pagination: "page param (1-indexed), size=100"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "string"
+      required: false
+    - name: "resolucion_number"
+      type: "string"
+      required: false
+    - name: "recurso_number"
+      type: "string"
+      required: false
+    - name: "decision"
+      type: "string"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+coverage:
+  temporal:
+    start: 2018-04-01
+    end: present
+  document_types:
+    - Resolución
+  estimated_count: 1992
+
+notes: |
+  Tribunal Administrativo de Contratación Pública de Galicia (TACGal). Resolves
+  the "recurso especial en materia de contratación pública" (Ley 9/2017) for
+  Galicia and issues binding resolucións. The public "Resolucións" search
+  (sixtacweb app on tacgal.xunta.gal) renders a paginated HTML table (100/page);
+  each row exposes the document id via the download anchor. Each document is
+  fetched from /sixtacweb/resolucions/download/{doc_id}, which returns a
+  born-digital PDF wrapped in a multipart/form-data envelope (inner PDF is
+  extracted from the %PDF..%%EOF span and read with PyMuPDF, no OCR). The
+  download endpoint does not enforce the site's reCAPTCHA. Regional sibling of
+  ES/TARCJA-Andalucia, ES/OARC-Euskadi, ES/TACPN-Navarra, ES/TACPA-Aragon,
+  ES/TCCSP-Catalunya, ES/TARCCyL and ES/TACPC-Canarias; open-data alternative to
+  the captcha-blocked central tribunal (ES/TACRC).

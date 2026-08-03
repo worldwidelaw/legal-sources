@@ -1,0 +1,120 @@
+# ===================================================================
+# US/WI-EthicsOpinions -- Wisconsin Ethics Commission
+#                         — Formal Advisory Opinions
+# ===================================================================
+# Formal advisory opinions issued by the Wisconsin Ethics Commission
+# and its statutory predecessors (the Wisconsin Ethics Board and the
+# Government Accountability Board / GAB) under Wis. Stat. § 19.46(2).
+# Each opinion is the Commission's official written interpretation of
+# the state Code of Ethics for public officials (Wis. Stat. ch. 19,
+# subch. III), the lobbying law (ch. 13, subch. III) and the campaign-
+# finance law (ch. 11) = doctrine. Born-digital, full-text PDFs (real
+# text layer, no OCR, no CAPTCHA, no auth). Public-domain State of
+# Wisconsin government works.
+# ===================================================================
+
+source:
+  id: "US/WI-EthicsOpinions"
+  country: "US"
+  name: "Wisconsin Ethics Commission — Formal Advisory Opinions"
+  url: "https://ethics.wi.gov/Pages/Resources/ResourcesOverview.aspx"
+  description: |
+    Formal advisory opinions of the Wisconsin Ethics Commission and its
+    predecessors (the Wisconsin Ethics Board and the Government
+    Accountability Board). Under Wis. Stat. § 19.46(2) the Commission
+    issues formal advisory opinions construing the Code of Ethics for
+    public officials (Wis. Stat. ch. 19, subch. III), the lobbying law
+    (ch. 13, subch. III) and the campaign-finance law (ch. 11). Formal
+    advisory opinions are public record and are published in the
+    Commission's "Resources" document library as born-digital PDFs whose
+    text layer is extracted directly (no OCR).
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://ethics.wi.gov"
+  endpoints:
+    listing: "/Pages/Resources/ResourcesOverview.aspx"
+    files: "/Resources/{filename}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "opinion_number"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/WI-EthicsOpinions/{opinion_number or filename slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "opinion_number"
+      description: "Opinion number/citation (e.g. 00-02, 2008 GAB 03, 04 Op. Eth Bd 103 (1981))"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "title"
+      description: "Opinion number + short subject caption"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "topic"
+      description: "Topic tag from the Commission's library (e.g. Ethics, Lobbying, Campaign Finance)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "text"
+      description: "Full text of the opinion, from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Issue date (ISO 8601), parsed from the opinion body ('Month DD, YYYY'), fallback to the year embedded in the opinion number"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (State of Wisconsin Government Work)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Formal advisory opinions of the Wisconsin Ethics Commission are official public records of the State of Wisconsin, published for public use with no copyright restriction (government edict)."
+
+notes: |
+  - Enumeration: GET the SharePoint "Resources" library view at
+    https://ethics.wi.gov/Pages/Resources/ResourcesOverview.aspx . It is
+    rendered as one server-side HTML table; each document is a <tr> of
+    <td class="ms-vb2"> cells [modified date, audience, type, topic,
+    filename, title]. Rows whose type cell == "Opinion" are the formal
+    advisory opinions (~313, covering 1974–present).
+  - IMPORTANT UA QUIRK: ethics.wi.gov serves the full server-rendered
+    list table only to NON-browser clients. A Mozilla/browser User-Agent
+    returns a JavaScript shell with zero rows; a plain UA
+    (python-requests/curl) returns all rows. Same inversion as mass.gov
+    Akamai. The scraper sends a plain UA.
+  - Full text: each file resolves to https://ethics.wi.gov/Resources/{filename}
+    (percent-encoded) and is a born-digital PDF with a real text layer,
+    extracted via the shared common.pdf_extract backend — no OCR.
+  - Type: every "Opinion" document is a formal advisory opinion = doctrine.
+    Withdrawn opinions are retained (they carry the withdrawal note in the
+    body) as official records.
+  - Date: parsed from the first "Month DD, YYYY" in the opinion body, with
+    a fallback to the year embedded in the opinion number (NN- prefix →
+    19NN/20NN; "YYYY GAB N"; "(YYYY)" citation).
