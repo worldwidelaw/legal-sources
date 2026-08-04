@@ -1,0 +1,37 @@
+{
+  "_id": "BR-DATAJUD-STJ_SUP_00483874220208260100",
+  "_source": "BR/DataJudCNJ",
+  "_type": "case_law",
+  "_fetched_at": "2026-07-28T23:16:38.553299+00:00",
+  "title": "Agravo em Recurso Especial - 0048387-42.2020.8.26.0100 - STJ",
+  "text": "Classe processual: Agravo em Recurso Especial\n\nAssuntos: Inventário e Partilha\n\nOrgao julgador: PRESIDÊNCIA\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-04-19 Distribuição (tipo_de_distribuicao_redistribuicao: competência exclusiva)\n2023-05-02 Documento (tipo_de_documento: Certidão)\n2023-05-02 Conclusão (tipo_de_conclusao: para decisão)\n2023-05-29 Não Conhecimento de recurso (tipo_de_peticao: Agravo em recurso especial)\n2023-05-30 Petição (tipo_de_peticao: Procuração/substabelecimento com reserva de poderes)\n2023-06-05 Petição (tipo_de_peticao: Embargos de declaração)\n2023-06-06 Petição (tipo_de_peticao: Impugnação)\n2023-06-07 Conclusão (tipo_de_conclusao: para decisão)\n2023-03-27 Recebimento\n2023-04-20 Publicação\n2023-05-31 Publicação\n2023-06-07 Publicação\n2023-06-22 Não-Acolhimento de Embargos de Declaração\n2023-06-26 Publicação\n2023-08-18 Trânsito em julgado\n2023-08-18 Baixa Definitiva\n2023-04-19 Ato ordinatório\n2023-04-19 Disponibilização no Diário da Justiça Eletrônico\n2023-05-29 Ato ordinatório\n2023-05-30 Protocolo de Petição\n2023-05-30 Disponibilização no Diário da Justiça Eletrônico\n2023-06-05 Protocolo de Petição\n2023-06-05 Ato ordinatório\n2023-06-06 Protocolo de Petição\n2023-06-06 Disponibilização no Diário da Justiça Eletrônico\n2023-06-22 Ato ordinatório\n2023-06-23 Disponibilização no Diário da Justiça Eletrônico",
+  "date": "2023-04-14",
+  "date_last_update": "2024-07-24",
+  "case_number": "0048387-42.2020.8.26.0100",
+  "case_number_raw": "00483874220208260100",
+  "court": "STJ",
+  "court_tier": 1,
+  "chamber": "PRESIDÊNCIA",
+  "jurisdiction": "Brazil",
+  "language": "pt",
+  "country": "BR",
+  "decision_type": "Agravo em Recurso Especial",
+  "classe_codigo": 11881,
+  "assuntos": [
+    "Inventário e Partilha"
+  ],
+  "grau": "SUP",
+  "movement_count": 27,
+  "url": "https://www.cnj.jus.br/sistemas/datajud/",
+  "_raw_fields": {
+    "sistema": {
+      "codigo": 8,
+      "nome": "Outros"
+    },
+    "formato": {
+      "codigo": 1,
+      "nome": "Eletrônico"
+    },
+    "@timestamp": "2025-02-06T11:19:21.417963869Z"
+  }
+}

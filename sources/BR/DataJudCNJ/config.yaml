@@ -1,0 +1,146 @@
+auth:
+  type: none
+base_url: https://api-publica.datajud.cnj.jus.br
+country: BR
+data_types:
+- case_law
+description: >
+  Public judicial process metadata from every Brazilian court, via the CNJ
+  DataJud public API (Resolucao CNJ 331/2020, Portaria CNJ 160/2020). Each
+  record carries the CNJ unified case number, procedural class, legal subjects,
+  judging body, court instance and the full dated procedural history
+  (movimentos), coded against the CNJ national tables. Metadata only: CNJ does
+  not publish the text of judgments through this API. Processes under judicial
+  secrecy (nivelSigilo > 0) are excluded by the collector.
+language: pt
+name: CNJ DataJud Public API (all Brazilian courts)
+rate_limit:
+  burst: 3
+  requests_per_second: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: case_number
+    required: true
+    type: string
+  - name: court
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+source_id: BR/DataJudCNJ
+
+# Court aliases forming https://api-publica.datajud.cnj.jus.br/api_publica_{alias}/_search
+# Published at https://datajud-wiki.cnj.jus.br/api-publica/endpoints/
+#
+# Every alias below was called individually on 2026-07-28 and returned HTTP 200.
+# 90 of the 91 aliases the CNJ wiki publishes are reachable. Two notes:
+#   - The wiki publishes "tre-dft" for the Federal District electoral court.
+#     That alias returns HTTP 404. The working alias is "tre-df" (5.907 records).
+#     Corrected here; reported upstream to CNJ.
+#   - "trt21" answers correctly but its index is empty (0 records). Kept in the
+#     list so it starts producing the day CNJ backfills it.
+# A transient HTTP 429 on "tjmt" during the sweep cleared on retry; the API rate
+# limits rather than denies, which is why rate_limit above is deliberately low.
+
+tribunals:
+# Superior courts
+- stj
+- tst
+- tse
+- stm
+# Federal justice
+- trf1
+- trf2
+- trf3
+- trf4
+- trf5
+- trf6
+# State justice
+- tjac
+- tjal
+- tjam
+- tjap
+- tjba
+- tjce
+- tjdft
+- tjes
+- tjgo
+- tjma
+- tjmg
+- tjms
+- tjmt
+- tjpa
+- tjpb
+- tjpe
+- tjpi
+- tjpr
+- tjrj
+- tjrn
+- tjro
+- tjrr
+- tjrs
+- tjsc
+- tjse
+- tjsp
+- tjto
+# Labor justice
+- trt1
+- trt2
+- trt3
+- trt4
+- trt5
+- trt6
+- trt7
+- trt8
+- trt9
+- trt10
+- trt11
+- trt12
+- trt13
+- trt14
+- trt15
+- trt16
+- trt17
+- trt18
+- trt19
+- trt20
+- trt21
+- trt22
+- trt23
+- trt24
+# Electoral justice
+- tre-ac
+- tre-al
+- tre-am
+- tre-ap
+- tre-ba
+- tre-ce
+- tre-df
+- tre-es
+- tre-go
+- tre-ma
+- tre-mg
+- tre-ms
+- tre-mt
+- tre-pa
+- tre-pb
+- tre-pe
+- tre-pi
+- tre-pr
+- tre-rj
+- tre-rn
+- tre-ro
+- tre-rr
+- tre-rs
+- tre-sc
+- tre-se
+- tre-sp
+- tre-to
+# Military justice
+- tjmmg
+- tjmrs
+- tjmsp
