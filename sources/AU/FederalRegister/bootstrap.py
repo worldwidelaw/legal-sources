@@ -138,20 +138,18 @@ class AustraliaFederalRegisterScraper(BaseScraper):
 
     def _get_total_count(self, filter_str: str = None) -> int:
         """Get total count of titles matching the filter."""
-        try:
-            self.rate_limiter.wait()
+        self.rate_limiter.wait()
 
-            url = "/v1/titles/$count"
-            if filter_str:
-                url += f"?$filter={filter_str}"
-
-            resp = self.client.get(url)
-            resp.raise_for_status()
-            return int(resp.text.strip())
-
-        except Exception as e:
-            logger.error(f"Failed to get title count: {e}")
-            return 0
+        query = "$top=1&$skip=0&$count=true"
+        if filter_str:
+            query += f"&$filter={filter_str}"
+        resp = self.client.get(f"/v1/titles?{query}")
+        resp.raise_for_status()
+        payload = resp.json()
+        count = payload.get("@odata.count")
+        if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+            raise ValueError("Australian title response has no valid @odata.count")
+        return count
 
     def _get_latest_version(self, title_id: str) -> Optional[Dict[str, Any]]:
         """
