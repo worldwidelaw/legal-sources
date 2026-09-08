@@ -1,0 +1,133 @@
+# License Registry — canonical taxonomy for Legal Data Hunter
+# Each license_id maps to its display name, canonical URL, and commercial use status.
+# This is the single source of truth for the license taxonomy.
+
+licenses:
+  # ── Standard Open Licenses ────────────────────────────────────────
+  cc0-1.0:
+    display_name: "CC0 1.0"
+    url: "https://creativecommons.org/publicdomain/zero/1.0/"
+    commercial_use: true
+
+  cc-by-3.0:
+    display_name: "CC BY 3.0"
+    url: "https://creativecommons.org/licenses/by/3.0/"
+    commercial_use: true
+
+  cc-by-4.0:
+    display_name: "CC BY 4.0"
+    url: "https://creativecommons.org/licenses/by/4.0/"
+    commercial_use: true
+
+  cc-by-sa-3.0:
+    display_name: "CC BY-SA 3.0"
+    url: "https://creativecommons.org/licenses/by-sa/3.0/"
+    commercial_use: true
+
+  cc-by-sa-4.0:
+    display_name: "CC BY-SA 4.0"
+    url: "https://creativecommons.org/licenses/by-sa/4.0/"
+    commercial_use: true
+
+  cc-by-nc:
+    display_name: "CC BY-NC 4.0"
+    url: "https://creativecommons.org/licenses/by-nc/4.0/"
+    commercial_use: false
+
+  cc-by-nc-sa:
+    display_name: "CC BY-NC-SA 4.0"
+    url: "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+    commercial_use: false
+
+  cc-by-nc-nd:
+    display_name: "CC BY-NC-ND 3.0"
+    url: "https://creativecommons.org/licenses/by-nc-nd/3.0/"
+    commercial_use: false
+
+  cc-by-nd-4.0:
+    display_name: "CC BY-ND 4.0"
+    url: "https://creativecommons.org/licenses/by-nd/4.0/"
+    commercial_use: true
+
+  odbl-1.0:
+    display_name: "ODbL 1.0"
+    url: "https://opendatacommons.org/licenses/odbl/1-0/"
+    commercial_use: true
+
+  mit:
+    display_name: "MIT License"
+    url: "https://opensource.org/licenses/MIT"
+    commercial_use: true
+
+  # ── Government Open Data Licenses ─────────────────────────────────
+  ogl-3.0:
+    display_name: "OGL v3.0"
+    url: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+    commercial_use: true
+
+  ogl-canada:
+    display_name: "Open Government Licence — Canada"
+    url: "https://open.canada.ca/en/open-government-licence-canada"
+    commercial_use: true
+
+  licence-ouverte-2.0:
+    display_name: "Licence Ouverte 2.0"
+    url: "https://www.etalab.gouv.fr/licence-ouverte-open-licence/"
+    commercial_use: true
+
+  iodl-2.0:
+    display_name: "IODL 2.0"
+    url: "https://www.dati.gov.it/content/italian-open-data-license-v20"
+    commercial_use: true
+
+  nlod-2.0:
+    display_name: "NLOD 2.0"
+    url: "https://data.norge.no/nlod/en/2.0"
+    commercial_use: true
+
+  dl-de-2.0:
+    display_name: "Data licence Germany — attribution 2.0"
+    url: "https://www.govdata.de/dl-de/by-2-0"
+    commercial_use: true
+
+  eur-lex:
+    display_name: "EUR-Lex reuse notice"
+    url: "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html"
+    commercial_use: true
+
+  # ── Public Domain by Statute ──────────────────────────────────────
+  pd-us:
+    display_name: "Public domain — 17 U.S.C. 105"
+    url: "https://www.law.cornell.edu/uscode/text/17/105"
+    commercial_use: true
+
+  pd-de:
+    display_name: "Public domain — 5 UrhG"
+    url: "https://www.gesetze-im-internet.de/urhg/__5.html"
+    commercial_use: true
+
+  pd-gov:
+    display_name: "Public domain (government works)"
+    url: null
+    commercial_use: true
+
+  # ── Catch-all Categories ──────────────────────────────────────────
+  ogd:
+    display_name: "Open government data"
+    url: null
+    commercial_use: true
+
+  custom-terms:
+    display_name: "Custom terms of use"
+    url: null
+    commercial_use: null   # per-source; check commercial_use field on each source
+
+  custom-nc:
+    display_name: "Custom non-commercial terms"
+    url: null
+    commercial_use: false
+
+  unverified:
+    display_name: "Unverified — needs research"
+    url: null
+    commercial_use: null

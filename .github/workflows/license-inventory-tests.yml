@@ -1,0 +1,28 @@
+name: License inventory tests
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/generate_licenses_json.py'
+      - 'scripts/validate_licenses.py'
+      - 'generate_dashboard.py'
+      - 'license_registry.yaml'
+      - 'tests/test_license_*.py'
+      - '.github/workflows/refresh-dashboard.yml'
+      - '.github/workflows/license-inventory-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install fixture dependencies
+        run: python -m pip install pytest pyyaml
+      - name: Run offline contract and refresh tests
+        run: python -m pytest tests/test_license_inventory.py tests/test_license_refresh.py -q
