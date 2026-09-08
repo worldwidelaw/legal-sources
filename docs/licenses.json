@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-08T09:28:32.344960+00:00",
+  "generated_at": "2026-09-08T14:12:31.711012+00:00",
   "summary": {
-    "total_complete": 2189,
-    "commercial_ok": 1995,
-    "non_commercial": 172,
+    "total_complete": 2188,
+    "commercial_ok": 1993,
+    "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
     "unique_license_ids": 30
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 699
+      "count": 698
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 372
+      "count": 373
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -38,7 +38,7 @@
       "display_name": "CC BY 4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true,
-      "count": 108
+      "count": 107
     },
     "eur-lex": {
       "display_name": "EUR-Lex reuse notice",
@@ -74,7 +74,7 @@
       "display_name": "Licence Ouverte 2.0",
       "url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
       "commercial_use": true,
-      "count": 38
+      "count": 37
     },
     "unverified": {
       "display_name": "Unverified — needs research",
@@ -104,7 +104,7 @@
       "display_name": "CC BY-NC 4.0",
       "url": "https://creativecommons.org/licenses/by-nc/4.0/",
       "commercial_use": false,
-      "count": 13
+      "count": 14
     },
     "cc-by-nc-sa": {
       "display_name": "CC BY-NC-SA 4.0",
@@ -1368,15 +1368,6 @@
       "name": "Bahrain Ministry of Information Official Gazette",
       "license_id": "ogd",
       "license_name": "Bahrain Government Open Data License v1.0",
-      "license_url": "https://www.data.gov.bh/en/ODPolicy",
-      "commercial_use": true
-    },
-    {
-      "id": "BH/MOLA-Laws",
-      "country": "BH",
-      "name": "Bahrain Ministry of Legal Affairs - Laws",
-      "license_id": "ogd",
-      "license_name": "Bahrain Government Open Data",
       "license_url": "https://www.data.gov.bh/en/ODPolicy",
       "commercial_use": true
     },
@@ -5742,15 +5733,6 @@
       "name": "Bofip (Bulletin Officiel des Finances Publiques)",
       "license_id": "licence-ouverte-2.0",
       "license_name": "Licence Ouverte 2.0 / Open Licence (Etalab)",
-      "license_url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
-      "commercial_use": true
-    },
-    {
-      "id": "FR/BulletinsOfficielsSociaux",
-      "country": "FR",
-      "name": "Bulletins officiels des ministères chargés des affaires sociales (Santé & Travail)",
-      "license_id": "licence-ouverte-2.0",
-      "license_name": "Licence Ouverte 2.0",
       "license_url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
       "commercial_use": true
     },
@@ -10741,15 +10723,6 @@
       "commercial_use": true
     },
     {
-      "id": "LY/DCAF",
-      "country": "LY",
-      "name": "Libya DCAF Security Sector Legal Database",
-      "license_id": "cc-by-4.0",
-      "license_name": "CC BY 4.0",
-      "license_url": "https://creativecommons.org/licenses/by/4.0/",
-      "commercial_use": true
-    },
-    {
       "id": "LY/LawSocietyGazette",
       "country": "LY",
       "name": "Libya Law Society — Official Gazette & Legislation Archive",
@@ -11785,15 +11758,6 @@
       "commercial_use": true
     },
     {
-      "id": "MZ/JurisMZ",
-      "country": "MZ",
-      "name": "Mozambique Case Law Database (JURIS MZ)",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain (Government)",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "MZ/TSLegislacao",
       "country": "MZ",
       "name": "Mozambique Supreme Court Legislation Portal",
@@ -12631,6 +12595,15 @@
       "commercial_use": true
     },
     {
+      "id": "PG/NationalGazette",
+      "country": "PG",
+      "name": "Papua New Guinea National Gazette",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "PG/WIPOLex",
       "country": "PG",
       "name": "Papua New Guinea Legislation (WIPO Lex)",
@@ -13360,6 +13333,15 @@
       "commercial_use": true
     },
     {
+      "id": "RW/OfficialGazette",
+      "country": "RW",
+      "name": "Rwanda Official Gazette (Igazeti ya Leta) via RwandaLII",
+      "license_id": "cc-by-nc",
+      "license_name": "CC BY-NC 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "commercial_use": false
+    },
+    {
       "id": "RW/RRA",
       "country": "RW",
       "name": "Rwanda Revenue Authority Tax Laws and Rulings (rra.gov.rw)",
@@ -13950,6 +13932,15 @@
       "name": "Centrale Bank van Suriname — Regulations",
       "license_id": "ogd",
       "license_name": "Open Government Data (Suriname)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "SR/DNAWetgeving",
+      "country": "SR",
+      "name": "Suriname Parliament Legislation (DNA)",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (government)",
       "license_url": null,
       "commercial_use": true
     },
