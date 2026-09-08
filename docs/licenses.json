@@ -1,42 +1,50 @@
 {
-  "generated_at": "2026-07-20T00:41:50.565018+00:00",
+  "schema_version": 2,
+  "generated_at": "2026-09-08T09:28:32.344960+00:00",
   "summary": {
-    "total_complete": 2111,
-    "commercial_ok": 1946,
-    "non_commercial": 165,
-    "unverified": 24,
-    "unique_license_ids": 29
+    "total_complete": 2189,
+    "commercial_ok": 1995,
+    "non_commercial": 172,
+    "commercial_unknown": 22,
+    "unverified": 26,
+    "unique_license_ids": 30
   },
   "by_license": {
     "ogd": {
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 693
+      "count": 699
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
       "url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true,
-      "count": 363
+      "count": 379
     },
     "pd-gov": {
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 357
+      "count": 372
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 178
+      "count": 182
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true,
       "count": 108
+    },
+    "eur-lex": {
+      "display_name": "EUR-Lex reuse notice",
+      "url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true,
+      "count": 65
     },
     "ogl-3.0": {
       "display_name": "OGL v3.0",
@@ -48,13 +56,13 @@
       "display_name": "Public domain — 5 UrhG",
       "url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true,
-      "count": 42
+      "count": 44
     },
     "custom-nc": {
       "display_name": "Custom non-commercial terms",
       "url": null,
       "commercial_use": false,
-      "count": 40
+      "count": 42
     },
     "odbl-1.0": {
       "display_name": "ODbL 1.0",
@@ -68,22 +76,16 @@
       "commercial_use": true,
       "count": 38
     },
-    "eur-lex": {
-      "display_name": "EUR-Lex reuse notice",
-      "url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
-      "commercial_use": true,
-      "count": 34
+    "unverified": {
+      "display_name": "Unverified — needs research",
+      "url": null,
+      "commercial_use": null,
+      "count": 26
     },
     "cc0-1.0": {
       "display_name": "CC0 1.0",
       "url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "commercial_use": true,
-      "count": 25
-    },
-    "unverified": {
-      "display_name": "Unverified — needs research",
-      "url": null,
-      "commercial_use": null,
       "count": 24
     },
     "ogl-canada": {
@@ -102,13 +104,13 @@
       "display_name": "CC BY-NC 4.0",
       "url": "https://creativecommons.org/licenses/by-nc/4.0/",
       "commercial_use": false,
-      "count": 14
+      "count": 13
     },
     "cc-by-nc-sa": {
       "display_name": "CC BY-NC-SA 4.0",
       "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
       "commercial_use": false,
-      "count": 10
+      "count": 11
     },
     "nlod-2.0": {
       "display_name": "NLOD 2.0",
@@ -157,6 +159,12 @@
       "url": "https://opensource.org/licenses/MIT",
       "commercial_use": true,
       "count": 2
+    },
+    "dl-de-by-2.0": {
+      "display_name": "dl-de-by-2.0",
+      "url": null,
+      "commercial_use": null,
+      "count": 1
     },
     "pd-dk": {
       "display_name": "pd-dk",
@@ -380,7 +388,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "AL/EURALIUS",
@@ -509,15 +517,6 @@
       "commercial_use": true
     },
     {
-      "id": "AR/CNAT",
-      "country": "AR",
-      "name": "Argentina Cámara Nacional de Apelaciones del Trabajo",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": "https://www.saij.gob.ar",
-      "commercial_use": true
-    },
-    {
       "id": "AR/CNDC",
       "country": "AR",
       "name": "Argentina National Competition Commission (CNDC)",
@@ -567,7 +566,7 @@
       "country": "AR",
       "name": "Buenos Aires Province Normative System (SIND)",
       "license_id": "ogd",
-      "license_name": "https://normas.gba.gob.ar/",
+      "license_name": "Open Government Data",
       "license_url": "https://normas.gba.gob.ar/",
       "commercial_use": true
     },
@@ -716,15 +715,6 @@
       "commercial_use": true
     },
     {
-      "id": "AU/ATO-TaxDoctrine",
-      "country": "AU",
-      "name": "Australian Tax Office Rulings & Determinations",
-      "license_id": "cc-by-4.0",
-      "license_name": "CC BY 4.0",
-      "license_url": "https://creativecommons.org/licenses/by/4.0/",
-      "commercial_use": true
-    },
-    {
       "id": "AU/FedCourt",
       "country": "AU",
       "name": "Federal Court of Australia Judgments",
@@ -764,9 +754,9 @@
       "id": "AU/NTLegislation",
       "country": "AU",
       "name": "Northern Territory Legislation (legislation.nt.gov.au)",
-      "license_id": "cc-by-4.0",
-      "license_name": "CC BY 4.0",
-      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "license_id": "custom-terms",
+      "license_name": "Northern Territory legislation copyright policy",
+      "license_url": "https://legislation.nt.gov.au/en/Footer/Terms-of-Use",
       "commercial_use": true
     },
     {
@@ -1211,6 +1201,15 @@
       "commercial_use": true
     },
     {
+      "id": "BE/DBRC",
+      "country": "BE",
+      "name": "Belgium (Flanders) — Dienst van de Bestuursrechtscolleges (Flemish Administrative Courts)",
+      "license_id": "custom-nc",
+      "license_name": "DBRC disclaimer — commercial reuse requires prior express written consent",
+      "license_url": "https://www.dbrc.be/disclaimer",
+      "commercial_use": false
+    },
+    {
       "id": "BE/FISCONETplus-Doctrine",
       "country": "BE",
       "name": "Belgian Tax Doctrine (FISCONETplus Circulars)",
@@ -1297,6 +1296,15 @@
       "name": "Bulgarian Data Protection Authority (CPDP)",
       "license_id": "pd-gov",
       "license_name": "Public domain — Bulgarian government regulatory decisions are publicly available without copyright restrictions.",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "BG/ConsolidatedLegislation",
+      "country": "BG",
+      "name": "Bulgaria Consolidated Legislation (Кодекси и закони)",
+      "license_id": "pd-gov",
+      "license_name": "Public domain — Bulgarian normative acts (laws, codes, regulations) are not subject to copyright under the Bulgarian Copyright Act.",
       "license_url": null,
       "commercial_use": true
     },
@@ -1519,9 +1527,9 @@
     {
       "id": "BN/AGC-Legislation",
       "country": "BN",
-      "name": "Brunei Attorney Generals Chambers Legislation",
+      "name": "Brunei Attorney General's Chambers Legislation (archive tree)",
       "license_id": "ogd",
-      "license_name": "https://www.agc.gov.bn/AGC%20Site%20Pages/Laws%20of%20Brunei.aspx",
+      "license_name": "Open access (government legislation portal)",
       "license_url": "https://www.agc.gov.bn/AGC%20Site%20Pages/Laws%20of%20Brunei.aspx",
       "commercial_use": true
     },
@@ -2210,15 +2218,6 @@
       "commercial_use": false
     },
     {
-      "id": "CA/ON-OSC",
-      "country": "CA",
-      "name": "Ontario Securities Commission — Instruments, Rules & Policies",
-      "license_id": "custom-nc",
-      "license_name": "OSC Website Terms of Use (non-commercial limited licence)",
-      "license_url": "https://www.osc.ca/en/legal",
-      "commercial_use": false
-    },
-    {
       "id": "CA/OntarioLaws",
       "country": "CA",
       "name": "Ontario e-Laws (Provincial Legislation)",
@@ -2558,7 +2557,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "CL/Aduanas",
@@ -2876,6 +2875,15 @@
       "commercial_use": true
     },
     {
+      "id": "CN/NNSA",
+      "country": "CN",
+      "name": "National Nuclear Safety Administration of China",
+      "license_id": "ogd",
+      "license_name": "Government open access — PRC official legal documents. Laws, regulations, rules and other official documents of PRC state organs, and their official translations, are excluded from copyright by Art. 5 PRC Copyright Law. Reuse permitted with attribution to the issuing authority.",
+      "license_url": "https://www.mee.gov.cn/bzsm/",
+      "commercial_use": true
+    },
+    {
       "id": "CN/NPC",
       "country": "CN",
       "name": "China National Laws Database (国家法律法规数据库)",
@@ -3006,7 +3014,7 @@
       "country": "CO",
       "name": "Colombian DIAN Tax Doctrine - Conceptos y Oficios (normograma.dian.gov.co)",
       "license_id": "ogd",
-      "license_name": "https://normograma.dian.gov.co/dian/compilacion/t_2_doctrina_tributaria.html",
+      "license_name": "Colombia Open Government Data (Ley 1712 de 2014)",
       "license_url": "https://normograma.dian.gov.co/dian/compilacion/t_2_doctrina_tributaria.html",
       "commercial_use": true
     },
@@ -3097,15 +3105,6 @@
       "name": "Costa Rica Ministry of Finance Tax Guidance (hacienda.go.cr)",
       "license_id": "ogd",
       "license_name": "Open Government Data",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "CR/PoderJudicial",
-      "country": "CR",
-      "name": "Costa Rica Poder Judicial - Jurisprudencia",
-      "license_id": "ogd",
-      "license_name": "Official Costa Rican court decisions — open access via the Poder Judicial NexusPJ system. Court decisions are public judicial acts. Free public access without authentication.",
       "license_url": null,
       "commercial_use": true
     },
@@ -3461,6 +3460,15 @@
       "commercial_use": true
     },
     {
+      "id": "DE/BASE",
+      "country": "DE",
+      "name": "Federal Office for the Safety of Nuclear Waste Management",
+      "license_id": "pd-de",
+      "license_name": "§ 5 UrhG (amtliches Werk)",
+      "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
+      "commercial_use": true
+    },
+    {
       "id": "DE/BFH",
       "country": "DE",
       "name": "German Federal Finance Court (Bundesfinanzhof)",
@@ -3578,6 +3586,15 @@
       "commercial_use": true
     },
     {
+      "id": "DE/BaFin",
+      "country": "DE",
+      "name": "German Financial Supervisory Authority (BaFin)",
+      "license_id": "pd-de",
+      "license_name": "§ 5 UrhG",
+      "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
+      "commercial_use": true
+    },
+    {
       "id": "DE/BadenWürttemberg",
       "country": "DE",
       "name": "Baden-Württemberg Regional Legislation",
@@ -3639,6 +3656,15 @@
       "license_name": "Public domain — § 5 UrhG",
       "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true
+    },
+    {
+      "id": "DE/BfS",
+      "country": "DE",
+      "name": "Federal Office for Radiation Protection",
+      "license_id": "cc-by-nc-sa",
+      "license_name": "CC BY-NC-SA 3.0 DE (adapted by BfS)",
+      "license_url": "https://doris.bfs.de/jspui/impressum/lizenz.html",
+      "commercial_use": false
     },
     {
       "id": "DE/Brandenburg",
@@ -3737,6 +3763,15 @@
       "license_id": "pd-de",
       "license_name": "§ 5 UrhG",
       "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
+      "commercial_use": true
+    },
+    {
+      "id": "DE/LDI-NRW",
+      "country": "DE",
+      "name": "LDI NRW - North Rhine-Westphalia Data Protection Authority",
+      "license_id": "dl-de-by-2.0",
+      "license_name": "Datenlizenz Deutschland - Namensnennung 2.0",
+      "license_url": "https://www.govdata.de/dl-de/by-2-0",
       "commercial_use": true
     },
     {
@@ -4055,6 +4090,15 @@
       "commercial_use": true
     },
     {
+      "id": "DO/CongresoRD",
+      "country": "DO",
+      "name": "Dominican Republic Legislation (Consultoría Jurídica)",
+      "license_id": "ogd",
+      "license_name": "https://www.consultoria.gov.do/consulta/",
+      "license_url": "https://www.consultoria.gov.do/consulta/",
+      "commercial_use": true
+    },
+    {
       "id": "DO/ConsultoriaJuridica",
       "country": "DO",
       "name": "Consultoria Juridica del Poder Ejecutivo — Dominican Legislation Database",
@@ -4172,15 +4216,6 @@
       "commercial_use": true
     },
     {
-      "id": "DZ/ConseilConstitutionnel",
-      "country": "DZ",
-      "name": "Algeria Constitutional Court (Cour constitutionnelle)",
-      "license_id": "pd-gov",
-      "license_name": "Official Algerian court decisions — public domain (government decisions). Published by the Cour constitutionnelle. Constitutional court decisions are public judicial acts under Algerian law.",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "DZ/CourSupreme",
       "country": "DZ",
       "name": "Algeria Supreme Court (Cour suprême) Decisions",
@@ -4199,20 +4234,11 @@
       "commercial_use": true
     },
     {
-      "id": "DZ/SupremeCourt-Decisions",
-      "country": "DZ",
-      "name": "Algeria Supreme Court Decisions",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": "https://coursupreme.dz",
-      "commercial_use": true
-    },
-    {
       "id": "EC/AsambleaNacional",
       "country": "EC",
       "name": "Ecuador Legislation (oficial.ec)",
       "license_id": "ogd",
-      "license_name": "https://www.oficial.ec/",
+      "license_name": "Open government data",
       "license_url": "https://www.oficial.ec/",
       "commercial_use": true
     },
@@ -4248,7 +4274,7 @@
       "country": "EC",
       "name": "Ecuador Servicio de Rentas Internas Tax Guidance",
       "license_id": "ogd",
-      "license_name": "https://www.sri.gob.ec/",
+      "license_name": "Open Government Data",
       "license_url": "https://www.sri.gob.ec/",
       "commercial_use": true
     },
@@ -4325,13 +4351,22 @@
       "commercial_use": true
     },
     {
+      "id": "EE/VAKO",
+      "country": "EE",
+      "name": "Estonia — Riigihangete vaidlustuskomisjon (Public Procurement Review Committee), VAKO otsused",
+      "license_id": "pd-gov",
+      "license_name": "Public domain — Estonian Copyright Act § 5 excludes official documents",
+      "license_url": "https://www.riigiteataja.ee/en/eli/ee/504042019001/consolide",
+      "commercial_use": true
+    },
+    {
       "id": "EG/CBE",
       "country": "EG",
       "name": "Central Bank of Egypt Circulars",
       "license_id": "ogd",
       "license_name": "Open Government Data",
       "license_url": "https://www.cbe.org.eg/en/laws-regulations/regulations/circulars",
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "EG/EgyptianLawArticles-HF",
@@ -4712,12 +4747,30 @@
       "commercial_use": true
     },
     {
+      "id": "EU/ACER",
+      "country": "EU",
+      "name": "EU Agency for Energy Regulators (ACER)",
+      "license_id": "eur-lex",
+      "license_name": "EUR-Lex reuse notice",
+      "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true
+    },
+    {
       "id": "EU/ADR",
       "country": "EU",
       "name": "EU Domain Dispute Resolution (.eu)",
       "license_id": "eur-lex",
       "license_name": "EUR-Lex reuse notice",
       "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/AG-Opinions",
+      "country": "EU",
+      "name": "CJEU — Opinions of the Advocates General",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
       "commercial_use": true
     },
     {
@@ -4730,12 +4783,39 @@
       "commercial_use": true
     },
     {
+      "id": "EU/AdvocateGeneralOpinions",
+      "country": "EU",
+      "name": "EU — Advocate General Opinions (CJEU)",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
       "id": "EU/BEREC",
       "country": "EU",
       "name": "Body of European Regulators for Electronic Communications (BEREC)",
       "license_id": "eur-lex",
       "license_name": "EUR-Lex legal notice",
       "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/Budgets",
+      "country": "EU",
+      "name": "EU — Budgets, Amending Budgets & Statements of Revenue and Expenditure",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/CFSP-Acts",
+      "country": "EU",
+      "name": "EU — CFSP Joint Actions & Common Positions",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
       "commercial_use": true
     },
     {
@@ -4784,6 +4864,51 @@
       "commercial_use": true
     },
     {
+      "id": "EU/CommissionOpinions",
+      "country": "EU",
+      "name": "EU — Commission Opinions",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/ComplementaryLegislation",
+      "country": "EU",
+      "name": "EU — Complementary Legislation",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/ConsolidatedLegislation",
+      "country": "EU",
+      "name": "EU — Consolidated Legislation (In-force Texts)",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/Council-Positions",
+      "country": "EU",
+      "name": "Council of the EU — Positions at First Reading",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/CouncilResolutions",
+      "country": "EU",
+      "name": "EU — Council Resolutions",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
       "id": "EU/DGComp",
       "country": "EU",
       "name": "EU Competition Directorate-General (DG COMP)",
@@ -4811,12 +4936,30 @@
       "commercial_use": true
     },
     {
+      "id": "EU/ECA",
+      "country": "EU",
+      "name": "European Court of Auditors — Reports, Opinions & Reviews",
+      "license_id": "eur-lex",
+      "license_name": "EUR-Lex Legal Notice",
+      "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true
+    },
+    {
       "id": "EU/ECB",
       "country": "EU",
       "name": "European Central Bank (ECB)",
       "license_id": "eur-lex",
       "license_name": "EUR-Lex reuse notice",
       "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/ECB-Opinions",
+      "country": "EU",
+      "name": "European Central Bank — Opinions",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
       "commercial_use": true
     },
     {
@@ -4844,6 +4987,15 @@
       "license_id": "eur-lex",
       "license_name": "EUR-Lex legal notice",
       "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/ECSC-Decisions",
+      "country": "EU",
+      "name": "EU — ECSC General Decisions",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
       "commercial_use": true
     },
     {
@@ -4883,6 +5035,15 @@
       "commercial_use": true
     },
     {
+      "id": "EU/EESC-InitiativeOpinions",
+      "country": "EU",
+      "name": "European Economic and Social Committee — Own-Initiative & Exploratory Opinions",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
       "id": "EU/EESC-Opinions",
       "country": "EU",
       "name": "European Economic and Social Committee — Opinions & Information Reports",
@@ -4901,12 +5062,57 @@
       "commercial_use": true
     },
     {
+      "id": "EU/EIOPA",
+      "country": "EU",
+      "name": "EU Insurance and Pensions Authority (EIOPA)",
+      "license_id": "eur-lex",
+      "license_name": "EUR-Lex legal notice",
+      "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true
+    },
+    {
       "id": "EU/EMA",
       "country": "EU",
       "name": "European Medicines Agency (EMA)",
       "license_id": "eur-lex",
       "license_name": "EUR-Lex legal notice",
       "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/EP-Decisions",
+      "country": "EU",
+      "name": "European Parliament — Decisions",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/EP-Positions",
+      "country": "EU",
+      "name": "European Parliament — Positions / Legislative Resolutions",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/EP-Questions",
+      "country": "EU",
+      "name": "European Parliament — Parliamentary Questions (written questions & answers)",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/EP-Resolutions",
+      "country": "EU",
+      "name": "European Parliament — Non-Legislative Resolutions",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
       "commercial_use": true
     },
     {
@@ -4934,6 +5140,15 @@
       "license_id": "eur-lex",
       "license_name": "EU reuse policy",
       "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/ESC-Opinions",
+      "country": "EU",
+      "name": "Economic and Social Committee — Opinions (historical AC series)",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
       "commercial_use": true
     },
     {
@@ -5009,12 +5224,66 @@
       "commercial_use": true
     },
     {
+      "id": "EU/FrameworkDecisions",
+      "country": "EU",
+      "name": "EU — Framework Decisions & Joint Actions",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
       "id": "EU/GDPRhub",
       "country": "EU",
       "name": "GDPRhub — European DPA Decisions Wiki",
       "license_id": "cc-by-sa-4.0",
       "license_name": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/InternationalAgreements",
+      "country": "EU",
+      "name": "EU — International Agreements",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/JC-Documents",
+      "country": "EU",
+      "name": "EU Joint Communications & Joint Reports (High Representative + Commission)",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/JointBodyDecisions",
+      "country": "EU",
+      "name": "EU — Decisions of Bodies Established by International Agreements",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/OJC-Acts",
+      "country": "EU",
+      "name": "EU — Official Journal C-series Acts",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/OJC-Declarations",
+      "country": "EU",
+      "name": "EU — OJ C-series Declarations & Joint Statements",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
       "commercial_use": true
     },
     {
@@ -5036,12 +5305,48 @@
       "commercial_use": true
     },
     {
+      "id": "EU/ParliamentaryAssemblies",
+      "country": "EU",
+      "name": "EU Joint / Regional Parliamentary Assemblies — Acts and Resolutions",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/Recommendations",
+      "country": "EU",
+      "name": "EU — Recommendations",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/RulesOfProcedure",
+      "country": "EU",
+      "name": "EU — Rules of Procedure & Institutional Acts",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
       "id": "EU/SRB-Decisions",
       "country": "EU",
       "name": "Single Resolution Board Decisions",
       "license_id": "eur-lex",
       "license_name": "EUR-Lex reuse notice",
       "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/SWD-Documents",
+      "country": "EU",
+      "name": "European Commission — Staff Working Documents (SWD/SEC)",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
       "commercial_use": true
     },
     {
@@ -5060,6 +5365,15 @@
       "license_id": "eur-lex",
       "license_name": "EUR-Lex reuse notice",
       "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/Treaties",
+      "country": "EU",
+      "name": "EU — Treaties (Primary Law)",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
       "commercial_use": true
     },
     {
@@ -5330,7 +5644,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "FR/AMF_Sanctions",
@@ -5765,6 +6079,15 @@
       "commercial_use": true
     },
     {
+      "id": "GE/CommonCourts-Decisions",
+      "country": "GE",
+      "name": "Georgia — Common Courts Unified Decisions Database (ecd.court.ge)",
+      "license_id": "ogd",
+      "license_name": "Open government data — decisions published under the Georgian judiciary's mandatory-publication rules",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "GE/ConstitutionalCourt",
       "country": "GE",
       "name": "Georgian Constitutional Court",
@@ -5834,7 +6157,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "GG/GCRA",
@@ -5879,7 +6202,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "GH/GhaLII",
@@ -6246,8 +6569,8 @@
       "country": "GU",
       "name": "Guam Code Annotated & Administrative Rules",
       "license_id": "pd-us",
-      "license_name": "https://guamcourts.gov/CompilerofLaws/index.html",
-      "license_url": "https://guamcourts.gov/CompilerofLaws/index.html",
+      "license_name": "US Public Domain",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
     {
@@ -6264,8 +6587,8 @@
       "country": "GU",
       "name": "Guam Superior Court Decisions",
       "license_id": "pd-us",
-      "license_name": "https://guamcourts.gov/Superior-Court-Decision-and-Orders/Superior-Court-Decision-and-Orders.asp",
-      "license_url": "https://guamcourts.gov/Superior-Court-Decision-and-Orders/Superior-Court-Decision-and-Orders.asp",
+      "license_name": "US Public Domain",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
     {
@@ -6273,8 +6596,8 @@
       "country": "GU",
       "name": "Supreme Court of Guam Opinions",
       "license_id": "pd-us",
-      "license_name": "https://guamcourts.gov/Supreme-Court-Opinions/Supreme-Court-Opinions.asp",
-      "license_url": "https://guamcourts.gov/Supreme-Court-Opinions/Supreme-Court-Opinions.asp",
+      "license_name": "US Public Domain",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
     {
@@ -6294,6 +6617,15 @@
       "license_name": "Public Domain (Government)",
       "license_url": null,
       "commercial_use": true
+    },
+    {
+      "id": "GW/PGR",
+      "country": "GW",
+      "name": "Guinea-Bissau — Procuradoria-Geral da República, Legislação",
+      "license_id": "custom-terms",
+      "license_name": "No terms-of-use page — site footer asserts \"Todos os Direitos Reservados\"",
+      "license_url": "https://pgr.gw/",
+      "commercial_use": false
     },
     {
       "id": "GY/BOG-Regulations",
@@ -6365,7 +6697,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "HK/IRD-AdvanceRulings",
@@ -6575,6 +6907,15 @@
       "commercial_use": true
     },
     {
+      "id": "HU/AnonHatarozatok",
+      "country": "HU",
+      "name": "Hungarian Anonymized Court Decisions",
+      "license_id": "ogd",
+      "license_name": "https://eakta.birosag.hu/anonimizalt-hatarozatok",
+      "license_url": "https://eakta.birosag.hu/anonimizalt-hatarozatok",
+      "commercial_use": true
+    },
+    {
       "id": "HU/Constitutional",
       "country": "HU",
       "name": "Hungarian Constitutional Court (Alkotmánybíróság)",
@@ -6656,21 +6997,12 @@
       "commercial_use": true
     },
     {
-      "id": "HU/Parlament",
-      "country": "HU",
-      "name": "Hungarian Parliament (Országgyűlés)",
-      "license_id": "ogd",
-      "license_name": "Open Government Data — Hungarian parliamentary documents are freely reusable.",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "ID/BI",
       "country": "ID",
       "name": "Bank Indonesia Regulations",
       "license_id": "ogd",
       "license_name": "Open government data",
-      "license_url": null,
+      "license_url": "https://www.bi.go.id/id/tentang-bi/profil/Pages/Visi-Misi-dan-Nilai-Strategis.aspx",
       "commercial_use": true
     },
     {
@@ -6734,7 +7066,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "IE/CBI-Enforcement",
@@ -6899,6 +7231,15 @@
       "commercial_use": true
     },
     {
+      "id": "IL/KnessetOData",
+      "country": "IL",
+      "name": "Israel Knesset OData API (Bills & Laws)",
+      "license_id": "ogd",
+      "license_name": "Open Government Data (Israel)",
+      "license_url": "https://main.knesset.gov.il/Activity/Info/Pages/Databases.aspx",
+      "commercial_use": true
+    },
+    {
       "id": "IL/Versa-SupremeCourt",
       "country": "IL",
       "name": "Israeli Supreme Court Decisions (English Translations)",
@@ -6938,10 +7279,10 @@
       "id": "IM/Legislation",
       "country": "IM",
       "name": "Isle of Man Legislation (Acts of Tynwald)",
-      "license_id": "ogl-3.0",
-      "license_name": "Isle of Man Government legislation — Crown Copyright applies (Isle of Man). Published for free public access. No formal open government licence published; reuse subject to Isle of Man Government terms.",
-      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-      "commercial_use": true
+      "license_id": "custom-nc",
+      "license_name": "Isle of Man Crown Copyright — private use only. The site states: \"Legislation can be downloaded and printed for private use. Any commercial entity is required to obtain permission to reuse the data from the Isle of Man Attorney General's Chambers.\"",
+      "license_url": "https://legislation.gov.im/cms/",
+      "commercial_use": false
     },
     {
       "id": "IM/TaxTribunal",
@@ -6950,6 +7291,15 @@
       "license_id": "ogd",
       "license_name": "gov.im",
       "license_url": "https://www.gov.im/",
+      "commercial_use": true
+    },
+    {
+      "id": "IN/AERB",
+      "country": "IN",
+      "name": "Atomic Energy Regulatory Board",
+      "license_id": "ogd",
+      "license_name": "Government Open Data License — India",
+      "license_url": "https://data.gov.in/government-open-data-license-india",
       "commercial_use": true
     },
     {
@@ -7502,6 +7852,15 @@
       "commercial_use": false
     },
     {
+      "id": "INTL/CaribbeanCourt",
+      "country": "INTL",
+      "name": "Caribbean Court of Justice (CCJ) Judgments",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain - CCJ Court Records",
+      "license_url": "https://ccj.org/",
+      "commercial_use": true
+    },
+    {
       "id": "INTL/CodexAlimentarius",
       "country": "INTL",
       "name": "Codex Alimentarius — FAO/WHO International Food Standards",
@@ -7709,6 +8068,15 @@
       "commercial_use": false
     },
     {
+      "id": "INTL/EnergyCommunity-Cases",
+      "country": "INTL",
+      "name": "Energy Community Dispute Settlement Cases",
+      "license_id": "custom-terms",
+      "license_name": "Energy Community Secretariat reuse notice",
+      "license_url": "https://www.energy-community.org/disclaimer.html",
+      "commercial_use": true
+    },
+    {
       "id": "INTL/FAOLEX",
       "country": "INTL",
       "name": "FAO Legislation Database (FAOLEX)",
@@ -7796,7 +8164,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "INTL/HarvardNuremberg",
@@ -8183,7 +8551,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "INTL/OECD-LegalInstruments",
@@ -8265,15 +8633,6 @@
       "license_name": "OPCW Terms of Use",
       "license_url": "https://www.opcw.org/legal",
       "commercial_use": false
-    },
-    {
-      "id": "INTL/OpenLegalData",
-      "country": "INTL",
-      "name": "Open Legal Data Platform (DE/EU Case Law)",
-      "license_id": "cc0-1.0",
-      "license_name": "CC0 / Public Domain",
-      "license_url": "https://github.com/openlegaldata/oldp",
-      "commercial_use": true
     },
     {
       "id": "INTL/PCA",
@@ -8438,6 +8797,15 @@
       "commercial_use": true
     },
     {
+      "id": "INTL/UEMOAJuricaf",
+      "country": "INTL",
+      "name": "Court of Justice of the WAEMU/UEMOA (Cour de justice de l'UEMOA) Decisions (Juricaf)",
+      "license_id": "odbl-1.0",
+      "license_name": "ODbL 1.0 (Juricaf/AHJUCAF)",
+      "license_url": "https://opendatacommons.org/licenses/odbl/1-0/",
+      "commercial_use": true
+    },
+    {
       "id": "INTL/UN-AVL",
       "country": "INTL",
       "name": "UN Audiovisual Library of International Law — Treaty Texts & Scholarly Notes",
@@ -8555,15 +8923,6 @@
       "commercial_use": true
     },
     {
-      "id": "INTL/UNODC-TRACK",
-      "country": "INTL",
-      "name": "UNODC TRACK Anti-Corruption Legal Library",
-      "license_id": "custom-terms",
-      "license_name": "UN Terms of Use",
-      "license_url": "https://www.unodc.org/unodc/en/terms-of-use.html",
-      "commercial_use": true
-    },
-    {
       "id": "INTL/UNOOSA-SpaceLaw",
       "country": "INTL",
       "name": "UN Office for Outer Space Affairs — Space Law Database",
@@ -8625,6 +8984,15 @@
       "license_name": "Open Government Data",
       "license_url": null,
       "commercial_use": true
+    },
+    {
+      "id": "INTL/WENRA",
+      "country": "INTL",
+      "name": "Western European Nuclear Regulators Association",
+      "license_id": "custom-terms",
+      "license_name": "© WENRA - All rights reserved",
+      "license_url": "https://wenra.eu/legal-information",
+      "commercial_use": false
     },
     {
       "id": "INTL/WHO-LegalInstruments",
@@ -8777,15 +9145,6 @@
       "license_id": "ogd",
       "license_name": "Open Government Data",
       "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "IQ/WIPOLex",
-      "country": "IQ",
-      "name": "Iraq Legislation (WIPO Lex)",
-      "license_id": "pd-gov",
-      "license_name": "Public domain (national legislation)",
-      "license_url": "https://www.wipo.int/wipolex/en/disclaimer",
       "commercial_use": true
     },
     {
@@ -9362,7 +9721,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "JP/CourtsGoJp",
@@ -9407,7 +9766,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "JP/NRA",
@@ -9545,21 +9904,21 @@
       "commercial_use": false
     },
     {
+      "id": "KG/ActSotKG",
+      "country": "KG",
+      "name": "Kyrgyz Republic — Judicial Acts Portal (act.sot.kg)",
+      "license_id": "ogd",
+      "license_name": "Open government data — judicial acts published under the Kyrgyz Republic judicial-transparency mandate",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "KG/ConstitutionalCourt",
       "country": "KG",
       "name": "Kyrgyzstan Constitutional Court Decisions",
       "license_id": "pd-gov",
       "license_name": "Public Domain",
       "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "KG/CourtActs",
-      "country": "KG",
-      "name": "Kyrgyzstan Judicial Acts Database (All Courts)",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain",
-      "license_url": "https://portal.sot.kg",
       "commercial_use": true
     },
     {
@@ -9770,6 +10129,15 @@
       "commercial_use": true
     },
     {
+      "id": "KR/KINS",
+      "country": "KR",
+      "name": "Korea Institute of Nuclear Safety",
+      "license_id": "ogd",
+      "license_name": "Public Data Act / Copyright Act art. 24-2 (public works free use)",
+      "license_url": "https://www.kins.re.kr/copyright",
+      "commercial_use": true
+    },
+    {
       "id": "KR/KLRI",
       "country": "KR",
       "name": "Korea Legislation Research Institute Open API",
@@ -9797,6 +10165,15 @@
       "commercial_use": true
     },
     {
+      "id": "KR/NSSC",
+      "country": "KR",
+      "name": "Nuclear Safety and Security Commission",
+      "license_id": "ogd",
+      "license_name": "KOGL Type 1 (공공누리 제1유형)",
+      "license_url": "https://www.kogl.or.kr/info/license.do",
+      "commercial_use": true
+    },
+    {
       "id": "KR/NTS-TaxLaw",
       "country": "KR",
       "name": "South Korean Tax Law Information System",
@@ -9820,24 +10197,6 @@
       "name": "Kuwait CITRA — Telecom & IT Regulations",
       "license_id": "pd-gov",
       "license_name": "Public Domain (Government)",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "KW/Legislation",
-      "country": "KW",
-      "name": "Kuwait e-Government Laws and Regulations",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain",
-      "license_url": "https://e.gov.kw",
-      "commercial_use": true
-    },
-    {
-      "id": "KW/MOF-TaxGuidance",
-      "country": "KW",
-      "name": "Kuwait Ministry of Finance Tax Circulars",
-      "license_id": "ogd",
-      "license_name": "Government of Kuwait, Ministry of Finance. Tax laws, circulars, and guidance published for public access. No formal open licence specified.",
       "license_url": null,
       "commercial_use": true
     },
@@ -9900,8 +10259,8 @@
       "country": "KZ",
       "name": "Adilet Legal Information System (Kazakhstan)",
       "license_id": "ogd",
-      "license_name": "https://adilet.zan.kz/",
-      "license_url": "https://adilet.zan.kz/",
+      "license_name": "Open Data (Ministry of Justice of Kazakhstan)",
+      "license_url": "https://adilet.zan.kz/rus/help",
       "commercial_use": true
     },
     {
@@ -10091,7 +10450,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "LK/GovPrinter",
@@ -10145,7 +10504,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "LR/SupremeCourt",
@@ -10319,6 +10678,15 @@
       "commercial_use": true
     },
     {
+      "id": "LV/AllCourts",
+      "country": "LV",
+      "name": "Latvian Courts Portal (elieta.lv)",
+      "license_id": "ogd",
+      "license_name": "https://www.elieta.lv/web/",
+      "license_url": "https://www.elieta.lv/web/",
+      "commercial_use": true
+    },
+    {
       "id": "LV/ConstitutionalCourt",
       "country": "LV",
       "name": "Latvian Constitutional Court (Satversmes tiesa)",
@@ -10418,6 +10786,15 @@
       "commercial_use": true
     },
     {
+      "id": "MA/AdalaJustice",
+      "country": "MA",
+      "name": "Morocco Adala Justice Portal",
+      "license_id": "ogd",
+      "license_name": "Open access, no authentication required.",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "MA/BankAlMaghrib",
       "country": "MA",
       "name": "Bank Al-Maghrib Circulars & Regulations",
@@ -10460,7 +10837,7 @@
       "license_id": "ogd",
       "license_name": "Monaco Government Publication",
       "license_url": "https://ccaf.mc/en/legal-notice/",
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "MC/CourtsJuricaf",
@@ -10478,6 +10855,15 @@
       "license_id": "ogd",
       "license_name": "Open Government Data",
       "license_url": "https://journaldemonaco.gouv.mc",
+      "commercial_use": true
+    },
+    {
+      "id": "MC/LegiMonaco",
+      "country": "MC",
+      "name": "LegiMonaco Legal Database",
+      "license_id": "ogd",
+      "license_name": "Government open access — Monaco consolidated legislation published by the Gouvernement Princier. Official legal texts freely accessible for consultation.",
+      "license_url": null,
       "commercial_use": true
     },
     {
@@ -11237,15 +11623,6 @@
       "commercial_use": true
     },
     {
-      "id": "MX/PoderJudicialJalisco",
-      "country": "MX",
-      "name": "Poder Judicial del Estado de Jalisco",
-      "license_id": "ogd",
-      "license_name": "Open government data",
-      "license_url": "https://datos.gob.mx",
-      "commercial_use": true
-    },
-    {
       "id": "MX/PoderJudicialMorelos",
       "country": "MX",
       "name": "Poder Judicial del Estado de Morelos",
@@ -11345,6 +11722,15 @@
       "commercial_use": true
     },
     {
+      "id": "MY/AGCLaws",
+      "country": "MY",
+      "name": "Malaysia Laws of Malaysia (AGC Official)",
+      "license_id": "ogd",
+      "license_name": "Official Malaysian legislation published by the Attorney General's Chambers. Copyright Government of Malaysia. Free public access for informational purposes; Malaysian Copyright Act 1987 applies.",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "MY/LFSA-Legislation",
       "country": "MY",
       "name": "Labuan FSA Legislation & Guidelines",
@@ -11358,8 +11744,8 @@
       "country": "MY",
       "name": "Malaysia LHDN Public Rulings and Tax Guidelines",
       "license_id": "ogd",
-      "license_name": "https://www.hasil.gov.my/en/legislation/",
-      "license_url": "https://www.hasil.gov.my/en/legislation/",
+      "license_name": "Open Government Data",
+      "license_url": "https://www.hasil.gov.my/en/perundangan/",
       "commercial_use": true
     },
     {
@@ -11395,6 +11781,15 @@
       "name": "Mozambique Supreme Court (Tribunal Supremo)",
       "license_id": "pd-gov",
       "license_name": "Public domain (government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "MZ/JurisMZ",
+      "country": "MZ",
+      "name": "Mozambique Case Law Database (JURIS MZ)",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government)",
       "license_url": null,
       "commercial_use": true
     },
@@ -11603,7 +11998,7 @@
       "license_id": "ogd",
       "license_name": "Open Government Data",
       "license_url": "https://sec.gov.ng/",
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "NI/BCN-Regulations",
@@ -11927,7 +12322,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "NP/LawsOfNepal",
@@ -12002,6 +12397,15 @@
       "commercial_use": false
     },
     {
+      "id": "NZ/BSA",
+      "country": "NZ",
+      "name": "NZ Broadcasting Standards Authority - Decisions",
+      "license_id": "cc-by-4.0",
+      "license_name": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use": true
+    },
+    {
       "id": "NZ/ERA",
       "country": "NZ",
       "name": "NZ Employment Relations Authority - Determinations",
@@ -12009,6 +12413,24 @@
       "license_name": "CC BY 4.0",
       "license_url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true
+    },
+    {
+      "id": "NZ/HDC",
+      "country": "NZ",
+      "name": "NZ Health and Disability Commissioner - Decisions",
+      "license_id": "custom-nc",
+      "license_name": "HDC website copyright terms — personal, educational or research use only",
+      "license_url": "https://www.hdc.org.nz/copyright/",
+      "commercial_use": false
+    },
+    {
+      "id": "NZ/HPDT",
+      "country": "NZ",
+      "name": "NZ Health Practitioners Disciplinary Tribunal - Decisions",
+      "license_id": "custom-nc",
+      "license_name": "Crown copyright — NZ Health Practitioners Disciplinary Tribunal (no re-use licence published)",
+      "license_url": "https://www.hpdt.org.nz/Terms",
+      "commercial_use": false
     },
     {
       "id": "NZ/IRD-TaxRulings",
@@ -12071,6 +12493,15 @@
       "license_id": "pd-gov",
       "license_name": "Public Domain (Omani Copyright Law)",
       "license_url": "https://qanoon.om/aboutqanoon/",
+      "commercial_use": true
+    },
+    {
+      "id": "OM/SJC-CaseLaw",
+      "country": "OM",
+      "name": "Oman Supreme Judiciary Council — Supreme Court Legal Principles",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government)",
+      "license_url": "https://www.sjc.gov.om/",
       "commercial_use": true
     },
     {
@@ -12581,9 +13012,9 @@
       "id": "PT/DiarioRepublica",
       "country": "PT",
       "name": "Diário da República - Portuguese Official Gazette",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": "https://dados.gov.pt",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (official state publications)",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
     {
@@ -12884,21 +13315,21 @@
       "commercial_use": true
     },
     {
+      "id": "RU/Rostechnadzor",
+      "country": "RU",
+      "name": "Federal Environmental, Industrial and Nuclear Supervision Service",
+      "license_id": "pd-gov",
+      "license_name": "Russian official document — public domain (Civil Code art. 1259(6))",
+      "license_url": "http://pravo.gov.ru/",
+      "commercial_use": true
+    },
+    {
       "id": "RU/Sudact",
       "country": "RU",
       "name": "Sudact.ru - Russian Court Decisions (General Jurisdiction, All Regions)",
       "license_id": "ogd",
       "license_name": "Open Access",
       "license_url": "https://sudact.ru",
-      "commercial_use": true
-    },
-    {
-      "id": "RW/Amategeko",
-      "country": "RW",
-      "name": "Rwanda Official Laws Portal (amategeko.gov.rw)",
-      "license_id": "ogd",
-      "license_name": "Official Rwandan legislation — public government data provided by the Rwanda Law Reform Commission (RLRC). No formal open data license published; laws are public acts of the Government of Rwanda.",
-      "license_url": null,
       "commercial_use": true
     },
     {
@@ -12927,15 +13358,6 @@
       "license_name": "Official Rwandan court decisions — public government data provided by the Rwanda Law Reform Commission (RLRC). No formal open data license published; court decisions are public judicial acts of the Rwandan judiciary.",
       "license_url": null,
       "commercial_use": true
-    },
-    {
-      "id": "RW/OfficialGazette",
-      "country": "RW",
-      "name": "Rwanda Official Gazette (Igazeti ya Leta) via RwandaLII",
-      "license_id": "cc-by-nc",
-      "license_name": "CC BY-NC 4.0",
-      "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
-      "commercial_use": false
     },
     {
       "id": "RW/RRA",
@@ -13100,6 +13522,15 @@
       "commercial_use": true
     },
     {
+      "id": "SE/ARN",
+      "country": "SE",
+      "name": "Sweden — Allmänna reklamationsnämnden (National Board for Consumer Complaints), vägledande beslut",
+      "license_id": "pd-gov",
+      "license_name": "Public domain — Swedish Copyright Act (upphovsrättslagen) 9 § excludes decisions of public authorities",
+      "license_url": "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/lag-1960729-om-upphovsratt-till-litterara-och_sfs-1960-729/",
+      "commercial_use": true
+    },
+    {
       "id": "SE/Domstolverket",
       "country": "SE",
       "name": "Swedish Courts (Domstolsverket)",
@@ -13141,7 +13572,7 @@
       "name": "Swedish Tax Agency (Skatteverket)",
       "license_id": "pd-gov",
       "license_name": "Public domain — Swedish Copyright Act § 9",
-      "license_url": null,
+      "license_url": "https://lagen.nu/1960:729#P9",
       "commercial_use": true
     },
     {
@@ -13204,6 +13635,15 @@
       "name": "Singapore International Commercial Court",
       "license_id": "ogd",
       "license_name": "Singapore Open Data Licence",
+      "license_url": "https://data.gov.sg/open-data-licence",
+      "commercial_use": true
+    },
+    {
+      "id": "SG/SLW",
+      "country": "SG",
+      "name": "Singapore Law Watch Judgments",
+      "license_id": "ogd",
+      "license_name": "Open government data",
       "license_url": "https://data.gov.sg/open-data-licence",
       "commercial_use": true
     },
@@ -13332,6 +13772,15 @@
       "license_name": "Slovak Open Data",
       "license_url": "https://data.gov.sk",
       "commercial_use": true
+    },
+    {
+      "id": "SK/UVO-Namietky",
+      "country": "SK",
+      "name": "Slovakia — Úrad pre verejné obstarávanie, Rozhodnutia o námietkach (Public Procurement Office objection decisions)",
+      "license_id": "unverified",
+      "license_name": "No open licence published — site footer asserts all rights reserved",
+      "license_url": "https://www.uvo.gov.sk/",
+      "commercial_use": false
     },
     {
       "id": "SL/BSL-Regulations",
@@ -13505,15 +13954,6 @@
       "commercial_use": true
     },
     {
-      "id": "SR/DNAWetgeving",
-      "country": "SR",
-      "name": "Suriname Parliament Legislation (DNA)",
-      "license_id": "pd-gov",
-      "license_name": "Public domain (government)",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "SR/SRiS",
       "country": "SR",
       "name": "Suriname Rechtsinformatie Systeem — Legal Information System",
@@ -13566,6 +14006,15 @@
       "license_name": "Public domain (government legislation)",
       "license_url": null,
       "commercial_use": true
+    },
+    {
+      "id": "ST/TribunalContas",
+      "country": "ST",
+      "name": "Tribunal de Contas de São Tomé e Príncipe (Court of Audit)",
+      "license_id": "unverified",
+      "license_name": "Official publications of the Tribunal de Contas (terms not stated on site)",
+      "license_url": null,
+      "commercial_use": false
     },
     {
       "id": "SV/AsambleaLegislativa",
@@ -13799,7 +14248,7 @@
       "license_id": "ogd",
       "license_name": "Thai Government Publication",
       "license_url": "https://www.bot.or.th/en/terms-of-use",
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "TH/HuggingFaceRG",
@@ -13898,6 +14347,15 @@
       "license_id": "ogd",
       "license_name": "Open Government Data",
       "license_url": "https://sud.tj/",
+      "commercial_use": true
+    },
+    {
+      "id": "TJ/SupremeCourt-Plenum",
+      "country": "TJ",
+      "name": "Tajikistan — Plenum Resolutions of the Supreme Court (Қарорҳои Пленуми Суди Олӣ)",
+      "license_id": "ogd",
+      "license_name": "Open government data — official acts of the Supreme Court of Tajikistan",
+      "license_url": null,
       "commercial_use": true
     },
     {
@@ -14000,15 +14458,6 @@
       "commercial_use": true
     },
     {
-      "id": "TN/CourDeCassation",
-      "country": "TN",
-      "name": "Tunisia Court of Cassation Jurisprudence",
-      "license_id": "odbl-1.0",
-      "license_name": "ODbL 1.0",
-      "license_url": "https://juricaf.org",
-      "commercial_use": true
-    },
-    {
       "id": "TN/JORT-Legislation",
       "country": "TN",
       "name": "Tunisia JORT Legislation (DCAF)",
@@ -14078,7 +14527,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "TR/GIB-Ozelgeler",
@@ -14186,6 +14635,15 @@
       "license_id": "ogd",
       "license_name": "All rights reserved (Ministry of Land and Legal Affairs). Free online access to unofficial versions of the law; official versions are the revised laws printed by the Law Revision Commission. Copyright retained by the government.",
       "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "TT/Judiciary",
+      "country": "TT",
+      "name": "Trinidad and Tobago Judiciary - Judgments",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (government edict)",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
     {
@@ -14311,6 +14769,15 @@
       "name": "Tanzania Capital Markets and Securities Authority — Regulations",
       "license_id": "ogd",
       "license_name": "CMSA Official Publications",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "TZ/FCC-Decisions",
+      "country": "TZ",
+      "name": "Tanzania Fair Competition Commission — Decisions",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (government)",
       "license_url": null,
       "commercial_use": true
     },
@@ -14547,15 +15014,6 @@
       "license_name": "Open Government Licence v3.0",
       "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
       "commercial_use": true
-    },
-    {
-      "id": "UK/CaseLaw",
-      "country": "UK",
-      "name": "UK Case Law (National Archives)",
-      "license_id": "custom-nc",
-      "license_name": "Re-use and licences",
-      "license_url": "https://caselaw.nationalarchives.gov.uk/re-use-and-licences",
-      "commercial_use": false
     },
     {
       "id": "UK/CentralArbitrationCommittee",
@@ -14870,7 +15328,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "UK/MCA",
@@ -14999,6 +15457,15 @@
       "commercial_use": false
     },
     {
+      "id": "UK/PlanningAppeals",
+      "country": "UK",
+      "name": "UK Planning Appeal Decisions",
+      "license_id": "ogl-3.0",
+      "license_name": "OGL v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
       "id": "UK/RPB",
       "country": "UK",
       "name": "UK Recognised Professional Bodies (Insolvency)",
@@ -15051,6 +15518,15 @@
       "license_name": "OGL v3.0",
       "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
       "commercial_use": true
+    },
+    {
+      "id": "UK/ScotCourts",
+      "country": "UK",
+      "name": "Scottish Courts and Tribunals Service — Judgments",
+      "license_id": "custom-terms",
+      "license_name": "SCTS terms (personal / in-house use only)",
+      "license_url": "https://www.scotcourts.gov.uk/terms-of-use",
+      "commercial_use": false
     },
     {
       "id": "UK/ScotHealthEducationChamber",
@@ -15260,6 +15736,15 @@
       "commercial_use": false
     },
     {
+      "id": "US/AFCCA",
+      "country": "US",
+      "name": "United States Air Force Court of Criminal Appeals — Opinions & Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/AK-AGOpinions",
       "country": "US",
       "name": "Alaska Attorney General Formal Opinions",
@@ -15355,6 +15840,15 @@
       "name": "Arkansas State Courts",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/AR-PSC",
+      "country": "US",
+      "name": "Arkansas Public Service Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — U.S. government edict (state regulatory orders)",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
@@ -15512,6 +16006,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/CA-OAH-GeneralJurisdiction",
+      "country": "US",
+      "name": "California Office of Administrative Hearings — General Jurisdiction Decisions",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (California state government work)",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/CA-OAH-SpecialEd",
       "country": "US",
       "name": "California Office of Administrative Hearings — Special Education Decisions",
@@ -15550,7 +16053,16 @@
     {
       "id": "US/CA-TaxAppeals",
       "country": "US",
-      "name": "California Office of Tax Appeals — Precedential Opinions",
+      "name": "California Office of Tax Appeals — Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CA-WCAB",
+      "country": "US",
+      "name": "California Workers' Compensation Appeals Board — En Banc, Significant Panel & Panel Decisions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -15755,6 +16267,42 @@
       "commercial_use": true
     },
     {
+      "id": "US/CherokeeNationAGOpinions",
+      "country": "US",
+      "name": "Cherokee Nation Attorney General Opinions",
+      "license_id": "pd-gov",
+      "license_name": "Tribal government edict — public record",
+      "license_url": "https://attorneygeneral.cherokee.org/opinions/",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CherokeeNationCode",
+      "country": "US",
+      "name": "Cherokee Nation Code Annotated",
+      "license_id": "pd-gov",
+      "license_name": "Tribal government edict — public record",
+      "license_url": "https://attorneygeneral.cherokee.org/tribal-code/",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CherokeeNationCourts",
+      "country": "US",
+      "name": "Cherokee Nation Supreme Court Opinions",
+      "license_id": "pd-gov",
+      "license_name": "Tribal government edict — public record",
+      "license_url": "https://www.cherokeecourts.org/Supreme-Court",
+      "commercial_use": true
+    },
+    {
+      "id": "US/ChickasawNationCode",
+      "country": "US",
+      "name": "Chickasaw Nation Code and Constitution",
+      "license_id": "pd-gov",
+      "license_name": "Tribal government edict — public record",
+      "license_url": "https://code.chickasaw.net/Table-of-Contents",
+      "commercial_use": true
+    },
+    {
       "id": "US/CongressGov",
       "country": "US",
       "name": "Congress.gov (Congressional Bills)",
@@ -15860,7 +16408,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "US/DE-Courts",
@@ -15904,6 +16452,15 @@
       "name": "Delaware Public Employment Relations Board — Decisions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/DE-PSC",
+      "country": "US",
+      "name": "Delaware Public Service Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — U.S. government edict (state regulatory orders)",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
@@ -15983,6 +16540,15 @@
       "id": "US/EEOC",
       "country": "US",
       "name": "US Equal Employment Opportunity Commission Appellate Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/EPA-EAB",
+      "country": "US",
+      "name": "US EPA Environmental Appeals Board — Decisions & Orders",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -16102,6 +16668,15 @@
       "name": "Florida Judicial Ethics Advisory Committee — Judicial Ethics Advisory Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/FL-OFR",
+      "country": "US",
+      "name": "Florida Office of Financial Regulation — Final Orders",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (Florida state government work)",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
@@ -16421,6 +16996,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/ID-PUC",
+      "country": "US",
+      "name": "Idaho Public Utilities Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — U.S. government edict (state regulatory orders)",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/IL-AGOpinions",
       "country": "US",
       "name": "Illinois Attorney General Opinions",
@@ -16442,6 +17026,15 @@
       "id": "US/IL-ILRB",
       "country": "US",
       "name": "Illinois Labor Relations Board — Decisions & Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/IL-IWCC",
+      "country": "US",
+      "name": "Illinois Workers' Compensation Commission — Decisions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -16478,6 +17071,15 @@
       "id": "US/IN-AGOpinions",
       "country": "US",
       "name": "Indiana Attorney General Official Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/IN-CADDNAR",
+      "country": "US",
+      "name": "Indiana Natural Resources Commission — CADDNAR Decisions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -16693,7 +17295,7 @@
     {
       "id": "US/LA-Legislation",
       "country": "US",
-      "name": "Louisiana Revised Statutes (legis.la.gov)",
+      "name": "Louisiana Revised Statutes and Codes (legis.la.gov)",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -16835,6 +17437,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/MD-PSC",
+      "country": "US",
+      "name": "Maryland Public Service Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — U.S. government edict (state regulatory orders)",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/MD-TaxCourt",
       "country": "US",
       "name": "Maryland Tax Court",
@@ -16970,6 +17581,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/MN-WCCA",
+      "country": "US",
+      "name": "Minnesota Workers' Compensation Court of Appeals — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/MO-AGOpinions",
       "country": "US",
       "name": "Missouri Attorney General Opinions",
@@ -17087,6 +17707,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/MashantucketPequotLaws",
+      "country": "US",
+      "name": "Mashantucket Pequot Tribal Laws (M.P.T.L.)",
+      "license_id": "pd-gov",
+      "license_name": "Tribal government edict — public record",
+      "license_url": "https://law.mptn-nsn.gov/tribal-laws/",
+      "commercial_use": true
+    },
+    {
       "id": "US/NC-AGOpinions",
       "country": "US",
       "name": "North Carolina Attorney General Opinions",
@@ -17137,6 +17766,15 @@
       "name": "North Carolina General Statutes (ncleg.gov)",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NC-NCUC",
+      "country": "US",
+      "name": "North Carolina Utilities Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — U.S. government edict (state regulatory orders)",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
@@ -17258,6 +17896,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/NE-PSC",
+      "country": "US",
+      "name": "Nebraska Public Service Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — U.S. government edict (state regulatory orders)",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/NE-TERC",
       "country": "US",
       "name": "Nebraska Tax Equalization and Review Commission — Decisions & Orders",
@@ -17326,6 +17973,15 @@
       "name": "New Jersey State Ethics Commission — Final Decisions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/NJ-LegalEthics",
+      "country": "US",
+      "name": "New Jersey Supreme Court — Ethics Advisory Opinions (ACPE / Attorney Advertising / Unauthorized Practice)",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (NJ Supreme Court committee opinions)",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
@@ -17564,6 +18220,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/NavajoCourts",
+      "country": "US",
+      "name": "Navajo Nation Supreme Court — Opinions",
+      "license_id": "pd-gov",
+      "license_name": "Tribal government edict — public record",
+      "license_url": "https://courts.navajo-nsn.gov/disclaimer.htm",
+      "commercial_use": true
+    },
+    {
       "id": "US/OCAHO",
       "country": "US",
       "name": "US OCAHO Decisions (Office of the Chief Administrative Hearing Officer)",
@@ -17659,6 +18324,15 @@
       "name": "Oklahoma Statutes (oklegislature.gov)",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/OK-OCC",
+      "country": "US",
+      "name": "Oklahoma Corporation Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — U.S. government edict (state regulatory orders)",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
@@ -17798,6 +18472,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/OR-WCB",
+      "country": "US",
+      "name": "Oregon Workers' Compensation Board — Board Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/OSHRC",
       "country": "US",
       "name": "Occupational Safety & Health Review Commission Decisions",
@@ -17813,16 +18496,7 @@
       "license_id": "",
       "license_name": "",
       "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "US/PA-AGOpinions",
-      "country": "US",
-      "name": "Pennsylvania Attorney General Opinions",
-      "license_id": "pd-us",
-      "license_name": "Public domain — 17 U.S.C. § 105",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
-      "commercial_use": true
+      "commercial_use": null
     },
     {
       "id": "US/PA-BFR",
@@ -18059,6 +18733,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/TN-TPUC",
+      "country": "US",
+      "name": "Tennessee Public Utility Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — U.S. government edict (state regulatory orders)",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/TN-TaxRulings",
       "country": "US",
       "name": "Tennessee Department of Revenue — Letter Rulings",
@@ -18089,6 +18772,15 @@
       "id": "US/TX-Courts",
       "country": "US",
       "name": "Texas State Courts",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/TX-DWC-AppealsPanel",
+      "country": "US",
+      "name": "Texas DWC — Workers' Compensation Appeals Panel Decisions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -18338,6 +19030,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/WA-BIIA",
+      "country": "US",
+      "name": "Washington Board of Industrial Insurance Appeals — Significant Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/WA-BTA",
       "country": "US",
       "name": "Washington State Board of Tax Appeals — Decisions",
@@ -18433,6 +19134,15 @@
       "name": "Wisconsin Judicial Conduct Advisory Committee — Formal Advisory Opinions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WI-LIRC",
+      "country": "US",
+      "name": "Wisconsin Labor & Industry Review Commission — Decisions",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (Wisconsin state government edict)",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
@@ -18817,7 +19527,7 @@
     {
       "id": "VN/PhapLuatGov",
       "country": "VN",
-      "name": "Vietnam National Legal Document Database (VBPL)",
+      "name": "Vietnam National Legal Document Database (Hệ thống văn bản)",
       "license_id": "ogd",
       "license_name": "Official Vietnamese legislation — public government data from the Ministry of Justice. Vietnamese legal documents are official state acts and not subject to copyright under Vietnamese Intellectual Property Law (Art. 15.1).",
       "license_url": null,
@@ -18827,9 +19537,9 @@
       "id": "VN/ThuVienPhapLuat",
       "country": "VN",
       "name": "Thu Vien Phap Luat (Legal Library)",
-      "license_id": "ogd",
-      "license_name": "https://thuvienphapluat.vn/en/",
-      "license_url": "https://thuvienphapluat.vn/en/",
+      "license_id": "cc-by-4.0",
+      "license_name": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true
     },
     {
