@@ -1,0 +1,46 @@
+name: Test Licence Sync
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/sync_licenses_json.py'
+      - 'generate_dashboard.py'
+      - 'tests/test_license_sync.py'
+      - '.github/workflows/refresh-dashboard.yml'
+      - '.github/workflows/test-license-sync.yml'
+      - 'docs/license-inventory-format.md'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sync_licenses_json.py'
+      - 'generate_dashboard.py'
+      - 'tests/test_license_sync.py'
+      - '.github/workflows/refresh-dashboard.yml'
+      - '.github/workflows/test-license-sync.yml'
+      - 'docs/license-inventory-format.md'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github
+            scripts
+            tests
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Test offline HTTP mirroring and workflow safety
+        run: |
+          set -euo pipefail
+          python -m pip install pyyaml pytest
+          python -m pytest tests/test_license_sync.py -q

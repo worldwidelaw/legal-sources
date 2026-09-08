@@ -737,12 +737,10 @@ def generate():
 
     print(f"Dashboard data generated: {complete}/{total} sources complete ({output['summary']['percent_complete']}%)")
 
-    # Also regenerate licenses.json
-    try:
-        from scripts.generate_licenses_json import main as generate_licenses
-        generate_licenses()
-    except Exception as e:
-        print(f"Warning: could not generate licenses.json: {e}")
+    # Mirror the canonical, already-public inventory; never infer licences from
+    # the independently synchronized public manifest. A failed sync must fail CI.
+    from scripts.sync_licenses_json import sync_licenses
+    sync_licenses(output=DOCS_DIR / "licenses.json")
 
 
 if __name__ == "__main__":
