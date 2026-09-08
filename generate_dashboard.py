@@ -513,6 +513,11 @@ def get_session_logs(limit=10):
 
 
 def generate():
+    # License generation is required. Fail before writing status on bad inputs
+    # or missing dependencies so automation cannot publish a stale inventory.
+    from scripts.generate_licenses_json import main as generate_licenses
+    generate_licenses()
+
     manifest = load_manifest()
     sources = manifest.get("sources", [])
     neon_live = bool(_load_neon_database_url())
@@ -736,13 +741,6 @@ def generate():
         json.dump(output, f, indent=2, ensure_ascii=False)
 
     print(f"Dashboard data generated: {complete}/{total} sources complete ({output['summary']['percent_complete']}%)")
-
-    # Also regenerate licenses.json
-    try:
-        from scripts.generate_licenses_json import main as generate_licenses
-        generate_licenses()
-    except Exception as e:
-        print(f"Warning: could not generate licenses.json: {e}")
 
 
 if __name__ == "__main__":
