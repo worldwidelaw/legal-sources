@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-09T14:13:42.405186+00:00",
+  "generated_at": "2026-09-09T19:07:41.555263+00:00",
   "summary": {
-    "total_complete": 2190,
-    "commercial_ok": 1995,
+    "total_complete": 2184,
+    "commercial_ok": 1989,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,19 +14,19 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 699
+      "count": 698
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
       "url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true,
-      "count": 379
+      "count": 376
     },
     "pd-gov": {
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 373
+      "count": 374
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -38,7 +38,7 @@
       "display_name": "CC BY 4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true,
-      "count": 108
+      "count": 106
     },
     "eur-lex": {
       "display_name": "EUR-Lex reuse notice",
@@ -56,7 +56,7 @@
       "display_name": "Public domain — 5 UrhG",
       "url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true,
-      "count": 44
+      "count": 43
     },
     "custom-nc": {
       "display_name": "Custom non-commercial terms",
@@ -720,15 +720,6 @@
       "name": "Federal Court of Australia Judgments",
       "license_id": "cc-by-4.0",
       "license_name": "CC BY 4.0",
-      "license_url": "https://creativecommons.org/licenses/by/4.0/",
-      "commercial_use": true
-    },
-    {
-      "id": "AU/FederalRegister",
-      "country": "AU",
-      "name": "Federal Register of Legislation (Australia)",
-      "license_id": "cc-by-4.0",
-      "license_name": "Creative Commons Attribution 4.0",
       "license_url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true
     },
@@ -2416,15 +2407,6 @@
       "commercial_use": true
     },
     {
-      "id": "CH/Fedlex",
-      "country": "CH",
-      "name": "Fedlex - Swiss Federal Legislation",
-      "license_id": "ogd",
-      "license_name": "OGD Switzerland",
-      "license_url": "https://opendata.swiss/en/terms-of-use",
-      "commercial_use": true
-    },
-    {
       "id": "CH/GE-Legislation",
       "country": "CH",
       "name": "République et Canton de Genève - Recueil systématique",
@@ -3474,15 +3456,6 @@
       "name": "German Federal Finance Court (Bundesfinanzhof)",
       "license_id": "pd-de",
       "license_name": "Public domain — § 5 UrhG",
-      "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
-      "commercial_use": true
-    },
-    {
-      "id": "DE/BGBl",
-      "country": "DE",
-      "name": "German Federal Law (Gesetze im Internet)",
-      "license_id": "pd-de",
-      "license_name": "§ 5 UrhG",
       "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true
     },
@@ -4603,6 +4576,15 @@
       "commercial_use": true
     },
     {
+      "id": "ES/REGCON",
+      "country": "ES",
+      "name": "Convenios colectivos sectoriales (REGCON / BOE)",
+      "license_id": "ogd",
+      "license_name": "Spanish PSI reuse regulations",
+      "license_url": "https://datos.gob.es/en/terms",
+      "commercial_use": true
+    },
+    {
       "id": "ES/TACGal-Galicia",
       "country": "ES",
       "name": "Tribunal Administrativo de Contratación Pública de Galicia (TACGal)",
@@ -4672,15 +4654,6 @@
       "license_id": "ogd",
       "license_name": "Generalitat de Catalunya open data (PSI reuse)",
       "license_url": "https://web.gencat.cat/ca/menu-ajuda/ajuda/avis_legal/",
-      "commercial_use": true
-    },
-    {
-      "id": "ES/TEAC",
-      "country": "ES",
-      "name": "Spanish Tax Administrative Tribunal (TEAC)",
-      "license_id": "ogd",
-      "license_name": "Spanish PSI reuse regulations",
-      "license_url": "https://datos.gob.es/en/terms",
       "commercial_use": true
     },
     {
@@ -5710,15 +5683,6 @@
       "commercial_use": true
     },
     {
-      "id": "FR/AssembleeNationale",
-      "country": "FR",
-      "name": "French National Assembly (Assemblée Nationale)",
-      "license_id": "licence-ouverte-2.0",
-      "license_name": "Licence Ouverte 2.0 / Open Licence (Etalab)",
-      "license_url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
-      "commercial_use": true
-    },
-    {
       "id": "FR/AssuranceMaladie",
       "country": "FR",
       "name": "Circulaires réseau de l'Assurance Maladie (CNAM)",
@@ -5742,6 +5706,15 @@
       "name": "Bofip (Bulletin Officiel des Finances Publiques)",
       "license_id": "licence-ouverte-2.0",
       "license_name": "Licence Ouverte 2.0 / Open Licence (Etalab)",
+      "license_url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
+      "commercial_use": true
+    },
+    {
+      "id": "FR/BulletinsOfficielsSociaux",
+      "country": "FR",
+      "name": "Bulletins officiels des ministères chargés des affaires sociales (Santé & Travail)",
+      "license_id": "licence-ouverte-2.0",
+      "license_name": "Licence Ouverte 2.0",
       "license_url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
       "commercial_use": true
     },
@@ -11776,6 +11749,15 @@
       "commercial_use": true
     },
     {
+      "id": "MZ/JurisMZ",
+      "country": "MZ",
+      "name": "Mozambique Case Law Database (JURIS MZ)",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "MZ/TSLegislacao",
       "country": "MZ",
       "name": "Mozambique Supreme Court Legislation Portal",
@@ -15997,15 +15979,6 @@
       "commercial_use": true
     },
     {
-      "id": "US/CA-Legislation",
-      "country": "US",
-      "name": "California Legislative Information (LegInfo FTP/MySQL)",
-      "license_id": "pd-us",
-      "license_name": "Public domain — 17 U.S.C. § 105",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
-      "commercial_use": true
-    },
-    {
       "id": "US/CA-OAH-DDS",
       "country": "US",
       "name": "California Office of Administrative Hearings — DDS (Lanterman Act) Decisions",
@@ -18283,15 +18256,6 @@
       "commercial_use": true
     },
     {
-      "id": "US/OH-Legislation",
-      "country": "US",
-      "name": "Ohio Revised Code (LAWriter)",
-      "license_id": "pd-us",
-      "license_name": "Public domain — 17 U.S.C. § 105",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
-      "commercial_use": true
-    },
-    {
       "id": "US/OH-SERB",
       "country": "US",
       "name": "Ohio State Employment Relations Board — Opinions",
@@ -18817,15 +18781,6 @@
       "id": "US/TX-LegalEthics",
       "country": "US",
       "name": "Texas Committee on Professional Ethics — Ethics Opinions",
-      "license_id": "pd-us",
-      "license_name": "Public domain — 17 U.S.C. § 105",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
-      "commercial_use": true
-    },
-    {
-      "id": "US/TX-Legislation",
-      "country": "US",
-      "name": "Texas Legislature Online (TLO) + Capitol Data Portal",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -19540,15 +19495,6 @@
       "license_id": "ogd",
       "license_name": "Official Vietnamese legislation — public government data from the Ministry of Justice. Vietnamese legal documents are official state acts and not subject to copyright under Vietnamese Intellectual Property Law (Art. 15.1).",
       "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "VN/ThuVienPhapLuat",
-      "country": "VN",
-      "name": "Thu Vien Phap Luat (Legal Library)",
-      "license_id": "cc-by-4.0",
-      "license_name": "CC BY 4.0",
-      "license_url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true
     },
     {
