@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-10T08:43:48.841019+00:00",
+  "generated_at": "2026-09-10T14:07:21.969658+00:00",
   "summary": {
-    "total_complete": 2188,
-    "commercial_ok": 1993,
+    "total_complete": 2192,
+    "commercial_ok": 1997,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,13 +14,13 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 699
+      "count": 700
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
       "url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true,
-      "count": 376
+      "count": 378
     },
     "pd-gov": {
       "display_name": "Public domain (government works)",
@@ -56,7 +56,7 @@
       "display_name": "Public domain — 5 UrhG",
       "url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true,
-      "count": 43
+      "count": 44
     },
     "custom-nc": {
       "display_name": "Custom non-commercial terms",
@@ -2416,6 +2416,15 @@
       "commercial_use": true
     },
     {
+      "id": "CH/Fedlex",
+      "country": "CH",
+      "name": "Fedlex - Swiss Federal Legislation",
+      "license_id": "ogd",
+      "license_name": "OGD Switzerland",
+      "license_url": "https://opendata.swiss/en/terms-of-use",
+      "commercial_use": true
+    },
+    {
       "id": "CH/GE-Legislation",
       "country": "CH",
       "name": "République et Canton de Genève - Recueil systématique",
@@ -3465,6 +3474,15 @@
       "name": "German Federal Finance Court (Bundesfinanzhof)",
       "license_id": "pd-de",
       "license_name": "Public domain — § 5 UrhG",
+      "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
+      "commercial_use": true
+    },
+    {
+      "id": "DE/BGBl",
+      "country": "DE",
+      "name": "German Federal Law (Gesetze im Internet)",
+      "license_id": "pd-de",
+      "license_name": "§ 5 UrhG",
       "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true
     },
@@ -16006,6 +16024,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/CA-Legislation",
+      "country": "US",
+      "name": "California Legislative Information (LegInfo FTP/MySQL)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/CA-OAH-DDS",
       "country": "US",
       "name": "California Office of Administrative Hearings — DDS (Lanterman Act) Decisions",
@@ -18808,6 +18835,15 @@
       "id": "US/TX-LegalEthics",
       "country": "US",
       "name": "Texas Committee on Professional Ethics — Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/TX-Legislation",
+      "country": "US",
+      "name": "Texas Legislature Online (TLO) + Capitol Data Portal",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
