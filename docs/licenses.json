@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-10T03:26:53.808678+00:00",
+  "generated_at": "2026-09-10T08:43:48.841019+00:00",
   "summary": {
-    "total_complete": 2184,
-    "commercial_ok": 1989,
+    "total_complete": 2188,
+    "commercial_ok": 1993,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 698
+      "count": 699
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,19 +26,19 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 374
+      "count": 375
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 182
+      "count": 183
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true,
-      "count": 106
+      "count": 107
     },
     "eur-lex": {
       "display_name": "EUR-Lex reuse notice",
@@ -720,6 +720,15 @@
       "name": "Federal Court of Australia Judgments",
       "license_id": "cc-by-4.0",
       "license_name": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "AU/FederalRegister",
+      "country": "AU",
+      "name": "Federal Register of Legislation (Australia)",
+      "license_id": "cc-by-4.0",
+      "license_name": "Creative Commons Attribution 4.0",
       "license_url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true
     },
@@ -6319,6 +6328,15 @@
       "license_id": "pd-gov",
       "license_name": "Public domain (government)",
       "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "GN/GuineeLex",
+      "country": "GN",
+      "name": "GuineeLex - Le droit guineen en vigueur",
+      "license_id": "pd-gov",
+      "license_name": "Guinean official legal texts - no re-use terms published",
+      "license_url": "https://guineelex.com/methodologie",
       "commercial_use": true
     },
     {
@@ -14431,6 +14449,15 @@
       "commercial_use": true
     },
     {
+      "id": "TN/ARP",
+      "country": "TN",
+      "name": "Assemblee des representants du peuple (Tunisian parliament)",
+      "license_id": "ogd",
+      "license_name": "Public sector information - Organic Law 2016-22 (right of access to information)",
+      "license_url": "https://www.arp.tn/relation_societe_civile/access_information",
+      "commercial_use": true
+    },
+    {
       "id": "TN/BCT",
       "country": "TN",
       "name": "Central Bank of Tunisia — Circulars & Regulations",
@@ -19441,6 +19468,15 @@
       "license_id": "ogd",
       "license_name": "Crown Copyright (British Virgin Islands)",
       "license_url": "https://www.bvifsc.vg/library/legislation",
+      "commercial_use": true
+    },
+    {
+      "id": "VG/Gazette",
+      "country": "VG",
+      "name": "Virgin Islands Official Gazette",
+      "license_id": "custom-terms",
+      "license_name": "Crown Copyright (British Virgin Islands)",
+      "license_url": "https://eservices.gov.vg/gazette/content/faqs",
       "commercial_use": true
     },
     {
