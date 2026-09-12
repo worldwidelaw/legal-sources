@@ -54,7 +54,13 @@ HEADERS = {
 }
 
 DELAY = 1.5
-PAGE_SIZE = 10
+
+# A refresh window of a few months is ~40K decisions, so at the old size of 10
+# an update spent ~4,000 requests per segment across four segments and ran out
+# of its budget before writing anything (#1510). Measured against the live API:
+# 10/page = 4.0s, 100/page = 9.5s — 10x the records for 2.4x the time — while
+# 250/page takes 33.5s and is where the endpoint starts answering 500.
+PAGE_SIZE = 100
 
 # GraphQL query for fetching decisions
 GRAPHQL_QUERY = """
@@ -347,4 +353,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

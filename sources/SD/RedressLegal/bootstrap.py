@@ -49,6 +49,11 @@ except ImportError:
     print("ERROR: pdfplumber not installed. Run: pip3 install pdfplumber")
     sys.exit(1)
 
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 SOURCE_ID = "SD/RedressLegal"
 SOURCE_DIR = Path(__file__).parent
 SAMPLE_DIR = SOURCE_DIR / "sample"
@@ -107,20 +112,29 @@ def slug_from_url(url):
     return slug[:120]
 
 
-def extract_pdf_text(pdf_bytes):
-    """Extract text from PDF bytes using pdfplumber."""
+def extract_pdf_text(pdf_bytes, doc_id):
+    """Extract text from PDF bytes via the shared helper.
+
+    This used to call pdfplumber directly. pdfplumber emits glyphs in the order
+    the content stream lists them, which for the Arabic half of these bilingual
+    PDFs is *visual* order, so those lines were stored character-reversed —
+    ``قانون`` as ``نوناق`` (issue #1560). Keyword search then matches nothing,
+    and silently: the semantic half of a hybrid index still returns something,
+    so the source looks healthy while ranking against gibberish.
+
+    ``common.pdf_extract`` routes RTL-heavy output back through
+    ``common.arabic_pdf``, which orders glyph clusters by x-geometry rather than
+    trusting the emitted sequence. The English text in these same documents is
+    not RTL, so it passes through unchanged.
+    """
     try:
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            texts = []
-            for page in pdf.pages:
-                text = page.extract_text() or ""
-                if text.strip():
-                    texts.append(text.strip())
-                try:
-                    page.flush_cache(); page.get_textmap.cache_clear()
-                except Exception:
-                    pass
-            return "\n\n".join(texts)
+        return extract_pdf_markdown(
+            SOURCE_ID,
+            doc_id,
+            pdf_bytes=pdf_bytes,
+            table="legislation",
+            force=True,
+        ) or ""
     except Exception as e:
         logger.error(f"PDF extraction error: {e}")
         return ""
@@ -227,15 +241,15 @@ def fetch_all(sample=False):
                 logger.warning(f"HTTP {resp.status_code} for {pdf_url}")
                 continue
 
-            text = extract_pdf_text(resp.content)
+            doc_id = slug_from_url(pdf_url)
+
+            text = extract_pdf_text(resp.content, doc_id)
             if not text or len(text) < 50:
                 logger.warning(f"Insufficient text from {pdf_url}: {len(text)} chars")
                 continue
 
             year = extract_year(entry["name"]) or extract_year(pdf_url)
             date = f"{year}-01-01" if year else None
-
-            doc_id = slug_from_url(pdf_url)
 
             doc = {
                 "_id": doc_id,
@@ -309,4 +323,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

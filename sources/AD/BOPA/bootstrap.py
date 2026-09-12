@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 AD/BOPA -- Andorra Official Gazette (Butlletí Oficial del Principat d'Andorra)
@@ -31,7 +32,6 @@ Usage:
   python bootstrap.py test               # Quick connectivity test
 """
 
-import os
 import sys
 import json
 import logging
@@ -46,7 +46,7 @@ from urllib.parse import unquote
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 
 logging.basicConfig(
@@ -164,7 +164,10 @@ class AndorraBOPAScraper(BaseScraper):
             self.rate_limiter.wait()
             resp = self.blob_client.get(storage_path.replace(BLOB_STORAGE_URL, ""))
             resp.raise_for_status()
-            return resp.text
+            # Blob Storage serves "text/html" with no charset, so requests falls
+            # back to ISO-8859-1 (RFC 2616) and mangles every accented Catalan
+            # character — "s’aprova" arrives as "sâ\x80\x99aprova". The bytes are UTF-8.
+            return resp.content.decode("utf-8-sig", errors="replace")
         except Exception as e:
             logger.warning(f"Failed to fetch HTML from {storage_path}: {e}")
             return ""
@@ -202,6 +205,16 @@ class AndorraBOPAScraper(BaseScraper):
 
         return text
 
+    @staticmethod
+    def _text_field(doc: Dict[str, Any], key: str) -> str:
+        """Read a string field that the API may return as JSON null.
+
+        ``doc.get(key, "")`` returns None when the key is *present* with a null
+        value, and ``"x" in None`` raises "argument of type 'NoneType' is not
+        iterable" — which aborted the whole crawl mid-run (issue #1588).
+        """
+        return doc.get(key) or ""
+
     def _decode_sumari(self, sumari: str) -> str:
         """Decode URL-encoded summary text."""
         if not sumari:
@@ -215,10 +228,10 @@ class AndorraBOPAScraper(BaseScraper):
         """
         Check if document is relevant legislation (not job postings, notices, etc.)
         """
-        organisme_pare = doc.get("organismePare", "")
-        organisme = doc.get("organisme", "")
-        tema_pare = doc.get("temaPare", "")
-        tema = doc.get("tema", "")
+        organisme_pare = self._text_field(doc, "organismePare")
+        organisme = self._text_field(doc, "organisme")
+        tema_pare = self._text_field(doc, "temaPare")
+        tema = self._text_field(doc, "tema")
 
         # Filter out non-legislative content
         excluded_keywords = [
@@ -267,14 +280,14 @@ class AndorraBOPAScraper(BaseScraper):
                 logger.error(f"Failed to fetch newsletter list: {e}")
                 break
 
-            bopa_list = newsletters.get("bopaList", [])
+            bopa_list = newsletters.get("bopaList") or []
             if not bopa_list:
                 logger.info("No more newsletters to process")
                 break
 
             for bopa in bopa_list:
-                num_bopa = bopa.get("numBOPA", "")
-                data_publicacio = bopa.get("dataPublicacio", "")
+                num_bopa = self._text_field(bopa, "numBOPA")
+                data_publicacio = self._text_field(bopa, "dataPublicacio")
 
                 if not num_bopa or not data_publicacio:
                     continue
@@ -296,44 +309,58 @@ class AndorraBOPAScraper(BaseScraper):
                     logger.warning(f"Failed to get documents for BOPA {year}/{num_bopa}: {e}")
                     continue
 
-                paginated_docs = docs_response.get("paginatedDocuments", [])
+                paginated_docs = docs_response.get("paginatedDocuments") or []
+
+                # The API's own totalCount occasionally exceeds what it returns.
+                # Log the shortfall rather than letting it pass as full coverage.
+                total_count = docs_response.get("totalCount") or 0
+                if total_count > len(paginated_docs):
+                    logger.warning(
+                        f"BOPA {year}/{num_bopa}: API returned {len(paginated_docs)} "
+                        f"of {total_count} documents ({total_count - len(paginated_docs)} short)"
+                    )
 
                 for doc_entry in paginated_docs:
-                    doc = doc_entry.get("document", {})
+                    doc = doc_entry.get("document") or {}
 
-                    # Skip non-legislation documents
-                    if not self._is_legislation_document(doc):
+                    # One malformed document must not abort the entire crawl.
+                    try:
+                        # Skip non-legislation documents
+                        if not self._is_legislation_document(doc):
+                            continue
+
+                        # Get full text from HTML
+                        storage_path = self._text_field(doc, "metadata_storage_path")
+                        if not storage_path or not storage_path.endswith(".html"):
+                            continue
+
+                        html_content = self._fetch_document_html(storage_path)
+                        full_text = self._extract_text_from_html(html_content)
+
+                        # Skip if no meaningful text
+                        if len(full_text) < 100:
+                            logger.debug(f"Skipping {doc.get('nomDocument')}: insufficient text ({len(full_text)} chars)")
+                            continue
+
+                        # Build document record
+                        record = {
+                            "nom_document": self._text_field(doc, "nomDocument"),
+                            "sumari": self._decode_sumari(self._text_field(doc, "sumari")),
+                            "organisme_pare": self._text_field(doc, "organismePare"),
+                            "organisme": self._text_field(doc, "organisme"),
+                            "tema_pare": self._text_field(doc, "temaPare"),
+                            "tema": self._text_field(doc, "tema"),
+                            "num_butlleti": self._text_field(doc, "numButlleti"),
+                            "any_butlleti": self._text_field(doc, "anyButlleti"),
+                            "data_publicacio_butlleti": self._text_field(doc, "dataPublicacioButlleti"),
+                            "data_article": self._text_field(doc, "dataArticle"),
+                            "storage_path": storage_path,
+                            "full_text": full_text,
+                            "is_extra": doc.get("isExtra") or "False",
+                        }
+                    except Exception as e:
+                        logger.warning(f"Skipping document {doc.get('nomDocument')!r} in BOPA {year}/{num_bopa}: {e}")
                         continue
-
-                    # Get full text from HTML
-                    storage_path = doc.get("metadata_storage_path", "")
-                    if not storage_path or not storage_path.endswith(".html"):
-                        continue
-
-                    html_content = self._fetch_document_html(storage_path)
-                    full_text = self._extract_text_from_html(html_content)
-
-                    # Skip if no meaningful text
-                    if len(full_text) < 100:
-                        logger.debug(f"Skipping {doc.get('nomDocument')}: insufficient text ({len(full_text)} chars)")
-                        continue
-
-                    # Build document record
-                    record = {
-                        "nom_document": doc.get("nomDocument", ""),
-                        "sumari": self._decode_sumari(doc.get("sumari", "")),
-                        "organisme_pare": doc.get("organismePare", ""),
-                        "organisme": doc.get("organisme", ""),
-                        "tema_pare": doc.get("temaPare", ""),
-                        "tema": doc.get("tema", ""),
-                        "num_butlleti": doc.get("numButlleti", ""),
-                        "any_butlleti": doc.get("anyButlleti", ""),
-                        "data_publicacio_butlleti": doc.get("dataPublicacioButlleti", ""),
-                        "data_article": doc.get("dataArticle", ""),
-                        "storage_path": storage_path,
-                        "full_text": full_text,
-                        "is_extra": doc.get("isExtra", "False"),
-                    }
 
                     count += 1
                     yield record
@@ -366,6 +393,8 @@ class AndorraBOPAScraper(BaseScraper):
         Since BOPA is chronologically ordered, we stop when we reach
         documents older than the since date.
         """
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         for doc in self._iterate_documents(sample_mode=False):
             date_str = doc.get("data_publicacio_butlleti", "")
             if date_str:
@@ -389,24 +418,27 @@ class AndorraBOPAScraper(BaseScraper):
 
         CRITICAL: Includes full text in the 'text' field.
         """
-        nom_document = raw.get("nom_document", "")
-        sumari = raw.get("sumari", "")
-        full_text = raw.get("full_text", "")
+        nom_document = self._text_field(raw, "nom_document")
+        sumari = self._text_field(raw, "sumari")
+        full_text = self._text_field(raw, "full_text")
 
         # Build document ID
-        doc_id = f"AD_BOPA_{raw.get('any_butlleti', '')}_{raw.get('num_butlleti', '')}_{nom_document}"
+        doc_id = (
+            f"AD_BOPA_{self._text_field(raw, 'any_butlleti')}"
+            f"_{self._text_field(raw, 'num_butlleti')}_{nom_document}"
+        )
 
         # Parse publication date
-        date_str = raw.get("data_publicacio_butlleti", "") or raw.get("data_article", "")
+        date_str = self._text_field(raw, "data_publicacio_butlleti") or self._text_field(raw, "data_article")
 
         # Build URL to document on bopa.ad
-        year = raw.get("any_butlleti", "")
-        num = raw.get("num_butlleti", "")
+        year = self._text_field(raw, "any_butlleti")
+        num = self._text_field(raw, "num_butlleti")
         url = f"https://www.bopa.ad/Documents/Detall?doc={nom_document}" if nom_document else "https://www.bopa.ad"
 
         # Determine document type from organisme/tema
         doc_type = "legislation"
-        organisme = raw.get("organisme", "").lower()
+        organisme = self._text_field(raw, "organisme").lower()
         if "llei" in organisme:
             doc_type = "law"
         elif "reglament" in organisme:
@@ -431,12 +463,12 @@ class AndorraBOPAScraper(BaseScraper):
             "document_name": nom_document,
             "bopa_year": year,
             "bopa_number": num,
-            "organisme_pare": raw.get("organisme_pare", ""),
-            "organisme": raw.get("organisme", ""),
-            "tema_pare": raw.get("tema_pare", ""),
-            "tema": raw.get("tema", ""),
+            "organisme_pare": self._text_field(raw, "organisme_pare"),
+            "organisme": self._text_field(raw, "organisme"),
+            "tema_pare": self._text_field(raw, "tema_pare"),
+            "tema": self._text_field(raw, "tema"),
             "document_type": doc_type,
-            "is_extra": raw.get("is_extra", "False") == "True",
+            "is_extra": (raw.get("is_extra") or "False") == "True",
             "language": "ca",  # Catalan
         }
 
@@ -558,4 +590,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

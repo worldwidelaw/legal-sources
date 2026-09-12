@@ -13,21 +13,27 @@ The API provides:
 - Comprehensive metadata including case numbers, dates, keywords, legal provisions
 
 Coverage: ~1,300+ decisions from the API (March 2025+ new decisions, plus historical referat)
-Legacy archive (2008-2025) may require the RSS feed fallback.
 
 No authentication required. Public domain court decisions.
+
+Usage:
+  python bootstrap.py bootstrap            # Full pull, streams to data/records.jsonl
+  python bootstrap.py bootstrap --sample   # Fetch ~15 sample decisions
+  python bootstrap.py bootstrap-fast       # Full pull, concurrent normalize
+  python bootstrap.py update               # Incremental pull
+  python bootstrap.py test                 # Connectivity test
 """
 
-import argparse
 import html
-import io
 import json
+import logging
 import re
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, date, timezone
 from pathlib import Path
-from typing import Generator, Optional, List, Dict
+from typing import Generator, Optional, List, Dict, Union
+from urllib.parse import quote
 
 import requests
 
@@ -35,14 +41,27 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from common.base_scraper import BaseScraper
 from common.pdf_extract import extract_pdf_markdown
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("legal-data-hunter.SE.SupremeAdministrativeCourt")
 
 API_BASE = "https://rattspraxis.etjanst.domstol.se/api/v1"
-SAMPLE_DIR = Path(__file__).parent / "sample"
 SOURCE_ID = "SE/SupremeAdministrativeCourt"
 COURT_CODE = "HFD"
 COURT_NAME = "Högsta förvaltningsdomstolen"
+
+# The API held ~1,300 HFD publications as of 2026-08. An empty first page means
+# the endpoint changed or is refusing us, not that the court stopped deciding
+# cases — so a full sweep must fail loud rather than exit 0.
+KNOWN_CORPUS_FLOOR = 100
+
+# Shortest body we accept as full text.
+MIN_TEXT_CHARS = 200
 
 PUB_TYPES = {
     'DOM_ELLER_BESLUT': 'Judgment or decision',
@@ -52,14 +71,20 @@ PUB_TYPES = {
 }
 
 
-def get_session() -> requests.Session:
-    """Create a requests session with proper headers."""
-    session = requests.Session()
-    session.headers.update({
-        'Accept': 'application/json',
-        'User-Agent': 'LegalDataHunter/1.0 (research; https://github.com/ZachLaik/LegalDataHunter)',
-    })
-    return session
+class HFDUnavailable(RuntimeError):
+    """The Domstolsverket API did not return a usable result set."""
+
+
+def _as_date_str(value: Union[str, date, datetime, None]) -> Optional[str]:
+    """Render a datetime/date/str as YYYY-MM-DD, so date comparisons are total."""
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value.date().isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
+    text = str(value).strip()
+    return text[:10] if text else None
 
 
 def html_to_text(html_content: str) -> str:
@@ -85,393 +110,315 @@ def html_to_text(html_content: str) -> str:
     return text.strip()
 
 
-def fetch_publications(
-    page: int = 0,
-    pagesize: int = 100,
-    pub_types: str = None,
-    sort_asc: bool = False,
-) -> List[Dict]:
+class HFDScraper(BaseScraper):
     """
-    Fetch HFD publications from the API.
+    Scraper for SE/SupremeAdministrativeCourt — Högsta förvaltningsdomstolen.
 
-    Args:
-        page: Page number (0-indexed)
-        pagesize: Results per page (max 100)
-        pub_types: Comma-separated publication types
-        sort_asc: Sort ascending by date (default False = newest first)
-
-    Returns:
-        List of publication records
+    fetch_all()/fetch_updates() yield RAW API publications; normalize(raw)
+    resolves the full text (HTML content, else PDF attachment, else summary)
+    and maps the record onto the standard schema.
     """
-    session = get_session()
-    params = {
-        'domstolkod': COURT_CODE,
-        'page': page,
-        'pagesize': pagesize,
-        'sortorder': 'avgorandedatum',
-        'asc': 'true' if sort_asc else 'false',
-    }
-    if pub_types:
-        params['publiceringstyper'] = pub_types
 
-    resp = session.get(f"{API_BASE}/publiceringar", params=params, timeout=30)
-    resp.raise_for_status()
-    return resp.json()
+    def __init__(self):
+        super().__init__(Path(__file__).parent)
+        self.session = requests.Session()
+        self.session.headers.update({
+            'Accept': 'application/json',
+            'User-Agent': 'LegalDataHunter/1.0 (research; https://github.com/ZachLaik/LegalDataHunter)',
+        })
 
+    # ---------------------------------------------------------------- fetching
 
-def download_attachment(storage_id: str) -> bytes:
-    """Download an attachment (PDF) from the API."""
-    from urllib.parse import quote
-    session = requests.Session()
-    session.headers.update({
-        'Accept': 'application/octet-stream',
-        'User-Agent': 'LegalDataHunter/1.0',
-    })
-    encoded_id = quote(storage_id, safe='')
-    url = f"{API_BASE}/bilagor/{encoded_id}"
+    def fetch_publications(
+        self,
+        page: int = 0,
+        pagesize: int = 100,
+        pub_types: str = None,
+        sort_asc: bool = False,
+    ) -> List[Dict]:
+        """Fetch one page of HFD publications from the API."""
+        params = {
+            'domstolkod': COURT_CODE,
+            'page': page,
+            'pagesize': pagesize,
+            'sortorder': 'avgorandedatum',
+            'asc': 'true' if sort_asc else 'false',
+        }
+        if pub_types:
+            params['publiceringstyper'] = pub_types
 
-    resp = session.get(url, timeout=60)
-    resp.raise_for_status()
-    return resp.content
+        resp = self.session.get(f"{API_BASE}/publiceringar", params=params, timeout=30)
+        if resp.status_code != 200:
+            raise HFDUnavailable(
+                f"{API_BASE}/publiceringar returned HTTP {resp.status_code} for page "
+                f"{page}: {resp.text[:200]}"
+            )
+        return resp.json()
 
+    def download_attachment(self, storage_id: str) -> bytes:
+        """Download an attachment (PDF) from the API."""
+        # The bilagor endpoint returns 406 Not Acceptable for
+        # application/octet-stream; it only serves application/pdf (see #1214).
+        resp = self.session.get(
+            f"{API_BASE}/bilagor/{quote(storage_id, safe='')}",
+            headers={'Accept': 'application/pdf'},
+            timeout=60,
+        )
+        resp.raise_for_status()
+        return resp.content
 
-def extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from PDF using centralized extractor."""
-    return extract_pdf_markdown(
-        source="SE/SupremeAdministrativeCourt",
-        source_id="",
-        pdf_bytes=pdf_bytes,
-        table="case_law",
-    ) or ""
+    def _iter_publications(self, stop_before: Optional[str] = None) -> Generator[Dict, None, None]:
+        """
+        Page through HFD publications newest-first, yielding RAW records.
 
-def process_publication(pub: Dict) -> Optional[Dict]:
-    """
-    Process a publication and extract full text.
-
-    First tries the HTML 'innehall' field, then falls back to PDF extraction.
-    """
-    pub_id = pub.get('id', '')
-    case_numbers = pub.get('malNummerLista', [])
-    case_num_str = case_numbers[0] if case_numbers else pub_id[:20]
-
-    # Try HTML content first (most cases have this)
-    html_content = pub.get('innehall', '')
-    if html_content:
-        text = html_to_text(html_content)
-        if text and len(text) >= 200:
-            pub['text'] = text
-            pub['text_source'] = 'html'
-            return pub
-
-    # Fall back to PDF extraction
-    attachments = pub.get('bilagaLista', [])
-    if attachments:
-        attachment = attachments[0]
-        storage_id = attachment.get('fillagringId', '')
-        filename = attachment.get('filnamn', '')
-
-        if storage_id:
-            try:
-                print(f"    -> Downloading PDF: {filename}")
-                pdf_bytes = download_attachment(storage_id)
-                text = extract_pdf_text(pdf_bytes)
-
-                if text and len(text) >= 200:
-                    pub['text'] = text
-                    pub['text_source'] = 'pdf'
-                    pub['pdf_filename'] = filename
-                    return pub
-            except Exception as e:
-                print(f"    -> PDF download/extraction error: {e}")
-
-    # Fall back to summary if available
-    summary = pub.get('sammanfattning', '')
-    if summary and len(summary) >= 200:
-        pub['text'] = summary
-        pub['text_source'] = 'summary'
-        return pub
-
-    return None
-
-
-def normalize(raw: Dict) -> Dict:
-    """Transform raw API data into standard schema."""
-    pub_id = raw.get('id', '')
-
-    # Get case numbers
-    case_numbers = raw.get('malNummerLista', [])
-    primary_case = case_numbers[0] if case_numbers else pub_id
-
-    # Get dates
-    decision_date = raw.get('avgorandedatum', '')
-    pub_time = raw.get('publiceringstid', '')
-
-    # Build title
-    title_parts = []
-    if raw.get('benamning'):
-        title_parts.append(raw['benamning'].strip())
-    if primary_case:
-        title_parts.append(f"Mål: {primary_case}")
-    title = ' - '.join(title_parts) if title_parts else f"Mål: {primary_case}"
-
-    # Get reference numbers (RÅ etc.)
-    ref_numbers = raw.get('referatNummerLista', [])
-
-    # Get legal provisions
-    provisions = raw.get('lagrumLista', [])
-    sfs_refs = [p.get('referens', '') for p in provisions if p.get('referens')]
-    sfs_numbers = [p.get('sfsNummer', '') for p in provisions if p.get('sfsNummer')]
-
-    # Get keywords
-    keywords = raw.get('nyckelordLista', [])
-
-    # Determine document type
-    pub_type = raw.get('typ', '')
-    is_precedent = raw.get('arVagledande', False)
-    doc_type = 'precedent' if is_precedent else 'decision'
-
-    # Create document ID
-    doc_id = f"HFD-{primary_case}" if primary_case else f"HFD-{pub_id[:12]}"
-
-    return {
-        '_id': doc_id,
-        '_source': SOURCE_ID,
-        '_type': 'case_law',
-        '_fetched_at': datetime.utcnow().isoformat() + 'Z',
-        'title': title,
-        'text': raw.get('text', ''),
-        'date': decision_date,
-        'url': f"https://rattspraxis.etjanst.domstol.se/sok/?id={pub_id}",
-        'court': COURT_NAME,
-        'court_code': COURT_CODE,
-        'case_numbers': case_numbers,
-        'case_number': primary_case,
-        'publication_type': pub_type,
-        'publication_type_label': PUB_TYPES.get(pub_type, pub_type),
-        'is_precedent': is_precedent,
-        'document_type': doc_type,
-        'published_at': pub_time,
-        'reference_numbers': ref_numbers,
-        'legal_provisions': sfs_refs,
-        'sfs_numbers': sfs_numbers,
-        'keywords': keywords,
-        'summary': raw.get('sammanfattning', ''),
-        'text_source': raw.get('text_source', ''),
-        'pdf_filename': raw.get('pdf_filename', ''),
-        'language': 'sv',
-    }
-
-
-def fetch_all(max_records: int = None) -> Generator[Dict, None, None]:
-    """
-    Fetch all HFD decisions from the API.
-
-    Args:
-        max_records: Maximum number of records to yield (None = all)
-
-    Yields:
-        Normalized document records with full text
-    """
-    page = 0
-    pagesize = 100
-    count = 0
-    empty_pages = 0
-
-    while True:
-        if max_records and count >= max_records:
-            break
-
-        print(f"Fetching page {page} (records {page*pagesize}-{(page+1)*pagesize})...")
-
-        try:
-            publications = fetch_publications(page=page, pagesize=pagesize)
-        except requests.HTTPError as e:
-            print(f"Error fetching page {page}: {e}")
-            break
-
-        if not publications:
-            empty_pages += 1
-            if empty_pages >= 3:
-                print("No more publications (3 empty pages)")
-                break
-            page += 1
-            continue
-
+        If stop_before is a YYYY-MM-DD string, stop as soon as a decision older
+        than it is reached — results are date-sorted descending, so everything
+        after that point is already held.
+        """
+        page = 0
+        pagesize = 100
+        yielded = 0
         empty_pages = 0
 
-        for pub in publications:
-            if max_records and count >= max_records:
-                break
+        while True:
+            publications = self.fetch_publications(page=page, pagesize=pagesize)
 
-            case_numbers = pub.get('malNummerLista', [])
-            case_num = case_numbers[0] if case_numbers else pub.get('id', '')[:12]
-            print(f"  [{count+1}] Processing {case_num}...")
-
-            # Process to get full text
-            pub_with_text = process_publication(pub)
-
-            if pub_with_text and pub_with_text.get('text'):
-                try:
-                    normalized = normalize(pub_with_text)
-                    text_len = len(normalized.get('text', ''))
-
-                    if text_len >= 200:
-                        source = normalized.get('text_source', 'unknown')
-                        print(f"      -> {text_len:,} chars ({source})")
-                        yield normalized
-                        count += 1
-                    else:
-                        print(f"      -> Skipping: text too short ({text_len} chars)")
-                except Exception as e:
-                    print(f"      -> Error normalizing: {e}")
-            else:
-                print(f"      -> Skipping: no text extracted")
-
-            # Rate limiting
-            time.sleep(0.5)
-
-        page += 1
-        time.sleep(1.0)
-
-    print(f"Total records yielded: {count}")
-
-
-def fetch_updates(since: datetime) -> Generator[Dict, None, None]:
-    """Fetch documents updated since a given date."""
-    since_str = since.strftime('%Y-%m-%d')
-
-    for record in fetch_all():
-        if record.get('date'):
-            if record['date'] >= since_str:
-                yield record
-
-
-def bootstrap_sample(sample_count: int = 15):
-    """Fetch sample records and save to sample directory."""
-    SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-
-    print(f"Fetching {sample_count} sample records from {SOURCE_ID}...")
-    print(f"Court: {COURT_CODE} ({COURT_NAME})")
-    print("=" * 60)
-
-    records = []
-
-    for record in fetch_all(max_records=sample_count + 10):
-        if len(records) >= sample_count:
-            break
-
-        try:
-            text_len = len(record.get('text', ''))
-            if text_len < 200:
-                print(f"  Skipping {record.get('case_number')}: Text too short ({text_len} chars)")
+            if not publications:
+                empty_pages += 1
+                if empty_pages >= 3:
+                    logger.info("No more publications (3 empty pages)")
+                    break
+                page += 1
                 continue
 
-            records.append(record)
+            empty_pages = 0
 
-            # Save individual record
-            doc_id = record['_id'].replace('/', '_').replace(':', '-')
-            filename = SAMPLE_DIR / f"{doc_id}.json"
-            with open(filename, 'w', encoding='utf-8') as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
+            for pub in publications:
+                if stop_before:
+                    decided = _as_date_str(pub.get('avgorandedatum'))
+                    if decided and decided < stop_before:
+                        logger.info(
+                            f"Reached {decided} (older than {stop_before}) — "
+                            f"stopping after {yielded} records"
+                        )
+                        return
+                yield pub
+                yielded += 1
 
-            source = record.get('text_source', 'unknown')
-            title_preview = record.get('title', '')[:50]
-            print(f"  [{len(records):02d}] {record['case_number']}: {text_len:,} chars ({source})")
-            print(f"       {title_preview}...")
+            page += 1
+            time.sleep(1.0)
 
-        except Exception as e:
-            print(f"  Error saving record: {e}")
+        if stop_before is None and yielded < KNOWN_CORPUS_FLOOR:
+            raise HFDUnavailable(
+                f"Full sweep yielded only {yielded} publications, below the known "
+                f"floor of {KNOWN_CORPUS_FLOOR} — the API changed or is refusing us"
+            )
 
-    print("=" * 60)
-    print(f"Saved {len(records)} sample records to {SAMPLE_DIR}")
+    def fetch_all(self) -> Generator[Dict, None, None]:
+        """Yield every HFD publication as a RAW API record."""
+        yield from self._iter_publications()
 
-    if records:
-        # Statistics
-        avg_text_len = sum(len(r.get('text', '')) for r in records) / len(records)
-        print(f"Average text length: {avg_text_len:,.0f} chars/doc")
+    def fetch_updates(self, since: Union[str, date, datetime]) -> Generator[Dict, None, None]:
+        """
+        Yield publications decided on or after `since`.
 
-        # Count by text source
-        source_counts = {}
-        for r in records:
-            source = r.get('text_source', 'unknown')
-            source_counts[source] = source_counts.get(source, 0) + 1
+        Accepts a datetime, date or string, since the refresh runner passes
+        whichever it has.
+        """
+        since_str = _as_date_str(since)
+        logger.info(f"Fetching HFD decisions since {since_str}")
+        yield from self._iter_publications(stop_before=since_str)
 
-        print("Text sources:")
-        for source, count in sorted(source_counts.items()):
-            print(f"  {source}: {count}")
+    # ------------------------------------------------------------- normalizing
 
-        # Count precedent vs regular
-        precedent_count = sum(1 for r in records if r.get('is_precedent'))
-        print(f"Precedent decisions: {precedent_count}/{len(records)}")
+    def _resolve_text(self, raw: Dict) -> tuple:
+        """
+        Resolve the full text of a publication.
 
-    # Validation
-    if len(records) < 10:
-        print("WARNING: Fewer than 10 records fetched!")
-        return False
+        Returns (text, text_source, pdf_filename). Tries the HTML 'innehall'
+        field first, then the PDF attachment, then the summary.
+        """
+        html_content = raw.get('innehall', '')
+        if html_content:
+            text = html_to_text(html_content)
+            if text and len(text) >= MIN_TEXT_CHARS:
+                return text, 'html', ''
 
-    insufficient_text = sum(1 for r in records if not r.get('text') or len(r['text']) < 200)
-    if insufficient_text > 0:
-        print(f"WARNING: {insufficient_text} records have insufficient text!")
-        return False
+        for attachment in raw.get('bilagaLista', []) or []:
+            storage_id = attachment.get('fillagringId', '')
+            filename = attachment.get('filnamn', '')
+            if not storage_id:
+                continue
+            try:
+                pdf_bytes = self.download_attachment(storage_id)
+                text = extract_pdf_markdown(
+                    source=SOURCE_ID,
+                    source_id=raw.get('id', ''),
+                    pdf_bytes=pdf_bytes,
+                    table="case_law",
+                ) or ""
+                if text and len(text) >= MIN_TEXT_CHARS:
+                    return text, 'pdf', filename
+            except Exception as e:
+                logger.warning(f"PDF download/extraction failed for {filename}: {e}")
 
-    print("VALIDATION PASSED: All records have full text content.")
-    return True
+        summary = raw.get('sammanfattning', '')
+        if summary and len(summary) >= MIN_TEXT_CHARS:
+            return summary, 'summary', ''
+
+        return '', '', ''
+
+    def normalize(self, raw: Dict) -> Optional[Dict]:
+        """Transform a raw API publication into the standard schema."""
+        pub_id = raw.get('id', '')
+
+        text, text_source, pdf_filename = self._resolve_text(raw)
+        if not text:
+            logger.warning(f"No usable text for publication {pub_id}")
+            return None
+
+        case_numbers = raw.get('malNummerLista', [])
+        primary_case = case_numbers[0] if case_numbers else pub_id
+
+        decision_date = _as_date_str(raw.get('avgorandedatum'))
+
+        title_parts = []
+        if raw.get('benamning'):
+            title_parts.append(raw['benamning'].strip())
+        if primary_case:
+            title_parts.append(f"Mål: {primary_case}")
+        title = ' - '.join(title_parts) if title_parts else f"Mål: {primary_case}"
+
+        provisions = raw.get('lagrumLista', []) or []
+        sfs_refs = [p.get('referens', '') for p in provisions if p.get('referens')]
+        sfs_numbers = [p.get('sfsNummer', '') for p in provisions if p.get('sfsNummer')]
+
+        pub_type = raw.get('typ', '')
+        is_precedent = raw.get('arVagledande', False)
+
+        # Key on the API's own publication id: case numbers repeat across the
+        # several publications a single case can produce, and are blank on some
+        # records, so a case-number key would collide (same failure as #1437).
+        doc_id = f"HFD-{pub_id}" if pub_id else f"HFD-{primary_case}"
+
+        return {
+            '_id': doc_id,
+            '_source': SOURCE_ID,
+            '_type': 'case_law',
+            '_fetched_at': datetime.now(timezone.utc).isoformat(),
+            'title': title,
+            'text': text,
+            'date': decision_date,
+            'url': f"https://rattspraxis.etjanst.domstol.se/sok/?id={pub_id}",
+            'court': COURT_NAME,
+            'court_code': COURT_CODE,
+            'case_numbers': case_numbers,
+            'case_number': primary_case,
+            'publication_type': pub_type,
+            'publication_type_label': PUB_TYPES.get(pub_type, pub_type),
+            'is_precedent': is_precedent,
+            'document_type': 'precedent' if is_precedent else 'decision',
+            'published_at': raw.get('publiceringstid', ''),
+            'reference_numbers': raw.get('referatNummerLista', []),
+            'legal_provisions': sfs_refs,
+            'sfs_numbers': sfs_numbers,
+            'keywords': raw.get('nyckelordLista', []),
+            'summary': raw.get('sammanfattning', ''),
+            'text_source': text_source,
+            'pdf_filename': pdf_filename,
+            'language': 'sv',
+        }
+
+    # -------------------------------------------------------------------- test
+
+    def test_connection(self):
+        """Quick connectivity test."""
+        print("Testing Domstolsverket HFD API...")
+        pubs = self.fetch_publications(page=0, pagesize=5)
+        print(f"Found {len(pubs)} publications")
+        if not pubs:
+            raise HFDUnavailable("API returned an empty first page")
+
+        pub = pubs[0]
+        print("First publication:")
+        print(f"  ID: {pub.get('id')}")
+        print(f"  Case numbers: {pub.get('malNummerLista', [])}")
+        print(f"  Date: {pub.get('avgorandedatum')}")
+        print(f"  Type: {pub.get('typ')}")
+        print(f"  Has HTML content: {bool(pub.get('innehall'))}")
+        print(f"  Attachments: {len(pub.get('bilagaLista', []) or [])}")
+
+        record = self.normalize(pub)
+        if not record:
+            raise HFDUnavailable("Could not extract text from the newest publication")
+        print(f"  Text: {len(record['text']):,} chars ({record['text_source']})")
+        print("\nTest complete!")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="SE/SupremeAdministrativeCourt case law fetcher")
-    parser.add_argument('command', choices=['bootstrap', 'fetch', 'test', 'count'],
-                       help="Command to run")
-    parser.add_argument('--sample', action='store_true',
-                       help="Fetch sample records only (12 records)")
-    parser.add_argument('--count', type=int, default=15,
-                       help="Number of sample records to fetch")
-    parser.add_argument("--full", action="store_true", help="Fetch all records")
+    if len(sys.argv) < 2:
+        print(
+            "Usage: python bootstrap.py [bootstrap|bootstrap-fast|update|test] "
+            "[--sample] [--sample-size N]"
+        )
+        sys.exit(1)
 
-    args = parser.parse_args()
+    command = sys.argv[1]
+    sample_mode = "--sample" in sys.argv
+    sample_size = 15
+    if "--sample-size" in sys.argv:
+        sample_size = int(sys.argv[sys.argv.index("--sample-size") + 1])
 
-    if args.command == 'count':
-        # Count total available records
-        print("Counting total HFD records...")
-        page = 0
-        total = 0
-        while True:
-            try:
-                pubs = fetch_publications(page=page, pagesize=100)
-                if not pubs:
-                    break
-                total += len(pubs)
-                print(f"  Page {page}: {len(pubs)} records (total: {total})")
-                page += 1
-                time.sleep(0.5)
-            except Exception as e:
-                print(f"Error at page {page}: {e}")
-                break
-        print(f"Total HFD records available: {total}")
+    scraper = HFDScraper()
 
-    elif args.command == 'test':
-        # Test a single fetch
-        print("Testing API connection...")
-        pubs = fetch_publications(page=0, pagesize=5)
-        print(f"Found {len(pubs)} publications")
-        if pubs:
-            pub = pubs[0]
-            print(f"First publication:")
-            print(f"  ID: {pub.get('id')}")
-            print(f"  Case numbers: {pub.get('malNummerLista', [])}")
-            print(f"  Date: {pub.get('avgorandedatum')}")
-            print(f"  Type: {pub.get('typ')}")
-            print(f"  Has HTML content: {bool(pub.get('innehall'))}")
-            print(f"  Attachments: {len(pub.get('bilagaLista', []))}")
+    try:
+        if command == "test":
+            scraper.test_connection()
+            return
 
-    elif args.command == 'bootstrap':
-        count = 12 if args.sample else args.count
-        success = bootstrap_sample(count)
-        sys.exit(0 if success else 1)
+        # "bootstrap-fast" is what the fleet wrapper invokes; route it to the
+        # full bootstrap so an unrecognised command can't fall back to samples.
+        if command in ("bootstrap", "bootstrap-fast"):
+            if sample_mode:
+                stats = scraper.run_sample(n=sample_size)
+                print(
+                    f"\nSample complete: "
+                    f"{stats.get('sample_records_saved', 0)} records saved to sample/"
+                )
+                written = stats.get("sample_records_saved", 0)
+            else:
+                stats = scraper.bootstrap()
+                print(
+                    f"\nBootstrap complete: {stats['records_new']} new, "
+                    f"{stats['records_updated']} updated, "
+                    f"{stats['records_skipped']} skipped"
+                )
+                written = stats.get("records_new", 0) + stats.get("records_updated", 0)
 
-    elif args.command == 'fetch':
-        for record in fetch_all():
-            print(json.dumps(record, ensure_ascii=False))
+        elif command == "update":
+            stats = scraper.update()
+            print(
+                f"\nUpdate complete: {stats['records_new']} new, "
+                f"{stats['records_updated']} updated"
+            )
+            written = stats.get("records_new", 0) + stats.get("records_updated", 0)
+
+        else:
+            print(f"Unknown command: {command}")
+            sys.exit(1)
+
+    except HFDUnavailable as e:
+        print(f"\nERROR: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    print(json.dumps(stats, indent=2))
+
+    if stats.get("error_message"):
+        print(f"\nERROR: {stats['error_message']}", file=sys.stderr)
+        sys.exit(1)
+    if command != "update" and not written:
+        print("\nERROR: no records written", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == '__main__':

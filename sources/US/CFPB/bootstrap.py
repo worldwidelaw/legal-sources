@@ -3,17 +3,23 @@
 US/CFPB -- Consumer Financial Protection Bureau Enforcement Actions
 
 Fetches CFPB enforcement actions via RSS feed index + HTML detail pages.
-~386 enforcement actions with full narrative text, metadata, and PDF links.
+~486 enforcement actions with full text, metadata, and linked legal documents.
 
 Data access:
-  - RSS feed at /enforcement/actions/feed/?page=N (25 items/page, ~16 pages)
-  - Individual action pages with full text body + sidebar metadata
-  - PDF documents on files.consumerfinance.gov (complaints, consent orders, etc.)
+  - RSS feed at /enforcement/actions/feed/?page=N (25 items/page, 20 pages)
+  - Individual action pages with the Bureau's narrative + sidebar metadata
+  - PDF documents on files.consumerfinance.gov (consent orders, stipulations,
+    complaints) — these carry the operative legal text and are extracted too
+
+Note: both hosts sit behind Akamai, which 403s browser-shaped User-Agents that
+lack a real browser fingerprint. Requests must go out under the honest bot UA
+set in get_session(); see issue #1338.
 
 Usage:
-  python bootstrap.py bootstrap          # Full initial pull
-  python bootstrap.py bootstrap --sample # Fetch 10+ sample records
-  python bootstrap.py update             # Incremental (newest first)
+  python bootstrap.py bootstrap          # Full pull → data/records.jsonl
+  python bootstrap.py bootstrap-fast     # Alias the fleet wrapper invokes
+  python bootstrap.py bootstrap --sample # Fetch 15 sample records → sample/
+  python bootstrap.py update --since D   # Incremental (newest first)
   python bootstrap.py test               # Quick connectivity test
 """
 
@@ -29,6 +35,9 @@ from typing import Generator, Optional, Dict, Any, List
 from urllib.parse import urljoin
 
 import requests
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from common.pdf_extract import extract_pdf_markdown  # noqa: E402
 
 try:
     from bs4 import BeautifulSoup
@@ -46,18 +55,25 @@ BASE_URL = "https://www.consumerfinance.gov"
 RSS_URL = BASE_URL + "/enforcement/actions/feed/"
 DELAY = 2.0
 MAX_RSS_PAGES = 20
+# The action page carries only the Bureau's narrative summary (~2K chars). The
+# operative legal text lives in the linked consent orders / stipulations /
+# complaints, so pull those too.
+MAX_PDFS_PER_ACTION = 4
+
+
+class FeedUnavailable(RuntimeError):
+    """The enforcement feed refused us -- never report this as an empty corpus."""
 
 
 def get_session() -> requests.Session:
     session = requests.Session()
+    # Do NOT claim to be a browser here. consumerfinance.gov sits behind Akamai,
+    # which 403s browser-shaped User-Agents arriving without the rest of a real
+    # browser's fingerprint -- the previous Chrome/120 string is refused even from
+    # a residential IP -- while serving 200 to an honest, self-identifying bot UA.
     session.headers.update({
-        "User-Agent": (
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/120.0.0.0 Safari/537.36"
-        ),
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
+        "User-Agent": "LegalDataHunter/1.0 (+https://legaldatahunter.com)",
+        "Accept": "application/rss+xml, application/xml;q=0.9, text/html;q=0.8, */*;q=0.5",
     })
     return session
 
@@ -101,23 +117,29 @@ class CFPBScraper:
 
     def __init__(self):
         self.session = get_session()
+        self.last_status: Optional[int] = None
 
     def _get(self, url: str) -> Optional[requests.Response]:
         full_url = urljoin(BASE_URL, url) if url.startswith("/") else url
+        self.last_status = None
         for attempt in range(3):
             try:
                 resp = self.session.get(full_url, timeout=30)
+                self.last_status = resp.status_code
                 if resp.status_code == 200:
                     return resp
-                if resp.status_code == 429:
+                if resp.status_code in (429, 500, 502, 503, 504):
                     wait = 10 * (attempt + 1)
-                    logger.warning("Rate limited, waiting %ds...", wait)
+                    logger.warning(
+                        "HTTP %d for %s, waiting %ds...", resp.status_code, full_url, wait
+                    )
                     time.sleep(wait)
                     continue
                 logger.warning("HTTP %d for %s", resp.status_code, full_url)
                 return None
             except requests.RequestException as e:
                 logger.warning("Request error (attempt %d): %s", attempt + 1, e)
+                self.last_status = None
                 time.sleep(5)
         return None
 
@@ -126,14 +148,24 @@ class CFPBScraper:
         url = f"{RSS_URL}?page={page}"
         resp = self._get(url)
         if not resp:
-            return []
+            # A refused feed page is not an exhausted corpus. Returning [] here used
+            # to look identical to "no more actions", so an Akamai 403 reported a
+            # clean run with 0 records instead of failing (issue #1338).
+            raise FeedUnavailable(
+                f"CFPB enforcement feed page {page} unreachable "
+                f"(HTTP {self.last_status}) at {url} -- the corpus is ~486 actions, "
+                "so this is a block or an outage, not an empty feed"
+            )
 
         items = []
         try:
             root = ET.fromstring(resp.content)
             channel = root.find("channel")
             if channel is None:
-                return []
+                raise FeedUnavailable(
+                    f"CFPB feed page {page} returned HTTP 200 but no <channel> "
+                    f"element ({len(resp.content)} bytes) -- likely an interstitial"
+                )
             for item in channel.findall("item"):
                 title = item.findtext("title", "").strip()
                 link = item.findtext("link", "").strip()
@@ -150,7 +182,9 @@ class CFPBScraper:
                         "categories": categories,
                     })
         except ET.ParseError as e:
-            logger.error("RSS parse error page %d: %s", page, e)
+            raise FeedUnavailable(
+                f"CFPB feed page {page} did not parse as RSS: {e}"
+            ) from e
 
         return items
 
@@ -170,6 +204,7 @@ class CFPBScraper:
             "forum": "",
             "products": [],
             "pdf_urls": [],
+            "documents": [],
         }
 
         if HAS_BS4:
@@ -180,10 +215,13 @@ class CFPBScraper:
                           soup.find("article") or \
                           soup.find("main")
             if content_div:
-                # Remove sidebar/aside elements
-                for aside in content_div.find_all(["aside", "nav"]):
+                # Drop sidebar/aside chrome from the body — on a copy, because the
+                # metadata fields below live inside that same <aside> and
+                # decomposing it in place used to blank them all out.
+                body = BeautifulSoup(str(content_div), "html.parser")
+                for aside in body.find_all(["aside", "nav"]):
                     aside.decompose()
-                meta["body_text"] = content_div.get_text(separator="\n", strip=True)
+                meta["body_text"] = body.get_text(separator="\n", strip=True)
 
             # Extract sidebar metadata
             for dl in soup.find_all("dl"):
@@ -203,31 +241,43 @@ class CFPBScraper:
                     elif "forum" in label:
                         meta["forum"] = value
 
-            # Alternative metadata extraction from field divs
-            for div in soup.find_all("div", class_=re.compile(r"m-related-metadata")):
-                for item_div in div.find_all("div", class_="m-related-metadata__item"):
-                    label_el = item_div.find(class_="m-related-metadata__label")
-                    value_el = item_div.find(class_="m-related-metadata__value")
-                    if not label_el or not value_el:
-                        continue
-                    label = label_el.get_text(strip=True).lower()
-                    value = value_el.get_text(strip=True)
-                    if "court" in label:
-                        meta["court"] = value
-                    elif "docket" in label:
-                        meta["docket_number"] = value
-                    elif "filing date" in label or "initial filing" in label:
-                        meta["filing_date"] = value
-                    elif "status" in label:
-                        meta["status"] = value
-                    elif "forum" in label:
-                        meta["forum"] = value
+            # Sidebar metadata. The current markup is one container per field
+            # holding an <h3> label followed by the value — sometimes as a bare
+            # text node, so read the container text and drop the label prefix
+            # rather than looking for a __value element (which no longer exists).
+            for container in soup.select("div.m-related-metadata__item-container"):
+                label_el = container.find(["h3", "h4", "dt"])
+                if not label_el:
+                    continue
+                label = label_el.get_text(strip=True).lower()
+                label_el.extract()
+                for note in container.find_all("a"):
+                    if "status definitions" in note.get_text(strip=True).lower():
+                        note.decompose()
+                value = re.sub(r"\s+", " ", container.get_text(" ", strip=True)).strip()
+                if not value:
+                    continue
+                if "court" in label:
+                    meta["court"] = value
+                elif "docket" in label:
+                    meta["docket_number"] = value
+                elif "filing date" in label:
+                    meta["filing_date"] = value
+                elif "status" in label:
+                    meta["status"] = value
+                elif "forum" in label:
+                    meta["forum"] = value
+                elif "product" in label:
+                    meta["products"] = [
+                        p.strip() for p in value.split("•") if p.strip()
+                    ]
 
-            # Products
-            for li in soup.select(".o-post_categories li, .m-tag-group li"):
-                tag = li.get_text(strip=True)
-                if tag:
-                    meta["products"].append(tag)
+            # Products (older markup)
+            if not meta["products"]:
+                for li in soup.select(".o-post_categories li, .m-tag-group li"):
+                    tag = li.get_text(strip=True)
+                    if tag:
+                        meta["products"].append(tag)
 
             # PDF links
             for a in soup.find_all("a", href=re.compile(r"\.pdf", re.IGNORECASE)):
@@ -257,7 +307,43 @@ class CFPBScraper:
                     href = BASE_URL + href
                 meta["pdf_urls"].append(href)
 
+        # De-duplicate while preserving document order.
+        meta["pdf_urls"] = list(dict.fromkeys(meta["pdf_urls"]))
+
+        for pdf_url in meta["pdf_urls"][:MAX_PDFS_PER_ACTION]:
+            time.sleep(DELAY)
+            body = self.fetch_document_text(pdf_url)
+            if body:
+                meta["documents"].append(
+                    {"url": pdf_url, "name": pdf_url.rsplit("/", 1)[-1], "text": body}
+                )
+
         return meta
+
+    def fetch_document_text(self, pdf_url: str) -> str:
+        """Download one linked document and return its extracted text.
+
+        files.consumerfinance.gov applies the same Akamai UA rule as the main
+        site, so the PDF is downloaded through our own session and handed to the
+        shared extractor as bytes rather than by URL.
+        """
+        resp = self._get(pdf_url)
+        if not resp:
+            return ""
+        if "pdf" not in (resp.headers.get("content-type") or "").lower():
+            logger.warning("Not a PDF: %s", pdf_url)
+            return ""
+        try:
+            return extract_pdf_markdown(
+                source=self.SOURCE_ID,
+                source_id=pdf_url.rsplit("/", 1)[-1],
+                pdf_bytes=resp.content,
+                table="case_law",
+                force=True,
+            ) or ""
+        except Exception as e:  # extraction backends vary by host
+            logger.warning("PDF extraction failed for %s: %s", pdf_url, e)
+            return ""
 
     def normalize(self, rss_item: Dict[str, Any], page_data: Dict[str, Any]) -> Dict[str, Any]:
         """Normalize a CFPB enforcement action into standard schema."""
@@ -268,8 +354,12 @@ class CFPBScraper:
         date = parse_date(page_data.get("filing_date", "")) or \
                parse_date(rss_item.get("pub_date", ""))
 
-        # Build text: body text from the action page
-        text = page_data.get("body_text", "").strip()
+        # Build text: the Bureau's narrative summary, then the operative
+        # documents (consent order, stipulation, complaint) it links to.
+        parts = [page_data.get("body_text", "").strip()]
+        for doc in page_data.get("documents", []):
+            parts.append(f"## {doc['name']}\n\n{doc['text'].strip()}")
+        text = "\n\n".join(p for p in parts if p)
 
         # Determine data type based on categories
         categories = rss_item.get("categories", [])
@@ -304,6 +394,7 @@ class CFPBScraper:
         max_pages = 2 if sample else MAX_RSS_PAGES
         count = 0
         sample_limit = 15 if sample else 999999
+        seen: set = set()
 
         for page in range(1, max_pages + 1):
             logger.info("Fetching RSS page %d...", page)
@@ -311,6 +402,14 @@ class CFPBScraper:
             if not items:
                 logger.info("No more RSS items at page %d, stopping.", page)
                 break
+
+            # Past the last real page the feed re-serves the final page rather than
+            # 404ing, so stop on a page that adds nothing new.
+            items = [it for it in items if it["url"] not in seen]
+            if not items:
+                logger.info("Page %d repeats already-seen actions, stopping.", page)
+                break
+            seen.update(it["url"] for it in items)
 
             for item in items:
                 if count >= sample_limit:
@@ -384,7 +483,9 @@ class CFPBScraper:
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="US/CFPB bootstrap")
-    parser.add_argument("command", choices=["bootstrap", "update", "test"])
+    # `bootstrap-fast` is what the fleet wrapper invokes; without it argparse exits 2
+    # and the wrapper falls back to re-ingesting sample/.
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "update", "test"])
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
     parser.add_argument("--since", type=str, help="ISO date for updates")
     parser.add_argument("--full", action="store_true", help="Fetch all records")
@@ -396,10 +497,11 @@ def main():
         ok = scraper.test()
         sys.exit(0 if ok else 1)
 
-    sample_dir = Path(__file__).parent / "sample"
+    base_dir = Path(__file__).parent
+    sample_dir = base_dir / "sample"
     sample_dir.mkdir(exist_ok=True)
 
-    if args.command == "bootstrap":
+    if args.command in ("bootstrap", "bootstrap-fast"):
         records = scraper.fetch_all(sample=args.sample)
     elif args.command == "update":
         if not args.since:
@@ -409,15 +511,34 @@ def main():
     else:
         sys.exit(1)
 
+    # Full runs stream to data/records.jsonl (what the pipeline ingests); only
+    # --sample writes the committed sample/*.json fixtures.
+    to_jsonl = not args.sample
     count = 0
-    for record in records:
-        out_path = sample_dir / f"{record['_id']}.json"
-        with open(out_path, "w", encoding="utf-8") as f:
-            json.dump(record, f, ensure_ascii=False, indent=2)
-        count += 1
-        logger.info("Saved %s (%d chars text)", record["_id"], len(record.get("text", "")))
+    jsonl_path = base_dir / "data" / "records.jsonl"
+    handle = None
+    if to_jsonl:
+        jsonl_path.parent.mkdir(exist_ok=True)
+        handle = open(jsonl_path, "w", encoding="utf-8")
 
-    logger.info("Done. %d records saved to %s", count, sample_dir)
+    try:
+        for record in records:
+            if to_jsonl:
+                handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+                handle.flush()
+            else:
+                out_path = sample_dir / f"{record['_id']}.json"
+                with open(out_path, "w", encoding="utf-8") as f:
+                    json.dump(record, f, ensure_ascii=False, indent=2)
+            count += 1
+            logger.info(
+                "Saved %s (%d chars text)", record["_id"], len(record.get("text", ""))
+            )
+    finally:
+        if handle:
+            handle.close()
+
+    logger.info("Done. %d records saved to %s", count, jsonl_path if to_jsonl else sample_dir)
     if count == 0:
         logger.error("No records fetched!")
         sys.exit(1)

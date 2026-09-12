@@ -27,6 +27,7 @@ Rate Limits:
 
 Usage:
   python bootstrap.py bootstrap           # Full initial pull
+  python bootstrap.py bootstrap-fast      # Full pull, threaded (used by the VPS runner)
   python bootstrap.py bootstrap --sample  # Fetch sample records for validation
   python bootstrap.py update              # Incremental update (recent docs)
   python bootstrap.py test-api            # Quick API connectivity test
@@ -35,6 +36,7 @@ Usage:
 import sys
 import json
 import logging
+import threading
 import time
 from pathlib import Path
 from datetime import datetime, timezone
@@ -58,6 +60,13 @@ BASE_URL = "https://data.rada.gov.ua"
 USER_AGENT = "OpenData"
 ORG_ID = 79  # Constitutional Court organization ID
 
+# Transient HTTP statuses worth retrying. 429 is the documented throttle
+# response; the 5xx set matters because `bootstrap_fast` runs normalize() —
+# and therefore the per-document text fetch — on several threads at once,
+# which pushes data.rada.gov.ua past its 60 req/min budget.
+RETRYABLE_STATUSES = {408, 425, 429, 500, 502, 503, 504, 509, 520, 521, 522, 524}
+MAX_ATTEMPTS = 5
+
 
 class ConstitutionalCourtScraper(BaseScraper):
     """
@@ -73,55 +82,117 @@ class ConstitutionalCourtScraper(BaseScraper):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
 
-        self.session = requests.Session()
-        self.session.headers.update({
-            "User-Agent": USER_AGENT,
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "uk,en;q=0.9",
-        })
-        self.last_request_time = 0
+        # `bootstrap_fast` calls normalize() from a ThreadPoolExecutor, and
+        # normalize() is what downloads the document text. requests.Session is
+        # not thread-safe, so give every worker thread its own session.
+        self._local = threading.local()
+        self._rate_lock = threading.Lock()
+        self.last_request_time = 0.0
 
         # Cache for list data
         self._list_cache = None
 
+        # Diagnostics: why individual documents failed, surfaced at run end.
+        self._failure_reasons: Dict[str, int] = {}
+        self._failure_lock = threading.Lock()
+
+    @property
+    def session(self) -> requests.Session:
+        """Per-thread requests.Session (see __init__ for why)."""
+        sess = getattr(self._local, "session", None)
+        if sess is None:
+            sess = requests.Session()
+            sess.headers.update({
+                "User-Agent": USER_AGENT,
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Language": "uk,en;q=0.9",
+            })
+            self._local.session = sess
+        return sess
+
+    def _record_failure(self, reason: str):
+        with self._failure_lock:
+            self._failure_reasons[reason] = self._failure_reasons.get(reason, 0) + 1
+
     def _rate_limit(self, delay: float = 1.0):
-        """Enforce rate limiting with configurable delay."""
-        current_time = time.time()
-        elapsed = current_time - self.last_request_time
+        """Enforce a global minimum gap between requests across all threads."""
+        with self._rate_lock:
+            elapsed = time.time() - self.last_request_time
+            if elapsed < delay:
+                time.sleep(delay - elapsed)
+            self.last_request_time = time.time()
 
-        if elapsed < delay:
-            time.sleep(delay - elapsed)
+    def _get(self, url: str, timeout: int, delay: float) -> Optional[requests.Response]:
+        """
+        GET with retry/backoff on transient failures.
 
-        self.last_request_time = time.time()
+        Returns the response for 2xx and 404, or None once retries are
+        exhausted. Never raises — callers decide what a None means.
+        """
+        for attempt in range(1, MAX_ATTEMPTS + 1):
+            self._rate_limit(delay)
+            try:
+                resp = self.session.get(url, timeout=timeout)
+            except Exception as e:
+                reason = type(e).__name__
+                if attempt == MAX_ATTEMPTS:
+                    logger.warning(f"{url}: giving up after {attempt} attempts ({reason})")
+                    self._record_failure(reason)
+                    return None
+                time.sleep(min(2 ** attempt, 30))
+                continue
+
+            if resp.status_code in RETRYABLE_STATUSES:
+                if attempt == MAX_ATTEMPTS:
+                    logger.warning(f"{url}: giving up after {attempt} attempts (HTTP {resp.status_code})")
+                    self._record_failure(f"http_{resp.status_code}")
+                    return None
+                retry_after = resp.headers.get("Retry-After")
+                try:
+                    backoff = float(retry_after) if retry_after else min(2 ** attempt, 30)
+                except ValueError:
+                    backoff = min(2 ** attempt, 30)
+                time.sleep(backoff)
+                continue
+
+            if resp.status_code == 404 or resp.ok:
+                return resp
+
+            logger.warning(f"{url}: HTTP {resp.status_code}")
+            self._record_failure(f"http_{resp.status_code}")
+            return None
+
+        return None
 
     def _fetch_json(self, url: str, timeout: int = 120) -> Optional[Any]:
         """Fetch JSON from URL with error handling."""
-        try:
-            self._rate_limit(0.5)
-            resp = self.session.get(url, timeout=timeout)
-            if resp.status_code == 404:
-                return None
-            resp.raise_for_status()
-            return resp.json()
-        except requests.exceptions.JSONDecodeError as e:
-            logger.warning(f"JSON decode error for {url}: {e}")
+        resp = self._get(url, timeout=timeout, delay=0.5)
+        if resp is None or resp.status_code == 404:
             return None
-        except Exception as e:
-            logger.warning(f"Request failed for {url}: {e}")
+        try:
+            return resp.json()
+        except ValueError as e:
+            logger.warning(f"JSON decode error for {url}: {e}")
+            self._record_failure("json_decode")
             return None
 
-    def _fetch_text(self, url: str, timeout: int = 60) -> str:
-        """Fetch plain text content from URL."""
-        try:
-            self._rate_limit(1.0)
-            resp = self.session.get(url, timeout=timeout)
-            if resp.status_code == 404:
-                return ""
-            resp.raise_for_status()
-            return resp.text
-        except Exception as e:
-            logger.warning(f"Request failed for {url}: {e}")
+    def _fetch_text(self, url: str, timeout: int = 60) -> Optional[str]:
+        """
+        Fetch plain text content from URL.
+
+        Returns the body, "" if the document does not exist (404), or None if
+        the fetch failed transiently even after retries.
+        """
+        resp = self._get(url, timeout=timeout, delay=1.0)
+        if resp is None:
+            return None
+        if resp.status_code == 404:
+            self._record_failure("http_404")
             return ""
+        # data.rada.gov.ua serves UTF-8 but does not always say so.
+        if not resp.encoding or resp.encoding.lower() == "iso-8859-1":
+            resp.encoding = "utf-8"
+        return resp.text
 
     def _get_decisions_list(self) -> List[Dict[str, Any]]:
         """
@@ -173,19 +244,24 @@ class ConstitutionalCourtScraper(BaseScraper):
         logger.info(f"Loaded all {len(all_decisions)} Constitutional Court decisions")
         return all_decisions
 
-    def _get_document_text(self, nreg: str) -> str:
+    def _get_document_text(self, nreg: str) -> Optional[str]:
         """
         Fetch full text for a document using its registration number.
 
-        Returns plain text content.
+        Returns the text, "" when the document genuinely has none (404), or
+        None when it could not be fetched — the caller drops those rather than
+        overwriting a good stored record with an empty one.
         """
         url = f"{BASE_URL}/laws/show/{nreg}.txt"
 
         text = self._fetch_text(url)
+        if text is None:
+            return None
+        text = text.strip()
         if not text:
             logger.warning(f"No text content for nreg={nreg}")
-
-        return text.strip()
+            self._record_failure("empty_body")
+        return text
 
     def _get_decision_type(self, typ: int) -> str:
         """Map document type code to human-readable name."""
@@ -220,6 +296,14 @@ class ConstitutionalCourtScraper(BaseScraper):
         errors = 0
 
         for decision in decisions:
+            # The API has been seen to return a bare string in place of a
+            # record; that used to abort the whole run with
+            # "'str' object has no attribute 'get'".
+            if not isinstance(decision, dict):
+                logger.warning(f"Skipping non-dict list entry: {str(decision)[:80]}")
+                errors += 1
+                continue
+
             nreg = decision.get("nreg", "")
 
             if not nreg:
@@ -256,12 +340,19 @@ class ConstitutionalCourtScraper(BaseScraper):
 
         logger.info(f"Found {count} decisions since {since_int}")
 
-    def normalize(self, raw: dict) -> dict:
+    def normalize(self, raw: dict) -> Optional[dict]:
         """
         Transform raw decision data into standard schema.
 
         CRITICAL: Downloads and includes FULL TEXT from text endpoint.
+        Returns None when the full text could not be retrieved, so a transient
+        outage never replaces a stored decision with an empty one.
         """
+        if not isinstance(raw, dict):
+            logger.warning(f"normalize got {type(raw).__name__}, skipping")
+            self._record_failure("non_dict_raw")
+            return None
+
         nreg = raw.get("nreg", "")
         dokid = raw.get("dokid", 0)
 
@@ -286,10 +377,15 @@ class ConstitutionalCourtScraper(BaseScraper):
         # Get full text from text endpoint
         full_text = ""
         if nreg:
-            full_text = self._get_document_text(nreg)
+            fetched_text = self._get_document_text(nreg)
+            if fetched_text is None:
+                logger.warning(f"Dropping {doc_id}: full text unavailable")
+                return None
+            full_text = fetched_text
 
         if not full_text:
             logger.warning(f"No full text for {doc_id}")
+            return None
 
         # Get title
         title = raw.get("nazva", "")
@@ -400,8 +496,8 @@ def main():
 
     if len(sys.argv) < 2:
         print(
-            "Usage: python bootstrap.py [bootstrap|update|test-api] "
-            "[--sample] [--sample-size N]"
+            "Usage: python bootstrap.py [bootstrap|bootstrap-fast|update|test-api] "
+            "[--sample] [--sample-size N] [--full] [--workers N] [--batch-size N]"
         )
         sys.exit(1)
 
@@ -411,16 +507,37 @@ def main():
     if "--sample-size" in sys.argv:
         idx = sys.argv.index("--sample-size")
         sample_size = int(sys.argv[idx + 1])
+    workers = None
+    if "--workers" in sys.argv:
+        workers = int(sys.argv[sys.argv.index("--workers") + 1])
+    batch_size = 100
+    if "--batch-size" in sys.argv:
+        batch_size = int(sys.argv[sys.argv.index("--batch-size") + 1])
+
+    def _report_failures():
+        if scraper._failure_reasons:
+            print("\nFailure reasons:")
+            for reason, count in sorted(
+                scraper._failure_reasons.items(), key=lambda kv: -kv[1]
+            ):
+                print(f"  {reason}: {count}")
 
     if command == "test-api":
         scraper.test_api()
 
-    elif command == "bootstrap":
+    elif command in ("bootstrap", "bootstrap-fast"):
         if sample_mode:
             stats = scraper.run_sample(n=sample_size)
             print(
                 f"\nSample complete: "
                 f"{stats.get('sample_records_saved', 0)} records saved to sample/"
+            )
+        elif command == "bootstrap-fast":
+            stats = scraper.bootstrap_fast(max_workers=workers, batch_size=batch_size)
+            print(
+                f"\nBootstrap-fast complete: {stats['records_new']} new, "
+                f"{stats['records_updated']} updated, "
+                f"{stats['errors']} errors"
             )
         else:
             stats = scraper.bootstrap()
@@ -429,6 +546,7 @@ def main():
                 f"{stats['records_updated']} updated, "
                 f"{stats['records_skipped']} skipped"
             )
+        _report_failures()
         print(json.dumps(stats, indent=2))
 
     elif command == "update":

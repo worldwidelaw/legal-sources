@@ -38,7 +38,7 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.pdf_extract import _extract as extract_pdf_text
 
 logging.basicConfig(
@@ -160,6 +160,9 @@ class NayaritCourtScraper(BaseScraper):
         yield from self._iter_rows()
 
     def fetch_updates(self, since: str = None) -> Generator[Dict[str, Any], None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self._iter_rows():
             if since and raw.get("fecha") and raw["fecha"] < since:
                 continue

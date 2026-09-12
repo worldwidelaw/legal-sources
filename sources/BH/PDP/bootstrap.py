@@ -151,11 +151,15 @@ class BHPDPScraper:
                 logger.warning("Skipping %s: not a PDF", rec["doc_id"])
                 continue
 
+            # force=True: the Arabic half of this corpus was stored
+            # character-reversed (issue #1560), so a refresh has to re-extract
+            # the rows already in Neon rather than skip them as present.
             text = extract_pdf_markdown(
                 source=self.SOURCE_ID,
                 source_id=rec["doc_id"],
                 pdf_bytes=pdf_bytes,
                 table="doctrine",
+                force=True,
             )
             if not text or len(text.strip()) < 100:
                 logger.warning(
@@ -208,27 +212,53 @@ def main():
             sys.exit(1)
         return
 
-    sample_dir = Path(__file__).parent / "sample"
+    source_dir = Path(__file__).parent
+    sample_dir = source_dir / "sample"
     sample_dir.mkdir(exist_ok=True)
 
     count = 0
     limit = 15 if args.sample else 9999
 
-    for record in scraper.fetch_all():
-        count += 1
-        fname = re.sub(r"[^\w\-]", "_", record["_id"])[:80] + ".json"
-        with open(sample_dir / fname, "w", encoding="utf-8") as f:
-            json.dump(record, f, ensure_ascii=False, indent=2)
-        logger.info(
-            "[%d] %s (%d chars)",
-            count, record["title"][:60], len(record.get("text", "")),
-        )
-        if count >= limit:
-            logger.info("Sample limit reached (%d)", limit)
-            break
+    if args.sample:
+        for record in scraper.fetch_all():
+            count += 1
+            fname = re.sub(r"[^\w\-]", "_", record["_id"])[:80] + ".json"
+            with open(sample_dir / fname, "w", encoding="utf-8") as f:
+                json.dump(record, f, ensure_ascii=False, indent=2)
+            logger.info(
+                "[%d] %s (%d chars)",
+                count, record["title"][:60], len(record.get("text", "")),
+            )
+            if count >= limit:
+                logger.info("Sample limit reached (%d)", limit)
+                break
+        print(f"\nDone: {count} records saved to {sample_dir}")
+        return
 
-    print(f"\nDone: {count} records saved to {sample_dir}")
+    # A full run streams to data/records.jsonl, which is what the pipeline
+    # ingests. It used to write the whole corpus into sample/ as individual
+    # files, so a fleet run left records.jsonl empty and only the bundled
+    # samples were ever ingested (issue #798 class).
+    data_dir = source_dir / "data"
+    data_dir.mkdir(exist_ok=True)
+    records_file = data_dir / "records.jsonl"
+
+    with open(records_file, "w", encoding="utf-8") as f:
+        for record in scraper.fetch_all():
+            count += 1
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+            logger.info(
+                "[%d] %s (%d chars)",
+                count, record["title"][:60], len(record.get("text", "")),
+            )
+
+    print(f"\nDone: {count} records written to {records_file}")
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

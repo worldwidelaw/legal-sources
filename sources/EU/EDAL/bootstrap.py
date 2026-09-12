@@ -1,311 +1,340 @@
 #!/usr/bin/env python3
 """
-EU/EDAL Data Fetcher
-European Database of Asylum Law - Structured case summaries
+EU/EDAL — European Database of Asylum Law (ECRE).
 
-HTML scraping of asylumlawdatabase.eu (Drupal 7).
-Extracts structured fields: headnote, facts, decision/reasoning, outcome,
-observations. ~900 cases from 22 EU member states, frozen at 2021.
-Crawl delay: 10 seconds (per robots.txt).
+EDAL publishes structured, English-language summaries of asylum case law from
+the CJEU, the ECtHR, UN treaty bodies and the national courts of 20+ EU member
+states. Each summary carries the full analytical body of the case as prepared by
+the national expert: headnote, facts, decision & reasoning, outcome, subsequent
+proceedings and observations.
+
+Site migration (2026)
+---------------------
+The Drupal 7 site was replaced by a Laravel application. The old paths are gone:
+
+    /en/case-law-search?page=N   -> 404   (old listing, used by the previous scraper)
+    /en/case-law/{title-slug}    -> 301 to the site root (old case pages)
+
+The new structure is:
+
+    /summaries                       listing (Livewire table, JS-paginated)
+    /summaries/case/{slug}           case page, server-rendered HTML
+    /sitemap.xml                     sitemap index
+    /sitemap.xml/summaries/{cjeu,ecrthr,national,un}
+
+Discovery therefore goes through the sitemaps rather than the listing: they are
+server-generated, complete (~1,830 cases) and cost four requests instead of
+~180 paginated ones. Case pages are plain server-rendered HTML — the analytical
+body lives in `<section data-section-id="...">` blocks and the metadata in a
+two-column table — so no browser automation is needed.
+
+robots.txt allows `User-agent: *` everywhere except /admin, /user and /core, and
+no longer declares a Crawl-delay; we still pace requests at 1s.
 """
 
+import html
 import json
 import logging
 import re
+import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any, Iterator, List, Optional
-from urllib.parse import urljoin
+from typing import Any, Dict, Generator, List, Optional
 
 import requests
-from bs4 import BeautifulSoup
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.base_scraper import BaseScraper
+
+logger = logging.getLogger("legal-data-hunter")
 
 BASE_URL = "https://www.asylumlawdatabase.eu"
-SEARCH_URL = f"{BASE_URL}/en/case-law-search"
-CRAWL_DELAY = 10  # per robots.txt
+SITEMAP_INDEX = f"{BASE_URL}/sitemap.xml"
+CASE_URL_RE = re.compile(r"^https://www\.asylumlawdatabase\.eu/summaries/case/[^/]+$")
+CRAWL_DELAY = 1.0
+
+USER_AGENT = "Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)"
+
+# Analytical sections, in the order they should appear in the composed full text.
+SECTIONS = [
+    ("headnote", "HEADNOTE"),
+    ("facts", "FACTS"),
+    ("decision", "DECISION & REASONING"),
+    ("outcome", "OUTCOME"),
+    ("subproc", "SUBSEQUENT PROCEEDINGS"),
+    ("observation", "OBSERVATIONS"),
+]
+
+# Metadata table labels -> record field names.
+META_LABELS = {
+    "country of decision": "country",
+    "country of applicant": "country_of_applicant",
+    "court name": "court",
+    "date of decision": "date_str",
+    "citation": "citation",
+    "additional citation": "additional_citation",
+    "ecli": "ecli",
+}
+
+_TAG_RE = re.compile(r"(?s)<[^>]+>")
+_BLOCK_RE = re.compile(r"(?i)</(p|div|li|tr|h[1-6]|section|table)\s*>|<br\s*/?>")
 
 
-class EDALFetcher:
-    def __init__(self):
+def _html_to_text(fragment: str) -> str:
+    """Strip tags from an HTML fragment, keeping block-level line breaks."""
+    text = re.sub(r"(?is)<(script|style)[^>]*>.*?</\1>", " ", fragment)
+    text = _BLOCK_RE.sub("\n", text)
+    text = _TAG_RE.sub(" ", text)
+    text = html.unescape(text)
+    text = text.replace("\xa0", " ")
+    # Collapse intra-line whitespace, drop empty lines.
+    lines = [re.sub(r"[ \t]+", " ", ln).strip() for ln in text.split("\n")]
+    return "\n".join(ln for ln in lines if ln)
+
+
+class EDALScraper(BaseScraper):
+    """Scraper for the European Database of Asylum Law."""
+
+    def __init__(self, source_dir: Optional[str] = None):
+        super().__init__(source_dir)
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)'
-        })
+        self.session.headers.update({"User-Agent": USER_AGENT})
 
-    def _get(self, url: str, retries: int = 3) -> Optional[requests.Response]:
-        """GET with retries and crawl delay."""
+    # ------------------------------------------------------------------ HTTP
+
+    def _get(self, url: str, retries: int = 3) -> Optional[str]:
         for attempt in range(retries):
             try:
-                r = self.session.get(url, timeout=30)
+                r = self.session.get(url, timeout=60)
                 if r.status_code == 200:
-                    return r
-                logger.warning(f"Status {r.status_code} for {url}")
-            except Exception as e:
-                logger.warning(f"Request failed (attempt {attempt+1}/{retries}): {e}")
+                    return r.text
+                if r.status_code == 404:
+                    logger.warning(f"404 for {url}")
+                    return None
+                logger.warning(f"HTTP {r.status_code} for {url}")
+            except Exception as exc:
+                logger.warning(f"Request failed ({attempt + 1}/{retries}) {url}: {exc}")
             if attempt < retries - 1:
                 time.sleep(2 ** attempt)
         return None
 
-    def _discover_case_urls(self, max_pages: int = 180) -> List[str]:
-        """Discover case URLs by paginating search results."""
-        urls = []
-        for page in range(max_pages):
-            r = self._get(f"{SEARCH_URL}?page={page}")
-            if not r:
-                break
+    # ------------------------------------------------------------- discovery
 
-            soup = BeautifulSoup(r.text, 'html.parser')
-            links = soup.select('a[href*="/en/case-law/"]')
+    def _sitemap_urls(self) -> List[str]:
+        """Return every sub-sitemap listed in the sitemap index."""
+        xml = self._get(SITEMAP_INDEX)
+        if not xml:
+            return []
+        return re.findall(r"<loc>\s*([^<\s]+)\s*</loc>", xml)
 
-            page_urls = set()
-            for link in links:
-                href = link.get('href', '')
-                if '/case-law-search' in href or not href:
-                    continue
-                # Remove #content anchor
-                href = href.split('#')[0]
-                full_url = urljoin(BASE_URL, href)
-                if full_url not in page_urls:
-                    page_urls.add(full_url)
+    def discover_case_urls(self) -> List[str]:
+        """Collect all /summaries/case/ URLs from the summary sitemaps.
 
-            if not page_urls:
-                logger.info(f"No cases on page {page}, stopping pagination")
-                break
-
-            urls.extend(page_urls)
-            logger.info(f"Page {page}: found {len(page_urls)} cases (total: {len(urls)})")
-
+        The four sitemaps are round-robin interleaved so that any prefix of the
+        result (notably the 15 records taken in sample mode) spans CJEU, ECtHR,
+        national and UN case law instead of being 100% CJEU.
+        """
+        groups: List[List[str]] = []
+        seen = set()
+        for sm in self._sitemap_urls():
+            if "/summaries/" not in sm:
+                continue
+            xml = self._get(sm)
+            if not xml:
+                logger.warning(f"Could not read sitemap {sm}")
+                continue
+            group = []
+            for loc in re.findall(r"<loc>\s*([^<\s]+)\s*</loc>", xml):
+                loc = html.unescape(loc)
+                if CASE_URL_RE.match(loc) and loc not in seen:
+                    seen.add(loc)
+                    group.append(loc)
+            logger.info(f"{sm.rsplit('/', 1)[-1]}: {len(group)} case URLs")
+            # Sitemaps list oldest first; walk newest first so an interrupted or
+            # sampled run covers the most recent case law.
+            groups.append(list(reversed(group)))
             time.sleep(CRAWL_DELAY)
 
+        urls: List[str] = []
+        for i in range(max((len(g) for g in groups), default=0)):
+            for group in groups:
+                if i < len(group):
+                    urls.append(group[i])
+        logger.info(f"Discovered {len(urls)} unique case URLs")
         return urls
 
-    def _extract_field(self, soup: BeautifulSoup, field_name: str) -> str:
-        """Extract text from a Drupal field."""
-        el = soup.select_one(f'.field-name-{field_name} .field-item')
-        if el:
-            return el.get_text(strip=True)
-        return ''
+    # ----------------------------------------------------------------- parse
 
-    def _extract_field_links(self, soup: BeautifulSoup, field_name: str) -> List[str]:
-        """Extract link texts from a Drupal field."""
-        els = soup.select(f'.field-name-{field_name} .field-item a')
-        return [a.get_text(strip=True) for a in els if a.get_text(strip=True)]
-
-    def _parse_title_metadata(self, title: str) -> Dict[str, str]:
-        """Extract country, court, date from the page title."""
-        # Title format: "Country – Court, Date, Citation"
-        # or "Country: Court, Date, Citation"
-        result = {'country': '', 'court': '', 'date_str': ''}
-
-        # Try to extract country (before first – or :)
-        m = re.match(r'^([A-Za-z ]+?)[\s]*[-–:]\s*(.+)', title)
-        if m:
-            result['country'] = m.group(1).strip()
-
-        return result
-
-    def _parse_case_page(self, url: str) -> Optional[Dict[str, Any]]:
-        """Parse a single case page and extract all fields."""
-        r = self._get(url)
-        if not r:
-            return None
-
-        soup = BeautifulSoup(r.text, 'html.parser')
-
-        # Get title from h1
-        h1 = soup.select_one('h1.title, h1#page-title, h1')
-        title = h1.get_text(strip=True) if h1 else ''
-
-        # Extract structured fields
-        headnote = self._extract_field(soup, 'field-headnote')
-        facts = self._extract_field(soup, 'field-facts')
-        decision = self._extract_field(soup, 'field-decision')
-        outcome = self._extract_field(soup, 'field-outcome')
-        subproc = self._extract_field(soup, 'field-subproc')
-        observations = self._extract_field(soup, 'field-observations')
-        citation = self._extract_field(soup, 'field-ncn')
-        court = self._extract_field(soup, 'field-court-name')
-        country = self._extract_field(soup, 'field-tcod')
-        legislation = self._extract_field(soup, 'field-leg-applicable')
-        other_sources = self._extract_field(soup, 'field-other-sources')
-        keywords = self._extract_field_links(soup, 'field-keywords')
-
-        # Extract date
-        date_el = soup.select_one('.field-name-field-date-dd .date-display-single')
-        date_str = date_el.get_text(strip=True) if date_el else ''
-
-        # Compose full text from structured sections
-        text_parts = []
-        if headnote:
-            text_parts.append(f"HEADNOTE\n{headnote}")
-        if facts:
-            text_parts.append(f"FACTS\n{facts}")
-        if decision:
-            text_parts.append(f"DECISION & REASONING\n{decision}")
-        if outcome:
-            text_parts.append(f"OUTCOME\n{outcome}")
-        if subproc:
-            text_parts.append(f"SUBSEQUENT PROCEEDINGS\n{subproc}")
-        if observations:
-            text_parts.append(f"OBSERVATIONS\n{observations}")
-
-        text = '\n\n'.join(text_parts)
-
-        if not text:
-            logger.warning(f"No text content for {url}")
-            return None
-
-        # Parse date to ISO format
-        parsed_date = self._parse_date(date_str, title)
-
-        # If country not from field, try from title
-        if not country:
-            meta = self._parse_title_metadata(title)
-            country = meta.get('country', '')
-
-        return {
-            'title': title,
-            'text': text,
-            'headnote': headnote,
-            'facts': facts,
-            'decision': decision,
-            'outcome': outcome,
-            'observations': observations,
-            'date_str': parsed_date,
-            'court': court,
-            'country': country,
-            'citation': citation,
-            'keywords': keywords,
-            'legislation': legislation,
-            'other_sources': other_sources,
-            'url': url,
-        }
-
-    def _parse_date(self, date_str: str, title: str = '') -> str:
-        """Try to parse date to ISO format from various formats."""
-        # Try common date patterns
-        for text in [date_str, title]:
-            if not text:
+    @staticmethod
+    def _parse_metadata(page: str) -> Dict[str, str]:
+        """Read the two-column header table (`<strong>Label:</strong> | value`)."""
+        meta: Dict[str, str] = {}
+        for m in re.finditer(
+            r"(?s)<tr>\s*<td>\s*<strong>(.*?)</strong>\s*</td>\s*<td>(.*?)</td>", page
+        ):
+            label = _html_to_text(m.group(1)).strip().rstrip(":").strip().lower()
+            field = META_LABELS.get(label)
+            if not field:
                 continue
-            # Try various date formats
-            patterns = [
-                (r'(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})', '%d %B %Y'),
-                (r'(\d{1,2})/(\d{1,2})/(\d{4})', None),  # d/m/y
-                (r'(\d{4})-(\d{2})-(\d{2})', None),  # ISO
-            ]
-            for pattern, fmt in patterns:
-                m = re.search(pattern, text)
-                if m:
-                    if fmt:
-                        try:
-                            return datetime.strptime(m.group(0), fmt).strftime('%Y-%m-%d')
-                        except ValueError:
-                            continue
-                    elif '/' in m.group(0):
-                        parts = m.group(0).split('/')
-                        try:
-                            return f"{parts[2]}-{parts[1].zfill(2)}-{parts[0].zfill(2)}"
-                        except (IndexError, ValueError):
-                            continue
-                    else:
-                        return m.group(0)
-        return ''
+            value = " ".join(_html_to_text(m.group(2)).split("\n")).strip()
+            if value:
+                meta[field] = value
+        return meta
 
-    def fetch_all(self, max_docs: int = None, max_pages: int = 180) -> Iterator[Dict[str, Any]]:
-        """Yield all case law documents."""
-        logger.info("Discovering case URLs...")
-        case_urls = self._discover_case_urls(max_pages=max_pages)
-        logger.info(f"Found {len(case_urls)} case URLs")
+    @staticmethod
+    def _parse_section(page: str, section_id: str) -> str:
+        """Extract one `<section data-section-id="...">` block, minus its heading."""
+        m = re.search(
+            r'(?s)<section[^>]*data-section-id="%s"[^>]*>(.*?)</section>' % section_id,
+            page,
+        )
+        if not m:
+            return ""
+        fragment = re.sub(r"(?is)<h[1-6][^>]*>.*?</h[1-6]>", "", m.group(1), count=1)
+        return _html_to_text(fragment).strip()
+
+    @staticmethod
+    def _parse_keywords(page: str) -> List[str]:
+        """Keyword chips link to the faceted listing (`/summaries?keywords=NN`)."""
+        kws: List[str] = []
+        for m in re.finditer(
+            r'(?s)<a[^>]+href="[^"]*/summaries\?[^"]*keywords[^"]*"[^>]*>(.*?)</a>', page
+        ):
+            kw = " ".join(_html_to_text(m.group(1)).split())
+            if kw and kw not in kws:
+                kws.append(kw)
+        return kws
+
+    @staticmethod
+    def _iso_date(value: str) -> str:
+        """EDAL prints dates as DD-MM-YYYY."""
+        if not value:
+            return ""
+        m = re.search(r"(\d{2})-(\d{2})-(\d{4})", value)
+        if m:
+            return f"{m.group(3)}-{m.group(2)}-{m.group(1)}"
+        m = re.search(r"(\d{4})-(\d{2})-(\d{2})", value)
+        return m.group(0) if m else ""
+
+    def parse_case(self, url: str) -> Optional[Dict[str, Any]]:
+        page = self._get(url)
+        if not page:
+            return None
+
+        h1 = re.search(r"(?s)<h1[^>]*>(.*?)</h1>", page)
+        title = " ".join(_html_to_text(h1.group(1)).split()) if h1 else ""
+
+        parts, fields = [], {}
+        for section_id, heading in SECTIONS:
+            body = self._parse_section(page, section_id)
+            fields[section_id] = body
+            if body:
+                parts.append(f"{heading}\n{body}")
+
+        text = "\n\n".join(parts)
+        if not text:
+            logger.warning(f"No analytical body on {url}")
+            return None
+
+        doc: Dict[str, Any] = {
+            "url": url,
+            "slug": url.rstrip("/").rsplit("/", 1)[-1],
+            "title": title,
+            "text": text,
+            "keywords": self._parse_keywords(page),
+            "other_sources": self._parse_section(page, "source"),
+        }
+        doc.update(fields)
+        doc.update(self._parse_metadata(page))
+        return doc
+
+    # -------------------------------------------------------------- pipeline
+
+    def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
+        urls = self.discover_case_urls()
+        if not urls:
+            raise RuntimeError("Sitemap discovery returned no case URLs")
 
         fetched = 0
-        for i, url in enumerate(case_urls):
-            if max_docs and fetched >= max_docs:
-                break
-
-            doc = self._parse_case_page(url)
+        for i, url in enumerate(urls, 1):
+            doc = self.parse_case(url)
             if doc:
                 fetched += 1
-                if fetched % 10 == 0:
-                    logger.info(f"Fetched {fetched}/{len(case_urls)} documents")
+                yield doc
+            if i % 50 == 0:
+                logger.info(f"Processed {i}/{len(urls)} case pages ({fetched} with text)")
+            time.sleep(CRAWL_DELAY)
+        logger.info(f"fetch_all complete: {fetched}/{len(urls)} cases with full text")
+
+    def fetch_updates(self, since: datetime) -> Generator[Dict[str, Any], None, None]:
+        """No per-document lastmod on the sitemaps — filter on decision date."""
+        cutoff = since.date() if hasattr(since, "date") else since
+        for doc in self.fetch_all():
+            iso = self._iso_date(doc.get("date_str", ""))
+            if not iso:
+                yield doc
+                continue
+            try:
+                if datetime.strptime(iso, "%Y-%m-%d").date() >= cutoff:
+                    yield doc
+            except ValueError:
                 yield doc
 
-            time.sleep(CRAWL_DELAY)
-
-        logger.info(f"fetch_all complete. Total: {fetched}")
-
-    def fetch_updates(self, since: datetime) -> Iterator[Dict[str, Any]]:
-        """Fetch documents updated since a given date (limited for static site)."""
-        for doc in self.fetch_all():
-            if doc.get('date_str'):
-                try:
-                    doc_date = datetime.strptime(doc['date_str'], '%Y-%m-%d')
-                    if doc_date >= since:
-                        yield doc
-                except ValueError:
-                    yield doc
-
-    def normalize(self, raw_doc: Dict[str, Any]) -> Dict[str, Any]:
-        """Normalize document to standard schema."""
-        # Create a stable ID from the URL slug
-        slug = raw_doc['url'].rstrip('/').split('/')[-1]
-        _id = f"EDAL-{slug[:80]}"
+    def normalize(self, raw: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        text = (raw.get("text") or "").strip()
+        if not text:
+            return None
 
         return {
-            '_id': _id,
-            '_source': 'EU/EDAL',
-            '_type': 'case_law',
-            '_fetched_at': datetime.now().isoformat(),
-            'title': raw_doc.get('title', ''),
-            'text': raw_doc.get('text', ''),
-            'headnote': raw_doc.get('headnote', ''),
-            'outcome': raw_doc.get('outcome', ''),
-            'date': raw_doc.get('date_str', ''),
-            'court': raw_doc.get('court', ''),
-            'country': raw_doc.get('country', ''),
-            'citation': raw_doc.get('citation', ''),
-            'keywords': raw_doc.get('keywords', []),
-            'url': raw_doc['url'],
+            "_id": f"EDAL-{raw['slug'][:120]}",
+            "_source": "EU/EDAL",
+            "_type": "case_law",
+            "_fetched_at": datetime.now(timezone.utc).isoformat(),
+            "title": raw.get("title", ""),
+            "text": text,
+            "headnote": raw.get("headnote", ""),
+            "facts": raw.get("facts", ""),
+            "decision": raw.get("decision", ""),
+            "outcome": raw.get("outcome", ""),
+            "observations": raw.get("observation", ""),
+            "date": self._iso_date(raw.get("date_str", "")),
+            "court": raw.get("court", ""),
+            "country": raw.get("country", ""),
+            "country_of_applicant": raw.get("country_of_applicant", ""),
+            "citation": raw.get("citation", ""),
+            "ecli": raw.get("ecli", ""),
+            "keywords": raw.get("keywords", []),
+            "other_sources": raw.get("other_sources", ""),
+            "url": raw["url"],
         }
 
 
 def main():
-    import sys
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    scraper = EDALScraper()
 
-    if len(sys.argv) > 1 and sys.argv[1] == 'bootstrap':
-        fetcher = EDALFetcher()
-        sample_dir = Path(__file__).parent / 'sample'
-        sample_dir.mkdir(exist_ok=True)
+    command = sys.argv[1] if len(sys.argv) > 1 else "bootstrap"
+    sample_mode = "--sample" in sys.argv
 
-        is_sample = '--sample' in sys.argv
-
-        if is_sample:
-            target = 15
-            max_pages = 5
-            logger.info(f"Sample mode: fetching {target} documents from first {max_pages} pages")
-        else:
-            target = None
-            max_pages = 180
-            logger.info("Full mode: fetching all documents")
-
-        count = 0
-        for doc in fetcher.fetch_all(max_docs=target, max_pages=max_pages):
-            normalized = fetcher.normalize(doc)
-            filename = re.sub(r'[^a-zA-Z0-9_-]', '_', normalized['_id'])[:80]
-            filepath = sample_dir / f"{filename}.json"
-            with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(normalized, f, ensure_ascii=False, indent=2)
-            count += 1
-            text_len = len(normalized.get('text', ''))
-            logger.info(f"[{count}] {normalized['title'][:60]} - {text_len} chars")
-
-        logger.info(f"Bootstrap complete: {count} documents saved to {sample_dir}")
+    if command in ("bootstrap", "bootstrap-fast"):
+        stats = scraper.bootstrap(sample_mode=sample_mode, sample_size=15)
+        print(f"\nBootstrap complete: {stats}")
+    elif command == "update":
+        stats = scraper.update()
+        print(f"\nUpdate complete: {stats}")
+    elif command == "test":
+        urls = scraper.discover_case_urls()
+        print(f"Discovered {len(urls)} case URLs")
+        if urls:
+            doc = scraper.parse_case(urls[0])
+            print(json.dumps(scraper.normalize(doc), ensure_ascii=False, indent=2)[:1500])
     else:
-        print("Usage: python3 bootstrap.py bootstrap [--sample]")
+        print(f"Unknown command: {command}")
+        sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

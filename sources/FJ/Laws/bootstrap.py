@@ -2,42 +2,62 @@
 """
 FJ/Laws -- Laws of Fiji (laws.gov.fj)
 
-Fetches all consolidated legislation from the official Laws of Fiji website,
-maintained by the Office of the Attorney-General.
+Official consolidated legislation of Fiji, published by the Office of the
+Attorney-General.
 
-Strategy:
-  - Fetch alphabetical act lists from /acts/actlist/{A-Z}
-  - For each act, load /Acts/DisplayAct/{id} to get section IDs
-  - Fetch full text of each section from /Acts/ViewSection/{section_id}
-  - Concatenate all section texts to produce the full act text
+Rebuilt 2026-08-03 for issue #1355. laws.gov.fj is now an Angular SPA: the old
+server-rendered scheme (/acts/actlist/{A-Z}, /Acts/DisplayAct/{id},
+/Acts/ViewSection/{id}) no longer exists, so the previous scraper enumerated
+nothing and every run fell back to the committed samples.
 
-URL patterns:
-  - Act list by letter: /acts/actlist/A .. /acts/actlist/Z
-  - Act TOC page: /Acts/DisplayAct/{act_id}
-  - Section content: /Acts/ViewSection/{section_id}
+The SPA is backed by a plain unauthenticated JSON API at /api. Endpoints used
+(all discovered from the app bundle's ApiService):
+
+  /api/get_all_acts                  index of consolidated principal acts
+  /api/get_act_by_id/{ActId}         nested section tree (LegalId per node)
+  /api/retrieve_html/{LegalId}       the node's own HTML body
+  /api/toc_lawsaspublished           index of "Laws as Published" PDFs
+                                     (Acts + Legal Notices, i.e. subsidiary
+                                     legislation), keyed by year
+  /api/show_pdf_lawsaspublished/{Id} that PDF, base64 in JSON
+  /api/toc_omittedrepealed           index of omitted/repealed law volumes
+  /api/show_pdf_omittedrepealed/{Id} that volume, base64 in JSON
+  /api/retrieve_constitution         the 2013 Constitution, base64 in JSON
+
+A consolidated act's text is assembled by walking its section tree in
+pre-order and concatenating each node's section_html: parent nodes carry the
+part/chapter heading, leaves carry the body.
 
 Usage:
-  python bootstrap.py bootstrap          # Full initial pull
-  python bootstrap.py bootstrap --sample # Fetch 15 sample records
-  python bootstrap.py update             # Re-fetch all
-  python bootstrap.py test               # Quick connectivity test
+  python bootstrap.py bootstrap            # sample pull into sample/
+  python bootstrap.py bootstrap --sample   # same, explicit
+  python bootstrap.py bootstrap --full     # full pull to data/records.jsonl
+  python bootstrap.py bootstrap-fast       # full pull, concurrent
+  python bootstrap.py test                 # connectivity / inventory test
 """
 
 import sys
 import json
+import base64
 import logging
 import re
 import html as html_module
-import time
+import threading
+from itertools import zip_longest
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Generator, Optional, Dict, Any, List, Tuple
+from typing import Generator, Optional, Dict, Any, List
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
+
+try:
+    from common.pdf_extract import _extract as _pdf_extract
+except Exception:  # pragma: no cover - fall back to bare PyMuPDF
+    _pdf_extract = None
 
 logging.basicConfig(
     level=logging.INFO,
@@ -46,81 +66,81 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.FJ.Laws")
 
 BASE_URL = "https://www.laws.gov.fj"
+API = "/api"
 
-# Letters used in the alphabetical index (some letters may have no acts)
-ALPHABET = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-# Regex to extract act links from listing page
-ACT_LINK_RE = re.compile(
-    r'href=["\']?/Acts/DisplayAct/(\d+)["\']?\s*[^>]*>\s*([^<]+)',
-    re.IGNORECASE,
-)
-
-# Regex to extract section IDs from act page
-# Sections have data-id="12345" attribute on labels and links
-SECTION_ID_RE = re.compile(r'data-id[=]"?(\d+)"?')
-
-# Regex to extract last updated date from section pages
-LAST_UPDATED_RE = re.compile(
-    r'Last\s+Updated:\s*(\d{1,2}\s+\w+\s+\d{4})', re.IGNORECASE
-)
+MIN_TEXT_CHARS = 200
 
 
 def clean_html(text: str) -> str:
-    """Strip HTML tags and decode entities."""
-    text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL)
-    text = re.sub(r'<script[^>]*>.*?</script>', '', text, flags=re.DOTALL)
-    text = re.sub(r'<br\s*/?\s*>', '\n', text, flags=re.IGNORECASE)
-    text = re.sub(r'</p>', '\n', text, flags=re.IGNORECASE)
-    text = re.sub(r'</div>', '\n', text, flags=re.IGNORECASE)
-    text = re.sub(r'</tr>', '\n', text, flags=re.IGNORECASE)
-    text = re.sub(r'</td>', '\t', text, flags=re.IGNORECASE)
-    text = re.sub(r'<[^>]+>', '', text)
+    """Strip HTML tags and decode entities, keeping block-level line breaks."""
+    text = re.sub(r"<style[^>]*>.*?</style>", "", text, flags=re.DOTALL | re.I)
+    text = re.sub(r"<script[^>]*>.*?</script>", "", text, flags=re.DOTALL | re.I)
+    # The section HTML hides cross-reference anchors in zero-content spans.
+    text = re.sub(r'<span class="hidden"[^>]*>.*?</span>', "", text, flags=re.DOTALL | re.I)
+    text = re.sub(r"<br\s*/?\s*>", "\n", text, flags=re.I)
+    # Every text run sits in its own <span>; without a separator the runs weld
+    # together ("accidentmeans an accident...", "(a)in the case of...").
+    text = re.sub(r"</span\s*>", " ", text, flags=re.I)
+    text = re.sub(r"</dt\s*>", " ", text, flags=re.I)
+    for tag in ("p", "div", "li", "tr", "dd", "dl", "h1", "h2", "h3", "h4", "section"):
+        text = re.sub(rf"</{tag}\s*>", "\n", text, flags=re.I)
+    text = re.sub(r"</t[dh]\s*>", "\t", text, flags=re.I)
+    text = re.sub(r"<[^>]+>", "", text)
     text = html_module.unescape(text)
-    # Normalize whitespace but preserve line breaks
-    lines = text.split('\n')
-    lines = [re.sub(r'[ \t]+', ' ', line).strip() for line in lines]
-    text = '\n'.join(line for line in lines if line)
-    return text.strip()
+    text = re.sub("[\\xa0\\u2000-\\u200a\\u202f\\u205f\\u3000]", " ", text)
+    lines = [re.sub(r"[ \t]+", " ", ln).strip() for ln in text.split("\n")]
+    out = "\n".join(ln for ln in lines if ln).strip()
+    # Repair the separator we just inserted in front of punctuation.
+    out = re.sub(r" +([,.;:)\]])", r"\1", out)
+    out = re.sub(r"([(\[]) +", r"\1", out)
+    return out
 
 
-def extract_section_text(html_content: str) -> Tuple[str, Optional[str]]:
-    """Extract section text and last-updated date from a ViewSection page.
+def pdf_to_text(pdf_bytes: bytes) -> str:
+    """Extract text from PDF bytes via the shared extractor, else PyMuPDF."""
+    if _pdf_extract is not None:
+        try:
+            text = _pdf_extract(pdf_bytes)
+            if text and text.strip():
+                return text.strip()
+        except Exception as e:
+            logger.debug(f"Shared PDF extractor failed: {e}")
+    try:
+        import fitz
 
-    Returns (text, last_updated_date).
-    """
-    # Extract last updated date
-    date_match = LAST_UPDATED_RE.search(html_content)
-    last_updated = date_match.group(1) if date_match else None
+        with fitz.open(stream=pdf_bytes, filetype="pdf") as doc:
+            return "\n".join(page.get_text() for page in doc).strip()
+    except Exception as e:
+        logger.debug(f"PyMuPDF failed: {e}")
+        return ""
 
-    # Find the main content area - look for the act content between
-    # the header/navigation and footer sections
-    # The content typically appears after the breadcrumb/navigation
-    # and before the footer "Contact Us" section
-    content = html_content
 
-    # Remove header/navigation (everything before the act title section)
-    # The act content starts after the menu items
-    menu_end = content.rfind('</style>')
-    if menu_end > 0:
-        content = content[menu_end:]
+def walk_sections(nodes: List[Dict[str, Any]]) -> Generator[Dict[str, Any], None, None]:
+    """Yield every node of an act's section tree in pre-order."""
+    for node in nodes or []:
+        yield node
+        for child in walk_sections(node.get("SectionData") or []):
+            yield child
 
-    # Remove footer
-    footer_start = content.find('Contact Us')
-    if footer_start > 0:
-        content = content[:footer_start]
 
-    text = clean_html(content)
-
-    # Remove common noise patterns
-    text = re.sub(r'I Agree\s*', '', text)
-    text = re.sub(r'All\s+Principal\s+Subsidiary', '', text)
-    text = re.sub(r'The Laws of Fiji', '', text, count=2)
-    text = re.sub(r'Home\s+The Fijian Constitution.*?Contact Us', '', text, flags=re.DOTALL)
-    text = re.sub(r'Search.*?Contact Us', '', text, flags=re.DOTALL)
-    text = text.strip()
-
-    return text, last_updated
+def iso_date(value: Optional[str]) -> Optional[str]:
+    """Normalize the API's assorted date spellings to ISO 8601 (date only)."""
+    if not value:
+        return None
+    value = str(value).strip()
+    if not value:
+        return None
+    m = re.match(r"(\d{4})-(\d{2})-(\d{2})", value)
+    if m:
+        return m.group(0)
+    if re.match(r"\d{1,2}\s+\w+\s+\d{4}$", value):
+        try:
+            return datetime.strptime(value, "%d %B %Y").date().isoformat()
+        except ValueError:
+            pass
+    if re.match(r"^\d{4}$", value):
+        return f"{value}-01-01"
+    return None
 
 
 class FijiLawsScraper(BaseScraper):
@@ -140,199 +160,345 @@ class FijiLawsScraper(BaseScraper):
             base_url=BASE_URL,
             headers={
                 "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
-                "Accept": "text/html,application/xhtml+xml,*/*",
+                "Accept": "application/json, text/plain, */*",
+                "Referer": f"{BASE_URL}/",
             },
-            timeout=60,
+            timeout=120,
         )
+        self._ckpt_path = source_dir / "data" / "checkpoint.json"
+        self._ckpt_lock = threading.Lock()
+        self._done = self._load_checkpoint()
+        self._pending = 0
+        # Sample runs must not poison the checkpoint for the full run.
+        self._checkpoint_enabled = True
 
-    def _get_all_acts(self) -> List[Dict[str, str]]:
-        """Fetch all acts from the alphabetical listing pages."""
-        all_acts = []
+    # ── checkpoint ───────────────────────────────────────────────────
 
-        for letter in ALPHABET:
-            url = f"/acts/actlist/{letter}"
-            logger.info(f"Fetching act list: {letter}")
+    def _load_checkpoint(self) -> set:
+        try:
+            data = json.loads(self._ckpt_path.read_text())
+            return set(data.get("done") or [])
+        except Exception:
+            return set()
 
-            try:
-                self.rate_limiter.wait()
-                resp = self.client.get(url)
-                if resp.status_code == 404:
-                    logger.debug(f"No acts for letter {letter}")
+    def _flush_checkpoint(self) -> None:
+        if not self._checkpoint_enabled:
+            return
+        try:
+            self._ckpt_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = self._ckpt_path.with_suffix(".tmp")
+            tmp.write_text(json.dumps({"done": sorted(self._done)}))
+            tmp.replace(self._ckpt_path)
+        except Exception as e:
+            logger.debug(f"Checkpoint write failed: {e}")
+
+    def _mark_done(self, key: str) -> None:
+        with self._ckpt_lock:
+            self._done.add(key)
+            self._pending += 1
+            if self._pending >= 25:
+                self._pending = 0
+                self._flush_checkpoint()
+
+    # ── API helpers ──────────────────────────────────────────────────
+
+    def _api_json(self, path: str) -> Any:
+        self.rate_limiter.wait()
+        resp = self.client.get(f"{API}{path}")
+        resp.raise_for_status()
+        return resp.json()
+
+    def _section_html(self, legal_id: str) -> Dict[str, Any]:
+        from urllib.parse import quote
+
+        return self._api_json(f"/retrieve_html/{quote(legal_id, safe='')}")
+
+    @staticmethod
+    def _flatten_toc(toc: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """toc_* payloads are {group: [{year_or_key: [items]}, ...]} or
+        {group: [items]}. Flatten to a plain item list."""
+        items: List[Dict[str, Any]] = []
+        for group, groups in (toc or {}).items():
+            for entry in groups or []:
+                if not isinstance(entry, dict):
                     continue
-                resp.raise_for_status()
-            except Exception as e:
-                logger.warning(f"Failed to fetch list for {letter}: {e}")
-                continue
+                if "Id" in entry:  # already an item
+                    entry.setdefault("Type", group)
+                    items.append(entry)
+                    continue
+                for _key, bucket in entry.items():
+                    for item in bucket or []:
+                        item.setdefault("Type", group)
+                        items.append(item)
+        return items
 
-            html = resp.text
-            matches = ACT_LINK_RE.findall(html)
+    # ── inventory ────────────────────────────────────────────────────
 
-            for act_id, title in matches:
-                title = title.strip()
-                if title:
-                    all_acts.append({
-                        "act_id": act_id,
-                        "title": title,
-                        "url": f"{BASE_URL}/Acts/DisplayAct/{act_id}",
-                    })
+    def _inventory(self) -> List[Dict[str, Any]]:
+        """Build the full work list of documents to fetch.
 
-            logger.info(f"  Letter {letter}: {len(matches)} acts")
+        The three families are round-robined so that a --sample run covers
+        consolidated acts, as-published PDFs and repealed volumes alike.
+        """
+        act_entries: List[Dict[str, Any]] = []
+        pub_entries: List[Dict[str, Any]] = []
+        om_entries: List[Dict[str, Any]] = []
 
-        logger.info(f"Total acts found: {len(all_acts)}")
-        return all_acts
+        acts = self._api_json("/get_all_acts")
+        for act in acts:
+            act_entries.append({
+                "kind": "act",
+                "id": str(act["ActId"]),
+                "title": (act.get("ActName") or "").strip(),
+                "last_updated": act.get("LastUpdated"),
+                "status": act.get("Status"),
+            })
+        logger.info(f"Consolidated acts: {len(acts)}")
 
-    def _get_section_ids(self, act_id: str) -> List[str]:
-        """Get all section IDs from an act's DisplayAct page."""
-        url = f"/Acts/DisplayAct/{act_id}"
+        published = self._flatten_toc(self._api_json("/toc_lawsaspublished"))
+        for item in published:
+            pub_entries.append({
+                "kind": "published",
+                "id": str(item["Id"]),
+                "title": (item.get("Title") or item.get("PDFFile_Name") or "").strip(),
+                "year": item.get("Year"),
+                "doc_type": item.get("Type"),
+                "status": item.get("Status"),
+            })
+        logger.info(f"Laws as published (PDF): {len(published)}")
 
-        try:
-            self.rate_limiter.wait()
-            resp = self.client.get(url)
-            resp.raise_for_status()
-        except Exception as e:
-            logger.warning(f"Failed to fetch act page {act_id}: {e}")
-            return []
+        omitted = self._flatten_toc(self._api_json("/toc_omittedrepealed"))
+        for item in omitted:
+            om_entries.append({
+                "kind": "omittedrepealed",
+                "id": str(item["Id"]),
+                "title": (item.get("Title") or "").strip(),
+                "doc_type": item.get("Type"),
+                "status": item.get("Status"),
+            })
+        logger.info(f"Omitted/repealed volumes (PDF): {len(omitted)}")
 
-        html = resp.text
-        section_ids = SECTION_ID_RE.findall(html)
-        # Remove duplicates while preserving order
-        seen = set()
-        unique_ids = []
-        for sid in section_ids:
-            if sid not in seen:
-                seen.add(sid)
-                unique_ids.append(sid)
+        inv: List[Dict[str, Any]] = [{
+            "kind": "constitution",
+            "id": "constitution",
+            "title": "Constitution of the Republic of Fiji",
+        }]
+        for group in zip_longest(act_entries, pub_entries, om_entries):
+            inv.extend(e for e in group if e is not None)
 
-        return unique_ids
+        logger.info(f"Total inventory: {len(inv)} documents")
+        return inv
 
-    def _fetch_section_text(self, section_id: str) -> Tuple[str, Optional[str]]:
-        """Fetch full text of a section."""
-        url = f"/Acts/ViewSection/{section_id}"
+    # ── per-document full text ───────────────────────────────────────
 
-        try:
-            self.rate_limiter.wait()
-            resp = self.client.get(url)
-            resp.raise_for_status()
-        except Exception as e:
-            logger.debug(f"Failed to fetch section {section_id}: {e}")
-            return "", None
+    def _act_text(self, act_id: str) -> Dict[str, Any]:
+        """Assemble a consolidated act's full text from its section tree."""
+        tree = self._api_json(f"/get_act_by_id/{act_id}")
+        if not tree:
+            return {}
+        act = tree[0]
+        nodes = list(walk_sections(act.get("Sections") or []))
 
-        return extract_section_text(resp.text)
-
-    def _fetch_act_full_text(self, act_id: str, title: str) -> Tuple[str, Optional[str]]:
-        """Fetch full text by fetching all sections and concatenating."""
-        section_ids = self._get_section_ids(act_id)
-
-        if not section_ids:
-            logger.warning(f"No sections found for act {act_id}: {title}")
-            return "", None
-
-        logger.info(f"    Fetching {len(section_ids)} sections for: {title[:60]}")
-
-        full_text_parts = []
+        parts: List[str] = []
+        description = ""
         last_updated = None
-
-        for i, sid in enumerate(section_ids):
-            text, date = self._fetch_section_text(sid)
-            if text:
-                full_text_parts.append(text)
-            if date and not last_updated:
-                last_updated = date
-
-            # Log progress for large acts
-            if (i + 1) % 50 == 0:
-                logger.info(f"      Progress: {i + 1}/{len(section_ids)} sections")
-
-        full_text = "\n\n".join(full_text_parts)
-        return full_text, last_updated
-
-    def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
-        now = datetime.now(timezone.utc).isoformat()
-        act_id = raw.get("act_id", "")
+        fetched = 0
+        for node in nodes:
+            legal_id = node.get("LegalId")
+            if not legal_id:
+                continue
+            try:
+                payload = self._section_html(legal_id)
+            except Exception as e:
+                logger.debug(f"section {legal_id} failed: {e}")
+                continue
+            fetched += 1
+            if not description:
+                description = clean_html(payload.get("act_description") or "")
+            if not last_updated:
+                last_updated = payload.get("act_last_updated")
+            body = clean_html(payload.get("section_html") or "")
+            if body:
+                parts.append(body)
 
         return {
-            "_id": f"FJ/Laws/{act_id}",
+            "text": "\n\n".join(parts),
+            "description": description,
+            "last_updated": last_updated,
+            "section_count": len(nodes),
+            "sections_fetched": fetched,
+            "act_name": (act.get("ActName") or "").strip(),
+        }
+
+    def _pdf_text(self, endpoint: str, doc_id: str) -> Dict[str, Any]:
+        path = f"/{endpoint}/{doc_id}" if doc_id else f"/{endpoint}"
+        payload = self._api_json(path)
+        if isinstance(payload, list):
+            payload = payload[0] if payload else {}
+        b64 = payload.get("PDFFile") or payload.get("English_PDFFile") or ""
+        if not b64:
+            return {}
+        try:
+            pdf_bytes = base64.b64decode(b64)
+        except Exception as e:
+            logger.debug(f"base64 decode failed for {endpoint}/{doc_id}: {e}")
+            return {}
+        return {
+            "text": pdf_to_text(pdf_bytes),
+            "title": (payload.get("Title") or payload.get("PDFFile_Name") or "").strip(),
+            "year": payload.get("Year"),
+            "doc_type": payload.get("Type"),
+        }
+
+    # ── BaseScraper interface ────────────────────────────────────────
+
+    def normalize(self, raw: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        kind = raw["kind"]
+        doc_id = raw["id"]
+        key = f"{kind}:{doc_id}"
+        now = datetime.now(timezone.utc).isoformat()
+
+        title = raw.get("title") or ""
+        extra: Dict[str, Any] = {}
+
+        try:
+            if kind == "act":
+                info = self._act_text(doc_id)
+                text = info.get("text", "")
+                title = title or info.get("act_name") or ""
+                date = iso_date(raw.get("last_updated")) or iso_date(info.get("last_updated"))
+                url = f"{BASE_URL}/acts/displayact/{doc_id}"
+                extra = {
+                    "description": info.get("description") or None,
+                    "section_count": info.get("section_count", 0),
+                    "sections_fetched": info.get("sections_fetched", 0),
+                    "document_class": "consolidated_act",
+                    "status": raw.get("status"),
+                }
+            elif kind == "published":
+                info = self._pdf_text("show_pdf_lawsaspublished", doc_id)
+                text = info.get("text", "")
+                title = title or info.get("title") or ""
+                date = iso_date(raw.get("year") or info.get("year"))
+                url = f"{BASE_URL}{API}/show_pdf_lawsaspublished/{doc_id}"
+                extra = {
+                    "document_class": "law_as_published",
+                    "category": raw.get("doc_type") or info.get("doc_type"),
+                    "year": raw.get("year") or info.get("year"),
+                    "status": raw.get("status"),
+                }
+            elif kind == "omittedrepealed":
+                info = self._pdf_text("show_pdf_omittedrepealed", doc_id)
+                text = info.get("text", "")
+                title = title or info.get("title") or ""
+                date = iso_date(info.get("year"))
+                url = f"{BASE_URL}{API}/show_pdf_omittedrepealed/{doc_id}"
+                extra = {
+                    "document_class": "omitted_or_repealed",
+                    "category": raw.get("doc_type"),
+                    "status": raw.get("status"),
+                }
+            elif kind == "constitution":
+                info = self._pdf_text("retrieve_constitution", "")
+                text = info.get("text", "")
+                title = "Constitution of the Republic of Fiji (2013)"
+                date = "2013-09-07"
+                url = f"{BASE_URL}{API}/retrieve_constitution"
+                extra = {"document_class": "constitution"}
+            else:
+                return None
+        except Exception as e:
+            logger.warning(f"Failed {key}: {e}")
+            return None
+
+        if not text or len(text) < MIN_TEXT_CHARS:
+            logger.warning(f"Insufficient text for {key} ({len(text)} chars): {title[:60]}")
+            return None
+
+        record = {
+            "_id": "FJ/Laws/constitution" if kind == "constitution" else f"FJ/Laws/{kind}/{doc_id}",
             "_source": "FJ/Laws",
             "_type": "legislation",
             "_fetched_at": now,
-            "title": raw.get("title", "Unknown"),
-            "text": raw.get("text", ""),
-            "date": raw.get("last_updated"),
-            "url": raw.get("url", ""),
-            "act_id": act_id,
-            "section_count": raw.get("section_count", 0),
+            "title": title or f"Laws of Fiji {kind} {doc_id}",
+            "text": text,
+            "date": date,
+            "url": url,
+            "jurisdiction": "FJ",
+            "language": "en",
+            "publisher": "Office of the Attorney-General of Fiji",
         }
+        record.update({k: v for k, v in extra.items() if v is not None})
+
+        self._mark_done(key)
+        return record
 
     def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
-        all_acts = self._get_all_acts()
-        if not all_acts:
-            logger.error("No acts found")
-            return
+        inventory = self._inventory()
+        if not inventory:
+            raise RuntimeError("laws.gov.fj API returned an empty inventory")
 
-        count = 0
-        errors = 0
-
-        for i, act in enumerate(all_acts):
-            act_id = act["act_id"]
-            title = act["title"]
-
-            logger.info(f"  [{i + 1}/{len(all_acts)}] Processing: {title[:60]}")
-
-            full_text, last_updated = self._fetch_act_full_text(act_id, title)
-
-            if not full_text or len(full_text.strip()) < 50:
-                logger.warning(
-                    f"  Insufficient text for {act_id}: "
-                    f"{len(full_text) if full_text else 0} chars"
-                )
-                errors += 1
+        skipped = 0
+        for entry in inventory:
+            key = f"{entry['kind']}:{entry['id']}"
+            if key in self._done:
+                skipped += 1
                 continue
+            yield entry
 
-            act["text"] = full_text
-            act["last_updated"] = last_updated
-            act["section_count"] = len(self._get_section_ids(act_id))
-            yield act
-            count += 1
-
-        logger.info(f"Fetched {count} acts ({errors} errors)")
+        if skipped:
+            logger.info(f"Skipped {skipped} documents already in checkpoint")
+        self._flush_checkpoint()
 
     def fetch_updates(self, since: datetime) -> Generator[Dict[str, Any], None, None]:
-        yield from self.fetch_all()
+        """Re-fetch acts consolidated on/after `since`. PDFs are immutable once
+        published, so only the years from `since` onwards are re-pulled."""
+        cutoff = since.date().isoformat()
+        for entry in self._inventory():
+            if entry["kind"] == "act":
+                updated = iso_date(entry.get("last_updated"))
+                if updated is None or updated >= cutoff:
+                    yield entry
+            elif entry["kind"] == "published":
+                year = iso_date(entry.get("year"))
+                if year is None or year >= f"{cutoff[:4]}-01-01":
+                    yield entry
 
 
 # ── CLI ──────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    scraper = FijiLawsScraper()
-
     if len(sys.argv) < 2:
-        print("Usage: python bootstrap.py [bootstrap|update|test] [--sample]")
+        print("Usage: python bootstrap.py [bootstrap|bootstrap-fast|update|test] "
+              "[--sample|--full]")
         sys.exit(1)
 
     command = sys.argv[1]
-    sample_mode = "--sample" in sys.argv
+    sample_mode = "--sample" in sys.argv or (
+        command == "bootstrap" and "--full" not in sys.argv
+    )
+
+    scraper = FijiLawsScraper()
+    if sample_mode or command == "test":
+        scraper._checkpoint_enabled = False
 
     if command == "test":
-        logger.info("Testing act listing...")
-        acts = scraper._get_all_acts()
-        if not acts:
-            logger.error("FAILED — no acts found")
+        inv = scraper._inventory()
+        if not inv:
+            logger.error("FAILED — empty inventory")
             sys.exit(1)
-        logger.info(f"OK — {len(acts)} acts found")
-
-        logger.info("Testing section fetch...")
-        first = acts[0]
-        section_ids = scraper._get_section_ids(first["act_id"])
-        if not section_ids:
-            logger.error(f"FAILED — no sections for {first['title']}")
+        probe = scraper.normalize(next(e for e in inv if e["kind"] == "act"))
+        if not probe:
+            logger.error("FAILED — could not assemble a sample act")
             sys.exit(1)
-        logger.info(f"OK — {len(section_ids)} sections for: {first['title']}")
+        print(f"Inventory OK: {len(inv)} documents")
+        print(f"Sample act: {probe['title']} — {len(probe['text'])} chars")
+        sys.exit(0)
 
-        text, date = scraper._fetch_section_text(section_ids[0])
-        logger.info(f"OK — section text: {len(text)} chars, date: {date}")
-
-    elif command == "bootstrap":
+    if command == "bootstrap":
         scraper.bootstrap(sample_mode=sample_mode, sample_size=15)
+    elif command in ("bootstrap-fast", "bootstrap_fast"):
+        scraper.bootstrap_fast()
     elif command == "update":
         scraper.bootstrap(sample_mode=False)
     else:

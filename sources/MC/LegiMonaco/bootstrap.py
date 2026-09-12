@@ -30,6 +30,10 @@ ES_URL = "https://legimonaco.mc/~~search/depot/_search"
 BASE_URL = "https://legimonaco.mc"
 RATE_LIMIT_DELAY = 1  # seconds between requests
 PAGE_SIZE = 100
+# ~1,810 of the 21,540 indexed resources carry an empty enBody; their detail page
+# and PDF hold only a metadata card, no body. Those are dropped as metadata-only,
+# along with the odd 1-character stub.
+MIN_TEXT_CHARS = 20
 HEADERS = {
     "Content-Type": "application/json",
     "User-Agent": "LegalDataHunter/1.0 (legal-data-collection)"
@@ -188,8 +192,11 @@ def normalize(hit: dict) -> dict:
     es_id = hit["_id"]
     doc_type = src.get("type", "")
 
-    # Get full text from enBody
+    # Get full text from enBody. A handful of records carry it as a list of
+    # section strings rather than one blob, so flatten before use.
     text = src.get("enBody", "")
+    if isinstance(text, list):
+        text = "\n\n".join(str(part) for part in text if part)
     if not text:
         # Try caseAbstract as fallback for case law
         text = clean_html(src.get("caseAbstract", ""))
@@ -243,7 +250,7 @@ def bootstrap_sample(sample_dir: Path, count: int = 100) -> None:
     for hit in fetch_all(max_docs=count):
         record = normalize(hit)
 
-        if not record["text"]:
+        if len(record["text"]) < MIN_TEXT_CHARS:
             empty_text += 1
             continue
 
@@ -307,7 +314,7 @@ def bootstrap_fast(batch_size: int = 100):
 
     for hit in fetch_all():
         record = normalize(hit)
-        if not record["text"]:
+        if len(record["text"]) < MIN_TEXT_CHARS:
             total_skipped += 1
             continue
 
@@ -334,7 +341,7 @@ def main():
     if len(sys.argv) < 2:
         print("Usage: python bootstrap.py <command> [options]")
         print("Commands: bootstrap, bootstrap-fast, fetch, updates")
-        print("Options: --sample, --count N, --since YYYY-MM-DD")
+        print("Options: --sample, --full, --count N, --since YYYY-MM-DD")
         sys.exit(1)
 
     command = sys.argv[1]
@@ -355,16 +362,10 @@ def main():
         if sample_mode:
             bootstrap_sample(sample_dir, count)
         else:
-            written = 0
-            empty = 0
-            for hit in fetch_all():
-                record = normalize(hit)
-                if record["text"]:
-                    print(json.dumps(record, ensure_ascii=False))
-                    written += 1
-                else:
-                    empty += 1
-            print(f"Bootstrap complete: {written} records written, {empty} skipped (no text)", file=sys.stderr)
+            # The full path must persist to data/records.jsonl, not stdout: the fleet
+            # wrapper invokes `bootstrap --full` and then ingests data/records.jsonl.
+            # Printing to stdout looked like "21,136 fetched / 0 written" (issue #1454).
+            bootstrap_fast()
 
     elif command == "bootstrap-fast":
         batch_size = 100
@@ -376,7 +377,7 @@ def main():
     elif command == "fetch":
         for hit in fetch_all(max_docs=count if sample_mode else None):
             record = normalize(hit)
-            if record["text"]:
+            if len(record["text"]) >= MIN_TEXT_CHARS:
                 print(json.dumps(record, ensure_ascii=False))
 
     elif command == "updates":
@@ -386,7 +387,7 @@ def main():
         since = datetime.fromisoformat(since_str)
         for hit in fetch_updates(since):
             record = normalize(hit)
-            if record["text"]:
+            if len(record["text"]) >= MIN_TEXT_CHARS:
                 print(json.dumps(record, ensure_ascii=False))
 
     else:

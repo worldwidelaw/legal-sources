@@ -58,7 +58,7 @@ data_model:
   update_strategy: "append_only"
   versioning: "none"
   dedup_key:
-    - "document_uuid"
+    - "_id"
 
 # ── Schema ────────────────────────────────────────────────────────
 schema:

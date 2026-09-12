@@ -204,12 +204,62 @@ def fetch_document(doc_id: str) -> Optional[dict]:
     }
 
 
-def _fetch_year(year: int) -> Generator[dict, None, None]:
-    """Fetch all documents for a single calendar year."""
+# ---------------------------------------------------------------------------
+# Checkpoint / resume
+#
+# Issue #1104: the fleet relaunches the (100h) full bootstrap on crash/timeout.
+# Without a checkpoint every relaunch re-walks from 1990 and re-appends the same
+# early-year records to data/records.jsonl, so the loader saw ~43 copies of the
+# first ~5,329 docs (5,329 written of 229,900 "fetched").  The checkpoint records
+# which calendar years are fully done and how far into the in-progress year we
+# got, so a relaunch skips completed years (no network calls) and resumes the
+# current year at the right page.  Kept next to the module so it survives the
+# fleet's temp CWD.
+# ---------------------------------------------------------------------------
+CHECKPOINT_PATH = Path(__file__).parent / "hr_allcourts_checkpoint.json"
+
+
+def _load_checkpoint() -> dict:
+    try:
+        with open(CHECKPOINT_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        return {
+            "completed_years": set(data.get("completed_years", [])),
+            "current_year": data.get("current_year"),
+            "current_page": data.get("current_page", 1),
+        }
+    except (FileNotFoundError, json.JSONDecodeError, ValueError):
+        return {"completed_years": set(), "current_year": None, "current_page": 1}
+
+
+def _save_checkpoint(state: dict) -> None:
+    tmp = CHECKPOINT_PATH.with_suffix(".json.tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "completed_years": sorted(state["completed_years"]),
+                "current_year": state["current_year"],
+                "current_page": state["current_page"],
+            },
+            f,
+        )
+    tmp.replace(CHECKPOINT_PATH)
+
+
+def _fetch_year(
+    year: int,
+    start_page: int = 1,
+    on_page: Optional[Any] = None,
+) -> Generator[dict, None, None]:
+    """Fetch all documents for a single calendar year.
+
+    Resumes at ``start_page`` and, after each page is fully yielded, invokes
+    ``on_page(next_page)`` so the caller can persist a checkpoint.
+    """
     dd_from = f"1.1.{year}."
     dd_to = f"31.12.{year}."
 
-    page = 1
+    page = start_page
     empty_pages = 0
     year_count = 0
 
@@ -230,6 +280,8 @@ def _fetch_year(year: int) -> Generator[dict, None, None]:
                 year_count += 1
 
         page += 1
+        if on_page is not None:
+            on_page(page)
 
     if year_count:
         print(f"  Year {year}: {year_count} documents", file=sys.stderr)
@@ -242,18 +294,58 @@ def fetch_all() -> Generator[dict, None, None]:
     The search endpoint caps results at ~10K per query.  By filtering
     each request to a single calendar year (``dd_from``/``dd_to`` in
     ``D.M.YYYY.`` format) every partition stays well under the cap.
+
+    Resume-safe: years are walked oldest-first (append-at-tail) and a
+    checkpoint (see ``CHECKPOINT_PATH``) records completed years plus the
+    in-progress page so a relaunch does not re-walk finished years.
     """
     current_year = datetime.now().year
     # Croatian court decisions available from ~1990 onwards
     years = list(range(1990, current_year + 1))
 
+    ckpt = _load_checkpoint()
+    completed = ckpt["completed_years"]
+    if completed:
+        print(
+            f"Resuming: {len(completed)} year(s) already complete, "
+            f"in-progress year={ckpt['current_year']} page={ckpt['current_page']}",
+            file=sys.stderr,
+        )
+
     total = 0
     for year in years:
-        print(f"Fetching year {year}...", file=sys.stderr)
+        if year in completed:
+            continue
+
+        # Resume mid-year only for the year we were last working on.
+        if year == ckpt["current_year"]:
+            start_page = ckpt["current_page"]
+        else:
+            start_page = 1
+
+        print(f"Fetching year {year} (from page {start_page})...", file=sys.stderr)
         before = total
-        for doc in _fetch_year(year):
+
+        def _on_page(next_page: int, _year: int = year) -> None:
+            ckpt["current_year"] = _year
+            ckpt["current_page"] = next_page
+            _save_checkpoint(
+                {
+                    "completed_years": completed,
+                    "current_year": _year,
+                    "current_page": next_page,
+                }
+            )
+
+        for doc in _fetch_year(year, start_page=start_page, on_page=_on_page):
             yield doc
             total += 1
+
+        # Year finished — mark complete and reset the in-progress pointer.
+        completed.add(year)
+        _save_checkpoint(
+            {"completed_years": completed, "current_year": None, "current_page": 1}
+        )
 
         year_docs = total - before
         if year_docs == 0:
@@ -371,12 +463,50 @@ def bootstrap_sample(count: int = 12) -> list[dict]:
     return documents
 
 
+def _records_jsonl_path() -> Path:
+    data_dir = Path(__file__).parent / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    return data_dir / "records.jsonl"
+
+
+def bootstrap_full() -> int:
+    """Stream the whole corpus to ``data/records.jsonl``.
+
+    Issue #1487: this used to print records to stdout only, so the fleet's
+    2.5-day crawl died mid-run (~162.5K records) with nothing on disk.  Every
+    record is written and flushed immediately, and the file is appended to when
+    the checkpoint says we are resuming a partially-walked corpus, so a crash
+    costs at most the page that was in flight rather than the whole run.
+    """
+    jsonl_path = _records_jsonl_path()
+
+    ckpt = _load_checkpoint()
+    resuming = bool(ckpt["completed_years"]) or ckpt["current_year"] is not None
+    mode = "a" if (resuming and jsonl_path.exists()) else "w"
+    if mode == "a":
+        print(f"Resuming: appending to existing {jsonl_path}", file=sys.stderr)
+
+    count = 0
+    with open(jsonl_path, mode, encoding="utf-8") as f:
+        for doc in fetch_all():
+            f.write(json.dumps(doc, ensure_ascii=False) + "\n")
+            # Flush per record: the fleet kills long crawls (OOM/timeout) and a
+            # buffered write would take the whole run's output with it.
+            f.flush()
+            count += 1
+            if count % 100 == 0:
+                print(f"Progress: {count} records written", file=sys.stderr)
+
+    print(f"Full bootstrap complete: {count} records -> {jsonl_path}", file=sys.stderr)
+    return count
+
+
 def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='HR/AllCourts - Croatian Court Decisions')
-    parser.add_argument('command', choices=['test', 'bootstrap', 'update'],
-                        help='Command to run')
+    parser.add_argument('command', choices=['test', 'bootstrap', 'bootstrap-fast', 'update'],
+                        help='Command to run (bootstrap-fast is the fleet pipeline alias)')
     parser.add_argument('--sample', action='store_true',
                         help='Fetch sample data only (for testing)')
     parser.add_argument('--since', type=str,
@@ -389,16 +519,11 @@ def main():
         success = test_connection()
         sys.exit(0 if success else 1)
 
-    elif args.command == 'bootstrap':
+    elif args.command in ('bootstrap', 'bootstrap-fast'):
         if args.sample:
             bootstrap_sample(12)
         else:
-            count = 0
-            for doc in fetch_all():
-                print(json.dumps(doc, ensure_ascii=False))
-                count += 1
-                if count % 100 == 0:
-                    print(f"Processed {count} documents", file=sys.stderr)
+            bootstrap_full()
 
     elif args.command == 'update':
         since = args.since or datetime.now(timezone.utc).replace(day=1).isoformat()

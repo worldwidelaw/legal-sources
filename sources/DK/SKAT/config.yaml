@@ -13,15 +13,20 @@ auth:
   type: none
 
 rate_limit:
-  requests_per_second: 1
-  burst: 3
+  requests_per_second: 2
+  burst: 5
+  max_workers: 5
+  min_rate: 0.5
+  max_rate: 8
 
 api:
   type: rest
   base_url: https://www.retsinformation.dk
   format: xml
   endpoints:
-    eli_retsinfo: "/eli/retsinfo/{year}/{number}/dan/xml"
+    # Enumeration: dt=230 is the "Afgørelse" (AFG) document type
+    search: "/api/documentsearch?ps=100&dt=230&page={page}"
+    eli_xml: "{retsinfo_link}/dan/xml"
 
 schema:
   key_fields:
@@ -42,11 +47,10 @@ schema:
       required: false
 
 fetch:
-  strategy: scan_years
-  year_start: 2020
-  year_end: current
-  number_start: 9000
-  number_end: 11000
-  filter_ministry: Skatteministeriet
-  filter_document_types:
-    - AFG  # Afgørelser (Decisions/Rulings)
+  # Enumerate via the Retsinformation search API instead of blind-scanning the
+  # /eli/retsinfo/{year}/{number} number space (issue #1389).
+  strategy: search_api
+  document_type_id: 230  # AFG - Afgørelser (Decisions/Rulings)
+  page_size: 100
+  filter_ressort_contains: skatte  # Skatteministeriet / Skatte- og Vækstministeriet
+  coverage: 1954-present

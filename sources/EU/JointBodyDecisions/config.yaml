@@ -1,0 +1,59 @@
+source:
+  id: "EU/JointBodyDecisions"
+  name: "EU — Decisions of Bodies Established by International Agreements"
+  country: "EU"
+  language: "en"
+
+  # Full text is retrieved from the EU Publications Office (CELLAR / EUR-Lex),
+  # where the external-relations decisions taken to administer and extend EU
+  # international agreements are stored with a CELEX number in sector 2, document
+  # class "D" — 2{YYYY}D{NNNN} (e.g. 22026D1299, EEA Joint Committee Decision No
+  # 107/2026). The corpus is dominated by decisions of the joint bodies set up by
+  # EU agreements — above all the EEA Joint Committee (which incorporates EU
+  # legislation into the EEA Agreement, extending it to Norway, Iceland and
+  # Liechtenstein) — together with Association Council and Cooperation Council
+  # decisions under EU association/partnership agreements, plus Council decisions
+  # in external relations. A distinct, additive corpus to EU/EUR-Lex (sector-3
+  # legislation) and EU/InternationalAgreements (sector-2 A agreement texts).
+  # Enumeration is via the public CELLAR SPARQL endpoint (the "D" corpus is
+  # ~8,900 rows, under the ~10K OFFSET ceiling); full text via CELLAR content
+  # negotiation (Accept application/xhtml+xml, Accept-Language en), which bypasses
+  # the eur-lex.europa.eu AWS-WAF that 202-challenges datacenter IPs, so it is
+  # fleet-safe. Same recipe as EU/InternationalAgreements.
+  endpoints:
+    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
+    cellar_celex: "http://publications.europa.eu/resource/celex/{celex}"
+
+  data_types:
+    - legislation
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1
+
+  schema:
+    key_fields:
+      _id:
+        type: string
+        required: true
+      title:
+        type: string
+        required: true
+      text:
+        type: string
+        required: true
+      date:
+        type: date
+        required: false
+
+fetch:
+  sample_count: 15
+
+license:
+  name: "EU institutional reuse (Decision 2011/833/EU)"
+  url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "EU external-relations decisions published by the Publications Office are reusable, including for commercial purposes, under the Commission's reuse policy (Decision 2011/833/EU). Attribution to the source is requested."

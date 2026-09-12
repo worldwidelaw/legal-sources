@@ -75,7 +75,10 @@ schema:
       role: "classification"
       required: true
     - name: "date"
-      description: "Date fetched (ISO 8601)"
+      description: >-
+        Enactment date (ISO 8601), taken from the newest year in the section's
+        own acts-of-assembly citation or Virginia Register effective note.
+        Stable across crawls; Constitution sections fall back to 1971-07-01.
       type: "date"
       role: "temporal_key"
       required: true
@@ -86,3 +89,7 @@ notes: |
   - Constitution: 12 articles with sections
   - All full text via Body field (HTML cleaned to plain text)
   - Public domain, no auth needed
+  - Incremental refresh compares upstream body hashes held in
+    data/va_law_state.json; the portal publishes no modified stamp on any
+    endpoint and its bulk CSVs lag the API by a year (#1502). Keep the
+    workdir between refreshes or the first one re-yields the whole corpus.

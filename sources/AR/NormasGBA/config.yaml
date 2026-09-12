@@ -7,9 +7,11 @@ fetcher:
   - Disposition
   - GeneralOrdinance
   - JointResolution
-  max_results_per_query: 190
-  pagination: weekly_date_ranges
-  rate_limit_seconds: 1.5
+  first_day: '1800-01-01'
+  max_results_per_query: 200
+  pagination: adaptive_date_windows
+  rate_limit_seconds: 0.8
+  checkpoint: data/checkpoint.json
   strategy: html_scraping
 schema:
   key_fields:

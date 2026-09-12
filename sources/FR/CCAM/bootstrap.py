@@ -87,6 +87,14 @@ LEGISLATION_PATTERNS = (
 
 MIN_TEXT_CHARS = 300  # below this we treat the PDF as scanned / empty
 
+# Fail-loud guards. The portal is a small, stable set of documents (20 distinct
+# PDFs as of 2026-08-26), so a crawl that comes back near-empty means ameli.fr
+# refused this client — not that the CCAM stopped publishing.
+KNOWN_PDF_COUNT = 20
+MIN_EXPECTED_PDFS = 10
+RETRIES = 3
+BLOCK_STATUSES = {401, 403, 407, 429, 451}
+
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -103,6 +111,11 @@ FR_MONTHS = {
     "août": "08", "septembre": "09", "octobre": "10", "novembre": "11",
     "decembre": "12", "décembre": "12",
 }
+
+
+class SourceBlockedError(RuntimeError):
+    """Raised when ameli.fr refuses this client, so an empty crawl is never
+    reported as a successful zero-document run."""
 
 
 class CCAMScraper(BaseScraper):
@@ -124,21 +137,39 @@ class CCAMScraper(BaseScraper):
     def _get(self, path: str) -> str:
         """Fetch a CCAM page. The TYPO3 site soft-errors (HTTP 500) on some
         sub-pages but still returns the full rendered body, so we read the body
-        regardless of status code. Charset is ISO-8859-1."""
+        regardless of status code. Charset is ISO-8859-1.
+
+        Returns "" when the page could not be read. A refusal status
+        (403/429/451…) raises instead, so a WAF/datacenter-IP block never looks
+        like an empty site."""
         url = path if path.startswith("http") else BASE + path
-        try:
-            r = self.session.get(url, timeout=60)
-        except requests.RequestException as e:
-            logger.warning(f"GET {path} failed: {e}")
-            return ""
-        return r.content.decode("iso-8859-1", "replace")
+        last_err = None
+        for attempt in range(RETRIES):
+            try:
+                r = self.session.get(url, timeout=60)
+            except requests.RequestException as e:
+                last_err = e
+                time.sleep(2 * (attempt + 1))
+                continue
+            if r.status_code in BLOCK_STATUSES:
+                raise SourceBlockedError(
+                    f"www.ameli.fr returned HTTP {r.status_code} for {url}. The CCAM "
+                    "portal is refusing this client (WAF / datacenter-IP block); "
+                    "failing loudly instead of crawling an apparently empty site."
+                )
+            return r.content.decode("iso-8859-1", "replace")
+        logger.warning(f"GET {path} failed after {RETRIES} attempts: {last_err}")
+        return ""
 
     def _discover_pages(self) -> list[str]:
         """Walk the seed pages to collect every règles-de-facturation /
         telechargement sub-page URL."""
         pages: set[str] = set(SEED_PAGES)
+        readable = 0
         for seed in SEED_PAGES:
             html = self._get(seed)
+            if html.strip():
+                readable += 1
             for href in re.findall(
                 r'href=["\']([^"\']*(?:regles-de-facturation|telechargement)[^"\']*\.php)["\']',
                 html,
@@ -146,6 +177,12 @@ class CCAMScraper(BaseScraper):
                 if href.startswith("/"):
                     pages.add(href)
             time.sleep(0.2)
+        if not readable:
+            raise SourceBlockedError(
+                f"None of the {len(SEED_PAGES)} CCAM seed pages under {BASE}{ROOT} "
+                "returned a body. The portal is unreachable from this vantage "
+                "(connection reset / timeout), not empty."
+            )
         return sorted(pages)
 
     def _discover_pdfs(self) -> list[dict]:
@@ -176,6 +213,16 @@ class CCAMScraper(BaseScraper):
                     "link_text": link_text,
                 }
             time.sleep(0.2)
+        if len(docs) < MIN_EXPECTED_PDFS:
+            raise SourceBlockedError(
+                f"Discovered only {len(docs)} PDF documents under "
+                f"{BASE}/fileadmin/user_upload/documents/, but the CCAM portal "
+                f"publishes about {KNOWN_PDF_COUNT} (nomenclature versions, "
+                "CAMNOTE release notes, the Liste des actes et des prestations and "
+                "the methodology fiches). Either ameli.fr is serving this client a "
+                "stripped page or the link markup changed — failing loudly instead "
+                "of reporting a near-empty corpus."
+            )
         logger.info(f"Discovered {len(docs)} distinct PDF documents")
         return list(docs.values())
 
@@ -325,6 +372,14 @@ def main():
 
     scraper = CCAMScraper()
 
+    try:
+        run(scraper, args)
+    except SourceBlockedError as e:
+        logger.error(f"Source blocked: {e}")
+        sys.exit(1)
+
+
+def run(scraper: "CCAMScraper", args) -> None:
     if args.command == "test":
         docs = scraper._discover_pdfs()
         logger.info(f"OK: discovered {len(docs)} PDF documents")

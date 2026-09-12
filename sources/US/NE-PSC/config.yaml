@@ -1,0 +1,113 @@
+# ===================================================================
+# US/NE-PSC -- Nebraska Public Service Commission Orders
+# ===================================================================
+# Full text of Orders issued by the Nebraska Public Service Commission
+# (NPSC) adjudicating dockets across telecommunications, natural gas,
+# grain warehouse/dealer, housing (manufactured/modular), transportation
+# (household goods / passenger carriers), State 911 and administrative
+# rulemaking. Each Order is an administrative adjudication / edict of a
+# specific docket = case_law. Public domain (US state government edict).
+# Published openly as born-digital PDFs via the NPSC Order Search
+# (nebraska.gov/psc/ordersearch). No authentication.
+# ===================================================================
+
+source:
+  id: "US/NE-PSC"
+  country: "US"
+  name: "Nebraska Public Service Commission — Orders"
+  url: "https://www.nebraska.gov/psc/ordersearch/user/index.cgi"
+  description: |
+    Orders issued by the Nebraska Public Service Commission (NPSC)
+    resolving dockets across telecommunications, natural gas, grain
+    warehouse / grain dealer matters, manufactured / modular housing,
+    transportation (household-goods and passenger carriers), State 911
+    and administrative rules-and-regulations proceedings. Each Order is
+    an administrative adjudication of a specific docket (case_law).
+    Records are available from May 27, 1980 to present. Full text is
+    extracted from the born-digital Order PDFs.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 5
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.nebraska.gov"
+  endpoints:
+    search: "/psc/ordersearch/user/index.cgi"
+    order_pdf: "/psc/orders/{path}"
+
+data_model:
+  type: "case_law"
+  primary_key: "doc_key"
+  update_strategy: "upsert"
+  dedup_key:
+    - "doc_key"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "doc_key"
+      description: "Order document key = PDF path under /psc/orders/ without extension, e.g. 'telecom/NUSF-77.03.1'"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "Docket number parsed from the filename / body, e.g. 'NUSF-77', 'C-4972', 'RR-171', 'NG-0087'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "department"
+      description: "NPSC department/division inferred from the storage subdirectory (Telecommunications, Natural Gas, Grain, Housing, Transportation, Administration, State 911)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Docket number plus the 'In the Matter of ...' subject line"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Order extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Entered/issued date of the Order (ISO 8601), parsed from the PDF body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Nebraska)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Nebraska Public Service Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - Enumeration uses the NPSC Order Search keyword index
+    (nebraska.gov/psc/ordersearch/user/index.cgi). A POST with
+    sbkw=commission returns paginated result cards (10 per page via the
+    AJAX page/size/next params); every genuine Order PDF carries the
+    "NEBRASKA PUBLIC SERVICE COMMISSION" header, so the broad keyword
+    "commission" is the site's own full-text index over the whole corpus
+    (~14,400 Orders back to 1980).
+  - Each result card links directly to the born-digital Order PDF at
+    /psc/orders/{subdir}/{file}.pdf (subdirs: telecom, ntips, natgas,
+    grain, housing, tran, admin, ...). normalize() downloads the PDF and
+    extracts full text via fitz/PyMuPDF; the entered date and docket
+    number are parsed from the PDF body / filename.
+  - Directory browsing of the subdirectories is disabled (403), so the
+    keyword index is the enumeration path; individual PDF files are
+    served openly (200).
+  - Public domain Nebraska government data.

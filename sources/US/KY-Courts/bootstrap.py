@@ -306,6 +306,13 @@ class KYCourtsScraper(BaseScraper):
         if short_title:
             short_title = short_title.replace("\r\n", " ").replace("\n", " ").strip()
 
+        # Fallback: some opinions (e.g. unpublished CA orders) have no shortTitle,
+        # yielding an empty title that violates the case_law.title NOT NULL constraint
+        # and aborts the whole ingest batch. Derive a non-empty title from the court
+        # and case number so every record is ingestable.
+        if not short_title:
+            short_title = f"{court_name} {opinion_meta['case_number']}".strip() or opinion_meta["case_number"]
+
         return {
             "docket_entry_id": docket_entry_id,
             "case_id": case_id,
@@ -495,4 +502,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

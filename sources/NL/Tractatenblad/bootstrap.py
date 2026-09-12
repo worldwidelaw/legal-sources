@@ -48,7 +48,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 import requests
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 logging.basicConfig(
     level=logging.INFO,
@@ -386,6 +386,7 @@ class NLTractatenbladScraper(BaseScraper):
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
         # SRU supports dt.modified filtering; enumerate and filter client-side by
         # modification date to keep the query simple and robust.
+        since = as_date_str(since)  # update() passes a datetime; #1512
         for raw in self._paginate():
             mod = raw.get("date_modified", "")
             if mod and mod < since:

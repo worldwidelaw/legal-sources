@@ -6,7 +6,7 @@
 #
 # Discovery: Browse listing at /en/LegislationPortal/Acts/By-Title
 # Full text: PDF download via /api/sitecore/Act/PDF?id={NUMERIC_ID}
-# Format: PDF extracted via pypdf
+# Format: PDF extracted via PyMuPDF (fallback: pdfplumber, then pypdf)
 # License: Crown copyright, free public access (non-official reproduction OK)
 # ===================================================================
 
@@ -26,9 +26,26 @@ data_types:
 auth:
   type: "none"
 
+license:
+  name: "Northern Territory legislation copyright policy"
+  url: "https://legislation.nt.gov.au/en/Footer/Terms-of-Use"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Crown copyright owned by the Northern Territory, which grants blanket
+    permission to republish NT legislation provided the publication does not
+    indicate it is an official version, does not use the arms of the Northern
+    Territory, and reproduces the material accurately without misleading.
+    Permission is revocable on reasonable notice. Not a Creative Commons licence.
+
 rate_limit:
-  requests_per_second: 0.1
-  burst: 1
+  # Each document costs two requests (page + on-demand PDF render, ~3-20 s),
+  # so throughput is bound by max_workers, not by the submit rate.
+  requests_per_second: 1.0
+  burst: 3
+  max_workers: 5
 
 api:
   type: "pdf_download"
@@ -76,6 +93,9 @@ schema:
 notes: |
   - PDF full text via /api/sitecore/Act/PDF?id={NUMERIC_ID}
   - Browse listing at /en/LegislationPortal/Acts/By-Title and /Subordinate-Legislation/By-Title
-  - No crawl-delay in robots.txt but 10-second delay for courtesy
+  - PDFs are rendered on demand with no server-side cache, so the download
+    happens in normalize() and bootstrap-fast overlaps it across 5 workers
+  - Every request runs under a wall-clock deadline (issue #1383); a run that
+    stalls can be resumed from data/records.jsonl
   - Crown copyright, free public access
   - ~385 Acts + ~304 subordinate legislation = ~689 documents

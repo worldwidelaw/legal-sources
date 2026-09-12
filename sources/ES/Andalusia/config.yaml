@@ -11,13 +11,16 @@ source:
   license: CC BY 4.0
 
 api:
-  base_url: https://datos.juntadeandalucia.es/api/v0/boja
+  base_url: https://www.juntadeandalucia.es/ssdigitales/datasets/contentapi
   endpoints:
-    all: /all?year={year}&format=json
+    search: "/search/boja.json?q=data.t_year:{year} AND data.t_number:{number}&_source=data.*&size=50&from={offset}"
 
+# Issue-level partitioning means many small requests instead of one 25 MB
+# per-year dump, so the sustained rate is higher than it was for the bulk path.
 rate_limit:
-  requests_per_second: 0.5
-  burst: 2
+  requests_per_second: 4.0
+  burst: 8
+  max_workers: 6
 
 schema:
   key_fields:
@@ -36,7 +39,7 @@ schema:
 
 coverage:
   temporal:
-    start: 2015-01-01
+    start: 1980-01-01
     end: present
   document_types:
     - Órdenes
@@ -45,10 +48,13 @@ coverage:
     - Leyes
     - Acuerdos
     - Convenios
-  estimated_count: 25000+
+  estimated_count: 250000+
 
 notes: |
   Boletín Oficial de la Junta de Andalucía (BOJA).
-  Full text available via REST API in JSON format.
-  Data available from 2015 onwards.
-  Approximately 2,000-2,500 dispositions per year.
+  Full text (data.t_bodyNoHtml) comes from the official dataset search API.
+  Data available from 1980 onwards; ~2,000-8,000 dispositions per year.
+  Queries are partitioned by gazette issue so no year hits the API's
+  10,000-hit window cap. The per-year bulk dump
+  (api/v0/boja/all?year=YYYY) is NOT used: it 404s for 2017 and earlier
+  and drops connections on the larger years (issue #1482).

@@ -50,7 +50,7 @@ from bs4 import BeautifulSoup
 ROOT_DIR = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
-from common.base_scraper import BaseScraper  # noqa: E402
+from common.base_scraper import BaseScraper, as_date_str  # noqa: E402
 from common.pdf_extract import extract_pdf_markdown  # noqa: E402
 
 logging.basicConfig(
@@ -224,6 +224,7 @@ class WVLegalEthicsScraper(BaseScraper):
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        since = as_date_str(since)  # update() passes a datetime; #1512
         for raw in self.fetch_all():
             if not since or (raw.get("year")
                              and f"{raw['year']:04d}-01-01" >= since):

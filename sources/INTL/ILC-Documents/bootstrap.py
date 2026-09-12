@@ -13,9 +13,9 @@ Strategy:
   - ~100-150 documents total (draft articles + commentaries + conventions)
 
 Usage:
-  python bootstrap.py bootstrap          # Full initial pull
-  python bootstrap.py bootstrap --sample # Fetch 15 sample records
-  python bootstrap.py bootstrap-fast     # Alias for bootstrap --sample
+  python bootstrap.py bootstrap          # Full pull -> data/records.jsonl
+  python bootstrap.py bootstrap --sample # Fetch 15 sample records -> sample/
+  python bootstrap.py bootstrap-fast     # Alias for the full bootstrap (fleet entry point)
   python bootstrap.py test               # Quick connectivity test
 """
 
@@ -69,6 +69,40 @@ CATEGORY_MAP = {
 }
 
 
+def _pdf_stem(pdf_url: str) -> str:
+    """Filename of a PDF link without directory or extension."""
+    return pdf_url.split("?")[0].split("/")[-1].rsplit(".", 1)[0]
+
+
+def _year_from_pdf_url(pdf_url: str) -> Optional[str]:
+    """Year of adoption, taken from anywhere in the PDF filename.
+
+    Many filenames carry a trailing qualifier after the year
+    (``8_1_1958_territorial_sea.pdf``), so anchoring the year to ``.pdf``
+    left a fifth of the corpus with no date at all.
+    """
+    years = [y for y in re.findall(r'(?:19|20)\d{2}', _pdf_stem(pdf_url))
+             if 1945 <= int(y) <= datetime.now(timezone.utc).year]
+    return years[-1] if years else None
+
+
+def _id_suffix(pdf_url: str, topic_id: str, year: Optional[str]) -> str:
+    """Distinguish sibling PDFs that share a topic, type and year.
+
+    A topic can publish several instruments in one year — the 1958 Law of the
+    Sea topic alone has five conventions — and they only differ by the tail of
+    the filename. Strip the parts already encoded in the _id (the topic id
+    prefix and the year) and keep the rest.
+    """
+    parts = [p for p in _pdf_stem(pdf_url).split("_") if p]
+    topic_parts = topic_id.split("_")
+    if parts[:len(topic_parts)] == topic_parts:
+        parts = parts[len(topic_parts):]
+    if year and year in parts:
+        parts.remove(year)
+    return "_".join(parts)
+
+
 class ILCDocumentsScraper(BaseScraper):
     SOURCE_ID = "INTL/ILC-Documents"
 
@@ -83,6 +117,11 @@ class ILCDocumentsScraper(BaseScraper):
             try:
                 resp = self.session.get(url, timeout=60)
                 resp.raise_for_status()
+                # legal.un.org serves UTF-8 pages as bare "text/html" with no
+                # charset, so requests falls back to ISO-8859-1 and mangles every
+                # accented topic title ("régime" -> "rÃ©gime").
+                if "charset" not in resp.headers.get("Content-Type", "").lower():
+                    resp.encoding = resp.apparent_encoding or "utf-8"
                 return resp.text
             except requests.RequestException as e:
                 if attempt == 2:
@@ -220,11 +259,11 @@ class ILCDocumentsScraper(BaseScraper):
             else:
                 pdf_url = urljoin(topic["url"], href)
 
-            # Extract year from filename
-            year_match = re.search(r'(\d{4})\.pdf', pdf_url)
-            year = year_match.group(1) if year_match else None
+            year = _year_from_pdf_url(pdf_url)
 
-            link_text = link.get_text(strip=True)
+            # Topic pages wrap link labels over several lines, so collapse runs
+            # of whitespace ("Convention on the   High   Seas").
+            link_text = re.sub(r'\s+', ' ', link.get_text(strip=True))
 
             documents.append({
                 "pdf_url": pdf_url,
@@ -273,10 +312,16 @@ class ILCDocumentsScraper(BaseScraper):
                     logger.warning("  Skipping (insufficient text): %s", pdf_url)
                     continue
 
-                # Build title
-                type_label = doc["doc_type"].replace("_", " ").title()
-                title = f"{doc['topic_title']} — {type_label}"
-                if doc["year"]:
+                # The link label is the instrument's own name ("Convention on
+                # the High Seas"); the topic/type pair is only a fallback since
+                # it is identical for every sibling PDF under a topic.
+                link_text = doc.get("link_text", "")
+                if len(link_text) > 3 and link_text.lower() != "statute":
+                    title = link_text
+                else:
+                    type_label = doc["doc_type"].replace("_", " ").title()
+                    title = f"{doc['topic_title']} — {type_label}"
+                if doc["year"] and doc["year"] not in title:
                     title += f" ({doc['year']})"
 
                 yield {
@@ -299,11 +344,14 @@ class ILCDocumentsScraper(BaseScraper):
     def normalize(self, raw: dict) -> dict:
         topic_id = raw["topic_id"]
         doc_type = raw["doc_type"]
-        year = raw.get("year", "unknown")
+        year = raw.get("year") or "unknown"
         safe_id = f"ILC-{topic_id}-{doc_type}-{year}"
+        suffix = _id_suffix(raw["pdf_url"], topic_id, raw.get("year"))
+        if suffix:
+            safe_id += f"-{suffix}"
         safe_id = re.sub(r'[^a-zA-Z0-9_-]', '_', safe_id)
 
-        date_str = f"{year}-01-01" if year and year != "unknown" else None
+        date_str = f"{year}-01-01" if year != "unknown" else None
 
         return {
             "_id": safe_id,
@@ -321,7 +369,20 @@ class ILCDocumentsScraper(BaseScraper):
             "topic_category": raw["category"],
         }
 
-    def run_bootstrap(self, sample: bool = False):
+    def run_bootstrap(self, sample: bool = False, sample_size: int = 15):
+        """Sample mode writes JSON files to sample/; full mode streams the whole
+        corpus to data/records.jsonl via BaseScraper.bootstrap()."""
+        if not sample:
+            stats = self.bootstrap()
+            logger.info(
+                "Bootstrap complete: %d fetched, %d new, %d updated, %d errors",
+                stats["records_fetched"],
+                stats["records_new"],
+                stats["records_updated"],
+                stats["errors"],
+            )
+            return stats["records_fetched"]
+
         sample_dir = self.source_dir / "sample"
         sample_dir.mkdir(exist_ok=True)
 
@@ -334,10 +395,10 @@ class ILCDocumentsScraper(BaseScraper):
             count += 1
             logger.info("  -> %s: %d chars of text", normalized["_id"], len(normalized["text"]))
 
-            if sample and count >= 15:
+            if count >= sample_size:
                 break
 
-        logger.info("Bootstrap complete: %d records saved", count)
+        logger.info("Sample bootstrap complete: %d records saved to sample/", count)
         return count
 
 
@@ -355,8 +416,7 @@ def main():
         ok = scraper.test_connection()
         sys.exit(0 if ok else 1)
     elif args.command in ("bootstrap", "bootstrap-fast"):
-        sample = args.sample or args.command == "bootstrap-fast"
-        scraper.run_bootstrap(sample=sample)
+        scraper.run_bootstrap(sample=args.sample)
     elif args.command == "update":
         logger.info("No update mechanism (ILC texts rarely change)")
 

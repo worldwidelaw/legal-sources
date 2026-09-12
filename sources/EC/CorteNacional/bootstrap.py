@@ -36,7 +36,7 @@ from html import unescape
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 
 from common.pdf_extract import extract_pdf_markdown
@@ -252,6 +252,9 @@ class CorteNacionalScraper(BaseScraper):
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
         """Fetch recently added sentences."""
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         page = 0
         max_pages = 20  # Check up to 20 pages for recent records
 

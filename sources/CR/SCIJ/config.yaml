@@ -6,8 +6,8 @@
 # Contains all legislation from 1821 to present: Constitution,
 # laws, decrees, treaties, regulations, municipal agreements, etc.
 #
-# URL: https://pgrweb.go.cr/scij/
-# Access: Direct GET requests to individual norm pages by numeric ID.
+# URL: https://sinalevi.go.cr/  (migrated off pgrweb.go.cr/scij, issue #1455)
+# Access: JSON XHR endpoints keyed by the same numeric norm ID.
 # No auth, no session required.
 # ===================================================================
 
@@ -15,7 +15,7 @@ source:
   id: "CR/SCIJ"
   country: "CR"
   name: "SCIJ - Sistema Costarricense de Información Jurídica"
-  url: "https://pgrweb.go.cr/scij/"
+  url: "https://sinalevi.go.cr/"
   description: |
     Costa Rica Juridical Information System from the Attorney General.
     Full text of all legislation organized by type: Constitution,
@@ -30,16 +30,25 @@ auth:
   type: "none"
 
 rate_limit:
-  requests_per_second: 1
-  burst: 2
+  # The XHR endpoints answer in ~0.2s; three per document (probe, ficha, text)
+  # means ~1 doc/s, which finishes the ~100K-norm walk inside one fleet slot.
+  # bootstrap-fast layers an AdaptiveRateLimiter on top and backs off on 429.
+  requests_per_second: 3
+  burst: 5
+  max_workers: 4
 
 api:
   type: "id_enumerate"
-  base_url: "https://pgrweb.go.cr/scij"
-  metadata_url: "https://pgrweb.go.cr/scij/Busqueda/Normativa/Normas/nrm_norma.aspx?param1=NRM&nValor1=1&nValor2={id}&nValor3=0&strTipM=FN"
-  fulltext_url: "https://pgrweb.go.cr/scij/Busqueda/Normativa/Normas/nrm_texto_completo.aspx?param1=NRTC&nValor1=1&nValor2={id}&nValor3=0&strTipM=TC"
-  id_range: [1, 107000]
-  invalid_response: "302 redirect to PagError.aspx"
+  base_url: "https://sinalevi.go.cr"
+  # version=-1 resolves a norm's live version; the redirect it returns carries
+  # param2 = that version id, or 0 when no norm sits behind the ID.
+  probe_endpoint: "https://sinalevi.go.cr/ResultadosNormativa/_CargarTextoCompleto"
+  fulltext_endpoint: "https://sinalevi.go.cr/ResultadosNormativa/_CargarTextoCompleto"
+  metadata_endpoint: "https://sinalevi.go.cr/ResultadosNormativa/_CargarFicha"
+  document_url: "https://sinalevi.go.cr/ResultadosNormativa/Informacion?param1={id}&param2={version}&param3=1"
+  method: "POST"
+  id_range: [1, 107600]   # ceiling re-probed at runtime; do not rely on this
+  invalid_response: "JSON redirect with param2=0"
 
 data_model:
   type: "legislation"
@@ -85,9 +94,11 @@ schema:
       role: "reference"
 
 notes: |
-  - No API or sitemap: enumerate IDs 1-107000
-  - Invalid IDs return 302 redirect (skip them)
-  - Full text is Word-exported HTML inside dvTextoCompleto div
-  - Metadata page has structured fields (type, number, title, date, issuing body)
+  - No API or sitemap: enumerate the numeric norm ID space
+  - IDs with no norm behind them resolve to version 0 (skip them)
+  - Full text is Word-exported HTML returned as JSON by _CargarTextoCompleto
+  - _CargarFicha returns the metadata card (type, number, date, issuing body)
+  - IDs walked are checkpointed to data/scij_checkpoint.json so a torn-down
+    fleet slot resumes instead of restarting at ID 1 (issue #1455)
   - Language: Spanish
   - ~70,000-90,000 valid norms estimated

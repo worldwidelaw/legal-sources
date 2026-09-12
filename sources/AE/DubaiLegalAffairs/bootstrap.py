@@ -11,7 +11,6 @@ Usage:
   python bootstrap.py test                  # Quick connectivity test
 """
 
-import io
 import json
 import os
 import re
@@ -26,8 +25,9 @@ from urllib.parse import unquote
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
     level=logging.INFO,
@@ -71,53 +71,137 @@ def _extract_hidden_fields(html: str) -> Dict[str, str]:
     return fields
 
 
+# The gazette filename, e.g. /OfficialGazette/2026/OGD-2026-779.pdf. The number
+# the publisher puts in the file it serves is the authoritative issue number; the
+# listing cell next to it is hand-typed and sometimes wrong (see below).
+PDF_ISSUE_RE = re.compile(r"/OGD-\d{4}-0*(\d+)\.pdf$", re.IGNORECASE)
+
+# Zero-width and bidi-control characters, literal or as numeric entities. This
+# is a hand-edited table on an RTL site, so they land anywhere: three 2026 rows
+# carry a U+200B *inside the date* ("15​/01/2026"), which is invisible in a
+# browser and fatal to `(\d+/\d+/\d+)`.
+_INVISIBLES_RE = re.compile(
+    r"[​-‏‪-‮⁠﻿]"
+    r"|&#(?:8203|8204|8205|8206|8207|65279);"
+    r"|&#x(?:200[b-f]|202[a-e]|feff);",
+    re.IGNORECASE,
+)
+
+
 def _parse_gazette_items(html: str) -> List[Dict[str, str]]:
     """Parse gazette items from page HTML. Returns list of {issue, date, url}."""
+    # Strip the invisibles before matching, not per-field: they are noise from
+    # the CMS editor and a row that carries one is otherwise dropped whole, with
+    # no error — the crawl just comes back a few issues short.
+    html = _INVISIBLES_RE.sub("", html)
     items = []
     # Match rows: <td>Issue No. 769</td><td>5/5/2026</td>...<a href="/OfficialGazette/...pdf"
+    #
+    # The issue cell tolerates trailing inline markup: at least one row ships as
+    # `<td>Issue No. 775<br></td>`, and against a `</td>`-anchored pattern that
+    # row simply did not match — the scan then resumed inside the *next* row, so
+    # issue 775 was never downloaded and nothing said so. A listing parser that
+    # drops a row on a stray <br> loses documents silently, which is the same
+    # failure shape whatever the markup happens to be.
     pattern = re.compile(
-        r'<td>Issue No\.\s*(\d+)</td>'
+        r'<td>Issue No\.\s*(\d+)\s*(?:<[^>]*>\s*)*</td>'
         r'<td>(\d+/\d+/\d+)</td>'
         r'.*?'
         r'href="(/OfficialGazette/[^"]+\.pdf)"',
         re.DOTALL,
     )
     for m in pattern.finditer(html):
-        issue_num = int(m.group(1))
+        listed_num = int(m.group(1))
         date_str = m.group(2)
         pdf_path = unquote(m.group(3))
+
+        # Prefer the number in the PDF filename. The listing mislabels at least
+        # one row — OGD-2026-779.pdf sits under a cell reading "Issue No. 780",
+        # directly below the real 780 — and since `_id` is built from the issue
+        # number, trusting the cell collapsed two different gazettes onto one id:
+        # 779 vanished and 780 was overwritten by it. Neither shows up as an
+        # error, only as a corpus one document short.
+        issue_num = listed_num
+        fm = PDF_ISSUE_RE.search(pdf_path)
+        if fm:
+            issue_num = int(fm.group(1))
+            if issue_num != listed_num:
+                logger.warning(
+                    "Listing says 'Issue No. %d' but the PDF is %s — using %d "
+                    "from the filename",
+                    listed_num,
+                    pdf_path.rsplit("/", 1)[-1],
+                    issue_num,
+                )
+
         items.append({
             "issue": issue_num,
             "date": date_str,
             "pdf_url": f"{BASE_URL}{pdf_path}",
         })
+
+    # The page links one gazette PDF per row, so parsed rows and gazette links
+    # must come out equal. Every defect this parser has hit — a <br> in the
+    # issue cell, a zero-width space in the date — showed up only as a quietly
+    # shorter list, so compare the two and say which links were dropped.
+    linked = {
+        unquote(h)
+        for h in re.findall(r'href="(/OfficialGazette/[^"]+\.pdf)"', html)
+    }
+    parsed = {i["pdf_url"][len(BASE_URL):] for i in items}
+    if linked - parsed:
+        logger.warning(
+            "%d gazette PDFs on this page matched no table row (row markup "
+            "changed?): %s",
+            len(linked - parsed),
+            ", ".join(sorted(p.rsplit("/", 1)[-1] for p in linked - parsed)[:10]),
+        )
+
     return items
 
 
-def _extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using pdfplumber."""
-    try:
-        import pdfplumber
-    except ImportError:
-        logger.error("pdfplumber not installed. Run: pip install pdfplumber")
-        return ""
+def _doc_id(issue_num: str) -> str:
+    """The `_id` normalize() emits for a gazette issue.
 
-    text_parts = []
+    Shared with the extraction path so `extract_pdf_markdown` receives the same
+    string that reaches Neon, which is what keeps its skip-if-already-stored
+    guard live (issue #1480).
+    """
+    return f"AE-DubaiGazette-{issue_num}"
+
+
+def _extract_pdf_text(pdf_bytes: bytes, doc_id: str) -> str:
+    """Extract text from a gazette PDF via the shared helper.
+
+    This used to call pdfplumber directly. pdfplumber emits glyphs in the order
+    the content stream lists them, which for these Arabic gazettes is *visual*
+    order, so every line was stored character-reversed — ``قانون`` as ``نوناق``
+    (issue #1560) — on top of Arabic presentation-form glyphs that no keyword
+    query spells. Search over such text matches nothing, and silently: the
+    semantic half of a hybrid index still returns something.
+
+    ``common.pdf_extract`` normalizes the shaped glyphs back to base letters and
+    routes RTL-heavy output through ``common.arabic_pdf``, which orders glyph
+    clusters by x-geometry rather than trusting the emitted sequence. The Latin
+    lines in these same PDFs are not RTL and pass through untouched.
+
+    ``force=True`` so a refresh re-extracts the issues already stored reversed
+    instead of skipping them as present.
+    """
     try:
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-                try:
-                    page.flush_cache(); page.get_textmap.cache_clear()
-                except Exception:
-                    pass
+        return (
+            extract_pdf_markdown(
+                SOURCE_ID,
+                doc_id,
+                pdf_bytes=pdf_bytes,
+                table="legislation",
+                force=True,
+            )
+            or ""
+        )
     except Exception as e:
         logger.warning(f"PDF extraction error: {e}")
         return ""
-
-    return "\n\n".join(text_parts)
 
 
 class DubaiLegalAffairsScraper(BaseScraper):
@@ -204,13 +288,13 @@ class DubaiLegalAffairsScraper(BaseScraper):
                 logger.warning(f"Failed to fetch year {year}: {e}")
                 continue
 
-    def _download_and_extract(self, pdf_url: str) -> str:
+    def _download_and_extract(self, pdf_url: str, doc_id: str) -> str:
         """Download PDF and extract text."""
         session = self._get_session()
         try:
             resp = session.get(pdf_url, timeout=120)
             resp.raise_for_status()
-            return _extract_pdf_text(resp.content)
+            return _extract_pdf_text(resp.content, doc_id)
         except Exception as e:
             logger.warning(f"Failed to download {pdf_url}: {e}")
             return ""
@@ -221,7 +305,7 @@ class DubaiLegalAffairsScraper(BaseScraper):
         issue_num = item["issue"]
 
         return {
-            "_id": f"AE-DubaiGazette-{issue_num}",
+            "_id": _doc_id(issue_num),
             "_source": SOURCE_ID,
             "_type": "legislation",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
@@ -249,7 +333,7 @@ class DubaiLegalAffairsScraper(BaseScraper):
             logger.info(
                 f"Downloading gazette issue #{item['issue']} ({item['date']})"
             )
-            text = self._download_and_extract(item["pdf_url"])
+            text = self._download_and_extract(item["pdf_url"], _doc_id(item["issue"]))
             if not text:
                 logger.warning(
                     f"No text extracted from issue #{item['issue']}, skipping"
@@ -269,6 +353,8 @@ class DubaiLegalAffairsScraper(BaseScraper):
 
     def fetch_updates(self, since: str) -> Generator[Dict, None, None]:
         """Fetch gazette issues published since a date."""
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         since_dt = datetime.fromisoformat(since)
         current_year = datetime.now().year
 
@@ -278,7 +364,9 @@ class DubaiLegalAffairsScraper(BaseScraper):
         for item in self._get_all_gazette_items(years=years):
             iso_date = _parse_date(item["date"])
             if iso_date and iso_date >= since:
-                text = self._download_and_extract(item["pdf_url"])
+                text = self._download_and_extract(
+                    item["pdf_url"], _doc_id(item["issue"])
+                )
                 if text:
                     yield self.normalize(item, text)
                 time.sleep(DELAY)
@@ -339,4 +427,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

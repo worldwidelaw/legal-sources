@@ -64,10 +64,38 @@ def strip_html(html_text: str) -> str:
     return text.strip()
 
 
+class UpstreamGone(RuntimeError):
+    """The CLD backend answered, but with nothing in it.
+
+    www.unodc.org/cld/* redirects to sherloc.unodc.org. On the fleet the
+    redirect target returned HTTP 200 with a zero-length body; the old code
+    read that as 'no more results' and stopped, so an empty reply was
+    indistinguishable from a finished crawl and the run exited with
+    'No records saved' and no reason (#1449). Raising makes it loud.
+
+    That empty body is NOT the backend being decommissioned — re-verified
+    2026-09-01 from a non-datacenter vantage, where the same redirect serves
+    23,103 records and `startAt` paginates correctly (offsets 0, 100 and
+    20,000 return disjoint result sets, and a --sample run returns 15
+    full-text records). So a zero-length body means THIS VANTAGE is being
+    served an empty response: the fix is a different vantage/proxy, NOT
+    blocking a live 23K-document corpus.
+    """
+
+
 def fetch_json(url: str, session: requests.Session) -> Optional[dict]:
     for attempt in range(3):
         try:
             resp = session.get(url, headers=HEADERS, timeout=30)
+            if resp.status_code == 200 and not resp.content:
+                raise UpstreamGone(
+                    f"{url} returned HTTP 200 with an empty body "
+                    f"(redirected to {resp.url}). The corpus is NOT gone: the "
+                    f"same URL served 23,103 records from a non-datacenter "
+                    f"vantage on 2026-09-01, so this vantage is being fed an "
+                    f"empty response and needs a proxy. Refusing to report "
+                    f"this as an empty corpus (#1449)."
+                )
             if resp.status_code == 200 and resp.content:
                 try:
                     return resp.json()
@@ -296,13 +324,18 @@ def test_connectivity() -> bool:
 def bootstrap(sample: bool = False) -> None:
     session = requests.Session()
     sample_dir = SAMPLE_DIR
-    if sample and sample_dir.exists():
-        for f in sample_dir.glob("*.json"):
-            f.unlink()
 
     print(f"{'Sample' if sample else 'Full'} bootstrap starting...")
     records_saved = 0
     for record in fetch_records(session, sample=sample):
+        if sample and records_saved == 0 and sample_dir.exists():
+            # Clear the old samples only once a replacement is actually in
+            # hand. Clearing up-front meant any failed run (an upstream 403,
+            # or the dead-backend case in #1449) destroyed the committed
+            # samples — which is exactly what the fleet wrapper falls back to
+            # ingesting when a crawl yields nothing.
+            for f in sample_dir.glob("*.json"):
+                f.unlink()
         save_record(record, sample_dir)
         records_saved += 1
         if records_saved % 100 == 0:
@@ -331,4 +364,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

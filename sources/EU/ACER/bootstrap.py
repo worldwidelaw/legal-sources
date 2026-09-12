@@ -8,6 +8,7 @@ Two page structures:
 - Flat listings (opinion): all PDFs on a single page
 """
 
+import sys
 import json
 import logging
 import re
@@ -395,10 +396,6 @@ def main():
         target_count = 12 if is_sample else 50
         logger.info(f"Fetching up to {target_count} documents...")
 
-        # Log PDF library availability
-        logger.info(f"pdfplumber available: {HAS_PDFPLUMBER}")
-        if not HAS_PDFPLUMBER:
-            logger.info(f"PyPDF2 available: {HAS_PYPDF2 if 'HAS_PYPDF2' in dir() else False}")
 
         sample_count = 0
         for raw_doc in fetcher.fetch_all(max_docs=target_count):
@@ -450,4 +447,9 @@ def main():
 
 
 if __name__ == '__main__':
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

@@ -24,7 +24,7 @@ from typing import Generator, Dict, Any
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 logging.basicConfig(
     level=logging.INFO,
@@ -166,6 +166,9 @@ class ZASCAHFScraper(BaseScraper):
 
     def fetch_updates(self, since: str) -> Generator[Dict[str, Any], None, None]:
         """Fetch raw records whose normalized date is newer than `since`."""
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self.fetch_all():
             record = self.normalize(raw)
             if record.get("date") and record["date"] >= since:

@@ -227,12 +227,17 @@ class GreekHCMCScraper(BaseScraper):
             logger.warning(f"Failed to fetch detail page {detail_url}: {e}")
             return None
 
-    def _extract_pdf_text(self, pdf_url: str) -> str:
-        """Extract text from PDF using centralized extractor."""
+    def _extract_pdf_text(self, pdf_url: str, doc_id: str = "") -> str:
+        """Extract text from PDF using centralized extractor.
+
+        Listing pages expose *relative* hrefs (/vdrv/elib/{uuid}); the extractor
+        downloads with requests, which rejects a schemeless URL, so resolve
+        against BASE_URL first (issue #1292).
+        """
         return extract_pdf_markdown(
             source="GR/HCMC",
-            source_id="",
-            pdf_url=pdf_url,
+            source_id=doc_id,
+            pdf_url=urljoin(BASE_URL, pdf_url),
             table="doctrine",
         ) or ""
 
@@ -248,7 +253,7 @@ class GreekHCMCScraper(BaseScraper):
 
         # Extract text from PDF
         if result.get("pdf_url"):
-            text = self._extract_pdf_text(result["pdf_url"])
+            text = self._extract_pdf_text(result["pdf_url"], item.get("doc_id", ""))
             result["text"] = text
         else:
             result["text"] = ""
@@ -258,6 +263,19 @@ class GreekHCMCScraper(BaseScraper):
             logger.warning(f"No text extracted for item {item['doc_id']}")
 
         return result
+
+    @staticmethod
+    def _parse_date(title: str, year: Any) -> str:
+        """HCMC titles carry the decision date as DD.MM.YYYY (e.g. 'Απόφαση ΔΣ
+        2/1076/22.12.2025_...'). Use the first one; fall back to the catalog year."""
+        # NB: titles use '_' as a separator, which is a word char, so \b would
+        # miss e.g. '10.6.2026_Τροποποίηση' — use digit lookarounds instead.
+        for d, m, y in re.findall(r'(?<!\d)(\d{1,2})\.(\d{1,2})\.(\d{4})(?!\d)', title):
+            try:
+                return datetime(int(y), int(m), int(d)).date().isoformat()
+            except ValueError:
+                continue
+        return f"{year}-01-01" if year else ""
 
     def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
         """Transform raw data into standard schema."""
@@ -280,7 +298,7 @@ class GreekHCMCScraper(BaseScraper):
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             "title": raw.get("title", ""),
             "text": raw.get("text", ""),
-            "date": f"{year}-01-01" if year else "",
+            "date": self._parse_date(raw.get("title", ""), year),
             "url": url,
             "category": category,
             "year": year,
@@ -327,7 +345,7 @@ def main():
         idx = sys.argv.index("--sample-size")
         sample_size = int(sys.argv[idx + 1])
 
-    if command == "bootstrap":
+    if command in ("bootstrap", "bootstrap-fast"):
         if sample_mode:
             stats = scraper.run_sample(n=sample_size)
             print(

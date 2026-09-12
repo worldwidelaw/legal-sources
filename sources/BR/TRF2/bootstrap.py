@@ -14,9 +14,17 @@ searched through a stateful PHP form (issue #1123):
   - Result list (POST the search, returns page 1 + total):
       POST https://eproc.trf2.jus.br/eproc/externo_controlador.php
              ?acao=jurisprudencia@jurisprudencia/listar_resultados
-  - Pagination (AJAX, same session):
-      GET  https://eproc.trf2.jus.br/eproc/externo_controlador.php
-             ?acao=jurisprudencia@jurisprudencia/ajax_paginar_resultado&pagina=N
+  - Pagination (AJAX, same session): POST the *result* form back, with the
+    wanted page written into its hidden `hdnPaginaAtual` field. There is no
+    `pagina` query parameter — sending one is answered HTTP 200 with a page the
+    server picks itself, so the walk never advances (#1502).
+      POST https://eproc.trf2.jus.br/eproc/externo_controlador.php
+             ?acao=jurisprudencia@jurisprudencia/ajax_paginar_resultado
+
+The result form also exposes `selTamanhoPagina` (10/25/50/100 — we ask for 100),
+`selOrdenacao` (1 = newest first) and a publication-date range
+(`dtPublicacaoInicio`/`dtPublicacaoFim`) that the refresh path uses to fetch
+only what has been published since the last run.
 
 Each result item carries the FULL inteiro-teor text inline (rdoCampo=I) inside a
 `resValue` block, together with resLabel/resValue metadata pairs (PROCESSO, UF,
@@ -38,7 +46,7 @@ import time
 import html as html_mod
 import logging
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Generator, Optional
 
 import requests
@@ -74,7 +82,18 @@ HEADERS = {
 }
 
 DELAY = 2.0
-PAGE_SIZE = 10  # items per result page
+
+# The result form's own page-size selector offers 10/25/50/100; 100 cuts the
+# full walk from ~121K requests to ~12.1K.
+PAGE_SIZE = 100
+# selOrdenacao: 1 = "mais recentes", 2 = "mais antigos". Newest-first is what
+# makes the incremental lane cheap.
+ORDER_NEWEST_FIRST = "1"
+# How far before `since` to reopen the publication window. A decision can be
+# indexed a few days after the publication date it carries, and re-yielding a
+# handful of already-ingested documents is much cheaper than missing them --
+# the loader dedups on _id.
+UPDATE_LOOKBACK_DAYS = 7
 
 # Regex patterns -----------------------------------------------------------
 RE_ITEM = re.compile(r'<div class="card mb-3 resultadoItem"')
@@ -119,6 +138,8 @@ class TRF2Scraper(BaseScraper):
         self.session = requests.Session()
         self.session.headers.update(HEADERS)
         self._session_ready = False
+        # The exact field set of the last search; every paging POST replays it.
+        self._search_data = {}
 
     # -- HTTP helpers ------------------------------------------------------
     def _establish_session(self) -> bool:
@@ -137,13 +158,27 @@ class TRF2Scraper(BaseScraper):
                 time.sleep(wait)
         return False
 
-    def _post_search(self) -> Optional[str]:
-        """POST the search form (empty query = full corpus, inteiro teor)."""
+    def _post_search(self, pub_from: str = "", pub_to: str = "") -> Optional[str]:
+        """POST the search form (empty query = full corpus, inteiro teor).
+
+        `pub_from`/`pub_to` are dd/mm/yyyy strings bound to the advanced form's
+        publication-date range; leaving them empty searches the whole corpus.
+        The form data is kept on the instance because every subsequent page has
+        to be POSTed back with the identical field set (see `_fetch_page`).
+        """
         data = {
             "txtPesquisa": "",
             "rdoCampo": "I",            # I = Inteiro Teor (full text)
             "chkAgruparResultados": "1",
+            "selOrdenacao": ORDER_NEWEST_FIRST,
+            "selTamanhoPagina": str(PAGE_SIZE),
         }
+        if pub_from:
+            data["dtPublicacaoInicio"] = pub_from
+        if pub_to:
+            data["dtPublicacaoFim"] = pub_to
+        self._search_data = data
+
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Referer": FORM_URL,
@@ -151,7 +186,7 @@ class TRF2Scraper(BaseScraper):
         for attempt in range(3):
             try:
                 time.sleep(DELAY)
-                resp = self.session.post(LIST_URL, data=data, headers=headers, timeout=90)
+                resp = self.session.post(LIST_URL, data=data, headers=headers, timeout=180)
                 resp.raise_for_status()
                 resp.encoding = "iso-8859-1"
                 return resp.text
@@ -185,13 +220,28 @@ class TRF2Scraper(BaseScraper):
         return None
 
     def _fetch_page(self, pagina: int) -> Optional[str]:
-        """Fetch a specific result page via the AJAX pagination endpoint."""
-        headers = {"Referer": LIST_URL}
+        """Fetch a specific result page via the AJAX pagination endpoint.
+
+        The endpoint takes no `pagina` query parameter, which is what the old
+        implementation sent: `paginar()` in modulos/jurisprudencia/js/jurisprudencia.js
+        POSTs `$('#frmJurisprudenciaResultado').serializeArray()` to
+        `hdnUrlPaginar` after writing the wanted page into the hidden
+        `hdnPaginaAtual` field. A GET with `?pagina=N` is accepted with HTTP 200
+        and silently answered with a page the server picks itself, so the walk
+        kept re-reading the head of the result set instead of advancing.
+        """
+        data = dict(self._search_data)
+        data["hdnPaginaAtual"] = str(pagina)
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Referer": LIST_URL,
+            "X-Requested-With": "XMLHttpRequest",
+        }
         for attempt in range(3):
             try:
                 time.sleep(DELAY)
-                resp = self.session.get(PAGE_URL, params={"pagina": str(pagina)},
-                                        headers=headers, timeout=90)
+                resp = self.session.post(PAGE_URL, data=data,
+                                         headers=headers, timeout=180)
                 resp.raise_for_status()
                 resp.encoding = "iso-8859-1"
                 return resp.text
@@ -255,9 +305,21 @@ class TRF2Scraper(BaseScraper):
 
     # -- Checkpoint --------------------------------------------------------
     def _load_checkpoint(self) -> int:
+        """Resume page for the full walk, or 0 to start over.
+
+        A page number only means anything alongside the page size it was
+        recorded under, so a checkpoint written at a different `selTamanhoPagina`
+        is discarded rather than silently skipping ten times too far.
+        """
         try:
             if CHECKPOINT_FILE.exists():
-                return int(json.loads(CHECKPOINT_FILE.read_text()).get("last_page", 0))
+                state = json.loads(CHECKPOINT_FILE.read_text())
+                if int(state.get("page_size", 0)) != PAGE_SIZE:
+                    logger.info("Ignoring checkpoint written at page size %s "
+                                "(now %d) — restarting the walk",
+                                state.get("page_size"), PAGE_SIZE)
+                    return 0
+                return int(state.get("last_page", 0))
         except Exception:
             pass
         return 0
@@ -265,7 +327,8 @@ class TRF2Scraper(BaseScraper):
     def _save_checkpoint(self, page: int) -> None:
         try:
             CHECKPOINT_FILE.parent.mkdir(parents=True, exist_ok=True)
-            CHECKPOINT_FILE.write_text(json.dumps({"last_page": page}))
+            CHECKPOINT_FILE.write_text(json.dumps({"last_page": page,
+                                                   "page_size": PAGE_SIZE}))
         except Exception as e:
             logger.debug("Checkpoint save failed: %s", e)
 
@@ -327,29 +390,39 @@ class TRF2Scraper(BaseScraper):
         }
 
     # -- Fetch loops -------------------------------------------------------
-    def fetch_all(self) -> Generator[dict, None, None]:
+    def _walk_search(self, pub_from: str = "", pub_to: str = "",
+                     resume_page: int = 0,
+                     checkpoint: bool = False) -> Generator[dict, None, None]:
+        """Walk every page of one search and yield raw records with full text.
+
+        Shared by the full crawl and the refresh; the only difference between
+        them is the publication-date window bound to the search.
+        """
         if not self._session_ready and not self._establish_session():
             logger.error("Could not establish eproc session")
             return
 
-        page_html = self._post_search()
+        page_html = self._post_search(pub_from, pub_to)
         if not page_html:
             logger.error("Failed to POST search")
             return
 
         total = 0
-        total_pages = 0
         m = RE_TOTAL.search(page_html)
         if m:
             total = int(m.group(1))
-        m = RE_TOTAL_PAGES.search(page_html)
-        if m:
-            total_pages = int(m.group(1))
-        logger.info("Total documents: %d across %d pages", total, total_pages)
-        if total_pages <= 0:
-            total_pages = 1
+        if total <= 0:
+            m = RE_TOTAL_PAGES.search(page_html)
+            total_pages = int(m.group(1)) if m else 1
+        else:
+            # hdnTotalPaginas is computed for the page size the form was
+            # rendered with, so derive the count from the one we asked for.
+            total_pages = (total + PAGE_SIZE - 1) // PAGE_SIZE
+        window = f" published {pub_from}–{pub_to}" if pub_from else ""
+        logger.info("Search returned %d documents across %d pages of %d%s",
+                    total, total_pages, PAGE_SIZE, window)
+        total_pages = max(total_pages, 1)
 
-        resume_page = self._load_checkpoint()
         seen = set()
         count = 0
 
@@ -387,16 +460,69 @@ class TRF2Scraper(BaseScraper):
                 yield it
                 count += 1
 
-            if page % 25 == 0:
+            if checkpoint and page % 25 == 0:
                 self._save_checkpoint(page)
                 logger.info("Fetched %d records through page %d", count, page)
 
-        self._save_checkpoint(total_pages)
+        if checkpoint:
+            self._save_checkpoint(total_pages)
         logger.info("Total records yielded: %d", count)
 
-    def fetch_updates(self, since: str) -> Generator[dict, None, None]:
-        logger.info("Fetching recent TRF2 decisions (since %s)", since)
-        yield from self.fetch_all()
+    def fetch_all(self) -> Generator[dict, None, None]:
+        yield from self._walk_search(resume_page=self._load_checkpoint(),
+                                     checkpoint=True)
+
+    def fetch_updates(self, since) -> Generator[dict, None, None]:
+        """Yield only decisions published since the last run.
+
+        The old body was `yield from self.fetch_all()`, so every refresh slot
+        re-walked the entire 1.2M-document result set to surface the handful of
+        genuinely new decisions (#1502).
+
+        The advanced search form carries a publication-date range
+        (`dtPublicacaoInicio`/`dtPublicacaoFim`) and the server honours it — an
+        August-2026 window returns 15,003 documents against a 1,209,328 corpus.
+        Publication date is the right comparator here because it is when the
+        decision became available to us, not when it was judged: DATA DO
+        JULGAMENTO routinely runs ahead of DATA DA PUBLICAÇÃO on this portal
+        (page one currently shows judgments dated 03/09/2026 published
+        27/08/2026), so a judgment-date cutoff would let documents appear on the
+        wrong side of the window.
+
+        The window is reopened `UPDATE_LOOKBACK_DAYS` before `since` to cover
+        decisions the portal indexes a few days late; the loader dedups the
+        overlap on `_id`.
+        """
+        cutoff = self._parse_since(since)
+        if cutoff is None:
+            logger.warning("Unparseable since=%r — falling back to a full walk", since)
+            yield from self.fetch_all()
+            return
+
+        pub_from = (cutoff - timedelta(days=UPDATE_LOOKBACK_DAYS)).strftime("%d/%m/%Y")
+        pub_to = datetime.now(timezone.utc).strftime("%d/%m/%Y")
+        logger.info("Fetching TRF2 decisions published %s–%s (since=%s)",
+                    pub_from, pub_to, since)
+        yield from self._walk_search(pub_from=pub_from, pub_to=pub_to)
+
+    @staticmethod
+    def _parse_since(since) -> Optional[datetime]:
+        """Accept the several shapes the runner passes as `since`."""
+        if isinstance(since, datetime):
+            return since
+        if not since:
+            return None
+        text = str(since).strip()
+        try:
+            return datetime.fromisoformat(text.replace("Z", "+00:00")).replace(tzinfo=None)
+        except ValueError:
+            pass
+        for fmt in ("%Y-%m-%d", "%d/%m/%Y"):
+            try:
+                return datetime.strptime(text, fmt)
+            except ValueError:
+                continue
+        return None
 
 
 def main():
@@ -436,8 +562,9 @@ def main():
         logger.info("Bootstrap complete: %s", stats)
 
     elif command == "update":
+        default_since = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
         since = (sys.argv[2] if len(sys.argv) > 2
-                 and not sys.argv[2].startswith("-") else "2025-01-01")
+                 and not sys.argv[2].startswith("-") else default_since)
         count = sum(1 for _ in scraper.fetch_updates(since))
         logger.info("Update complete: %d records since %s", count, since)
 

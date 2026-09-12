@@ -44,4 +44,4 @@ schema:
 data_model:
   update_strategy: append_only
   dedup_key:
-    - pdf_url
+    - "_id"

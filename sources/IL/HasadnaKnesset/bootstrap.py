@@ -45,6 +45,100 @@ _HEADERS = {
     "Accept": "text/csv, */*",
 }
 
+# --- document_type (issue #1533, item 4) --------------------------------
+#
+# The customer could not tell a proposal from binding law: drafts
+# (הצעת תקנות / טיוטת תקנות) were served next to enacted law with
+# document_type null. The Knesset's own kns_law taxonomy carries most of the
+# distinction, so it is read from the data rather than guessed:
+#
+#   TypeDesc    חוק בן חיצוני      1,048  primary legislation (statutes)
+#               פעולה על פי חוק   59,603  an action taken under a law
+#   SubTypeDesc חקיקת משנה        56,986  secondary legislation (regulations)
+#               דיווח על פי חוק    1,510  a report filed under a law — not law
+#               פעולה אחרת על פי חוק 1,107 other statutory action
+#               נוסח משולב / נוסח חדש / השלטון הבריטי / העותומני /
+#               מועצת המדינה הזמנית      consolidated or historic statutes
+#
+# What the taxonomy does *not* encode is draft status: all 1,116 drafts are
+# filed under חקיקת משנה like enacted regulations. The Knesset does mark it in
+# its own title (הצעת = proposed, טיוטת = draft), so that is read from the
+# title — the publisher's wording, not an inference of ours.
+_PRIMARY_SUBTYPES = {
+    "נוסח משולב",           # consolidated version
+    "נוסח חדש",             # new version
+    "השלטון הבריטי",         # British Mandate legislation
+    "השלטון העותומני",       # Ottoman legislation
+    "מועצת המדינה הזמנית",   # Provisional State Council
+}
+_DRAFT_MARKERS = ("הצעת", "טיוטת", "הצעה ל", "טיוטה")
+
+# --- PDF selection (issue #1559) ----------------------------------------
+#
+# kns_document_law holds every document filed against a LawID, of which only
+# some are the law. The old rule — "newest gazette publication, else newest of
+# anything" — put an errata notice under the title of the consolidated statute
+# it corrected (9 laws, all high-traffic: חוק הביטוח הלאומי, חוק בתי המשפט,
+# חוק סדר הדין הפלילי …), because for those laws the errata are the *only*
+# PDFs on file, so the gazette filter matched nothing and the fallback took
+# them. The same fallback handed back committee background material as the law
+# text for ~107 more (verified: 7K–12K chars of legal-advice memos to a
+# committee, filed under a צו's title).
+#
+# GroupTypeDesc already names what each document is, so selection reads it
+# instead of guessing from recency. Ordered most authoritative first:
+_TEXT_GROUP_PRIORITY = (
+    "חוק - נוסח חדש",                   # consolidated new version — is the statute
+    "חוק - פרסום ברשומות",              # published in Reshumot (official gazette)
+    "פרסום ברשומות",
+    "נוסח מהגורם המוסמך",               # signed text from the authorising body
+    "הנוסח שאושר על-ידי הוועדה",         # text as approved by the Knesset committee
+    "חקיקת משנה - פניית הגורם המומסך",   # secondary legislation as submitted
+    "דיווח על-פי חוק",                  # statutory report — the substance for report entries
+)
+
+# Documents that are never the operative text, whatever their date. Choosing
+# any of these means storing something the title does not describe, which is
+# worse than storing nothing: a law with no usable PDF is simply skipped.
+_NEVER_THE_LAW = frozenset({
+    "חוק - תיקון טעות",          # errata ("correction of errors") — a typo notice
+    "הצעת נוסח חדש",             # *draft* of a consolidated version
+    "חומר רקע",                  # background material prepared for a committee
+    "אסמכתא לקיום הליך מקדים",   # evidence a preliminary step was taken
+    "הודעה לעיתונות",            # press release
+    "מכתב אישור לגורם המוסמך",   # approval letter
+    "מסמך של מרכז המחקר והמידע", # Knesset Research Centre paper
+    "מסמכים לא משויכים",         # unassigned documents
+})
+
+
+def _classify_document(type_desc: str, sub_type_desc: str, title: str):
+    """
+    Return ``(document_type, is_draft)`` for a kns_law record.
+
+    ``document_type`` is None when nothing in the source fixes it. Per issue
+    #1533 requirement 5 an unknown stays an explicit unknown — a confident
+    false label is worse than a null for a consumer citing this to a court.
+    """
+    type_desc = (type_desc or "").strip()
+    sub_type_desc = (sub_type_desc or "").strip()
+    is_draft = any(m in (title or "") for m in _DRAFT_MARKERS)
+
+    if sub_type_desc == "דיווח על פי חוק":
+        # A report filed with a Knesset committee. Never binding law, and a
+        # draft marker in its title would describe what it reports *on*.
+        return "report", False
+    if type_desc == "חוק בן חיצוני" or sub_type_desc in _PRIMARY_SUBTYPES:
+        return ("draft_primary_legislation" if is_draft
+                else "primary_legislation"), is_draft
+    if sub_type_desc == "חקיקת משנה":
+        return ("draft_secondary_legislation" if is_draft
+                else "secondary_legislation"), is_draft
+    if sub_type_desc == "פעולה אחרת על פי חוק":
+        return ("draft_statutory_action" if is_draft
+                else "statutory_action"), is_draft
+    return None, is_draft
+
 
 class ILHasadnaKnessetScraper(BaseScraper):
     """Scraper for IL/HasadnaKnesset - Israeli legislation via Hasadna pipeline."""
@@ -117,24 +211,37 @@ class ILHasadnaKnessetScraper(BaseScraper):
                      f"for {len(self._doc_map)} laws")
 
     def _pick_best_pdf(self, docs: list) -> Optional[str]:
-        """Pick the best PDF URL from a list of document records.
+        """Pick the PDF that actually carries the law's text, or None.
 
-        Prefers official gazette publications (GroupTypeDesc containing 'פרסום ברשומות')
-        then falls back to newest by LastUpdatedDate.
+        Ranks candidates by what the Knesset says each document *is*
+        (``GroupTypeDesc``, see ``_TEXT_GROUP_PRIORITY``) and only then by
+        recency, so a later errata or amendment can no longer outrank the
+        consolidated text it amends. Documents in ``_NEVER_THE_LAW`` are
+        dropped outright; a law left with no candidate returns None and is
+        skipped rather than stored under text that is not it (issue #1559).
         """
-        official = [d for d in docs
-                    if "פרסום ברשומות" in d.get("GroupTypeDesc", "")]
-        candidates = official if official else docs
+        candidates = [d for d in docs
+                      if d.get("GroupTypeDesc", "") not in _NEVER_THE_LAW]
+        if not candidates:
+            return None
 
-        # Sort by LastUpdatedDate descending, pick newest
-        def sort_key(d):
+        def rank(d):
+            group = d.get("GroupTypeDesc", "")
             try:
-                return d.get("LastUpdatedDate", "")
-            except Exception:
-                return ""
+                tier = _TEXT_GROUP_PRIORITY.index(group)
+            except ValueError:
+                # Unrecognised group: usable, but only after every known one,
+                # so a new Knesset document type degrades to last-resort
+                # instead of silently taking over selection.
+                tier = len(_TEXT_GROUP_PRIORITY)
+            return tier
 
-        candidates.sort(key=sort_key, reverse=True)
-        return candidates[0].get("FilePath") if candidates else None
+        # Newest first within a tier: stable sort, recency applied underneath.
+        candidates = sorted(candidates,
+                            key=lambda d: d.get("LastUpdatedDate", ""),
+                            reverse=True)
+        candidates.sort(key=rank)
+        return candidates[0].get("FilePath")
 
     def _fetch_pdf_bytes(self, url: str) -> Optional[bytes]:
         """Download a PDF. Returns bytes or None on error."""
@@ -152,7 +259,35 @@ class ILHasadnaKnessetScraper(BaseScraper):
             return None
 
     def _extract_text_from_pdf(self, pdf_bytes: bytes) -> str:
-        """Extract text from PDF bytes using pdfplumber."""
+        """
+        Extract text from PDF bytes in *logical* (readable) Hebrew order.
+
+        pdfplumber emits glyphs in the order the content stream lists them,
+        which for these Knesset PDFs is visual order — so every Hebrew line
+        came out character-reversed (``חוק`` stored as ``קוח``). Nothing
+        downstream could match that: keyword search over the corpus was
+        scoring against gibberish, which is what surfaced unrelated patent and
+        customs documents for a small-claims query (issue #1533, item 3).
+
+        common.arabic_pdf reorders glyph clusters by x-geometry rather than
+        trusting the emitted sequence. That is script-neutral, so it repairs
+        Hebrew as well as Arabic. pdfplumber stays as the fallback for PDFs
+        whose text layer PyMuPDF cannot read, or if PyMuPDF is unavailable.
+        """
+        from common.arabic_pdf import extract_rtl_pdf_text
+
+        try:
+            rtl_text = extract_rtl_pdf_text(pdf_bytes)
+        except Exception as e:
+            logger.warning(f"RTL extraction failed, falling back to pdfplumber: {e}")
+            rtl_text = None
+        if rtl_text:
+            return rtl_text
+
+        return self._extract_text_with_pdfplumber(pdf_bytes)
+
+    def _extract_text_with_pdfplumber(self, pdf_bytes: bytes) -> str:
+        """Fallback extractor. Emits visual order for RTL — see the caller."""
         import pdfplumber
 
         text_parts = []
@@ -272,6 +407,10 @@ class ILHasadnaKnessetScraper(BaseScraper):
         # Stable ID from law_id
         doc_id = f"IL-KNS-{law_id}"
 
+        type_desc = raw.get("type_desc", "")
+        sub_type_desc = raw.get("sub_type_desc", "")
+        document_type, is_draft = _classify_document(type_desc, sub_type_desc, name)
+
         return {
             "_id": doc_id,
             "_source": "IL/HasadnaKnesset",
@@ -282,8 +421,12 @@ class ILHasadnaKnessetScraper(BaseScraper):
             "date": date_str,
             "url": pdf_url,
             "law_id": law_id,
-            "type_desc": raw.get("type_desc", ""),
-            "sub_type_desc": raw.get("sub_type_desc", ""),
+            # Enacted law vs proposal, so consumers can tell binding law from a
+            # draft (#1533 item 4). None where the source does not fix it.
+            "document_type": document_type,
+            "is_draft": is_draft,
+            "type_desc": type_desc,
+            "sub_type_desc": sub_type_desc,
             "knesset_num": raw.get("knesset_num", ""),
             "publication_series": raw.get("publication_series", ""),
             "magazine_number": raw.get("magazine_number", ""),
@@ -292,6 +435,11 @@ class ILHasadnaKnessetScraper(BaseScraper):
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     scraper = ILHasadnaKnessetScraper()
 
     if len(sys.argv) < 2:

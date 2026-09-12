@@ -1,0 +1,146 @@
+# ===================================================================
+# IN/AERB -- Atomic Energy Regulatory Board (India)
+# ===================================================================
+# Full text of the regulatory corpus published by India's nuclear and
+# radiation safety regulator: AERB Safety Codes, Safety Guides, Safety
+# Standards and Safety Manuals; the Acts and Rules AERB administers
+# (Atomic Energy Act 1962, Radiation Protection Rules 2004, Civil
+# Liability for Nuclear Damage Act 2010 …); licensing / consent
+# decisions for named installations; and AERB doctrine (annual reports,
+# guidelines, safety-research highlights).
+#
+# ACCESS: aerb.gov.in resets the TLS handshake for every connection from
+# non-Indian vantages (port 80 answers with a 302 to https, port 443
+# sends TCP RST at Client Hello — verified 2026-08-06 with LibreSSL and
+# OpenSSL 3.6 clients, browser UA, TLS 1.2 pinning and bare-IP/no-SNI).
+# The corpus is therefore read from the Internet Archive, which holds a
+# deep crawl of the Board's document tree. The scraper still tries the
+# live host first and latches to archive-only after three consecutive
+# failures, so it runs unchanged from an Indian vantage.
+# ===================================================================
+
+source:
+  id: "IN/AERB"
+  country: "IN"
+  name: "Atomic Energy Regulatory Board"
+  url: "https://www.aerb.gov.in/"
+  description: |
+    Regulatory documents of the Atomic Energy Regulatory Board (AERB),
+    the authority constituted under the Atomic Energy Act, 1962 to
+    regulate nuclear and radiation safety in India. Covers the AERB
+    Safety Code / Safety Guide / Safety Standard / Safety Manual series
+    (nuclear power plants, research reactors, fuel-cycle and radiation
+    facilities, industrial radiography, radiotherapy, diagnostic
+    radiology, transport of radioactive material, radioactive-waste
+    management, siting, decommissioning, emergency preparedness), the
+    Acts, Rules and GSR notifications AERB administers, licensing and
+    consenting decisions for named installations (first approach to
+    criticality, operating-licence grants and renewals, site approvals,
+    INES event ratings) and AERB doctrine such as annual reports and
+    guidance notes. Full text is extracted from the born-digital PDFs
+    AERB publishes, read via the Internet Archive because aerb.gov.in
+    refuses TLS connections from non-Indian vantages.
+
+data_types:
+  - doctrine
+  - legislation
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "html_scraping"
+  base_url: "https://web.archive.org"
+  endpoints:
+    cdx: "/cdx/search/cdx?url=aerb.gov.in&matchType=domain&filter=urlkey:.*.pdf&collapse=urlkey&fl=original,timestamp,statuscode"
+    raw_pdf: "/web/{timestamp}id_/{original_url}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "title"
+      description: "Document title, taken from the first substantive line of the PDF text (falls back to the prettified filename)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the AERB document, extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601) parsed from the filename; falls back to the earliest Internet Archive capture date, which bounds publication from above"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "document_category"
+      description: "Normalized AERB site directory the document lives in, e.g. t/publications/codesguides, t/actsrules, prsrel, images/pdf"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "language"
+      description: "Document language — 'en' (English) or 'hi' (Hindi translation)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "archive_url"
+      description: "Wayback Machine raw-PDF URL the text was extracted from (null when the live host served the PDF)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "authority"
+      description: "Issuing authority — always 'Atomic Energy Regulatory Board (AERB)'"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Government Open Data License — India (GODL-India)"
+  url: "https://data.gov.in/government-open-data-license-india"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: |
+    AERB is a Government of India regulatory body; its published safety
+    codes, guides, acts, rules and press material fall under the standard
+    GoI copyright policy / GODL-India, which permits reproduction —
+    including for commercial purposes — provided the material is
+    reproduced accurately, attributed and not used in a misleading
+    context. Third-party copyright material embedded in AERB documents is
+    excluded.
+
+notes: |
+  - aerb.gov.in TCP-RSTs the TLS Client Hello from non-Indian vantages
+    (verified 2026-08-06). The corpus is read from the Internet Archive;
+    fetch_all() enumerates every archived aerb.gov.in *.pdf via the
+    Wayback CDX API.
+  - CDX rows with an archived status of 4xx/5xx are dropped, but revisit
+    rows (statuscode "-") are KEPT — a CDX `statuscode:200` filter hides
+    them and would truncate the corpus.
+  - AERB has reorganised its site several times, so the same document is
+    reachable under several path schemes
+    (/AERBPortal/pages/English/t/publications/CODESGUIDES/, /T/PUBLICATIONS/
+    CODESGUIDES/, /images/PDF/, /storage/uploads/documents/, plus
+    index.php/english/ prefixed variants). Records are de-duplicated on
+    (language, lowercase filename), preferring the modern /images/PDF/ |
+    /storage/ scheme and then the newest capture.
+  - Recruitment, tender and procurement PDFs are skipped; documents whose
+    extracted text is under 400 characters (application forms, cover
+    sheets) are dropped.
+  - Document type is inferred from path and title: Acts / Rules / GSR
+    notifications => legislation, licensing and consent decisions for a
+    named installation => case_law, everything else => doctrine.

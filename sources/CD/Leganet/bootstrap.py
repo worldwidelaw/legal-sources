@@ -41,7 +41,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger("legal-data-hunter.CD.Leganet")
 
-BASE_URL = "https://www.leganet.cd"
+# The publisher moved to www.leganet.be, which every internal link on the site now
+# points at and which serves a valid Let's Encrypt cert. The old www.leganet.cd
+# still answers but on a self-signed cPanel cert (CN=leganetcd.kihe2179.odns.fr,
+# issuer == subject) that can never verify — that was the visible half of #1593.
+BASE_URL = "https://www.leganet.be"
+
+# Both domains serve the same DRC corpus, so a link to either is ours to follow.
+KNOWN_HOSTS = ("leganet.be", "www.leganet.be", "leganet.cd", "www.leganet.cd")
+
+# .cd has no verifiable cert and an AIA repair has nothing to fetch, but it serves
+# the identical static HTML over plain HTTP with no redirect. If we ever land back
+# on it, downgrade rather than abort: that is no weaker than trusting a self-signed
+# cert, and unlike pinning the leaf it survives the yearly AutoSSL rotation.
+TLS_DOWNGRADE_HOSTS = ("leganet.cd", "www.leganet.cd")
 
 CATEGORY_PAGES = [
     "/Legislation/Tables/droit_civil.htm",
@@ -71,9 +84,53 @@ class LeganetScraper(BaseScraper):
         super().__init__(source_dir)
         self.session = requests.Session()
         self.session.headers.update(HEADERS)
+        # Set once the self-signed cert is observed, so we don't pay the failed
+        # TLS handshake on every subsequent request.
+        self._downgraded = False
+
+    @staticmethod
+    def _downgrade(url: str) -> str:
+        """Rewrite https:// -> http:// for the allowlisted self-signed host."""
+        if not url.startswith("https://"):
+            return url
+        host = url.split("/")[2].lower()
+        if host not in TLS_DOWNGRADE_HOSTS:
+            return url
+        return "http://" + url[len("https://"):]
+
+    @staticmethod
+    def _sniff_encoding(content: bytes) -> str:
+        """Pick a decoding for a response whose Content-Type omits charset.
+
+        The site serves valid UTF-8 declared only in a <meta charset> tag, but
+        older pages are still windows-1252. Hardcoding windows-1252 turned every
+        accent into mojibake ("dEcembre"), which in turn broke the accented
+        month regex in _parse_date and silently dated those documents to
+        January 1st (#1593). Trust the meta tag, then verify by decoding.
+        """
+        head = content[:2048]
+        m = re.search(rb"charset=[\"']?([\w-]+)", head, re.I)
+        declared = m.group(1).decode("ascii", "ignore").lower() if m else None
+
+        candidates = [declared] if declared else []
+        candidates += ["utf-8", "windows-1252"]
+
+        for enc in candidates:
+            if not enc:
+                continue
+            try:
+                content.decode(enc)
+                return enc
+            except (UnicodeDecodeError, LookupError):
+                continue
+        # windows-1252 maps every byte, so this is only reached on a bad alias.
+        return "windows-1252"
 
     def _request(self, url: str, timeout: int = 30) -> Optional[requests.Response]:
         """HTTP GET with retry and rate limiting."""
+        if self._downgraded:
+            url = self._downgrade(url)
+
         for attempt in range(3):
             try:
                 time.sleep(2)
@@ -84,10 +141,24 @@ class LeganetScraper(BaseScraper):
                 if resp.status_code == 404:
                     return None
                 resp.raise_for_status()
-                # Handle windows-1252 encoding
                 if 'charset' not in resp.headers.get('content-type', ''):
-                    resp.encoding = 'windows-1252'
+                    resp.encoding = self._sniff_encoding(resp.content)
                 return resp
+            except requests.exceptions.SSLError as e:
+                downgraded = self._downgrade(url)
+                if downgraded == url:
+                    logger.warning(f"Attempt {attempt+1} failed for {url[:80]}: {e}")
+                else:
+                    if not self._downgraded:
+                        logger.warning(
+                            "leganet.cd TLS verification failed (self-signed cert, "
+                            "issue #1593) — falling back to plain HTTP for this host"
+                        )
+                        self._downgraded = True
+                    url = downgraded
+                    continue
+                if attempt < 2:
+                    time.sleep(5 * (attempt + 1))
             except requests.exceptions.RequestException as e:
                 logger.warning(f"Attempt {attempt+1} failed for {url[:80]}: {e}")
                 if attempt < 2:
@@ -115,13 +186,16 @@ class LeganetScraper(BaseScraper):
                 href = a["href"]
                 link_text = a.get_text(strip=True)
 
-                # Skip navigation, category links, PDFs, and external links
-                if not href or href.startswith("http") or href.startswith("#"):
+                # Skip navigation, category links, PDFs, and external links.
+                # Links used to be relative; the site now writes them absolute
+                # against www.leganet.be, so filter on the resolved host instead
+                # of rejecting everything that starts with "http" (#1593).
+                if not href or href.startswith(("#", "mailto:", "javascript:")):
                     continue
                 if "Tables/" in href or href == "../../" or not link_text:
                     continue
 
-                # Only HTML documents
+                # Only HTML documents (every doc has a PDF twin we skip)
                 if not (href.endswith(".htm") or href.endswith(".html")):
                     continue
 
@@ -131,6 +205,15 @@ class LeganetScraper(BaseScraper):
                     continue
 
                 full_url = urljoin(cat_url, href)
+
+                # Stay on the publisher's own hosts, and normalize the legacy
+                # .cd domain onto the canonical .be one so the same document
+                # reached via either link dedups to a single _id.
+                if full_url.split("/")[2].lower() not in KNOWN_HOSTS:
+                    continue
+                full_url = re.sub(
+                    r"^https?://(?:www\.)?leganet\.(?:be|cd)", BASE_URL, full_url
+                )
 
                 # Only documents under /Legislation/
                 if "/Legislation/" not in full_url:
@@ -148,6 +231,15 @@ class LeganetScraper(BaseScraper):
 
                 if max_docs and len(documents) >= max_docs:
                     return documents
+
+        if not documents:
+            # Fail loud: a 0-URL crawl is always a transport/layout regression,
+            # never a legitimately empty corpus (issue #1593).
+            raise RuntimeError(
+                f"Discovered 0 document URLs across {len(CATEGORY_PAGES)} category "
+                f"pages on {BASE_URL} — expected ~2,200. Transport failure or "
+                "site layout change; check the category page fetches above."
+            )
 
         logger.info(f"Discovered {len(documents)} unique document URLs")
         return documents
@@ -209,17 +301,21 @@ class LeganetScraper(BaseScraper):
 
     def _parse_date(self, title: str) -> Optional[str]:
         """Extract date from document title like '15 février 1965. - ORDONNANCE 44'."""
-        # French month names
+        # French month names, keyed on the accent-stripped form so the lookup
+        # below can never miss. Keying on the accented spelling used to drop
+        # "décembre" -> "decembre" out of the dict, silently dating every
+        # December document to January (#1593).
         months = {
-            "janvier": "01", "février": "02", "mars": "03", "avril": "04",
-            "mai": "05", "juin": "06", "juillet": "07", "août": "08",
-            "septembre": "09", "octobre": "10", "novembre": "11", "décembre": "12",
-            "fevrier": "02", "aout": "08",  # without accents
+            "janvier": "01", "fevrier": "02", "mars": "03", "avril": "04",
+            "mai": "05", "juin": "06", "juillet": "07", "aout": "08",
+            "septembre": "09", "octobre": "10", "novembre": "11", "decembre": "12",
         }
 
         # Pattern: DD month YYYY
         m = re.search(
-            r"(\d{1,2})\s+(janvier|f[eé]vrier|mars|avril|mai|juin|juillet|ao[uû]t|"
+            # \s* not \s+ : titles are typed by hand and run the day into the
+            # month ("DU 16juin 2011"), which otherwise fell back to Jan 1st.
+            r"(\d{1,2})\s*(janvier|f[eé]vrier|mars|avril|mai|juin|juillet|ao[uû]t|"
             r"septembre|octobre|novembre|d[eé]cembre)\s+(\d{4})",
             title, re.IGNORECASE,
         )
@@ -227,7 +323,10 @@ class LeganetScraper(BaseScraper):
             day = int(m.group(1))
             month_name = m.group(2).lower().replace("é", "e").replace("û", "u")
             year = m.group(3)
-            month = months.get(month_name, "01")
+            month = months.get(month_name)
+            if month is None:
+                logger.warning(f"Unmapped French month {month_name!r} in title: {title[:80]}")
+                return None
             return f"{year}-{month}-{day:02d}"
 
         # Pattern: just a year
@@ -332,4 +431,9 @@ def main():
         stats = scraper.update()
         logger.info(f"Update complete: {stats}")
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

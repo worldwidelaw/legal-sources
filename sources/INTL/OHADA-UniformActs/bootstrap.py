@@ -17,9 +17,9 @@ Data:
   - No authentication required
 
 Usage:
-  python bootstrap.py bootstrap          # Full initial pull
-  python bootstrap.py bootstrap --sample # Fetch 15 sample records
-  python bootstrap.py bootstrap-fast     # Alias for bootstrap
+  python bootstrap.py bootstrap          # Full pull -> data/records.jsonl
+  python bootstrap.py bootstrap --sample # Fetch 15 sample records -> sample/
+  python bootstrap.py bootstrap-fast     # Alias for the full bootstrap (fleet entry point)
   python bootstrap.py update             # Fetch all (same as bootstrap)
   python bootstrap.py test               # Quick connectivity test
 """
@@ -50,6 +50,10 @@ logger = logging.getLogger("legal-data-hunter.INTL.OHADA-UniformActs")
 
 SOURCE_ID = "INTL/OHADA-UniformActs"
 BASE_URL = "https://www.ohadalegis.com/anglais/telAUGB"
+
+# Below this fraction of distinct lines, an extraction is running headers, not
+# a document. See normalize(); measured 0.93-1.00 across all 12 real acts.
+MIN_DISTINCT_LINE_RATIO = 0.5
 
 # All 12 documents with metadata and PDF URLs
 DOCUMENTS = [
@@ -160,7 +164,12 @@ DOCUMENTS = [
         "date": "2017-01-26",
         "adopted_location": "Brazzaville, Congo",
         "category": "uniform_act",
-        "pdf_url": f"{BASE_URL}/AU-Ohada-Comptabilite-info-financiere-2017-fr.pdf",
+        # ohadalegis serves the whole 1,246-page Journal Officiel special issue,
+        # whose SYSCOHADA accounting tables are scanned images with no text
+        # layer — extraction returned nothing but the running page headers.
+        # OHADA's own digital library publishes the Act on its own (54 pages,
+        # OCR'd but complete: articles 1-113 plus the signature page).
+        "pdf_url": "https://biblio.ohada.org/doc_num.php?explnum_id=2061",
         "language": "fr",
     },
     {
@@ -210,11 +219,11 @@ class OHADAUniformActsScraper(BaseScraper):
                           "Chrome/120.0.0.0 Safari/537.36",
         })
 
-    def _download_pdf_text(self, pdf_url: str, max_pages: int = 300) -> Optional[str]:
-        """Download a PDF and extract text via pdfplumber."""
+    def _download_pdf_text(self, pdf_url: str) -> Optional[str]:
+        """Download a PDF and extract text from every page via pdfplumber."""
         try:
             logger.info("Downloading PDF: %s", pdf_url)
-            resp = self.session.get(pdf_url, timeout=120)
+            resp = self.session.get(pdf_url, timeout=180)
             resp.raise_for_status()
 
             if not resp.content or b"%PDF" not in resp.content[:10]:
@@ -222,17 +231,17 @@ class OHADAUniformActsScraper(BaseScraper):
                 return None
 
             pdf = pdfplumber.open(io.BytesIO(resp.content))
+            total_pages = len(pdf.pages)
             pages_text = []
-            page_count = min(len(pdf.pages), max_pages)
 
-            for i in range(page_count):
-                text = pdf.pages[i].extract_text()
+            for page in pdf.pages:
+                text = page.extract_text()
                 if text and text.strip():
                     pages_text.append(text.strip())
 
             pdf.close()
             full_text = "\n\n".join(pages_text)
-            logger.info("Extracted %d chars from %d/%d pages", len(full_text), page_count, len(pdf.pages) if hasattr(pdf, 'pages') else page_count)
+            logger.info("Extracted %d chars from %d pages", len(full_text), total_pages)
             return full_text if full_text.strip() else None
 
         except Exception as e:
@@ -269,6 +278,20 @@ class OHADAUniformActsScraper(BaseScraper):
         if not text or len(text) < 100:
             return None
 
+        # A scanned PDF whose only text layer is the running header extracts as
+        # the same two lines repeated for hundreds of pages, which is long
+        # enough to sail past the length check above. Real acts sit at 0.93+
+        # distinct lines; the header-only AUDCIF extraction sat at 0.15.
+        lines = [ln.strip() for ln in text.split("\n") if ln.strip()]
+        distinct_ratio = len(set(lines)) / len(lines)
+        if distinct_ratio < MIN_DISTINCT_LINE_RATIO:
+            logger.error(
+                "%s: %.0f%% of lines are repeats (%d chars) — PDF has no body "
+                "text layer, only running headers. Dropping.",
+                raw["id"], (1 - distinct_ratio) * 100, len(text),
+            )
+            return None
+
         return {
             "_id": raw["id"],
             "_source": SOURCE_ID,
@@ -298,7 +321,7 @@ def main():
     boot.add_argument("--sample", action="store_true", help="Fetch sample records only")
     boot.add_argument("--full", action="store_true", help="Fetch all records")
 
-    sub.add_parser("bootstrap-fast", help="Alias for bootstrap")
+    sub.add_parser("bootstrap-fast", help="Alias for the full bootstrap (fleet entry point)")
     sub.add_parser("update", help="Incremental update")
     sub.add_parser("test", help="Quick connectivity test")
 
@@ -320,8 +343,7 @@ def main():
             sys.exit(1)
 
     if args.command in ("bootstrap", "bootstrap-fast"):
-        sample_mode = getattr(args, "sample", False) or args.command == "bootstrap-fast"
-        stats = scraper.bootstrap(sample_mode=sample_mode, sample_size=15)
+        stats = scraper.bootstrap(sample_mode=getattr(args, "sample", False), sample_size=15)
         print(json.dumps(stats, indent=2, default=str))
     elif args.command == "update":
         stats = scraper.bootstrap(sample_mode=False)

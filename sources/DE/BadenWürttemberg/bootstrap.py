@@ -40,6 +40,8 @@ PORTAL_PAGE_URL = f"{BASE_URL}/jportal/portal/page/{PORTAL_ID}"
 API_BASE = f"{BASE_URL}/jportal/wsrest/recherche3"
 RATE_LIMIT_DELAY = 1.5  # seconds between requests
 SAMPLE_DIR = Path(__file__).parent / "sample"
+RECORDS_PATH = Path(__file__).parent / "data" / "records.jsonl"
+ID_PREFIX = "BW-"
 SOURCE_ID = "DE/BadenWürttemberg"
 PAGE_SIZE = 100  # max results per search page
 
@@ -247,6 +249,29 @@ def make_rahmen_id(base_id: str) -> str:
     return base_id + "rahmen"
 
 
+# The portal migrated from mnemonic docIds (jlr-BauOBW2010V32P54) to opaque
+# ones. A law is 'jlr-' + a 13-character key; its individual norms are that
+# same key + 'NN' + an 11-digit sequence:
+#
+#   jlr-NNLBW00007BCC               Landesbauordnung (the whole law)
+#   jlr-NNLBW00007BCCNN00000000080  § 58 LBO
+#
+# Appending 'rahmen' to one of these produces a docId the API rejects with
+# HTTP 500, which is why nearly every document failed (issue #1384).
+OPAQUE_DOC_ID_RE = re.compile(r'^(jlr-[A-Z0-9]{13})(?:NN\d{11})?$')
+
+
+def law_doc_id(doc_id: str) -> str:
+    """Return the law-level docId that `doc_id` belongs to.
+
+    Handles both the opaque scheme and the legacy mnemonic one.
+    """
+    match = OPAQUE_DOC_ID_RE.match(doc_id)
+    if match:
+        return match.group(1)
+    return make_rahmen_id(extract_base_law_id(doc_id))
+
+
 def clean_html_to_text(html: str) -> str:
     """Convert HTML to clean plain text."""
     if not html:
@@ -351,7 +376,7 @@ def normalize(doc_id: str, doc_data: Dict, search_item: Dict = None) -> Dict:
     permalink = doc_data.get("permalink", f"{BASE_URL}/perma?d={doc_id}")
 
     return {
-        "_id": f"BW-{doc_id}",
+        "_id": f"{ID_PREFIX}{doc_id}",
         "_source": SOURCE_ID,
         "_type": "legislation",
         "_fetched_at": datetime.now(timezone.utc).isoformat(),
@@ -418,11 +443,10 @@ def discover_unique_laws(session: JPortalSession, limit: int = None,
             if not doc_id:
                 continue
 
-            base = extract_base_law_id(doc_id)
-            if base not in seen_bases:
-                seen_bases.add(base)
-                rahmen_id = make_rahmen_id(base)
-                rahmen_ids.append(rahmen_id)
+            law_id = law_doc_id(doc_id)
+            if law_id not in seen_bases:
+                seen_bases.add(law_id)
+                rahmen_ids.append(law_id)
 
         if verbose and start % 1000 == 1:
             print(f"  Scanned {start:,}/{total_hits:,} norms, found {len(rahmen_ids)} unique laws")
@@ -442,12 +466,11 @@ def discover_unique_laws(session: JPortalSession, limit: int = None,
 def fetch_law(session: JPortalSession, rahmen_id: str) -> Optional[Dict]:
     """Fetch a single law as full Gesamtausgabe and normalize it."""
     doc_data = session.fetch_document(rahmen_id, doc_part="X")
+    if not doc_data and rahmen_id.endswith("rahmen"):
+        # Legacy mnemonic ids: some work without the 'rahmen' suffix.
+        doc_data = session.fetch_document(rahmen_id[:-len("rahmen")], doc_part="X")
     if not doc_data:
-        # Try without 'rahmen' suffix (some IDs work directly)
-        base_id = rahmen_id.replace("rahmen", "")
-        doc_data = session.fetch_document(base_id, doc_part="X")
-        if not doc_data:
-            return None
+        return None
 
     record = normalize(rahmen_id, doc_data)
     if not record.get("text") or len(record.get("text", "")) < 100:
@@ -484,6 +507,65 @@ def fetch_all(limit: int = None) -> Iterator[Dict]:
     print(f"Fetched {count} laws with full text ({errors} errors)")
 
 
+def _already_written_ids() -> set:
+    """Law docIds already present in data/records.jsonl, so a relaunch resumes.
+
+    Records are keyed `BW-{docId}`; strip the prefix to compare against the
+    docIds discovery yields.
+    """
+    written = set()
+    try:
+        with RECORDS_PATH.open("r", encoding="utf-8") as fh:
+            for line in fh:
+                try:
+                    rec_id = json.loads(line).get("_id") or ""
+                except ValueError:
+                    continue
+                if rec_id.startswith(ID_PREFIX):
+                    written.add(rec_id[len(ID_PREFIX):])
+    except OSError:
+        return written
+    return written
+
+
+def bootstrap_fast(limit: int = None) -> int:
+    """Stream the full corpus to data/records.jsonl, resuming where it left off.
+
+    The previous full path only counted the records it yielded and wrote
+    nothing, so the pipeline had no corpus to ingest (issue #1384).
+    """
+    session = JPortalSession()
+    if not session.authenticate():
+        print("Authentication failed")
+        return 0
+
+    rahmen_ids = discover_unique_laws(session, limit=limit)
+    written = _already_written_ids()
+    if written:
+        print(f"Resuming: {len(written)} laws already in {RECORDS_PATH.name}")
+    todo = [rid for rid in rahmen_ids if rid not in written]
+    print(f"\nFetching {len(todo)} of {len(rahmen_ids)} unique laws...")
+
+    RECORDS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    count = 0
+    errors = 0
+    with RECORDS_PATH.open("a", encoding="utf-8") as out:
+        for i, rid in enumerate(todo):
+            if i % 50 == 0 and i > 0:
+                print(f"  Progress: {i}/{len(todo)}, {count} written, {errors} errors",
+                      flush=True)
+            record = fetch_law(session, rid)
+            if not record:
+                errors += 1
+                continue
+            out.write(json.dumps(record, ensure_ascii=False) + "\n")
+            out.flush()
+            count += 1
+
+    print(f"Wrote {count} laws with full text to {RECORDS_PATH} ({errors} errors)")
+    return count
+
+
 def fetch_sample(count: int = 15) -> List[Dict]:
     """Fetch sample records for validation."""
     session = JPortalSession()
@@ -514,12 +596,11 @@ def fetch_sample(count: int = 15) -> List[Dict]:
             if not doc_id:
                 continue
 
-            base = extract_base_law_id(doc_id)
-            if base in seen_bases:
+            rahmen_id = law_doc_id(doc_id)
+            if rahmen_id in seen_bases:
                 continue
-            seen_bases.add(base)
+            seen_bases.add(rahmen_id)
 
-            rahmen_id = make_rahmen_id(base)
             print(f"Fetching law: {rahmen_id}")
 
             record = fetch_law(session, rahmen_id)
@@ -600,7 +681,7 @@ def main():
     parser = argparse.ArgumentParser(description="DE/BadenWürttemberg data fetcher")
     parser.add_argument(
         "command",
-        choices=["bootstrap", "update", "status"],
+        choices=["bootstrap", "bootstrap-fast", "update", "status"],
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample records only")
@@ -622,12 +703,14 @@ def main():
                 return 1
         else:
             print("Full bootstrap - fetching all laws...")
-            count = 0
-            for record in fetch_all():
-                count += 1
-                if count % 10 == 0:
-                    print(f"Fetched {count} records...")
+            count = bootstrap_fast()
             print(f"Total: {count} records")
+            if count == 0:
+                return 1
+
+    elif args.command == "bootstrap-fast":
+        count = bootstrap_fast()
+        return 0 if count else 1
 
     elif args.command == "update":
         print("Fetching recent updates...")

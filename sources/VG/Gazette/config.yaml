@@ -1,0 +1,89 @@
+source:
+  id: VG/Gazette
+  name: Virgin Islands Official Gazette
+  country: VG
+  url: https://eservices.gov.vg/gazette/
+  description: >
+    The Official Gazette of the Government of the British Virgin Islands,
+    published weekly on Thursdays (plus Extraordinary editions) by the Gazette
+    Unit of the Cabinet Office. Covers Part 1 -- Government and Statutory
+    Notices: statutory instruments, proclamations, commencement notices,
+    subsidiary legislation, appointments to boards and commissions, land,
+    court, election and deportation notices -- plus the Acts, Bills and
+    Statutory Instruments circulated with the Gazette as attachments.
+    Editions are numbered G00001 (9 November 2006) upwards and are served as
+    born-digital PDFs from the site's public file directory; full text is
+    extracted from those PDFs. Language: English.
+
+    Scope note: the site's browse and search pages are login-gated and the
+    Liquidation and Other Notices archive (Part 2) needs a paid enhanced
+    subscription. Only the tiers the Gazette publishes free of charge are
+    fetched -- Government and Statutory Notices and attachments -- and no
+    authentication is used.
+
+data_model:
+  types:
+    - legislation
+  update_strategy: upsert
+  dedup_key:
+    - doc_id
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 4
+
+license:
+  name: "Crown Copyright (British Virgin Islands)"
+  url: "https://eservices.gov.vg/gazette/content/faqs"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Crown Copyright (BVI). No formal open licence is published. The Gazette
+    Unit states in its FAQ and Help pages that Government and Statutory
+    Notices and Gazette attachments are "available free of charge" online;
+    only the Liquidation and Other Notices archive is behind a $500/year
+    enhanced subscription, and this source deliberately excludes it. Statutory
+    instruments and Acts published in the Gazette are official law and are
+    freely reproducible as such.
+
+schema:
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url
+  key_fields:
+    - name: doc_id
+      type: string
+      required: true
+    - name: date
+      type: date
+      required: false
+    - name: gazette_part
+      type: string
+      required: false
+    - name: document_kind
+      type: string
+      required: false
+    - name: jurisdiction
+      type: string
+      required: false
+    - name: publisher
+      type: string
+      required: false
+    - name: language
+      type: string
+      required: false
+
+schedule:
+  full_refresh: quarterly
+  update_check: weekly

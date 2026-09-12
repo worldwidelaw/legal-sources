@@ -1,0 +1,155 @@
+# ES/REGCON -- Spanish collective bargaining agreements (convenios colectivos)
+# Registry: REGCON (Ministerio de Trabajo y Economia Social)
+# Text channel: BOE Open Data API (state-scope register)
+# License: Spanish PSI reuse regulations (Ley 37/2007 / RD 1495/2011)
+
+source:
+  id: "ES/REGCON"
+  name: "Convenios colectivos sectoriales (REGCON / BOE)"
+  country: "ES"
+  url: "https://expinterweb.mites.gob.es/regcon/"
+  description: >
+    Collective bargaining agreements registered in REGCON by the Direccion
+    General de Trabajo and published in the BOE, with full text. Covers
+    sectoral (state-scope) and company agreements plus their revisions, wage
+    tables, extensions, adhesions and arbitration awards.
+
+data_types:
+  - legislation
+
+api:
+  type: "rest"
+  base_url: "https://www.boe.es"
+  format: "json+xml"
+  documentation: "https://www.boe.es/datosabiertos/documentos/APIsumarioBOE.pdf"
+  endpoints:
+    daily_summary: "/datosabiertos/api/boe/sumario/{YYYYMMDD}"
+    document_xml: "/diario_boe/xml.php?id={doc_id}"
+  index:
+    section: "3"
+    epigraph: "Convenios colectivos de trabajo"
+
+auth:
+  type: "none"
+
+coverage:
+  # Earliest BOE day walked by a full bootstrap. The JSON summary API is
+  # reliable from 1990; earlier editions exist only as scanned PDFs.
+  start_date: "1990-01-01"
+  scope: >
+    State-scope register (BOE). Province- and region-scope agreements publish
+    in the boletines provinciales/autonomicos: see ES/ProvincialGazettes and
+    the per-region ES sources.
+
+rate_limit:
+  requests_per_second: 4
+  burst: 8
+  max_workers: 4
+
+license:
+  name: "Spanish PSI reuse regulations (Ley 37/2007, RD 1495/2011)"
+  url: "https://datos.gob.es/en/terms"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    BOE content is reusable including for commercial purposes, provided the
+    source and the date of the last update are cited and the content is not
+    altered or misrepresented as official.
+
+data_model:
+  type: "legislation"
+  primary_key: "identifier"
+  update_strategy: "upsert"
+  dedup_key:
+    - "identifier"
+
+schema:
+  key_fields:
+    - name: "identifier"
+      description: "BOE document identifier (e.g., BOE-A-2025-4386)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Title of the registration resolution"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the collective agreement, annexes and wage tables"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the registration resolution (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "publication_date"
+      description: "BOE publication date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "url"
+      description: "Canonical BOE URL for the document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "convenio_code"
+      description: "REGCON agreement code cited in the resolution (11-14 digits)"
+      type: "string"
+      role: "classification"
+      required: false
+    - name: "scope_type"
+      description: "Functional scope: sector | empresa | unknown"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "instrument_type"
+      description: >
+        agreement | revision | wage_tables | amendment | extension | adhesion |
+        arbitration_award | minutes | denunciation
+      type: "string"
+      role: "classification"
+      required: true
+  secondary_fields:
+    - name: "territorial_scope"
+      description: "estatal | provincial, derived from the agreement code prefix"
+    - name: "province"
+      description: >
+        Province name; present only when the agreement code carries a province
+        prefix (state-scope codes 99/90 omit the field rather than emit null)
+    - name: "validity_notes"
+      description: "BOE analysis notes recording vigencia and prorroga of the agreement"
+    - name: "departamento"
+      description: "Issuing department (Ministerio de Trabajo y Economia Social)"
+    - name: "rango"
+      description: "Instrument rank as recorded by BOE (Resolucion)"
+    - name: "boe_issue"
+      description: "BOE issue number"
+    - name: "publication_reference"
+      description: "Official publication reference (BOE identifier)"
+    - name: "materias"
+      description: "BOE subject-matter descriptors"
+    - name: "url_pdf"
+      description: "PDF of the BOE page range"
+    - name: "url_xml"
+      description: "BOE XML endpoint used for the full text"
+    - name: "language"
+      description: "Language of the document (es)"
+
+notes: |
+  - REGCON itself is a stateful JSF consultation form exposing registry
+    metadata only; the authoritative text of every state-scope agreement is
+    its BOE publication, which the BOE Open Data API serves as XML.
+  - Index filter is an exact epigraph match on "Convenios colectivos de
+    trabajo", which excludes the unrelated administrative "Convenios" between
+    public bodies published in the same BOE section.
+  - Agreement codes are parsed from the "codigo de convenio n.o ..." clause
+    that every registration resolution cites. Prefix 99 = state sectoral,
+    90 = state company, otherwise the INE province code.
+  - fetch_updates re-walks BOE summaries from `since` minus a 7-day overlap;
+    BOE publication date is the availability comparator, not the date the
+    agreement was signed.

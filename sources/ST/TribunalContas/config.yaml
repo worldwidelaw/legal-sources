@@ -1,0 +1,130 @@
+# ═══════════════════════════════════════════════════════════════════
+# ST/TribunalContas — Tribunal de Contas de São Tomé e Príncipe
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "ST/TribunalContas"
+  country: "ST"
+  name: "Tribunal de Contas de São Tomé e Príncipe (Court of Audit)"
+  url: "https://www.tcontas.st/"
+  description: |
+    São Tomé e Príncipe's supreme audit institution. Publishes acórdãos and
+    decisões of the 1st and 2nd Sections (prior-visa refusals, financial
+    liability, account judgments), pareceres on the Conta Geral do Estado and
+    on the RAP/INSS accounts, audit and account-verification reports (VIC/VEC),
+    and the Court's own normative acts (instruções, resoluções, deliberações).
+    Portuguese. Documents are born-digital PDFs; coverage runs roughly 2017 to
+    the present, with the bulk of the online corpus from 2020 onward.
+
+data_types:
+  - case_law
+  - doctrine
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.tcontas.st"
+  # Wix site. Enumeration goes through the site's own sitemap index, which
+  # exposes one `dynamic-<collection>_p_<uuid>_0_5000-sitemap.xml` per Wix Data
+  # collection plus `pages-sitemap.xml`. There is no REST/JSON API, no SPARQL
+  # endpoint, no ELI implementation and no ST open-data portal entry.
+  sitemap: "https://www.tcontas.st/sitemap.xml"
+  selectors:
+    item: 'div[class*="wixui-repeater__item"]'
+    # PDFs live off-site on the Wix user-files CDN, NOT on tcontas.st:
+    pdf_href: 'https://<site-uuid>.usrfiles.com/ugd/27dc02_<hash>.pdf'
+
+data_model:
+  type: "case_law"
+  source_nature: "gazette"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "none"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "ST/TribunalContas/<usrfiles PDF hash> — stable per document"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title as rendered in the Wix repeater item"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601), parsed from the Portuguese date line"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "_type"
+      description: "case_law (acórdãos/decisões), legislation (instruções/resoluções/deliberações) or doctrine (pareceres/relatórios)"
+      type: "string"
+      role: "status"
+      required: true
+    - name: "url"
+      description: "tcontas.st page the document was listed on"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "pdf_url"
+      description: "Direct usrfiles.com PDF URL"
+    - name: "document_class"
+      description: "Acórdão / Decisão / Instrução / Resolução / Deliberação / Relatório-Parecer"
+    - name: "section"
+      description: "First path segment of the listing page (acordaos-2026, vic2025, parecercge, ...)"
+    - name: "court"
+      description: "Always 'Tribunal de Contas de São Tomé e Príncipe'"
+  probably_ignorable:
+    - name: "language"
+      description: "Always 'pt'"
+    - name: "country"
+      description: "Always 'ST'"
+
+license:
+  id: "unverified"
+  name: "Official publications of the Tribunal de Contas de São Tomé e Príncipe"
+  url: "https://www.tcontas.st/"
+  commercial_use: null
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    No terms-of-use, copyright or reuse page exists anywhere on tcontas.st; the
+    footer carries only "Copyright 2025 © - Tribunal de Contas de São Tomé e
+    Príncipe. Todos os direitos reservados." São Tomé e Príncipe has no statutory
+    open-data or public-sector-information regime, and no explicit public-domain
+    carve-out for official texts was found. Flagged unverified rather than
+    assumed open — confirm with the Court before commercial redistribution.
+
+notes: |
+  - Wix site, not Google Sites (the pre-build manifest note was wrong).
+  - Every page server-side-renders its full repeater, so a dynamic *detail* page
+    carries every item of its collection. Documents are therefore deduped on the
+    `27dc02_<hash>` PDF id, which also collapses the `/fr/` mirrors.
+  - PDF anchors ARE present in the HTML, but they point at `usrfiles.com`, not at
+    a `*.pdf` path under tcontas.st. A naive href="*.pdf" scrape finds nothing;
+    discover() raises rather than returning an empty corpus.
+  - Several navigation hub pages (/decisoes1ra, /decisoes2ra, /acordaos2ra,
+    /legislacoes, /vic, /vec, /c-rap, /c-inss, /contas-de-gerência) are currently
+    EMPTY upstream — the Court has not published anything under them yet. That is
+    a real upstream gap, not a parser miss.
+  - PDFs are born-digital; no OCR needed.

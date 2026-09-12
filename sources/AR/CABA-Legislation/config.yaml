@@ -36,8 +36,13 @@ source:
   country: AR
   data_types:
   - legislation
-  description: 'Legislation from Buenos Aires City (CABA) via the Boletín Oficial REST API. Covers laws (Leyes) and decrees (Decretos) from 1996 to present. Full text extracted from PDF documents served
-    by the API.
+  description: 'Legislation from Buenos Aires City (CABA) via the Boletín Oficial REST
+    API. Covers laws (Leyes) and decrees (Decretos); the API indexes back to 2008 but
+    only publishes a per-norm document from 2018 onward, so that is where full-text
+    coverage becomes complete. 2017 is partly covered via link_anexo; 2008-2016 norms
+    are enumerated but emit no record because no per-norm document exists. Document
+    URLs come from link_documento_normas or /getUrlDocument/{id}/{tipo}; text is
+    extracted from the PDF.
 
     '
   format: json+pdf

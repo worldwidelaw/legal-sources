@@ -1,0 +1,94 @@
+# ═══════════════════════════════════════════════════════════════════
+# US/MashantucketPequotLaws — Mashantucket Pequot Tribal Laws (M.P.T.L.)
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "US/MashantucketPequotLaws"
+  country: "US"
+  name: "Mashantucket Pequot Tribal Laws (M.P.T.L.)"
+  url: "https://law.mptn-nsn.gov/tribal-laws/"
+  description: |
+    The codified body of law of the Mashantucket (Western) Pequot Tribal
+    Nation, a federally recognized sovereign tribe in Connecticut: the Tribal
+    Constitution and Bylaws, the Mashantucket Pequot Rules of Court, and the
+    numbered titles of the Mashantucket Pequot Tribal Laws (M.P.T.L.) covering
+    judiciary, criminal law, gaming, tort claims, child welfare, family
+    relations, employment, taxation, land use, cannabis, sovereign immunity
+    and more. Also includes the bound 2008 code volumes with their 2009–2014
+    pocket parts and the dated current supplement. Sourced from the Tribal
+    Court law portal's static index at law.mptn-nsn.gov/tribal-laws/ and the
+    born-digital PDFs it links under /globalassets/laws/. English.
+    The current titles and the rules volume are split to provision level on the
+    official citation lines each PDF prints above every provision, so one
+    record is one section, rule or canon; the historical compilations and the
+    supplement are kept whole. The tribe's case law (West's Mashantucket Pequot
+    Reports) is a commercial publication and is not covered here.
+
+data_types:
+  - legislation
+
+jurisdictions:
+  - code: US-CT
+    scope: partial
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_scrape"   # static law index + born-digital statute PDFs
+  base_url: "https://law.mptn-nsn.gov"
+
+# ── Output Schema ─────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "document_type"
+      type: "string"
+      required: false
+    - name: "title_number"
+      type: "integer"
+      required: false
+    - name: "citation"
+      type: "string"
+      required: false
+    - name: "section_heading"
+      type: "string"
+      required: false
+    - name: "document"
+      type: "string"
+      required: false
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Public Domain (tribal government edict)"
+  url: "https://law.mptn-nsn.gov/tribal-laws/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    The Mashantucket Pequot Tribal Laws are enacted law of a sovereign tribal
+    government, published in full by the Tribal Court's law portal for public
+    access. Under the government edicts doctrine enacted law is not subject to
+    copyright. Freely reusable, including commercially. (West's Mashantucket
+    Pequot Reports — the tribe's reported case law — is a separate commercial
+    publication and is deliberately out of scope for this source.)

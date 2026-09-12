@@ -1,0 +1,30 @@
+{
+  "_id": "FR/CADA/20200361",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-08-06T21:54:01.148909+00:00",
+  "opinion_id": "20200361",
+  "title": "Avis 20200361 - Préfecture du Gard",
+  "date": "2020-02-20",
+  "url": "https://www.data.gouv.fr/explore/cada/20200361",
+  "text": "Maître X, X, a saisi la commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 23 septembre 2019, à la suite du refus opposé par le préfet du Gard à sa demande de communication des documents suivants :\n1) les arrêtés préfectoraux autorisant les abattoirs de la région à pratiquer l'abattage rituel ;\n2) l'état des commandes commerciales, conformément à l'article R214-70 du code rural et de la pêche maritime.\n\nEn réponse à la demande qui lui a été adressée, le préfet du Gard a informé la commission de ce que les documents visés au point 1) avaient été transmis à Maître X par courrier du 7 février 2020, dont il joint une copie. La commission ne peut, dès lors, que déclarer sans objet la demande d'avis sur ce point.\n\nS'agissant du document visé au point 2), la commission, après avoir pris connaissance de la réponse faite au demandeur par le préfet du Gard, rappelle que, dans un avis n° 20143464 du 2 octobre 2014, elle avait statué sur la communicabilité de tels documents, et avait estimé que leur communication serait susceptible de porter atteinte au secret des affaires protégé par le 1° de l'article L311-6 du code des relations entre le public et l'administration. Elle émet donc un avis défavorable à la demande sur ce point.",
+  "subject": "",
+  "administration": "Préfecture du Gard",
+  "meanings": [
+    "Sans objet",
+    "Communiqué",
+    "Défavorable",
+    "Secret des affaires"
+  ],
+  "topics": [
+    "Economie",
+    "Industrie",
+    "Agriculture",
+    "Agriculture"
+  ],
+  "tags": [
+    "Contrôle"
+  ],
+  "part": "III",
+  "type": "Avis"
+}

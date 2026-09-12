@@ -1,0 +1,83 @@
+source:
+  id: US/TX-DWC-AppealsPanel
+  name: Texas DWC — Workers' Compensation Appeals Panel Decisions
+  country: US
+  url: https://wwwapps.tdi.texas.gov/inter/perlroot/wc/appeals/index.html
+  auth: none
+  data_types:
+  - case_law
+  description: >
+    Decisions of the Appeals Panel of the Texas Department of Insurance,
+    Division of Workers' Compensation. The Appeals Panel reviews the decisions
+    of administrative law judges (formerly hearing officers) in contested case
+    hearings under the Texas Workers' Compensation Act (Tex. Lab. Code
+    § 401.001 et seq.), and its decisions are the state's workers' compensation
+    case law — cited by appeal number ("APD 220175-s"). ~21,800 decisions from
+    1991 to the present, served as born-digital PDFs under
+    /appeals/{year}cases/{appeal}r.pdf (significant decisions under
+    /appeals/sig_cases/). The public search tool is a DataTables front end whose
+    own AJAX source is an anonymous SAS broker endpoint returning the complete
+    index as JSON in a single call; that JSON is the authoritative list (year,
+    appeal number, issues, decision file date, disposition, significant-case
+    flag and the PDF URL). Crawled in year partitions with a completed-year
+    checkpoint.
+license:
+  name: Public domain — 17 U.S.C. § 105
+  url: https://www.law.cornell.edu/uscode/text/17/105
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    US state government edict; decisions of a state adjudicative body are not
+    subject to copyright.
+fetch:
+  rate_limit_delay: 1
+  sample_size: 15
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string
+  - name: docket_number
+    required: false
+    type: string
+  - name: citation
+    required: false
+    type: string
+  - name: disposition
+    required: false
+    type: string
+  - name: issues
+    required: false
+    type: array
+  - name: significant
+    required: false
+    type: boolean
+  - name: year
+    required: false
+    type: integer
+  - name: source_format
+    required: false
+    type: string

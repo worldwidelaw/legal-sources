@@ -47,6 +47,7 @@ Usage:
 from __future__ import annotations
 
 import io
+import gc
 import sys
 import json
 import logging
@@ -60,7 +61,7 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 logging.basicConfig(
     level=logging.INFO,
@@ -126,6 +127,7 @@ def _extract_full_text(pdf_bytes: bytes) -> str:
             page = doc[pno]
             for img in page.get_images(full=True):
                 xref = img[0]
+                im = None
                 try:
                     info = doc.extract_image(xref)
                     im = Image.open(io.BytesIO(info["image"])).convert("L")
@@ -133,6 +135,13 @@ def _extract_full_text(pdf_bytes: bytes) -> str:
                 except Exception as e:  # pragma: no cover
                     logger.debug(f"    OCR page {pno} failed: {e}")
                     continue
+                finally:
+                    # Release the decoded image and its buffer promptly; without
+                    # this, PyMuPDF's native image objects + PIL buffers accumulate
+                    # over a long crawl and drive the process to OOM (#1150).
+                    if im is not None:
+                        im.close()
+                    info = None
                 if t and t.strip():
                     parts.append(t.strip())
         if doc.page_count > OCR_MAX_PAGES:
@@ -142,6 +151,12 @@ def _extract_full_text(pdf_bytes: bytes) -> str:
         return "\n\n".join(parts).strip()
     finally:
         doc.close()
+        # Shrink PyMuPDF's internal store so freed page/image objects do not
+        # linger in native memory across the 1.5M-document crawl.
+        try:
+            fitz.TOOLS.store_shrink(100)
+        except Exception:  # pragma: no cover
+            pass
 
 
 class RURegionalLegislationScraper(BaseScraper):
@@ -154,6 +169,30 @@ class RURegionalLegislationScraper(BaseScraper):
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": UA})
         self._auth_map: dict | None = None
+        # Persist crawl progress next to the module (survives the temp CWD the
+        # fleet runs in) so an OOM-killed or timed-out run resumes at the last
+        # completed page rather than re-OCRing pages 1..N from scratch (#1150).
+        self._ckpt_path = Path(__file__).parent / "_checkpoint.json"
+
+    def _load_checkpoint(self) -> int:
+        try:
+            with open(self._ckpt_path) as f:
+                return int(json.load(f).get("next_index", 1))
+        except Exception:
+            return 1
+
+    def _save_checkpoint(self, next_index: int) -> None:
+        try:
+            with open(self._ckpt_path, "w") as f:
+                json.dump({"next_index": next_index}, f)
+        except Exception as e:  # pragma: no cover
+            logger.debug(f"checkpoint save failed: {e}")
+
+    def _clear_checkpoint(self) -> None:
+        try:
+            self._ckpt_path.unlink()
+        except Exception:
+            pass
 
     # ---------------------------------------------------------------- http
     def _get(self, url: str, want_json: bool = False):
@@ -186,8 +225,15 @@ class RURegionalLegislationScraper(BaseScraper):
 
     # ----------------------------------------------------------- discovery
     def _iter_index(self, sample: bool = False) -> Generator[dict, None, None]:
-        """Yield document metadata dicts from the /api/Documents pager."""
-        index = 1
+        """Yield document metadata dicts from the /api/Documents pager.
+
+        On a full crawl, resumes from the last persisted page (checkpoint) and
+        advances it after each fully-yielded page, so an OOM/timeout restart
+        continues forward instead of re-processing pages 1..N.
+        """
+        index = 1 if sample else self._load_checkpoint()
+        if not sample and index > 1:
+            logger.info(f"Resuming crawl from page index {index} (checkpoint)")
         total_pages = None
         while True:
             r = self._get(DOCS_API.format(index=index), want_json=True)
@@ -206,13 +252,17 @@ class RURegionalLegislationScraper(BaseScraper):
                     f"across {total_pages} pages"
                 )
             if not items:
+                if not sample:
+                    self._clear_checkpoint()
                 return
             for it in items:
                 yield it
             if sample:
                 return
             index += 1
+            self._save_checkpoint(index)
             if total_pages and index > total_pages:
+                self._clear_checkpoint()
                 return
 
     def _fetch_one(self, item: dict) -> dict | None:
@@ -248,8 +298,15 @@ class RURegionalLegislationScraper(BaseScraper):
 
     def _iter_raw(self, sample: bool = False) -> Generator[dict, None, None]:
         emitted = 0
+        processed = 0
         for item in self._iter_index(sample=sample):
             rec = self._fetch_one(item)
+            processed += 1
+            # Force a GC sweep periodically: the OCR path allocates large native
+            # (PyMuPDF/PIL/tesseract) buffers whose Python wrappers may outlive a
+            # single doc; without this the RSS climbs to OOM over a long run.
+            if processed % 50 == 0:
+                gc.collect()
             if rec:
                 yield rec
                 emitted += 1
@@ -313,6 +370,7 @@ class RURegionalLegislationScraper(BaseScraper):
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        since = as_date_str(since)  # update() passes a datetime; #1512
         for raw in self._iter_raw(sample=False):
             date = raw.get("publish_date") or raw.get("date")
             if not since or (date and date >= since):

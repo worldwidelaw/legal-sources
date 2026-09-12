@@ -32,7 +32,7 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 logging.basicConfig(
     level=logging.INFO,
@@ -188,6 +188,9 @@ class IEAIRENAPolicyScraper(BaseScraper):
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
         """Yield RAW policies modified since a date (filters client-side)."""
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         policies = self._fetch_policies()
         count = 0
         for doc in policies:

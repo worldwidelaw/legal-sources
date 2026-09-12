@@ -13,6 +13,9 @@ auth:
 rate_limit:
   requests_per_second: 0.5
   burst: 2
+  # Search pagination stays sequential; bootstrap_fast overlaps the per-case PDF
+  # downloads that normalize() performs.
+  max_workers: 8
 data_model:
   update_strategy: upsert
   dedup_key:
@@ -44,5 +47,17 @@ schema:
       type: string
       required: false
     - name: court
+      type: string
+      required: false
+    - name: judgment_type
+      type: string
+      required: false
+    - name: result
+      type: string
+      required: false
+    - name: collection
+      type: string
+      required: false
+    - name: pdf_url
       type: string
       required: false

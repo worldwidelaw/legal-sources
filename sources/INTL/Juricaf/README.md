@@ -23,6 +23,30 @@ UEMOA (95), DR Congo (89), Mauritania (58), Czech Republic (59), Cambodia (66),
 CAR (53), Lebanon (35), Andorra (29), Tunisia (28), Burundi (25), Comoros (10),
 and others.
 
+## How the scraper works
+
+Decision URLs come from the published sitemap: `/sitemap.xml` fans out to 38
+chunks of up to 50,000 `<loc>` entries (~1.85M decisions), each with a
+`<lastmod>` that drives `fetch_updates`. Full text is then read from the
+`<article id="textArret">` element of each `/arret/{slug}` page.
+
+Search pagination (`/recherche/+/facet_pays:{COUNTRY}?page=N`) is deliberately
+**not** used: `robots.txt` disallows `?page=` and `?tri=` for `User-agent: *`,
+and at 10 results per request it cost ~186,000 requests just to learn the URLs.
+
+At the configured 1 request/second a full pass takes far longer than one fleet
+slot, so the run is designed to be resumed rather than restarted:
+
+- `data/checkpoint.json` records which sitemap chunks are finished and the
+  offset reached inside the current one, saved every 25 URLs.
+- Any decision already in storage is skipped without a request, so a resumed
+  run (or a drifted sitemap offset) costs a local lookup rather than a refetch.
+- The trailing chunk is never retired, since new decisions are appended to it.
+
+Juricaf carries metadata-only stubs for some older decisions — mostly 19th
+century Conseil d'État entries whose `<article>` is empty upstream. These are
+skipped rather than stored as empty records.
+
 ## License
 
 [Public Domain (Government Judicial Decisions)](https://juricaf.org/static/mentions_legales) — Supreme court decisions are public domain in most jurisdictions. AHJUCAF provides free access.

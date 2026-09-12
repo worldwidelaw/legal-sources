@@ -1,0 +1,134 @@
+# ===================================================================
+# US/NC-NCUC -- North Carolina Utilities Commission Orders
+# ===================================================================
+# Full text of Orders and decisions issued by the North Carolina
+# Utilities Commission (NCUC) adjudicating utility dockets — electric,
+# natural gas, water/sewer and telephone matters: general rate cases,
+# fuel and rider adjustments, certificates of public convenience and
+# necessity, complaints, integrated resource plans, securitization
+# proceedings, competitive-procurement (RFP) dockets and rulemakings.
+# Each Commission Order is an administrative adjudication / edict of a
+# specific docket = case_law. Public domain (US state government edict).
+#
+# ACCESS: the NCUC document portal at starw1.ncuc.gov ("STAR" filing
+# system) is fronted by Cloudflare, which serves an "Attention Required!"
+# 403 managed-challenge page to every datacenter / non-browser vantage
+# (this build vantage and Anthropic's fetch vantage both 403 as of
+# 2026-07-27). The corpus is therefore read from the Internet Archive
+# (Wayback Machine), which has a large crawl (~14,000) of the
+# Commission's public order PDFs served at ViewFile.aspx?Id={GUID}.
+# ===================================================================
+
+source:
+  id: "US/NC-NCUC"
+  country: "US"
+  name: "North Carolina Utilities Commission — Orders"
+  url: "https://www.ncuc.gov/"
+  description: |
+    Orders issued by the North Carolina Utilities Commission (NCUC)
+    resolving utility dockets — electric, natural gas, water/sewer and
+    telephone rate cases, fuel and rider adjustments, certificates of
+    public convenience and necessity, complaints, integrated resource
+    plans, securitization, competitive-procurement (RFP) dockets and
+    rulemakings. Each Order is an administrative adjudication of a
+    specific docket (case_law). Full text is extracted from the
+    born-digital order PDFs the Commission publishes through its STAR
+    document system, read via the Internet Archive because the
+    starw1.ncuc.gov portal is Cloudflare-challenge-blocked to
+    non-browser vantages.
+
+data_types:
+  - case_law
+
+jurisdictions:
+  - code: US-NC
+    scope: full
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "html_scraping"
+  base_url: "https://web.archive.org"
+  endpoints:
+    cdx: "/cdx/search/cdx?url=starw1.ncuc.gov/NCUC/ViewFile.aspx&matchType=prefix&filter=mimetype:application/pdf&filter=statuscode:200"
+    raw_pdf: "/web/{timestamp}id_/{original_url}"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "docket_number"
+      description: "NCUC docket number, e.g. 'E-7, SUB 1276', 'W-354, SUB 384', 'SP-13695, SUB 1' (parsed from the order header)"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "title"
+      description: "Docket number plus the order caption/doc-type, e.g. 'NCUC Docket G-5, SUB 632 — Order Approving Stipulation'"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Order, extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order issued date (ISO 8601), parsed from the 'this the Nth day of Month, YYYY' execution clause or a Month DD, YYYY date in the body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Canonical live-host ViewFile.aspx URL for the document (Cloudflare-blocked but the canonical reference)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "archive_url"
+      description: "Wayback Machine raw-PDF URL the text was extracted from"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — North Carolina)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "North Carolina Utilities Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - starw1.ncuc.gov (the NCUC STAR document portal) is fronted by
+    Cloudflare, which returns an "Attention Required!" 403 managed
+    challenge to datacenter / non-browser clients. Both the searchable
+    Orders / DocketDetails listing pages and the ViewFile.aspx PDF handler
+    are behind the challenge, so the live host cannot be enumerated or
+    downloaded without browser automation / a residential Cloudflare
+    solver. The corpus is therefore read from the Internet Archive.
+  - fetch_all() enumerates archived ``ViewFile.aspx?...&Id={GUID}`` PDF
+    snapshots via the Wayback CDX API (prefix match, mimetype
+    application/pdf, statuscode 200) and de-duplicates on the document
+    GUID (~14,000 unique documents).
+  - normalize() downloads the raw archived PDF and extracts full text via
+    fitz/PyMuPDF (Tesseract OCR fallback for the rare scanned document).
+    The ViewFile URL carries no metadata, so each PDF is classified from
+    its own text: a document is kept only if it has the NCUC caption header
+    AND either an ordering/decretal clause ("IT IS, THEREFORE, ORDERED",
+    "BY ORDER OF THE COMMISSION", ...) or an ORDER caption doc-type on
+    page 1. Party filings (testimony, comments, motions, complaints,
+    briefs, applications) are dropped.
+  - The docket number, order caption (title) and issued date are parsed
+    from the PDF text. Covers all NCUC utility industries (E-/G-/W-/WR-/
+    P-/SP-/M-/T-/EMP- docket prefixes).

@@ -43,7 +43,7 @@ from common.base_scraper import BaseScraper
 
 import requests
 
-from common.pdf_extract import extract_pdf_markdown
+from common.pdf_extract import extract_pdf_markdown, read_capped
 
 logging.basicConfig(
     level=logging.INFO,
@@ -55,6 +55,10 @@ CDX_API = "https://web.archive.org/cdx/search/cdx"
 WAYBACK_DL = "https://web.archive.org/web/{ts}id_/{url}"
 CRS_UPLOADS = "www.stl-tsl.org/crs/assets/Uploads/*"
 MAX_PDF_BYTES = 80 * 1024 * 1024  # 80 MB
+# Hard ceiling on one PDF download. The full Ayyash judgment with annexes is
+# legitimately large and slow, so this is generous — it exists only to stop a
+# single document from wedging the crawl (#1350).
+PDF_DOWNLOAD_DEADLINE = 600  # seconds
 
 
 class STLScraper(BaseScraper):
@@ -200,7 +204,7 @@ class STLScraper(BaseScraper):
         """Download a PDF from the Wayback Machine."""
         wayback_url = WAYBACK_DL.format(ts=timestamp, url=url)
         try:
-            resp = self.session.get(wayback_url, timeout=120, stream=True)
+            resp = self.session.get(wayback_url, timeout=(15, 60), stream=True)
             resp.raise_for_status()
 
             # Check content length
@@ -209,9 +213,19 @@ class STLScraper(BaseScraper):
                 logger.warning(f"PDF too large ({content_length} bytes): {url}")
                 return None
 
-            content = resp.content
-            if len(content) > MAX_PDF_BYTES:
-                logger.warning(f"PDF too large ({len(content)} bytes): {url}")
+            # Read incrementally under both caps. Wayback replays large PDFs in a
+            # slow trickle, which never trips the per-socket read timeout, so
+            # resp.content could block indefinitely — one 279-doc crawl sat on a
+            # single judgment-with-annexes PDF for 70 minutes (#1350). Streaming
+            # also means an oversized body is abandoned mid-download rather than
+            # after we have already paid to receive all of it.
+            content = read_capped(
+                resp,
+                max_size=MAX_PDF_BYTES,
+                wall_clock=PDF_DOWNLOAD_DEADLINE,
+                label=url,
+            )
+            if not content:
                 return None
 
             # Verify it looks like a PDF
@@ -376,4 +390,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

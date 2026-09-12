@@ -38,6 +38,7 @@ CELEX; this source extends it to "PC"/"DC" with a PDF fallback for proposals.
 
 import sys
 import html
+import json
 import re
 import time
 import logging
@@ -64,6 +65,21 @@ CELLAR_CELEX = "http://publications.europa.eu/resource/celex/{celex}"
 
 # COM documents exist from 1959 onward; go a little earlier to be safe.
 MIN_YEAR = 1959
+
+# The full corpus is ~44K documents, far more than one fleet slot can finish.
+# Persist crawl progress so a torn-down/restarted run advances monotonically
+# instead of re-walking 2026 forever (GH-1252).
+CHECKPOINT_PATH = Path(__file__).resolve().parent / "data" / "checkpoint.json"
+
+# Emit a heartbeat every N documents so a slow crawl is distinguishable from a
+# hung one: the fleet watchdog (and a human reading the log) saw 4h of complete
+# silence and assumed a hang, because nothing logged below 500-record intervals.
+HEARTBEAT_EVERY = 25
+
+# Hard caps on a single document download. ``requests`` timeouts are per-socket
+# read, so a server trickling bytes indefinitely never trips them — these do.
+MAX_DOC_BYTES = 80 * 1024 * 1024
+MAX_DOC_SECONDS = 300
 
 SPARQL_QUERY = """
 PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
@@ -124,15 +140,19 @@ class COMDocumentsScraper(BaseScraper):
         self.session.headers.update({
             "User-Agent": "LegalDataHunter/1.0 (+https://github.com/ZachLaik) legal-open-data",
         })
+        # Disabled for sample runs so a 15-record sample never marks years done.
+        self.checkpoint_enabled = True
 
     # ---- HTTP helper ------------------------------------------------------
 
-    def _get(self, url, *, headers=None, params=None, max_retries=4, timeout=60):
+    def _get(self, url, *, headers=None, params=None, max_retries=4, timeout=60,
+             stream=False):
         last = None
         for attempt in range(max_retries):
             try:
                 r = self.session.get(url, headers=headers, params=params,
-                                     timeout=timeout, allow_redirects=True)
+                                     timeout=timeout, allow_redirects=True,
+                                     stream=stream)
                 if r.status_code == 200:
                     return r
                 if r.status_code in (429, 500, 502, 503, 504):
@@ -145,6 +165,58 @@ class COMDocumentsScraper(BaseScraper):
         if last:
             raise last
         return None
+
+    @staticmethod
+    def _read_capped(r) -> bytes:
+        """Read a streamed response under a hard size + wall-clock budget.
+
+        CELLAR occasionally trickles a large stream to a throttled client; a
+        plain ``r.content`` then blocks forever because the read timeout keeps
+        being reset by each dribble of bytes. Raise instead of hanging.
+        """
+        started = time.time()
+        buf = bytearray()
+        for chunk in r.iter_content(64 * 1024):
+            if chunk:
+                buf.extend(chunk)
+            if len(buf) > MAX_DOC_BYTES:
+                raise RuntimeError(f"response exceeded {MAX_DOC_BYTES} bytes")
+            if time.time() - started > MAX_DOC_SECONDS:
+                raise RuntimeError(f"response exceeded {MAX_DOC_SECONDS}s wall clock")
+        return bytes(buf)
+
+    @classmethod
+    def _read_text(cls, r) -> str:
+        return cls._read_capped(r).decode(r.encoding or "utf-8", errors="replace")
+
+    # ---- Checkpoint -------------------------------------------------------
+
+    def _load_checkpoint(self) -> dict:
+        try:
+            with open(CHECKPOINT_PATH, encoding="utf-8") as fh:
+                data = json.load(fh)
+        except (OSError, ValueError):
+            return {}
+        if not isinstance(data, dict):
+            return {}
+        return data
+
+    def _save_checkpoint(self, completed_years, in_progress) -> None:
+        if not self.checkpoint_enabled:
+            return
+        payload = {
+            "completed_years": sorted(completed_years, reverse=True),
+            "in_progress": in_progress,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        try:
+            CHECKPOINT_PATH.parent.mkdir(parents=True, exist_ok=True)
+            tmp = CHECKPOINT_PATH.with_suffix(".json.tmp")
+            with open(tmp, "w", encoding="utf-8") as fh:
+                json.dump(payload, fh)
+            tmp.replace(CHECKPOINT_PATH)
+        except OSError as e:
+            logger.warning("Could not write checkpoint %s: %s", CHECKPOINT_PATH, e)
 
     # ---- Enumeration ------------------------------------------------------
 
@@ -176,22 +248,27 @@ class COMDocumentsScraper(BaseScraper):
             })
         return out
 
-    def _enumerate_year(self, year: int) -> Generator[dict, None, None]:
-        """Yield COM document metadata for a single year, both PC and DC."""
+    def _enumerate_year(self, year: int, start_offset: int = 0):
+        """Yield ``(offset, metadata)`` for a single year, both PC and DC.
+
+        ``offset`` is the SPARQL offset of the page the row came from, so the
+        caller can checkpoint page-granular progress.
+        """
         pattern = f"^5{year}(PC|DC)"
-        offset = 0
+        offset = start_offset
         seen = set()
         while True:
             page = self._sparql_page(pattern, offset)
             if not page:
                 break
+            logger.info("Year %d: SPARQL offset %d → %d rows", year, offset, len(page))
             new = 0
             for meta in page:
                 if meta["celex"] in seen:
                     continue
                 seen.add(meta["celex"])
                 new += 1
-                yield meta
+                yield offset, meta
             if len(page) < self.PAGE_SIZE:
                 break
             offset += self.PAGE_SIZE
@@ -207,9 +284,10 @@ class COMDocumentsScraper(BaseScraper):
             CELLAR_CELEX.format(celex=celex),
             headers={"Accept": "application/xhtml+xml", "Accept-Language": "en"},
             timeout=90,
+            stream=True,
         )
         if r is not None and r.status_code == 200 and "xml" in (r.headers.get("content-type", "")):
-            text = _strip_html(r.text)
+            text = _strip_html(self._read_text(r))
             if len(text) >= 200:
                 return text
 
@@ -220,22 +298,23 @@ class COMDocumentsScraper(BaseScraper):
             CELLAR_CELEX.format(celex=celex),
             headers={"Accept": "application/pdf", "Accept-Language": "en"},
             timeout=90,
+            stream=True,
         )
         if r is None:
             return ""
         # Direct single-PDF response.
         ctype = r.headers.get("content-type", "")
         if r.status_code == 200 and "pdf" in ctype:
-            return self._pdf_bytes_to_text(r.content)
+            return self._pdf_bytes_to_text(self._read_capped(r))
         # 300 Multiple-Choice listing → pick the EN ACT part PDF.
         if r.status_code == 300:
-            url = self._pick_pdf_stream(r.text)
+            url = self._pick_pdf_stream(self._read_text(r))
             if not url:
                 return ""
-            pr = self._get(url, timeout=120)
+            pr = self._get(url, timeout=120, stream=True)
             if pr is None or pr.status_code != 200:
                 return ""
-            return self._pdf_bytes_to_text(pr.content)
+            return self._pdf_bytes_to_text(self._read_capped(pr))
         return ""
 
     @staticmethod
@@ -280,11 +359,55 @@ class COMDocumentsScraper(BaseScraper):
         return datetime.now(timezone.utc).year
 
     def fetch_all(self) -> Generator[dict, None, None]:
-        """Yield RAW COM-document dicts (with full text), newest year first."""
+        """Yield RAW COM-document dicts (with full text), newest year first.
+
+        Resumable: years finished by an earlier run are skipped with no network
+        calls at all, and the year in progress restarts at its last completed
+        SPARQL page, so successive fleet slots advance through the ~44K corpus
+        instead of re-crawling 2026 every time (GH-1252).
+        """
+        checkpoint = self._load_checkpoint()
+        completed = {int(y) for y in checkpoint.get("completed_years", [])}
+        resume = checkpoint.get("in_progress") or {}
+        # The current year keeps gaining documents, so never treat it as done —
+        # otherwise a fully-caught-up source would yield 0 records forever and
+        # every later fleet run would look like a failure. The loader dedups.
+        completed.discard(self._current_year())
+        if completed:
+            logger.info("Checkpoint: %d years already crawled, resuming", len(completed))
+
+        seen_docs = 0
         for year in range(self._current_year(), MIN_YEAR - 1, -1):
-            for meta in self._enumerate_year(year):
+            if year in completed:
+                logger.info("Year %d already complete (checkpoint) — skipping", year)
+                continue
+
+            start_offset = 0
+            if resume.get("year") == year:
+                start_offset = int(resume.get("offset") or 0)
+                if start_offset:
+                    logger.info("Year %d: resuming at SPARQL offset %d", year, start_offset)
+            resume = {}
+
+            saved_offset = -1
+            for offset, meta in self._enumerate_year(year, start_offset):
+                if offset != saved_offset:
+                    # The previous page has been fully consumed by the caller.
+                    self._save_checkpoint(completed, {"year": year, "offset": offset})
+                    saved_offset = offset
+
                 celex = meta["celex"]
-                text = self._fetch_text(celex)
+                try:
+                    text = self._fetch_text(celex)
+                except Exception as e:
+                    logger.warning("Fetch failed for %s: %s", celex, e)
+                    continue
+
+                seen_docs += 1
+                if seen_docs % HEARTBEAT_EVERY == 0:
+                    logger.info("Heartbeat: year %d, %d documents processed this run",
+                                year, seen_docs)
+
                 if len(text) < 200:
                     logger.debug("Skip %s: text too short (%d)", celex, len(text))
                     continue
@@ -296,6 +419,10 @@ class COMDocumentsScraper(BaseScraper):
                     "text": text,
                 }
 
+            completed.add(year)
+            self._save_checkpoint(completed, None)
+            logger.info("Year %d complete (%d documents processed so far)", year, seen_docs)
+
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """Yield COM documents from the years spanning ``since`` to now.
 
@@ -305,7 +432,7 @@ class COMDocumentsScraper(BaseScraper):
         start_year = since.year if isinstance(since, datetime) else int(str(since)[:4])
         cutoff = since.date().isoformat() if isinstance(since, datetime) else str(since)
         for year in range(self._current_year(), start_year - 1, -1):
-            for meta in self._enumerate_year(year):
+            for _offset, meta in self._enumerate_year(year):
                 d = meta.get("date")
                 if d and d < cutoff:
                     continue
@@ -350,6 +477,8 @@ def main():
     sample_mode = "--sample" in sys.argv
 
     if command in ("bootstrap", "bootstrap-fast"):
+        # A 15-record sample must never mark 2026 as a crawled year.
+        scraper.checkpoint_enabled = not sample_mode
         stats = scraper.bootstrap(sample_mode=sample_mode, sample_size=15)
         print(f"\nBootstrap complete: {stats}")
     elif command == "update":

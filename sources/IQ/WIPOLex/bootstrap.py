@@ -62,6 +62,31 @@ logging.basicConfig(
 )
 logger = logging.getLogger("legal-data-hunter.IQ.WIPOLex")
 
+# Most of Iraq's WIPO Lex PDFs are scans carrying a broken text layer: the
+# /ToUnicode map is wrong, so extraction returns thousands of characters of
+# punctuation, stray Latin letters and "(cid:NNN)" markers rather than the law.
+# That output is long enough to clear pdf_extract's text-layer floor, so it is
+# accepted as the body and OCR is never reached. Length alone cannot tell it
+# apart from a real document — legibility can.
+_LETTER_RE = re.compile(r"[A-Za-z؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]")
+_MIN_LETTER_RATIO = 0.60
+
+
+def _is_legible(text: str) -> bool:
+    """True if `text` reads as prose rather than a corrupt text layer.
+
+    Real documents in this corpus sit at 0.93-0.97 letters per non-space
+    character; every corrupt extraction measured sat between 0.15 and 0.35, so
+    the split is unambiguous and the threshold is nowhere near either cluster.
+    """
+    stripped = "".join(text.split())
+    if not stripped:
+        return False
+    if "(cid:" in text:
+        return False
+    return len(_LETTER_RE.findall(stripped)) / len(stripped) >= _MIN_LETTER_RATIO
+
+
 HOST = "https://www.wipo.int"
 COUNTRY = "IQ"
 COUNTRY_NAME = "Iraq"
@@ -198,11 +223,25 @@ class WIPOLexIQScraper(BaseScraper):
                         source_id=doc_id,
                         pdf_url=url,
                         table="legislation",
+                        # force: without it, extract_pdf_markdown returns None for any doc
+                        # already in Neon with text, which this loop cannot tell apart from a
+                        # scanned PDF. Once the (small, born-digital) WIPO Lex corpus is
+                        # ingested, every later crawl reported all of it as scanned and emitted
+                        # 0 records, so the fleet fell back to the bundled samples (#1520).
+                        # Re-extraction is cheap here and a full run has to emit every record.
+                        force=True,
                     )
                 except Exception as e:
                     logger.warning("PDF extraction failed for %s: %s", url, e)
                     extracted = None
                 if extracted and len(extracted.strip()) >= 200:
+                    if not _is_legible(extracted):
+                        # Keep looking: the other language's PDF is often a
+                        # clean scan even when this one is not.
+                        logger.warning(
+                            "Corrupt text layer (illegible), trying next language: %s", url
+                        )
+                        continue
                     text = extracted
                     chosen_url = url
                     language = lang

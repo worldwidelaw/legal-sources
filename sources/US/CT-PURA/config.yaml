@@ -55,7 +55,7 @@ data_model:
     - "_id"
 
 schema:
-  total_fields: 9
+  total_fields: 10
   key_fields:
     - name: "docket"
       description: "PURA docket number, e.g. '26-05-12' (from view column DocketNumber)"
@@ -68,7 +68,7 @@ schema:
       role: "content"
       required: true
     - name: "text"
-      description: "Full text of the Final Decision extracted from the born-digital PDF"
+      description: "Full text of the Final Decision extracted from the born-digital PDF or Word attachment"
       type: "string"
       role: "content"
       required: true
@@ -77,8 +77,13 @@ schema:
       type: "date"
       role: "temporal_key"
       required: true
-    - name: "pdf_url"
-      description: "Domino $FILE attachment URL for the born-digital decision PDF"
+    - name: "document_url"
+      description: "Domino $FILE attachment URL for the born-digital decision document"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "document_format"
+      description: "Attachment format the decision was published in: pdf, docx or doc"
       type: "string"
       role: "reference"
       required: true

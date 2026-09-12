@@ -1,6 +1,6 @@
 fetch:
   base_url: https://www.vatican.va
-  delay_seconds: 2
+  delay_seconds: 1
   method: AEM/Sling JSON API (append .N.json to URL paths)
 notes: 'Uses the Adobe Experience Manager / Apache Sling JSON API exposed by vatican.va.
 
@@ -8,7 +8,17 @@ notes: 'Uses the Adobe Experience Manager / Apache Sling JSON API exposed by vat
 
   encyclicals, motu proprio, apostolic constitutions, apostolic exhortations,
 
-  apostolic letters, and papal bulls. ~1,900 documents with full text.
+  apostolic letters, and papal bulls. ~2,100 documents with full text.
+
+  Slugs are enumerated as the union across the en/la/it/es/fr/pt/de site trees
+  (a single tree truncates: Paul VI apostolic letters are 229 under /en/ but
+  325 under /la/), and each document is fetched across the same language chain
+  until a version carries a body — many acts, notably the ~640 John Paul II and
+  ~356 Paul VI diocese-erection constitutions, are marked isemptybody in English
+  and only published in Latin.
+
+  Full runs stream to data/records.jsonl and checkpoint every 50 documents to
+  data/checkpoint.json, so a restart resumes without refetching.
 
   '
 schema:

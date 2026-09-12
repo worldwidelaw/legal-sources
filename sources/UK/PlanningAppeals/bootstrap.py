@@ -44,9 +44,16 @@ logger = logging.getLogger("UK/PlanningAppeals")
 
 MAX_PDF_SIZE = 30 * 1024 * 1024  # 30MB limit
 
-# Recent case IDs with decisions — iterate backwards from latest
+# Case IDs with decisions — iterate backwards from latest.
+# Live probe (2026-07-27): valid cases span ~3190000 (2017) to ~3364000 (2025);
+# below ~3190000 the portal returns "No case found". The dense range holds the
+# full ~44K+ decided-appeal corpus (issue #1209).
 LATEST_CASE_ID = 3365000
-EARLIEST_CASE_ID = 3300000
+EARLIEST_CASE_ID = 3190000
+
+# Tolerate large gaps of missing/undecided case IDs within the valid range before
+# concluding we have run off the bottom. Individual gaps of a few hundred exist.
+MAX_CONSECUTIVE_MISSING = 3000
 
 
 class UKPlanningAppealsScraper(BaseScraper):
@@ -71,6 +78,32 @@ class UKPlanningAppealsScraper(BaseScraper):
             },
             timeout=30,
         )
+
+        # Checkpoint file: persists the next case ID to resume from so that a
+        # fleet slot killed mid-run (wall-clock/OOM) resumes descending instead
+        # of re-walking from LATEST_CASE_ID and re-appending the same records
+        # (root cause of issue #1209's 44,662-fetched / 85-written under-write).
+        self._checkpoint_path = self.source_dir / "data" / "planningappeals_checkpoint.json"
+
+    def _load_checkpoint(self) -> Optional[int]:
+        """Return the case ID to resume from, or None to start at LATEST_CASE_ID."""
+        try:
+            if self._checkpoint_path.exists():
+                data = json.loads(self._checkpoint_path.read_text())
+                nxt = data.get("next_case_id")
+                if isinstance(nxt, int):
+                    return nxt
+        except Exception as e:
+            logger.warning(f"Could not read checkpoint: {e}")
+        return None
+
+    def _save_checkpoint(self, next_case_id: int) -> None:
+        """Persist the next case ID to resume from (everything above it is done)."""
+        try:
+            self._checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            self._checkpoint_path.write_text(json.dumps({"next_case_id": next_case_id}))
+        except Exception as e:
+            logger.warning(f"Could not write checkpoint: {e}")
 
     def _parse_case_page(self, html: str) -> Optional[dict]:
         """Parse an ACP case page and extract metadata + decision PDF link."""
@@ -183,14 +216,23 @@ class UKPlanningAppealsScraper(BaseScraper):
         ) or ""
 
     def fetch_all(self) -> Generator[dict, None, None]:
-        """Yield all planning appeal decisions with full text."""
+        """Yield all planning appeal decisions with full text.
+
+        Descends the sequential case-ID space newest-first. A checkpoint records
+        the next ID to resume from so a killed/relaunched fleet slot continues
+        downward instead of restarting at LATEST_CASE_ID (issue #1209).
+        """
         count = 0
         skipped = 0
         not_found = 0
         consecutive_not_found = 0
 
-        # Iterate from latest backwards
-        case_id = LATEST_CASE_ID
+        # Resume from checkpoint if present, else start at the newest case ID.
+        resume_at = self._load_checkpoint()
+        case_id = resume_at if resume_at is not None else LATEST_CASE_ID
+        if resume_at is not None:
+            logger.info(f"Resuming from checkpoint at case_id {case_id}")
+
         while case_id >= EARLIEST_CASE_ID:
             self.rate_limiter.wait()
             try:
@@ -198,11 +240,13 @@ class UKPlanningAppealsScraper(BaseScraper):
                 if resp.status_code != 200:
                     skipped += 1
                     case_id -= 1
+                    self._save_checkpoint(case_id)
                     continue
             except Exception as e:
                 logger.warning(f"Failed to fetch case {case_id}: {e}")
                 skipped += 1
                 case_id -= 1
+                # Do NOT checkpoint past a transient fetch error — retry this id next run.
                 continue
 
             meta = self._parse_case_page(resp.text)
@@ -210,11 +254,12 @@ class UKPlanningAppealsScraper(BaseScraper):
                 # Case doesn't exist or has no decision
                 not_found += 1
                 consecutive_not_found += 1
-                # Stop if too many consecutive missing
-                if consecutive_not_found > 500:
-                    logger.info(f"500 consecutive missing cases at {case_id}, stopping")
+                # Stop if too many consecutive missing (ran off the bottom).
+                if consecutive_not_found > MAX_CONSECUTIVE_MISSING:
+                    logger.info(f"{MAX_CONSECUTIVE_MISSING} consecutive missing cases at {case_id}, stopping")
                     break
                 case_id -= 1
+                self._save_checkpoint(case_id)
                 continue
 
             consecutive_not_found = 0
@@ -224,12 +269,14 @@ class UKPlanningAppealsScraper(BaseScraper):
             if not pdf_bytes:
                 skipped += 1
                 case_id -= 1
+                self._save_checkpoint(case_id)
                 continue
 
             text = self._extract_text(pdf_bytes, str(case_id))
             if not text or len(text) < 100:
                 skipped += 1
                 case_id -= 1
+                self._save_checkpoint(case_id)
                 continue
 
             count += 1
@@ -244,10 +291,13 @@ class UKPlanningAppealsScraper(BaseScraper):
                 "lpa": meta["lpa"],
             }
 
+            # Advance the checkpoint only after the record has been yielded so a
+            # crash re-fetches this one id (the loader dedups on _id).
+            case_id -= 1
+            self._save_checkpoint(case_id)
+
             if count % 50 == 0:
                 logger.info(f"  {count} decisions fetched ({skipped} skipped, {not_found} not found)")
-
-            case_id -= 1
 
         logger.info(f"Total: {count} decisions with text ({skipped} skipped, {not_found} not found)")
 
@@ -335,7 +385,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     cmd = sys.argv[1]
-    if cmd == "bootstrap":
+    if cmd in ("bootstrap", "bootstrap-fast"):
         sample = "--sample" in sys.argv
         result = scraper.bootstrap(sample_mode=sample, sample_size=12)
         print(json.dumps(result, indent=2, default=str))

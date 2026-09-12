@@ -14,7 +14,10 @@ source:
     regulations, international agreements, and government decisions.
 
     Data is accessed via the official Sejm API with ELI (European Legislation
-    Identifier) support. Full HTML text is available for all acts since 1918.
+    Identifier) support. Full text comes from the /text.html endpoint where the
+    act has an HTML rendering (textHTML=true, roughly 2015-2024) and from
+    /text.pdf otherwise — every act since 2025 and most of the pre-2015 archive
+    is PDF-only.
 
     Coverage: 1918 onwards (~96,000 acts)
 
@@ -65,7 +68,7 @@ schema:
       role: "content"
       required: true
     - name: "text"
-      description: "Full HTML text content of the act"
+      description: "Full text of the act, from the HTML rendering or the PDF"
       type: "string"
       role: "content"
       required: true
@@ -85,6 +88,8 @@ notes: |
   - Language: Polish (UTF-8)
   - API: Official Sejm API with ELI support (api.sejm.gov.pl)
   - Coverage: 1918 onwards (~96,000 acts in Dziennik Ustaw)
-  - Full HTML text available via /text.html endpoint
-  - PDF text available via /text.pdf endpoint
+  - Full text via /text.html where textHTML=true, else /text.pdf
+  - 2025 onwards is 100% PDF-only (textHTML=false on every act)
+  - Completed years are checkpointed to data/years_done.json so a re-launch
+    resumes rather than re-crawling
   - License: Open data, public domain

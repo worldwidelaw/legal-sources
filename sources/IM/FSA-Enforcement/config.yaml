@@ -2,7 +2,9 @@
 # IM/FSA-Enforcement -- Isle of Man FSA Enforcement Actions
 # ===================================================================
 # Enforcement actions from the Isle of Man Financial Services Authority.
-# Covers civil penalties, prohibited persons, and disqualified directors.
+# Covers civil penalties, prohibited persons, disqualified directors, and the
+# full /fsa-news/ archive of statutory public warnings and public notices
+# back to 2002 (~1,090 notices).
 # Full text from press releases and public statements.
 # No authentication required. Umbraco CMS, server-rendered HTML.
 # ===================================================================
@@ -15,7 +17,10 @@ source:
   description: |
     Isle of Man Financial Services Authority enforcement actions including
     discretionary civil penalties, prohibited persons declarations, and
-    disqualified directors. Full text of decisions available via press
+    disqualified directors, plus the archive of statutory public warnings
+    (s.30 Financial Services Act 2008) and public notices (s.12 Designated
+    Businesses (Registration & Oversight) Act 2015) published under
+    /fsa-news/ back to 2002. Full text of decisions available via press
     releases and public statements.
 
 data_types:
@@ -73,7 +78,7 @@ schema:
       required: true
   secondary_fields:
     - name: "enforcement_type"
-      description: "Type: civil_penalty, prohibited_person, or disqualified_director"
+      description: "Type: civil_penalty, prohibited_person, disqualified_director, public_warning, or public_notice"
     - name: "subject_name"
       description: "Name of the person or entity subject to enforcement"
     - name: "penalty_amount"

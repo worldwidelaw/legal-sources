@@ -41,7 +41,7 @@ schema:
 data_model:
   update_strategy: append_only
   dedup_key:
-    - doc_id
+    - "_id"
 
 notes: |
   Two content types:

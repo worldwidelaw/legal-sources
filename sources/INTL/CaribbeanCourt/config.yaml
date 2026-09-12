@@ -1,0 +1,65 @@
+source:
+  id: "INTL/CaribbeanCourt"
+  name: "Caribbean Court of Justice (CCJ) Judgments"
+  description: |
+    Judgments of the Caribbean Court of Justice — the final appellate court
+    (Appellate Jurisdiction, AJ) for CARICOM member states that have acceded to
+    it (Barbados, Belize, Guyana, Dominica, and others), and the sole judicial
+    body interpreting the Revised Treaty of Chaguaramas (Original Jurisdiction,
+    OJ). Full text extracted from the Court's official born-digital PDF
+    judgments hosted at ccj.org. ~500 judgments from 2007 to present.
+  url: "https://ccj.org/judgments-proceedings/"
+  country: "INTL"
+  language: "EN"
+  data_types:
+    - case_law
+  auth:
+    type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "rest"
+  base_url: "https://ccj.org"
+
+schema:
+  key_fields:
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: true
+    - name: "citation"
+      type: "string"
+      required: true
+    - name: "jurisdiction_type"
+      type: "string"
+      required: false
+    - name: "parties"
+      type: "string"
+      required: false
+
+data_model:
+  update_strategy: append_only
+  dedup_key:
+    - _id
+
+license:
+  id: "pd-gov"
+  name: "Public Domain — CCJ Court Records"
+  url: "https://ccj.org/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Official judgments of the Caribbean Court of Justice are public court records published for free access on ccj.org."

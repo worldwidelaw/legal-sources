@@ -36,6 +36,22 @@ Strategy:
      from the ruling body when present, else derived from the YY- prefix
      of the ruling number.
 
+Vantage fallback (issue #1234):
+  www.tn.gov TLS-resets / read-times-out connections from every non-US
+  vantage tested (Hetzner fleet IPs and this build machine both get
+  ECONNRESET on the TLS handshake), so a live-only run yields nothing off
+  a US residential IP. Both halves of the corpus are mirrored in the
+  Internet Archive, so every fetch is live-first with a Wayback fallback:
+
+      https://web.archive.org/web/3000id_/{url}
+
+  ("3000" = latest capture, "id_" = raw bytes, no IA banner injection.)
+  The archived tax-type pages yield 595 unique ruling anchors — the same
+  corpus the live pages list — and 589 of those PDFs have a capture.
+  After three consecutive live failures with no live success the scraper
+  latches into Wayback-only mode so it stops paying the reset timeout on
+  every remaining URL.
+
 Usage:
   python bootstrap.py bootstrap            # Full pull (all tax types)
   python bootstrap.py bootstrap --sample   # Fetch ~12 sample documents
@@ -59,7 +75,7 @@ from typing import Generator
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 from common.pdf_extract import extract_pdf_markdown
 
@@ -72,6 +88,12 @@ logger = logging.getLogger("legal-data-hunter.US.TN-TaxRulings")
 BASE_URL = "https://www.tn.gov"
 RULINGS_INDEX = "/revenue/tax-resources/legal-resources/tax-rulings.html"
 RULINGS_PREFIX = "/revenue/tax-resources/legal-resources/tax-rulings/"
+
+# Internet Archive replay of the latest capture, raw bytes (no IA banner).
+WAYBACK_LATEST = "https://web.archive.org/web/3000id_/"
+# Consecutive live failures (with zero live successes) before we stop trying
+# the live host at all and read everything from the archive.
+LIVE_FAIL_LATCH = 3
 
 # Tax-type pages exposed in the Tax Rulings index. Empty pages are harmless.
 TAX_TYPE_PAGES = [
@@ -148,45 +170,92 @@ class TNTaxRulingsScraper(BaseScraper):
         if source_dir is None:
             source_dir = str(Path(__file__).parent)
         super().__init__(source_dir)
+        # Keep the per-request budget small: www.tn.gov read-times-out from
+        # non-US/datacenter vantages, so a large timeout x internal retries x
+        # the per-URL loop below compounds into hours of dead hang (issue #1234).
         self.http = HttpClient(
             base_url="",
             headers={
                 "User-Agent": "LegalDataHunter/1.0 (open-data research project; +https://github.com/worldwidelaw/legal-sources)",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             },
+            timeout=30,
+            max_retries=0,
+        )
+        # The archive is slower than the origin and worth waiting on.
+        self.http_wayback = HttpClient(
+            base_url="",
+            headers={
+                "User-Agent": "LegalDataHunter/1.0 (open-data research project; +https://github.com/worldwidelaw/legal-sources)",
+                "Accept": "*/*",
+            },
             timeout=90,
+            max_retries=2,
         )
         self.delay = 1.0
+        # Vantage state: latch into archive-only mode once the live host has
+        # proved unreachable, so we stop paying its timeout on every URL.
+        self._live_ok = False
+        self._live_failures = 0
+        self._wayback_mode = False
 
     # ---- fetch helpers -------------------------------------------------
 
-    def _get(self, url: str, retries: int = 4) -> str:
+    def _raw_get(self, url: str, client: HttpClient, retries: int):
+        """Single-endpoint GET loop. Returns the response or None."""
         for attempt in range(retries + 1):
             time.sleep(self.delay)
             try:
-                resp = self.http.get(url)
-                if resp.status_code == 200:
-                    return resp.text
+                resp = client.get(url)
+                if resp.status_code == 200 and resp.content:
+                    return resp
                 logger.warning(f"HTTP {resp.status_code} for {url}")
             except Exception as e:
                 logger.warning(f"Error fetching {url} (attempt {attempt + 1}): {e}")
             if attempt < retries:
                 time.sleep(2 ** attempt)
-        return ""
-
-    def _get_bytes(self, url: str, retries: int = 3) -> bytes | None:
-        for attempt in range(retries + 1):
-            time.sleep(self.delay)
-            try:
-                resp = self.http.get(url)
-                if resp.status_code == 200 and resp.content:
-                    return resp.content
-                logger.warning(f"HTTP {resp.status_code} for {url}")
-            except Exception as e:
-                logger.warning(f"Error fetching PDF {url} (attempt {attempt + 1}): {e}")
-            if attempt < retries:
-                time.sleep(2 ** attempt)
         return None
+
+    def _fetch(self, url: str, retries: int = 2, want_pdf: bool = False):
+        """Fetch `url` live, falling back to its latest Wayback capture.
+
+        www.tn.gov is unreachable from non-US vantages (issue #1234), so the
+        archive is a first-class path here rather than a curiosity.
+        """
+        if not self._wayback_mode:
+            # Until the origin has answered once, treat the live call as a
+            # single cheap probe: off a US vantage it costs one 30s timeout
+            # per URL for the first three URLs, then the latch takes over.
+            resp = self._raw_get(url, self.http, retries if self._live_ok else 0)
+            if resp is not None and (not want_pdf or resp.content[:4] == b"%PDF"):
+                self._live_ok = True
+                self._live_failures = 0
+                return resp
+            self._live_failures += 1
+            if not self._live_ok and self._live_failures >= LIVE_FAIL_LATCH:
+                self._wayback_mode = True
+                logger.warning(
+                    f"www.tn.gov unreachable from this vantage "
+                    f"({self._live_failures} consecutive failures, 0 successes) — "
+                    f"reading the corpus from the Internet Archive instead"
+                )
+
+        resp = self._raw_get(WAYBACK_LATEST + url, self.http_wayback, retries=1)
+        if resp is None:
+            return None
+        if want_pdf and resp.content[:4] != b"%PDF":
+            # IA replayed a soft-404 / error page rather than the document.
+            logger.warning(f"No usable Wayback capture for {url}")
+            return None
+        return resp
+
+    def _get(self, url: str, retries: int = 2) -> str:
+        resp = self._fetch(url, retries=retries)
+        return resp.text if resp is not None else ""
+
+    def _get_bytes(self, url: str, retries: int = 2) -> bytes | None:
+        resp = self._fetch(url, retries=retries, want_pdf=True)
+        return resp.content if resp is not None else None
 
     # ---- parsing -------------------------------------------------------
 
@@ -236,12 +305,27 @@ class TNTaxRulingsScraper(BaseScraper):
         """Yield ruling-PDF descriptors discovered across the tax-type pages."""
         seen: set[str] = set()
         total = 0
+        pages_ok = 0
+        pages_tried = 0
         for page_name in TAX_TYPE_PAGES:
             url = f"{BASE_URL}{RULINGS_PREFIX}{page_name}.html"
             html = self._get(url)
+            pages_tried += 1
             if not html:
-                logger.warning(f"[{page_name}] page fetch failed")
+                logger.warning(f"[{page_name}] page fetch failed (live + Wayback)")
+                # Fail fast + loud only when BOTH paths are dead. www.tn.gov
+                # TLS-resets non-US/datacenter IPs, but _get falls back to the
+                # Internet Archive, so reaching here means the archive is down
+                # or unreachable too — grinding through every remaining page and
+                # PDF would just burn hours before exiting (issue #1234).
+                if pages_ok == 0 and pages_tried >= 3:
+                    raise RuntimeError(
+                        f"Neither www.tn.gov nor its Internet Archive mirror is "
+                        f"reachable — {pages_tried} tax-type pages all failed to "
+                        f"fetch (0 succeeded). Check egress/DNS for both hosts."
+                    )
                 continue
+            pages_ok += 1
             txt = _htmllib.unescape(html)
             found_on_page = 0
             for pdf_url, raw_anchor in PDF_ANCHOR_RE.findall(txt):
@@ -368,6 +452,9 @@ class TNTaxRulingsScraper(BaseScraper):
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self.fetch_all():
             if not since or (raw.get("date") and raw["date"] >= since):
                 yield raw

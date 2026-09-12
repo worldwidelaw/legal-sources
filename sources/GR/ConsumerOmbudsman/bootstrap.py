@@ -46,10 +46,16 @@ from urllib.parse import urljoin, unquote
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 
 from common.pdf_extract import extract_pdf_markdown
+
+# PDF extraction is delegated to common.pdf_extract.extract_pdf_markdown, which picks
+# among opendataloader/pdfplumber/pypdf/OCR at call time. These flags survive from the
+# pre-refactor per-library imports; keep them defined so the old call sites don't NameError.
+HAS_PYPDF = True
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -245,23 +251,20 @@ class GreekConsumerOmbudsmanScraper(BaseScraper):
                 result["pdf_url"] = pdf_url
 
                 # Download and extract text from PDF
-                if HAS_PYPDF:
-                    try:
-                        self.rate_limiter.wait()
-                        pdf_resp = self.client.get(pdf_url)
-                        pdf_resp.raise_for_status()
-                        reader = PdfReader(io.BytesIO(pdf_resp.content))
-                        pdf_text = ""
-                        for page in reader.pages:
-                            page_text = page.extract_text()
-                            if page_text:
-                                pdf_text += page_text + "\n"
-                        pdf_text = pdf_text.strip()
-                        if pdf_text and len(pdf_text) > 100:
-                            result["pdf_text"] = pdf_text
-                            logger.debug(f"Extracted {len(pdf_text)} chars from PDF")
-                    except Exception as e:
-                        logger.warning(f"Failed to extract PDF text for {item['slug']}: {e}")
+                try:
+                    self.rate_limiter.wait()
+                    pdf_text = (extract_pdf_markdown(
+                        "GR/ConsumerOmbudsman",
+                        item["slug"],
+                        pdf_url=urljoin(BASE_URL, pdf_url),
+                        table="doctrine",
+                        force=True,
+                    ) or "").strip()
+                    if len(pdf_text) > 100:
+                        result["pdf_text"] = pdf_text
+                        logger.debug(f"Extracted {len(pdf_text)} chars from PDF")
+                except Exception as e:
+                    logger.warning(f"Failed to extract PDF text for {item['slug']}: {e}")
 
             # Use PDF text as primary, HTML text as fallback
             result["text"] = result.get("pdf_text", "") or result.get("html_text", "")
@@ -309,6 +312,9 @@ class GreekConsumerOmbudsmanScraper(BaseScraper):
 
     def fetch_updates(self, since: Optional[str] = None) -> Generator[Dict[str, Any], None, None]:
         """Yield recently added recommendations (first few pages)."""
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for page in range(0, 5):
             items = self._scrape_list_page(page)
             for item in items:
@@ -369,4 +375,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

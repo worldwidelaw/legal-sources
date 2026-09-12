@@ -1,10 +1,10 @@
 fetch:
-  base_url: https://www.ilo.org/dyn/triblex/triblexmain
+  base_url: https://wwwex.ilo.org/dyn/triblex/triblexmain
   detail_url_pattern: '{base_url}.detail?p_lang=en&p_judgment_no={no}'
-  max_judgment_no: 5203
+  max_judgment_no: 5400
   method: sequential_pdf
   pdf_url_pattern: '{base_url}.fullText?p_lang=en&p_judgment_no={no}'
-  rate_limit_seconds: 2
+  rate_limit_seconds: 1
 schema:
   key_fields:
   - name: _id

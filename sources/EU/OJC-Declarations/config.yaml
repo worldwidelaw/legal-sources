@@ -1,0 +1,67 @@
+source:
+  id: "EU/OJC-Declarations"
+  name: "EU — OJ C-series Declarations & Joint Statements"
+  country: "EU"
+  language: "en"
+
+  # Full text is retrieved from the EU Publications Office (CELLAR / EUR-Lex),
+  # where declarations and joint statements entered in the Official Journal
+  # "Information and Notices" (C) series carry a CELEX number in sector 3,
+  # document class "C" — 3{YYYY}C{NNNN}. The "C" descriptor gathers the
+  # declarations, joint statements and statements of the EU institutions
+  # (chiefly the Council and the Commission, alone or jointly, plus the
+  # interinstitutional EP/Council/Commission joint statements): declarations
+  # entered in the Council minutes on the interpretation of an adopted act,
+  # Commission statements on the implementation of a regulation/directive,
+  # joint statements on the annual budgetary procedure, and statements on the
+  # exercise of delegated/implementing powers. These are soft-law /
+  # interpretative acts (not the binding enacting text), classified as doctrine.
+  # A distinct, additive corpus to EU/EUR-Lex, which enumerates sector 3 by the
+  # ordinary binding resource-types only (REG / DIR / DEC and their
+  # implementing/delegated variants) and never pulls the "C" declarations. "C"
+  # is a different CELEX letter from every other descriptor (distinct in
+  # particular from EU/OJC-Acts = "Y", OJ C-series *acts*), so no _id collision.
+  # Enumeration is via the public CELLAR SPARQL endpoint (~170 rows, far under
+  # the OFFSET ceiling, so a single paged sweep suffices). Full text via CELLAR
+  # content negotiation: xHTML for modern acts, OJ HTML via the language-suffixed
+  # CELEX (.ENG) for older ones, born-digital PDF (PyMuPDF) for the remainder —
+  # all of which bypass the eur-lex.europa.eu AWS-WAF that 202-challenges
+  # datacenter IPs, so it is fleet-safe. Same recipe as EU/ECSC-Decisions,
+  # EU/CFSP-Acts and EU/RulesOfProcedure.
+  endpoints:
+    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
+    cellar_celex: "http://publications.europa.eu/resource/celex/{celex}"
+
+  data_types:
+    - doctrine
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1
+
+  schema:
+    key_fields:
+      _id:
+        type: string
+        required: true
+      title:
+        type: string
+        required: true
+      text:
+        type: string
+        required: true
+      date:
+        type: date
+        required: false
+
+fetch:
+  sample_count: 15
+
+license:
+  name: "EU institutional reuse (Decision 2011/833/EU)"
+  url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Declarations and joint statements published in the Official Journal by the Publications Office are reusable, including for commercial purposes, under the Commission's reuse policy (Decision 2011/833/EU). Attribution to the source is requested."

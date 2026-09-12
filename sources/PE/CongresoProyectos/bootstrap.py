@@ -35,7 +35,7 @@ from typing import Generator, Optional
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 
 logging.basicConfig(
@@ -319,6 +319,8 @@ class CongresoProyectosScraper(BaseScraper):
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
         """Yield bills presented since the given date."""
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         bills = self._list_bills()
         total_yielded = 0
 

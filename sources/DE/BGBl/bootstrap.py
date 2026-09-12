@@ -167,6 +167,76 @@ class GermanLawFetcher:
             'text': full_text
         }
 
+    def _law_metadata(self, root) -> Dict[str, Any]:
+        """Metadata of the law itself, taken from its first norm."""
+        doknr = root.get('doknr', '')
+        first_norm = root.find('.//norm/metadaten')
+        if first_norm is None:
+            return {'doknr': doknr}
+
+        fundstelle = first_norm.find('fundstelle')
+        periodikum = fundstelle.findtext('periodikum', '') if fundstelle is not None else ''
+        zitstelle = fundstelle.findtext('zitstelle', '') if fundstelle is not None else ''
+        kurzue = first_norm.findtext('kurzue', '')
+
+        return {
+            'doknr': doknr,
+            'jurabk': first_norm.findtext('jurabk', ''),
+            'title': first_norm.findtext('langue', '') or kurzue,
+            'short_title': kurzue,
+            'date': first_norm.findtext('ausfertigung-datum', ''),
+            'publication': f"{periodikum} {zitstelle}".strip(),
+        }
+
+    def _parse_law_sections(self, xml_content: str) -> Dict[str, Any]:
+        """Split a law's XML into one entry per section (§ / Artikel).
+
+        Issue #1621: the BGB was stored as a single 2.5M-character record and
+        never made it into the index, so "§ 195 BGB" resolved to nothing.
+        `gliederungskennzahl` is a hierarchical fixed-width code (010, 010010,
+        ...), which gives each section its book/chapter breadcrumb.
+        """
+        root = ET.fromstring(xml_content)
+        law = self._law_metadata(root)
+
+        sections = []
+        outline = {}  # kennzahl length -> "Buch 1 Allgemeiner Teil"
+
+        for norm in root.findall('.//norm'):
+            norm_meta = norm.find('metadaten')
+            if norm_meta is None:
+                continue
+
+            gliederung = norm_meta.find('gliederungseinheit')
+            if gliederung is not None:
+                kennzahl = gliederung.findtext('gliederungskennzahl', '') or ''
+                label = ' '.join(x for x in (gliederung.findtext('gliederungsbez', ''),
+                                             gliederung.findtext('gliederungstitel', '')) if x)
+                if kennzahl and label:
+                    outline = {k: v for k, v in outline.items() if k < len(kennzahl)}
+                    outline[len(kennzahl)] = label.strip()
+
+            enbez = (norm_meta.findtext('enbez', '') or '').strip()
+            if not enbez or enbez.lower() in ('inhaltsübersicht', 'inhaltsverzeichnis'):
+                continue
+
+            content = norm.find('textdaten/text/Content')
+            if content is None:
+                continue
+            text = self._clean_text(self._extract_text_recursive(content))
+            if not text:
+                continue
+
+            sections.append({
+                'doknr': norm.get('doknr', ''),
+                'section': enbez,
+                'heading': (norm_meta.findtext('titel', '') or '').strip(),
+                'context': ' > '.join(outline[k] for k in sorted(outline)),
+                'text': text,
+            })
+
+        return {'law': law, 'sections': sections}
+
     def _extract_text_recursive(self, element) -> str:
         """Recursively extract text from XML elements"""
         parts = []
@@ -237,42 +307,154 @@ class GermanLawFetcher:
             if not xml_content:
                 continue
 
-            parsed = self._parse_law_xml(xml_content)
-
-            if parsed.get('text') and len(parsed.get('text', '')) > 100:
-                yield {
-                    **parsed,
-                    'toc_title': law['title'],
-                    'xml_url': xml_url
-                }
+            for doc in self.expand_law(xml_content, law['title'], xml_url):
+                yield doc
                 count += 1
 
-                if limit and count >= limit:
-                    break
+            if limit and count >= limit:
+                break
 
             # Rate limiting
             time.sleep(0.5)
 
-        logger.info(f"Fetched {count} laws with full text")
+        logger.info(f"Fetched {count} records with full text")
+
+    def expand_law(self, xml_content: str, toc_title: str, xml_url: str) -> Iterator[Dict[str, Any]]:
+        """Yield one raw document per section, or the whole law if it has none."""
+        parsed = self._parse_law_sections(xml_content)
+        law, sections = parsed['law'], parsed['sections']
+
+        if sections:
+            for section in sections:
+                yield {
+                    'kind': 'section',
+                    'law': law,
+                    'toc_title': toc_title,
+                    'xml_url': xml_url,
+                    **section,
+                }
+            return
+
+        # Short regulations carry their text outside any numbered section.
+        whole = self._parse_law_xml(xml_content)
+        if whole.get('text') and len(whole['text']) > 100:
+            yield {'kind': 'law', 'law': law, 'toc_title': toc_title,
+                   'xml_url': xml_url, **whole}
+
+    # Codes used for the validation sample: the sections most often cited, so
+    # the sample shows several laws instead of the first law's first pages.
+    SAMPLE_LAWS = ['bgb', 'gg', 'stgb', 'hgb', 'stpo', 'ao_1977']
+
+    def fetch_sample(self, per_law: int = 2, min_chars: int = 200) -> Iterator[Dict[str, Any]]:
+        """Yield a couple of substantive sections from each well-known code."""
+        for slug in self.SAMPLE_LAWS:
+            xml_url = f"{BASE_URL}/{slug}/xml.zip"
+            xml_content = self._download_and_extract_xml(xml_url)
+            if not xml_content:
+                continue
+            emitted = 0
+            for doc in self.expand_law(xml_content, slug.upper(), xml_url):
+                if len(doc.get('text', '')) < min_chars:
+                    continue
+                yield doc
+                emitted += 1
+                if emitted >= per_law:
+                    break
+            time.sleep(0.5)
 
     def fetch_updates(self, since: datetime) -> Iterator[Dict[str, Any]]:
         """Fetch all laws (no date filtering available from this source)"""
         yield from self.fetch_all()
 
+    @staticmethod
+    def law_slug(xml_url: str, jurabk: str) -> str:
+        """The gesetze-im-internet.de path segment, e.g. "bgb"."""
+        match = re.search(r'gesetze-im-internet\.de/([^/]+)/xml\.zip', xml_url or '')
+        if match:
+            return match.group(1)
+        return (jurabk or '').lower().replace(' ', '_').replace('/', '_')
+
+    @staticmethod
+    def section_anchor(section: str) -> Optional[str]:
+        """Filename of a single section page ("§ 195" -> "__195.html")."""
+        match = re.match(r'^§+\s*([0-9]+[a-zA-Z]*)', section)
+        if match:
+            return f"__{match.group(1)}.html"
+        match = re.match(r'^Art(?:ikel)?\.?\s*([0-9]+[a-zA-Z]*)', section)
+        if match:
+            return f"art_{match.group(1)}.html"
+        return None
+
+    def normalize_section(self, raw_doc: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize one § / Artikel of a law."""
+        law = raw_doc.get('law', {})
+        jurabk = law.get('jurabk', '')
+        law_title = law.get('title') or raw_doc.get('toc_title', '')
+        section = raw_doc.get('section', '')
+        heading = raw_doc.get('heading', '')
+
+        slug = self.law_slug(raw_doc.get('xml_url', ''), jurabk)
+        anchor = self.section_anchor(section)
+        url = f"https://www.gesetze-im-internet.de/{slug}/"
+        if anchor:
+            url += anchor
+
+        header = f"{law_title} ({jurabk})" if jurabk else law_title
+        if raw_doc.get('context'):
+            header += f"\n{raw_doc['context']}"
+        label = f"{section} {heading}".strip()
+        text = f"{header}\n\n{label}\n\n{raw_doc.get('text', '')}"
+
+        number = ''
+        match = re.match(r'^(?:§+|Art(?:ikel)?\.?)\s*([0-9]+[a-zA-Z]*)', section)
+        if match:
+            number = match.group(1)
+
+        return {
+            '_id': raw_doc.get('doknr') or f"{law.get('doknr', '')}/{section}",
+            '_source': 'DE/BGBl',
+            '_type': 'legislation',
+            '_fetched_at': datetime.now().isoformat(),
+            'title': f"{jurabk} {label}".strip() if jurabk else label,
+            'law_title': law_title,
+            'short_title': law.get('short_title', ''),
+            'abbreviation': jurabk,
+            'section': section,
+            'section_number': number,
+            'heading': heading,
+            'context': raw_doc.get('context', ''),
+            'text': text,
+            'date': self._iso_date(law.get('date', '')),
+            'publication': law.get('publication', ''),
+            'url': url,
+            'law_url': f"https://www.gesetze-im-internet.de/{slug}/",
+            'language': 'de',
+        }
+
+    @staticmethod
+    def _iso_date(date_str: str) -> Optional[str]:
+        if not date_str:
+            return None
+        try:
+            return datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
+        except ValueError:
+            return date_str
+
     def normalize(self, raw_doc: Dict[str, Any]) -> Dict[str, Any]:
         """Normalize document to standard schema"""
-        doknr = raw_doc.get('doknr', '')
-        jurabk = raw_doc.get('jurabk', '')
+        if raw_doc.get('kind') == 'section':
+            return self.normalize_section(raw_doc)
+
+        law = raw_doc.get('law') or raw_doc
+        doknr = raw_doc.get('doknr', '') or law.get('doknr', '')
+        jurabk = raw_doc.get('jurabk', '') or law.get('jurabk', '')
 
         # Build URL to the law on gesetze-im-internet.de
-        if jurabk:
-            url_id = jurabk.lower().replace(' ', '_').replace('/', '_')
-            url = f"https://www.gesetze-im-internet.de/{url_id}/"
-        else:
-            url = "https://www.gesetze-im-internet.de"
+        slug = self.law_slug(raw_doc.get('xml_url', ''), jurabk)
+        url = f"https://www.gesetze-im-internet.de/{slug}/" if slug else "https://www.gesetze-im-internet.de"
 
         # Parse date
-        date_str = raw_doc.get('date', '')
+        date_str = raw_doc.get('date', '') or law.get('date', '')
         if date_str:
             try:
                 # Format is typically YYYY-MM-DD
@@ -288,12 +470,18 @@ class GermanLawFetcher:
             '_type': 'legislation',
             '_fetched_at': datetime.now().isoformat(),
             'title': raw_doc.get('title', raw_doc.get('toc_title', '')),
+            'law_title': raw_doc.get('title', raw_doc.get('toc_title', '')),
             'short_title': raw_doc.get('short_title', ''),
             'abbreviation': jurabk,
+            'section': '',
+            'section_number': '',
+            'heading': '',
+            'context': '',
             'text': raw_doc.get('text', ''),
             'date': date,
             'publication': raw_doc.get('publication', ''),
             'url': url,
+            'law_url': url,
             'language': 'de'
         }
 
@@ -309,9 +497,11 @@ def main():
         logger.info("Starting bootstrap...")
 
         sample_count = 0
-        target_count = 10 if '--sample' in sys.argv else 100
+        target_count = 12 if '--sample' in sys.argv else 100
 
-        for raw_doc in fetcher.fetch_all(limit=target_count + 20):
+        stream = (fetcher.fetch_sample() if '--sample' in sys.argv
+                  else fetcher.fetch_all(limit=target_count + 20))
+        for raw_doc in stream:
             if sample_count >= target_count:
                 break
 
@@ -391,12 +581,10 @@ def main():
                 xml_content = fetcher._download_and_extract_xml(law['xml_url'])
                 if not xml_content:
                     return None
-                parsed = fetcher._parse_law_xml(xml_content)
-                if not parsed.get('text') or len(parsed.get('text', '')) < 100:
-                    return None
-                parsed['toc_title'] = law['title']
-                parsed['xml_url'] = law['xml_url']
-                return fetcher.normalize(parsed)
+                records = [fetcher.normalize(doc) for doc in
+                           fetcher.expand_law(xml_content, law['title'], law['xml_url'])]
+                records = [r for r in records if len(r.get('text', '')) >= 100]
+                return records or None
             except Exception as e:
                 logger.warning(f"Error processing {law.get('title', '?')[:40]}: {e}")
                 return None
@@ -419,19 +607,20 @@ def main():
 
                     for fut in done:
                         del futures[fut]
-                        record = fut.result()
-                        if record is None:
+                        records = fut.result()
+                        if not records:
                             stats["errors"] += 1
                             continue
 
-                        stats["fetched"] += 1
-                        dedup_key = record['_id']
+                        for record in records:
+                            stats["fetched"] += 1
+                            dedup_key = record['_id']
 
-                        if storage.exists(dedup_key):
-                            stats["skipped"] += 1
-                        else:
-                            batch.append((dedup_key, record))
-                            stats["new"] += 1
+                            if storage.exists(dedup_key):
+                                stats["skipped"] += 1
+                            else:
+                                batch.append((dedup_key, record))
+                                stats["new"] += 1
 
                         if len(batch) >= batch_size:
                             storage.write_batch(batch)
@@ -446,17 +635,18 @@ def main():
 
             # Drain remaining
             for fut in as_completed(futures.keys()):
-                record = fut.result()
-                if record is None:
+                records = fut.result()
+                if not records:
                     stats["errors"] += 1
                     continue
-                stats["fetched"] += 1
-                dedup_key = record['_id']
-                if storage.exists(dedup_key):
-                    stats["skipped"] += 1
-                else:
-                    batch.append((dedup_key, record))
-                    stats["new"] += 1
+                for record in records:
+                    stats["fetched"] += 1
+                    dedup_key = record['_id']
+                    if storage.exists(dedup_key):
+                        stats["skipped"] += 1
+                    else:
+                        batch.append((dedup_key, record))
+                        stats["new"] += 1
 
         # Final batch
         if batch:
@@ -469,7 +659,7 @@ def main():
         print(f"\n{'='*60}")
         print(f"FAST BOOTSTRAP COMPLETE: DE/BGBl")
         print(f"{'='*60}")
-        print(f"Laws fetched:  {stats['fetched']}/{len(laws)}")
+        print(f"Records built: {stats['fetched']} from {len(laws)} laws")
         print(f"New records:   {stats['new']}")
         print(f"Skipped:       {stats['skipped']}")
         print(f"Errors:        {stats['errors']}")

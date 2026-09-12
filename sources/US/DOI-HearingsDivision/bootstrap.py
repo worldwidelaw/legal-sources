@@ -58,7 +58,7 @@ from typing import Generator
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 from common.pdf_extract import extract_pdf_markdown
 
@@ -404,9 +404,14 @@ class DOIHearingsDivisionScraper(BaseScraper):
     def fetch_sample(self) -> Generator[dict, None, None]:
         yield from self._iter_raw(sample=True)
 
-    def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+    def fetch_updates(self, since) -> Generator[dict, None, None]:
+        # BaseScraper.update() hands us a datetime, but `raw["date"]` is an ISO
+        # date string — comparing the two raises TypeError and aborts the whole
+        # refresh with zero records (#1441). Reduce whatever we are given to a
+        # YYYY-MM-DD string first so the comparison stays lexicographic.
+        since_str = as_date_str(since)
         for raw in self.fetch_all():
-            if not since or (raw.get("date") and raw["date"] >= since):
+            if not since_str or (raw.get("date") and raw["date"] >= since_str):
                 yield raw
 
 

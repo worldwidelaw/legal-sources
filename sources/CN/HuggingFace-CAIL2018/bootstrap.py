@@ -66,15 +66,23 @@ SPLITS = [
 ]
 
 
+RETRYABLE_STATUS = (429, 500, 502, 503, 504)
+
+
 def _request_with_retry(url, params=None, retries=6, backoff=5):
     """GET with retry. Handles transient network errors and, critically, the
     HuggingFace datasets-server /rows 429 throttle (issue #890): the rows API
     rate-limits paged access, so we back off (honoring Retry-After) instead of
-    dying on the first 429. 503 (server busy) is treated the same way."""
+    dying on the first 429.
+
+    The transient 5xx family is treated the same way (issue #1453): a single
+    502 Bad Gateway from the datasets-server gateway used to reach
+    raise_for_status directly and kill a 2.17M-row crawl a couple hundred rows
+    in. 500/504 are the same gateway-side failure mode as 502/503."""
     for attempt in range(retries):
         try:
             resp = requests.get(url, params=params, headers=HEADERS, timeout=30)
-            if resp.status_code in (429, 503):
+            if resp.status_code in RETRYABLE_STATUS:
                 if attempt < retries - 1:
                     retry_after = resp.headers.get("Retry-After")
                     try:
@@ -82,8 +90,9 @@ def _request_with_retry(url, params=None, retries=6, backoff=5):
                     except ValueError:
                         wait = backoff * (2 ** attempt)
                     wait = min(wait, 120)
+                    kind = "rate-limited" if resp.status_code == 429 else "server error"
                     logger.warning(
-                        f"HTTP {resp.status_code} (rate-limited); "
+                        f"HTTP {resp.status_code} ({kind}); "
                         f"retry {attempt+1}/{retries} after {wait}s"
                     )
                     time.sleep(wait)
@@ -97,7 +106,7 @@ def _request_with_retry(url, params=None, retries=6, backoff=5):
                 time.sleep(wait)
             else:
                 raise
-    # Exhausted retries on 429/503 — raise so the caller sees the failure
+    # Exhausted retries on a retryable status — raise so the caller sees it
     resp.raise_for_status()
     return resp
 
@@ -315,4 +324,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

@@ -52,21 +52,38 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.BM.SupremeCourt")
 
 BASE_URL = "https://www.gov.bm"
-START_YEAR = 2017
-# Regex to extract PDF links with their anchor text
+# Archive pages exist from 2007 (2005/2006 return 404); current year lives at
+# /court-judgments (there is no /court-judgments-{current_year} page).
+START_YEAR = 2007
+# Regex to extract PDF links with their anchor text. gov.bm moved its media out
+# of the Drupal-default /sites/default/files/ tree into /files/ and
+# /files/media-library/ — match both so old and new layouts keep working.
 PDF_LINK_RE = re.compile(
-    r'<a[^>]*href="(/sites/default/files/[^"]+\.pdf)"[^>]*>(.*?)</a>',
+    r'<a[^>]*href="((?:/sites/default)?/files/[^"]+\.pdf)"[^>]*>(.*?)</a>',
     re.IGNORECASE | re.DOTALL,
 )
-# Regex to extract date from link text (DD Month YYYY or similar)
+# Regex to extract date from link text. Most entries wrap it in parentheses
+# ("(20 July 2026)") but a minority trail it bare ("24 July 2026").
 DATE_RE = re.compile(
-    r'\((\d{1,2}\s+\w+\s+\d{4})\)',
+    r'\(?\b(\d{1,2}\s+[A-Za-z]+\s+\d{4})\b\)?',
 )
 # Regex to extract citation
 CITATION_RE = re.compile(
     r'\[(\d{4})\]\s*(CA|SC)\s*\(Bda\)\s*(\d+)\s*(\w+)',
     re.IGNORECASE,
 )
+
+# Judgment PDFs carry the decision date in a labelled header line, in either
+# "12 June 2026" or "23/04/2026" (UK day-first) form.
+PDF_DATE_RE = re.compile(
+    r'(?:Date\s+of\s+(?:Judgment|Judgement|Decision|Ruling|Reasons|Hearing)'
+    r'|Judgment\s+delivered(?:\s+on)?|Date\s+Delivered|Date)'
+    r'\s*:?\s*'
+    r'(\d{1,2}\s+[A-Za-z]+\s+\d{4}|\d{1,2}/\d{1,2}/\d{4})',
+    re.IGNORECASE,
+)
+# gov.bm serves media under /files/{YYYYMMDD}/ or /files/media-library/{YYYYMMDD}/
+URL_DATE_RE = re.compile(r'/files/(?:media-library/)?(\d{8})/')
 
 MONTH_MAP = {
     "january": "01", "february": "02", "march": "03", "april": "04",
@@ -115,8 +132,35 @@ class BMSupremeCourtScraper(BaseScraper):
             pass
         return None
 
+    def _derive_date(self, text: str, pdf_path: str) -> Optional[str]:
+        """
+        Fall back for judgments whose listing anchor carries no date: read the
+        labelled date from the PDF header, else the gov.bm upload date in the
+        file path. Without this the record has date=None and is dropped by the
+        pipeline's temporal-key validation.
+        """
+        match = PDF_DATE_RE.search(text[:4000])
+        if match:
+            raw = match.group(1)
+            if "/" in raw:
+                day, month, year = raw.split("/")
+                return f"{year}-{int(month):02d}-{int(day):02d}"
+            parsed = self._parse_date(raw)
+            if parsed:
+                return parsed
+
+        url_match = URL_DATE_RE.search(pdf_path)
+        if url_match:
+            stamp = url_match.group(1)
+            return f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:8]}"
+
+        return None
+
     def _parse_link_text(self, text: str) -> Dict[str, str]:
         """Parse case name, citation, court, and date from link text."""
+        # Anchor bodies often wrap the title in <strong>/<span>; drop the markup
+        # before parsing so the citation and date regexes see clean text.
+        text = re.sub(r'<[^>]+>', ' ', text)
         text = html_mod.unescape(text).strip()
         text = re.sub(r'\s+', ' ', text)
 
@@ -160,8 +204,12 @@ class BMSupremeCourtScraper(BaseScraper):
             return []
 
         results = []
+        seen = set()
         for match in PDF_LINK_RE.finditer(resp.text):
             pdf_path = match.group(1)
+            if pdf_path in seen:
+                continue
+            seen.add(pdf_path)
             link_text = match.group(2)
             meta = self._parse_link_text(link_text)
             meta["pdf_path"] = pdf_path
@@ -200,6 +248,7 @@ class BMSupremeCourtScraper(BaseScraper):
         current_year = datetime.now().year
         limit = 15 if sample else None
         count = 0
+        seen_paths = set()
 
         for year in range(current_year, START_YEAR - 1, -1):
             if limit and count >= limit:
@@ -209,11 +258,23 @@ class BMSupremeCourtScraper(BaseScraper):
             judgments = self._collect_judgments_for_year(year)
             logger.info(f"  Found {len(judgments)} judgments for {year}")
 
+            if year == current_year and not judgments:
+                # The current-year page is always populated; an empty result means
+                # the layout moved again or the host is refusing this vantage.
+                # Fail loud rather than silently reporting a 0-record success.
+                raise RuntimeError(
+                    f"No judgment PDF links found on {BASE_URL}"
+                    f"{self._get_year_url(year)} — page layout changed or access blocked"
+                )
+
             for meta in judgments:
                 if limit and count >= limit:
                     break
 
                 pdf_path = meta["pdf_path"]
+                if pdf_path in seen_paths:
+                    continue
+                seen_paths.add(pdf_path)
                 title = meta.get("case_name") or meta.get("raw_title", "?")
                 logger.info(f"  [{count + 1}] Downloading: {title[:60]}")
 
@@ -235,6 +296,8 @@ class BMSupremeCourtScraper(BaseScraper):
                     continue
 
                 meta["text"] = text
+                if not meta.get("date"):
+                    meta["date"] = self._derive_date(text, pdf_path)
                 yield meta
                 count += 1
 
@@ -263,6 +326,8 @@ class BMSupremeCourtScraper(BaseScraper):
                 continue
 
             meta["text"] = text
+            if not meta.get("date"):
+                meta["date"] = self._derive_date(text, pdf_path)
             yield meta
 
 
@@ -278,7 +343,7 @@ if __name__ == "__main__":
 
     if command == "test":
         scraper.test_connection()
-    elif command == "bootstrap":
+    elif command in ("bootstrap", "bootstrap-fast"):
         scraper.bootstrap(sample_mode=sample_mode)
     elif command == "update":
         scraper.bootstrap(sample_mode=False)

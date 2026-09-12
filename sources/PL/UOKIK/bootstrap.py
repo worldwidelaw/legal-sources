@@ -30,7 +30,8 @@ import time
 import urllib3
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
+from urllib.parse import urljoin
 
 import requests
 
@@ -52,6 +53,8 @@ SOURCE_ID = "PL/UOKIK"
 VIEW_ID = "0b335ee1820a0883c1257876002d1521"
 SAMPLE_DIR = Path(__file__).parent / "sample"
 DATA_DIR = Path(__file__).parent / "data"
+RECORDS_FILE = DATA_DIR / "records.jsonl"
+CHECKPOINT_FILE = DATA_DIR / "checkpoint.json"
 
 
 class UOKIKFetcher:
@@ -125,13 +128,13 @@ class UOKIKFetcher:
         pdf_pattern = r'href="(/bp/dec_prez\.nsf/[^"]+/\$FILE/[^"]+\.pdf)"'
         match = re.search(pdf_pattern, resp.text, re.IGNORECASE)
         if match:
-            return match.group(1)
+            return urljoin(BASE_URL, match.group(1))
 
         # Also try broader pattern
         pdf_pattern2 = r'(/bp/dec_prez\.nsf/[^"\s]+\$FILE/[^"\s]+\.pdf)'
         match = re.search(pdf_pattern2, resp.text, re.IGNORECASE)
         if match:
-            return match.group(1)
+            return urljoin(BASE_URL, match.group(1))
 
         return None
 
@@ -180,6 +183,7 @@ class UOKIKFetcher:
             'text': full_text,
             'date': date_iso,
             'url': doc_url,
+            'unid': unid,
             'case_number': case_number,
             'signature': signature,
             'parties': parties,
@@ -190,13 +194,24 @@ class UOKIKFetcher:
             'appeal': appeal == 'Tak',
         }
 
-    def fetch_all(self, sample: bool = False) -> Iterator[Dict[str, Any]]:
-        """Fetch all UOKiK decisions with full text."""
+    def fetch_all(self, sample: bool = False,
+                  done: Optional[Set[str]] = None) -> Iterator[Dict[str, Any]]:
+        """Fetch all UOKiK decisions with full text.
+
+        `done` holds UNIDs already written by a previous run; they are skipped
+        with no network calls so a restarted fleet slot advances monotonically
+        instead of re-walking the corpus from the top (issue #1285).
+        """
         entries = self.fetch_all_unids()
 
         if sample:
             entries = entries[:15]
             logger.info(f"Sample mode: processing {len(entries)} decisions")
+        elif done:
+            before = len(entries)
+            entries = [e for e in entries if e[1] not in done]
+            logger.info(f"Resuming: skipping {before - len(entries)} already-fetched "
+                        f"decisions, {len(entries)} remaining")
 
         for i, (view_id, unid) in enumerate(entries):
             logger.info(f"[{i+1}/{len(entries)}] Fetching {unid}...")
@@ -291,24 +306,49 @@ def bootstrap_sample(fetcher: UOKIKFetcher):
     return count
 
 
+def _load_checkpoint() -> Set[str]:
+    """UNIDs already streamed to records.jsonl by an earlier run."""
+    if not CHECKPOINT_FILE.exists():
+        return set()
+    try:
+        with open(CHECKPOINT_FILE, encoding='utf-8') as f:
+            return set(json.load(f).get('done', []))
+    except (OSError, ValueError) as e:
+        logger.warning(f"Ignoring unreadable checkpoint {CHECKPOINT_FILE}: {e}")
+        return set()
+
+
+def _save_checkpoint(done: Set[str]):
+    tmp = CHECKPOINT_FILE.with_suffix('.tmp')
+    with open(tmp, 'w', encoding='utf-8') as f:
+        json.dump({'done': sorted(done)}, f)
+    tmp.replace(CHECKPOINT_FILE)
+
+
 def bootstrap_full(fetcher: UOKIKFetcher):
-    """Fetch all records and save to data/ directory."""
+    """Fetch all records, streaming to data/records.jsonl for pipeline ingest."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
+    done = _load_checkpoint()
     count = 0
-    for record in fetcher.fetch_all(sample=False):
-        fname = DATA_DIR / f"{record['_id']}.json"
-        with open(fname, 'w', encoding='utf-8') as f:
-            json.dump(record, f, ensure_ascii=False, indent=2)
-        count += 1
-        if count % 100 == 0:
-            logger.info(f"  Progress: {count} records saved")
-    logger.info(f"Full bootstrap complete: {count} records saved to {DATA_DIR}")
+    # Append so a resumed run keeps what the previous slot already wrote; the
+    # checkpoint guarantees we never re-append the same decision.
+    with open(RECORDS_FILE, 'a', encoding='utf-8') as out:
+        for record in fetcher.fetch_all(sample=False, done=done):
+            out.write(json.dumps(record, ensure_ascii=False) + '\n')
+            out.flush()
+            done.add(record['unid'])
+            count += 1
+            if count % 25 == 0:
+                _save_checkpoint(done)
+                logger.info(f"  Progress: {count} records written")
+    _save_checkpoint(done)
+    logger.info(f"Full bootstrap complete: {count} records written to {RECORDS_FILE}")
     return count
 
 
 def main():
     parser = argparse.ArgumentParser(description='PL/UOKIK Competition Decisions Fetcher')
-    parser.add_argument('command', choices=['bootstrap', 'update', 'test-api'],
+    parser.add_argument('command', choices=['bootstrap', 'bootstrap-fast', 'update', 'test-api'],
                         help='Command to run')
     parser.add_argument('--sample', action='store_true',
                         help='Only fetch sample records (15 decisions)')
@@ -323,14 +363,19 @@ def main():
         success = fetcher.test_api()
         sys.exit(0 if success else 1)
 
-    elif args.command == 'bootstrap':
+    # The fleet wrapper invokes `bootstrap-fast`; route it to the full path so it
+    # streams the whole corpus instead of falling back to the committed samples.
+    elif args.command in ('bootstrap', 'bootstrap-fast'):
         if args.sample:
             count = bootstrap_sample(fetcher)
         else:
             count = bootstrap_full(fetcher)
         if count == 0:
-            logger.error("No records fetched!")
-            sys.exit(1)
+            if not args.sample and _load_checkpoint():
+                logger.info("No new records — corpus already fetched (checkpoint complete)")
+            else:
+                logger.error("No records fetched!")
+                sys.exit(1)
 
     elif args.command == 'update':
         logger.info("Update not supported for Domino-based source; use full bootstrap")

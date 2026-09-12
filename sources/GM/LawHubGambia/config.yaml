@@ -26,6 +26,18 @@ data_types:
 auth:
   type: "none"
 
+license:
+  name: "Open access (not-for-profit legal database)"
+  url: "https://www.lawhubgambia.com/terms-of-use"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Law Hub Gambia disclaims copyright ownership over the statutes and
+    judgments it republishes; the underlying material is Gambian government
+    legislation and court judgments.
+
 rate_limit:
   requests_per_second: 0.5
   burst: 1
@@ -81,4 +93,8 @@ notes: |
   - Constitution: HTML full text on /1997-constitution
   - Legislation: PDF downloads at /s/*.pdf
   - Gambia Law Reports: bulk PDFs (large, may be scanned)
-  - pdfplumber used for PDF text extraction
+  - Most legislation PDFs are scans, so OCR (tesseract) is the normal
+    extraction path, not a rare fallback
+  - Every PDF carries a per-page "Law Hub Gambia Digital" watermark; it is
+    stripped before the minimum-length guard so a stamp is never mistaken
+    for a document (issue #1414)

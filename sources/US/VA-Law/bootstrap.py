@@ -15,9 +15,23 @@ Strategy:
 
 Data: Public domain. No authentication required.
 
+Incremental refresh (#1502):
+  The portal exposes no upstream modified stamp anywhere — the whole JSON API
+  surface is enumerated at /jsonapi/ and carries no date facet, the responses
+  come back `Cache-Control: no-cache` with no `Last-Modified`/`ETag`, and the
+  bulk CSVs under /CSV/ share one batch mtime that has not moved since
+  2025-08-13 even though the API already serves 2026 amendments. So the only
+  honest availability comparator is the upstream body itself: `fetch_updates`
+  walks the corpus and yields only the sections whose text hash differs from
+  the one recorded in data/va_law_state.json. That is the `availability`
+  comparator in common.base_scraper — an upstream content SHA, not a date read
+  out of the document.
+
 Usage:
   python bootstrap.py bootstrap            # Full pull (all collections)
+  python bootstrap.py bootstrap-fast       # Alias for the full pull
   python bootstrap.py bootstrap --sample   # Fetch ~15 sample sections
+  python bootstrap.py update               # Incremental refresh (changed only)
   python bootstrap.py test-api             # Connectivity test
 """
 
@@ -25,6 +39,7 @@ import sys
 import re
 import time
 import json
+import hashlib
 import logging
 import html as html_module
 from pathlib import Path
@@ -47,6 +62,24 @@ logger = logging.getLogger("legal-data-hunter.US.VA-Law")
 API_BASE = "https://law.lis.virginia.gov/api"
 DELAY = 1.0  # seconds between requests
 
+#: Flush the content-hash state this often so a torn-down fleet slot keeps the
+#: work it already did instead of restarting from an empty comparator.
+STATE_FLUSH_EVERY = 500
+
+#: Amendment history citation at the foot of a section body: "2005, c. 839.",
+#: "2019, cc. 12, 34.", "Code 1919, § 2". Used only to date the record — never
+#: as the refresh comparator.
+_CITATION_YEAR_RE = re.compile(r"\b(1[6-9]\d\d|20\d\d)\s*,\s*(?:cc?\.|§)")
+
+#: Virginia Register historical note on an Administrative Code section:
+#: "eff. July 1, 1993", "eff. February 1, 2010".
+_EFFECTIVE_YEAR_RE = re.compile(r"eff\.\s+(?:[A-Z][a-z]+\s+\d{1,2},\s*)?(19\d\d|20\d\d)")
+
+#: The current Constitution of Virginia took effect on this date. Constitution
+#: sections carry no citation block, and a crawl-date fallback would re-date
+#: every one of them on every pass.
+CONSTITUTION_EFFECTIVE_DATE = "1971-07-01"
+
 
 def strip_html(html_text: str) -> str:
     """Strip HTML tags and clean up text."""
@@ -67,6 +100,11 @@ def strip_html(html_text: str) -> str:
 
 class VALawScraper(BaseScraper):
 
+    #: law.lis.virginia.gov publishes no modified/published stamp at any level
+    #: (see the module docstring), so the refresh narrows on the upstream body
+    #: hash rather than on `since`.
+    incremental_comparator = "availability"
+
     def __init__(self, source_dir: str = None):
         if source_dir is None:
             source_dir = str(Path(__file__).parent)
@@ -79,6 +117,61 @@ class VALawScraper(BaseScraper):
             },
             timeout=60,
         )
+        self.state_path = Path(source_dir) / "data" / "va_law_state.json"
+        self._state = None
+        self._state_dirty = 0
+
+    # ── Upstream content-hash state ───────────────────────────────────
+
+    @property
+    def state(self) -> dict:
+        """Lazily loaded `{section_id: sha1(text)}` map of the last seen bodies."""
+        if self._state is None:
+            try:
+                with open(self.state_path, encoding="utf-8") as fh:
+                    loaded = json.load(fh)
+                self._state = loaded.get("hashes", {})
+                logger.info(
+                    "Loaded content-hash state: %d sections (updated %s)",
+                    len(self._state), loaded.get("updated_at", "unknown"),
+                )
+            except FileNotFoundError:
+                self._state = {}
+                logger.info("No content-hash state yet — first run builds it")
+            except (json.JSONDecodeError, OSError) as e:
+                # A truncated state file must not silently become "nothing
+                # changed"; drop it and rebuild rather than skip the corpus.
+                self._state = {}
+                logger.warning("Unreadable state at %s (%s) — rebuilding", self.state_path, e)
+        return self._state
+
+    @staticmethod
+    def _body_hash(raw: dict) -> str:
+        return hashlib.sha1(raw["text"].encode("utf-8")).hexdigest()
+
+    def _remember(self, raw: dict) -> None:
+        """Record a section's upstream body hash, flushing periodically."""
+        self.state[raw["section_id"]] = self._body_hash(raw)
+        self._state_dirty += 1
+        if self._state_dirty >= STATE_FLUSH_EVERY:
+            self._save_state()
+
+    def _save_state(self) -> None:
+        if self._state is None:
+            return
+        self.state_path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = self.state_path.with_suffix(".json.tmp")
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(
+                {
+                    "version": 1,
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                    "hashes": self._state,
+                },
+                fh,
+            )
+        tmp.replace(self.state_path)
+        self._state_dirty = 0
 
     def _get_json(self, url: str):
         """Fetch URL and parse JSON, with rate limiting."""
@@ -358,10 +451,29 @@ class VALawScraper(BaseScraper):
 
     # ── Normalize ─────────────────────────────────────────────────────
 
+    @staticmethod
+    def _enacted_date(text: str, collection: str) -> str:
+        """Date the section from the newest year in its enactment history.
+
+        The old code stamped every record with the crawl date, so an unchanged
+        section looked freshly dated on every pass. Code sections carry an
+        acts-of-assembly citation ("2019, cc. 12, 34."), Administrative Code
+        sections a Virginia Register note ("eff. February 1, 2010"); both are
+        stable across crawls. Where neither exists the fallback still has to be
+        stable, so Constitution sections take the current Constitution's
+        effective date rather than today's.
+        """
+        years = [int(y) for y in _CITATION_YEAR_RE.findall(text)]
+        years += [int(y) for y in _EFFECTIVE_YEAR_RE.findall(text)]
+        if years:
+            return f"{max(years)}-01-01"
+        if collection == "Constitution":
+            return CONSTITUTION_EFFECTIVE_DATE
+        return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
     def normalize(self, raw: dict) -> dict:
         """Transform raw section data into standard schema."""
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
         collection = raw["collection"]
         section_id = raw["section_id"]
@@ -381,7 +493,7 @@ class VALawScraper(BaseScraper):
             "section_id": section_id,
             "title": title,
             "text": raw["text"],
-            "date": today,
+            "date": self._enacted_date(raw["text"], collection),
             "url": raw["url"],
             "collection": collection,
         }
@@ -414,8 +526,8 @@ class VALawScraper(BaseScraper):
             logger.error(f"API test FAILED: {e}")
             return False
 
-    def fetch_all(self) -> Generator[dict, None, None]:
-        """Yield all raw sections across all Virginia law collections."""
+    def _walk(self) -> Generator[dict, None, None]:
+        """Walk every section of every collection once, in publication order."""
         total = 0
         for record in self.iter_cov():
             yield record
@@ -438,9 +550,60 @@ class VALawScraper(BaseScraper):
 
         logger.info(f"Total Virginia sections: {total}")
 
-    def fetch_updates(self, since: str) -> Generator[dict, None, None]:
-        """Fetch all sections (no incremental update supported)."""
-        yield from self.fetch_all()
+    def fetch_all(self) -> Generator[dict, None, None]:
+        """Yield all raw sections, recording each body hash for later refreshes."""
+        try:
+            for raw in self._walk():
+                self._remember(raw)
+                yield raw
+        finally:
+            self._save_state()
+
+    def fetch_updates(self, since=None) -> Generator[dict, None, None]:
+        """Yield only the sections whose upstream body changed.
+
+        `since` is a crawl timestamp and there is nothing upstream to compare it
+        against — the portal serves no modified stamp on any endpoint, and the
+        bulk CSVs carry a batch mtime that lags the API by a year. So the
+        comparator is the upstream body hash recorded by the previous run: a
+        section comes through when law.lis.virginia.gov is serving text we have
+        not seen, which is exactly when it became available to us, and never
+        because of a date printed inside it (#1502).
+        """
+        # `since` is deliberately unread: reporting this as a date-narrowed
+        # refresh would be a false positive in classify_fetch_updates, and the
+        # declared `availability` comparator is what actually narrows it.
+        logger.info(
+            "Incremental refresh: comparing upstream body hashes against "
+            "%d recorded sections", len(self.state),
+        )
+        if not self.state:
+            logger.warning(
+                "No content-hash state on disk — this refresh yields the whole "
+                "corpus once to establish the baseline, then narrows."
+            )
+
+        examined = changed = added = 0
+        try:
+            for raw in self._walk():
+                examined += 1
+                digest = self._body_hash(raw)
+                previous = self.state.get(raw["section_id"])
+                if previous == digest:
+                    continue
+                if previous is None:
+                    added += 1
+                else:
+                    changed += 1
+                self._remember(raw)
+                yield raw
+        finally:
+            self._save_state()
+            logger.info(
+                "Refresh done: %d sections examined, %d changed, %d new, "
+                "%d unchanged and skipped",
+                examined, changed, added, examined - changed - added,
+            )
 
     def fetch_sample(self) -> Generator[dict, None, None]:
         """Fetch a small sample: 5 CoV + 5 VAC + 5 Constitution sections."""
@@ -457,20 +620,24 @@ class VALawScraper(BaseScraper):
         logger.info(f"Sample complete: {count} sections")
 
 
+USAGE = ("Usage: python bootstrap.py "
+         "[test-api|bootstrap [--sample]|bootstrap-fast|update]")
+
+
 if __name__ == "__main__":
     scraper = VALawScraper()
     if len(sys.argv) > 1:
         cmd = sys.argv[1]
         if cmd == "test-api":
             scraper.test_api()
-        elif cmd == "bootstrap":
-            sample = "--sample" in sys.argv
-            if sample:
-                scraper.bootstrap(sample_mode=True)
-            else:
-                scraper.bootstrap(sample_mode=False)
+        elif cmd in ("bootstrap", "bootstrap-fast"):
+            # The fleet wrapper invokes `bootstrap-fast`; without the alias it
+            # falls back to re-ingesting sample/ (#1113 class).
+            scraper.bootstrap(sample_mode="--sample" in sys.argv)
+        elif cmd == "update":
+            scraper.update()
         else:
             print(f"Unknown command: {cmd}")
-            print("Usage: python bootstrap.py [test-api|bootstrap [--sample]]")
+            print(USAGE)
     else:
-        print("Usage: python bootstrap.py [test-api|bootstrap [--sample]]")
+        print(USAGE)

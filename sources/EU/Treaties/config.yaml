@@ -1,0 +1,58 @@
+source:
+  id: "EU/Treaties"
+  name: "EU — Treaties (Primary Law)"
+  country: "EU"
+  language: "en"
+
+  # Full text is retrieved from the EU Publications Office (CELLAR / EUR-Lex),
+  # where the EU's primary law — the first sector of the EUR-Lex taxonomy — is
+  # stored with a CELEX number in sector 1 (1{YYYY}{DESC}...). This is the EU's
+  # constitutional layer: the consolidated TEU (12016M/TXT) and TFEU
+  # (12016E/TXT), the Charter of Fundamental Rights (12016A/TXT), the Euratom
+  # Treaty, the amending Treaties (Maastricht, Amsterdam, Nice, Lisbon —
+  # 12007L/TXT), the Accession Treaties, annexed Protocols and Declarations, and
+  # the UK Withdrawal Agreement (12020W/TXT). A distinct, additive corpus to
+  # EU/EUR-Lex (sector-3 secondary legislation) and the sector-2/4 external and
+  # complementary siblings. Enumeration is via the public CELLAR SPARQL endpoint
+  # (the sector-1 corpus is ~9,800 rows, under the ~10K OFFSET ceiling); full
+  # text via CELLAR content negotiation (Accept application/xhtml+xml,
+  # Accept-Language en), which bypasses the eur-lex.europa.eu AWS-WAF that
+  # 202-challenges datacenter IPs, so it is fleet-safe. Sector-1 CELEX carry "/"
+  # and parenthesised sub-part markers and are URL-encoded before fetch.
+  endpoints:
+    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
+    cellar_celex: "http://publications.europa.eu/resource/celex/{celex}"
+
+  data_types:
+    - legislation
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1
+
+  schema:
+    key_fields:
+      _id:
+        type: string
+        required: true
+      title:
+        type: string
+        required: true
+      text:
+        type: string
+        required: true
+      date:
+        type: date
+        required: false
+
+fetch:
+  sample_count: 15
+
+license:
+  name: "EU institutional reuse (Decision 2011/833/EU)"
+  url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "EU primary-law texts published by the Publications Office are reusable, including for commercial purposes, under the Commission's reuse policy (Decision 2011/833/EU). Attribution to the source is requested."

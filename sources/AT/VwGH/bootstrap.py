@@ -57,15 +57,51 @@ class VwGHScraper(BaseScraper):
     Auth: none (Open Government Data)
     """
 
+    # VwGH digital coverage in RIS begins ~1946 (1945 returns 0 hits).
+    FIRST_YEAR = 1946
+
     def __init__(self):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
+
+        # Checkpoint/resume. The full crawl is ~356K decisions × 1 full-text
+        # download each — far longer than one fleet slot. The RIS OGD search
+        # has no cursor and its default order is by modification date
+        # (unstable across a multi-hour crawl), so an unpartitioned crawl that
+        # restarts at page 1 every relaunch re-fetches and re-appends the same
+        # early pages (issue #1105: 2,017 written / 171,208 fetched ≈ 85x
+        # re-append). We instead crawl in STABLE per-year partitions
+        # (EntscheidungsdatumVon/Bis) and persist the set of completed years
+        # NEXT TO THE MODULE (survives the fleet's temp CWD) so a relaunch
+        # skips finished years with no network calls.
+        self._checkpoint_path = source_dir / "data" / "vwgh_checkpoint.json"
+        self._completed_years = self._load_checkpoint()
 
         self.client = HttpClient(
             base_url=API_BASE,
             headers={"User-Agent": "LegalDataHunter/1.0 (Open Data Research)"},
             timeout=60,
         )
+
+    def _load_checkpoint(self) -> set:
+        try:
+            with open(self._checkpoint_path) as f:
+                years = set(int(y) for y in json.load(f).get("completed_years", []))
+            if years:
+                logger.info(f"Resuming: {len(years)} years already complete")
+            return years
+        except Exception:
+            return set()
+
+    def _save_checkpoint(self) -> None:
+        try:
+            self._checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = self._checkpoint_path.with_suffix(".json.tmp")
+            with open(tmp, "w") as f:
+                json.dump({"completed_years": sorted(self._completed_years)}, f)
+            tmp.replace(self._checkpoint_path)
+        except Exception as e:
+            logger.warning(f"Could not write checkpoint: {e}")
 
     # -- API helpers --------------------------------------------------------
 
@@ -350,13 +386,26 @@ class VwGHScraper(BaseScraper):
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """
-        Yield all VwGH decisions.
-
-        Full fetch is 354K+ records.
+        Yield all VwGH decisions (~356K), crawled in stable per-year
+        partitions with checkpoint/resume (see __init__ for the rationale).
         """
-        logger.info("Fetching all VwGH decisions")
-        for doc in self._paginate():
-            yield doc
+        current_year = datetime.now(timezone.utc).year
+        logger.info("Fetching all VwGH decisions by year (resumable)")
+        for year in range(current_year, self.FIRST_YEAR - 1, -1):
+            if year in self._completed_years:
+                continue
+            date_filter = {
+                "EntscheidungsdatumVon": f"{year}-01-01",
+                "EntscheidungsdatumBis": f"{year}-12-31",
+            }
+            count = 0
+            for doc in self._paginate(extra_params=date_filter):
+                count += 1
+                yield doc
+            # Mark the year done only after its pages were fully yielded.
+            self._completed_years.add(year)
+            self._save_checkpoint()
+            logger.info(f"Year {year} complete ({count} records)")
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """
@@ -507,4 +556,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

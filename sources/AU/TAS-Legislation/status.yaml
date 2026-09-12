@@ -1,6 +1,6 @@
-last_bootstrap: null
+last_bootstrap: '2026-08-04T03:49:59.364830+00:00'
 last_error: '''str'' object has no attribute ''get'''
-last_run: '2026-04-05T04:50:21.411857+00:00'
+last_run: '2026-08-04T03:49:59.364830+00:00'
 run_history:
 - error_message: '''str'' object has no attribute ''get'''
   errors: 0
@@ -23,4 +23,43 @@ run_history:
   skip_exception: 0
   skip_normalize_none: 0
   started_at: '2026-04-05T04:49:24.115184+00:00'
-total_records: 0
+- errors: 0
+  finished_at: '2026-08-04T03:47:15.977064+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-04T03:46:37.657061+00:00'
+- errors: 0
+  finished_at: '2026-08-04T03:49:36.426343+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-04T03:49:04.368354+00:00'
+- batch_size: 4
+  errors: 0
+  finished_at: '2026-08-04T03:49:59.364830+00:00'
+  max_workers: 4
+  mode: fast
+  rate_limiter:
+    current_rate: 1
+    rate_changes: 0
+    start_rate: 1
+    total_429s: 0
+    total_wait_time_seconds: 5.99
+    total_waits: 6
+  records_fetched: 8
+  records_new: 8
+  records_skipped: 0
+  records_updated: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-04T03:49:47.012908+00:00'
+total_records: 8

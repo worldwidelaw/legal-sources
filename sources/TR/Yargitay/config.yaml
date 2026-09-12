@@ -25,8 +25,16 @@ auth:
 
 # ── Rate Limiting ─────────────────────────────────────────────────
 rate_limit:
+  # The API throttles with HTTP 429 (plain-text body, not JSON). bootstrap_fast
+  # starts here and lets the adaptive limiter discover the real ceiling, backing
+  # off on every 429 and ramping only after sustained success.
+  # Measured: sustained 3 req/s draws 429s whose Retry-After stalls a request
+  # ~40s, so start below that and let the adaptive limiter climb if it can.
   requests_per_second: 1
+  min_rate: 0.25
+  max_rate: 5
   burst: 3
+  max_workers: 4
 
 # ── API / Scraping Configuration ──────────────────────────────────
 api:

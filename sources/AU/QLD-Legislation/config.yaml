@@ -3,8 +3,8 @@
 # ===================================================================
 # Queensland Acts and subordinate legislation from the OQPC portal.
 #
-# Primary: XML full text via /view/whole/xml/inforce/current/{id}
-# Discovery: Atom feeds + systematic ID enumeration
+# Primary: XML full text via /view/whole/xml/{rendition}/{id}
+# Discovery: browse data API (/projectdata, ds=OQPC-BrowseDataSource)
 # Format: QuILLS DTD XML with semantic markup
 # License: Creative Commons Attribution 4.0
 # ===================================================================
@@ -15,9 +15,10 @@ source:
   name: "Queensland Legislation (legislation.qld.gov.au)"
   url: "https://www.legislation.qld.gov.au/"
   description: |
-    Queensland in-force Acts and subordinate legislation. Full text
-    in structured XML (QuILLS DTD) from the Office of the Queensland
-    Parliamentary Counsel. Covers all current Acts and regulations.
+    Queensland Acts and subordinate legislation. Full text in
+    structured XML (QuILLS DTD) from the Office of the Queensland
+    Parliamentary Counsel. Covers in-force, repealed, as-passed and
+    as-made renditions (~21,000 documents).
 
 data_types:
   - legislation
@@ -32,7 +33,13 @@ rate_limit:
 api:
   type: "xml_download"
   base_url: "https://www.legislation.qld.gov.au"
-  xml_pattern: "/view/whole/xml/inforce/current/{id}"
+  xml_pattern: "/view/whole/xml/{rendition}/{id}"
+  browse_api:
+    url: "/projectdata"
+    data_source: "OQPC-BrowseDataSource"
+    collection: "OQPC.toc"
+    # `start` is 1-based; passing 0 (or omitting it) returns counts only
+    note: "Same endpoint the browse UI calls; one request lists a whole rendition"
   atom_feeds:
     - "/feed?id=whatsnew"
     - "/feed?id=newinforce"
@@ -43,15 +50,25 @@ data_model:
   primary_key: "doc_id"
   update_strategy: "upsert"
   dedup_key:
-    - "doc_id"
+    - "_id"
 
 schema:
-  total_fields: 10
+  total_fields: 12
   key_fields:
-    - name: "doc_id"
-      description: "Document ID (e.g., act-1899-009)"
+    - name: "_id"
+      description: "Record ID — doc_id, suffixed \":asmade\" for as-passed/as-made texts"
       type: "string"
       role: "primary_key"
+      required: true
+    - name: "doc_id"
+      description: "Portal document ID (e.g., act-1899-009, sl-2010-0056)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "category"
+      description: "Rendition: inforce-act, inforce-sl, repealed-act, repealed-sl, aspassed-act, asmade-sl"
+      type: "string"
+      role: "classification"
       required: true
     - name: "title"
       description: "Act or regulation title"
@@ -75,8 +92,15 @@ schema:
       required: true
 
 notes: |
-  - XML full text via /view/whole/xml/inforce/current/{id} (no auth)
-  - ID format: act-YYYY-NNN for Acts, sl-YYYY-NNNN for subordinate legislation
+  - XML full text via /view/whole/xml/{rendition}/{id} (no auth). Renditions:
+    inforce/current, repealed, asmade.
+  - IDs come from the portal's own browse API, not from probing an ID space:
+    many instruments use non-numeric IDs (act-1914-bsga, act-1995-lra) that
+    an act-YYYY-NNN sweep can never reach.
+  - A browser User-Agent trips the site's Imperva JS challenge; the plain
+    crawler identity is served normally.
+  - Every request carries a wall-clock deadline, and completed documents are
+    checkpointed to data/qld_checkpoint.txt so fleet restarts resume (#1373).
   - QuILLS DTD XML with semantic markup (act, part, clause, heading, txt)
   - CC BY 4.0 license
   - robots.txt allows /view/whole/xml/

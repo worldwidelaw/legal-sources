@@ -28,6 +28,8 @@ CURL_TIMEOUT = 120
 
 SOURCE_DIR = Path(__file__).parent
 SAMPLE_DIR = SOURCE_DIR / "sample"
+DATA_DIR = SOURCE_DIR / "data"
+RECORDS_PATH = DATA_DIR / "records.jsonl"
 
 
 def fetch_json(url: str, retries: int = 2):
@@ -85,6 +87,20 @@ def strip_html(html):
     return text.strip()
 
 
+def dget(obj, key, default=None):
+    """`obj[key]`, treating an explicit JSON `null` like a missing key.
+
+    LexWork emits the key with a `null` value rather than omitting it — e.g.
+    `text_of_law_type` is null on ~600 of the 915 laws — so plain
+    `.get(key, {})` hands back None and the next `.get()` in the chain raises
+    AttributeError (issue #1318).
+    """
+    if not isinstance(obj, dict):
+        return default
+    value = obj.get(key)
+    return default if value is None else value
+
+
 def extract_text_from_tree(node):
     """Recursively extract text from the LexWork JSON content tree."""
     if not isinstance(node, dict):
@@ -93,16 +109,16 @@ def extract_text_from_tree(node):
     parts = []
 
     # Get title/heading text
-    text_dict = node.get("text", {})
+    text_dict = dget(node, "text", {})
     if isinstance(text_dict, dict):
-        title_text = text_dict.get("de", "")
+        title_text = dget(text_dict, "de", "")
         if title_text:
             parts.append(title_text)
 
     # Get paragraph content from html_content
-    html_content = node.get("html_content", {})
+    html_content = dget(node, "html_content", {})
     if isinstance(html_content, dict):
-        html = html_content.get("de", "")
+        html = dget(html_content, "de", "")
     else:
         html = ""
     if html:
@@ -111,7 +127,7 @@ def extract_text_from_tree(node):
             parts.append(cleaned)
 
     # Recurse into children
-    for child in node.get("children", []):
+    for child in dget(node, "children", []) or []:
         child_text = extract_text_from_tree(child)
         if child_text:
             parts.append(child_text)
@@ -127,12 +143,14 @@ def get_law_index():
 
     laws = []
     for cat_id, items in data.items():
-        for item in items:
+        for item in items or []:
+            if not isinstance(item, dict) or not item.get("systematic_number"):
+                continue
             laws.append({
-                "id": item["id"],
+                "id": item.get("id"),
                 "systematic_number": item["systematic_number"],
-                "title": item["title"],
-                "abrogated": item.get("abrogated", False),
+                "title": dget(item, "title", ""),
+                "abrogated": bool(item.get("abrogated", False)),
             })
     return laws
 
@@ -143,11 +161,11 @@ def fetch_law_text(systematic_number):
     if not data:
         return None, ""
 
-    tol = data.get("text_of_law", {})
-    sv = tol.get("selected_version", {})
-    jc = sv.get("json_content", {})
-    doc = jc.get("document", {})
-    content = doc.get("content", {})
+    tol = dget(data, "text_of_law", {})
+    sv = dget(tol, "selected_version", {})
+    jc = dget(sv, "json_content", {})
+    doc = dget(jc, "document", {})
+    content = dget(doc, "content", {})
 
     text = ""
     if isinstance(content, dict):
@@ -157,22 +175,22 @@ def fetch_law_text(systematic_number):
         text = "\n".join(p for p in parts if p)
 
     # Extract date — prefer enactment (in-force date), fall back to date_of_decision
-    date = tol.get("enactment", "") or ""
+    date = dget(tol, "enactment", "")
     if not date:
-        date = tol.get("date_of_decision", "") or ""
+        date = dget(tol, "date_of_decision", "")
     if not date:
-        vds = sv.get("version_dates_str", "")
+        vds = dget(sv, "version_dates_str", "")
         if vds:
             m = re.search(r"in Kraft seit[:\s]*(\d{2})\.(\d{2})\.(\d{4})", vds)
             if m:
                 date = "%s-%s-%s" % (m.group(3), m.group(2), m.group(1))
 
-    law_type = tol.get("text_of_law_type", {}).get("description", "")
+    law_type = dget(dget(tol, "text_of_law_type", {}), "description", "")
 
     return {
         "date": date,
         "law_type": law_type,
-        "abbreviation": tol.get("abbreviation", ""),
+        "abbreviation": dget(tol, "abbreviation", ""),
     }, text
 
 
@@ -186,11 +204,11 @@ def normalize(law_info, text, meta):
         "_fetched_at": datetime.now(timezone.utc).isoformat(),
         "title": law_info["title"],
         "text": text,
-        "date": meta.get("date", "") if meta else "",
+        "date": dget(meta, "date", ""),
         "url": "https://www.gesetzessammlung.bs.ch/app/de/texts_of_law/%s" % sn,
-        "doc_type": meta.get("law_type", "legislation") if meta else "legislation",
+        "doc_type": dget(meta, "law_type", "") or "legislation",
         "systematic_number": sn,
-        "abbreviation": meta.get("abbreviation", "") if meta else "",
+        "abbreviation": dget(meta, "abbreviation", ""),
         "jurisdiction": "CH-BS",
     }
 
@@ -234,23 +252,40 @@ def main():
     parser = argparse.ArgumentParser(description="Basel-Stadt cantonal legislation fetcher")
     sub = parser.add_subparsers(dest="command")
 
-    boot = sub.add_parser("bootstrap", help="Fetch documents")
-    boot.add_argument("--sample", action="store_true", help="Fetch ~15 sample records")
-    boot.add_argument("--full", action="store_true", help="Fetch all records")
+    for name in ("bootstrap", "bootstrap-fast"):
+        boot = sub.add_parser(name, help="Fetch documents")
+        boot.add_argument("--sample", action="store_true", help="Fetch ~15 sample records")
+        boot.add_argument("--full", action="store_true", help="Fetch all records")
 
     args = parser.parse_args()
     if not args.command:
         parser.print_help()
         sys.exit(1)
 
-    if args.command == "bootstrap":
-        SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
+    if args.command in ("bootstrap", "bootstrap-fast"):
+        # A sample run writes the curated sample/ files; a full run streams to
+        # data/records.jsonl, which is what the pipeline ingests. The full path
+        # used to write into sample/ as well, so a completed crawl was
+        # indistinguishable from a sample fallback (the #798 class).
         count = 0
-        for record in fetch_all(sample=args.sample):
-            out_path = SAMPLE_DIR / ("%04d.json" % count)
-            out_path.write_text(json.dumps(record, ensure_ascii=False, indent=2))
-            count += 1
-        print("Done. Saved %d records to %s/" % (count, SAMPLE_DIR), file=sys.stderr)
+        if args.sample:
+            SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
+            for record in fetch_all(sample=True):
+                (SAMPLE_DIR / ("%04d.json" % count)).write_text(
+                    json.dumps(record, ensure_ascii=False, indent=2)
+                )
+                count += 1
+            print("Done. Saved %d records to %s/" % (count, SAMPLE_DIR), file=sys.stderr)
+        else:
+            DATA_DIR.mkdir(parents=True, exist_ok=True)
+            with RECORDS_PATH.open("w", encoding="utf-8") as stream:
+                for record in fetch_all(sample=False):
+                    stream.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    stream.flush()
+                    count += 1
+            print("%s complete: %d records written to %s"
+                  % (args.command, count, RECORDS_PATH), file=sys.stderr)
+        sys.exit(0 if count >= (10 if args.sample else 1) else 1)
 
 
 if __name__ == "__main__":

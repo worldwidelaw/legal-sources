@@ -33,6 +33,9 @@ PREFIX_ACT = "https://slovník.gov.cz/datový/sbírka/pojem/"
 SOURCE_ID = "CZ/eSbirka"
 SAMPLE_DIR = Path(__file__).parent / "sample"
 
+# Consecutive per-act SPARQL failures tolerated before aborting the crawl.
+MAX_CONSECUTIVE_ERRORS = 10
+
 HEADERS = {
     "Accept": "application/json",
     "User-Agent": "LegalDataHunter/1.0 (legal-data research project)",
@@ -41,8 +44,21 @@ HEADERS = {
 # ───────────────────────── SPARQL helpers ─────────────────────────
 
 
+class SparqlError(RuntimeError):
+    """The SPARQL endpoint could not be queried after retries."""
+
+
 def _sparql(query: str, timeout: int = 120) -> List[dict]:
-    """Execute a SPARQL SELECT and return the list of bindings."""
+    """Execute a SPARQL SELECT and return the list of bindings.
+
+    The query is stripped before sending: opendata.eselpoint.gov.cz answers 403
+    to any `query` parameter that begins with whitespace (leading newline, space
+    or tab), which is exactly what a triple-quoted Python query literal produces.
+    Internal newlines and a trailing newline are accepted, so only the leading
+    edge needs trimming (issue #1472).
+    """
+    query = query.strip()
+    last_error: Optional[str] = None
     for attempt in range(3):
         try:
             r = requests.get(
@@ -54,9 +70,12 @@ def _sparql(query: str, timeout: int = 120) -> List[dict]:
             r.raise_for_status()
             return r.json()["results"]["bindings"]
         except Exception as e:
+            last_error = str(e)
             logger.warning("SPARQL attempt %d failed: %s", attempt + 1, e)
             time.sleep(2 * (attempt + 1))
-    return []
+    # Never degrade to an empty result set: a silent [] here is what let a total
+    # endpoint failure look like "0 acts found" and fall back to the samples.
+    raise SparqlError(f"SPARQL endpoint {SPARQL_ENDPOINT} failed after 3 attempts: {last_error}")
 
 
 def _val(binding: dict, key: str) -> Optional[str]:
@@ -170,6 +189,7 @@ def fetch_all() -> Iterator[Dict[str, Any]]:
     offset = 0
     page_size = 500
     total = 0
+    consecutive_errors = 0
     while True:
         acts = list_acts(offset=offset, limit=page_size)
         if not acts:
@@ -182,12 +202,28 @@ def fetch_all() -> Iterator[Dict[str, Any]]:
             if not act_uri:
                 continue
 
-            version_uri = get_latest_version(act_uri)
+            # An isolated per-act failure is tolerable; a run of them means the
+            # endpoint has gone away and the rest of the crawl would be a
+            # silently truncated corpus, so escalate.
+            try:
+                version_uri = get_latest_version(act_uri)
+                text = get_full_text(version_uri) if version_uri else ""
+            except SparqlError as e:
+                consecutive_errors += 1
+                logger.warning("SPARQL failure on %s (%d in a row): %s",
+                               citation, consecutive_errors, e)
+                if consecutive_errors >= MAX_CONSECUTIVE_ERRORS:
+                    raise SparqlError(
+                        f"{consecutive_errors} consecutive SPARQL failures after "
+                        f"{total} acts — aborting rather than writing a truncated corpus"
+                    ) from e
+                time.sleep(5)
+                continue
+            consecutive_errors = 0
+
             if not version_uri:
                 logger.debug("No version for %s, skipping", citation)
                 continue
-
-            text = get_full_text(version_uri)
             if not text:
                 logger.debug("No text for %s, skipping", citation)
                 continue

@@ -42,6 +42,7 @@ SAMPLE_DIR = SCRIPT_DIR / "sample"
 STATUS_FILE = SCRIPT_DIR / "status.yaml"
 CHECKPOINT_FILE = SCRIPT_DIR / "checkpoint.json"
 GLOBAL_DUMP_PATH = DATA_DIR / "global_dump.tar.gz"
+RECORDS_FILE = DATA_DIR / "records.jsonl"
 
 
 def get_session() -> requests.Session:
@@ -431,81 +432,128 @@ def process_archive(archive_path: Path) -> Generator[dict, None, None]:
         yield record
 
 
-def process_global_dump_streaming(archive_path: Path, checkpoint: dict) -> Generator[dict, None, None]:
-    """
-    Process the global dump with streaming to handle large files.
-    Yields records one at a time and supports resuming from checkpoint.
+TEXT_DIR_RE = re.compile(r'^[A-Z]+TEXT\d+$')
 
-    The global dump structure is:
-    legi/global/code_et_TNC_en_vigueur/  -- in-force legislation
-    legi/global/code_et_TNC_non_vigueur/ -- historical versions
+
+def text_dir_of(member_name: str) -> Optional[str]:
     """
-    processed_ids = set(checkpoint.get("processed_ids", []))
+    Return the path prefix that identifies the text a dump member belongs to.
+
+    Inside the LEGI global dump every document lives under one
+    ``.../{JORF,LEGI,...}TEXT<id>/`` directory, e.g.
+
+        .../JORFTEXT000000549304/texte/version/LEGITEXT000005616260.xml
+        .../JORFTEXT000000549304/article/LEGI/ARTI/00/00/06/72/97/LEGIARTI000006729774.xml
+
+    so that prefix is the natural grouping key for a single streaming pass.
+    """
+    parts = member_name.split('/')
+    for i, part in enumerate(parts):
+        if TEXT_DIR_RE.match(part):
+            return '/'.join(parts[:i + 1])
+    return None
+
+
+def build_text_record(text_data: Optional[dict], articles: list[dict]) -> Optional[dict]:
+    """Combine a LEGITEXT container with its articles into a normalized record."""
+    if not text_data:
+        return None
+
+    article_texts = []
+    sorted_articles = sorted(
+        articles,
+        key=lambda a: (
+            int(a['num']) if a['num'] and a['num'].isdigit() else 999,
+            a['num'] or ''
+        )
+    )
+    for art in sorted_articles:
+        if art['text']:
+            num_str = f"Article {art['num']}" if art['num'] else "Article"
+            article_texts.append(f"{num_str}:\n{art['text']}")
+
+    all_text_parts = []
+    if text_data.get('container_text'):
+        all_text_parts.append(text_data['container_text'])
+    if article_texts:
+        all_text_parts.append("\n\n".join(article_texts))
+
+    full_text = "\n\n".join(all_text_parts)
+
+    # Skip if no substantial text
+    if len(full_text) < 100:
+        return None
+
+    return normalize(text_data, full_text)
+
+
+def process_global_dump_streaming(
+    archive_path: Path,
+    checkpoint: dict,
+    progress: Optional[dict] = None,
+) -> Generator[dict, None, None]:
+    """
+    Process the global dump in a single streaming pass, yielding one record at a time.
+
+    The dump is ~1.1 GB compressed and holds millions of members, so neither the
+    member list nor the article bodies may be held in memory: ``tar.getmembers()``
+    alone materialises every TarInfo and OOM-kills a 4 GB worker (issue #1395).
+    Instead the archive is opened in stream mode (``r|gz``) and members are grouped
+    by their ``.../XXXTEXT<id>/`` directory, which the archive stores contiguously —
+    so only the articles of the text currently being assembled are ever resident.
+
+    Resuming is by directory: the last completed text directory is recorded in
+    ``progress`` and re-walked (without parsing) on restart.
+    """
+    resume_after = checkpoint.get("last_text_dir")
+    skipping = resume_after is not None
+    if skipping:
+        print(f"Resuming global dump after {resume_after}")
+
     total_processed = checkpoint.get("total_processed", 0)
-
-    print(f"Starting from checkpoint: {total_processed} records already processed")
-
-    # For the global dump, we need to process LEGITEXT and LEGIARTI files together
-    # within the same directory tree. We'll collect articles first, then process texts.
-
-    # First pass: collect all articles by parent CID
-    articles = {}
-    file_count = 0
-
-    print("Phase 1: Indexing articles...")
-    with tarfile.open(archive_path, 'r:gz') as tar:
-        for member in tar.getmembers():
-            if not member.isfile():
-                continue
-            if not member.name.endswith('.xml'):
-                continue
-            if '/struct/' in member.name:
-                continue
-
-            filename = os.path.basename(member.name)
-            if not filename.startswith('LEGIARTI'):
-                continue
-
-            file_count += 1
-            if file_count % 10000 == 0:
-                print(f"  Indexed {file_count} article files, {len(articles)} parent CIDs...")
-
-            try:
-                f = tar.extractfile(member)
-                if f is None:
-                    continue
-                content = f.read()
-                data = parse_legiarti(content)
-                if data and data.get('text') and data.get('parent_cid'):
-                    cid = data['parent_cid']
-                    if cid not in articles:
-                        articles[cid] = []
-                    articles[cid].append(data)
-            except Exception:
-                continue
-
-    print(f"  Indexed {len(articles)} parent CIDs with articles")
-
-    # Second pass: process LEGITEXT files and combine with articles
-    print("Phase 2: Processing legislation texts...")
     record_count = 0
 
-    with tarfile.open(archive_path, 'r:gz') as tar:
-        for member in tar.getmembers():
-            if not member.isfile():
+    current_dir: Optional[str] = None
+    text_data: Optional[dict] = None
+    articles: list[dict] = []
+
+    with tarfile.open(archive_path, 'r|gz') as tar:
+        for member in tar:
+            # Stream mode still caches every TarInfo it has seen; drop them so
+            # memory stays flat across millions of members.
+            tar.members = []
+
+            if not member.isfile() or not member.name.endswith('.xml'):
                 continue
-            if not member.name.endswith('.xml'):
-                continue
+            # Only process version files (not struct)
             if '/struct/' in member.name:
                 continue
 
-            filename = os.path.basename(member.name)
-            if not filename.startswith('LEGITEXT'):
+            tdir = text_dir_of(member.name)
+            if tdir is None:
                 continue
 
-            # Extract the ID from filename to check if already processed
-            doc_id = filename.replace('.xml', '')
-            if doc_id in processed_ids:
+            if tdir != current_dir:
+                if current_dir is not None and not skipping:
+                    record = build_text_record(text_data, articles)
+                    if record is not None:
+                        record_count += 1
+                        if progress is not None:
+                            progress["last_text_dir"] = current_dir
+                        if record_count % 1000 == 0:
+                            print(f"  Processed {record_count + total_processed} records...")
+                        yield record
+                if skipping and current_dir == resume_after:
+                    skipping = False
+                current_dir = tdir
+                text_data = None
+                articles = []
+
+            if skipping:
+                continue
+
+            filename = os.path.basename(member.name)
+            if not (filename.startswith('LEGITEXT') or filename.startswith('LEGIARTI')):
                 continue
 
             try:
@@ -513,51 +561,29 @@ def process_global_dump_streaming(archive_path: Path, checkpoint: dict) -> Gener
                 if f is None:
                     continue
                 content = f.read()
-                text_data = parse_legitext(Path(member.name), content)
-                if not text_data:
-                    continue
 
-                cid = text_data.get('cid')
-
-                # Gather article texts
-                article_texts = []
-                if cid and cid in articles:
-                    sorted_articles = sorted(
-                        articles[cid],
-                        key=lambda a: (
-                            int(a['num']) if a['num'] and a['num'].isdigit() else 999,
-                            a['num'] or ''
-                        )
-                    )
-                    for art in sorted_articles:
-                        if art['text']:
-                            num_str = f"Article {art['num']}" if art['num'] else "Article"
-                            article_texts.append(f"{num_str}:\n{art['text']}")
-
-                # Combine all text
-                all_text_parts = []
-                if text_data.get('container_text'):
-                    all_text_parts.append(text_data['container_text'])
-                if article_texts:
-                    all_text_parts.append("\n\n".join(article_texts))
-
-                full_text = "\n\n".join(all_text_parts)
-
-                # Skip if no substantial text
-                if len(full_text) < 100:
-                    continue
-
-                record = normalize(text_data, full_text)
-                record_count += 1
-
-                if record_count % 1000 == 0:
-                    print(f"  Processed {record_count + total_processed} records...")
-
-                yield record
-
+                if filename.startswith('LEGITEXT'):
+                    parsed = parse_legitext(Path(member.name), content)
+                    if parsed:
+                        text_data = parsed
+                else:
+                    parsed = parse_legiarti(content)
+                    if parsed and parsed.get('text'):
+                        articles.append(parsed)
             except Exception as e:
                 print(f"Error processing {member.name}: {e}", file=sys.stderr)
                 continue
+
+    # Flush the final text directory
+    if current_dir is not None and not skipping:
+        record = build_text_record(text_data, articles)
+        if record is not None:
+            record_count += 1
+            if progress is not None:
+                progress["last_text_dir"] = current_dir
+            yield record
+
+    print(f"  Global dump pass finished: {record_count} records this run")
 
 
 def normalize(raw: dict, full_text: str) -> dict:
@@ -652,7 +678,6 @@ def fetch_all(session: requests.Session, use_global: bool = True) -> Generator[d
     checkpoint = load_checkpoint()
     global_dump_date = checkpoint.get("global_dump_date")
     global_dump_complete = checkpoint.get("global_dump_complete", False)
-    processed_ids = set(checkpoint.get("processed_ids", []))
     total_processed = checkpoint.get("total_processed", 0)
 
     if use_global and not global_dump_complete:
@@ -664,6 +689,13 @@ def fetch_all(session: requests.Session, use_global: bool = True) -> Generator[d
             print(f"Found global dump: {global_dump['filename']} ({global_dump['date']})")
             global_dump_date = global_dump['date'].isoformat()
 
+            # A checkpoint taken against a different dump can't be resumed from,
+            # because resuming replays the archive's member order.
+            if checkpoint.get("global_dump_file") not in (None, global_dump['filename']):
+                print("Global dump changed since last run — restarting the pass")
+                checkpoint = {}
+                total_processed = 0
+
             # Download if not already present
             if not GLOBAL_DUMP_PATH.exists() or GLOBAL_DUMP_PATH.stat().st_size < 100 * 1024 * 1024:
                 print("Downloading global dump (1.1 GB)...")
@@ -673,28 +705,35 @@ def fetch_all(session: requests.Session, use_global: bool = True) -> Generator[d
 
             if use_global and GLOBAL_DUMP_PATH.exists():
                 print("Processing global dump...")
-                for record in process_global_dump_streaming(GLOBAL_DUMP_PATH, checkpoint):
-                    doc_id = record.get('_id', '')
-                    if doc_id and doc_id not in processed_ids:
-                        processed_ids.add(doc_id)
-                        total_processed += 1
-                        yield record
+                seen_ids = set()
+                progress = {"last_text_dir": checkpoint.get("last_text_dir")}
 
-                        # Save checkpoint periodically
-                        if total_processed % CHECKPOINT_INTERVAL == 0:
-                            save_checkpoint({
-                                "global_dump_date": global_dump_date,
-                                "global_dump_complete": False,
-                                "processed_ids": list(processed_ids)[-10000:],  # Keep last 10K IDs
-                                "total_processed": total_processed,
-                            })
+                for record in process_global_dump_streaming(GLOBAL_DUMP_PATH, checkpoint, progress):
+                    doc_id = record.get('_id', '')
+                    if doc_id and doc_id in seen_ids:
+                        continue
+                    if doc_id:
+                        seen_ids.add(doc_id)
+                    total_processed += 1
+                    yield record
+
+                    # Save checkpoint periodically
+                    if total_processed % CHECKPOINT_INTERVAL == 0:
+                        save_checkpoint({
+                            "global_dump_date": global_dump_date,
+                            "global_dump_file": global_dump['filename'],
+                            "global_dump_complete": False,
+                            "last_text_dir": progress["last_text_dir"],
+                            "total_processed": total_processed,
+                        })
 
                 # Mark global dump as complete
                 global_dump_complete = True
                 save_checkpoint({
                     "global_dump_date": global_dump_date,
+                    "global_dump_file": global_dump['filename'],
                     "global_dump_complete": True,
-                    "processed_ids": [],  # Clear to save space
+                    "last_text_dir": None,
                     "total_processed": total_processed,
                 })
                 print(f"Global dump complete: {total_processed} records")
@@ -739,7 +778,7 @@ def fetch_all(session: requests.Session, use_global: bool = True) -> Generator[d
     save_checkpoint({
         "global_dump_date": global_dump_date,
         "global_dump_complete": global_dump_complete,
-        "processed_ids": [],
+        "last_text_dir": None,
         "total_processed": total_processed,
         "last_full_fetch": datetime.now(timezone.utc).isoformat(),
     })
@@ -826,6 +865,29 @@ def update_status(records_fetched: int, errors: int, sample_count: int = 0) -> N
         yaml.dump(status, f, default_flow_style=False)
 
 
+def write_records_jsonl(records: Generator[dict, None, None]) -> int:
+    """
+    Stream records to data/records.jsonl (what the ingest pipeline reads).
+
+    Appends when resuming a checkpointed global-dump pass so a restart adds to the
+    corpus already on disk instead of truncating it; the loader dedups on _id.
+    """
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    resuming = bool(load_checkpoint().get("last_text_dir"))
+    mode = 'a' if resuming and RECORDS_FILE.exists() else 'w'
+
+    count = 0
+    with open(RECORDS_FILE, mode, encoding='utf-8') as f:
+        for record in records:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+            count += 1
+            if count % 1000 == 0:
+                f.flush()
+                print(f"  {count} records written...")
+    print(f"Wrote {count} records to {RECORDS_FILE}")
+    return count
+
+
 def main():
     parser = argparse.ArgumentParser(description="FR/JournalOfficiel data fetcher")
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
@@ -906,11 +968,7 @@ def main():
         elif args.full:
             use_global = not getattr(args, 'incremental_only', False)
             print(f"Starting full fetch (global dump: {'yes' if use_global else 'no'})...")
-            count = 0
-            for record in fetch_all(session, use_global=use_global):
-                count += 1
-                if count % 1000 == 0:
-                    print(f"  {count} records...")
+            count = write_records_jsonl(fetch_all(session, use_global=use_global))
             print(f"Fetched {count} records")
             update_status(count, 0)
 
@@ -925,14 +983,9 @@ def main():
                 print("Global dump file deleted.")
 
         print("Starting fast bootstrap with global dump...")
-        count = 0
-        errors = 0
-        for record in fetch_all(session, use_global=True):
-            count += 1
-            if count % 1000 == 0:
-                print(f"  {count} records...")
+        count = write_records_jsonl(fetch_all(session, use_global=True))
         print(f"Fetched {count} records")
-        update_status(count, errors)
+        update_status(count, 0)
 
     elif args.command == "updates":
         since = datetime.strptime(args.since, "%Y-%m-%d").replace(tzinfo=timezone.utc)

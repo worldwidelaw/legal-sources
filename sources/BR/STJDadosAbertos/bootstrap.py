@@ -90,14 +90,42 @@ class STJDadosAbertosScraper(BaseScraper):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
 
-    def _get_all_json_urls(self, dataset_id: str) -> List[str]:
-        """Get URLs of ALL JSON resources from a CKAN dataset (all monthly snapshots)."""
+    @staticmethod
+    def _get_json_with_retry(url: str, params: Optional[Dict] = None,
+                             timeout: int = 60, attempts: int = 4):
+        """GET and parse JSON, retrying transient upstream failures (#1453).
+
+        dadosabertos.web.stj.jus.br sits behind a proxy that intermittently
+        answers 5xx (520 observed on package_show) or returns a truncated body
+        that will not parse. Both were seen in a single probing session, and
+        either one previously cost the run an entire collegiate body's
+        snapshots, so they are retried rather than propagated.
+        """
         import requests
 
-        url = f"{CKAN_API}/package_show"
-        resp = requests.get(url, params={"id": dataset_id}, timeout=15)
-        resp.raise_for_status()
-        data = resp.json()
+        last = None
+        for attempt in range(attempts):
+            try:
+                resp = requests.get(url, params=params, timeout=timeout)
+                resp.raise_for_status()
+                return resp.json()
+            except (requests.RequestException, ValueError) as e:
+                last = e
+                status = getattr(getattr(e, "response", None), "status_code", None)
+                # A real 404 will not fix itself; stop rather than burn retries.
+                if status is not None and status in (400, 401, 403, 404):
+                    raise
+                if attempt == attempts - 1:
+                    raise
+                delay = 2 ** attempt
+                logger.warning(f"Retrying {url} in {delay}s after {type(e).__name__}: {e}")
+                time.sleep(delay)
+        raise last  # unreachable; keeps the contract explicit
+
+    def _get_json_resources(self, dataset_id: str) -> List[Dict]:
+        """Get ALL JSON resources of a CKAN dataset (the monthly snapshots)."""
+        data = self._get_json_with_retry(f"{CKAN_API}/package_show",
+                                         params={"id": dataset_id}, timeout=15)
 
         if not data.get("success"):
             return []
@@ -105,20 +133,30 @@ class STJDadosAbertosScraper(BaseScraper):
         resources = data["result"]["resources"]
         json_resources = [r for r in resources if r.get("format") == "JSON"]
 
-        if not json_resources:
-            return []
-
         # Sort by name (date-based: YYYYMMDD.json) chronologically
         json_resources.sort(key=lambda r: r.get("name", ""))
-        return [r["url"] for r in json_resources]
+        return json_resources
+
+    def _get_all_json_urls(self, dataset_id: str) -> List[str]:
+        """URLs of all JSON snapshots of a dataset, chronologically."""
+        return [r["url"] for r in self._get_json_resources(dataset_id)]
+
+    @staticmethod
+    def _published_at(resource: Dict) -> str:
+        """When a snapshot became available to us, as an ISO timestamp.
+
+        Deliberately NOT the `YYYYMMDD.json` name: that is the period the
+        snapshot *covers*, and STJ uploads every one of them after that period
+        closes -- all 150 checked, by up to 52 days. Comparing the name against
+        a crawl-time cutoff would therefore skip snapshots that appeared since
+        the last run, which is exactly the set we are here to collect.
+        """
+        return max(resource.get("last_modified") or "",
+                   resource.get("created") or "")
 
     def _fetch_json_resource(self, url: str) -> List[Dict]:
         """Download and parse a JSON resource."""
-        import requests
-
-        resp = requests.get(url, timeout=60)
-        resp.raise_for_status()
-        return resp.json()
+        return self._get_json_with_retry(url, timeout=60)
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all records from ALL monthly snapshots of each espelhos dataset."""
@@ -157,10 +195,65 @@ class STJDadosAbertosScraper(BaseScraper):
                 continue
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
-        """Fetch records from snapshots after the given date."""
-        logger.info("Use bootstrap for full refresh. Incremental not supported for snapshot data.")
-        return
-        yield
+        """Yield records from snapshots published since the last run.
+
+        This was a `return; yield` stub, so every refresh reported 0 records
+        and the caller fell back to a full re-crawl of all ~500 snapshots
+        across the 10 collegiate bodies (#1502).
+
+        Snapshot data turns out to be well suited to an incremental path: the
+        monthly files are disjoint deltas, not cumulative dumps -- verified
+        live, consecutive snapshots share zero record ids. So downloading only
+        the snapshots published after the cutoff yields exactly the new records
+        and nothing else.
+
+        Note the filter is on snapshot publication, never on the records'
+        `dataDecisao`. STJ routinely publishes older decisions in a current
+        snapshot, so a per-record decision-date cutoff would silently drop
+        precisely those late-published acordaos.
+        """
+        cutoff = since.isoformat()
+        seen_ids = set()
+        considered = downloaded = 0
+
+        for dataset_id in ESPELHOS_DATASETS:
+            try:
+                resources = self._get_json_resources(dataset_id)
+            except Exception as e:
+                logger.error(f"Error listing {dataset_id}: {e}")
+                continue
+
+            considered += len(resources)
+            fresh = [r for r in resources if self._published_at(r) >= cutoff]
+            if not fresh:
+                logger.info(f"{dataset_id}: no snapshot published since {cutoff[:10]}")
+                continue
+
+            logger.info(f"{dataset_id}: {len(fresh)} of {len(resources)} snapshots are new")
+            for resource in fresh:
+                try:
+                    records = self._fetch_json_resource(resource["url"])
+                    downloaded += 1
+                    logger.info(f"Got {len(records)} records from {resource.get('name')}")
+
+                    for record in records:
+                        rec_id = str(record.get("id", "")).strip()
+                        if rec_id and rec_id in seen_ids:
+                            continue
+                        if rec_id:
+                            seen_ids.add(rec_id)
+                        record["_dataset"] = dataset_id
+                        yield record
+
+                    time.sleep(2)
+                except Exception as e:
+                    logger.error(f"Error downloading {resource.get('url')}: {e}")
+                    continue
+
+        logger.info(
+            f"Incremental refresh: {len(seen_ids)} record(s) from {downloaded} "
+            f"snapshot(s); skipped {considered - downloaded} already-ingested snapshots"
+        )
 
     def normalize(self, raw: dict) -> Optional[dict]:
         """Transform a raw espelhos record into standardized schema."""
@@ -178,11 +271,16 @@ class STJDadosAbertosScraper(BaseScraper):
         if not text:
             return None
 
-        # ID from STJ's own id field
+        # ID from STJ's own id field. (Field is `numeroProcesso`, not `processo` —
+        # the old `processo` lookup always returned "" so process_number/title were
+        # blank and the id fallbacks never had a usable value.)
         stj_id = str(raw.get("id", "")).strip()
-        processo = (raw.get("processo") or "").strip()
+        processo = (raw.get("numeroProcesso") or "").strip()
+        registro = (raw.get("numeroRegistro") or "").strip()
         if stj_id:
             doc_id = f"BR-STJ-{stj_id}"
+        elif registro:
+            doc_id = f"BR-STJ-{re.sub(r'[^0-9]', '', registro)}"
         elif processo:
             doc_id = f"BR-STJ-{processo.replace(' ', '')}"
         else:
@@ -204,6 +302,18 @@ class STJDadosAbertosScraper(BaseScraper):
         orgao = (raw.get("nomeOrgaoJulgador") or "").strip()
         dataset = raw.get("_dataset", "")
 
+        # Per-document URL. The dataset-only URL made every record in a judging
+        # body share one of just 10 URLs, which collapsed the corpus at ingest
+        # (dedup/upsert keyed on url). Anchor the (valid, resolvable) dataset page
+        # with the STJ registration number so each acórdão has a distinct URL.
+        anchor = stj_id or re.sub(r"[^0-9]", "", registro)
+        if dataset and anchor:
+            url = f"https://dadosabertos.web.stj.jus.br/dataset/{dataset}#{anchor}"
+        elif dataset:
+            url = f"https://dadosabertos.web.stj.jus.br/dataset/{dataset}"
+        else:
+            url = "https://dadosabertos.web.stj.jus.br/"
+
         return {
             "_id": doc_id,
             "_source": "BR/STJDadosAbertos",
@@ -212,13 +322,13 @@ class STJDadosAbertosScraper(BaseScraper):
             "title": title,
             "text": text,
             "date": date,
-            "url": f"https://dadosabertos.web.stj.jus.br/dataset/{dataset}" if dataset else "https://dadosabertos.web.stj.jus.br/",
+            "url": url,
             "process_number": processo,
-            "numero_registro": (raw.get("numeroRegistro") or "").strip(),
+            "numero_registro": registro,
             "orgao_julgador": orgao,
             "judge_relator": (raw.get("ministroRelator") or "").strip(),
             "decision_type": (raw.get("tipoDeDecisao") or "").strip(),
-            "decision_outcome": (raw.get("teor") or "").strip(),
+            "decision_outcome": (raw.get("tipoDeDecisao") or "").strip(),
         }
 
 

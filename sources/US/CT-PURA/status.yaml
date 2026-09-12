@@ -1,6 +1,13 @@
-last_bootstrap: null
-last_error: null
-last_run: '2026-07-14T12:00:17.499925+00:00'
+last_bootstrap: '2026-08-22T01:42:37.956508+00:00'
+last_error: 'ReadViewEntries failed after 5 attempts (ConnectionError: HTTPSConnectionPool(host=''127.0.0.1'',
+  port=9): Max retries exceeded with url: /FINALDEC.NSF/UtilityByDecisionDateView?ReadViewEntries&Count=100
+  (Caused by NewConnectionError("HTTPSConnection(host=''127.0.0.1'', port=9): Failed
+  to establish a new connection: [Errno 61] Connection refused"))) for https://127.0.0.1:9/FINALDEC.NSF/UtilityByDecisionDateView?ReadViewEntries&Count=100
+  — www.dpuc.state.ct.us is not serving the Final Decision view to this vantage. The
+  view returns 20 categories / ~24,900 rows from an unblocked (typically US) client,
+  so this is a reachability problem, not an empty database; re-run from a residential/US
+  proxy.'
+last_run: '2026-08-22T01:42:37.956508+00:00'
 run_history:
 - errors: 9
   finished_at: '2026-07-14T12:00:17.499925+00:00'
@@ -12,4 +19,101 @@ run_history:
   skip_exception: 0
   skip_normalize_none: 9
   started_at: '2026-07-14T11:58:39.055461+00:00'
+- coverage_gaps: 0
+  errors: 9
+  finished_at: '2026-08-22T01:36:45.680411+00:00'
+  records_fetched: 12
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 12
+  skip_exception: 0
+  skip_normalize_none: 9
+  started_at: '2026-08-22T01:35:55.169352+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-22T01:41:02.406265+00:00'
+  records_fetched: 12
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 12
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-22T01:40:43.571932+00:00'
+- coverage_gaps: 0
+  error_message: 'ReadViewEntries failed after 5 attempts (ConnectionError: HTTPSConnectionPool(host=''127.0.0.1'',
+    port=9): Max retries exceeded with url: /FINALDEC.NSF/UtilityByDecisionDateView?ReadViewEntries&Count=100
+    (Caused by NewConnectionError("HTTPSConnection(host=''127.0.0.1'', port=9): Failed
+    to establish a new connection: [Errno 61] Connection refused"))) for https://127.0.0.1:9/FINALDEC.NSF/UtilityByDecisionDateView?ReadViewEntries&Count=100
+    — www.dpuc.state.ct.us is not serving the Final Decision view to this vantage.
+    The view returns 20 categories / ~24,900 rows from an unblocked (typically US)
+    client, so this is a reachability problem, not an empty database; re-run from
+    a residential/US proxy.'
+  errors: 0
+  finished_at: '2026-08-22T01:41:29.650421+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-22T01:41:14.297676+00:00'
+- batch_size: 100
+  coverage_gaps: 0
+  error_message: 'ReadViewEntries failed after 5 attempts (ConnectionError: HTTPSConnectionPool(host=''127.0.0.1'',
+    port=9): Max retries exceeded with url: /FINALDEC.NSF/UtilityByDecisionDateView?ReadViewEntries&Count=100
+    (Caused by NewConnectionError("HTTPSConnection(host=''127.0.0.1'', port=9): Failed
+    to establish a new connection: [Errno 61] Connection refused"))) for https://127.0.0.1:9/FINALDEC.NSF/UtilityByDecisionDateView?ReadViewEntries&Count=100
+    — www.dpuc.state.ct.us is not serving the Final Decision view to this vantage.
+    The view returns 20 categories / ~24,900 rows from an unblocked (typically US)
+    client, so this is a reachability problem, not an empty database; re-run from
+    a residential/US proxy.'
+  errors: 0
+  finished_at: '2026-08-22T01:42:13.300133+00:00'
+  max_workers: 4
+  mode: fast
+  rate_limiter:
+    current_rate: 2
+    rate_changes: 0
+    start_rate: 2
+    total_429s: 0
+    total_wait_time_seconds: 0.0
+    total_waits: 0
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-22T01:41:55.487864+00:00'
+- batch_size: 100
+  coverage_gaps: 0
+  error_message: 'ReadViewEntries failed after 5 attempts (ConnectionError: HTTPSConnectionPool(host=''127.0.0.1'',
+    port=9): Max retries exceeded with url: /FINALDEC.NSF/UtilityByDecisionDateView?ReadViewEntries&Count=100
+    (Caused by NewConnectionError("HTTPSConnection(host=''127.0.0.1'', port=9): Failed
+    to establish a new connection: [Errno 61] Connection refused"))) for https://127.0.0.1:9/FINALDEC.NSF/UtilityByDecisionDateView?ReadViewEntries&Count=100
+    — www.dpuc.state.ct.us is not serving the Final Decision view to this vantage.
+    The view returns 20 categories / ~24,900 rows from an unblocked (typically US)
+    client, so this is a reachability problem, not an empty database; re-run from
+    a residential/US proxy.'
+  errors: 0
+  finished_at: '2026-08-22T01:42:37.956508+00:00'
+  max_workers: 4
+  mode: fast
+  rate_limiter:
+    current_rate: 2
+    rate_changes: 0
+    start_rate: 2
+    total_429s: 0
+    total_wait_time_seconds: 0.0
+    total_waits: 0
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-22T01:42:20.255881+00:00'
 total_records: 0

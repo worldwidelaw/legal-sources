@@ -140,8 +140,21 @@ class CAFederalLegislationScraper(BaseScraper):
             logger.error(f"Error fetching document {xml_url}: {e}")
             return None
 
+    # LIMS XML block-level content tags. <Label> holds the statutory numbering
+    # (section "30", subsection "(1)", paragraph "(b)") as a SIBLING of <Text>;
+    # it was previously dropped, stripping all numbering (issue #1186). <P> wraps
+    # <Text> in some structures, so we must not double-capture nested targets.
+    _CONTENT_TAGS = ("MarginalNote", "Label", "Text", "FormulaParagraph", "P")
+
     def _extract_text_from_xml(self, root: ET.Element) -> str:
-        """Extract full text content from legislation XML."""
+        """Extract full text content from legislation XML.
+
+        Walks block-level content in document order, merging each <Label>
+        (section/subsection/paragraph number) onto the following text so the
+        numbering is preserved, e.g. "30 (1) Where oral evidence ...". Marginal
+        notes are emitted as their own lines and are NOT deduplicated (repeated
+        headings such as "Definitions" are legitimate).
+        """
         text_parts = []
 
         # Extract title from Identification section
@@ -151,20 +164,44 @@ class CAFederalLegislationScraper(BaseScraper):
                 text_parts.append(elem.text.strip())
                 break
 
-        # Extract all text content from Text, P, Label elements
-        # These contain the actual legislative text
-        seen_text = set()
+        # Map each element to its parent so we can skip content tags that are
+        # nested inside another content tag (e.g. a <Text> inside a <P>), whose
+        # text is already captured by the ancestor's itertext().
+        parent = {id(child): p for p in root.iter() for child in p}
 
+        def _has_content_ancestor(el):
+            node = parent.get(id(el))
+            while node is not None:
+                if self._get_tag_name(node) in self._CONTENT_TAGS:
+                    return True
+                node = parent.get(id(node))
+            return False
+
+        pending_label = ""  # accumulates one or more Labels awaiting their text
         for elem in root.iter():
             tag = self._get_tag_name(elem)
+            if tag not in self._CONTENT_TAGS or _has_content_ancestor(elem):
+                continue
 
-            # Get text from relevant elements
-            if tag in ("Text", "P", "FormulaParagraph", "MarginalNote"):
-                # Get all text including nested elements
-                text = "".join(elem.itertext()).strip()
-                if text and text not in seen_text:
-                    seen_text.add(text)
+            text = "".join(elem.itertext()).strip()
+            if not text:
+                continue
+
+            if tag == "Label":
+                # Chain labels (section number + subsection number) with a space.
+                pending_label = f"{pending_label} {text}".strip()
+            elif tag == "MarginalNote":
+                # Heading line; leave any pending label to attach to its text.
+                text_parts.append(text)
+            else:  # Text, P, FormulaParagraph — the substantive body
+                if pending_label:
+                    text_parts.append(f"{pending_label} {text}")
+                    pending_label = ""
+                else:
                     text_parts.append(text)
+
+        if pending_label:  # stranded numbering with no following text
+            text_parts.append(pending_label)
 
         full_text = "\n\n".join(text_parts)
 
@@ -471,4 +508,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

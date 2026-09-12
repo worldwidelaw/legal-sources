@@ -441,7 +441,9 @@ def main():
     if command == "test":
         scraper.test_connection()
 
-    elif command == "bootstrap":
+    # bootstrap-fast is the VPS fleet entrypoint; alias it to the full bootstrap
+    # path so it runs the full corpus instead of erroring out (see #1218).
+    elif command in ("bootstrap", "bootstrap-fast"):
         if sample_mode:
             stats = scraper.run_sample(n=sample_size)
             print(

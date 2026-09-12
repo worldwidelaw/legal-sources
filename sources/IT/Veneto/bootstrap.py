@@ -11,8 +11,8 @@ Strategy:
   - Parse full text from HTML content embedded in the page
 
 Endpoints:
-  - Search: http://bur.regione.veneto.it/BurvServices/Pubblica/SommarioRicerca.aspx
-  - Detail: http://bur.regione.veneto.it/BurvServices/Pubblica/DettaglioLegge.aspx?id={id}
+  - Search: https://bur.regione.veneto.it/BurvServices/Pubblica/SommarioRicerca.aspx
+  - Detail: https://bur.regione.veneto.it/BurvServices/Pubblica/DettaglioLegge.aspx?id={id}
 
 Data:
   - Coverage: 2004-present (BUR online archive)
@@ -58,7 +58,7 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.IT.veneto")
 
 # Base URLs
-BASE_URL = "http://bur.regione.veneto.it/BurvServices"
+BASE_URL = "https://bur.regione.veneto.it/BurvServices"
 SEARCH_URL = f"{BASE_URL}/Pubblica/SommarioRicerca.aspx"
 DETAIL_URL = f"{BASE_URL}/Pubblica/DettaglioLegge.aspx"
 
@@ -74,7 +74,7 @@ class VenetoScraper(BaseScraper):
     """
     Scraper for IT/Veneto -- Veneto Regional Legislation.
     Country: IT
-    URL: http://bur.regione.veneto.it/BurvServices/
+    URL: https://bur.regione.veneto.it/BurvServices/
 
     Data types: legislation
     Auth: none (CC0 1.0 Universal)
@@ -556,4 +556,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

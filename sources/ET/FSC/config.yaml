@@ -20,10 +20,44 @@ rate_limit:
 
 schema:
   key_fields:
-    - _id
-    - _source
-    - _type
-    - title
-    - text
-    - date
-    - url
+    - name: "_id"
+      description: "ET-FSC-L-{articleid} for laws, ET-FSC-J-{articleid} for judgments"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document headline (Amharic, from JSON-LD or listing link)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the DocumentDownload.ashx PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (YYYY-MM-DD) from JSON-LD datePublished"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "url"
+      description: "Detail page URL on fsc.gov.et"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "section"
+      description: "Federal-Laws, Cassation-Decisions or Supreme-Court-Decisions"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Government open access (no explicit licence)"
+  url: null
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Official Ethiopian Federal Supreme Court legal texts published for public
+    access. No explicit open licence is stated on the site.

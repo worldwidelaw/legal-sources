@@ -1,0 +1,42 @@
+source_id: BE/KULeuven
+name: KU Leuven Law Library Open-Access Archive
+country: BE
+url: https://bib.kuleuven.be/rbib/collectie/archieven
+data_types:
+  - doctrine
+auth: none
+
+status: blocked
+blocked_reason: terms_of_use_prohibit_scraping
+blocked_notes: >-
+  Personal use only. The archive pages explicitly forbid both commercial reuse and
+  public reuse of anything not in the public domain, which are the two things this
+  project does. Technically the source works (2,815 born-digital PDFs, clean text
+  extraction) — the blocker is licensing, so do not re-probe the endpoint.
+
+license:
+  name: KU Leuven Libraries digital archive terms — personal use only
+  url: https://bib.kuleuven.be/rbib/collectie/archieven
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    "Commercieel en publiek (her)gebruik van deze bestanden is niet toegelaten"
+    (/archieven/boeken). The overview page allows "vrij gebruiken voor persoonlijke
+    doeleinden" only, with "geen commercieel hergebruik, evenmin publiek hergebruik
+    voor de documenten die nog niet in het publiek domein zijn". The per-title
+    "open access" tag means free-to-read, not free-to-reuse — the volumes are
+    in-copyright Larcier / Intersentia / die Keure monographs digitised under a
+    permission granted to KU Leuven Libraries that does not extend to downstream
+    redistributors.
+
+schema:
+  key_fields:
+    - _id
+    - _source
+    - _type
+    - title
+    - text
+    - date
+    - url

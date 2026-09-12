@@ -12,8 +12,19 @@ Puerto Rico legislation from [LexJuris.com](https://www.lexjuris.com/), the prim
 
 ## Data Access
 
-- Annual menu pages list all laws for each year
-- Individual law pages contain full text in HTML (`WordSection1` div)
+- The master index (`lexleyes.htm`) links one menu page per year. The menu URL
+  scheme changed several times (`ley1997/lex1997menu.htm`,
+  `Leyes2001/lex2001menu.htm`, `Leyes2024/lexl2024Menu.htm`), so menus are
+  discovered from the index rather than templated.
+- Law filenames are `lex[l]{YY|YYYY}{NNN}.htm` (2-digit year before 2000).
+- Individual law pages are Word exports; the body lives in the `Section1` /
+  `Section2` / … divs (pre-2022) or `WordSection1` (2022+). **All** section
+  divs must be concatenated — on multi-section pages the first one ends at the
+  `DECRÉTASE` enacting formula and the articles follow in the next.
+- **Charset:** pages before ~2022 are `windows-1252` (declared in a meta tag);
+  2022+ pages are UTF-8 and declare nothing. Decode UTF-8 strictly first and
+  fall back to cp1252 — forcing UTF-8 on the older bytes destroys every
+  accented character (issue #1410).
 - No authentication required
 - No robots.txt restrictions
 - 2-second crawl delay for politeness

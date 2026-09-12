@@ -6,10 +6,11 @@ Fetches judgments and rulings from the COMESA Court of Justice via AfricanLII,
 which hosts OCR'd PDFs with extractable text layers.
 
 Strategy:
-  - Scrape AfricanLII's COMESA Court judgment listing for metadata + PDF URLs
+  - Walk AfricanLII's COMESA Court listing, including every per-year page, for
+    metadata + PDF URLs
   - Download OCR'd PDFs from AfricanLII and extract full text
   - Fall back to comesacourt.org for any decisions not on AfricanLII
-  - ~19 decisions on AfricanLII, ~38 on COMESA site (mostly scanned)
+  - 45 decisions on AfricanLII, 38 on the COMESA site (heavily overlapping)
 
 Data Coverage:
   - Trade, investment, and employment disputes from 21 COMESA member states
@@ -17,10 +18,11 @@ Data Coverage:
   - Judgments, rulings, and orders (2000-present)
 
 Usage:
-  python bootstrap.py bootstrap          # Full initial pull
-  python bootstrap.py bootstrap --sample # Fetch 15 sample records
+  python bootstrap.py bootstrap          # Full pull -> data/records.jsonl
+  python bootstrap.py bootstrap --sample # Fetch 15 sample records -> sample/
+  python bootstrap.py bootstrap-fast     # Alias for the full bootstrap (fleet entry point)
   python bootstrap.py update             # Incremental update
-  python bootstrap.py bootstrap-fast     # Alias for bootstrap --sample
+  python bootstrap.py test               # Quick connectivity test
 """
 
 import io
@@ -28,6 +30,7 @@ import re
 import sys
 import json
 import time
+import hashlib
 import logging
 from pathlib import Path
 from datetime import datetime, timezone
@@ -59,6 +62,7 @@ class COMESACourtScraper(BaseScraper):
     def __init__(self):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
+        self.last_status: Optional[int] = None
         self.session = requests.Session()
         self.session.headers.update({
             "User-Agent": "LegalDataHunter/1.0 (legal research; +https://github.com/worldwidelaw/legal-sources)",
@@ -67,16 +71,38 @@ class COMESACourtScraper(BaseScraper):
 
     # ── AfricanLII source (primary — OCR'd PDFs) ──────────────────────
 
-    def _parse_africanlii_listing(self) -> list[dict]:
-        """Parse the AfricanLII COMESA Court judgment listing page."""
+    def _listing_pages(self) -> Generator[str, None, None]:
+        """Yield the HTML of the listing root and of every per-year page.
+
+        The root only carries the most recent judgment of each year (19 of 45),
+        so the year pages linked from its sidebar are the actual corpus index.
+        """
         resp = self.session.get(AFRICANLII_LISTING, timeout=30)
         resp.raise_for_status()
-        html = resp.text
+        root = resp.text
+        yield root
 
-        entries = re.findall(
-            r'<a href="(/en/akn/aa/judgment/comesacj/[^"]+)"[^>]*>(.*?)</a>',
-            html, re.DOTALL,
-        )
+        years = sorted(set(re.findall(
+            r'href="(/en/judgments/COMESACJ/(?:\d{4})/)"', root,
+        )))
+        if not years:
+            logger.warning("No year pages found on the listing root")
+        for path in years:
+            time.sleep(1.0)
+            resp = self.session.get(f"{AFRICANLII_BASE}{path}", timeout=30)
+            resp.raise_for_status()
+            yield resp.text
+
+    def _parse_africanlii_listing(self) -> list[dict]:
+        """Parse the AfricanLII COMESA Court judgment listing pages."""
+        entries = []
+        for html in self._listing_pages():
+            # Judgments live under two FRBR country prefixes -- the older
+            # /akn/aa/ (26 of them are /akn/aa-au/), so match either.
+            entries += re.findall(
+                r'<a href="(/en/akn/[a-z-]+/judgment/comesacj/[^"]+)"[^>]*>(.*?)</a>',
+                html, re.DOTALL,
+            )
 
         decisions = []
         seen = set()
@@ -189,7 +215,7 @@ class COMESACourtScraper(BaseScraper):
                 "title": title,
                 "parties": parties,
                 "reference_number": "",
-                "date": f"{year}-01-01" if year.isdigit() else None,
+                "date": self._comesa_date(year, pdf_url),
                 "pdf_url": pdf_url,
                 "decision_type": decision_type,
                 "akn_uri": None,
@@ -198,6 +224,21 @@ class COMESACourtScraper(BaseScraper):
 
         logger.info(f"Parsed {len(decisions)} decisions from COMESA site")
         return decisions
+
+    @staticmethod
+    def _comesa_date(year: str, pdf_url: str) -> Optional[str]:
+        """Best available date for a comesacourt.org row.
+
+        The table gives only a year, but the WordPress upload path carries a
+        month (/wp-content/uploads/YYYY/MM/). Use it when the two years agree,
+        so a decision handed down in November stops reading as 1 January.
+        """
+        if not year.isdigit():
+            return None
+        upload = re.search(r"/uploads/(\d{4})/(\d{2})/", pdf_url)
+        if upload and upload.group(1) == year:
+            return f"{year}-{upload.group(2)}-01"
+        return f"{year}-01-01"
 
     # ── PDF extraction ────────────────────────────────────────────────
 
@@ -225,11 +266,19 @@ class COMESACourtScraper(BaseScraper):
             clean.append(line)
         return "\n".join(clean)
 
-    def _download_pdf_text(self, url: str) -> str:
-        """Download a PDF and extract its text."""
+    def _download_pdf_text(self, url: str, doc_id: str = "") -> str:
+        """Download a PDF and extract its text.
+
+        Records the HTTP status in ``self.last_status`` so callers can tell a
+        refused vantage apart from a document that simply carries no text.
+        ``doc_id`` must be the same string ``normalize()`` emits as ``_id`` so
+        the extractor's skip-if-already-in-Neon guard can key on it (#1480).
+        """
+        self.last_status = None
         try:
             time.sleep(1.5)
             resp = self.session.get(url, timeout=120)
+            self.last_status = resp.status_code
             if resp.status_code != 200:
                 logger.warning(f"PDF download failed ({resp.status_code}): {url}")
                 return ""
@@ -243,7 +292,7 @@ class COMESACourtScraper(BaseScraper):
             # Try centralized extractor first
             text = extract_pdf_markdown(
                 source="INTL/COMESA-Court",
-                source_id="",
+                source_id=doc_id,
                 pdf_bytes=resp.content,
                 table="case_law",
             )
@@ -294,46 +343,92 @@ class COMESACourtScraper(BaseScraper):
 
     # ── Core scraper methods ──────────────────────────────────────────
 
+    @staticmethod
+    def _text_signature(text: str) -> str:
+        """Fingerprint a decision by its opening body text.
+
+        The two sites publish the same PDFs, but their titles disagree
+        ("Agiliss Ltd v Republic of Mauritius (Reference 1 of 2022) [2023]
+        COMESACJ 3" vs "Judgment - Agiliss vs The Republic of Mauritius and 4
+        Others"), so only the text identifies a duplicate.
+        """
+        body = re.sub(r"[^a-z0-9]+", "", text.lower())[:2000]
+        return hashlib.sha1(body.encode()).hexdigest()
+
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all decisions with full text.
 
         Primary source: AfricanLII (OCR'd PDFs with text layers).
-        Fallback: COMESA Court website (mostly scanned, low yield).
+        Secondary: the COMESA Court website, for decisions AfricanLII lacks.
         """
+        seen_signatures: set[str] = set()
+        yielded = 0
+
         # Phase 1: AfricanLII (high success rate)
         africanlii_decisions = self._parse_africanlii_listing()
         total = len(africanlii_decisions)
         logger.info(f"Phase 1: Processing {total} AfricanLII decisions")
 
-        yielded_titles = set()
+        refused = 0
         for i, info in enumerate(africanlii_decisions):
             logger.info(f"[{i+1}/{total}] {info['title'][:80]}")
 
-            text = self._download_pdf_text(info["pdf_url"])
+            text = self._download_pdf_text(info["pdf_url"], self._derive_id(info))
+            if self.last_status in (403, 429):
+                refused += 1
+                # africanlii.org fronts its document pages (not its listings)
+                # with a Cloudflare managed challenge, so a refused vantage
+                # 403s every PDF while the index still looks healthy.
+                if refused >= 5 and yielded == 0:
+                    logger.error(
+                        "AfricanLII refused the first %d document downloads "
+                        "(HTTP %s) while the listing returned %d judgments — "
+                        "this vantage is challenged, skipping to comesacourt.org",
+                        refused, self.last_status, total,
+                    )
+                    break
+                continue
             if not text or len(text.strip()) < 200:
                 logger.warning(f"  Insufficient text ({len(text.strip()) if text else 0} chars), skipping")
                 continue
 
             info["text"] = text
-            yielded_titles.add(info["title"][:50].lower())
+            seen_signatures.add(self._text_signature(text))
+            yielded += 1
             yield info
 
         # Phase 2: COMESA site for decisions not on AfricanLII
         comesa_decisions = self._parse_comesa_decisions()
-        extra = [d for d in comesa_decisions
-                 if d["title"][:50].lower() not in yielded_titles]
-        logger.info(f"Phase 2: {len(extra)} additional decisions from COMESA site")
+        logger.info(f"Phase 2: Processing {len(comesa_decisions)} COMESA site decisions")
 
-        for i, info in enumerate(extra):
-            logger.info(f"[COMESA {i+1}/{len(extra)}] {info['title'][:80]}")
+        duplicates = 0
+        for i, info in enumerate(comesa_decisions):
+            logger.info(f"[COMESA {i+1}/{len(comesa_decisions)}] {info['title'][:80]}")
 
-            text = self._download_pdf_text(info["pdf_url"])
+            text = self._download_pdf_text(info["pdf_url"], self._derive_id(info))
             if not text or len(text.strip()) < 200:
                 logger.warning(f"  Insufficient text (scanned PDF), skipping")
                 continue
 
+            signature = self._text_signature(text)
+            if signature in seen_signatures:
+                duplicates += 1
+                logger.info("  Already fetched from AfricanLII, skipping")
+                continue
+
             info["text"] = text
+            seen_signatures.add(signature)
+            yielded += 1
             yield info
+
+        logger.info(f"Phase 2: {duplicates} duplicates of AfricanLII decisions skipped")
+
+        if yielded == 0:
+            raise RuntimeError(
+                "No decisions with full text from either africanlii.org or "
+                "comesacourt.org — both hosts refused this vantage or changed "
+                "layout. Refusing to report an empty crawl as a success."
+            )
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """Yield decisions newer than since date."""
@@ -343,19 +438,23 @@ class COMESACourtScraper(BaseScraper):
         decisions = self._parse_africanlii_listing()
         for info in decisions:
             if info.get("date") and info["date"] >= since_str:
-                text = self._download_pdf_text(info["pdf_url"])
+                text = self._download_pdf_text(info["pdf_url"], self._derive_id(info))
                 if text and len(text.strip()) >= 200:
                     info["text"] = text
                     yield info
 
-    def normalize(self, raw: dict) -> dict:
-        """Transform raw item into standard schema."""
-        title = raw.get("title", "")
+    @staticmethod
+    def _derive_id(raw: dict) -> str:
+        """Build the stable ``_id`` for a decision.
+
+        Shared with ``_download_pdf_text`` so the extractor's
+        skip-if-already-in-Neon guard keys on the same string ``normalize()``
+        emits (#1480).
+        """
         ref = raw.get("reference_number", "")
         pdf_url = raw.get("pdf_url", "")
         akn_uri = raw.get("akn_uri")
 
-        # Build a stable ID
         if akn_uri:
             # e.g., /en/akn/aa/judgment/comesacj/2025/3/eng@2025-11-07
             slug = re.sub(r"[^a-zA-Z0-9]+", "-", akn_uri).strip("-")
@@ -364,7 +463,16 @@ class COMESACourtScraper(BaseScraper):
         else:
             slug = re.sub(r"[^a-zA-Z0-9]+", "-", Path(pdf_url).stem.lower()).strip("-")
 
-        _id = f"comesa-court-{slug}"
+        return f"comesa-court-{slug}"
+
+    def normalize(self, raw: dict) -> dict:
+        """Transform raw item into standard schema."""
+        title = raw.get("title", "")
+        ref = raw.get("reference_number", "")
+        pdf_url = raw.get("pdf_url", "")
+        akn_uri = raw.get("akn_uri")
+
+        _id = self._derive_id(raw)
 
         # URL: prefer AfricanLII page, fall back to PDF
         if akn_uri:
@@ -403,7 +511,7 @@ def main():
     bp.add_argument("--sample-size", type=int, default=15, help="Sample size")
     bp.add_argument("--full", action="store_true", help="Fetch all records")
 
-    subparsers.add_parser("bootstrap-fast", help="Alias for bootstrap --sample")
+    subparsers.add_parser("bootstrap-fast", help="Alias for the full bootstrap")
     subparsers.add_parser("update", help="Incremental update")
     subparsers.add_parser("test", help="Quick connectivity test")
 
@@ -436,7 +544,9 @@ def main():
             sys.exit(1)
 
     elif args.command in ("bootstrap", "bootstrap-fast"):
-        sample = getattr(args, "sample", False) or args.command == "bootstrap-fast"
+        # bootstrap-fast is the fleet's entry point: it must run the full
+        # crawl. Only --sample writes sample/.
+        sample = getattr(args, "sample", False)
         sample_size = getattr(args, "sample_size", 15)
         stats = scraper.bootstrap(sample_mode=sample, sample_size=sample_size)
         logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2)}")

@@ -48,7 +48,7 @@ from bs4 import BeautifulSoup
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 from common.pdf_extract import extract_pdf_markdown
 
@@ -315,6 +315,9 @@ class SCAGOpinionsScraper(BaseScraper):
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
         """Fetch opinions issued on/after `since` (ISO date)."""
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self.fetch_all():
             if not since or (raw.get("date") and raw["date"] >= since):
                 yield raw

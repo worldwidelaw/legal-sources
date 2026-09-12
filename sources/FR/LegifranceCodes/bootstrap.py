@@ -530,6 +530,16 @@ def main():
     bootstrap_parser.add_argument("--full", action="store_true", help="Full fetch")
     bootstrap_parser.add_argument("--count", type=int, default=15, help="Number of samples")
 
+    # The fleet wrapper invokes `bootstrap-fast`; argparse rejected it, so the
+    # wrapper fell back to re-ingesting sample/ and the corpus went stale. Same
+    # class as the FR/CASS fix for #1363.
+    fast_parser = subparsers.add_parser(
+        "bootstrap-fast", help="Alias the fleet calls; always runs the full fetch"
+    )
+    fast_parser.add_argument("--sample", action="store_true", help=argparse.SUPPRESS)
+    fast_parser.add_argument("--full", action="store_true", help=argparse.SUPPRESS)
+    fast_parser.add_argument("--count", type=int, default=15, help=argparse.SUPPRESS)
+
     # List codes command
     subparsers.add_parser("list-codes", help="List available codes")
 
@@ -558,7 +568,14 @@ def main():
 
     client = PISTEApiClient(client_id, client_secret)
 
-    if args.command == "bootstrap":
+    if args.command in ("bootstrap", "bootstrap-fast"):
+        # `bootstrap-fast` always means the full corpus, and a bare `bootstrap`
+        # used to fall through to the "No action specified" exit, which the
+        # fleet wrapper read as a failed run.
+        if args.command == "bootstrap-fast" or not (args.sample or args.full):
+            args.sample = False
+            args.full = True
+
         if args.sample:
             print(f"Fetching {args.count} sample records...")
             records = fetch_sample(client, args.count)

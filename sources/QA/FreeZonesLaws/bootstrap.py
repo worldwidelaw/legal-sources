@@ -230,10 +230,18 @@ class FreeZonesLawsScraper(BaseScraper):
                 continue
 
             try:
+                # force=True: the rows already in Neon hold this corpus in
+                # character-reversed visual order (issue #1560), and the helper
+                # skips any document it finds stored with non-empty text — so
+                # without it the re-crawl meant to replace them emits nothing.
+                # table= was defaulting to "case_law", which pointed the
+                # idempotency preload at the wrong table for a statute corpus.
                 text = extract_pdf_markdown(
                     source="QA/FreeZonesLaws",
                     source_id=doc_id,
                     pdf_bytes=pdf_bytes,
+                    table="legislation",
+                    force=True,
                 )
             except Exception as e:
                 logger.warning("PDF extraction failed for %s: %s", url, e)
@@ -305,4 +313,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

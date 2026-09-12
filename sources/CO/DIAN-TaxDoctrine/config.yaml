@@ -9,16 +9,17 @@ data:
     - doctrine
   language: spa
   coverage: Tax doctrine concepts and official letters (conceptos y oficios tributarios) from Colombia's DIAN (Dirección de Impuestos y Aduanas Nacionales). Covers income tax, VAT, withholding tax, transfer pricing, customs duties, and exchange controls. Documents from 1987 to present.
-  volume: 5,000+ tax doctrine documents
+  volume: 15,960 tax doctrine documents (index-verified 2026-08-04)
 
 access:
   auth: none
   license: Open Government Data (Colombia public law - Ley 1712 de 2014)
-  rate_limit: 1 request per 1.5 seconds
+  rate_limit: 1 request per 0.6 seconds
 
 endpoints:
-  base_url: https://normograma.dian.gov.co/dian/compilacion/docs/
-  document_pattern: oficio_dian_{number}_{year}.htm
+  base_url: https://normograma.dian.gov.co/dian/compilacion/
+  index_pattern: t_2_doctrina_tributaria_parte_{NN}.html   # NN = 01..13, walk until 404
+  document_pattern: docs/{slug}.htm                         # slug taken from the index
 
 schema:
   key_fields:
@@ -40,6 +41,11 @@ schema:
 notes: |
   DIAN Normograma is the official legal compilation of Colombia's tax authority.
   Tax doctrine documents (conceptos and oficios) are published as individual HTML pages.
-  URL pattern: oficio_dian_{NNNN}_{YYYY}.htm where numbers < 1000 are zero-padded to 4 digits.
-  Documents are not sequentially numbered - discovery requires scanning ranges.
-  Full text is available in HTML body with legal references as hyperlinks.
+  Discovery is index-driven: the tree page t_2_doctrina_tributaria.html lazily loads
+  its branches from t_2_doctrina_tributaria_parte_NN.html (NN = 01..13, then 404).
+  Those parts carry an <a href="docs/....htm"> for every document in the compilation.
+  Do NOT brute-force the number space: document slugs include six-digit numbers
+  (oficio_dian_915014_2022), letter suffixes (oficio_dian_8937a_2025), the
+  concepto_tributario_dian_* family and Consejo de Estado concepts (CE-SC-RAD*),
+  none of which a sequential 1..20000 sweep reaches.
+  Pages are served as ISO-8859-1; full text lives in the .panel-documento div.

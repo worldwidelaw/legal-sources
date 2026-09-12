@@ -5,16 +5,19 @@ DK/DTIL -- Danish Data Protection Authority (Datatilsynet) Data Fetcher
 Fetches GDPR enforcement decisions from the Danish Data Protection Authority.
 
 Strategy:
-  - Discovery: Parse sitemap at /Handlers/Sitemap.ashx for decision URLs
-  - Filter: Match URLs with pattern /afgoerelser/afgoerelser/YYYY/mon/slug
-  - Full text: Fetch each HTML page and extract decision text
+  - Discovery: Parse sitemap at /sitemap.xml for decision URLs
+  - Filter: Match URLs with pattern /afgoerelser/{section}/YYYY/mon/slug where
+    section is afgoerelser (current decisions), historiske-afgoerelser
+    (pre-GDPR decisions back to 2000) or tilladelser (permits under § 10)
+  - Full text: Fetch each HTML page and extract the `news-page` article body
 
 URL patterns:
-  - Sitemap: https://www.datatilsynet.dk/Handlers/Sitemap.ashx
+  - Sitemap: https://www.datatilsynet.dk/sitemap.xml
   - Decision: https://www.datatilsynet.dk/afgoerelser/afgoerelser/2024/jan/decision-slug
 
 Usage:
   python bootstrap.py bootstrap          # Full initial pull
+  python bootstrap.py bootstrap-fast     # Full pull, concurrent (used by the fleet)
   python bootstrap.py bootstrap --sample  # Fetch sample records for validation
   python bootstrap.py update             # Incremental update (new decisions)
   python bootstrap.py test-api           # Quick API connectivity test
@@ -45,12 +48,21 @@ logger = logging.getLogger("legal-data-hunter.DK.DTIL")
 
 # Constants
 BASE_URL = "https://www.datatilsynet.dk"
-SITEMAP_URL = "/Handlers/Sitemap.ashx"
+SITEMAP_URL = "/sitemap.xml"
 
-# URL pattern for individual decisions
+# URL pattern for individual decisions. The site groups them into three
+# sections, all sharing the /YYYY/{danish-month}/{slug} layout.
 DECISION_URL_PATTERN = re.compile(
-    r"/afgoerelser/afgoerelser/(\d{4})/([a-z]+)/([^/]+)$"
+    r"/afgoerelser/(afgoerelser|historiske-afgoerelser|tilladelser)"
+    r"/(\d{4})/([a-z]+)/([^/]+)$"
 )
+
+# Short code per section, used to keep _id values unique across sections
+SECTION_CODE = {
+    "afgoerelser": "AFG",
+    "historiske-afgoerelser": "HIST",
+    "tilladelser": "TILL",
+}
 
 # Danish month abbreviations
 MONTH_MAP = {
@@ -102,6 +114,14 @@ class DatatilsynetScraper(BaseScraper):
             if url and DECISION_URL_PATTERN.search(url):
                 decision_urls.append(url)
 
+        if not decision_urls:
+            raise RuntimeError(
+                f"Sitemap {BASE_URL}{SITEMAP_URL} returned no decision URLs "
+                f"(HTTP {resp.status_code}, {len(resp.content)} bytes). The "
+                "sitemap location or URL layout changed, or the request was "
+                "blocked — refusing to report an empty crawl as success."
+            )
+
         logger.info(f"Found {len(decision_urls)} decision URLs in sitemap")
         return decision_urls
 
@@ -127,11 +147,12 @@ class DatatilsynetScraper(BaseScraper):
             if not match:
                 return None
 
-            year, month_abbr, slug = match.groups()
+            section, year, month_abbr, slug = match.groups()
 
             return {
                 "_raw_html": resp.text,
                 "_url": url,
+                "_section": section,
                 "_year": year,
                 "_month_abbr": month_abbr,
                 "_slug": slug,
@@ -141,35 +162,58 @@ class DatatilsynetScraper(BaseScraper):
             logger.warning(f"Error fetching {url}: {e}")
             return None
 
+    @staticmethod
+    def _balanced_div(html_content: str, start: int) -> str:
+        """
+        Return the inner HTML of the <div> whose opening tag begins at `start`,
+        matching nested <div>s so the block is not truncated at the first
+        </div>. Falls back to the remainder of the document if unbalanced.
+        """
+        open_end = html_content.find(">", start)
+        if open_end == -1:
+            return ""
+        depth = 1
+        pos = open_end + 1
+        tag_re = re.compile(r"<(/?)div\b", re.IGNORECASE)
+        while depth:
+            m = tag_re.search(html_content, pos)
+            if not m:
+                return html_content[open_end + 1:]
+            depth += -1 if m.group(1) else 1
+            pos = m.end()
+        return html_content[open_end + 1:html_content.rfind("</div", open_end, pos)]
+
     def _extract_text_from_html(self, html_content: str) -> str:
         """
         Extract the main decision text from the HTML page.
 
-        Datatilsynet uses a structured content area for decisions.
-        We extract text from the main content area, cleaning HTML tags.
+        The 2025 site rebuild dropped <article>; a decision now lives in
+        <div class="news-page"> with the summary in <p class="lead"> and the
+        body in one or more <div class="rich-text"> blocks.
         """
         # Remove script and style elements
         html_content = re.sub(r"<script[^>]*>.*?</script>", "", html_content, flags=re.DOTALL | re.IGNORECASE)
         html_content = re.sub(r"<style[^>]*>.*?</style>", "", html_content, flags=re.DOTALL | re.IGNORECASE)
 
-        # Look for the main content area
-        # Datatilsynet uses article or main content divs
-        content_match = re.search(
-            r'<article[^>]*>(.*?)</article>',
-            html_content,
-            re.DOTALL | re.IGNORECASE
+        # Scope to the decision article first so sidebar/footer rich-text
+        # blocks elsewhere on the page cannot leak in.
+        page = re.search(r'<div[^>]*class="[^"]*\bnews-page\b[^"]*"', html_content, re.IGNORECASE)
+        if page:
+            html_content = self._balanced_div(html_content, page.start())
+
+        parts = []
+        lead = re.search(
+            r'<p[^>]*class="[^"]*\blead\b[^"]*"[^>]*>(.*?)</p>',
+            html_content, re.DOTALL | re.IGNORECASE,
         )
-        if content_match:
-            html_content = content_match.group(1)
-        else:
-            # Try to find main content div
-            content_match = re.search(
-                r'<div[^>]*class="[^"]*content[^"]*"[^>]*>(.*?)</div>',
-                html_content,
-                re.DOTALL | re.IGNORECASE
-            )
-            if content_match:
-                html_content = content_match.group(1)
+        if lead:
+            parts.append(lead.group(1))
+
+        for m in re.finditer(r'<div[^>]*class="[^"]*\brich-text\b[^"]*"', html_content, re.IGNORECASE):
+            parts.append(self._balanced_div(html_content, m.start()))
+
+        if parts:
+            html_content = "\n".join(parts)
 
         # Remove navigation and footer elements
         html_content = re.sub(r"<nav[^>]*>.*?</nav>", "", html_content, flags=re.DOTALL | re.IGNORECASE)
@@ -219,8 +263,10 @@ class DatatilsynetScraper(BaseScraper):
 
         Datatilsynet uses various date formats in the page metadata.
         """
-        # Look for date in meta tags
+        # Look for date in meta tags. The rebuilt site renders the publication
+        # date as <span class="datetime" data-date="2026-05-05T10:39:00Z">.
         date_patterns = [
+            r'<span[^>]*class="[^"]*\bdatetime\b[^"]*"[^>]*data-date="([^"]+)"',
             r'<meta[^>]*property="article:published_time"[^>]*content="([^"]+)"',
             r'<meta[^>]*name="date"[^>]*content="([^"]+)"',
             r'<time[^>]*datetime="([^"]+)"',
@@ -275,12 +321,29 @@ class DatatilsynetScraper(BaseScraper):
 
         Iterates through all decision URLs from the sitemap.
         """
-        decision_urls = self._fetch_sitemap()
-
-        for url in decision_urls:
+        for url in self._interleave_sections(self._fetch_sitemap()):
             raw = self._fetch_decision_page(url)
             if raw:
                 yield raw
+
+    @staticmethod
+    def _interleave_sections(urls: list[str]) -> list[str]:
+        """
+        Round-robin the three sections so a truncated run (e.g. --sample)
+        still covers decisions, historical decisions and permits.
+        """
+        buckets: dict[str, list[str]] = {}
+        for url in urls:
+            match = DECISION_URL_PATTERN.search(url)
+            buckets.setdefault(match.group(1), []).append(url)
+
+        ordered = []
+        for i in range(max((len(b) for b in buckets.values()), default=0)):
+            for section in SECTION_CODE:
+                bucket = buckets.get(section, [])
+                if i < len(bucket):
+                    ordered.append(bucket[i])
+        return ordered
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """
@@ -316,9 +379,11 @@ class DatatilsynetScraper(BaseScraper):
         """
         html_content = raw["_raw_html"]
         url = raw["_url"]
+        section = raw["_section"]
         year = raw["_year"]
         month_abbr = raw["_month_abbr"]
         slug = raw["_slug"]
+        code = SECTION_CODE[section]
 
         # Extract full text
         full_text = self._extract_text_from_html(html_content)
@@ -333,11 +398,12 @@ class DatatilsynetScraper(BaseScraper):
         date = self._extract_date_from_html(html_content)
         case_number = self._extract_case_number(html_content)
 
-        # Build ID from case number or URL components
+        # Build ID from case number or URL components. The section code keeps
+        # ids unique when the same journalnummer surfaces in two sections.
         if case_number:
-            doc_id = f"DK-DTIL-{case_number}"
+            doc_id = f"DK-DTIL-{code}-{case_number}"
         else:
-            doc_id = f"DK-DTIL-{year}-{month_abbr}-{slug}"
+            doc_id = f"DK-DTIL-{code}-{year}-{month_abbr}-{slug}"
 
         # Convert month abbr to number for date fallback
         if not date and month_abbr in MONTH_MAP:
@@ -357,6 +423,7 @@ class DatatilsynetScraper(BaseScraper):
             "url": url,
             # Source-specific fields
             "case_number": case_number,
+            "section": section,
             "year": int(year),
             "month": MONTH_MAP.get(month_abbr, ""),
             "slug": slug,
@@ -416,7 +483,7 @@ def main():
 
     if len(sys.argv) < 2:
         print(
-            "Usage: python bootstrap.py [bootstrap|update|test-api] "
+            "Usage: python bootstrap.py [bootstrap|bootstrap-fast|update|test-api] "
             "[--sample] [--sample-size N]"
         )
         sys.exit(1)
@@ -445,6 +512,17 @@ def main():
                 f"{stats['records_updated']} updated, "
                 f"{stats['records_skipped']} skipped"
             )
+        print(json.dumps(stats, indent=2))
+
+    elif command == "bootstrap-fast":
+        # The fleet wrapper invokes this; without it argparse-less dispatch used
+        # to exit 1 and the pipeline fell back to re-ingesting sample/.
+        stats = scraper.bootstrap_fast()
+        print(
+            f"\nBootstrap-fast complete: {stats['records_new']} new, "
+            f"{stats['records_updated']} updated, "
+            f"{stats['records_skipped']} skipped"
+        )
         print(json.dumps(stats, indent=2))
 
     elif command == "update":

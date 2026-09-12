@@ -1,0 +1,77 @@
+# ═══════════════════════════════════════════════════════════════════
+# US/TN-TPUC — Tennessee Public Utility Commission — Orders
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "US/TN-TPUC"
+  country: "US"
+  name: "Tennessee Public Utility Commission — Orders"
+  url: "https://tpucdockets.tn.gov/"
+  description: |
+    Full-text Orders issued by the Tennessee Public Utility Commission
+    (TPUC, formerly the Tennessee Regulatory Authority / TRA) adjudicating
+    public-utility dockets: rate cases, certificates of convenience and
+    necessity (CCN), service-territory amendments, tariff/franchise matters,
+    consumer complaints, and related contested cases. Each Commission Order
+    is an administrative adjudication of a specific docket = case_law.
+    Sourced from the TPUC Electronic Docket File Room
+    (tpucdockets.tn.gov). Only born-digital order PDFs carry an extractable
+    text layer; the small residue of older scanned-image orders has no OCR
+    text and is not captured. English. Coverage: the e-filing era (~2000+).
+
+data_types:
+  - case_law
+
+jurisdictions:
+  - code: US-TN
+    scope: full
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 4
+  max_workers: 4
+
+api:
+  type: "html_scrape"   # static docket-room HTML + born-digital filing PDFs
+  base_url: "https://tpucdockets.tn.gov"
+
+# ── Output Schema ─────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "case_number"
+      type: "string"
+      required: false
+    - name: "document_type"
+      type: "string"
+      required: false
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Public Domain (US state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Orders of the Tennessee Public Utility Commission are edicts of a US
+    state government body and are not subject to copyright (government
+    edicts doctrine). Freely reusable, including commercially.

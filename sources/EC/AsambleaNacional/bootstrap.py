@@ -25,14 +25,18 @@ Usage:
   python bootstrap.py test-api            # Quick API connectivity test
 """
 
+import os
 import sys
 import re
 import html
 import json
+import time
 import logging
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Generator, Optional
+from typing import Generator, Iterable, Optional
 from xml.etree import ElementTree as ET
 
 # Add project root to path
@@ -50,6 +54,18 @@ logger = logging.getLogger("legal-data-hunter.EC.AsambleaNacional")
 
 BASE_URL = "https://www.oficial.ec"
 
+# Crawl tuning (issue #1316). The corpus is ~6,200 pages that each answer in
+# well under a second, so the crawl is paced rather than serialised: WORKERS
+# threads share a single aggregate rate of RPS requests/second. Defaults finish
+# a full pull in ~30 min, which fits a fleet slot.
+WORKERS = int(os.environ.get("EC_OFICIAL_WORKERS", "6"))
+RPS = float(os.environ.get("EC_OFICIAL_RPS", "4"))
+
+# (connect, read) — a stuck page can no longer hang the run for minutes.
+REQUEST_TIMEOUT = (15, 45)
+
+CHECKPOINT_FLUSH_EVERY = 100
+
 # URL prefixes that are NOT legal documents (skip these)
 SKIP_PREFIXES = (
     "/temas/", "/instituciones/", "/acerca-", "/user", "/contacto",
@@ -63,6 +79,25 @@ SPANISH_MONTHS = {
     "mayo": 5, "junio": 6, "julio": 7, "agosto": 8,
     "septiembre": 9, "octubre": 10, "noviembre": 11, "diciembre": 12,
 }
+
+
+class _Pacer:
+    """Thread-safe aggregate pacer: spaces request starts across all workers."""
+
+    def __init__(self, requests_per_second: float):
+        self._interval = 1.0 / requests_per_second if requests_per_second > 0 else 0.0
+        self._lock = threading.Lock()
+        self._next = 0.0
+
+    def wait(self):
+        if self._interval <= 0:
+            return
+        with self._lock:
+            slot = max(time.monotonic(), self._next)
+            self._next = slot + self._interval
+        delay = slot - time.monotonic()
+        if delay > 0:
+            time.sleep(delay)
 
 
 def _parse_spanish_date(date_str: str) -> Optional[str]:
@@ -124,13 +159,56 @@ class AsambleaNacionalScraper(BaseScraper):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
 
-        self.client = HttpClient(
+        self.client = self._new_client()
+        self._pacer = _Pacer(RPS)
+        self._local = threading.local()
+        self._sample_mode = False
+        self._checkpoint_path = self.source_dir / "data" / "checkpoint.json"
+        self._done: set = set()
+
+    @staticmethod
+    def _new_client() -> HttpClient:
+        return HttpClient(
             base_url=BASE_URL,
             headers={"User-Agent": "LegalDataHunter/1.0 (Open Data Research)"},
-            timeout=60,
+            timeout=REQUEST_TIMEOUT,
+            max_retries=2,
         )
 
-    def _fetch_sitemap_urls(self) -> list[dict]:
+    def _client(self) -> HttpClient:
+        """One HttpClient (and therefore one requests.Session) per worker thread."""
+        client = getattr(self._local, "client", None)
+        if client is None:
+            client = self._new_client()
+            self._local.client = client
+        return client
+
+    # ── checkpoint ────────────────────────────────────────────────────
+
+    def _load_checkpoint(self) -> set:
+        try:
+            with open(self._checkpoint_path, encoding="utf-8") as f:
+                return set(json.load(f).get("done", []))
+        except (FileNotFoundError, ValueError, OSError):
+            return set()
+
+    def _save_checkpoint(self):
+        try:
+            self._checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = self._checkpoint_path.with_suffix(".json.tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump({"done": sorted(self._done)}, f)
+            tmp.replace(self._checkpoint_path)
+        except OSError as e:
+            logger.warning(f"Could not write checkpoint: {e}")
+
+    def bootstrap(self, sample_mode: bool = False, sample_size: int = 10) -> dict:
+        # fetch_all only checkpoints on a real (non-sample) pull, so the 10
+        # pages a sample run touches are not later skipped by a full run.
+        self._sample_mode = sample_mode
+        return super().bootstrap(sample_mode=sample_mode, sample_size=sample_size)
+
+    def _fetch_sitemap_urls(self) -> list:
         """
         Parse sitemap pages and return all document URLs.
         Filters out non-document pages (temas, instituciones, etc.).
@@ -139,7 +217,7 @@ class AsambleaNacionalScraper(BaseScraper):
 
         for page in [1, 2]:
             logger.info(f"Fetching sitemap page {page}...")
-            self.rate_limiter.wait()
+            self._pacer.wait()
             try:
                 resp = self.client.get(f"/sitemap.xml?page={page}")
                 resp.raise_for_status()
@@ -180,8 +258,8 @@ class AsambleaNacionalScraper(BaseScraper):
         Returns raw dict with extracted content or None on failure.
         """
         try:
-            self.rate_limiter.wait()
-            resp = self.client.get(path)
+            self._pacer.wait()
+            resp = self._client().get(path)
 
             if resp.status_code == 404:
                 return None
@@ -311,33 +389,87 @@ class AsambleaNacionalScraper(BaseScraper):
             "document_type": doc_type,
         }
 
+    def _crawl(self, entries: Iterable[dict]) -> Generator[dict, None, None]:
+        """
+        Fetch document pages with WORKERS threads sharing an aggregate rate of
+        RPS req/s, yielding raw dicts as they complete.
+
+        Outside sample mode, completed paths are checkpointed to
+        data/checkpoint.json so a re-launched run skips them with no network
+        calls (the loader dedups on _id, and already-written records stay in
+        data/records.jsonl).
+        """
+        entries = list(entries)
+        use_checkpoint = not self._sample_mode
+
+        if use_checkpoint:
+            self._done = self._load_checkpoint()
+            if self._done:
+                logger.info(f"Checkpoint: skipping {len(self._done)} already-fetched documents")
+            pending = [e for e in entries if e["path"] not in self._done]
+        else:
+            pending = entries
+
+        total = len(pending)
+        logger.info(
+            f"Crawling {total} documents ({WORKERS} workers, {RPS} req/s aggregate)"
+        )
+
+        done_since_flush = 0
+        completed = 0
+        chunk_size = max(WORKERS * 4, 1)
+        executor = ThreadPoolExecutor(max_workers=WORKERS)
+        try:
+            for start in range(0, total, chunk_size):
+                chunk = pending[start:start + chunk_size]
+                futures = {
+                    executor.submit(self._parse_page, e["url"], e["path"]): e
+                    for e in chunk
+                }
+                for future in as_completed(futures):
+                    entry = futures[future]
+                    completed += 1
+                    if completed % 100 == 0:
+                        logger.info(f"Progress: {completed}/{total} documents fetched")
+
+                    try:
+                        raw = future.result()
+                    except Exception as e:  # _parse_page already traps fetch errors
+                        logger.warning(f"Error parsing {entry['path']}: {e}")
+                        continue
+
+                    # A 404 or a fetch failure still counts as visited: retrying it
+                    # on every relaunch is what kept the crawl from advancing.
+                    if use_checkpoint:
+                        self._done.add(entry["path"])
+                        done_since_flush += 1
+                        if done_since_flush >= CHECKPOINT_FLUSH_EVERY:
+                            self._save_checkpoint()
+                            done_since_flush = 0
+
+                    if raw is None:
+                        continue
+
+                    raw["_sitemap_lastmod"] = entry.get("lastmod")
+                    yield raw
+        finally:
+            executor.shutdown(wait=False)
+            if use_checkpoint and done_since_flush:
+                self._save_checkpoint()
+
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all documents from the sitemap."""
-        urls = self._fetch_sitemap_urls()
-
-        for i, entry in enumerate(urls):
-            if i > 0 and i % 100 == 0:
-                logger.info(f"Progress: {i}/{len(urls)} documents fetched")
-
-            raw = self._parse_page(entry["url"], entry["path"])
-            if raw is None:
-                continue
-
-            raw["_sitemap_lastmod"] = entry.get("lastmod")
-            yield raw
+        yield from self._crawl(self._fetch_sitemap_urls())
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """Yield documents modified since the given date."""
-        urls = self._fetch_sitemap_urls()
         since_str = since.strftime("%Y-%m-%d")
-
-        for entry in urls:
-            lastmod = entry.get("lastmod", "")
-            if lastmod and lastmod[:10] >= since_str:
-                raw = self._parse_page(entry["url"], entry["path"])
-                if raw is not None:
-                    raw["_sitemap_lastmod"] = entry.get("lastmod")
-                    yield raw
+        entries = [
+            e for e in self._fetch_sitemap_urls()
+            if (e.get("lastmod") or "")[:10] >= since_str
+        ]
+        logger.info(f"{len(entries)} documents modified since {since_str}")
+        yield from self._crawl(entries)
 
     def normalize(self, raw: dict) -> Optional[dict]:
         """Transform raw document data into standard schema."""
@@ -371,7 +503,7 @@ def main():
     parser = argparse.ArgumentParser(description="EC/AsambleaNacional scraper")
     parser.add_argument(
         "command",
-        choices=["bootstrap", "update", "test-api"],
+        choices=["bootstrap", "bootstrap-fast", "update", "test-api", "test"],
         help="Command to run",
     )
     parser.add_argument(
@@ -382,7 +514,7 @@ def main():
 
     scraper = AsambleaNacionalScraper()
 
-    if args.command == "test-api":
+    if args.command in ("test-api", "test"):
         logger.info("Testing oficial.ec access...")
         urls = scraper._fetch_sitemap_urls()
         logger.info(f"Sitemap: {len(urls)} document URLs found")
@@ -400,7 +532,8 @@ def main():
                 logger.error("Failed to parse page")
         return
 
-    if args.command == "bootstrap":
+    # The fleet wrapper invokes `bootstrap-fast`; route it to the full pull.
+    if args.command in ("bootstrap", "bootstrap-fast"):
         stats = scraper.bootstrap(sample_mode=args.sample)
         logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2)}")
     elif args.command == "update":

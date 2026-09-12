@@ -43,6 +43,12 @@ logger = logging.getLogger("legal-data-hunter.SR.DNAWetgeving")
 
 BASE_URL = "https://www.dna.sr"
 
+DUTCH_MONTHS = {
+    "januari": 1, "februari": 2, "maart": 3, "april": 4,
+    "mei": 5, "juni": 6, "juli": 7, "augustus": 8,
+    "september": 9, "oktober": 10, "november": 11, "december": 12,
+}
+
 INDEX_PAGES = [
     (
         f"{BASE_URL}/wetgeving/surinaamse-wetten/geldende-teksten-t-m-2005/",
@@ -175,6 +181,29 @@ class DNAWetgevingScraper(BaseScraper):
                 return m.group(1)
         return None
 
+    def _extract_date(self, text: str, title: str) -> Optional[str]:
+        """Best available enactment date, in ISO 8601.
+
+        Surinamese instruments open by dating themselves -- "WET van 29 november
+        1915", "DECREET van 8 december 1984", "STAATSBESLUIT van 15 september
+        1981" -- so the document's own first line is both more precise and more
+        widely present than the year embedded in its title (only 7 of 15 sample
+        titles carry one). Prefer it, fall back to the title year, then null.
+        """
+        head = text[:1000].replace("\n", " ")
+        m = re.search(
+            r"\bvan\s+(\d{1,2})\s+(" + "|".join(DUTCH_MONTHS) + r")\s+(\d{4})\b",
+            head,
+            re.IGNORECASE,
+        )
+        if m:
+            day, month, year = int(m.group(1)), m.group(2).lower(), int(m.group(3))
+            if 1800 <= year <= 2030 and 1 <= day <= 31:
+                return f"{year:04d}-{DUTCH_MONTHS[month]:02d}-{day:02d}"
+
+        year = self._extract_year(title)
+        return f"{year}-01-01" if year else None
+
     def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
         return {
             "_id": raw.get("law_id", ""),
@@ -183,14 +212,24 @@ class DNAWetgevingScraper(BaseScraper):
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             "title": raw.get("title", ""),
             "text": raw.get("text", ""),
-            "date": raw.get("date", ""),
+            # null, not "", when the instrument dates neither itself nor its title
+            "date": raw.get("date") or None,
             "url": raw.get("url", ""),
             "pdf_url": raw.get("pdf_url", ""),
             "section": raw.get("section", ""),
         }
 
-    def fetch_all(self, max_records: int = None) -> Generator[Dict[str, Any], None, None]:
+    def fetch_all(
+        self, max_records: int = None, skip_stored: bool = False
+    ) -> Generator[Dict[str, Any], None, None]:
+        """Walk the index pages and yield each law with text from its PDF.
+
+        skip_stored: skip laws already in the storage index. The law_id comes
+        from the listing URL slug, so this is decided *before* the detail page
+        and the PDF download -- see fetch_updates().
+        """
         count = 0
+        skipped_stored = 0
         seen_ids = set()
 
         for index_url, section in INDEX_PAGES:
@@ -208,6 +247,13 @@ class DNAWetgevingScraper(BaseScraper):
                 if law_id in seen_ids:
                     continue
                 seen_ids.add(law_id)
+
+                # The dedup key is _id, which is law_id, so the storage index
+                # answers "already got this law?" before we pay for the detail
+                # page and the PDF.
+                if skip_stored and self.storage.exists(law_id):
+                    skipped_stored += 1
+                    continue
 
                 pdf_url = self._get_pdf_url(law_url)
                 if not pdf_url:
@@ -232,8 +278,7 @@ class DNAWetgevingScraper(BaseScraper):
                     )
                     continue
 
-                year = self._extract_year(title)
-                date = f"{year}-01-01" if year else ""
+                date = self._extract_date(text, title)
 
                 raw = {
                     "law_id": law_id,
@@ -247,10 +292,20 @@ class DNAWetgevingScraper(BaseScraper):
                 count += 1
                 yield raw
 
+        if skipped_stored:
+            logger.info(f"Skipped {skipped_stored} laws already in the storage index")
         logger.info(f"Completed: {count} laws fetched with full text")
 
-    def fetch_updates(self, since: str = None) -> Generator[Dict[str, Any], None, None]:
-        yield from self.fetch_all(max_records=20)
+    def fetch_updates(self, since=None) -> Generator[Dict[str, Any], None, None]:
+        """Yield only laws we have not stored yet.
+
+        `since` is deliberately unused: the DNA index pages carry no publication
+        stamp, and the year parsed out of a law's title is its enactment year,
+        not the date DNA posted the PDF. The seen-id checkpoint is the only
+        availability-based comparator available here, and it is what append_only
+        dedups on anyway.
+        """
+        yield from self.fetch_all(skip_stored=True)
 
     def test(self) -> bool:
         law_links = self._get_law_links(INDEX_PAGES[0][0], INDEX_PAGES[0][1])
@@ -294,36 +349,25 @@ def main():
         sys.exit(0 if success else 1)
 
     elif args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        count = 0
-        max_records = 15 if args.sample else None
-
-        for record in scraper.fetch_all(max_records=max_records):
-            out_path = sample_dir / f"record_{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            text_len = len(record.get("text", ""))
-            logger.info(
-                f"[{count + 1}] {record.get('title', '?')[:80]} "
-                f"({text_len:,} chars)"
-            )
-            count += 1
-
-        logger.info(f"Bootstrap complete: {count} records saved to sample/")
+        # Delegate to BaseScraper rather than writing records by hand: the
+        # hand-rolled loop this replaces dumped *raw* fetch_all() output into
+        # sample/, so normalize() never ran (records carried no _id/_source/
+        # _type/_fetched_at) and a full crawl produced no data/records.jsonl for
+        # the fleet to ingest. See issue #1596.
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+        logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2)}")
 
     elif args.command == "update":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-        count = 0
-        for record in scraper.fetch_updates():
-            out_path = sample_dir / f"update_{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-        logger.info(f"Update complete: {count} records")
+        # BaseScraper.update() derives `since` from status.yaml:last_run and
+        # routes through fetch_updates(), writing like bootstrap does.
+        stats = scraper.update()
+        logger.info(f"Update complete: {json.dumps(stats, indent=2)}")
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

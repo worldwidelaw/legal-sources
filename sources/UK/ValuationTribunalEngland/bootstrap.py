@@ -25,8 +25,9 @@ Source: https://appealsearch.valuationtribunal.gov.uk/  (Appeal & decisions sear
   which returns the born-digital decision PDF (text layer present — extracted via
   common.pdf_extract, no OCR). The trailing 2 characters of ApAppealNumber are a
   render-time decoration; the stable identifier is the appeal number shown as the
-  link text (e.g. "VT00034997", "CHG100095546"). Older appeals with no published
-  written decision return HTTP 404 and are skipped.
+  link text (e.g. "VT00034997", "CHG100095546"). Appeals with no published
+  written decision return HTTP 404 — or, for about one row in ten, a persistent
+  HTTP 500 — and are skipped.
 
 Appeal-type families with published decisions:
   CD = Council tax (valuation/banding etc.)     ~11,656 decisions
@@ -44,6 +45,7 @@ Usage:
 import re
 import sys
 import json
+import time
 import logging
 from pathlib import Path
 from datetime import datetime, timezone
@@ -54,6 +56,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+from common.http_client import parse_retry_after, request_with_deadline
 
 import fitz  # PyMuPDF
 import requests
@@ -67,6 +70,14 @@ logger = logging.getLogger("UK/ValuationTribunalEngland")
 
 MIN_TEXT_CHARS = 200
 PAGE_SIZE = 20
+
+# The search app is an Azure App Service that intermittently answers 5xx under
+# sustained crawling (issue #1464: one such blip on the very first listing
+# aborted the whole run). Retry the transient classes rather than treating a
+# flaky host as an empty corpus.
+RETRYABLE_STATUS = {408, 429, 500, 502, 503, 504}
+MAX_ATTEMPTS = 5
+BACKOFF_CAP = 120
 
 _MONTHS = {
     "jan": "01", "feb": "02", "mar": "03", "apr": "04", "may": "05",
@@ -96,8 +107,65 @@ class UKValuationTribunalEnglandScraper(BaseScraper):
             "User-Agent": "Mozilla/5.0 (compatible; LegalDataHunter/1.0; legal research)",
             "Accept": "text/html,application/xhtml+xml",
         })
+        self._checkpoint_path = source_dir / "data" / "vte_checkpoint.json"
+        self._completed_pages = self._load_checkpoint()
 
     # ------------------------------------------------------------------- fetch
+    def _reset_affinity(self) -> None:
+        """Drop the Azure ARR session-affinity cookies.
+
+        ``ARRAffinity`` pins the session to one App Service instance for its
+        whole life. If that instance goes unhealthy every subsequent request
+        fails while the other instances serve fine — indistinguishable, from
+        the log, from the host refusing us outright. Clearing the cookie lets
+        the load balancer hand out a different instance on the next attempt.
+        """
+        for name in ("ARRAffinity", "ARRAffinitySameSite"):
+            self.session.cookies.pop(name, None)
+
+    def _request(self, path: str, params: dict, what: str, timeout: int = 60,
+                 max_attempts: int = MAX_ATTEMPTS) -> Optional[requests.Response]:
+        """GET with backoff over transient failures.
+
+        Returns the 200 response, or ``None`` for a 404 (an appeal with no
+        published decision document). Raises the last error once the attempts
+        are exhausted, so a flaky or blocking host surfaces as a loud failure
+        instead of a silently truncated corpus.
+        """
+        last_error = None
+        for attempt in range(1, max_attempts + 1):
+            self.rate_limiter.wait()
+            delay = min(BACKOFF_CAP, 2 ** attempt)
+            try:
+                resp = request_with_deadline(
+                    self.session, "GET", self.BASE_URL + path,
+                    wall_timeout=timeout + 30, params=params, timeout=timeout,
+                )
+            except Exception as e:
+                last_error = e
+                logger.warning(f"{what}: request failed (attempt {attempt}/{max_attempts}): {e}")
+            else:
+                if resp.status_code == 200:
+                    return resp
+                if resp.status_code == 404:
+                    return None
+                last_error = requests.HTTPError(f"HTTP {resp.status_code} for {what}")
+                if resp.status_code not in RETRYABLE_STATUS:
+                    # 403/401 and friends are a decision by the host, not a
+                    # blip — retrying only burns the fleet slot.
+                    raise last_error
+                delay = parse_retry_after(resp.headers.get("Retry-After"),
+                                          default=delay, cap=BACKOFF_CAP)
+                logger.warning(f"{what}: HTTP {resp.status_code} "
+                               f"(attempt {attempt}/{max_attempts}), retrying in {delay}s")
+
+            if attempt >= 2:
+                self._reset_affinity()
+            if attempt < max_attempts:
+                time.sleep(delay)
+
+        raise last_error
+
     def _get_listing(self, appeal_type: str, skip: int) -> Optional[str]:
         page = (skip // PAGE_SIZE) + 1
         params = {
@@ -110,32 +178,34 @@ class UKValuationTribunalEnglandScraper(BaseScraper):
             "SortDesc": "True",
             "HearingId": "00000000-0000-0000-0000-000000000000",
         }
-        self.rate_limiter.wait()
-        try:
-            resp = self.session.get(self.BASE_URL + self.DECISIONS_PATH,
-                                    params=params, timeout=60)
-            if resp.status_code == 200:
-                return resp.text
-            logger.warning(f"{resp.status_code} for {appeal_type} skip={skip}")
-            return None
-        except Exception as e:
-            logger.warning(f"Listing request failed ({appeal_type} skip={skip}): {e}")
-            return None
+        resp = self._request(self.DECISIONS_PATH, params,
+                             what=f"listing {appeal_type} skip={skip}")
+        return resp.text if resp is not None else None
 
     def _download_pdf(self, ap_number: str) -> Optional[bytes]:
-        """Download a decision PDF; return None on 404 (no published decision)."""
-        self.rate_limiter.wait()
+        """Download a decision PDF; return None when there is no document.
+
+        The app answers a *persistent* 500 — not a 404 — for roughly one appeal
+        in ten, where the row exists but no decision document is stored. Those
+        never recover, so downloads get a short retry budget: enough to ride out
+        a real blip, cheap enough that ~1,500 dead documents cost minutes rather
+        than the whole fleet slot.
+        """
         try:
-            resp = self.session.get(self.BASE_URL + self.DOWNLOAD_PATH,
-                                    params={"ApAppealNumber": ap_number}, timeout=90)
-            if resp.status_code == 200 and resp.content[:4] == b"%PDF":
-                return resp.content
-            if resp.status_code != 404:
-                logger.warning(f"Download {resp.status_code} for {ap_number}")
-            return None
+            resp = self._request(self.DOWNLOAD_PATH, {"ApAppealNumber": ap_number},
+                                 what=f"download {ap_number}", timeout=90,
+                                 max_attempts=2)
         except Exception as e:
-            logger.warning(f"Download failed for {ap_number}: {e}")
+            # One unavailable document must not end the crawl.
+            logger.warning(f"Download gave up for {ap_number}: {e}")
             return None
+        if resp is None:
+            return None
+        if resp.content[:4] != b"%PDF":
+            logger.warning(f"Download for {ap_number} was not a PDF "
+                           f"({resp.headers.get('Content-Type')})")
+            return None
+        return resp.content
 
     @staticmethod
     def _extract_text(pdf_bytes: bytes, case_id: str = "") -> str:
@@ -249,6 +319,34 @@ class UKValuationTribunalEnglandScraper(BaseScraper):
             return None
         return f"{m.group(3)}-{mm}-{int(m.group(1)):02d}"
 
+    # --------------------------------------------------------------- checkpoint
+    def _load_checkpoint(self) -> dict:
+        """Pages already crawled, so a relaunched fleet slot resumes.
+
+        ~15,600 decisions at one document per request outlast a single slot;
+        without this every restart re-walks the same newest pages and the
+        corpus never advances.
+        """
+        try:
+            with open(self._checkpoint_path) as f:
+                data = json.load(f)
+            done = {k: set(v) for k, v in data.get("completed_pages", {}).items()}
+            if done:
+                logger.info("Resuming from checkpoint: " + ", ".join(
+                    f"{k} {len(v)} pages done" for k, v in sorted(done.items())))
+            return done
+        except (OSError, ValueError):
+            return {}
+
+    def _save_checkpoint(self) -> None:
+        try:
+            self._checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(self._checkpoint_path, "w") as f:
+                json.dump({"completed_pages":
+                           {k: sorted(v) for k, v in self._completed_pages.items()}}, f)
+        except OSError as e:
+            logger.warning(f"Could not write checkpoint: {e}")
+
     # ---------------------------------------------------------------- iteration
     def fetch_all(self) -> Generator[dict, None, None]:
         any_rows = False
@@ -260,6 +358,7 @@ class UKValuationTribunalEnglandScraper(BaseScraper):
             total = self._total_results(first)
             logger.info(f"{family} ({appeal_type}): {total} decided appeals")
 
+            done = self._completed_pages.setdefault(appeal_type, set())
             skip = 0
             pages_html = first
             while True:
@@ -267,18 +366,22 @@ class UKValuationTribunalEnglandScraper(BaseScraper):
                 if not rows:
                     break
                 any_rows = True
-                for r in rows:
-                    pdf_bytes = self._download_pdf(r["ap_number"])
-                    if not pdf_bytes:
-                        continue  # no published decision document (404) — skip
-                    text = self._extract_text(pdf_bytes, r["case_id"])
-                    if len(text) < MIN_TEXT_CHARS:
-                        continue
-                    raw = dict(r)
-                    raw["text"] = text
-                    if not raw.get("date"):
-                        raw["date"] = self._date_from_text(text)
-                    yield raw
+                if skip not in done:
+                    for r in rows:
+                        pdf_bytes = self._download_pdf(r["ap_number"])
+                        if not pdf_bytes:
+                            continue  # no published decision document (404) — skip
+                        text = self._extract_text(pdf_bytes, r["case_id"])
+                        if len(text) < MIN_TEXT_CHARS:
+                            continue
+                        raw = dict(r)
+                        raw["text"] = text
+                        if not raw.get("date"):
+                            raw["date"] = self._date_from_text(text)
+                        yield raw
+                    done.add(skip)
+                    if len(done) % 25 == 0:
+                        self._save_checkpoint()
 
                 skip += PAGE_SIZE
                 if skip >= total:
@@ -287,11 +390,15 @@ class UKValuationTribunalEnglandScraper(BaseScraper):
                 if not pages_html:
                     break
 
+            self._save_checkpoint()
+
         if not any_rows:
+            # Every listing above answered HTTP 200 (_request raises otherwise),
+            # so an empty parse is the search-app markup having moved.
             raise RuntimeError(
-                "No VTE decision rows parsed for any appeal type — the search app "
-                "layout may have changed or the host blocked the request (fail loud "
-                "rather than emit an empty corpus)"
+                "VTE listings returned HTTP 200 but no decision rows parsed for any "
+                "appeal type — the search app layout has changed (fail loud rather "
+                "than emit an empty corpus)"
             )
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:

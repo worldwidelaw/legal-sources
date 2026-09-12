@@ -15,14 +15,25 @@ notes: 'Brazilian Chamber of Deputies open data API.
 
   Full text via urlInteiroTeor PDF download + centralized PDF extraction.
 
+  Each listing page''s documents are fetched concurrently (CAMARA_PDF_WORKERS, default
+  6) and progress is checkpointed per page to checkpoint.json, so a torn-down run
+  resumes instead of restarting at 0 (issue #1343). Full runs stream to
+  data/records.jsonl.
+
+  The portal''s WAF rejects some User-Agent strings (the substring "; Open Data" 403s
+  from every vantage) — A/B any UA change before shipping it.
+
   '
 rate_limit:
-  delay_between_requests: 1.0
+  delay_between_requests: 0.5
   requests_per_second: 2
 schema:
   key_fields:
   - name: _id
     required: true
+    type: string
+  - name: text_source
+    required: false
     type: string
   - name: sigla_tipo
     required: false

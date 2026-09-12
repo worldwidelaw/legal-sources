@@ -21,7 +21,17 @@ schema:
   - name: process_number
     required: false
     type: string
+  # Part of the record key: one process number carries a Sentença, an Acórdão and
+  # interlocutory Decisões, so the type is what separates them.
   - name: document_type
+    required: true
+    type: string
+  - name: section
+    required: false
+    type: string
+  # Scraped from the decision text (the listing has no date column), so it is
+  # approximate and occasionally absent — see README.
+  - name: date
     required: false
     type: string
 source_id: BR/TRF1

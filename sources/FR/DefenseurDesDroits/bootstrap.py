@@ -149,13 +149,24 @@ def get_explnum_id_from_page(html: str) -> Optional[str]:
     return match.group(1) if match else None
 
 
+def pdf_url_for(explnum_id: str) -> str:
+    """Build the download URL for a PDF from its explnum_id."""
+    return f"{BASE_URL}/doc_num.php?explnum_id={explnum_id}"
+
+
 def extract_pdf_text(explnum_id: str, session: requests.Session) -> str:
-    """Extract text from PDF using centralized extractor."""
+    """
+    Extract text from PDF using centralized extractor.
+
+    `explnum_id` is a bare number — it has to be expanded into the full
+    doc_num.php URL, otherwise requests rejects it as scheme-less.
+    """
     return extract_pdf_markdown(
         source="FR/DefenseurDesDroits",
-        source_id="",
-        pdf_url=explnum_id,
+        source_id=str(explnum_id),
+        pdf_url=pdf_url_for(explnum_id),
         table="case_law",
+        force=True,
     ) or ""
 
 def categorize_decision(title: str) -> str:
@@ -218,7 +229,7 @@ def fetch_document(doc_info: dict, session: requests.Session) -> Optional[dict]:
             'notice_id': notice_id,
             'explnum_id': explnum_id,
             'url': url,
-            'pdf_url': f"{BASE_URL}/doc_num.php?explnum_id={explnum_id}",
+            'pdf_url': pdf_url_for(explnum_id),
             'title': metadata.get('title', ''),
             'date': metadata.get('date'),
             'decision_number': decision_number,
@@ -365,7 +376,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='Défenseur des Droits decisions fetcher')
-    parser.add_argument('command', choices=['bootstrap', 'fetch', 'updates'],
+    parser.add_argument('command', choices=['bootstrap', 'bootstrap-fast', 'fetch', 'updates'],
                        help='Command to run')
     parser.add_argument('--sample', action='store_true',
                        help='Generate sample data only')
@@ -374,13 +385,17 @@ def main():
     parser.add_argument('--since', type=str,
                        help='Fetch updates since date (YYYY-MM-DD)')
     parser.add_argument("--full", action="store_true", help="Fetch all records")
+    parser.add_argument("--workers", type=int, default=1,
+                       help="Accepted for VPS wrapper compatibility")
+    parser.add_argument("--batch-size", type=int, default=100,
+                       help="Accepted for VPS wrapper compatibility")
     
     args = parser.parse_args()
     
     script_dir = Path(__file__).parent
     sample_dir = script_dir / 'sample'
     
-    if args.command == 'bootstrap':
+    if args.command in ('bootstrap', 'bootstrap-fast'):
         if args.sample:
             bootstrap_sample(sample_dir, args.count)
         else:

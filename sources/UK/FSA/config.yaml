@@ -6,12 +6,14 @@ source:
   id: "UK/FSA"
   country: "UK"
   name: "UK Food Standards Agency (FSA)"
-  url: "https://www.food.gov.uk"
+  url: "https://www.gov.uk/government/organisations/food-standards-agency"
   description: |
-    UK Food Standards Agency guidance, research, consultations, and
-    regulatory content. ~3,500 documents covering food safety standards,
-    business guidance, consumer guidance, and board papers.
-    Full text via internal search API returning JSON with HTML body.
+    UK Food Standards Agency statutory guidance, business and consumer
+    guidance, regulated-product decisions, EU-withdrawal statutory
+    instruments, corporate reports, research and official statistics.
+    ~900 documents. The FSA website (www.food.gov.uk) was migrated onto
+    GOV.UK in 2026, so content is read from the official GOV.UK Search API
+    (enumeration) and Content API (full text).
 
 data_types:
   - doctrine
@@ -25,12 +27,19 @@ rate_limit:
 
 api:
   type: "json_api"
-  base_url: "https://www.food.gov.uk"
+  base_url: "https://www.gov.uk"
   endpoints:
     search:
-      path: "/search-api"
+      path: "/api/search.json"
       method: "GET"
-      description: "FSA internal search API returning full document content"
+      description: >-
+        GOV.UK Search API — enumerate FSA documents with
+        filter_organisations=food-standards-agency, partitioned by
+        filter_content_store_document_type
+    content:
+      path: "/api/content/{base_path}"
+      method: "GET"
+      description: "GOV.UK Content API — full document JSON incl. details.body HTML"
 
 data_model:
   type: "doctrine"
@@ -60,7 +69,11 @@ schema:
       role: "classification"
 
 notes: |
-  - Language: English (+ Welsh translations)
-  - ~3,500 documents (guidance, research, consultations, alerts, board papers)
-  - Full text via /search-api with body.#markup field
+  - Language: English
+  - ~900 documents across 37 GOV.UK document types (guidance, statutory
+    guidance, transparency, corporate reports, research, official statistics,
+    regulated-product decisions, statutory instruments)
+  - Full text from GOV.UK Content API details.body / details.parts; thin
+    landing pages are supplemented with their HTML and PDF attachments
+  - www.food.gov.uk/search-api was retired in the 2026 GOV.UK migration
   - No authentication required

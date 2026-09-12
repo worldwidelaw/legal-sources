@@ -37,10 +37,13 @@ api:
 
 data_model:
   type: "legislation"
-  primary_key: "section_id"
+  primary_key: "_id"
   update_strategy: "full_replace"
+  # normalize() emits `_id`, never `section_id` — the old value matched no
+  # field on any normalized record, so BaseScraper logged the mismatch and
+  # fell back to `_id` anyway.
   dedup_key:
-    - "section_id"
+    - "_id"
 
 schema:
   total_fields: 12
@@ -51,9 +54,19 @@ schema:
       role: "primary_key"
       required: true
     - name: "title"
-      description: "Section heading with code name and number"
+      description: "Fully-qualified citation, e.g. 'Texas Estates Code § 55.001'"
       type: "string"
       role: "content"
+      required: true
+    - name: "citation"
+      description: "Canonical citation string for reference resolution (#1619)"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "subdivision"
+      description: "ISO 3166-2 sub-jurisdiction — always 'US-TX'"
+      type: "string"
+      role: "classification"
       required: true
     - name: "text"
       description: "Full text of the statute section"

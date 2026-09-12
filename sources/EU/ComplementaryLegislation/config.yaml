@@ -1,0 +1,60 @@
+source:
+  id: "EU/ComplementaryLegislation"
+  name: "EU — Complementary Legislation"
+  country: "EU"
+  language: "en"
+
+  # Full text is retrieved from the EU Publications Office (CELLAR / EUR-Lex),
+  # where the EU's "complementary legislation" (the fourth sector of the EUR-Lex
+  # taxonomy) is stored with a CELEX number in sector 4 — 4{YYYY}{DESC}{NNNN}.
+  # The corpus is dominated by three classes: UN/UNECE Regulations given legal
+  # effect in the EU through the UNECE 1958 Agreement (motor-vehicle
+  # type-approval technical prescriptions, descriptor "X"), Decisions of the
+  # Representatives of the Governments of the Member States meeting within the
+  # Council (appointing CJEU/General Court judges, descriptor "D"), and
+  # Resolutions of the Council and of the Representatives of the Governments of
+  # the Member States (descriptor "Y"). A distinct, additive corpus to
+  # EU/EUR-Lex (sector-3 secondary legislation), EU/InternationalAgreements
+  # (sector-2 A agreements) and EU/JointBodyDecisions (sector-2 D decisions).
+  # Enumeration is via the public CELLAR SPARQL endpoint (the sector-4 corpus is
+  # ~1,650 rows, under the ~10K OFFSET ceiling); full text via CELLAR content
+  # negotiation (Accept application/xhtml+xml, Accept-Language en), which bypasses
+  # the eur-lex.europa.eu AWS-WAF that 202-challenges datacenter IPs, so it is
+  # fleet-safe. Same recipe as EU/InternationalAgreements/EU/JointBodyDecisions.
+  endpoints:
+    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
+    cellar_celex: "http://publications.europa.eu/resource/celex/{celex}"
+
+  data_types:
+    - legislation
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1
+
+  schema:
+    key_fields:
+      _id:
+        type: string
+        required: true
+      title:
+        type: string
+        required: true
+      text:
+        type: string
+        required: true
+      date:
+        type: date
+        required: false
+
+fetch:
+  sample_count: 15
+
+license:
+  name: "EU institutional reuse (Decision 2011/833/EU)"
+  url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "EU complementary legislation published by the Publications Office is reusable, including for commercial purposes, under the Commission's reuse policy (Decision 2011/833/EU). Attribution to the source is requested."

@@ -58,6 +58,26 @@ python bootstrap.py bootstrap --sample
 }
 ```
 
+## Record granularity
+
+Records are emitted **one per section** (§ / Artikel), not one per law:
+
+| field | example |
+|-------|---------|
+| `_id` | `BJNR001950896BJNE018702377` (the norm's official `doknr`) |
+| `abbreviation` | `BGB` |
+| `section` / `section_number` | `§ 195` / `195` |
+| `heading` | `Regelmäßige Verjährungsfrist` |
+| `context` | `Buch 1 Allgemeiner Teil > Abschnitt 5 Verjährung > ...` |
+| `url` | `https://www.gesetze-im-internet.de/bgb/__195.html` |
+
+Each section's `text` begins with the law title, abbreviation and the
+`gliederungskennzahl` breadcrumb, so "§ 195 BGB" resolves to exactly one
+document (issue #1621 — the BGB used to be a single 2.5M-character record
+and never reached the index). Laws with no numbered sections — short
+regulations and annex-only instruments — are still emitted whole, with an
+empty `section`.
+
 ## License
 
 Public domain under German law — [§ 5 UrhG](https://www.gesetze-im-internet.de/urhg/__5.html) (official works / amtliche Werke).

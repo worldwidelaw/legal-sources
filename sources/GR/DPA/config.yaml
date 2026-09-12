@@ -16,6 +16,9 @@ data_model:
     - doctrine  # DPA decisions are regulatory guidance/doctrine
   update_strategy: append_only
   dedup_key:
+    # Each act type is numbered from 1 every year, so the category is part of
+    # the key — Απόφαση 8/2026 and Γνωμοδότηση 8/2026 are different documents.
+    - category
     - decision_number
     - year
 
@@ -37,8 +40,9 @@ schema:
     - date
     - url
   key_fields:
+    # Not purely numeric: pre-2019 acts carry numbers like "734/18" or "581α".
     - name: decision_number
-      type: integer
+      type: string
       required: true
     - name: year
       type: integer

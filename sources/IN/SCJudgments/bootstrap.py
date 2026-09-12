@@ -131,25 +131,26 @@ class IndianSCJudgmentsScraper(BaseScraper):
         r = self._s3_get(url, timeout=180)
         return pd.read_parquet(io.BytesIO(r.content))
 
-    def _download_tar_and_extract(self, year: int, language: str = "english") -> dict:
-        """Download a year's tar archive and extract PDFs into memory.
-        Returns dict mapping filename -> pdf_bytes.
+    def _download_tar_to_file(self, year: int, dest_path: str, language: str = "english") -> None:
+        """Stream a year's tar archive to a temp file on disk.
+
+        Streaming (rather than holding the whole tar + every extracted PDF in
+        memory at once) keeps peak memory bounded to a single PDF during
+        processing. Year tars run 190-575 MB; the old load-everything approach
+        peaked at >1 GB/year and OOM-killed full runs on the VPS after the most
+        recent years, leaving the pre-2021 corpus unfetched (issue #1189).
         """
         url = f"{S3_BASE}/data/tar/year={year}/{language}/{language}.tar"
         logger.info(f"Downloading tar for year={year} language={language}...")
-        r = self._s3_get(url, timeout=600)
-        logger.info(f"Downloaded {len(r.content) / 1024 / 1024:.1f} MB tar")
-
-        pdfs = {}
-        with tarfile.open(fileobj=io.BytesIO(r.content), mode="r:") as tf:
-            for member in tf.getmembers():
-                if member.isfile() and member.name.endswith(".pdf"):
-                    f = tf.extractfile(member)
-                    if f:
-                        filename = member.name.split("/")[-1]
-                        pdfs[filename] = f.read()
-        logger.info(f"Extracted {len(pdfs)} PDFs from tar")
-        return pdfs
+        r = self._s3_get(url, timeout=600, stream=True)
+        total = 0
+        with open(dest_path, "wb") as fh:
+            for chunk in r.iter_content(chunk_size=1024 * 1024):
+                if chunk:
+                    fh.write(chunk)
+                    total += len(chunk)
+        r.close()
+        logger.info(f"Downloaded {total / 1024 / 1024:.1f} MB tar to disk")
 
     def _extract_pdf_text(self, pdf_content: bytes) -> str:
         """Extract text from PDF using centralized extractor."""
@@ -197,45 +198,68 @@ class IndianSCJudgmentsScraper(BaseScraper):
         except Exception as e:
             logger.warning(f"Could not check tar size for year {year}: {e}")
 
-        # Download tar with PDFs
-        try:
-            pdfs = self._download_tar_and_extract(year)
-        except Exception as e:
-            logger.error(f"Failed to download tar for year {year}: {e}")
-            return
-
-        count = 0
+        # Build a filename -> metadata-row map so we can iterate the tar members
+        # one at a time and look up metadata by PDF filename (both the language
+        # suffix and bare variants), instead of holding every PDF in memory.
+        by_filename = {}
         for _, row in df.iterrows():
-            if sample_limit and count >= sample_limit:
-                break
-
             path = row.get("path", "")
             if not path:
                 continue
+            row_dict = row.to_dict()
+            by_filename.setdefault(f"{path}_EN.pdf", row_dict)
+            by_filename.setdefault(f"{path}.pdf", row_dict)
 
-            # Map path to PDF filename: path + _EN.pdf
-            pdf_filename = f"{path}_EN.pdf"
-            pdf_bytes = pdfs.get(pdf_filename)
-            if not pdf_bytes:
-                # Try without language suffix
-                pdf_filename = f"{path}.pdf"
-                pdf_bytes = pdfs.get(pdf_filename)
+        # Stream the tar to a temp file, then process one PDF at a time.
+        tmp = tempfile.NamedTemporaryFile(suffix=".tar", delete=False)
+        tmp_path = tmp.name
+        tmp.close()
+        try:
+            self._download_tar_to_file(year, tmp_path)
+        except Exception as e:
+            logger.error(f"Failed to download tar for year {year}: {e}")
+            try:
+                Path(tmp_path).unlink()
+            except OSError:
+                pass
+            return
 
-            text = ""
-            if pdf_bytes:
-                text = self._extract_pdf_text(pdf_bytes)
+        count = 0
+        try:
+            with tarfile.open(tmp_path, mode="r:") as tf:
+                for member in tf:
+                    if sample_limit and count >= sample_limit:
+                        break
+                    if not (member.isfile() and member.name.endswith(".pdf")):
+                        continue
+                    filename = member.name.split("/")[-1]
+                    row_dict = by_filename.get(filename)
+                    if row_dict is None:
+                        continue
 
-            if not text or len(text.strip()) < 50:
-                continue
+                    f = tf.extractfile(member)
+                    if f is None:
+                        continue
+                    pdf_bytes = f.read()
+                    text = self._extract_pdf_text(pdf_bytes)
+                    pdf_bytes = None  # free memory before extraction of next member
 
-            yield {
-                "metadata": row.to_dict(),
-                "text": text,
-                "pdf_filename": pdf_filename,
-                "year": year,
-            }
-            count += 1
-            time.sleep(0.1)
+                    if not text or len(text.strip()) < 50:
+                        continue
+
+                    yield {
+                        "metadata": row_dict,
+                        "text": text,
+                        "pdf_filename": filename,
+                        "year": year,
+                    }
+                    count += 1
+                    time.sleep(0.1)
+        finally:
+            try:
+                Path(tmp_path).unlink()
+            except OSError:
+                pass
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all judgments, iterating over years (newest first)."""
@@ -355,4 +379,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

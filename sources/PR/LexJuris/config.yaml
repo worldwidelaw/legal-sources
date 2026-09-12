@@ -80,4 +80,5 @@ notes: |
   - ~200+ laws per year from 1997-2026
   - Full text in HTML format
   - Spanish language
-  - URL pattern: lexjuris.com/lexlex/Leyes{YEAR}/lexl{YEAR}{NUM}.htm
+  - URL pattern varies by era; year menus are discovered from lexleyes.htm
+  - Pre-2022 pages are windows-1252, 2022+ are UTF-8 (see README)

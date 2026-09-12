@@ -88,8 +88,12 @@ class OpenStatesAPI:
                 response = self.session.get(url, params=params, timeout=60)
 
                 if response.status_code == 429:
-                    # Rate limited
-                    wait = 2 ** (attempt + 1)
+                    # Rate limited. Honor Retry-After when the API sends one.
+                    try:
+                        wait = int(response.headers.get("Retry-After", ""))
+                    except ValueError:
+                        wait = 2 ** (attempt + 1)
+                    wait = min(max(wait, 1), 120)
                     print(f"  Rate limited, waiting {wait}s...")
                     time.sleep(wait)
                     continue
@@ -115,7 +119,13 @@ class OpenStatesAPI:
                     continue
                 raise
 
-        return {}
+        # Only reachable when every attempt was rate-limited. Returning {} here
+        # reads downstream as "no more results" and silently truncates the
+        # corpus, so fail loudly instead.
+        raise RuntimeError(
+            f"Open States API rate-limited {endpoint} on all {retries} attempts "
+            f"(params={params}). Aborting rather than reporting an empty page."
+        )
 
     def get_jurisdictions(self) -> List[Dict]:
         """Get list of available jurisdictions."""
@@ -645,11 +655,22 @@ def main():
     client = OpenStatesAPI(api_key)
 
     if args.command in ("bootstrap", "bootstrap-fast"):
+        # The fleet wrapper invokes `bootstrap-fast` with no flags; without this
+        # it fell through to the "use --sample or --full" branch and exited 1, so
+        # the pipeline re-ingested sample/ instead of the corpus (#1216).
+        if args.command == "bootstrap-fast" and not args.sample:
+            args.full = True
         if args.full:
             juris = None
             if args.jurisdictions:
                 juris = [j.strip().lower() for j in args.jurisdictions.split(",") if j.strip()]
-            written = bootstrap_full(jurisdictions=juris, max_records=args.max_records)
+            try:
+                written = bootstrap_full(jurisdictions=juris, max_records=args.max_records)
+            except ValueError as e:
+                # An expired/invalid OPENSTATES_API_KEY used to surface as a raw
+                # traceback from deep inside pagination (#1216).
+                print(f"ERROR: {e}", file=sys.stderr)
+                sys.exit(1)
             sys.exit(0 if written > 0 else 1)
         if args.sample:
             print("Fetching samples from Open States API...")

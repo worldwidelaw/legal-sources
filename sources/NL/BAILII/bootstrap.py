@@ -106,6 +106,7 @@ class RechtspraakScraper(BaseScraper):
         date_from: Optional[str] = None,
         date_to: Optional[str] = None,
         modified_from: Optional[str] = None,
+        offset: int = 0,
         sort: str = "DESC",
         return_type: str = "DOC",
     ) -> Optional[ET.Element]:
@@ -129,15 +130,21 @@ class RechtspraakScraper(BaseScraper):
             "return": return_type,
         }
 
+        # Rechtspraak's zoeken API takes plain repeated `date` params (from, to)
+        # with NO >=/<= operators, `modified` for the mod-date floor, and `from`
+        # for offset paging (the earlier >=/<= single-param form 400'd, and
+        # offset paging was wrongly believed unsupported — #1557).
+        date_vals = []
         if date_from:
-            params["date"] = f">={date_from}"
+            date_vals.append(date_from)
         if date_to:
-            if "date" in params:
-                params["date"] = f"{params['date']}&date<={date_to}"
-            else:
-                params["date"] = f"<={date_to}"
+            date_vals.append(date_to)
+        if date_vals:
+            params["date"] = date_vals
         if modified_from:
-            params["modified"] = f">={modified_from}"
+            params["modified"] = modified_from
+        if offset:
+            params["from"] = str(offset)
 
         self._rate_limit()
 
@@ -354,60 +361,72 @@ class RechtspraakScraper(BaseScraper):
         Note: The Rechtspraak API doesn't support offset pagination directly.
         Instead, we paginate by date ranges.
         """
-        page = 1
-        batch_size = 100
+        # The zoeken feed carries no body text, so for every ECLI we fetch the
+        # decision content and extract the full <uitspraak> text. The API caps
+        # each query at ~1000 rows but DOES support `from` offset paging, so we
+        # walk offsets to cover the whole corpus (#1557).
+        RESULT_CAP = 1000
+        seen: set = set()
 
-        # Get total count first
-        root = self._search_decisions(max_results=1)
-        if root is None:
-            return
-
-        # Parse subtitle for total count
-        subtitle = root.find(".//atom:subtitle", NAMESPACES)
-        total_count = 0
-        if subtitle is not None and subtitle.text:
-            match = re.search(r"(\d+)", subtitle.text)
-            if match:
-                total_count = int(match.group(1))
-
-        logger.info(f"Total decisions available: {total_count}")
-
-        while True:
-            if max_pages and page > max_pages:
-                logger.info(f"Reached max_pages={max_pages}, stopping")
-                return
-
+        # Sample/single-batch mode: one page, capped.
+        if max_pages == 1:
             root = self._search_decisions(
-                max_results=batch_size,
+                max_results=RESULT_CAP,
                 date_from=date_from,
                 date_to=date_to,
                 modified_from=modified_from,
             )
+            if root is not None:
+                yield from self._emit_entries_with_text(
+                    self._parse_feed_entries(root), seen
+                )
+            return
 
+        # Full crawl: offset paging until a short/empty page.
+        offset = 0
+        while True:
+            root = self._search_decisions(
+                max_results=RESULT_CAP,
+                date_from=date_from,
+                date_to=date_to,
+                modified_from=modified_from,
+                offset=offset,
+            )
             if root is None:
-                logger.error("Failed to fetch search results")
+                logger.error(f"NL/BAILII: search failed at offset {offset}, stopping")
                 return
-
             entries = self._parse_feed_entries(root)
             if not entries:
-                logger.info("No more entries in feed")
+                logger.info("NL/BAILII: no more entries, crawl complete")
                 return
-
-            logger.info(f"Page {page}: fetched {len(entries)} entries")
-
-            for entry in entries:
-                yield entry
-
-            # For sample mode, we don't need to paginate further
-            if max_pages == 1:
+            logger.info(f"NL/BAILII offset {offset}: {len(entries)} entries")
+            yield from self._emit_entries_with_text(entries, seen)
+            if len(entries) < RESULT_CAP:
+                logger.info("NL/BAILII: last (short) page reached, crawl complete")
                 return
+            offset += len(entries)
 
-            # Note: True pagination would require tracking last ECLI and
-            # using from/to parameters. For now, we just do one batch.
-            page += 1
-
-            # Stop after first page for now (use date ranges for full fetch)
-            return
+    def _emit_entries_with_text(self, entries, seen: set):
+        """For each feed entry, fetch content + extract full text, then yield raw."""
+        for entry in entries:
+            ecli = entry.get("ecli", "")
+            if not ecli or ecli in seen:
+                continue
+            seen.add(ecli)
+            content_root = self._get_decision_content(ecli)
+            if content_root is None:
+                continue
+            metadata = self._parse_decision_metadata(content_root)
+            full_text = self._extract_full_text(content_root)
+            if not full_text:
+                # Genuinely metadata-only ECLI — skip (do not emit empty text).
+                continue
+            yield {
+                "ecli": ecli,
+                "feed_entry": entry,
+                "metadata": metadata,
+                "full_text": full_text,
+            }
 
     # -- Abstract method implementations ------------------------------------
 
@@ -659,4 +678,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

@@ -34,7 +34,7 @@ from xml.etree import ElementTree as ET
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 
 logging.basicConfig(
@@ -376,6 +376,8 @@ class EduskuntaScraper(BaseScraper):
 
         Currently fetches recent pages of government proposals.
         """
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         logger.info(f"Fetching updates since {since}")
         for row in self._paginate_vaski_data(doc_type_filter="HE", max_pages=5):
             # Check if the document is newer than since
@@ -564,4 +566,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

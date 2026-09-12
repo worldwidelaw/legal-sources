@@ -35,7 +35,7 @@ from typing import Generator, Optional, Dict
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 from common.pdf_extract import extract_pdf_markdown
 
@@ -269,6 +269,8 @@ class AGCOMScraper(BaseScraper):
 
     def fetch_updates(self, since: str) -> Generator[Dict, None, None]:
         """Fetch decisions published since a given date."""
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         since_date = datetime.fromisoformat(since).date()
 
         for page_num in range(50):  # Check recent pages
@@ -385,4 +387,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

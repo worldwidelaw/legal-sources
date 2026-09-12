@@ -43,10 +43,15 @@ schema:
       role: "content"
       required: true
     - name: "text"
-      description: "Full text extracted from DOCX/PDF attachment"
+      description: "Full text extracted from the DOCX, ZIP, PDF, HTML or RTF attachment"
       type: "string"
       role: "content"
       required: true
+    - name: "text_source"
+      description: "Attachment format the text came from (docx/zip/pdf/html/rtf)"
+      type: "string"
+      role: "metadata"
+      required: false
     - name: "date"
       description: "Date of adoption (ISO 8601)"
       type: "date"

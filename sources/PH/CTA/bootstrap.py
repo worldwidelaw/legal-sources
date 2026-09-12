@@ -51,6 +51,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+from common.ssl_aia import is_missing_issuer_error, ca_bundle_for
 
 logging.basicConfig(
     level=logging.INFO,
@@ -76,6 +77,30 @@ class CTAScraper(BaseScraper):
             "Accept": "text/html,application/xhtml+xml",
         })
 
+    def _request(self, method: str, url: str, **kwargs) -> requests.Response:
+        """
+        Session request with a missing-intermediate TLS recovery.
+
+        cta.judiciary.gov.ph serves only its leaf certificate, so verification
+        fails with "unable to get local issuer certificate" on every vantage
+        (issue #1417). Recover the way a browser does — AIA-fetch the missing
+        intermediate and retry with an augmented CA bundle — rather than
+        dropping verification with verify=False.
+        """
+        try:
+            return self.session.request(method, url, **kwargs)
+        except requests.exceptions.SSLError as ssl_exc:
+            if not is_missing_issuer_error(ssl_exc):
+                raise
+            bundle = ca_bundle_for(url)
+            if not bundle:
+                raise
+            logger.warning("Retrying with AIA-augmented CA bundle: %s", url)
+            # Pin the bundle for the rest of the run so later requests skip the
+            # failed handshake entirely.
+            self.session.verify = bundle
+            return self.session.request(method, url, **kwargs)
+
     def _get_all_decisions(self) -> List[Dict[str, str]]:
         """Fetch the full decision listing via AJAX POST."""
         data = {
@@ -85,7 +110,7 @@ class CTAScraper(BaseScraper):
             "disposalType": "",
             "natureOfCase": "",
         }
-        resp = self.session.post(SEARCH_URL, data=data, timeout=120)
+        resp = self._request("POST", SEARCH_URL, data=data, timeout=120)
         resp.raise_for_status()
 
         soup = BeautifulSoup(resp.text, "html.parser")
@@ -129,7 +154,7 @@ class CTAScraper(BaseScraper):
     def _download_pdf_text(self, url: str) -> Optional[str]:
         """Download a PDF and extract text."""
         try:
-            resp = self.session.get(url, timeout=60)
+            resp = self._request("GET", url, timeout=60)
             resp.raise_for_status()
 
             if b"%PDF" not in resp.content[:10]:
@@ -251,7 +276,7 @@ if __name__ == "__main__":
     scraper = CTAScraper()
 
     if len(sys.argv) < 2:
-        print("Usage: python bootstrap.py [bootstrap|update|test] [--sample]")
+        print("Usage: python bootstrap.py [bootstrap|bootstrap-fast|update|test] [--sample]")
         sys.exit(1)
 
     command = sys.argv[1]
@@ -274,7 +299,10 @@ if __name__ == "__main__":
             print(f"FAIL: {e}")
             sys.exit(1)
 
-    elif command == "bootstrap":
+    elif command in ("bootstrap", "bootstrap-fast"):
+        # The fleet wrapper invokes `bootstrap-fast`; without it argparse-less
+        # dispatch fell through to "Unknown command" → exit 1 and the wrapper
+        # re-ingested sample/ instead of the corpus.
         sample_mode = "--sample" in sys.argv
         stats = scraper.bootstrap(sample_mode=sample_mode, sample_size=15)
         print(json.dumps(stats, indent=2, default=str))

@@ -80,7 +80,12 @@ schema:
 
 notes: |
   - SharePoint 2013 document library
-  - Index page lists ~220 chapters in a table
+  - Index page lists ~220 chapters in a table; each row links the principal Act
+    plus its subsidiary rules/orders (~312 PDFs in total)
   - PDFs are downloadable without authentication
   - pdfplumber required for PDF text extraction
-  - Some chapters have subsidiary legislation PDFs
+  - Between 2026-03-11 and 2026-05-14 the AGC stripped the PDF-link column from
+    the live index page (chapter numbers and titles remain). The PDFs themselves
+    are still served, so the scraper falls back to the newest Internet Archive
+    capture that still carries the links and overlays the live titles.
+  - A handful of 1984-edition scans have no text layer and are skipped

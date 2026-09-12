@@ -17,7 +17,14 @@ already covered (UK/HCPTS, UK/GMC, UK/SDT, UK/BTAS).
 
 No authentication, no CAPTCHA, no JavaScript required.
 
-- Each concluded hearing has a server-rendered detail page at
+- The **Hearing decisions** listing at
+  `/concerns/hearings-and-decisions/hearings-decisions/` is a server-rendered
+  search over every published hearing. It takes a date range
+  (`From/ToDate{Day,Month,Year}`) plus `&page=N` (10 rows/page) and reports
+  *"Showing A - B of N results"*, so the corpus is walked one calendar year at a
+  time to exhaustion. Requesting a page past the last one answers HTTP 500, so
+  the page ceiling is derived from the reported total.
+- Each hearing has a server-rendered detail page at
   `/umbraco/surface/hearingdetails/details/{id}` (integer hearing id). The page
   carries the registrant's name + registration number, the outcome, notes and
   (for upcoming hearings) the full allegations, plus a *Hearing details* block
@@ -26,15 +33,19 @@ No authentication, no CAPTCHA, no JavaScript required.
   **Outcome documents** — born-digital PDFs served from
   `/umbraco/surface/hearingdetails/download?docid={docid}&hearingid={id}`. Final
   hearings run ~10–30 pages / 20k–40k characters of reasoned decision. No OCR.
-- Old decisions are removed under SWE's publication policy, so the live corpus is
-  a **rolling window** of recently published hearings; hearing ids are a sparse
-  integer sequence. The scraper enumerates ids over a sliding window (from
-  `MIN_ID` upward, the ceiling auto-extending past the last valid id) and skips
-  the fixed *Page Not Found* pages.
+- Old decisions are removed under SWE's publication policy, so the listing is a
+  **rolling window**; removed / never-published ids render the fixed *Page Not
+  Found* page and are skipped.
+
+Hearing ids are a sparse integer sequence running from ~730 (2020) to ~5700
+(2026), so a bounded integer scan cannot reach the older end — the listing is the
+authoritative enumeration and the id scan survives only as a fallback for when
+the listing itself returns nothing.
 
 Records are kept only when at least one Outcome-document PDF yields real text —
-i.e. a concluded hearing with a published determination. Upcoming hearings that
-carry only a charge sheet and no determination are skipped.
+i.e. a concluded hearing with a published determination. Upcoming hearings and
+interim-order hearings (which publish only an on-page outcome and note, no
+determination PDF) are skipped.
 
 ## Usage
 

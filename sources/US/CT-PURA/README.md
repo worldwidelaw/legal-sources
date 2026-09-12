@@ -24,10 +24,27 @@ Final Decision is an administrative adjudication of a specific docket
    a time). Each leaf `<viewentry>` carries the document `unid` plus columns
    `AbbrevDckTitle` (title), `Decision_Date` (YYYYMMDD) and `DocketNumber`.
 2. **Full text.** `normalize()` opens the Domino document
-   (`/FINALDEC.NSF/0/{unid}?OpenDocument`), parses the attached born-digital
-   decision PDF href (`.../$FILE/{name}.pdf`), downloads it and extracts the
-   full text via `fitz`/PyMuPDF (Tesseract OCR fallback for the rare
-   image-only scan).
+   (`/FINALDEC.NSF/0/{unid}?OpenDocument`) and downloads its born-digital
+   decision attachment (`.../$FILE/{name}`).
+
+   PURA publishes each decision in whichever format the Authority signed it
+   in, so the attachment is not always a PDF. Measured over a 126-document
+   sample spanning seven industry categories:
+
+   | format | share | extractor |
+   |---|---:|---|
+   | `.pdf` | 55.6% | `fitz`/PyMuPDF, Tesseract OCR fallback for the rare image-only scan |
+   | `.docx` | 24.6% | `common.doc_extract.extract_docx_text` (stdlib `zipfile`, no python-docx) |
+   | `.doc` | 19.0% | `common.doc_extract.extract_doc_text` (Word 97-2003 piece table via `olefile`) |
+
+   Matching only `.pdf` silently dropped the Word half of the corpus —
+   roughly 10,800 of ~24,900 decisions, concentrated in the pre-2019 record.
+   See issue #1262.
+
+Discovery fails loud: `ReadViewEntries` raises `SourceBlockedError` rather
+than returning an empty string, and the CLI exits non-zero on a block or a
+0-record run, so a refused vantage can no longer be mistaken for an empty
+database (which is what let the fleet ingest `sample/` as a false completion).
 
 `fetch_all()` is checkpointed to `data/ct_pura_checkpoint.json` so fleet reruns
 advance monotonically (completed categories are skipped; an in-progress
@@ -45,7 +62,8 @@ python bootstrap.py bootstrap-fast      # high-throughput full pull (VPS)
 ## Record schema
 
 `_id`, `_source` (`US/CT-PURA`), `_type` (`case_law`), `_fetched_at`, `docket`,
-`title`, `text` (full decision text), `url`, `pdf_url`, `date` (ISO 8601).
+`title`, `text` (full decision text), `url`, `document_url`, `document_format`
+(`pdf`/`docx`/`doc`), `date` (ISO 8601).
 
 ## License
 

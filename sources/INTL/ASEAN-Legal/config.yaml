@@ -16,12 +16,24 @@ schema:
   - name: document_type
     required: false
     type: string
+  - name: status
+    required: false
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: url
+    required: true
+    type: string
 source:
   auth: none
   country: INTL
   data_types:
   - legislation
-  description: 'ASEAN agreements, declarations, protocols, and legal instruments. ~260 instruments with PDFs. Uses AJAX paginated HTML listing and direct PDF downloads.
+  description: 'ASEAN agreements, declarations, protocols, and legal instruments.
+    ~256 instruments with full-text PDFs. Live AJAX listing when reachable; since
+    2026-08 agreement.asean.org is behind a Sucuri JS challenge so the corpus is
+    read from Internet Archive captures of /agreement/detail/{id}.html.
 
     '
   id: INTL/ASEAN-Legal

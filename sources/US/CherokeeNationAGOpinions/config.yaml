@@ -1,0 +1,106 @@
+# ═══════════════════════════════════════════════════════════════════
+# US/CherokeeNationAGOpinions — Cherokee Nation Attorney General Opinions
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "US/CherokeeNationAGOpinions"
+  country: "US"
+  name: "Cherokee Nation Attorney General Opinions"
+  url: "https://attorneygeneral.cherokee.org/opinions/"
+  description: |
+    The formal opinions of the Attorney General of the Cherokee Nation, the
+    largest federally recognized tribe in the United States (~450,000 citizens,
+    reservation covering 14 counties of north-eastern Oklahoma). An opinion
+    answers a question of Cherokee Nation law put by the Principal Chief, a
+    Council member or a tribal official — election and absentee-ballot
+    procedure, Freedom of Information Act compliance, term limits, gaming
+    commission jurisdiction, tribal employment and TERO funds, conflicts of
+    interest, service animals under the ADA — construing the Constitution of
+    the Cherokee Nation and the Cherokee Nation Code Annotated. English,
+    numbered YYYY-CNAG-NN, 2006 to date.
+    Collected as DOCTRINE: an AG opinion interprets the law for the executive
+    but decides no case and does not bind the courts. Cherokee court decisions
+    are US/CherokeeNationCourts; the code itself is US/CherokeeNationCode.
+    Sourced from the OAG's own listing, which serves every opinion as a PDF and
+    honours a pageSize parameter so the whole series comes back in one request.
+    Only the most recent handful are born-digital; the back-catalogue is
+    scanned, so the shared extraction cascade's tesseract OCR supplies the text
+    for most records.
+
+data_types:
+  - doctrine
+
+jurisdictions:
+  - code: US-OK
+    scope: partial
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_scrape"   # static document listing + opinion PDFs
+  base_url: "https://attorneygeneral.cherokee.org"
+
+# ── Output Schema ─────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "citation"
+      type: "string"
+      required: true
+    - name: "opinion_number"
+      type: "string"
+      required: false
+    - name: "year"
+      type: "integer"
+      required: false
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "date_decided"
+      type: "date"
+      required: false
+    - name: "published_date"
+      type: "date"
+      required: false
+    - name: "summary"
+      type: "string"
+      required: false
+    - name: "submitted_by"
+      type: "string"
+      required: false
+    - name: "extraction"
+      type: "string"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Public Domain (tribal government edict)"
+  url: "https://attorneygeneral.cherokee.org/opinions/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Opinions of the Attorney General of the Cherokee Nation are official acts
+    of a sovereign tribal government, published in full and without restriction
+    by the Office of the Attorney General for public access ("They may be
+    viewed on your screen, printed or even downloaded"). Under the government
+    edicts doctrine official legal pronouncements of a government are not
+    subject to copyright. Freely reusable, including commercially.

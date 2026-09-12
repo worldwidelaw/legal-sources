@@ -1,0 +1,96 @@
+source:
+  id: "MZ/JurisMZ"
+  country: "MZ"
+  name: "Mozambique Case Law Database (JURIS MZ)"
+  url: "https://juris.ts.gov.mz"
+  description: |
+    "Jurisprudência Moçambicana" (JURIS MZ) — the official ECLI-indexed case-law
+    database of the Supreme Court of Mozambique (Tribunal Supremo), built with the
+    technical support of the Portuguese Superior Council of the Judiciary (CSM).
+    Each acórdão is published as clean HTML (not scanned PDF) with a structured
+    headnote (Sumário), descriptors, the full reasoning (Decisão Texto Parcial),
+    and the operative ruling (Decisão Texto Integral). Content in Portuguese.
+    Distinct from MZ/CourtSupremo (raw WordPress-media PDFs on www.ts.gov.mz):
+    JURIS is a curated, ECLI-addressed corpus with clean full text.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+
+api:
+  type: "rest"
+  base_url: "https://juris.ts.gov.mz"
+  endpoints:
+    # `page` is accepted with HTTP 200 but ignored — every page serves the same
+    # first batch. `offset` is the cursor the server honours (issue #1600).
+    list: "/items/loadItems?perPage={N}&offset={O}"
+    record: "/juris/{ecli}/"
+
+data_model:
+  type: "case_law"
+  source_nature: "consolidated"
+  primary_key: "ecli"
+  update_strategy: "upsert"
+  versioning: "none"
+  dedup_key:
+    - "ecli"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Unique identifier (the ECLI, e.g. JURIS:MZ:TS:2023:2)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (ECLI + process number)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text: Sumário + Decisão Texto Parcial + Decisão Texto Integral"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601, from Data do Acordão)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+  secondary_fields:
+    - name: "url"
+      description: "Link to the decision page"
+    - name: "court"
+      description: "Court name (tribunal)"
+    - name: "relator"
+      description: "Reporting judge (relator)"
+    - name: "process_number"
+      description: "Case process number"
+    - name: "area_tematica"
+      description: "Thematic area (e.g. Penal, Civil)"
+    - name: "ecli"
+      description: "European Case Law Identifier"
+  probably_ignorable: []
+
+license:
+  name: "Public Domain (Government)"
+  url: null
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official court decisions are public domain under Mozambican law. Database produced by the Tribunal Supremo with CSM Portugal / EU Projeto Íntegra support."
+
+notes: |
+  - JSON list endpoint /items/loadItems (GET, X-Requested-With header) returns
+    all records with ECLI, court, relator, date, thematic area, summary.
+  - Full text per record fetched from /juris/{ecli}/ HTML page.
+  - 324 acórdãos as of 2026-09 (2019-2026), Portuguese language.
+  - Clean HTML full text — no OCR needed.

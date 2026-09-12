@@ -11,13 +11,25 @@ license:
   notes: "Official Israeli legislation published via Knesset OData API. Government data."
 name: Israel Knesset OData API (Bills & Laws)
 notes: >
-  2,009 Israeli laws with full text via OData API + PDF download from fs.knesset.gov.il.
-  Uses KNS_IsraelLaw for metadata and KNS_DocumentLaw for PDF links.
-  Text extracted from PDFs using pdfminer.
+  ~7,200 Israeli legislative documents (primary acts, amendments and secondary
+  legislation) with full Hebrew text, via the Knesset OData API + gazette PDF
+  download from fs.knesset.gov.il.
+  Driven from KNS_DocumentLaw (the only entity carrying FilePath), joined to
+  KNS_Law for act metadata and to KNS_IsraelLaw via KNS_LawBinding for the
+  consolidated parent law. KNS_DocumentLaw.LawID is NOT an IsraelLawID —
+  filtering it by IsraelLawID returns an empty set with HTTP 200 (issue #1438).
+  Text extracted with PyMuPDF, which applies bidi reordering; the pdfminer
+  fallback repairs the visual-order reversal itself.
 schema:
   key_fields:
+  - name: document_id
+    required: true
+    type: string
   - name: law_id
     required: true
+    type: integer
+  - name: israel_law_id
+    required: false
     type: integer
   - name: knesset_num
     required: false

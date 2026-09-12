@@ -23,8 +23,9 @@ auth:
   type: "none"
 
 rate_limit:
-  requests_per_second: 1
-  burst: 2
+  requests_per_second: 2
+  burst: 4
+  max_workers: 5
 
 api:
   type: "json_index_html_fulltext"
@@ -73,3 +74,10 @@ notes: |
   - ID format: act-YYYY-NNN for Acts, sr-YYYY-NNN for Statutory Rules
   - CC BY 4.0 license
   - robots.txt only blocks /admin/
+  - Index paging uses start/count only. Do NOT pass sortField=sort.title —
+    the datasource answers "E3701-AS: The sort operation failed / Cannot find
+    a sort index" and the whole crawl yields 0 records (issue #1376).
+  - Keep count small (50). Larger pages get truncated mid-body and urllib
+    raises IncompleteRead.
+  - Expression: PrintType=act.reprint|reprint AND Repealed<>Y AND
+    PitValid=@pointInTime(YYYYMMDDhhmmss) — ~685 Acts + ~1,734 Statutory Rules.

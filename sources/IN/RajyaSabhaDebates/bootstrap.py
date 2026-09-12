@@ -34,7 +34,7 @@ import pdfplumber
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 logging.basicConfig(
     level=logging.INFO,
@@ -304,6 +304,7 @@ class RajyaSabhaDebatesScraper(BaseScraper):
 
     def fetch_updates(self, since: str) -> Generator[Dict[str, Any], None, None]:
         """Fetch debates issued since the given date."""
+        since = as_date_str(since)  # update() passes a datetime; #1512
         since_date = datetime.fromisoformat(since).date() if isinstance(since, str) else since
         logger.info("Fetching debates since %s", since_date)
 

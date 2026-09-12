@@ -11,10 +11,17 @@ source:
     as PDFs from 2014-present. Content primarily in Somali.
 
 fetch:
-  method: html_scrape_pdf
+  method: html_scrape_pdf_ocr
   base_url: https://osagsomalia.com/en/resources/bulletins-contents/
   rate_limit: 1.5
   auth: none
+  # The bulletins are scans; body pages are re-OCR'd with tesseract rather than
+  # read from the publisher's English-model text layer (issue #1411).
+  requires:
+    - tesseract
+    - pytesseract
+    - Pillow
+    - PyMuPDF
 
 schema:
   key_fields:
@@ -26,6 +33,7 @@ schema:
     - reference_number
     - issuing_organization
     - language
+    - text_source
 
 license:
   name: "Government of Somalia — Official Gazette"

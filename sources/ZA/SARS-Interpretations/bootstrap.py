@@ -216,21 +216,22 @@ class SARSInterpretationsScraper(BaseScraper):
                 else:
                     return ""
 
+        # force=True: this scraper re-walks the whole catalogue on every run, so
+        # the skip-if-already-in-Neon path would hand back None for every
+        # previously ingested note and empty out an update run.
         try:
-            with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-                pages = []
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        pages.append(text)
-                    try:
-                        page.flush_cache(); page.get_textmap.cache_clear()
-                    except Exception:
-                        pass
-                return "\n\n".join(pages)
+            text = extract_pdf_markdown(
+                self.SOURCE_ID,
+                path,
+                pdf_bytes=resp.content,
+                table="doctrine",
+                force=True,
+            )
         except Exception as e:
-            logger.warning("Failed to extract PDF from %s: %s", path, e)
+            logger.warning("Failed to extract PDF from %s: %s: %s",
+                           path, type(e).__name__, e)
             return ""
+        return text or ""
 
     def normalize(self, doc_meta: Dict[str, str], text: str) -> Dict[str, Any]:
         """Normalize a document into the standard schema."""
@@ -360,4 +361,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

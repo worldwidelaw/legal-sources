@@ -41,11 +41,21 @@ Pillow>=9.0.0
 # for idempotent skip-if-already-in-Neon checks.
 psycopg2-binary>=2.9.0
 
+# AES-GCM response decryption. MY/AGCLaws' DataTables endpoints return
+# {"encrypted": true, "data": "<base64>"} where the key is published in the
+# listing page source, exactly as the site's own js/responseCrypto.js reads it
+# (issue #1465). The scraper falls back to pycryptodome when this is absent.
+cryptography>=42.0.0
+
 # RSS/Atom feed parsing
 feedparser>=6.0.0
 
 # HuggingFace datasets (for CH/Kantone and other dataset-based sources)
 datasets>=2.18.0
+# Both ship as datasets dependencies, but CH/OpenCaseLaw imports them directly to
+# read the parquet export shard-by-shard, so pin them in their own right.
+pyarrow>=14.0.0
+fsspec>=2023.9.0
 
 # Browser automation (for JavaScript SPAs and Cloudflare-protected sites)
 # After install, run: playwright install chromium

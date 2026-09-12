@@ -40,6 +40,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+from common.http_client import request_with_deadline
 from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
@@ -49,6 +50,12 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.ET.FSC")
 
 BASE_URL = "https://www.fsc.gov.et"
+
+# (connect, read) budget per socket operation, and the wall-clock ceiling for a
+# whole request — a slow PDF must never hold the crawl longer than the latter.
+SOCKET_TIMEOUT = (30, 60)
+WALL_TIMEOUT = 180
+RETRY_BACKOFF = 5
 
 # Section definitions: (path, PgrID, max_pages, data_type)
 SECTIONS = [
@@ -78,13 +85,38 @@ class EthiopiaFSCScraper(BaseScraper):
             "Accept-Language": "en-US,en;q=0.5",
         })
         self.session.verify = False
+        self._sample = False
 
-    def _get(self, url: str, binary: bool = False):
-        """Fetch URL with rate limiting."""
-        self.rate_limiter.wait()
-        resp = self.session.get(url, timeout=120)
-        resp.raise_for_status()
-        return resp.content if binary else resp.text
+    def _get(self, url: str, binary: bool = False, attempts: int = 3):
+        """
+        Fetch a URL under a wall-clock deadline, retrying transient failures.
+
+        fsc.gov.et trickles bytes on large PDFs, and ``requests``' ``timeout``
+        only bounds a single socket operation — it resets on every byte, so a
+        slow document parks the crawl inside one call with no log output
+        (issue #1371, which wedged the tail at ~800 of ~821 records).
+        ``request_with_deadline`` abandons the call once ``WALL_TIMEOUT``
+        seconds have elapsed, raising ``requests.Timeout`` so the caller's
+        existing skip path runs.
+        """
+        last_error = None
+        for attempt in range(1, attempts + 1):
+            self.rate_limiter.wait()
+            try:
+                resp = request_with_deadline(
+                    self.session, "GET", url, WALL_TIMEOUT,
+                    timeout=SOCKET_TIMEOUT,
+                )
+                resp.raise_for_status()
+                return resp.content if binary else resp.text
+            except Exception as e:
+                last_error = e
+                if attempt < attempts:
+                    logger.warning(
+                        f"Attempt {attempt}/{attempts} failed for {url}: {e}"
+                    )
+                    time.sleep(RETRY_BACKOFF * attempt)
+        raise last_error
 
     def _collect_entries_from_listing(self, section_path: str, pgr_id: int,
                                       max_pages: int, sample: bool = False) -> list:
@@ -99,8 +131,10 @@ class EthiopiaFSCScraper(BaseScraper):
             try:
                 html = self._get(url)
             except Exception as e:
-                logger.error(f"Failed to fetch page {page_num}: {e}")
-                break
+                # One timed-out listing page must not abandon the rest of the
+                # section — skip it and keep paginating (#1371).
+                logger.error(f"Failed to fetch page {page_num}, skipping: {e}")
+                continue
 
             # Extract article title links
             title_links = re.findall(
@@ -188,7 +222,7 @@ class EthiopiaFSCScraper(BaseScraper):
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all documents from all sections."""
-        yield from self._fetch_documents(sample=False)
+        yield from self._fetch_documents(sample=self._sample)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
         """Yield all documents (no incremental API available)."""
@@ -264,11 +298,10 @@ class EthiopiaFSCScraper(BaseScraper):
                     "section": section_name,
                 }
 
-                record = self.normalize(raw)
                 section_count += 1
                 total_count += 1
                 logger.info(f"[{total_count}] {section_name}: {title[:50]} ({len(text)} chars)")
-                yield record
+                yield raw
 
             total_failures += section_failures
             logger.info(f"Section {section_name}: {section_count} records, {section_failures} failures")
@@ -310,7 +343,8 @@ def main():
     scraper = EthiopiaFSCScraper()
 
     if len(sys.argv) < 2:
-        print("Usage: python bootstrap.py [bootstrap|update|test-api] [--sample]")
+        print("Usage: python bootstrap.py "
+              "[bootstrap|bootstrap-fast|update|test-api] [--sample]")
         sys.exit(1)
 
     command = sys.argv[1]
@@ -319,18 +353,13 @@ def main():
     if command == "test-api":
         scraper.test_api()
     elif command in ("bootstrap", "update"):
-        sample_dir = scraper.source_dir / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        count = 0
-        for record in scraper._fetch_documents(sample=sample):
-            safe_id = re.sub(r'[^\w\-]', '_', record["_id"])
-            out_path = sample_dir / f"{safe_id}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-
-        logger.info(f"Saved {count} records to {sample_dir}")
+        # Route through BaseScraper so a full run streams to data/records.jsonl;
+        # only --sample writes into sample/ (the old main() wrote every record
+        # of a full run into sample/, so the pipeline had nothing to ingest).
+        scraper._sample = sample
+        scraper.bootstrap(sample_mode=sample, sample_size=15)
+    elif command == "bootstrap-fast":
+        scraper.bootstrap_fast()
     else:
         print(f"Unknown command: {command}")
         sys.exit(1)

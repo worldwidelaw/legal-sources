@@ -41,6 +41,7 @@ import json
 import logging
 import re
 import html
+import time
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Optional, Dict, Any, List
@@ -121,6 +122,11 @@ class CassazioneCivileScraper(BaseScraper):
         Execute a Solr query and return the response.
 
         Returns dict with 'numFound', 'start', and 'docs' keys.
+
+        NOTE: Only used for cheap count probes (rows=1). Full corpus iteration
+        uses cursorMark paging via _iter_docs -- plain start/rows deep paging on
+        a non-unique sort ('pd') silently duplicated/skipped documents at depth,
+        which is what collapsed 336K fetched -> 29K ingested (#1102).
         """
         params = {
             "q": query,
@@ -147,6 +153,87 @@ class CassazioneCivileScraper(BaseScraper):
         except Exception as e:
             logger.error(f"Solr query failed: {e}")
             return {"numFound": 0, "start": 0, "docs": []}
+
+    def _cursor_page(self, query: str, cursor_mark: str,
+                     rows: int = PAGE_SIZE,
+                     sort: str = "pd desc,id asc") -> tuple:
+        """
+        Fetch one cursorMark page. Returns (response_dict, next_cursor_mark).
+
+        The sort MUST end in a unique tiebreaker ('id asc') for cursorMark to be
+        well-defined. Retries transient failures a few times before giving up so
+        a single blip does not truncate the whole corpus.
+        """
+        params = {
+            "q": query,
+            "rows": rows,
+            "wt": "json",
+            "fl": ",".join(SOLR_FIELDS),
+            "sort": sort,
+            "cursorMark": cursor_mark,
+        }
+        url = f"{BASE_URL}{SOLR_ENDPOINT}?{urlencode(params)}"
+
+        last_err = None
+        for attempt in range(4):
+            try:
+                self.rate_limiter.wait()
+                resp = self._session.get(url, timeout=60)
+                resp.raise_for_status()
+                data = resp.json()
+                return (
+                    data.get("response", {"numFound": 0, "docs": []}),
+                    data.get("nextCursorMark"),
+                )
+            except Exception as e:
+                last_err = e
+                logger.warning(
+                    f"Cursor page failed (attempt {attempt + 1}/4): {e}"
+                )
+                time.sleep(2 * (attempt + 1))
+        logger.error(f"Cursor page permanently failed: {last_err}")
+        return ({"numFound": 0, "docs": []}, None)
+
+    def _iter_docs(self, query: str) -> Generator[dict, None, None]:
+        """
+        Iterate every document matching `query` via stable cursorMark paging.
+
+        Skips records without usable OCR full text, and guards against any
+        residual duplicate ids so the downstream loader never has to dedup away
+        real data.
+        """
+        # Count probe for progress logging.
+        total = self._solr_query(query, start=0, rows=1).get("numFound", 0)
+        logger.info(f"Total documents for [{query}]: {total:,}")
+
+        cursor = "*"
+        seen_ids = set()
+        emitted = 0
+        while True:
+            response, next_cursor = self._cursor_page(query, cursor)
+            docs = response.get("docs", [])
+            if not docs:
+                break
+
+            for doc in docs:
+                ocr = self._get_list_value(doc.get("ocr", ""))
+                if not ocr or len(ocr) < 100:
+                    continue
+                doc_id = doc.get("id")
+                if not doc_id or doc_id in seen_ids:
+                    continue
+                seen_ids.add(doc_id)
+                emitted += 1
+                yield doc
+
+            if emitted and emitted % 500 < len(docs):
+                pct = f"{100 * len(seen_ids) / total:.1f}%" if total else "?"
+                logger.info(f"Progress: {emitted:,} emitted / {total:,} ({pct})")
+
+            # cursorMark terminates when the cursor stops advancing.
+            if not next_cursor or next_cursor == cursor:
+                break
+            cursor = next_cursor
 
     def _clean_text(self, text: str) -> str:
         """Clean and normalize OCR text."""
@@ -212,34 +299,7 @@ class CassazioneCivileScraper(BaseScraper):
             logger.info(f"Fetching {type_name} decisions (kind:{doc_type})...")
 
             query = f"kind:{doc_type}"
-
-            # Get total count
-            result = self._solr_query(query, start=0, rows=1)
-            total = result.get("numFound", 0)
-            logger.info(f"Total {type_name} documents: {total:,}")
-
-            # Paginate through results
-            start = 0
-            while start < total:
-                result = self._solr_query(query, start=start, rows=PAGE_SIZE)
-                docs = result.get("docs", [])
-
-                if not docs:
-                    logger.warning(f"No documents returned at offset {start}")
-                    break
-
-                for doc in docs:
-                    # Skip if no full text
-                    ocr = self._get_list_value(doc.get("ocr", ""))
-                    if not ocr or len(ocr) < 100:
-                        continue
-
-                    yield doc
-
-                start += len(docs)
-
-                if start % 500 == 0:
-                    logger.info(f"Progress: {start:,}/{total:,} ({100*start/total:.1f}%)")
+            yield from self._iter_docs(query)
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """
@@ -256,28 +316,7 @@ class CassazioneCivileScraper(BaseScraper):
 
             # Range query on deposit date
             query = f"kind:{doc_type} AND pd:[{since_str} TO {now_str}]"
-
-            # Get total count
-            result = self._solr_query(query, start=0, rows=1)
-            total = result.get("numFound", 0)
-            logger.info(f"Found {total:,} {type_name} updates")
-
-            # Paginate
-            start = 0
-            while start < total:
-                result = self._solr_query(query, start=start, rows=PAGE_SIZE)
-                docs = result.get("docs", [])
-
-                if not docs:
-                    break
-
-                for doc in docs:
-                    ocr = self._get_list_value(doc.get("ocr", ""))
-                    if not ocr or len(ocr) < 100:
-                        continue
-                    yield doc
-
-                start += len(docs)
+            yield from self._iter_docs(query)
 
     def normalize(self, raw: dict) -> dict:
         """
@@ -476,4 +515,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

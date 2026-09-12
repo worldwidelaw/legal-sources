@@ -1,0 +1,26 @@
+{
+  "_id": "FR/CADA/20164766",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-08-06T21:53:57.729879+00:00",
+  "opinion_id": "20164766",
+  "title": "Avis 20164766 - Mairie de Longjumeau",
+  "date": "2016-12-01",
+  "url": "https://www.data.gouv.fr/explore/cada/20164766",
+  "text": "Monsieur X a saisi la commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 07 octobre 2016, à la suite du refus opposé par le maire de Longjumeau à sa demande de communication d'une copie des documents suivants :\n1) les procès-verbaux des prestations de serments effectuées par tous les policiers municipaux de la commune devant le juge du tribunal de grande instance ;\n2) les arrêtés relatifs à ces agents.\n\nLa commission, qui a pris connaissance de la réponse de l'administration, estime que ces documents constituent des documents administratifs communicables à toute personne qui en fait la demande, en application de l'article L311-1 du code des relations entre le public et l'administration, sous réserve, s'agissant des documents visés au point 1), de l'occultation préalable des mentions protégées par le secret de la vie privée en application de l'article L311-6 du même code, à savoir la date et le lieu de naissance de l'agent ainsi que son adresse. \n\nElle émet donc, sous cette réserve, un avis favorable.",
+  "subject": "",
+  "administration": "Mairie de Longjumeau",
+  "meanings": [
+    "Favorable"
+  ],
+  "topics": [
+    "Travail Et Emploi",
+    "Emploi Public"
+  ],
+  "tags": [
+    "Territoriale",
+    "Carrière"
+  ],
+  "part": "III",
+  "type": "Avis"
+}

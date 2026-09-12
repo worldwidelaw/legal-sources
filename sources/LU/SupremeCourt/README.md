@@ -6,21 +6,25 @@ This source fetches case law decisions from the Luxembourg Court of Cassation (C
 
 ## Data Source
 
-- **Dataset**: [Cour de Cassation](https://data.public.lu/en/datasets/cour-de-cassation/)
+- **Dataset**: [Cour de Cassation](https://data.public.lu/en/datasets/cour-de-cassation-1/)
 - **Organization**: Administration judiciaire (AJUD)
-- **Format**: PDF documents (pseudonymized and accessible)
-- **Total Records**: ~2,346 decisions
-- **Coverage**: 1976 - present
+- **Format**: one ZIP archive per year, each holding born-digital decision PDFs (pseudonymized and accessible)
+- **Total Records**: ~2,500 decisions across 48 year archives (~440 MB)
+- **Coverage**: 1971 - present
 - **Update Frequency**: Weekly
 
 ## Data Access
 
 The source uses the data.public.lu API to:
-1. Fetch the list of PDF resources from the dataset
-2. Download individual PDF files
-3. Extract text using pdfplumber
+1. Resolve the dataset (slug `cour-de-cassation-1`, with a portal-search fallback
+   so a future rename does not 404 the whole crawl — see GH-1268)
+2. Stream each yearly ZIP archive to a temp file
+3. Extract text from every PDF member in memory via `common.pdf_extract`
 
-API endpoint: `https://data.public.lu/api/1/datasets/cour-de-cassation/`
+API endpoint: `https://data.public.lu/api/1/datasets/cour-de-cassation-1/`
+
+Completed years are checkpointed to `data/checkpoint.json`, so a restarted run
+resumes rather than re-appending records it already wrote.
 
 ## Schema
 

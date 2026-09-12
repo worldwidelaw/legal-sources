@@ -44,6 +44,7 @@ Usage:
   python bootstrap.py test               # Quick connectivity test
 """
 
+import os
 import re
 import sys
 import html
@@ -51,6 +52,7 @@ import logging
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Optional, Dict, Any, List
+from urllib.parse import quote
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -71,6 +73,26 @@ logger = logging.getLogger("legal-data-hunter.FR.ACPR-Sanctions")
 
 BASE_URL = "https://acpr.banque-france.fr"
 RECUEIL_PATH = "/fr/reglementation/recueil-des-sanctions"
+
+# acpr.banque-france.fr refuses datacenter IPs (Hetzner/fleet vantages get
+# connection resets / 403s while residential FR/EU vantages get 200s — issue
+# #1244).  Every page and every /system/files/ decision PDF is mirrored by the
+# Internet Archive, so each fetch falls back to the archived copy.
+#
+# We cannot just replay /web/3000id_/ (= "latest capture"): the ACPR site now
+# 403s the Internet Archive's own crawler too, so the most recent snapshot of a
+# page is often an archived 403 body.  Ask CDX for the capture list instead and
+# replay the newest snapshot that actually succeeded.  Revisit records carry
+# statuscode "-" (identical content already stored under an earlier digest) and
+# replay fine, so they count as good — filtering CDX on statuscode:200 would
+# silently discard half the usable captures.
+WAYBACK_CDX = ("https://web.archive.org/cdx/search/cdx"
+               "?url={url}&output=json&limit=-8")
+WAYBACK_REPLAY = "https://web.archive.org/web/{ts}id_/{url}"
+_ARCHIVE_BAD_STATUS = {"403", "404", "429", "500", "502", "503", "504"}
+# Number of consecutive live failures (with zero live successes) after which we
+# stop attempting the live host altogether and read only from the archive.
+LIVE_FAIL_LATCH = 3
 
 TAG_RE = re.compile(r"<[^>]+>")
 
@@ -198,35 +220,114 @@ class ACPRSanctionsScraper(BaseScraper):
             },
             timeout=90,
         )
+        # Wayback needs its own client: a different host, no retry storm, and a
+        # longer timeout (archive replay of a large PDF can be slow).
+        self.archive_client = HttpClient(
+            base_url="https://web.archive.org",
+            headers={
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                              "AppleWebKit/537.36 (KHTML, like Gecko) "
+                              "Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "*/*",
+            },
+            max_retries=2,
+            timeout=180,
+            respect_robots=False,
+        )
+        self._live_ok = 0
+        self._live_fail = 0
+        # ACPR_FORCE_ARCHIVE=1 skips the live host entirely — used to exercise
+        # the archive path from an unblocked vantage.
+        self._archive_only = os.environ.get("ACPR_FORCE_ARCHIVE") == "1"
 
     # -- HTTP helpers ----------------------------------------------------
-    def _get_html(self, url: str) -> Optional[str]:
+    def _skip_live(self) -> bool:
+        """True once the live host has failed LIVE_FAIL_LATCH times in a row
+        without a single success — i.e. this vantage is IP-blocked, so stop
+        burning ~90s per request on it and read only from the archive."""
+        if self._archive_only:
+            return True
+        if self._live_ok == 0 and self._live_fail >= LIVE_FAIL_LATCH:
+            logger.warning(
+                f"{self._live_fail} consecutive live failures and 0 successes "
+                "— acpr.banque-france.fr is blocking this vantage; switching to "
+                "Internet Archive replay for the rest of the run"
+            )
+            self._archive_only = True
+            return True
+        return False
+
+    def _get_live(self, url: str) -> Optional[bytes]:
+        if self._skip_live():
+            return None
         self.rate_limiter.wait()
         try:
             resp = self.client.get(url)
         except Exception as e:
-            logger.warning(f"GET {url} failed: {e}")
+            self._live_fail += 1
+            logger.warning(f"live GET {url} failed: {e}")
             return None
         if resp.status_code != 200:
-            logger.debug(f"GET {url}: HTTP {resp.status_code}")
+            self._live_fail += 1
+            logger.debug(f"live GET {url}: HTTP {resp.status_code}")
             return None
-        return resp.content.decode("utf-8", "replace")
+        self._live_ok += 1
+        self._live_fail = 0
+        return resp.content
+
+    def _archive_timestamps(self, url: str) -> List[str]:
+        """Timestamps of the newest usable captures of `url`, newest first."""
+        cdx = WAYBACK_CDX.format(url=quote(url, safe=""))
+        self.rate_limiter.wait()
+        try:
+            resp = self.archive_client.get(cdx)
+            rows = resp.json() if resp.status_code == 200 else []
+        except Exception as e:
+            logger.warning(f"wayback cdx {url}: {e}")
+            return []
+        if not rows or len(rows) < 2:
+            return []
+        header, data = rows[0], rows[1:]
+        try:
+            ts_i, st_i = header.index("timestamp"), header.index("statuscode")
+        except ValueError:
+            return []
+        good = [r[ts_i] for r in data if r[st_i] not in _ARCHIVE_BAD_STATUS]
+        return list(reversed(good))
+
+    def _get_archived(self, url: str) -> Optional[bytes]:
+        """Raw bytes of the newest Internet Archive capture of `url` that is
+        not itself an archived error page."""
+        for ts in self._archive_timestamps(url)[:3]:
+            self.rate_limiter.wait()
+            try:
+                resp = self.archive_client.get(
+                    WAYBACK_REPLAY.format(ts=ts, url=url))
+            except Exception as e:
+                logger.warning(f"wayback {ts} {url}: {e}")
+                continue
+            if resp.status_code == 200 and resp.content:
+                return resp.content
+            logger.debug(f"wayback {ts} {url}: HTTP {resp.status_code}")
+        logger.warning(f"wayback {url}: no usable capture")
+        return None
+
+    def _get_html(self, url: str) -> Optional[str]:
+        data = self._get_live(url)
+        if data is None:
+            data = self._get_archived(url)
+        if data is None:
+            return None
+        return data.decode("utf-8", "replace")
 
     def _fetch_pdf(self, url: str) -> Optional[bytes]:
-        self.rate_limiter.wait()
-        try:
-            resp = self.client.get(url)
-        except Exception as e:
-            logger.warning(f"pdf {url}: {e}")
-            return None
-        if resp.status_code != 200:
-            logger.warning(f"pdf {url}: HTTP {resp.status_code}")
-            return None
-        data = resp.content
-        if not data[:5].startswith(b"%PDF"):
-            logger.debug(f"pdf {url}: not a PDF")
-            return None
-        return data
+        data = self._get_live(url)
+        if not (data and data.startswith(b"%PDF")):
+            data = self._get_archived(url)
+        if data and data.startswith(b"%PDF"):
+            return data
+        logger.warning(f"pdf {url}: no PDF bytes from live host or archive")
+        return None
 
     # -- listing ---------------------------------------------------------
     def _list_decision_pages(self) -> List[str]:
@@ -294,7 +395,8 @@ class ACPRSanctionsScraper(BaseScraper):
         if not pages:
             raise RuntimeError(
                 "ACPR recueil-des-sanctions listing returned 0 decision links "
-                "— site blocked or layout changed"
+                "from both the live site and the Internet Archive "
+                "— layout changed or the archive replay is down"
             )
         produced = 0
         for pub_url in pages:
@@ -307,18 +409,15 @@ class ACPRSanctionsScraper(BaseScraper):
                 "ACPR: found decision pages but extracted 0 full-text PDFs "
                 "— download blocked or PDFs unreadable"
             )
-        # Fail loud on a suspiciously partial yield: the recueil listing is
-        # reachable (we got the decision links) but most /system/files/ PDF
-        # downloads silently failed — the hallmark of a datacenter-IP block on
-        # the PDF host (Hetzner/fleet). Raising here prevents the pipeline from
-        # ingesting a small partial corpus as a false "complete". From a
-        # residential vantage all ~109 decisions extract, so this never
-        # false-triggers there.
+        # Fail loud on a suspiciously partial yield: we got the decision links
+        # but most decision PDFs came back empty from BOTH the live host and the
+        # archive. Raising here prevents the pipeline from ingesting a small
+        # partial corpus as a false "complete".
         if produced < 0.6 * len(pages):
             raise RuntimeError(
                 f"ACPR: only {produced} of {len(pages)} decision PDFs extracted "
-                "— most /system/files/ downloads failed, likely a datacenter-IP "
-                "block on acpr.banque-france.fr; needs a residential/EU vantage"
+                "— live /system/files/ downloads failed and the Internet Archive "
+                "has no usable capture for the remainder"
             )
 
     def fetch_updates(self, since: datetime) -> Generator[Dict[str, Any], None, None]:
@@ -372,7 +471,8 @@ class ACPRSanctionsScraper(BaseScraper):
 
     # -- diagnostics -----------------------------------------------------
     def test_connection(self):
-        print("Testing ACPR recueil-des-sanctions listing...")
+        vantage = "Internet Archive (forced)" if self._archive_only else "live"
+        print(f"Testing ACPR recueil-des-sanctions listing ({vantage})...")
         pages = self._list_decision_pages()
         print(f"  decision pages found: {len(pages)}")
         if not pages:

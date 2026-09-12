@@ -18,7 +18,25 @@ api:
   detail_endpoint: /judgments/{id}
   court_type: CONSTITUTIONAL_TRIBUNAL
   page_size: 100
-  max_pages: 100
+  max_pages: 2000  # safety ceiling only; pagination stops on info.totalResults
+  # Do NOT send sortingField: JUDGMENT_DATE ordering makes the SAOS search
+  # endpoint take 15-75s+ per page (and frequently time out), against ~2-4s for
+  # the default DATABASE_ID ordering. See issue #1468.
+  sorting_field: null
+
+# Second fetch path: the Tribunal's own portal, covering everything SAOS never
+# ingested (its Constitutional Tribunal corpus is frozen at 2015-12-09).
+# See issue #1469.
+ipo:
+  base_url: https://ipo.trybunal.gov.pl/ipo
+  listing_endpoint: /SzukajDrukuj   # print view of the default search, ?cid=1&page=N
+  detail_endpoint: /Sprawa          # ?cid=1&dokument={id}[&sprawa={id}]
+  cutoff_date: "2016-01-01"         # SAOS owns everything before this
+  page_size: 25                     # fixed by the portal
+  max_pages: 400                    # safety ceiling; ~135 pages covered 1997-2026
+  # The host answers over HTTP/2 ONLY -- an HTTP/1.1 request hangs unanswered, so
+  # requests/urllib3 cannot reach it. Fetched via curl --http2.
+  transport: curl-http2
 
 schema:
   key_fields:

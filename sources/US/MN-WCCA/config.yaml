@@ -1,0 +1,72 @@
+source:
+  id: US/MN-WCCA
+  name: Minnesota Workers' Compensation Court of Appeals — Decisions
+  country: US
+  url: https://mn.gov/workcomp/
+  auth: none
+  data_types:
+  - case_law
+  description: >
+    Published decisions of the Minnesota Workers' Compensation Court of Appeals
+    (Minn. Stat. s. 175A), a standing appellate court of record that reviews
+    compensation-judge decisions and is itself reviewable only by the Minnesota
+    Supreme Court on certiorari, together with the Supreme Court's workers'
+    compensation opinions (the `sup/` series). ~3,600 unique decisions,
+    1988-present, served as static XHTML (plus redacted PDFs for 1988-2001) and
+    enumerated from the site's own recursive directory index
+    /workcomp-stat/.doclist.html.
+license:
+  name: Public domain — 17 U.S.C. § 105
+  url: https://www.law.cornell.edu/uscode/text/17/105
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: US state government edict; judicial opinions are not subject to copyright.
+fetch:
+  rate_limit_delay: 1
+  sample_size: 15
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: docket_number
+    required: false
+    type: string
+  - name: parties
+    required: false
+    type: string
+  - name: summary
+    required: false
+    type: string
+  - name: headnote
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string
+  - name: year
+    required: false
+    type: integer
+  - name: source_format
+    required: false
+    type: string

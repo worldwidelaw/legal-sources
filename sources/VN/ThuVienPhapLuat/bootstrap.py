@@ -2,200 +2,250 @@
 """
 Vietnamese Legal Library (Thu Vien Phap Luat) Data Fetcher
 
-518,255 Vietnamese legal documents from thuvienphapluat.vn, accessed via
+Vietnamese legal documents from thuvienphapluat.vn, accessed via the
 HuggingFace dataset th1nhng0/vietnamese-legal-documents (CC-BY-4.0).
 
-Two configs: 'metadata' (id, title, url, legal_type, etc.) and
-'content' (id, full text). Joined by integer id field.
+Dataset layout (as republished by the maintainer):
+  - config 'metadata' / split 'data'  -> 171,556 rows, Vietnamese column names,
+    string ids (some non-numeric, e.g. 'vbpqta_2709')
+  - config 'content'  / split 'data'  -> 170,824 rows, columns (id, content_html)
+  - configs 'legacy_metadata' / 'legacy_content' are the pre-restructure dumps;
+    legacy_content currently 500s server-side, so we do not use them.
+
+Metadata and content are joined on the string `id`.
 """
 
+import argparse
+import html as html_lib
 import json
 import logging
 import os
+import re
 import sqlite3
-import subprocess
 import sys
 import tempfile
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Iterator, Optional, List
+from typing import Dict, Any, Iterator, List, Optional
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 DATASET = "th1nhng0/vietnamese-legal-documents"
 HF_ROWS_API = "https://datasets-server.huggingface.co/rows"
-HF_BASE = "https://huggingface.co/datasets"
+HF_FILTER_API = "https://datasets-server.huggingface.co/filter"
+DATASET_URL = f"https://huggingface.co/datasets/{DATASET}"
+SEARCH_URL = "https://thuvienphapluat.vn/page/tim-van-ban.aspx?keyword="
+
+MIN_TEXT_LEN = 100
+
+# Vietnamese metadata column -> normalized field name
+META_FIELDS = {
+    'title': 'title',
+    'so_ky_hieu': 'document_number',
+    'ngay_ban_hanh': 'issuance_date',
+    'loai_van_ban': 'legal_type',
+    'ngay_co_hieu_luc': 'effect_date',
+    'ngay_het_hieu_luc': 'effectless_date',
+    'nganh': 'legal_sectors',
+    'linh_vuc': 'legal_field',
+    'co_quan_ban_hanh': 'issuing_authority',
+    'chuc_danh': 'signer_title',
+    'nguoi_ky': 'signers',
+    'pham_vi': 'scope',
+    'tinh_trang_hieu_luc': 'effect_status',
+}
+META_COLUMNS = list(META_FIELDS.values())
+
+_SCRIPT_RE = re.compile(r'<(script|style|head)\b[^>]*>.*?</\1>', re.I | re.S)
+_BLOCK_RE = re.compile(r'</?(p|div|br|tr|li|h[1-6]|table|section)\b[^>]*>', re.I)
+_TAG_RE = re.compile(r'<[^>]+>')
+_WS_RE = re.compile(r'[ \t ]+')
+_NL_RE = re.compile(r'\n{3,}')
+
+
+def html_to_text(raw: Optional[str]) -> str:
+    """Strip HTML markup to readable plain text (no external dependencies)."""
+    if not raw:
+        return ''
+    text = _SCRIPT_RE.sub(' ', raw)
+    text = _BLOCK_RE.sub('\n', text)
+    text = _TAG_RE.sub(' ', text)
+    text = html_lib.unescape(text)
+    text = text.replace(' ', ' ').replace('\r', '')
+    text = _WS_RE.sub(' ', text)
+    text = '\n'.join(line.strip() for line in text.split('\n'))
+    text = _NL_RE.sub('\n\n', text)
+    return text.strip()
+
+
+def _s(value: Any) -> str:
+    """Coerce any dataset value to a plain string safe for SQLite TEXT binding."""
+    if value is None:
+        return ''
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (list, tuple)):
+        return '; '.join(_s(v) for v in value if v is not None)
+    if isinstance(value, dict):
+        return json.dumps(value, ensure_ascii=False)
+    return str(value)
+
+
+def _http_json(url: str, timeout: int = 120, retries: int = 4) -> Dict[str, Any]:
+    """GET a JSON document with retry/backoff on throttling and transient errors."""
+    req = urllib.request.Request(url, headers={'User-Agent': 'LegalDataHunter/1.0'})
+    last_err = None
+    for attempt in range(retries):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                return json.loads(resp.read().decode('utf-8'))
+        except urllib.error.HTTPError as e:
+            last_err = e
+            if e.code in (429, 500, 502, 503, 504):
+                wait = 5 * (attempt + 1)
+                logger.warning(f"HTTP {e.code} from HF API, retrying in {wait}s")
+                time.sleep(wait)
+                continue
+            raise
+        except Exception as e:  # timeouts, connection resets
+            last_err = e
+            time.sleep(3 * (attempt + 1))
+    raise RuntimeError(f"HF API request failed after {retries} attempts: {last_err}")
 
 
 def hf_fetch_rows(config: str, split: str = "data", offset: int = 0,
                   length: int = 100) -> List[Dict[str, Any]]:
-    """Fetch rows from HuggingFace datasets-server API."""
+    """Fetch rows from the HuggingFace datasets-server API."""
     params = {
-        'dataset': DATASET,
-        'config': config,
-        'split': split,
-        'offset': str(offset),
-        'length': str(length),
+        'dataset': DATASET, 'config': config, 'split': split,
+        'offset': str(offset), 'length': str(length),
     }
-    url = HF_ROWS_API + '?' + urllib.parse.urlencode(params)
-    req = urllib.request.Request(url, headers={
-        'User-Agent': 'LegalDataHunter/1.0',
-    })
-    try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            data = json.loads(resp.read().decode('utf-8'))
-        if 'error' in data:
-            logger.warning(f"HF API error: {data['error'][:200]}")
-            return []
-        return [r['row'] for r in data.get('rows', [])]
-    except Exception as e:
-        logger.error(f"HF API request failed: {e}")
+    data = _http_json(HF_ROWS_API + '?' + urllib.parse.urlencode(params))
+    if 'error' in data:
+        logger.warning(f"HF API error: {str(data['error'])[:200]}")
         return []
+    return [r['row'] for r in data.get('rows', [])]
+
+
+def hf_filter_rows(config: str, where: str, split: str = "data",
+                   length: int = 10) -> List[Dict[str, Any]]:
+    """Fetch rows matching a SQL-ish WHERE clause via the datasets-server filter API."""
+    params = {
+        'dataset': DATASET, 'config': config, 'split': split,
+        'where': where, 'offset': '0', 'length': str(length),
+    }
+    data = _http_json(HF_FILTER_API + '?' + urllib.parse.urlencode(params))
+    if 'error' in data:
+        logger.warning(f"HF filter error: {str(data['error'])[:200]}")
+        return []
+    return [r['row'] for r in data.get('rows', [])]
 
 
 class ThuVienPhapLuatFetcher:
-    """Fetcher for Vietnamese legislation via HuggingFace dataset."""
+    """Fetcher for Vietnamese legislation via the HuggingFace dataset."""
 
     def __init__(self):
         self.delay = 1.0
 
-    def fetch_metadata_batch(self, offset: int = 0, length: int = 100) -> List[Dict]:
-        """Fetch a batch of metadata records."""
-        return hf_fetch_rows('metadata', offset=offset, length=length)
+    # ------------------------------------------------------------------ #
+    # Sampling                                                            #
+    # ------------------------------------------------------------------ #
 
-    def fetch_content_batch(self, offset: int = 0, length: int = 100) -> List[Dict]:
-        """Fetch a batch of content records.
+    def fetch_joined_batch(self, offset: int = 0, length: int = 20) -> List[Dict[str, Any]]:
+        """Fetch a batch of content rows and join each with its metadata row.
 
-        Note: The content config has large row groups in early shards.
-        Offsets >= 500000 (shard 10) work reliably via the rows API.
-        For full fetch, use datasets library streaming instead.
+        The two configs are NOT row-aligned (content offset 0 starts at id
+        132934, metadata offset 0 at id 8733), so metadata is looked up per id
+        through the datasets-server filter endpoint.
         """
-        return hf_fetch_rows('content', offset=offset, length=length)
-
-    def fetch_joined_batch(self, offset: int = 0, length: int = 15) -> List[Dict]:
-        """Fetch metadata and content, join by id.
-
-        For sampling: metadata is fetchable at any offset, content only from
-        offset >= 500000 via rows API. We fetch both at a matching offset.
-        """
-        # Content API works from offset 500000+ (smaller shard)
-        content_offset = max(offset, 500000)
-
-        content_rows = self.fetch_content_batch(offset=content_offset, length=length)
+        content_rows = hf_fetch_rows('content', offset=offset, length=length)
         if not content_rows:
-            logger.error("Failed to fetch content")
+            logger.error("Failed to fetch content rows")
             return []
 
-        content_by_id = {r['id']: r['content'] for r in content_rows}
-        content_ids = list(content_by_id.keys())
-
-        # Now fetch metadata for these same IDs
-        # The metadata and content are in the same order, so same offset works
-        meta_rows = self.fetch_metadata_batch(offset=content_offset, length=length)
-        meta_by_id = {r['id']: r for r in meta_rows}
-
         joined = []
-        for cid in content_ids:
-            meta = meta_by_id.get(cid, {})
-            text = content_by_id[cid]
-            if not text or len(text) < 50:
+        for row in content_rows:
+            doc_id = _s(row.get('id'))
+            text = html_to_text(row.get('content_html'))
+            if not doc_id or len(text) < MIN_TEXT_LEN:
                 continue
-            joined.append({
-                'id': cid,
-                'title': meta.get('title', ''),
-                'text': text,
-                'document_number': meta.get('document_number', ''),
-                'url': meta.get('url', ''),
-                'legal_type': meta.get('legal_type', ''),
-                'legal_sectors': meta.get('legal_sectors', ''),
-                'issuing_authority': meta.get('issuing_authority', ''),
-                'issuance_date': meta.get('issuance_date', ''),
-                'signers': meta.get('signers', ''),
-            })
-
+            meta_rows = hf_filter_rows('metadata', where=f'"id"=\'{doc_id}\'', length=1)
+            meta = meta_rows[0] if meta_rows else {}
+            joined.append(self._build(doc_id, text, meta))
+            time.sleep(self.delay)
         return joined
 
-    def fetch_all(self) -> Iterator[Dict[str, Any]]:
-        """Fetch all documents using datasets library streaming.
+    @staticmethod
+    def _build(doc_id: str, text: str, meta: Dict[str, Any]) -> Dict[str, Any]:
+        doc = {'id': doc_id, 'text': text}
+        for src, dst in META_FIELDS.items():
+            doc[dst] = _s(meta.get(src))
+        return doc
 
-        Uses SQLite temp file for metadata cache to avoid OOM on low-memory VPS.
+    # ------------------------------------------------------------------ #
+    # Full corpus                                                         #
+    # ------------------------------------------------------------------ #
+
+    def fetch_all(self) -> Iterator[Dict[str, Any]]:
+        """Stream the whole corpus.
+
+        Metadata is cached in an on-disk SQLite table (all columns TEXT — dataset
+        ids are strings and some are non-numeric, e.g. 'vbpqta_2709') so the
+        content stream can be joined without holding 170K rows in memory.
         """
         try:
             from datasets import load_dataset
         except ImportError:
-            logger.error("datasets library required for full fetch. pip install datasets")
+            logger.warning("datasets library unavailable; falling back to the rows API")
+            yield from self._fetch_all_via_api()
             return
 
-        # Use SQLite on disk instead of in-memory dict to avoid OOM
         db_path = os.path.join(tempfile.gettempdir(), 'vn_tvpl_meta.db')
         db = sqlite3.connect(db_path)
         db.execute('PRAGMA journal_mode=WAL')
-        db.execute('''CREATE TABLE IF NOT EXISTS meta (
-            id INTEGER PRIMARY KEY,
-            title TEXT, document_number TEXT, url TEXT,
-            legal_type TEXT, legal_sectors TEXT,
-            issuing_authority TEXT, issuance_date TEXT, signers TEXT
-        )''')
+        columns = ', '.join(f'{c} TEXT' for c in META_COLUMNS)
+        db.execute(f'CREATE TABLE IF NOT EXISTS meta (id TEXT PRIMARY KEY, {columns})')
         db.execute('DELETE FROM meta')
         db.commit()
 
+        placeholders = ','.join('?' * (len(META_COLUMNS) + 1))
+        insert_sql = f'INSERT OR REPLACE INTO meta VALUES ({placeholders})'
+        select_sql = f'SELECT {", ".join(META_COLUMNS)} FROM meta WHERE id=?'
+
         logger.info("Streaming metadata into SQLite cache...")
         meta_ds = load_dataset(DATASET, 'metadata', split='data', streaming=True)
-        batch = []
-        meta_count = 0
+        batch, meta_count = [], 0
         for row in meta_ds:
-            batch.append((
-                row['id'], row.get('title', ''), row.get('document_number', ''),
-                row.get('url', ''), row.get('legal_type', ''),
-                row.get('legal_sectors', ''), row.get('issuing_authority', ''),
-                row.get('issuance_date', ''), row.get('signers', ''),
-            ))
+            batch.append(tuple([_s(row.get('id'))] + [_s(row.get(c)) for c in META_FIELDS]))
             if len(batch) >= 5000:
-                db.executemany('INSERT OR REPLACE INTO meta VALUES (?,?,?,?,?,?,?,?,?)', batch)
+                db.executemany(insert_sql, batch)
                 db.commit()
                 meta_count += len(batch)
                 batch = []
-                if meta_count % 100000 == 0:
+                if meta_count % 50000 == 0:
                     logger.info(f"Cached {meta_count} metadata records...")
         if batch:
-            db.executemany('INSERT OR REPLACE INTO meta VALUES (?,?,?,?,?,?,?,?,?)', batch)
+            db.executemany(insert_sql, batch)
             db.commit()
             meta_count += len(batch)
-
         logger.info(f"Cached {meta_count} metadata records in SQLite")
-        logger.info("Streaming content...")
 
+        logger.info("Streaming content...")
         content_ds = load_dataset(DATASET, 'content', split='data', streaming=True)
         count = 0
         for row in content_ds:
-            doc_id = row['id']
-            text = row.get('content', '')
-            if not text or len(text) < 50:
+            doc_id = _s(row.get('id'))
+            text = html_to_text(row.get('content_html'))
+            if not doc_id or len(text) < MIN_TEXT_LEN:
                 continue
-
-            cur = db.execute('SELECT title, document_number, url, legal_type, legal_sectors, issuing_authority, issuance_date, signers FROM meta WHERE id=?', (doc_id,))
-            meta_row = cur.fetchone()
-            if meta_row:
-                title, doc_num, url, ltype, lsectors, authority, idate, signers = meta_row
-            else:
-                title = doc_num = url = ltype = lsectors = authority = idate = signers = ''
-
-            yield {
-                'id': doc_id,
-                'title': title,
-                'text': text,
-                'document_number': doc_num,
-                'url': url,
-                'legal_type': ltype,
-                'legal_sectors': lsectors,
-                'issuing_authority': authority,
-                'issuance_date': idate,
-                'signers': signers,
-            }
+            meta_row = db.execute(select_sql, (doc_id,)).fetchone()
+            meta = dict(zip(META_FIELDS.keys(), meta_row)) if meta_row else {}
+            yield self._build(doc_id, text, meta)
             count += 1
             if count % 10000 == 0:
                 logger.info(f"Processed {count} documents...")
@@ -207,84 +257,141 @@ class ThuVienPhapLuatFetcher:
             pass
         logger.info(f"Fetched {count} documents total")
 
-    def fetch_updates(self, since: datetime) -> Iterator[Dict[str, Any]]:
-        """Fetch documents published since a given date.
+    def _fetch_all_via_api(self, page: int = 100) -> Iterator[Dict[str, Any]]:
+        """Fallback full fetch: page both configs through the rows API."""
+        logger.info("Building metadata index from the rows API...")
+        meta_index: Dict[str, Dict[str, Any]] = {}
+        offset = 0
+        while True:
+            rows = hf_fetch_rows('metadata', offset=offset, length=page)
+            if not rows:
+                break
+            for row in rows:
+                meta_index[_s(row.get('id'))] = row
+            offset += len(rows)
+            if len(rows) < page:
+                break
+        logger.info(f"Indexed {len(meta_index)} metadata records")
 
-        Filters by issuance_date from the full dataset stream.
-        """
+        offset, count = 0, 0
+        while True:
+            rows = hf_fetch_rows('content', offset=offset, length=page)
+            if not rows:
+                break
+            for row in rows:
+                doc_id = _s(row.get('id'))
+                text = html_to_text(row.get('content_html'))
+                if not doc_id or len(text) < MIN_TEXT_LEN:
+                    continue
+                yield self._build(doc_id, text, meta_index.get(doc_id, {}))
+                count += 1
+            offset += len(rows)
+            if len(rows) < page:
+                break
+            if count % 10000 < page:
+                logger.info(f"Processed {count} documents...")
+        logger.info(f"Fetched {count} documents total")
+
+    def fetch_updates(self, since: datetime) -> Iterator[Dict[str, Any]]:
+        """Fetch documents issued since a given date."""
         since_str = since.strftime('%Y-%m-%d')
         for doc in self.fetch_all():
-            date = doc.get('issuance_date', '')
-            if date and date >= since_str:
+            if parse_date(doc.get('issuance_date', '')) >= since_str:
                 yield doc
 
-    def normalize(self, raw_doc: Dict[str, Any]) -> Dict[str, Any]:
-        """Normalize document to standard schema."""
-        # Parse date to ISO format
-        date = raw_doc.get('issuance_date', '')
-        if date:
-            # Try dd/mm/yyyy format
-            for fmt in ('%d/%m/%Y', '%Y-%m-%d', '%d-%m-%Y'):
-                try:
-                    dt = datetime.strptime(date, fmt)
-                    date = dt.strftime('%Y-%m-%d')
-                    break
-                except ValueError:
-                    continue
+    # ------------------------------------------------------------------ #
 
+    def normalize(self, raw_doc: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize a document to the standard schema."""
+        doc_number = raw_doc.get('document_number', '')
+        url = SEARCH_URL + urllib.parse.quote(doc_number) if doc_number else DATASET_URL
         return {
-            '_id': str(raw_doc.get('id', '')),
+            '_id': _s(raw_doc.get('id')),
             '_source': 'VN/ThuVienPhapLuat',
             '_type': 'legislation',
             '_fetched_at': datetime.now().isoformat(),
             'title': raw_doc.get('title', ''),
             'text': raw_doc.get('text', ''),
-            'date': date,
-            'document_number': raw_doc.get('document_number', ''),
+            'date': parse_date(raw_doc.get('issuance_date', '')),
+            'document_number': doc_number,
             'legal_type': raw_doc.get('legal_type', ''),
             'legal_sectors': raw_doc.get('legal_sectors', ''),
+            'legal_field': raw_doc.get('legal_field', ''),
             'issuing_authority': raw_doc.get('issuing_authority', ''),
             'signers': raw_doc.get('signers', ''),
-            'url': raw_doc.get('url', ''),
+            'signer_title': raw_doc.get('signer_title', ''),
+            'scope': raw_doc.get('scope', ''),
+            'effect_date': parse_date(raw_doc.get('effect_date', '')),
+            'effectless_date': parse_date(raw_doc.get('effectless_date', '')),
+            'effect_status': raw_doc.get('effect_status', ''),
+            'url': url,
         }
 
 
-def bootstrap_sample():
-    """Fetch a sample of documents for testing."""
+def parse_date(value: Optional[str]) -> str:
+    """Normalize a dataset date (dd/mm/yyyy or ISO) to ISO 8601, else ''."""
+    value = _s(value).strip()
+    if not value:
+        return ''
+    for fmt in ('%d/%m/%Y', '%Y-%m-%d', '%d-%m-%Y', '%Y-%m-%dT%H:%M:%S'):
+        try:
+            return datetime.strptime(value, fmt).strftime('%Y-%m-%d')
+        except ValueError:
+            continue
+    return ''
+
+
+def bootstrap_sample(sample_size: int = 15):
+    """Fetch a sample of documents for validation."""
     sample_dir = Path(__file__).parent / 'sample'
     sample_dir.mkdir(exist_ok=True)
-
-    # Clear old samples
     for f in sample_dir.glob('*.json'):
         f.unlink()
 
     fetcher = ThuVienPhapLuatFetcher()
+    logger.info("Fetching sample from the HuggingFace dataset...")
 
-    logger.info("Fetching sample from HuggingFace dataset...")
-    docs = fetcher.fetch_joined_batch(offset=500000, length=20)
+    count = 0
+    offset = 0
+    while count < sample_size and offset < 200:
+        for doc in fetcher.fetch_joined_batch(offset=offset, length=sample_size + 5):
+            if count >= sample_size:
+                break
+            normalized = fetcher.normalize(doc)
+            if len(normalized['text']) < MIN_TEXT_LEN:
+                continue
+            out_path = sample_dir / f"{normalized['_id']}.json"
+            with open(out_path, 'w', encoding='utf-8') as f:
+                json.dump(normalized, f, ensure_ascii=False, indent=2)
+            count += 1
+            logger.info(f"[{count}/{sample_size}] Saved {out_path.name} "
+                        f"({len(normalized['text'])} chars)")
+        offset += sample_size + 5
 
-    if not docs:
+    if not count:
         logger.error("Failed to fetch any documents")
         sys.exit(1)
 
-    count = 0
-    for doc in docs:
-        if count >= 15:
-            break
-
-        normalized = fetcher.normalize(doc)
-        if not normalized.get('text') or len(normalized['text']) < 100:
-            continue
-
-        out_path = sample_dir / f"{normalized['_id']}.json"
-        with open(out_path, 'w', encoding='utf-8') as f:
-            json.dump(normalized, f, ensure_ascii=False, indent=2)
-
-        count += 1
-        logger.info(f"[{count}/15] Saved {out_path.name} ({len(normalized['text'])} chars)")
-
     logger.info(f"\nSample complete: {count} documents saved to {sample_dir}/")
     validate_sample(sample_dir)
+
+
+def bootstrap_full():
+    """Stream the full corpus to data/records.jsonl (used by the fleet runner)."""
+    out_dir = Path(__file__).parent / 'data'
+    out_dir.mkdir(exist_ok=True)
+    out_path = out_dir / 'records.jsonl'
+
+    fetcher = ThuVienPhapLuatFetcher()
+    written = 0
+    with open(out_path, 'w', encoding='utf-8') as fh:
+        for doc in fetcher.fetch_all():
+            normalized = fetcher.normalize(doc)
+            if len(normalized['text']) < MIN_TEXT_LEN:
+                continue
+            fh.write(json.dumps(normalized, ensure_ascii=False) + '\n')
+            written += 1
+    logger.info(f"bootstrap_fast complete: {written} written -> {out_path}")
 
 
 def validate_sample(sample_dir: Path):
@@ -295,9 +402,7 @@ def validate_sample(sample_dir: Path):
         return
 
     total = len(files)
-    has_text = 0
-    has_title = 0
-    has_date = 0
+    has_text = has_title = has_date = 0
     text_lengths = []
 
     for f in files:
@@ -311,14 +416,14 @@ def validate_sample(sample_dir: Path):
         if doc.get('date'):
             has_date += 1
 
-    logger.info(f"\n=== VALIDATION SUMMARY ===")
+    logger.info("\n=== VALIDATION SUMMARY ===")
     logger.info(f"Total samples: {total}")
     logger.info(f"With full text: {has_text}/{total}")
     logger.info(f"With title: {has_title}/{total}")
     logger.info(f"With date: {has_date}/{total}")
     if text_lengths:
-        avg_len = sum(text_lengths) // len(text_lengths)
-        logger.info(f"Text length: min={min(text_lengths)}, avg={avg_len}, max={max(text_lengths)}")
+        logger.info(f"Text length: min={min(text_lengths)}, "
+                    f"avg={sum(text_lengths) // len(text_lengths)}, max={max(text_lengths)}")
 
     if has_text < total:
         logger.warning(f"WARNING: {total - has_text} documents missing full text!")
@@ -328,21 +433,20 @@ def validate_sample(sample_dir: Path):
         logger.warning(f"FAIL: Need 10+ docs with text, got {has_text}")
 
 
-if __name__ == '__main__':
-    import argparse
+def main():
     parser = argparse.ArgumentParser(description='Vietnamese Legal Library Fetcher')
-    parser.add_argument('command', choices=['bootstrap', 'validate'],
-                        help='Command to run')
-    parser.add_argument('--sample', action='store_true',
-                        help='Fetch sample data only')
-    parser.add_argument("--full", action="store_true", help="Fetch all records")
+    parser.add_argument('command', choices=['bootstrap', 'bootstrap-fast', 'update', 'validate'])
+    parser.add_argument('--sample', action='store_true', help='Fetch sample data only')
+    parser.add_argument('--full', action='store_true', help='Fetch all records')
     args = parser.parse_args()
 
-    if args.command == 'bootstrap':
-        if args.sample:
-            bootstrap_sample()
-        else:
-            logger.info("Full fetch not implemented in bootstrap mode. Use --sample.")
-    elif args.command == 'validate':
-        sample_dir = Path(__file__).parent / 'sample'
-        validate_sample(sample_dir)
+    if args.command == 'validate':
+        validate_sample(Path(__file__).parent / 'sample')
+    elif args.command == 'bootstrap' and args.sample and not args.full:
+        bootstrap_sample()
+    else:
+        bootstrap_full()
+
+
+if __name__ == '__main__':
+    main()

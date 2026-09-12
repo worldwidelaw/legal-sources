@@ -1,14 +1,9 @@
 api:
-  databases:
-    IESP: Higher Courts
-    SEU: Court of Justice of the EU
-    SOVS: Supreme Court
-    UPRS: Administrative Court
-    VDSS: Higher Labor and Social Court
-  document_url: https://www.sodnapraksa.si/?id={doc_id}
-  pdf_url: https://www.sodnapraksa.si/printPdf.php?id={doc_id}
+  doc_type: vsrs
+  document_url: https://sodnapraksa.si/dokument/vsrs/{doc_id}
+  page_size: 50
   rate_limit: 2
-  search_url: https://www.sodnapraksa.si/
+  search_url: https://sodnapraksa.si/backend/api/search/documents
 schema:
   fields:
     court:

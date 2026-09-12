@@ -37,7 +37,7 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.ZA.ConstitutionalCourt")
 
 BASE_URL = "https://collections.concourt.org.za"
-REST_URL = BASE_URL + "/rest"
+API_URL = BASE_URL + "/server/api"
 DELAY = 1.5
 
 
@@ -93,42 +93,133 @@ class ConCourtFetcher:
         return None
 
     def get_yearly_collections(self) -> List[Dict[str, Any]]:
-        """Get all yearly judgment collections (1994-2026)."""
-        data = self._get_json(f"{REST_URL}/collections")
-        if not data:
-            return []
-        yearly = []
-        for c in data:
-            name = c.get("name", "")
-            count = c.get("numberItems", 0)
-            # Match year collections (4-digit names), exclude Court Roll etc.
-            if re.match(r"^\d{4}$", name) and count > 0:
-                yearly.append(c)
+        """Every yearly judgment collection (1994-present).
+
+        The repository was upgraded to DSpace 9, whose REST API lives at
+        /server/api and is paged; the DSpace 6 /rest/collections endpoint this
+        used to call now 404s (issue #1315).
+        """
+        yearly, page = [], 0
+        while True:
+            data = self._get_json(
+                f"{API_URL}/core/collections?size=100&page={page}"
+            )
+            if not data:
+                break
+            collections = (data.get("_embedded") or {}).get("collections") or []
+            for collection in collections:
+                if re.match(r"^\d{4}$", collection.get("name", "")):
+                    yearly.append({
+                        "id": collection["uuid"],
+                        "name": collection["name"],
+                        "numberItems": collection.get("archivedItemsCount", 0),
+                    })
+            page_info = data.get("page") or {}
+            page += 1
+            if page >= page_info.get("totalPages", 0):
+                break
+            time.sleep(DELAY)
         yearly.sort(key=lambda c: c["name"], reverse=True)
         return yearly
 
-    def get_collection_items(self, coll_id: int, offset: int = 0,
+    @staticmethod
+    def _flatten_metadata(metadata: Dict[str, Any]) -> List[Dict[str, str]]:
+        """DSpace 9's `{key: [{value}, ...]}` as DSpace 6's `[{key, value}]`.
+
+        Everything downstream of here (extract_metadata, normalize) already
+        speaks the flat list, so the API change stops at this function.
+        """
+        flat = []
+        for key, values in (metadata or {}).items():
+            for entry in values or []:
+                flat.append({"key": key, "value": entry.get("value", "")})
+        return flat
+
+    def get_collection_items(self, coll_id: str, offset: int = 0,
                              limit: int = 50) -> List[Dict[str, Any]]:
-        """Fetch items from a collection with metadata and bitstreams."""
-        url = (f"{REST_URL}/collections/{coll_id}/items"
-               f"?limit={limit}&offset={offset}&expand=metadata,bitstreams")
-        data = self._get_json(url)
+        """A page of items in a collection, in the legacy item shape."""
+        page = offset // limit if limit else 0
+        data = self._get_json(
+            f"{API_URL}/discover/search/objects?dsoType=item"
+            f"&scope={coll_id}&size={limit}&page={page}"
+        )
         time.sleep(DELAY)
-        return data or []
+        if not data:
+            return []
+        search_result = (data.get("_embedded") or {}).get("searchResult") or {}
+        objects = (search_result.get("_embedded") or {}).get("objects") or []
+        items = []
+        for wrapper in objects:
+            item = (wrapper.get("_embedded") or {}).get("indexableObject")
+            if not item:
+                continue
+            items.append({
+                "id": item.get("uuid"),
+                "uuid": item.get("uuid"),
+                "name": item.get("name", ""),
+                "handle": item.get("handle", ""),
+                "lastModified": item.get("lastModified"),
+                "metadata": self._flatten_metadata(item.get("metadata")),
+            })
+        return items
+
+    def _text_bitstreams(self, item_uuid: str) -> List[Dict[str, Any]]:
+        """The item's TEXT-bundle bitstreams (the .pdf.txt extractions).
+
+        Only the TEXT bundle is walked: ORIGINAL holds the multi-megabyte PDFs
+        and THUMBNAIL the page images, and neither is worth a request when the
+        repository has already extracted the text alongside them.
+        """
+        bundles = self._get_json(f"{API_URL}/core/items/{item_uuid}/bundles")
+        if not bundles:
+            return []
+        text_bundle = next(
+            (
+                bundle
+                for bundle in (bundles.get("_embedded") or {}).get("bundles") or []
+                if bundle.get("name", "").upper() == "TEXT"
+            ),
+            None,
+        )
+        if not text_bundle:
+            return []
+        time.sleep(DELAY)
+        listing = self._get_json(
+            f"{API_URL}/core/bundles/{text_bundle['uuid']}/bitstreams?size=200"
+        )
+        if not listing:
+            return []
+        bitstreams = []
+        for bitstream in (listing.get("_embedded") or {}).get("bitstreams") or []:
+            name = bitstream.get("name", "")
+            bitstreams.append({
+                "id": bitstream.get("uuid"),
+                "name": name,
+                # DSpace 9 leaves dc.format.mimetype off these records, and
+                # everything in the TEXT bundle is a plain-text extraction.
+                "mimeType": "text/plain",
+                "sizeBytes": bitstream.get("sizeBytes", 0),
+                "_content": ((bitstream.get("_links") or {}).get("content") or {}).get("href"),
+            })
+        return bitstreams
 
     def find_judgment_text(self, item: Dict[str, Any]) -> Optional[str]:
-        """Find and retrieve the judgment full text from bitstreams.
+        """The judgment's full text, from the repository's own extraction.
 
         Strategy:
-        1. Look for a .pdf.txt bitstream whose name contains 'Judgment' or 'Order'
-        2. Fall back to the largest .pdf.txt bitstream
-        3. Retrieve via /rest/bitstreams/{id}/retrieve
+        1. Prefer a .pdf.txt bitstream named for the judgment or the order
+        2. Fall back to the largest non-trivial .pdf.txt
+        3. Download it from the bitstream's `content` link
         """
-        bitstreams = item.get("bitstreams", [])
+        bitstreams = item.get("bitstreams")
+        if bitstreams is None:
+            bitstreams = self._text_bitstreams(item.get("uuid") or item.get("id"))
+            time.sleep(DELAY)
         txt_bitstreams = [
             b for b in bitstreams
-            if b.get("name", "").endswith(".pdf.txt")
+            if b.get("name", "").endswith(".txt")
             and b.get("mimeType") == "text/plain"
+            and b.get("name", "").lower() != "license.txt"
         ]
         if not txt_bitstreams:
             return None
@@ -151,11 +242,13 @@ class ConCourtFetcher:
                 return None
             chosen = max(non_trivial, key=lambda b: b.get("sizeBytes", 0))
 
-        bs_id = chosen.get("id")
-        if not bs_id:
+        content_url = chosen.get("_content")
+        if not content_url and chosen.get("id"):
+            content_url = f"{API_URL}/core/bitstreams/{chosen['id']}/content"
+        if not content_url:
             return None
 
-        text = self._get_text(f"{REST_URL}/bitstreams/{bs_id}/retrieve")
+        text = self._get_text(content_url)
         time.sleep(DELAY)
         if text and len(text.strip()) > 100:
             return text.strip()
@@ -347,11 +440,10 @@ class ConCourtFetcher:
     def test(self) -> bool:
         """Quick connectivity test."""
         try:
-            data = self._get_json(f"{REST_URL}/collections")
-            if not data:
+            yearly = self.get_yearly_collections()
+            if not yearly:
                 logger.error("Test failed: no collections returned")
                 return False
-            yearly = [c for c in data if re.match(r"^\d{4}$", c.get("name", ""))]
             logger.info("Test passed: %d yearly collections found", len(yearly))
 
             # Test fetching one item with text
@@ -374,7 +466,9 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="ZA/ConstitutionalCourt bootstrap")
-    parser.add_argument("command", choices=["bootstrap", "update", "test"])
+    parser.add_argument(
+        "command", choices=["bootstrap", "bootstrap-fast", "update", "test"]
+    )
     parser.add_argument("--sample", action="store_true", help="Fetch only 10-15 sample records")
     parser.add_argument("--since", type=str, help="Date for incremental update (YYYY-MM-DD)")
     parser.add_argument("--full", action="store_true", help="Fetch all records")
@@ -386,27 +480,48 @@ def main():
         success = fetcher.test()
         sys.exit(0 if success else 1)
 
-    if args.command == "bootstrap":
+    if args.command in ("bootstrap", "bootstrap-fast"):
+        # A sample run writes the curated sample/ files; a full run streams to
+        # data/records.jsonl, which is what the pipeline ingests. The full path
+        # used to write into sample/ too, so a completed crawl looked like a
+        # 15-record sample fallback (the #798 class).
         sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
+        data_dir = Path(__file__).parent / "data"
+        records_path = data_dir / "records.jsonl"
+        if args.sample:
+            sample_dir.mkdir(exist_ok=True)
+            stream = None
+        else:
+            data_dir.mkdir(exist_ok=True)
+            stream = records_path.open("w", encoding="utf-8")
 
         count = 0
-        for raw in fetcher.fetch_all(sample=args.sample):
-            record = fetcher.normalize(raw)
-            safe_name = re.sub(r"[^\w\-.]", "_", str(record["_id"]))[:100]
-            out_file = sample_dir / f"{safe_name}.json"
-            out_file.write_text(
-                json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8"
-            )
-            count += 1
-            text_len = len(record.get("text", ""))
-            logger.info(
-                "  [%d] %s | %s | text=%d chars",
-                count, record.get("date", "?"), record["title"][:60], text_len,
-            )
+        try:
+            for raw in fetcher.fetch_all(sample=args.sample):
+                record = fetcher.normalize(raw)
+                if stream is None:
+                    safe_name = re.sub(r"[^\w\-.]", "_", str(record["_id"]))[:100]
+                    (sample_dir / f"{safe_name}.json").write_text(
+                        json.dumps(record, ensure_ascii=False, indent=2),
+                        encoding="utf-8",
+                    )
+                else:
+                    stream.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    stream.flush()
+                count += 1
+                text_len = len(record.get("text", ""))
+                logger.info(
+                    "  [%d] %s | %s | text=%d chars",
+                    count, record.get("date", "?"), record["title"][:60], text_len,
+                )
+        finally:
+            if stream is not None:
+                stream.close()
 
-        logger.info("Bootstrap complete: %d records saved to sample/", count)
-        sys.exit(0 if count >= 10 else 1)
+        destination = "sample/" if args.sample else str(records_path)
+        logger.info("%s complete: %d records written to %s",
+                    args.command, count, destination)
+        sys.exit(0 if count >= (10 if args.sample else 1) else 1)
 
     if args.command == "update":
         since = args.since or "2026-01-01"

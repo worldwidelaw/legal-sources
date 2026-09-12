@@ -1,0 +1,124 @@
+# ===================================================================
+# US/MD-PSC -- Maryland Public Service Commission Orders
+# ===================================================================
+# Full text of Orders issued by the Maryland Public Service Commission
+# (PSC) adjudicating utility cases — electric, gas, water/sewer,
+# telecommunications and transportation matters: rate cases,
+# certificates of public convenience and necessity (CPCN), merger
+# approvals and merger-condition enforcement, tariff filings,
+# fuel/purchased-gas adjustments and regulatory dockets. Each Commission
+# Order is an administrative adjudication / edict of a specific case =
+# case_law. Public domain (US state government edict).
+#
+# ACCESS: official DMS "Commission orders" portal at
+# webpscxb.pscmaryland.com/DMS. The /DMS/commissionorders page is an
+# ASP.NET WebForms date-range search; the corpus is enumerated one
+# calendar month at a time and each order's full text is retrieved from
+# the born-digital PDF via a two-hop maillogpdfview -> pdfview chain.
+# ===================================================================
+
+source:
+  id: "US/MD-PSC"
+  country: "US"
+  name: "Maryland Public Service Commission — Orders"
+  url: "https://webpscxb.pscmaryland.com/DMS/commissionorders"
+  description: |
+    Orders issued by the Maryland Public Service Commission (PSC)
+    resolving utility cases — electric, gas, water/sewer,
+    telecommunications and transportation rate cases, certificates of
+    public convenience and necessity, merger approvals and
+    merger-condition enforcement, tariff filings, fuel/purchased-gas
+    adjustments and regulatory dockets. Each Order is an administrative
+    adjudication of a specific case (case_law). Full text is extracted
+    from the born-digital order PDFs the Commission publishes through its
+    Document Management System (DMS) portal.
+
+data_types:
+  - case_law
+
+jurisdictions:
+  - code: US-MD
+    scope: full
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "html_scraping"
+  base_url: "https://webpscxb.pscmaryland.com"
+  endpoints:
+    orders_search: "/DMS/commissionorders"
+    maillog_view: "/DMS/maillogpdfview/MailLog/0/0/{maillog_id}/0"
+    pdf_view: "/DMS/pdfview/{path}"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 10
+  key_fields:
+    - name: "order_number"
+      description: "Commission order number, e.g. '91502' (from the order listing / 'ORDER NO. 91502')"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "case_number"
+      description: "MD PSC case number, e.g. '9449' (from the order body 'CASE NO. 9449' or the pdfview filename)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Order number plus case number"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Order, extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order issue date (ISO 8601), from the listing 'Issue Date'"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "DMS maillog viewer URL for the order document"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Maryland)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Maryland Public Service Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - The MD PSC publishes Commission Orders through its DMS portal
+    (webpscxb.pscmaryland.com/DMS). /DMS/commissionorders is an ASP.NET
+    WebForms search whose "Find by date range" (btnFind2) returns orders
+    issued in a window. The search silently returns nothing for spans
+    wider than ~one month, so fetch_all() enumerates the corpus one
+    calendar month at a time (newest first, back to 1999) and
+    de-duplicates on the DMS mail-log id.
+  - Full text is a two-hop chain per order:
+    /DMS/maillogpdfview/MailLog/0/0/{maillog_id}/0 returns an HTML viewer
+    that embeds the real document path in data-pdf='/DMS/pdfview/...';
+    that pdfview URL streams the application/pdf, extracted with
+    fitz/PyMuPDF (Tesseract OCR fallback for the rare scanned order).
+  - Coverage is patchy before ~2005 but present back to 2000; the case
+    number is read from the order body ("CASE NO. 9449"), falling back to
+    the parenthesised code in the pdfview filename.

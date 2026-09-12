@@ -67,21 +67,57 @@ DATABASES = [
 # Max sequential documents to try per year before moving on
 MAX_DOCS_PER_YEAR = 300
 
+# AustLII numbering has gaps (withdrawn/reserved numbers), so tolerate a run of
+# misses before declaring a year exhausted. Five was too tight and silently
+# truncated dense years.
+MISS_TOLERANCE = 12
 
-def _fetch_url(url: str, timeout: int = 30) -> Optional[str]:
-    """Fetch URL content, return None on 404/302/error."""
+CHECKPOINT_PATH = Path(__file__).parent / "data" / "checkpoint.json"
+
+
+class SourceBlockedError(RuntimeError):
+    """Raised when AustLII refuses this vantage (Cloudflare WAF).
+
+    This must NOT be swallowed: a swallowed 403 looks identical to "document
+    does not exist", which turns a total block into a silent 0-record run and
+    lets the pipeline fall back to ingesting the committed samples.
+    """
+
+
+def _fetch_url(url: str, timeout: int = 30, retries: int = 3) -> Optional[str]:
+    """Fetch URL content.
+
+    Returns None only when the document genuinely does not exist (404/410).
+    Raises SourceBlockedError on 403 (Cloudflare block) so the run fails loud.
+    """
     req = Request(url, headers={"User-Agent": USER_AGENT})
-    try:
-        resp = urlopen(req, timeout=timeout)
-        if resp.geturl() != url and "/error" in resp.geturl():
-            return None
-        return resp.read().decode("utf-8", errors="replace")
-    except HTTPError as e:
-        if e.code in (404, 410, 403):
-            return None
-        raise
-    except URLError:
-        return None
+    last_err: Optional[Exception] = None
+    for attempt in range(retries):
+        try:
+            resp = urlopen(req, timeout=timeout)
+            if resp.geturl() != url and "/error" in resp.geturl():
+                return None
+            return resp.read().decode("utf-8", errors="replace")
+        except HTTPError as e:
+            if e.code in (404, 410):
+                return None
+            if e.code == 403:
+                raise SourceBlockedError(
+                    f"HTTP 403 from AustLII for {url} — Cloudflare is blocking this "
+                    f"vantage (WAF rule, not a missing document). AustLII serves ATO "
+                    f"rulings only to unblocked (typically AU residential) clients; "
+                    f"re-run from a residential/AU proxy."
+                ) from e
+            if e.code in (429, 500, 502, 503, 504):
+                last_err = e
+                time.sleep(min(60, 2 ** attempt * 5))
+                continue
+            raise
+        except URLError as e:
+            last_err = e
+            time.sleep(min(30, 2 ** attempt * 2))
+    logger.warning(f"Giving up on {url} after {retries} attempts: {last_err}")
+    return None
 
 
 def _strip_html(html_text: str) -> str:
@@ -222,9 +258,50 @@ class AustraliaATOTaxDoctrineScraper(BaseScraper):
             "number": num,
         }
 
+    # ── checkpoint/resume ────────────────────────────────────────────
+    # A full sweep is ~10 databases x up to 75 years at 1 req/s, which does not
+    # fit in a single fleet slot. Persist the (database, year) units already
+    # finished so a relaunch advances instead of re-walking from 1951.
+
+    def _load_checkpoint(self) -> set:
+        try:
+            with open(CHECKPOINT_PATH) as fh:
+                return {tuple(unit) for unit in json.load(fh).get("done", [])}
+        except (FileNotFoundError, ValueError):
+            return set()
+
+    def _save_checkpoint(self, done: set) -> None:
+        CHECKPOINT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        tmp = CHECKPOINT_PATH.with_suffix(".tmp")
+        with open(tmp, "w") as fh:
+            json.dump({"done": sorted(list(unit) for unit in done)}, fh)
+        tmp.replace(CHECKPOINT_PATH)
+
+    def _preflight(self) -> None:
+        """Confirm AustLII actually serves this vantage before a long sweep.
+
+        Without this, a site-wide block reads as "every document is missing"
+        and the run exits 0 having written nothing.
+        """
+        probe = self._build_doc_url("ATOTR", 1992, 2)
+        page = _fetch_url(probe)  # raises SourceBlockedError on 403
+        if page is None or len(page) < 500:
+            raise SourceBlockedError(
+                f"Preflight failed: {probe} returned no usable content. This "
+                f"document is known to exist (see sample/record_0000.json), so "
+                f"AustLII is unreachable or blocking this vantage."
+            )
+        logger.info(f"Preflight OK: AustLII reachable ({len(page)} bytes)")
+
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all ATO rulings across all databases and years."""
         current_year = datetime.now().year
+
+        self._preflight()
+
+        done = self._load_checkpoint()
+        if done:
+            logger.info(f"Resuming: {len(done)} (database, year) units already done")
 
         for db in DATABASES:
             db_code = db["code"]
@@ -235,6 +312,9 @@ class AustraliaATOTaxDoctrineScraper(BaseScraper):
             logger.info(f"Scanning {db_name} ({db_code}) from {start_year} to {current_year}")
 
             for year in range(start_year, current_year + 1):
+                if (db_code, year) in done:
+                    continue
+
                 consecutive_misses = 0
                 for num in range(1, MAX_DOCS_PER_YEAR + 1):
                     doc = self._fetch_document(db_code, db_name, db_prefix, year, num)
@@ -243,10 +323,11 @@ class AustraliaATOTaxDoctrineScraper(BaseScraper):
                         yield doc
                     else:
                         consecutive_misses += 1
-                        # AustLII numbering can have gaps, but 5 consecutive
-                        # misses means we've exhausted this year
-                        if consecutive_misses >= 5:
+                        if consecutive_misses >= MISS_TOLERANCE:
                             break
+
+                done.add((db_code, year))
+                self._save_checkpoint(done)
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """Fetch recent rulings from AustLII RSS feeds."""
@@ -308,7 +389,9 @@ def main():
     parser = argparse.ArgumentParser(description="AU/ATO-TaxDoctrine bootstrap")
     parser.add_argument(
         "command",
-        choices=["bootstrap", "update", "test"],
+        # "bootstrap-fast" is what the fleet wrapper invokes; without it argparse
+        # errored out and the wrapper silently fell back to ingesting sample/.
+        choices=["bootstrap", "bootstrap-fast", "update", "test"],
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
@@ -321,16 +404,29 @@ def main():
     if args.command == "test":
         logger.info("Testing connectivity to AustLII...")
         url = scraper._build_doc_url("ATOTR", 2024, 1)
-        page = _fetch_url(url)
+        try:
+            page = _fetch_url(url)
+        except SourceBlockedError as e:
+            logger.error(f"BLOCKED: {e}")
+            sys.exit(1)
         if page and len(page) > 1000:
             logger.info(f"SUCCESS: AustLII accessible, page size={len(page)} bytes")
         else:
             logger.error("FAILED: Could not fetch test document")
             sys.exit(1)
 
-    elif args.command == "bootstrap":
+    elif args.command in ("bootstrap", "bootstrap-fast"):
         result = scraper.bootstrap(sample_mode=args.sample, sample_size=args.sample_size)
         logger.info(f"Bootstrap result: {json.dumps(result, indent=2, default=str)}")
+        # BaseScraper.bootstrap() catches fetch_all exceptions and records them in
+        # stats["error_message"] rather than propagating, so a total block would
+        # otherwise exit 0 and let the fleet ingest sample/ as a "success".
+        if result.get("error_message"):
+            logger.error(f"FAILED: {result['error_message']}")
+            sys.exit(1)
+        if not args.sample and result.get("records_fetched", 0) == 0:
+            logger.error("FAILED: 0 records fetched — refusing to report success")
+            sys.exit(1)
 
     elif args.command == "update":
         result = scraper.update()

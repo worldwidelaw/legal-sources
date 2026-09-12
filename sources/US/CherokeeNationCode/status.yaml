@@ -1,0 +1,41 @@
+last_bootstrap: null
+last_error: 'Title 21 Amendments: 0 TITLE anchors in 1181081 chars — the PDF layout
+  changed or a scan replaced the text layer'
+last_run: '2026-08-27T15:26:24.414009+00:00'
+run_history:
+- coverage_gaps: 0
+  error_message: 'Title 21 Amendments: 0 TITLE anchors in 1181081 chars — the PDF
+    layout changed or a scan replaced the text layer'
+  errors: 0
+  finished_at: '2026-08-27T11:06:07.824608+00:00'
+  records_fetched: 11
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 11
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-27T11:05:47.057657+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-27T11:07:02.086201+00:00'
+  records_fetched: 12
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 12
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-27T11:06:41.862291+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-27T15:26:24.414009+00:00'
+  records_fetched: 12
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 12
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-27T15:26:04.433973+00:00'
+total_records: 0

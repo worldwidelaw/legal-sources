@@ -241,7 +241,7 @@ class JuricafCMConstitutionnelScraper(BaseScraper):
 
 def main():
     parser = argparse.ArgumentParser(description="CM/ConseilConstitutionnel data fetcher")
-    parser.add_argument("command", choices=["bootstrap", "update", "test"])
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "update", "test"])
     parser.add_argument("--sample", action="store_true")
     parser.add_argument("--full", action="store_true")
     args = parser.parse_args()
@@ -263,6 +263,20 @@ def main():
             logger.info(f"[{count + 1}] {record.get('title', '?')[:80]} ({text_len:,} chars)")
             count += 1
         logger.info(f"Bootstrap complete: {count} records saved to sample/")
+    elif args.command == "bootstrap-fast":
+        # Fleet entry point: stream NORMALIZED records to data/records.jsonl
+        data_dir = Path(__file__).parent / "data"
+        data_dir.mkdir(exist_ok=True)
+        out_path = data_dir / "records.jsonl"
+        count = 0
+        with open(out_path, "w", encoding="utf-8") as f:
+            for raw in scraper.fetch_all():
+                record = scraper.normalize(raw)
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                count += 1
+                if count % 25 == 0:
+                    logger.info(f"{count} records written to data/records.jsonl")
+        logger.info(f"Bootstrap-fast complete: {count} records -> {out_path}")
     elif args.command == "update":
         sample_dir = Path(__file__).parent / "sample"
         sample_dir.mkdir(exist_ok=True)

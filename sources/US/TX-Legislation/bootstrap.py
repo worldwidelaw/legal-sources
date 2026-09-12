@@ -25,6 +25,7 @@ import json
 import logging
 import re
 import time
+import hashlib
 import zipfile
 import io
 import html as html_module
@@ -71,6 +72,12 @@ def strip_html(html_text: str) -> str:
 
 class TXLegislationScraper(BaseScraper):
 
+    # `normalize()` stamps sections with the crawl date, not an enactment date, so
+    # no `since` comparison is meaningful here; `fetch_updates` narrows on each
+    # code ZIP's publication stamp and then a per-section hash. Declared so the
+    # refresh classifier does not read the unused `since` as a no-op (#1502).
+    incremental_comparator = "availability"
+
     def __init__(self, source_dir: str = None):
         if source_dir is None:
             source_dir = str(Path(__file__).parent)
@@ -84,6 +91,7 @@ class TXLegislationScraper(BaseScraper):
             timeout=120,
         )
         self.delay = 2.0
+        self.force_walk = False
 
     def _get(self, url: str, binary: bool = False):
         """Fetch URL with rate limiting."""
@@ -92,6 +100,64 @@ class TXLegislationScraper(BaseScraper):
         if binary:
             return resp.content
         return resp.text
+
+    # ---- refresh state -------------------------------------------------
+    # A refresh has to answer "what became available since we last looked",
+    # not "what is dated after `since`". Every section here is dated with the
+    # crawl date rather than its enactment date, so a date comparator would
+    # match either everything or nothing. The ZIPs carry the real signal.
+
+    def _state_path(self, name: str) -> Path:
+        path = Path(__file__).parent / "data" / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def _load_json(self, name: str, default):
+        try:
+            with open(self._state_path(name), encoding="utf-8") as f:
+                return json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return default
+
+    def _save_json(self, name: str, payload) -> None:
+        path = self._state_path(name)
+        tmp = path.with_suffix(path.suffix + ".tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(payload, f)
+        tmp.replace(path)  # atomic: a half-written state would skip codes
+
+    def _zip_stamp(self, code: str) -> Optional[dict]:
+        """HEAD a code's ZIP and return its publication stamp.
+
+        tcss.legis.texas.gov serves every `{code}.htm.zip` with ETag,
+        Last-Modified and Content-Length, and the codes move independently
+        (Penal last changed 2026-04-10 while Government moved 2026-07-31).
+        One HEAD per code is what lets an unchanged code cost nothing.
+        """
+        url = f"{TCSS_BASE}/Zips/{code}.htm.zip"
+        try:
+            time.sleep(self.delay)
+            resp = self.http.session.head(url, timeout=60, allow_redirects=True)
+            resp.raise_for_status()
+        except Exception as e:
+            logger.warning(f"Could not HEAD {code} ZIP ({e}) — will re-read it")
+            return None
+        stamp = {
+            "etag": resp.headers.get("ETag"),
+            "last_modified": resp.headers.get("Last-Modified"),
+            "content_length": resp.headers.get("Content-Length"),
+        }
+        return stamp if any(stamp.values()) else None
+
+    def _section_key(self, record: dict) -> str:
+        """Refresh-state key. Must match `_id` so duplicate-numbered sections
+        are tracked separately rather than overwriting each other."""
+        return (f"{record['code']}-{record['section_num']}"
+                f"{self._enacting_suffix(record.get('text', ''), record.get('chapter', ''))}")
+
+    @staticmethod
+    def _text_hash(text: str) -> str:
+        return hashlib.sha256((text or "").encode("utf-8")).hexdigest()[:16]
 
     def test_api(self):
         """Test connectivity to Texas statute server."""
@@ -186,28 +252,90 @@ class TXLegislationScraper(BaseScraper):
 
         return sections
 
+    # A Texas session can enact several *different* sections carrying the same
+    # number: the 89th Legislature (2025) added four distinct Penal Code
+    # § 32.56, one each from S.B. 1809, S.B. 1281, S.B. 1333 and S.B. 2373.
+    # The statute server publishes all of them, each under its own
+    # "Text of section as added by Acts ..., Ch. N" header. Keying on
+    # code+section alone collapsed the four into one row and silently dropped
+    # three real provisions, so the enacting chapter joins the key.
+    _ENACTING_CH_RE = re.compile(
+        r'Text of section as (?:added|amended) by\s+Acts\s+(\d{4})\b[^\n]*?\bCh\.\s*(\d+)',
+        re.IGNORECASE,
+    )
+
+    # The other duplication mechanism: two wholly different chapters can share
+    # a number, and the statute server separates them only by filename --
+    # Civil Practice & Remedies ch. 100B is fraudulent crowdfunding in
+    # `cp.100b.htm` and AI-related financial exploitation in `cp.100b.v2.htm`.
+    _CHAPTER_VARIANT_RE = re.compile(r'\.v(\d+)$', re.IGNORECASE)
+
+    # KNOWN RESIDUAL (~0.2% of sections): a third mechanism is not handled --
+    # two different *subchapters* of one chapter can reuse the same numbers,
+    # e.g. Family Code 264.191-264.195 exist once in the lead-entity
+    # subchapter and again in the receivership subchapter. Nothing structural
+    # separates them (same code, same chapter, no enacting header, no .vN
+    # file), so only the catchline distinguishes them and those still collapse
+    # pairwise. Measured on a 4-code sample: AG 2, CP 4, FA 6 of ~6,000
+    # sections. Fixing it needs a catchline-derived key, which is a bigger
+    # change than this refresh fix should carry.
+
+    @classmethod
+    def _enacting_suffix(cls, text: str, chapter: str = "") -> str:
+        """Return a stable disambiguator, or "" for ordinary single sections.
+
+        Derived from the enacting act / chapter variant rather than the
+        position in the file, so it does not shift when another duplicate is
+        codified ahead of it. Sections that need no disambiguation -- the vast
+        majority -- keep their original `_id` untouched, so this does not
+        churn the ~120K rows already ingested.
+        """
+        variant = cls._CHAPTER_VARIANT_RE.search(chapter or "")
+        if variant:
+            return f"~v{variant.group(1)}"
+        match = cls._ENACTING_CH_RE.search(text or "")
+        return f"~{match.group(1)}c{match.group(2)}" if match else ""
+
     def normalize(self, raw: dict) -> dict:
         """Transform raw section data into standard schema."""
-        section_id = f"{raw['code']}-{raw['section_num']}"
+        section_id = (f"{raw['code']}-{raw['section_num']}"
+                      f"{self._enacting_suffix(raw.get('text', ''), raw.get('chapter', ''))}")
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-        # Build a clean title
-        sec_title = f"{raw['code_name']} § {raw['section_num']}"
+        # The citation has to name the *state*, not just the code (#1619).
+        # Texas, California, Louisiana and others all publish a "Penal Code",
+        # a "Family Code" and an "Education Code", so a bare
+        # "Family Code § 1.001" is ambiguous across jurisdictions and matches
+        # no citation a reader would actually write. The form below is the one
+        # a citation carries in the wild -- "Texas Estates Code § 55.001".
+        citation = f"Texas {raw['code_name']} § {raw['section_num']}"
+
+        # ... and it has to appear in the body as well. `text` opens with the
+        # statute server's own catchline ("Sec. 55.001. OPPOSITION IN PROBATE
+        # PROCEEDING."), which never names the code, so a keyword search for
+        # "Texas Estates Code 55.001" had nothing lexical to hit and the
+        # section was reachable only semantically.
+        breadcrumb = citation
+        chapter_title = raw.get("chapter_title", "")
+        if chapter_title:
+            breadcrumb = f"{breadcrumb} — {chapter_title}"
 
         return {
             "_id": section_id,
             "_source": "US/TX-Legislation",
             "_type": "legislation",
             "_fetched_at": now,
-            "title": sec_title,
-            "text": raw["text"],
+            "title": citation,
+            "text": f"{breadcrumb}\n\n{raw['text']}",
             "date": today,
             "url": f"https://statutes.capitol.texas.gov/Docs/{raw['code']}/htm/{raw['code']}.{raw['chapter']}.htm#{raw['section_num']}",
+            "citation": citation,
+            "subdivision": "US-TX",
             "code": raw["code"],
             "code_name": raw["code_name"],
             "chapter": raw["chapter"],
-            "chapter_title": raw.get("chapter_title", ""),
+            "chapter_title": chapter_title,
             "section_num": raw["section_num"],
         }
 
@@ -252,21 +380,82 @@ class TXLegislationScraper(BaseScraper):
         zf.close()
 
     def fetch_all(self) -> Generator[dict, None, None]:
-        """Yield all sections across all Texas Codes."""
+        """Yield all sections across all Texas Codes.
+
+        Also records each code's ZIP stamp and each section's text hash, so
+        the next refresh has a baseline to compare against instead of having
+        to re-read all ~120K sections to discover that nothing moved.
+        """
         codes = self.get_code_list()
         logger.info(f"Found {len(codes)} Texas codes")
+        state = self._load_json("zip_state.json", {})
+        hashes = self._load_json("section_hashes.json", {})
         total = 0
         for code_info in codes:
+            code = code_info["code"]
+            stamp = self._zip_stamp(code)
             for record in self.process_code(code_info):
+                hashes[self._section_key(record)] = self._text_hash(record["text"])
                 yield record
                 total += 1
                 if total % 500 == 0:
                     logger.info(f"  Progress: {total} sections fetched")
+            if stamp:
+                state[code] = stamp
+            self._save_json("zip_state.json", state)
+            self._save_json("section_hashes.json", hashes)
         logger.info(f"Total sections fetched: {total}")
 
-    def fetch_updates(self, since: str) -> Generator[dict, None, None]:
-        """Fetch all sections (no incremental update supported)."""
-        yield from self.fetch_all()
+    def fetch_updates(self, since: str = None) -> Generator[dict, None, None]:
+        """Yield only sections that are new or whose text actually changed.
+
+        The old body was `yield from self.fetch_all()`, so every refresh slot
+        re-downloaded all 31 code ZIPs and re-parsed ~120K sections purely to
+        have the loader dedup ~all of them away (#1502).
+
+        `since` is accepted but deliberately unused: it is a *crawl* time, and
+        `normalize()` stamps every section with the crawl date rather than an
+        enactment date, so no date comparison here can be meaningful. The
+        comparator is availability instead — each code's ZIP publication stamp
+        (ETag/Last-Modified/size), then a per-section text hash for the codes
+        that did move. A quiet week costs 31 HEAD requests.
+        """
+        codes = self.get_code_list()
+        state = self._load_json("zip_state.json", {})
+        hashes = self._load_json("section_hashes.json", {})
+        seeding = not hashes
+        if seeding:
+            logger.info("No section hashes recorded yet — this refresh seeds them")
+
+        changed_codes = 0
+        emitted = 0
+        for code_info in codes:
+            code = code_info["code"]
+            stamp = self._zip_stamp(code)
+            prior = state.get(code)
+            if not self.force_walk and stamp and prior and stamp == prior and not seeding:
+                logger.info(f"  {code}: ZIP unchanged since {prior.get('last_modified')} — skipped")
+                continue
+
+            changed_codes += 1
+            for record in self.process_code(code_info):
+                key = self._section_key(record)
+                digest = self._text_hash(record["text"])
+                if hashes.get(key) == digest:
+                    continue
+                hashes[key] = digest
+                emitted += 1
+                yield record
+
+            if stamp:
+                state[code] = stamp
+            self._save_json("zip_state.json", state)
+            self._save_json("section_hashes.json", hashes)
+
+        logger.info(
+            f"Refresh complete: {changed_codes} of {len(codes)} codes republished, "
+            f"{emitted} sections new or changed"
+        )
 
     def fetch_sample(self) -> Generator[dict, None, None]:
         """Fetch a small sample: 3 codes, first 2 chapters each."""
@@ -287,7 +476,7 @@ def main():
     parser = argparse.ArgumentParser(description="US/TX-Legislation bootstrap")
     parser.add_argument(
         "command",
-        choices=["bootstrap", "test-api"],
+        choices=["bootstrap", "update", "test-api"],
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
@@ -300,26 +489,35 @@ def main():
         success = scraper.test_api()
         sys.exit(0 if success else 1)
 
-    elif args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
+    elif args.command == "update":
+        stats = scraper.update()
 
+    else:
+        # Drive BaseScraper rather than the generator directly. `fetch_all` /
+        # `fetch_sample` yield RAW sections by contract (the double-normalize
+        # sweep in fee7e120b made them raw everywhere), but this CLI kept
+        # reading `record['_id']` off them -- so *every* invocation, sample or
+        # full, died with `KeyError: '_id'` before writing a single record and
+        # the source has been un-crawlable ever since. Going through
+        # `bootstrap()` also streams the full corpus to data/records.jsonl,
+        # which the hand-rolled loop never did (it wrote all ~120K sections
+        # into sample/).
         if args.sample:
-            gen = scraper.fetch_sample()
-        else:
-            gen = scraper.fetch_all()
+            # `bootstrap()` only ever reads fetch_all; bind the curated sample
+            # walk onto it so a sample still spans PE/GV/FA rather than
+            # whichever code the listing happens to put first.
+            scraper.fetch_all = scraper.fetch_sample
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
 
-        count = 0
-        for record in gen:
-            out_path = sample_dir / f"{record['_id']}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-            if count <= 20 or count % 100 == 0:
-                logger.info(f"Saved: {record['_id']} ({len(record['text'])} chars)")
-
-        logger.info(f"Bootstrap complete: {count} records saved to {sample_dir}")
+    if stats.get("records_fetched", 0) == 0:
+        logger.error("No records fetched — failing loud rather than exiting 0")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

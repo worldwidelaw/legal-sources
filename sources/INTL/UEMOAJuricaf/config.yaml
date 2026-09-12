@@ -1,0 +1,37 @@
+source:
+  id: INTL/UEMOAJuricaf
+  country: INTL
+  name: "Court of Justice of the WAEMU/UEMOA (Cour de justice de l'UEMOA) Decisions (Juricaf)"
+  url: https://juricaf.org/recherche/+/facet_pays:UEMOA
+  data_types:
+    - case_law
+  language: fr
+license:
+  name: "ODbL 1.0 (Juricaf/AHJUCAF)"
+  url: https://opendatacommons.org/licenses/odbl/1-0/
+  commercial_use: true
+  attribution_required: true
+  share_alike: true
+  no_derivatives: false
+  notes: "Cour de justice de l'UEMOA decisions published on Juricaf by AHJUCAF."
+fetcher:
+  type: api_json
+  pagination: page_number
+  rate_limit: 2.0
+schema:
+  key_fields:
+    - name: _id
+      required: true
+      type: string
+  date_fields:
+    - date
+    - _fetched_at
+  text_fields:
+    - text
+    - title
+notes: >
+  Court of Justice of the West African Economic and Monetary Union
+  (Cour de justice de l'UEMOA) decisions via Juricaf. Full judgment text
+  (div#textArret). Rules on the interpretation and application of UEMOA law
+  across its 8 member states (BJ, BF, CI, GW, ML, NE, SN, TG). ODbL 1.0.
+  Distinct from INTL/UEMOA-Legislation (UEMOA legal instruments).

@@ -62,7 +62,8 @@ except Exception:  # pragma: no cover
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
+from common.http_client import HttpClient
 
 logging.basicConfig(
     level=logging.INFO,
@@ -96,21 +97,32 @@ class NJLegalEthicsScraper(BaseScraper):
             source_dir = str(Path(__file__).parent)
         super().__init__(source_dir)
         self.delay = 0.3
-        self._session = requests.Session()
-        self._session.headers.update({
-            "User-Agent": (
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                "AppleWebKit/605.1.15 (KHTML, like Gecko) "
-                "Version/16.0 Safari/605.1.15"
-            ),
-            "Accept": "application/pdf,text/html,*/*",
-        })
+        # njlaw.rutgers.edu completes the TLS handshake but ships the wrong
+        # intermediate CA, so a bare requests.Session() fails
+        # CERTIFICATE_VERIFY_FAILED. Route fetches through the common
+        # HttpClient: it first tries an AIA-repair (fetch the real intermediate
+        # and verify properly), and only for this allowlisted host degrades to
+        # an unverified retry as a last resort, matching CR/SCIJ (#1484),
+        # VN/CongBao (#1236) and INTL/EnergyCharterTreaty (#1241).
+        self.http = HttpClient(
+            headers={
+                "User-Agent": (
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                    "AppleWebKit/605.1.15 (KHTML, like Gecko) "
+                    "Version/16.0 Safari/605.1.15"
+                ),
+                "Accept": "application/pdf,text/html,*/*",
+            },
+            timeout=90,
+            wall_timeout=180,
+            insecure_ssl_hosts={"njlaw.rutgers.edu"},
+        )
 
     # ---------------------------------------------------------------- http
     def _get(self, url: str) -> requests.Response | None:
         for attempt in range(3):
             try:
-                r = self._session.get(url, timeout=90)
+                r = self.http.get(url)
                 if r.status_code == 200:
                     return r
                 if r.status_code == 404:
@@ -329,12 +341,16 @@ class NJLegalEthicsScraper(BaseScraper):
         buckets = {s: [] for s in SERIES_ORDER}
         for op in opinions:
             buckets[op["series"]].append(op)
-        out, i = [], 0
-        while any(buckets[s] for s in SERIES_ORDER):
+        # Round-robin by index. The loop must stop once i has passed the
+        # longest bucket: it never empties the buckets, so a
+        # `while any(buckets[s] ...)` condition is always True and spins
+        # forever (100% CPU, no output). Bound it by the max bucket length.
+        out = []
+        max_len = max((len(buckets[s]) for s in SERIES_ORDER), default=0)
+        for i in range(max_len):
             for s in SERIES_ORDER:
                 if i < len(buckets[s]):
                     out.append(buckets[s][i])
-            i += 1
         return out
 
     # ------------------------------------------------------------- fetch
@@ -360,6 +376,9 @@ class NJLegalEthicsScraper(BaseScraper):
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self.fetch_all():
             if not since or (raw.get("date") and raw["date"] >= since):
                 yield raw

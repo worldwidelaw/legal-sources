@@ -2,12 +2,16 @@ source_id: CA/YukonLaws
 name: Yukon Consolidated Laws
 country: CA
 url: https://laws.yukon.ca/cms/
-data_url: https://laws.yukon.ca/cms/images/LEGISLATION/
+data_url: http://web.archive.org/cdx/search/cdx?url=laws.yukon.ca/cms/images/LEGISLATION/*
 description: |
-  Consolidated Yukon Acts (PRINCIPAL) and Regulations (SUBORDINATE) from
-  the official laws.yukon.ca portal. Documents are PDF-only, hosted under
-  open Apache directory listings. Each document folder may contain multiple
-  versions; the highest-numbered version is the current consolidated text.
+  Consolidated Yukon Acts (PRINCIPAL), Regulations and orders-in-council
+  (SUBORDINATE), amending acts (AMENDING), the Yukon Gazette (GAZETTES) and
+  appointment orders from the official laws.yukon.ca portal. Documents are
+  PDF-only. Each document folder may contain multiple point-in-time versions;
+  the highest-numbered version is the current consolidated text.
+
+  Read from the Internet Archive: the live laws.yukon.ca estate now sits behind
+  a Cloudflare managed challenge that 403s every non-browser client.
 
 data_types:
   - legislation
@@ -15,11 +19,21 @@ data_types:
 license: "© Government of Yukon (open access)"
 language: en
 
+rate_limit:
+  requests_per_second: 2
+  burst: 4
+
 update_frequency: monthly
 
 schema:
   key_fields:
     - name: doc_id
+      required: true
+      type: string
+    - name: collection
+      required: true
+      type: string
+    - name: doc_type
       required: true
       type: string
   date_field: date
@@ -29,5 +43,30 @@ schema:
 
 notes: |
   All documents are PDFs. Text extraction via common/pdf_extract.
-  Directory listings at /cms/images/LEGISLATION/PRINCIPAL/ and
-  /cms/images/LEGISLATION/SUBORDINATE/ enumerate all folders by year.
+
+  Enumeration is the Wayback CDX API over
+  laws.yukon.ca/cms/images/LEGISLATION/*.pdf. The live host (and the whole
+  yukon.ca legislation estate) returns a Cloudflare "Just a moment..." 403
+  under every UA from every vantage, including residential — verified
+  2026-08-18, issue #1441-D — so neither the by-title index POST nor the PDF
+  assets can be fetched directly without browser automation.
+
+  Two archived URL schemes are folded into one document namespace:
+    current  /LEGISLATION/{PRINCIPAL|SUBORDINATE|AMENDING|GAZETTES}/{year}/{id}/{id}[_N].pdf
+    legacy   /LEGISLATION/{acts|regs|app}/{id}.pdf
+  Keyed on (collection, doc_id); current scheme wins over legacy, then the
+  highest _N point-in-time version, then the newest snapshot.
+
+  Doc IDs are unique only within a collection; colliding SUBORDINATE/AMENDING
+  ids are qualified with the collection name in _id.
+  Year-0000 folders hold placeholder stubs (no legislative text) and are skipped.
+
+  Titles come from the archived HTML index pages (acts-before-2003,
+  acts-from-2003-onwards, index-of-regulations, annual-acts articles, ...),
+  cached to data/wayback_titles.json; documents those pages miss fall back to a
+  title parsed from the PDF's own cover page.
+
+  Coverage gap: /LEGISLATION/historical_statutes/ (216 bound statute volumes
+  1902-2002) and /LEGISLATION/ncnr/ (45 not-consolidated-not-repealed acts) are
+  scanned page images with no text layer. They are excluded and recorded as a
+  coverage gap; ingesting them needs OCR.

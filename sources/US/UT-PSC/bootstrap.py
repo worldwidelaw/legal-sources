@@ -11,10 +11,14 @@ domain (US state government edict).
 Strategy (official public PSC site, psc.utah.gov -- a WordPress site whose
 document store is the pscdocs.utah.gov S3 bucket):
 
-  1. Enumerate every docket page from the WordPress sitemap
-     (psc.utah.gov/wp-sitemap-posts-post-{1,2,3}.xml). Each docket is a
-     post at /YYYY/MM/DD/docket-no-{NN-NNN-NN}/ (~4,700 dockets). The
-     docket number and post date are parsed from the URL.
+  1. Enumerate every docket page from the WordPress sitemap. The shard list
+     comes from psc.utah.gov/wp-sitemap.xml so a future shard is picked up
+     automatically. Each docket is a post at
+     /YYYY/MM/DD/docket-no-{NN-NNN-NN}/ (~4,700 dockets). The docket number
+     and post date are parsed from the URL.
+     NB the newest shard (post-3) is served with HTTP 404 and a valid
+     <urlset> body, so shards are judged by their body, not their status --
+     see _fetch_sitemap.
   2. GET each docket page. It lists every filing in the docket as an
      anchor whose text is the document description and whose href is a
      born-digital PDF on pscdocs.utah.gov. Keep the anchors whose text
@@ -28,9 +32,12 @@ VANTAGE NOTE: the pscdocs.utah.gov S3 bucket serves objects publicly to
 residential clients but returns HTTP 403 to cloud/datacenter IP ranges
 (verified from this build vantage AND the WebFetch egress). To stay
 vantage-independent, _download() tries the live pscdocs URL first and, on
-failure, falls back to the Internet Archive Wayback Machine (which has
-~20k pscdocs PDFs captured and is reachable from any vantage). From a
-residential / proxied vantage the live path retrieves the full corpus.
+failure, falls back to the Internet Archive Wayback Machine (which holds
+~75k pscdocs PDFs and is reachable from any vantage). From a residential /
+proxied vantage the live path retrieves the full corpus.
+The archive lookup is a single CDX sweep built once per run, not one
+/wayback/available call per document -- the per-document call is what
+archive.org refused for 4.4h under fleet load in issue #1270.
 
 Usage:
   python bootstrap.py bootstrap            # Full pull (all Orders)
@@ -50,13 +57,14 @@ import time
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Optional, List, Tuple
+from urllib.parse import unquote
 
 import fitz  # PyMuPDF
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 
 logging.basicConfig(
@@ -66,12 +74,24 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.US.UT-PSC")
 
 SITE = "https://psc.utah.gov"
+SITEMAP_INDEX = SITE + "/wp-sitemap.xml"
+# Fallback shard list if the index itself is unreachable. The site currently
+# publishes three post shards; the index is read first so a future 4th shard is
+# picked up without a code change.
 SITEMAPS = [
     SITE + "/wp-sitemap-posts-post-3.xml",  # newest first
     SITE + "/wp-sitemap-posts-post-2.xml",
     SITE + "/wp-sitemap-posts-post-1.xml",
 ]
 WAYBACK_AVAIL = "https://archive.org/wayback/available?url="
+# One CDX sweep indexes every pscdocs PDF the Internet Archive holds (~75k),
+# which replaces one /wayback/available call per document -- that per-document
+# call is what archive.org started refusing under fleet load (issue #1270).
+WAYBACK_CDX = (
+    "http://web.archive.org/cdx/search/cdx"
+    "?url=pscdocs.utah.gov&matchType=domain&filter=urlkey:.*%5C.pdf"
+    "&fl=timestamp,original&collapse=urlkey"
+)
 
 UA = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -139,6 +159,14 @@ def date_from_filename(url: str) -> Optional[str]:
         return None
 
 
+def _retry_after(resp, default: float) -> float:
+    """Seconds to wait from a Retry-After header, bounded, else `default`."""
+    try:
+        return min(120.0, max(1.0, float(resp.headers.get("Retry-After"))))
+    except (TypeError, ValueError, AttributeError):
+        return default
+
+
 def date_from_posturl(url: str) -> Optional[str]:
     m = POSTDATE_RE.search(url)
     if not m:
@@ -162,37 +190,78 @@ class UTPSCScraper(BaseScraper):
             timeout=90,
         )
         self.delay = 1.0
+        self._wb_index: Optional[dict] = None
 
     # ---- enumeration --------------------------------------------------------
+
+    def _fetch_sitemap(self, url: str) -> Optional[str]:
+        """Fetch a sitemap, judging it by its body rather than its status code.
+
+        psc.utah.gov serves ``wp-sitemap-posts-post-3.xml`` -- the shard holding
+        the newest ~736 dockets -- with HTTP 404 and a complete, valid
+        ``<urlset>`` body (a WordPress rewrite quirk behind Cloudflare). Trusting
+        the status silently dropped every docket published since Nov 2023 while
+        the two older shards still returned 200, so the source looked healthy.
+        """
+        last_body = None
+        for attempt in range(4):
+            try:
+                time.sleep(self.delay)
+                r = self.http.get(url)
+                body = r.text or ""
+                if "<urlset" in body or "<sitemapindex" in body:
+                    if r.status_code != 200:
+                        logger.warning(
+                            f"sitemap {url}: HTTP {r.status_code} but the body is a "
+                            f"valid sitemap ({len(LOC_RE.findall(body))} <loc>) -- using it"
+                        )
+                    return body
+                last_body = body
+                logger.warning(
+                    f"sitemap {url}: HTTP {r.status_code}, no <urlset> in "
+                    f"{len(body)} bytes (attempt {attempt + 1})"
+                )
+            except Exception as e:
+                logger.warning(f"sitemap {url} error: {e} (attempt {attempt + 1})")
+            time.sleep(2.0 * (attempt + 1))
+        if last_body is not None:
+            logger.error(f"sitemap {url}: never returned a parseable sitemap")
+        return None
+
+    def _sitemap_shards(self) -> List[str]:
+        """Post-shard sitemap URLs, newest first, read from the sitemap index."""
+        body = self._fetch_sitemap(SITEMAP_INDEX)
+        if body:
+            shards = [u for u in LOC_RE.findall(body) if "wp-sitemap-posts-post-" in u]
+            if shards:
+                # shard N holds older posts than shard N+1 -> walk newest first
+                return sorted(shards, reverse=True)
+            logger.warning(f"{SITEMAP_INDEX} listed no post shards; using the static list")
+        return list(SITEMAPS)
 
     def _docket_urls(self) -> List[str]:
         """All docket-page URLs from the WordPress sitemaps (newest first)."""
         urls: List[str] = []
         seen = set()
-        for sm in SITEMAPS:
-            r = None
-            for attempt in range(4):
-                try:
-                    time.sleep(self.delay)
-                    r = self.http.get(sm)
-                    if r.status_code == 200:
-                        break
-                    logger.warning(f"sitemap {sm}: HTTP {r.status_code} (attempt {attempt+1})")
-                except Exception as e:
-                    logger.warning(f"sitemap {sm} error: {e}")
-                time.sleep(2.0 * (attempt + 1))
-            if r is None or r.status_code != 200:
+        shards = self._sitemap_shards()
+        for sm in shards:
+            body = self._fetch_sitemap(sm)
+            if body is None:
                 continue
-            try:
-                locs = [u for u in LOC_RE.findall(r.text) if "docket-no" in u]
-                # within a sitemap, newest posts tend to be last -> reverse
-                for u in reversed(locs):
-                    if u not in seen:
-                        seen.add(u)
-                        urls.append(u)
-            except Exception as e:
-                logger.warning(f"sitemap {sm} error: {e}")
-        logger.info(f"Discovered {len(urls)} docket pages")
+            locs = [u for u in LOC_RE.findall(body) if "docket-no" in u]
+            # within a sitemap, newest posts tend to be last -> reverse
+            for u in reversed(locs):
+                if u not in seen:
+                    seen.add(u)
+                    urls.append(u)
+            logger.info(f"{sm}: {len(locs)} docket pages")
+        logger.info(f"Discovered {len(urls)} docket pages from {len(shards)} sitemap shards")
+        if not urls:
+            raise RuntimeError(
+                "US/UT-PSC: no docket pages discovered from any sitemap shard "
+                f"({', '.join(shards)}) -- psc.utah.gov is unreachable or the "
+                "sitemap layout changed; refusing to report an empty corpus"
+            )
         return urls
 
     def _order_links(self, docket_url: str) -> List[Tuple[str, str]]:
@@ -231,24 +300,104 @@ class UTPSCScraper(BaseScraper):
             logger.debug(f"GET {url} error: {e}")
         return None
 
-    def _wayback_pdf(self, url: str) -> Optional[bytes]:
-        """Fetch the closest Wayback capture of a pscdocs PDF (raw bytes)."""
+    @staticmethod
+    def _cdx_key(url: str) -> str:
+        """Scheme/host-insensitive key for matching a pscdocs URL against CDX."""
+        path = url.split("pscdocs.utah.gov", 1)[-1]
+        return unquote(path).lstrip("/").lower()
+
+    def _wayback_index(self) -> dict:
+        """Map pscdocs PDF path -> newest Wayback timestamp, built in one sweep.
+
+        The previous implementation called ``/wayback/available`` once per
+        document. Under fleet load archive.org refused every one of those calls
+        for 4.4 hours and the run produced nothing (#1270). One CDX query
+        indexes the whole bucket (~75k PDFs) instead, so the per-document cost
+        drops to a dict lookup and the only archive.org request that can fail is
+        this one -- which is retried and reported loudly.
+        """
+        if self._wb_index is not None:
+            return self._wb_index
+
+        index: dict = {}
+        for attempt in range(4):
+            try:
+                time.sleep(self.delay)
+                r = self.http.get(WAYBACK_CDX)
+                if r.status_code != 200 or not r.text.strip():
+                    logger.warning(
+                        f"Wayback CDX: HTTP {r.status_code}, {len(r.text or '')} bytes "
+                        f"(attempt {attempt + 1})"
+                    )
+                    time.sleep(5.0 * (attempt + 1))
+                    continue
+                for line in r.text.splitlines():
+                    parts = line.split()
+                    if len(parts) != 2:
+                        continue
+                    ts, original = parts
+                    key = self._cdx_key(original)
+                    # collapse=urlkey already dedupes, but keep the newest anyway
+                    if key and ts > index.get(key, ""):
+                        index[key] = ts
+                break
+            except Exception as e:
+                logger.warning(f"Wayback CDX error: {e} (attempt {attempt + 1})")
+                time.sleep(5.0 * (attempt + 1))
+
+        if index:
+            logger.info(f"Wayback CDX: indexed {len(index)} archived pscdocs PDFs")
+        else:
+            logger.warning(
+                "Wayback CDX returned nothing -- falling back to the per-document "
+                "availability API, which is slower and rate-limited"
+            )
+        self._wb_index = index
+        return index
+
+    def _wayback_timestamp(self, url: str) -> Optional[str]:
+        """Newest Wayback capture timestamp for a pscdocs PDF, if any."""
+        index = self._wayback_index()
+        if index:
+            return index.get(self._cdx_key(url))
+        # CDX unavailable -- fall back to the old per-document lookup.
         try:
             time.sleep(self.delay)
             r = self.http.get(WAYBACK_AVAIL + url)
             if r.status_code != 200:
                 return None
             snap = (r.json().get("archived_snapshots") or {}).get("closest")
-            if not snap or not snap.get("available"):
-                return None
-            ts = snap["timestamp"]
-            raw = f"https://web.archive.org/web/{ts}id_/{url}"
-            time.sleep(self.delay)
-            rr = self.http.get(raw)
-            if rr.status_code == 200 and rr.content[:4] == b"%PDF":
-                return rr.content
+            if snap and snap.get("available"):
+                return snap.get("timestamp")
         except Exception as e:
-            logger.debug(f"wayback {url} error: {e}")
+            logger.debug(f"wayback availability {url} error: {e}")
+        return None
+
+    def _wayback_pdf(self, url: str) -> Optional[bytes]:
+        """Fetch the newest Wayback capture of a pscdocs PDF (raw bytes)."""
+        ts = self._wayback_timestamp(url)
+        if not ts:
+            return None
+        raw = f"https://web.archive.org/web/{ts}id_/{url}"
+        # web.archive.org throttles replays with 503s under sustained load. Without
+        # a backoff each 503 silently drops a document from the corpus, which is
+        # the shape of the #1270 failure -- so retry before giving up.
+        for attempt in range(4):
+            try:
+                time.sleep(self.delay)
+                rr = self.http.get(raw)
+                if rr.status_code == 200 and rr.content[:4] == b"%PDF":
+                    return rr.content
+                if rr.status_code in (429, 503, 502, 504):
+                    delay = _retry_after(rr, 10.0 * (attempt + 1))
+                    logger.debug(f"wayback {url}: HTTP {rr.status_code}, waiting {delay:.0f}s")
+                    time.sleep(delay)
+                    continue
+                return None
+            except Exception as e:
+                logger.debug(f"wayback {url} error: {e} (attempt {attempt + 1})")
+                time.sleep(10.0 * (attempt + 1))
+        logger.warning(f"wayback replay gave up after 4 attempts: {url}")
         return None
 
     def _download(self, url: str) -> Optional[bytes]:
@@ -313,6 +462,9 @@ class UTPSCScraper(BaseScraper):
                 }
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self.fetch_all():
             if not since or (raw.get("date") and raw["date"] >= since):
                 yield raw

@@ -39,6 +39,27 @@ Strategy:
      "Published" date from the listing, falling back to a body date or the
      YY- prefix of the ruling number.
 
+Vantage fallback (issue #1256):
+  tax.colorado.gov answers 200 from a US residential IP but its WAF returns
+  HTTP 403 to datacenter IPs, so a live-only run off the fleet fetches the
+  index, gets 403, and writes nothing. The corpus is mirrored in the Internet
+  Archive, so every fetch is live-first with a Wayback fallback:
+
+      https://web.archive.org/web/3000id_/{url}
+
+  ("3000" = latest capture, "id_" = raw bytes, no IA banner injection.)
+  The archived index still lists 364 ruling anchors (vs 372 live) and 368 of
+  the ruling PDFs have a capture, 365 of them at status 200.
+
+  Two refinements over a plain "3000id_" fallback, both learned the hard way:
+    * The origin 403s IA's crawler too, so the *newest* capture can itself be
+      an archived error body. When the latest replay is unusable we walk the
+      CDX index backwards (`limit=-8`), drop 403/404/429/5xx rows, keep
+      revisit records (statuscode "-"), and replay the newest survivor.
+    * After three consecutive live failures with zero live successes the
+      scraper latches into Wayback-only mode so it stops paying the 403
+      round-trip on every remaining URL.
+
 Usage:
   python bootstrap.py bootstrap            # Full pull
   python bootstrap.py bootstrap --sample   # Fetch ~12 samples
@@ -62,7 +83,7 @@ from typing import Generator
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 from common.pdf_extract import extract_pdf_markdown
 
@@ -74,8 +95,21 @@ logger = logging.getLogger("legal-data-hunter.US.CO-TaxRulings")
 
 BASE_URL = "https://tax.colorado.gov"
 INDEX_PATH = "/all-letter-rulings"
+DOCUMENTS_PREFIX = "/sites/tax/files/documents"
 
 MIN_TEXT_CHARS = 200
+
+# Internet Archive replay of the latest capture, raw bytes (no IA banner).
+WAYBACK_LATEST = "https://web.archive.org/web/3000id_/"
+WAYBACK_REPLAY = "https://web.archive.org/web/{ts}id_/{url}"
+CDX_API = "https://web.archive.org/cdx/search/cdx"
+# Capture statuses that mean "the archive stored an error page, not the doc".
+CDX_BAD_STATUS = {"403", "404", "429", "500", "502", "503", "504"}
+# How many historical captures to replay before giving up on one PDF.
+MAX_CDX_REPLAYS = 4
+# Consecutive live failures (with zero live successes) before we stop trying
+# the live host at all and read everything from the archive.
+LIVE_FAIL_LATCH = 3
 
 # A <tr>...</tr> block on the listing table.
 TR_RE = re.compile(r"<tr[^>]*>(.*?)</tr>", re.S | re.I)
@@ -121,6 +155,17 @@ def _strip_tags(html: str) -> str:
     return re.sub(r"\s+", " ", _htmllib.unescape(TAG_RE.sub(" ", html))).strip()
 
 
+def _pdf_key(url: str) -> str:
+    """Match a ruling PDF across the live listing and the CDX index.
+
+    The two disagree on percent-encoding and filename case (``GIL%2022-003.pdf``
+    vs ``GIL 22-003.pdf``, ``.pdf`` vs ``.PDF``), so key on the unquoted,
+    upper-cased filename.
+    """
+    path = urllib.parse.urlparse(url).path
+    return urllib.parse.unquote(path).rsplit("/", 1)[-1].upper()
+
+
 def _parse_month_date(month: str, day: str, year: str) -> str | None:
     try:
         mon = _MONTHS[month.lower()]
@@ -151,37 +196,136 @@ class COTaxRulingsScraper(BaseScraper):
             },
             timeout=90,
         )
+        # The archive is slower than the origin and worth waiting on.
+        self.http_wayback = HttpClient(
+            base_url="",
+            headers={
+                "User-Agent": "LegalDataHunter/1.0 (open-data research project; "
+                "+https://github.com/ZachLaik)",
+                "Accept": "*/*",
+            },
+            timeout=120,
+            max_retries=2,
+        )
         self.delay = 1.0
+        # Vantage state: latch into archive-only mode once the live host has
+        # proved unreachable, so we stop paying its 403 on every URL.
+        self._live_ok = False
+        self._live_failures = 0
+        self._wayback_mode = False
+        self._cdx_cache: dict | None = None
 
     # ---- fetch helpers -------------------------------------------------
 
-    def _get(self, url: str, retries: int = 4) -> str:
+    def _raw_get(self, url: str, client: HttpClient, retries: int):
+        """Single-endpoint GET loop. Returns the response or None."""
         for attempt in range(retries + 1):
             time.sleep(self.delay)
             try:
-                resp = self.http.get(url)
-                if resp.status_code == 200:
-                    return resp.text
+                resp = client.get(url)
+                if resp.status_code == 200 and resp.content:
+                    return resp
                 logger.warning(f"HTTP {resp.status_code} for {url}")
             except Exception as e:
                 logger.warning(f"Error fetching {url} (attempt {attempt + 1}): {e}")
             if attempt < retries:
                 time.sleep(2 ** attempt)
-        return ""
+        return None
+
+    @staticmethod
+    def _usable(resp, want_pdf: bool) -> bool:
+        return resp is not None and (not want_pdf or resp.content[:4] == b"%PDF")
+
+    def _cdx_index(self) -> dict:
+        """Map ruling filename -> newest-first (timestamp, archived URL) captures.
+
+        Built from a *single* prefix query over the documents library. Querying
+        the CDX API once per missing PDF gets rate-limited into 503s, and the
+        whole ruling corpus is only ~2,000 capture rows, so one query is both
+        cheaper and more reliable.
+
+        Revisit records carry statuscode "-" (the real status lives on the
+        capture they point at) and are kept — dropping them would discard most
+        of the archive's coverage.
+        """
+        if self._cdx_cache is not None:
+            return self._cdx_cache
+        self._cdx_cache = {}
+        params = urllib.parse.urlencode({
+            "url": f"{urllib.parse.urlparse(BASE_URL).netloc}{DOCUMENTS_PREFIX}*",
+            "output": "json",
+            "fl": "original,timestamp,statuscode",
+            "filter": r"urlkey:.*(plr|gil).*\.pdf",
+        })
+        resp = self._raw_get(f"{CDX_API}?{params}", self.http_wayback, retries=2)
+        if resp is None:
+            logger.warning("CDX prefix query failed — per-PDF archive fallback disabled")
+            return self._cdx_cache
+        try:
+            rows = resp.json()[1:]
+        except Exception:
+            logger.warning("CDX prefix query returned unparseable JSON")
+            return self._cdx_cache
+        for original, ts, status in rows:
+            if status in CDX_BAD_STATUS:
+                continue
+            self._cdx_cache.setdefault(_pdf_key(original), []).append((ts, original))
+        for captures in self._cdx_cache.values():
+            captures.sort(reverse=True)  # newest first
+        logger.info(f"CDX: {len(rows)} captures across "
+                    f"{len(self._cdx_cache)} archived ruling PDFs")
+        return self._cdx_cache
+
+    def _wayback_get(self, url: str, want_pdf: bool):
+        """Read `url` from the Internet Archive, latest usable capture first."""
+        resp = self._raw_get(WAYBACK_LATEST + url, self.http_wayback, retries=1)
+        if self._usable(resp, want_pdf):
+            return resp
+        # The "latest capture" shortcut can itself replay an archived 403/404
+        # (the origin blocks IA's crawler too) — walk back through the CDX index.
+        # Only PDFs are indexed there; the listing page has no prefix entry.
+        if want_pdf:
+            for ts, original in self._cdx_index().get(_pdf_key(url), [])[:MAX_CDX_REPLAYS]:
+                resp = self._raw_get(
+                    WAYBACK_REPLAY.format(ts=ts, url=original), self.http_wayback,
+                    retries=0,
+                )
+                if self._usable(resp, want_pdf):
+                    return resp
+        logger.warning(f"No usable Wayback capture for {url}")
+        return None
+
+    def _fetch(self, url: str, retries: int = 2, want_pdf: bool = False):
+        """Fetch `url` live, falling back to the Internet Archive.
+
+        tax.colorado.gov 403s datacenter IPs (issue #1256), so the archive is a
+        first-class path here rather than a curiosity.
+        """
+        if not self._wayback_mode:
+            # Until the origin has answered once, treat the live call as a
+            # single cheap probe rather than a full retry ladder.
+            resp = self._raw_get(url, self.http, retries if self._live_ok else 0)
+            if self._usable(resp, want_pdf):
+                self._live_ok = True
+                self._live_failures = 0
+                return resp
+            self._live_failures += 1
+            if not self._live_ok and self._live_failures >= LIVE_FAIL_LATCH:
+                self._wayback_mode = True
+                logger.warning(
+                    f"tax.colorado.gov unreachable from this vantage "
+                    f"({self._live_failures} consecutive failures, 0 successes) — "
+                    f"reading the corpus from the Internet Archive instead"
+                )
+        return self._wayback_get(url, want_pdf)
+
+    def _get(self, url: str, retries: int = 4) -> str:
+        resp = self._fetch(url, retries=retries)
+        return resp.text if resp is not None else ""
 
     def _get_bytes(self, url: str, retries: int = 3) -> bytes | None:
-        for attempt in range(retries + 1):
-            time.sleep(self.delay)
-            try:
-                resp = self.http.get(url)
-                if resp.status_code == 200 and resp.content:
-                    return resp.content
-                logger.warning(f"HTTP {resp.status_code} for {url}")
-            except Exception as e:
-                logger.warning(f"Error fetching PDF {url} (attempt {attempt + 1}): {e}")
-            if attempt < retries:
-                time.sleep(2 ** attempt)
-        return None
+        resp = self._fetch(url, retries=retries, want_pdf=True)
+        return resp.content if resp is not None else None
 
     # ---- parsing -------------------------------------------------------
 
@@ -199,8 +343,12 @@ class COTaxRulingsScraper(BaseScraper):
         url = f"{BASE_URL}{INDEX_PATH}"
         html = self._get(url)
         if not html:
-            logger.error("Failed to fetch the All Letter Rulings index")
-            return
+            raise RuntimeError(
+                "US/CO-TaxRulings: could not read the All Letter Rulings index "
+                "live (tax.colorado.gov 403s datacenter IPs) and no usable "
+                "Internet Archive capture answered either — the corpus is "
+                "unreachable from this vantage."
+            )
         seen: set[str] = set()
         total = 0
         for row in TR_RE.findall(html):
@@ -368,6 +516,9 @@ class COTaxRulingsScraper(BaseScraper):
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self.fetch_all():
             if not since or (raw.get("date") and raw["date"] >= since):
                 yield raw

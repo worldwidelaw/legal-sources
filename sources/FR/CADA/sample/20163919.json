@@ -1,0 +1,26 @@
+{
+  "_id": "FR/CADA/20163919",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-08-06T21:53:57.602631+00:00",
+  "opinion_id": "20163919",
+  "title": "Avis 20163919 - Mairie de Tresses",
+  "date": "2016-10-06",
+  "url": "https://www.data.gouv.fr/explore/cada/20163919",
+  "text": "Maître X, X, a saisi la commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 1er août 2016, à la suite du refus opposé par le maire de Tresses à sa demande de communication, si possible par voie dématérialisée, du document d'urbanisme en vigueur sur la commune, sur laquelle ses clients sont propriétaires de plusieurs parcelles concernées par l'opération d'aménagement de la RD936.\n\nEn réponse à la demande qui lui a été adressée, le maire de Tresses a informé la commission qu'il avait, le 5 septembre 2016, fait parvenir à Maître X un lien vers un service de transfert de fichier, lui permettant de télécharger le document demandé, opération que celle-ci avait effectuée le jour même.\n\nLa commission ne peut dès lors que déclarer sans objet la demande d'avis.",
+  "subject": "",
+  "administration": "Mairie de Tresses",
+  "meanings": [
+    "Sans objet",
+    "Communiqué"
+  ],
+  "topics": [
+    "Urbanisme Et Aménagement Du Territoire",
+    "Urbanisme"
+  ],
+  "tags": [
+    "POS-PLU"
+  ],
+  "part": "III",
+  "type": "Avis"
+}

@@ -53,3 +53,12 @@ schema:
     - name: judgment_type
       type: string
       required: false
+    # Filing year read off the case number (2005구단4445 -> 2005). Present so the
+    # ~29K records the API gives no 선고일자 for (#1496) stay time-bucketable
+    # without asserting a decision date they do not have.
+    - name: filing_year
+      type: integer
+      required: false
+    - name: data_origin
+      type: string
+      required: false

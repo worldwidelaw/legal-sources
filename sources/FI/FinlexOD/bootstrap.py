@@ -38,6 +38,11 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.FI.FinlexOD")
 
 API_BASE = "https://opendata.finlex.fi/finlex/avoindata/v1"
+
+# The statute list is newest-first, so once this many consecutive already-seen
+# statutes go by we are past the new tail. Kept well above the 10-item page size
+# so a single page of re-ordered results cannot end the walk early.
+STOP_AFTER_SEEN = 50
 SPARQL_URL = "http://ldf.fi/finlex/sparql"
 
 
@@ -295,9 +300,95 @@ SELECT ?judgment ?title ?text WHERE {{
         yield from self._fetch_legislation()
         yield from self._fetch_case_law()
 
+    # ── Incremental refresh (#1502) ───────────────────────────────────
+
+    def _checkpoint_path(self) -> Path:
+        return Path(__file__).parent / "data" / "finlex_checkpoint.json"
+
+    def _load_seen(self) -> set:
+        try:
+            with open(self._checkpoint_path(), encoding="utf-8") as f:
+                return set(json.load(f).get("seen_ids") or [])
+        except (OSError, ValueError):
+            return set()
+
+    def _save_seen(self, seen: set) -> None:
+        path = self._checkpoint_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".json.tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump({"seen_ids": sorted(seen), "count": len(seen),
+                       "updated_at": datetime.now(timezone.utc).isoformat()}, f)
+        tmp.replace(path)  # atomic: a truncated checkpoint would re-yield the corpus
+
     def fetch_updates(self, since: str = None) -> Generator[Dict[str, Any], None, None]:
-        """Fetch recent legislation updates."""
-        yield from self._fetch_legislation(max_records=50)
+        """Yield only statutes and decisions not seen by a previous run.
+
+        The old implementation fetched the first 50 statutes on every refresh —
+        not a full re-crawl, but an arbitrary cap that could neither reach
+        anything below the 50 newest nor return any case law at all (#1502).
+
+        Two facts drive the replacement, both verified against the live API:
+
+        * `/act/statute/list` is ordered newest-first — page 1 is the latest
+          statute, page 500 lands about three years back — so the legislation
+          walk can stop once it is deep into already-seen territory.
+        * `limit` is capped at 10 server-side, so every page costs a request and
+          stopping early is where the entire saving comes from.
+
+        The comparator is a seen-ID checkpoint, not a date. A statute's year is
+        its enactment year rather than the day Finlex published it, so a date
+        cutoff would silently skip anything published late or re-issued — the
+        exact failure mode this issue is about. An ID we have never emitted is
+        new regardless of the date it carries.
+
+        Case law comes from SPARQL with no ORDER BY, so its offset order is not
+        guaranteed to track recency and an early stop would be unsound. Those
+        results are filtered against the checkpoint but still walked, so the
+        refresh stays correct at the cost of the SPARQL pagination.
+        """
+        seen = self._load_seen()
+        if not seen:
+            logger.info(
+                "No checkpoint — this first incremental run walks the whole "
+                "corpus so nothing is missed; later runs stop early."
+            )
+
+        emitted = 0
+        consecutive_seen = 0
+        stopped_early = False
+
+        for raw in self._fetch_legislation():
+            doc_id = raw.get("document_id")
+            if doc_id in seen:
+                consecutive_seen += 1
+                if consecutive_seen >= STOP_AFTER_SEEN:
+                    logger.info(
+                        f"Reached {consecutive_seen} consecutive known statutes — "
+                        "stopping the newest-first walk"
+                    )
+                    stopped_early = True
+                    break
+                continue
+            consecutive_seen = 0
+            seen.add(doc_id)
+            emitted += 1
+            yield raw
+
+        logger.info(f"Legislation: {emitted} new "
+                    f"({'stopped early' if stopped_early else 'walked to the end'})")
+
+        case_new = 0
+        for raw in self._fetch_case_law():
+            doc_id = raw.get("document_id")
+            if doc_id in seen:
+                continue
+            seen.add(doc_id)
+            case_new += 1
+            yield raw
+
+        logger.info(f"Case law: {case_new} new. Update yielded {emitted + case_new} records")
+        self._save_seen(seen)
 
     def test(self) -> bool:
         """Quick connectivity test."""
@@ -370,4 +461,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

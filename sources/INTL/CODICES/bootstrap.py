@@ -23,7 +23,7 @@ import json
 import time
 import logging
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Generator, Optional
 
 import requests
@@ -31,7 +31,7 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 logging.basicConfig(
     level=logging.INFO,
@@ -42,6 +42,18 @@ logger = logging.getLogger("legal-data-hunter.INTL.CODICES")
 API_BASE = "https://codices.coe.int/api"
 
 # Full search request body matching the Angular SPA's SearchRequestDto
+# CODICES filters on the decision date, but a précis is published in a Bulletin
+# issued long after the judgment it summarises, so a strict `StartDate = since`
+# would skip every late-catalogued older decision. Two years of slack costs a
+# few extra pages that dedupe on `_id` at ingest; missing them is silent (#1502).
+UPDATE_LOOKBACK_DAYS = 730
+
+# The old loop stopped dead at 20 pages (1,000 précis) with no warning. Now the
+# walk runs until the API says there is nothing more, and only a page count that
+# could not be legitimate — the whole corpus is ~10,000 précis at 50 a page —
+# trips the guard, which fails loud rather than truncating.
+UPDATE_MAX_PAGES = 500
+
 SEARCH_TEMPLATE = {
     "Text": "",
     "Type": None,
@@ -283,15 +295,40 @@ class CODICESScraper(BaseScraper):
 
         logger.info(f"fetch_all complete: {total_yielded} documents")
 
-    def fetch_updates(self, since: str) -> Generator[dict, None, None]:
-        """Yield précis newer than `since` (ISO date string)."""
+    def fetch_updates(self, since) -> Generator[dict, None, None]:
+        """
+        Yield précis whose decision date falls after `since`.
+
+        `since` is normalized to a plain YYYY-MM-DD string first. `update()`
+        hands down a `datetime`, which went straight into the `json=` body of
+        the search POST and raised "Object of type datetime is not JSON
+        serializable" — the run ended with 0 written and the traceback reduced
+        to an `error_message`, so it read as an empty refresh (#1509).
+
+        CODICES filters on the DECISION date, not on when a précis was added,
+        and the Venice Commission publishes its bulletins well after the
+        decisions they cover — a précis of a 2019 judgment can land this year.
+        Filtering strictly at `since` would step over exactly those late
+        arrivals, so the window is widened by UPDATE_LOOKBACK_DAYS and the
+        re-offered records dedupe on `_id` at ingest (#1502).
+        """
+        since_date = as_date_str(since)
+        if since_date:
+            start = (datetime.fromisoformat(since_date)
+                     - timedelta(days=UPDATE_LOOKBACK_DAYS)).date().isoformat()
+        else:
+            start = ""
+        logger.info(f"Update window: decisions from {start or 'the beginning'} "
+                    f"(since={since_date or 'unset'}, "
+                    f"lookback={UPDATE_LOOKBACK_DAYS}d)")
+
         page = 0
         total_yielded = 0
 
-        while page < 20:
+        while True:
             logger.info(f"Update search page {page}")
             try:
-                results = self._search(page=page, StartDate=since)
+                results = self._search(page=page, StartDate=start or None)
             except requests.HTTPError as e:
                 logger.error(f"Update search failed: {e}")
                 break
@@ -311,9 +348,17 @@ class CODICESScraper(BaseScraper):
             if not has_more:
                 break
             page += 1
+            if page > UPDATE_MAX_PAGES:
+                raise RuntimeError(
+                    f"Update search still reports more results at page {page} "
+                    f"({total_yielded} yielded) — StartDate is being ignored?"
+                )
             time.sleep(0.5)
 
-        logger.info(f"fetch_updates complete: {total_yielded} documents since {since}")
+        logger.info(
+            f"fetch_updates complete: {total_yielded} documents "
+            f"with a decision date after {start or 'the beginning'}"
+        )
 
 
 def main():
@@ -377,4 +422,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

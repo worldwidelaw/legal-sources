@@ -14,10 +14,15 @@ Strategy:
   - ~10 documents total
 
 Usage:
-  python bootstrap.py bootstrap          # Full initial pull
-  python bootstrap.py bootstrap --sample # Fetch 15 sample records
+  python bootstrap.py bootstrap          # Full corpus -> data/records.jsonl
+  python bootstrap.py bootstrap --full   # Same
+  python bootstrap.py bootstrap-fast     # Same, fleet entry point
+  python bootstrap.py bootstrap --sample # 6 sample records -> sample/
   python bootstrap.py update             # No-op (treaty texts rarely change)
   python bootstrap.py test               # Quick connectivity test
+
+Downloads fail loud (WMODownloadError) on an undersized or non-PDF body so a
+block/placeholder page can never be mistaken for a completed run (GH-1239).
 """
 
 import re
@@ -138,14 +143,32 @@ WMO15_URL = f"{LIBRARY_BASE}/viewer/{WMO15_ITEM_ID}/download?file={WMO15_FILENAM
 WMO15_RECORD_URL = f"{LIBRARY_BASE}/records/item/{WMO15_ITEM_ID}"
 
 
-def _curl_download(url: str, dest: str, timeout: int = 120) -> bool:
-    """Download a file using curl (avoids Python SSL issues with this host)."""
+class WMODownloadError(RuntimeError):
+    """A WMO PDF could not be retrieved as a real PDF."""
+
+
+# A genuine WMO-No. 15 is ~1.5 MB; the Technical Regulations run ~1-5 MB. Any
+# body far below this is a block/error page, not a truncated document.
+MIN_PDF_BYTES = 50_000
+
+
+def _curl_download(url: str, dest: str, timeout: int = 120,
+                   min_bytes: int = MIN_PDF_BYTES) -> None:
+    """Download a PDF with curl (Python requests has SSL issues with this host).
+
+    Raises WMODownloadError instead of returning False so a blocked or
+    placeholder response fails loud. The fleet previously received a
+    10,535-byte body with HTTP 200 (GH-1239); `curl -s -L` without --fail
+    happily saved it, and the caller only logged a warning, so the run
+    exited "successfully" having fetched nothing.
+    """
     try:
         result = subprocess.run(
             [
-                "curl", "-s", "-L", "--http1.1",
+                "curl", "-s", "-L", "--http1.1", "--fail",
                 "-H", "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
                 "--max-time", str(timeout),
+                "-w", "%{http_code}",
                 "-o", dest,
                 url,
             ],
@@ -153,10 +176,31 @@ def _curl_download(url: str, dest: str, timeout: int = 120) -> bool:
             text=True,
             timeout=timeout + 30,
         )
-        return result.returncode == 0
     except Exception as e:
-        logger.error("curl download failed: %s", e)
-        return False
+        raise WMODownloadError(f"curl failed for {url}: {e}") from e
+
+    http_code = (result.stdout or "").strip() or "?"
+    if result.returncode != 0:
+        raise WMODownloadError(
+            f"curl exit {result.returncode} (HTTP {http_code}) for {url}"
+        )
+
+    path = Path(dest)
+    size = path.stat().st_size if path.exists() else 0
+    if size < min_bytes:
+        head = path.read_bytes()[:200] if size else b""
+        raise WMODownloadError(
+            f"{url} returned only {size} bytes (HTTP {http_code}) — expected "
+            f">={min_bytes}. This is a block/placeholder page, not the PDF. "
+            f"First bytes: {head!r}"
+        )
+    with open(dest, "rb") as fh:
+        magic = fh.read(5)
+    if magic != b"%PDF-":
+        raise WMODownloadError(
+            f"{url} returned {size} bytes that are not a PDF (magic {magic!r}, "
+            f"HTTP {http_code}) — likely an HTML block page."
+        )
 
 
 def _extract_pdf_text(pdf_path: str, start_page: int = 0, end_page: int = -1) -> str:
@@ -220,18 +264,15 @@ class WMOBasicDocsScraper(BaseScraper):
         tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
         tmp.close()
         logger.info("Downloading WMO-No. 15 (Basic Documents No. 1)...")
-        if _curl_download(WMO15_URL, tmp.name):
-            import os
-            size = os.path.getsize(tmp.name)
-            if size > 100000:  # Should be ~1.5 MB
-                logger.info("Downloaded WMO-No. 15: %d bytes", size)
-                self._wmo15_path = tmp.name
-                return tmp.name
-            else:
-                logger.error("WMO-No. 15 download too small: %d bytes", size)
-        else:
-            logger.error("Failed to download WMO-No. 15")
-        return None
+        try:
+            # WMO-No. 15 is ~1.5 MB; hold it to a higher bar than the generic guard.
+            _curl_download(WMO15_URL, tmp.name, min_bytes=100_000)
+        except WMODownloadError:
+            Path(tmp.name).unlink(missing_ok=True)
+            raise
+        logger.info("Downloaded WMO-No. 15: %d bytes", Path(tmp.name).stat().st_size)
+        self._wmo15_path = tmp.name
+        return tmp.name
 
     def _fetch_wmo15_sections(self, sample: bool = False):
         """Yield records for each section of WMO-No. 15."""
@@ -276,23 +317,11 @@ class WMOBasicDocsScraper(BaseScraper):
             tmp.close()
 
             logger.info("Downloading: %s", reg["title"][:70])
-            if not _curl_download(url, tmp.name):
-                logger.warning("Failed to download: %s", reg["title"])
-                continue
-
-            import os
-            size = os.path.getsize(tmp.name)
-            if size < 50000:
-                logger.warning("Download too small (%d bytes): %s", size, reg["title"])
-                continue
-
-            text = _extract_pdf_text(tmp.name)
-            text = _clean_text(text)
-
             try:
-                os.unlink(tmp.name)
-            except OSError:
-                pass
+                _curl_download(url, tmp.name)
+                text = _clean_text(_extract_pdf_text(tmp.name))
+            finally:
+                Path(tmp.name).unlink(missing_ok=True)
 
             if text and len(text) > 500:
                 yield {
@@ -322,9 +351,18 @@ class WMOBasicDocsScraper(BaseScraper):
         }
 
     def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
-        """Fetch all WMO basic documents."""
-        yield from self._fetch_wmo15_sections(sample=False)
-        yield from self._fetch_tech_regs(sample=False)
+        """Fetch all WMO basic documents (yields RAW, per the BaseScraper contract)."""
+        try:
+            yield from self._fetch_wmo15_sections(sample=False)
+            yield from self._fetch_tech_regs(sample=False)
+        finally:
+            self._cleanup()
+
+    def _cleanup(self) -> None:
+        """Drop the cached WMO-No. 15 download."""
+        if self._wmo15_path:
+            Path(self._wmo15_path).unlink(missing_ok=True)
+            self._wmo15_path = None
 
     def fetch_updates(self, since=None) -> Generator[Dict[str, Any], None, None]:
         """WMO treaty texts rarely change; re-fetch all."""
@@ -371,22 +409,39 @@ class WMOBasicDocsScraper(BaseScraper):
                 json.dump(normalized, f, ensure_ascii=False, indent=2)
             count += 1
 
-        # Clean up cached WMO-15 PDF
-        if self._wmo15_path:
-            try:
-                import os
-                os.unlink(self._wmo15_path)
-            except OSError:
-                pass
+        self._cleanup()
 
         logger.info("%s bootstrap complete: %d records saved", label, count)
         return count
 
 
+def _run_full(scraper: "WMOBasicDocsScraper") -> None:
+    """Full corpus through BaseScraper storage -> data/records.jsonl.
+
+    The old `bootstrap --full` called run_bootstrap(), which only ever wrote
+    into sample/ — so even a completely successful run left the fleet with
+    nothing to ingest beyond the committed samples (GH-1239).
+    """
+    stats = scraper.bootstrap(sample_mode=False)
+    fetched = stats.get("records_fetched", 0)
+    logger.info(
+        "bootstrap_fast complete: %d fetched, %d new, %d errors",
+        fetched, stats.get("records_new", 0), stats.get("errors", 0),
+    )
+    if fetched == 0:
+        raise RuntimeError(
+            "0 records fetched — every library.wmo.int download failed; "
+            "do not treat this as a completed run"
+        )
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="INTL/WMO-BasicDocs Bootstrap")
-    parser.add_argument("command", choices=["bootstrap", "update", "test"])
+    parser.add_argument(
+        "command",
+        choices=["bootstrap", "bootstrap-fast", "bootstrap_fast", "update", "test"],
+    )
     parser.add_argument("--sample", action="store_true",
                         help="Fetch sample only (~6 records)")
     parser.add_argument("--full", action="store_true", help="Fetch all records")
@@ -397,14 +452,18 @@ def main():
     if args.command == "test":
         ok = scraper.test_connection()
         sys.exit(0 if ok else 1)
+    elif args.command in ("bootstrap-fast", "bootstrap_fast"):
+        _run_full(scraper)
     elif args.command == "update":
         logger.info("WMO treaty texts rarely change; use bootstrap for full re-fetch")
     elif args.command == "bootstrap":
-        sample = args.sample and not args.full
-        count = scraper.run_bootstrap(sample=sample)
-        if count == 0:
-            logger.error("No records fetched!")
-            sys.exit(1)
+        if args.full or not args.sample:
+            _run_full(scraper)
+        else:
+            count = scraper.run_bootstrap(sample=True)
+            if count == 0:
+                logger.error("No records fetched!")
+                sys.exit(1)
 
 
 if __name__ == "__main__":

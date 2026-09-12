@@ -1,0 +1,52 @@
+source:
+  id: "EU/EP-Questions"
+  name: "European Parliament — Parliamentary Questions (written questions & answers)"
+  country: "EU"
+  language: "en"
+
+  # Full text is retrieved from the European Parliament Open Data Portal, which
+  # exposes each written question and its answer as a born-digital PDF
+  # distribution. The 9{YYYY}E{NNNN} CELEX works are metadata-only in CELLAR
+  # (every content-negotiation manifestation 404s), so the portal is the only
+  # full-text vein. Enumeration is by year (portal covers term 8 onward, ~2014+);
+  # full text via the /api/v2/parliamentary-questions detail records, which embed
+  # the English PDF manifestation of the question and (via inverse_answers_to) the
+  # answer. data.europarl.europa.eu is not behind the AWS-WAF that 202-challenges
+  # the www.europarl.europa.eu doceo pages, so it is fleet-safe.
+  endpoints:
+    api: "https://data.europarl.europa.eu/api/v2/parliamentary-questions"
+    distribution: "https://data.europarl.europa.eu/{path}"
+
+  data_types:
+    - doctrine
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1
+
+  schema:
+    key_fields:
+      _id:
+        type: string
+        required: true
+      title:
+        type: string
+        required: true
+      text:
+        type: string
+        required: true
+      date:
+        type: date
+        required: false
+
+fetch:
+  sample_count: 15
+
+license:
+  name: "EU institutional reuse (Decision 2011/833/EU)"
+  url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "European Parliament documents (parliamentary questions and answers) published via the EP Open Data Portal are reusable under the Commission's reuse policy (Decision 2011/833/EU) and the Portal's open reuse terms. Attribution required; commercial use permitted."

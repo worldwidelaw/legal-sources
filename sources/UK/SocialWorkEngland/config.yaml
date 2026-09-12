@@ -18,10 +18,15 @@
 # /umbraco/surface/hearingdetails/download?docid={docid}&hearingid={id}. Final
 # hearings run ~10-30 pages of reasoned decision (findings of fact, impairment,
 # sanction). Born-digital PDF text layer, no OCR. Old decisions are removed under
-# SWE's publication policy, so the live corpus is a rolling window of recently
-# published hearings, enumerated over a sliding integer-id window.
+# SWE's publication policy, so the live corpus is a rolling window of published
+# hearings. Enumeration walks the site's own "Hearing decisions" listing
+# (/concerns/hearings-and-decisions/hearings-decisions/) one calendar year at a
+# time (date-range filter + &page=N, 10 rows/page, reported result total); hearing
+# ids run from ~730 (2020) to ~5700 (2026) so a bounded integer scan cannot reach
+# the older end and is kept only as a fallback.
 #
-# Total: ~400-600 full-text determinations live at any time (rolling window).
+# Total: ~1,050 hearings listed, ~600 of which carry a full-text determination
+# (interim-order hearings publish no determination PDF).
 
 source:
   id: UK/SocialWorkEngland

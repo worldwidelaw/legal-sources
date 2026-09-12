@@ -343,12 +343,14 @@ def bootstrap(sample: bool = False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="GT/CC data fetcher")
-    parser.add_argument("command", choices=["test-api", "bootstrap"])
+    parser.add_argument("command", choices=["test-api", "bootstrap", "bootstrap-fast"])
     parser.add_argument("--sample", action="store_true", help="Fetch only sample data")
     parser.add_argument("--full", action="store_true", help="Fetch all data")
     args = parser.parse_args()
 
     if args.command == "test-api":
         test_api()
-    elif args.command == "bootstrap":
-        bootstrap(sample=args.sample or not args.full)
+    elif args.command in ("bootstrap", "bootstrap-fast"):
+        # bootstrap-fast is the fleet entrypoint and is always a full run.
+        sample = (args.sample or not args.full) and args.command != "bootstrap-fast"
+        bootstrap(sample=sample)

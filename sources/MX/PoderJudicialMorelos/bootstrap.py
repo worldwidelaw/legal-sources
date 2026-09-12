@@ -38,7 +38,7 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.pdf_extract import _extract as extract_pdf_text
 
 logging.basicConfig(
@@ -163,6 +163,7 @@ class MorelosCourtScraper(BaseScraper):
         yield from self._iter_rows()
 
     def fetch_updates(self, since: str = None) -> Generator[Dict[str, Any], None, None]:
+        since = as_date_str(since)  # update() passes a datetime; #1512
         for raw in self._iter_rows():
             f = raw.get("fecha_sentencia") or ""
             if since and f and f < since:

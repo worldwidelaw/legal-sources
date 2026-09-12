@@ -58,6 +58,38 @@ logger = logging.getLogger("legal-data-hunter.GR.dpa")
 # Base URL for Greek DPA
 BASE_URL = "https://www.dpa.gr"
 LIST_URL = "/el/enimerwtiko/prakseisArxis"
+# Rows per list page in the Drupal view.
+PAGE_SIZE = 15
+
+
+# The HDPA numbers each act type from 1 every year, so Απόφαση 8/2026 and
+# Γνωμοδότηση 8/2026 are different documents. Ids must therefore carry the
+# category. Αποφάσεις keep the bare historical id so the ~1.5K rows already
+# ingested under "HDPA/<n>/<year>" stay addressable; the other categories,
+# which were previously colliding with them, get a prefixed id.
+CATEGORY_CODES = {
+    "Απόφαση": "",
+    "Γνωμοδότηση": "GNOM",
+    "Οδηγία": "ODIG",
+    "Σύσταση": "SYST",
+    "Κατευθυντήρια γραμμή": "KATG",
+    "Κατευθυντήριες γραμμές": "KATG",
+}
+
+
+def _doc_id(number, year, category: str = "Απόφαση") -> str:
+    """
+    Stable document id. Numbers are not always integers ("734/18", "581α"),
+    so slashes are folded to keep each id a single path segment.
+    """
+    code = CATEGORY_CODES.get(
+        (category or "").strip(),
+        # Unknown category: derive a deterministic code rather than silently
+        # colliding with Αποφάσεις.
+        re.sub(r"\W+", "", category or "")[:8].upper(),
+    )
+    number = str(number).strip().replace("/", "-")
+    return f"HDPA/{code}/{number}/{year}" if code else f"HDPA/{number}/{year}"
 
 
 class GreekDPAScraper(BaseScraper):
@@ -92,20 +124,27 @@ class GreekDPAScraper(BaseScraper):
             resp.raise_for_status()
             content = resp.text
 
-            # Look for "Βρέθηκαν X αποτελέσματα" (Found X results)
-            match = re.search(r'Βρέθηκαν\s+(\d+)\s+αποτελέσματα', content)
+            # The pager is authoritative: ?page=N links run 0..last.
+            page_match = re.findall(r'[?&]page=(\d+)', content)
+            pager_pages = max(int(p) for p in page_match) + 1 if page_match else 0
+
+            # "Βρέθηκαν <span class="badge badge-info">2277</span> αποτελέσματα"
+            # — the count sits inside a badge span, so match across tags.
+            count_pages = 0
+            match = re.search(r'Βρέθηκαν\s*(?:<[^>]+>\s*)*(\d+)', content)
             if match:
                 total = int(match.group(1))
-                # 10 items per page
-                pages = (total + 9) // 10
-                logger.info(f"Found {total} total decisions ({pages} pages)")
+                count_pages = (total + PAGE_SIZE - 1) // PAGE_SIZE
+                logger.info(f"Found {total} total decisions (~{count_pages} pages)")
+
+            # Trust whichever is larger — the pager only lists nearby pages on
+            # some Drupal themes, and the badge count can lag the view.
+            pages = max(pager_pages, count_pages)
+            if pages:
+                logger.info(f"Crawling {pages} list pages")
                 return pages
 
-            # Fallback: look for pagination links
-            page_match = re.findall(r'page=(\d+)', content)
-            if page_match:
-                return max(int(p) for p in page_match) + 1
-
+            logger.warning("Could not determine page count — defaulting to 1")
             return 1
         except Exception as e:
             logger.error(f"Failed to get total pages: {e}")
@@ -134,13 +173,17 @@ class GreekDPAScraper(BaseScraper):
             #   <td>...<a href="/el/enimerwtiko/prakseisArxis/...">Title</a>...</td>
             # </tr>
 
-            # Pattern to match table rows with decision data
+            # Capture the category and the number as free text rather than
+            # enumerating them: the site uses categories the old alternation
+            # missed ("Κατευθυντήριες γραμμές") and pre-2019 acts carry
+            # non-numeric numbers ("734/18", "581α"), both of which were being
+            # silently dropped.
             row_pattern = re.compile(
                 r'<tr>\s*'
                 r'<td[^>]*class="[^"]*views-field-nothing-1[^"]*"[^>]*>\s*'
-                r'(Απόφαση|Γνωμοδότηση|Οδηγία|Σύσταση|Κατευθυντήρια γραμμή)\s*</td>\s*'  # Category
+                r'([^<]+?)\s*</td>\s*'  # Category
                 r'<td[^>]*class="[^"]*views-field-field-arithmos-protokolloy[^"]*"[^>]*>\s*'
-                r'(\d+)\s*</td>\s*'  # Number
+                r'([^<]+?)\s*</td>\s*'  # Number
                 r'<td[^>]*>.*?<time[^>]*>(\d{2}/\d{2}/\d{4})</time>.*?</td>\s*'  # Date
                 r'<td[^>]*>.*?<a\s+href="(/el/enimerwtiko/prakseisArxis/[^"]+)"[^>]*>([^<]+)</a>.*?</td>\s*'  # URL + Title
                 r'</tr>',
@@ -149,7 +192,7 @@ class GreekDPAScraper(BaseScraper):
 
             for match in row_pattern.finditer(content):
                 category = html.unescape(match.group(1).strip())
-                number = int(match.group(2))
+                number = html.unescape(match.group(2).strip())
                 date_str = match.group(3)  # DD/MM/YYYY
                 rel_url = match.group(4)
                 title = html.unescape(match.group(5).strip())
@@ -248,13 +291,22 @@ class GreekDPAScraper(BaseScraper):
             logger.warning(f"Failed to fetch decision page {rel_url}: {e}")
             return None
 
-    def _extract_pdf_text(self, pdf_url: str) -> Optional[str]:
-        """Extract text from PDF using centralized extractor."""
+    def _extract_pdf_text(self, pdf_url: str, source_id: str = "") -> Optional[str]:
+        """
+        Extract text from PDF using the centralized extractor.
+
+        `pdf_url` is stored relative (see `_fetch_decision_page`), but
+        common.pdf_extract downloads with plain requests, which rejects a
+        schemeless URL — so absolutise it here.
+        """
         return extract_pdf_markdown(
             source="GR/DPA",
-            source_id="",
-            pdf_url=pdf_url,
+            source_id=source_id,
+            pdf_url=urljoin(BASE_URL, pdf_url),
             table="doctrine",
+            # Doctrine re-run: always re-extract rather than skipping documents
+            # already in Neon, so a full crawl always writes the whole corpus.
+            force=True,
         ) or ""
 
     def fetch_all(self) -> Generator[dict, None, None]:
@@ -280,7 +332,10 @@ class GreekDPAScraper(BaseScraper):
                     continue
 
                 # Extract text from PDF
-                text = self._extract_pdf_text(page_data["pdf_url"])
+                text = self._extract_pdf_text(
+                    page_data["pdf_url"],
+                    _doc_id(entry["number"], entry["year"], entry["category"]),
+                )
 
                 if not text:
                     logger.warning(f"No text extracted for {entry['title'][:50]}")
@@ -325,7 +380,10 @@ class GreekDPAScraper(BaseScraper):
                     if not page_data or not page_data.get("pdf_url"):
                         continue
 
-                    text = self._extract_pdf_text(page_data["pdf_url"])
+                    text = self._extract_pdf_text(
+                        page_data["pdf_url"],
+                        _doc_id(entry["number"], entry["year"], entry["category"]),
+                    )
                     if not text:
                         continue
 
@@ -354,7 +412,7 @@ class GreekDPAScraper(BaseScraper):
 
         CRITICAL: Includes full text in the 'text' field.
         """
-        number = raw.get("number", 0)
+        number = raw.get("number", "")
         year = raw.get("year", 0)
         category = raw.get("category", "Απόφαση")
 
@@ -365,11 +423,11 @@ class GreekDPAScraper(BaseScraper):
             "Οδηγία": "Guideline",
             "Σύσταση": "Recommendation",
             "Κατευθυντήρια γραμμή": "Guideline",
+            "Κατευθυντήριες γραμμές": "Guideline",
         }
         category_en = category_map.get(category, "Decision")
 
-        # Create unique document ID
-        doc_id = f"HDPA/{number}/{year}"
+        doc_id = _doc_id(number, year, category)
 
         title = raw.get("title", "")
         text = raw.get("text", "")
@@ -471,7 +529,7 @@ def main():
 
     if len(sys.argv) < 2:
         print(
-            "Usage: python bootstrap.py [bootstrap|update|test] "
+            "Usage: python bootstrap.py [bootstrap|bootstrap-fast|update|test] "
             "[--sample] [--sample-size N]"
         )
         sys.exit(1)
@@ -500,6 +558,17 @@ def main():
                 f"{stats['records_updated']} updated, "
                 f"{stats['records_skipped']} skipped"
             )
+        print(json.dumps(stats, indent=2))
+
+    elif command == "bootstrap-fast":
+        # The fleet wrapper invokes this; without it argparse-less main() fell
+        # through to "Unknown command" → exit 1 → sample-only fallback (#1390).
+        stats = scraper.bootstrap_fast()
+        print(
+            f"\nbootstrap_fast complete: {stats.get('records_fetched', 0)} fetched, "
+            f"{stats.get('records_new', 0)} new, "
+            f"{stats.get('records_updated', 0)} updated"
+        )
         print(json.dumps(stats, indent=2))
 
     elif command == "update":

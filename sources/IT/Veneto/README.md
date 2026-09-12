@@ -4,7 +4,7 @@ Fetches regional legislation from the Bollettino Ufficiale della Regione del Ven
 
 ## Data Source
 
-- **Portal**: http://bur.regione.veneto.it/BurvServices/
+- **Portal**: https://bur.regione.veneto.it/BurvServices/
 - **Coverage**: 2004-present
 - **Document Types**: Regional laws (Leggi Regionali), regulations, decrees, deliberations
 - **Volume**: ~4,400+ regional laws
@@ -18,10 +18,10 @@ Fetches regional legislation from the Bollettino Ufficiale della Regione del Ven
 
 ## Endpoints
 
-- **Search**: `http://bur.regione.veneto.it/BurvServices/Pubblica/SommarioRicerca.aspx`
+- **Search**: `https://bur.regione.veneto.it/BurvServices/Pubblica/SommarioRicerca.aspx`
   - Parameters: `tipoRicerca=base`, `oggetto=*`, `daDta=DD/MM/YYYY`, `aDta=DD/MM/YYYY`, `tipoAtto=11`
 
-- **Detail**: `http://bur.regione.veneto.it/BurvServices/Pubblica/DettaglioLegge.aspx?id={id}`
+- **Detail**: `https://bur.regione.veneto.it/BurvServices/Pubblica/DettaglioLegge.aspx?id={id}`
 
 ## Document Types (tipoAtto codes)
 

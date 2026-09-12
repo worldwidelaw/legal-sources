@@ -1,0 +1,71 @@
+source:
+  id: US/IL-IWCC
+  name: Illinois Workers' Compensation Commission — Commission-Level Decisions
+  country: US
+  url: https://iwcc.illinois.gov/resources/resources-for/decisions.html
+  auth: none
+  data_types:
+  - case_law
+  description: >
+    Commission-level decisions of the Illinois Workers' Compensation Commission,
+    which reviews arbitrator awards in Illinois workers' compensation claims.
+    Published as monthly roll-up PDFs holding every decision issued that month;
+    individual decisions are split out on the CompFile "DECISION SIGNATURE PAGE"
+    cover sheet. Covers the CompFile era, April 2021-present — the earlier
+    archived roll-ups (2014 to early 2021) are image-only scans requiring OCR.
+license:
+  name: Public domain — 17 U.S.C. § 105
+  url: https://www.law.cornell.edu/uscode/text/17/105
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: Illinois state agency adjudication; government edict, not subject to copyright.
+fetch:
+  rate_limit_delay: 1
+  sample_size: 15
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 4
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  - name: case_number
+    required: false
+    type: string
+  - name: parties
+    required: false
+    type: string
+  - name: decision_type
+    required: false
+    type: string
+  - name: proceeding_type
+    required: false
+    type: string
+  - name: decided_by
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string

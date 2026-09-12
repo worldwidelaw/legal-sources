@@ -55,7 +55,7 @@ from urllib.parse import quote
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.pdf_extract import _extract as _pdf_extract_bytes
 
 logging.basicConfig(
@@ -124,20 +124,59 @@ class VAEthicsOpinionsScraper(BaseScraper):
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
             "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
         )
+        # Refusal bookkeeping, so a blocked vantage is reported rather than
+        # silently degraded into "0 records" (issue #1401).
+        self._refusals: dict[int, int] = {}
+        self._transport_errors = 0
+
+    # ------------------------------------------------------- refusal state
+    def _note_refusal(self, status: int) -> None:
+        self._refusals[status] = self._refusals.get(status, 0) + 1
+
+    def _refusal_summary(self) -> str:
+        parts = [f"HTTP {s}x{n}" for s, n in sorted(self._refusals.items())]
+        if self._transport_errors:
+            parts.append(f"transport errors x{self._transport_errors}")
+        return ", ".join(parts) if parts else "no HTTP errors seen"
 
     # ---------------------------------------------------------------- http
+    @staticmethod
+    def _status_from_stderr(stderr: bytes) -> int | None:
+        """curl writes '%{stderr}%{http_code}' at the tail of stderr."""
+        m = re.search(rb"(\d{3})\s*$", stderr or b"")
+        return int(m.group(1)) if m else None
+
     def _curl(self, url: str, binary: bool = False):
+        """Fetch a URL; return the body, or None once the retries are spent.
+
+        Status-aware: a 403/404/5xx is tallied as a refusal instead of being
+        collapsed into an indistinguishable None, so an empty corpus can be
+        told apart from a vantage the site refuses to serve."""
         for attempt in range(3):
             time.sleep(self.delay)
             try:
                 out = subprocess.run(
-                    ["curl", "-s", "-L", "--max-time", "60", "-A", self._ua, url],
+                    ["curl", "-s", "-L", "--max-time", "60", "-A", self._ua,
+                     "-w", "%{stderr}%{http_code}", url],
                     capture_output=True, timeout=90,
                 )
-                if out.returncode == 0 and out.stdout:
-                    return out.stdout if binary else out.stdout.decode("utf-8", "replace")
             except Exception as e:
+                self._transport_errors += 1
                 logger.warning(f"curl failed for {url} (attempt {attempt + 1}): {e}")
+                time.sleep(2 ** attempt)
+                continue
+            status = self._status_from_stderr(out.stderr)
+            if out.returncode != 0:
+                self._transport_errors += 1
+                logger.warning(f"curl exited {out.returncode} for {url} "
+                               f"(attempt {attempt + 1})")
+            elif status and status != 200:
+                self._note_refusal(status)
+                logger.warning(f"GET {url}: HTTP {status} (attempt {attempt + 1})")
+            elif out.stdout:
+                return out.stdout if binary else out.stdout.decode("utf-8", "replace")
+            else:
+                logger.warning(f"GET {url}: empty body (attempt {attempt + 1})")
             time.sleep(2 ** attempt)
         return None
 
@@ -176,11 +215,20 @@ class VAEthicsOpinionsScraper(BaseScraper):
 
     # ---------------------------------------------------------- discovery
     def _list_all(self) -> list[dict]:
-        """Return [{opinion_number, caption, date, pdf_url}] for each opinion."""
+        """Return [{opinion_number, caption, date, pdf_url}] for each opinion.
+
+        Raises rather than returning [] — the page has carried a formal-opinion
+        list continuously since 2015, so an empty result means the fetch was
+        refused or the page was restructured, never "no opinions exist"."""
         html = self._curl(LISTING_URL)
         if not html:
-            logger.error("could not fetch the advisory-opinions page")
-            return []
+            raise RuntimeError(
+                f"Could not fetch {LISTING_URL} ({self._refusal_summary()}). "
+                f"ethics.dls.virginia.gov answers 200 to a browser UA from a "
+                f"US/residential vantage, so this is a refused vantage rather "
+                f"than an empty corpus — the source needs a residential or "
+                f"proxied slot."
+            )
         seen: dict[str, dict] = {}
         for m in ANCHOR_RE.finditer(html):
             href = m.group("href")
@@ -202,14 +250,24 @@ class VAEthicsOpinionsScraper(BaseScraper):
                 "date": year,  # refined from PDF body during fetch
                 "pdf_url": self._abs_pdf_url(href),
             }
+        if not seen:
+            raise RuntimeError(
+                f"Fetched {LISTING_URL} ({len(html)} bytes) but parsed 0 PDF "
+                f"anchors ({self._refusal_summary()}). The page has listed the "
+                f"formal advisory opinions as direct <a href=\"...pdf\"> links "
+                f"since 2015 — 0 anchors means the page was restructured or a "
+                f"WAF served an interstitial, so failing loud rather than "
+                f"reporting an empty corpus."
+            )
         return list(seen.values())
 
     # -------------------------------------------------------------- test
     def test_api(self) -> bool:
         logger.info("Testing VA Ethics Advisory Council opinions + PDF extraction...")
-        items = self._list_all()
-        if not items:
-            logger.error("API test FAILED: no opinions found on page")
+        try:
+            items = self._list_all()
+        except RuntimeError as e:
+            logger.error(f"API test FAILED: {e}")
             return False
         logger.info(f"  discovered {len(items)} formal advisory opinions")
         ok = 0
@@ -277,6 +335,16 @@ class VAEthicsOpinionsScraper(BaseScraper):
             if sample and emitted >= 12:
                 return
 
+        if not emitted:
+            raise RuntimeError(
+                f"Listed {len(items)} formal advisory opinions but extracted 0 "
+                f"({self._refusal_summary()}). The index parsed, so the break "
+                f"is in the PDF downloads or the text layer — not an empty "
+                f"corpus. Every opinion is a born-digital PDF with a real text "
+                f"layer, so a total extraction failure means the PDF fetches "
+                f"were refused."
+            )
+
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield RAW records (framework normalizes via normalize())."""
         yield from self._iter_raw(sample=False)
@@ -285,6 +353,9 @@ class VAEthicsOpinionsScraper(BaseScraper):
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self.fetch_all():
             if not since or (raw.get("date") and raw["date"] >= since):
                 yield raw

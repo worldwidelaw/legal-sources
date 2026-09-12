@@ -15,7 +15,6 @@ Usage:
   python bootstrap.py test-api            # Quick connectivity test
 """
 
-import io
 import re
 import sys
 import json
@@ -33,6 +32,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
     level=logging.INFO,
@@ -69,10 +69,46 @@ class ISCScraper(BaseScraper):
 
     # ── PDF text extraction ────────────────────────────────────────────
 
+    @staticmethod
+    def _doc_id(url: str) -> str:
+        """The stable id normalize() emits, derived from the document URL."""
+        return "IQ_ISC_" + re.sub(r"[^a-zA-Z0-9]", "_", url.split("isc.gov.iq")[-1])[:120]
+
+    @staticmethod
+    def _date_from_url(url: str) -> Optional[str]:
+        """Read the upload date out of an ISC document path.
+
+        The category pages carry no date next to a PDF link, so every
+        PDF-backed record used to land with date=None — 15 of 15 samples, i.e.
+        the whole field null across the corpus. The upload path does hold one
+        (/upload/YYYY/MM/DD/hash.pdf), so use it. It is the date the ISC
+        published the file, not the date the regulation was enacted; that is
+        the honest reading of this field for a source whose PDFs are undated,
+        and it is the same fallback MS/Revenue-TaxGuidance uses (issue #995).
+        """
+        m = re.search(r"/upload/(\d{4})/(\d{2})/(\d{2})/", url)
+        if not m:
+            return None
+        year, month, day = m.groups()
+        if not (1990 <= int(year) <= 2100 and 1 <= int(month) <= 12 and 1 <= int(day) <= 31):
+            return None
+        return f"{year}-{month}-{day}"
+
     def _extract_pdf_text(self, pdf_url: str) -> Optional[str]:
-        """Download a PDF and extract text with pdfplumber."""
+        """Download a PDF and extract text through the shared helper.
+
+        This used to call pdfplumber directly, which emits the glyphs in the
+        order the content stream lists them. For these Arabic regulations that
+        is VISUAL order, so every word landed character-reversed in Neon and no
+        Arabic keyword could ever match it (issue #1560). Going through
+        common.pdf_extract picks up the geometry-based RTL reorder and the
+        presentation-form normalization instead.
+
+        force=True because the rows this is meant to replace are exactly the
+        ones already in Neon with (reversed) text — without it the helper skips
+        them and the refresh emits nothing.
+        """
         try:
-            import pdfplumber
             resp = self.http.get(pdf_url, timeout=120)
             if resp.status_code != 200:
                 logger.warning("PDF download failed (%d): %s", resp.status_code, pdf_url)
@@ -80,22 +116,19 @@ class ISCScraper(BaseScraper):
             if not resp.content[:5] == b"%PDF-":
                 logger.warning("Not a PDF: %s", pdf_url)
                 return None
-            with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-                pages = []
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        pages.append(page_text)
-                    try:
-                        page.flush_cache(); page.get_textmap.cache_clear()
-                    except Exception:
-                        pass
-                text = "\n\n".join(pages)
-                if len(text.strip()) >= MIN_TEXT_LENGTH:
-                    return text.strip()
-                logger.warning("PDF text too short (%d chars): %s", len(text.strip()), pdf_url)
+            text = extract_pdf_markdown(
+                source=SOURCE_ID,
+                source_id=self._doc_id(pdf_url),
+                pdf_bytes=resp.content,
+                table="legislation",
+                force=True,
+            )
+            text = (text or "").strip()
+            if len(text) >= MIN_TEXT_LENGTH:
+                return text
+            logger.warning("PDF text too short (%d chars): %s", len(text), pdf_url)
         except Exception as e:
-            logger.warning("pdfplumber failed for %s: %s", pdf_url, e)
+            logger.warning("PDF extraction failed for %s: %s", pdf_url, e)
         return None
 
     # ── HTML text extraction ───────────────────────────────────────────
@@ -291,17 +324,14 @@ class ISCScraper(BaseScraper):
         text = raw.get("text", "").strip()
         url = raw.get("url", "")
 
-        # Generate stable ID from URL
-        doc_id = re.sub(r"[^a-zA-Z0-9]", "_", url.split("isc.gov.iq")[-1])[:120]
-
         return {
-            "_id": f"IQ_ISC_{doc_id}",
+            "_id": self._doc_id(url),
             "_source": SOURCE_ID,
             "_type": "legislation",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             "title": title,
             "text": text,
-            "date": raw.get("date"),
+            "date": raw.get("date") or self._date_from_url(url),
             "url": url,
             "document_type": raw.get("document_type", "legislation"),
             "category": raw.get("category", ""),
@@ -320,6 +350,11 @@ class ISCScraper(BaseScraper):
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     scraper = ISCScraper()
 
     if len(sys.argv) < 2:
@@ -334,17 +369,34 @@ if __name__ == "__main__":
 
     elif cmd == "bootstrap":
         sample = "--sample" in sys.argv
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
+        source_dir = Path(__file__).parent
         count = 0
-        for record in scraper.fetch_all(sample=sample):
-            count += 1
-            outfile = sample_dir / f"{count:04d}.json"
-            outfile.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
-            logger.info("[%d] %s — %d chars", count, record["title"][:60], len(record.get("text", "")))
 
-        logger.info("Done: %d records saved to %s", count, sample_dir)
+        if sample:
+            sample_dir = source_dir / "sample"
+            sample_dir.mkdir(exist_ok=True)
+            for record in scraper.fetch_all(sample=True):
+                count += 1
+                outfile = sample_dir / f"{count:04d}.json"
+                outfile.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
+                logger.info("[%d] %s — %d chars", count, record["title"][:60], len(record.get("text", "")))
+            logger.info("Done: %d sample records saved to %s", count, sample_dir)
+        else:
+            # A full run streams to data/records.jsonl, which is what the
+            # pipeline ingests. It used to write the whole corpus into sample/
+            # as individual files and leave records.jsonl absent, so a fleet run
+            # had nothing to ingest and only the bundled samples were ever
+            # picked up (issue #798 class).
+            data_dir = source_dir / "data"
+            data_dir.mkdir(exist_ok=True)
+            records_file = data_dir / "records.jsonl"
+            with open(records_file, "w", encoding="utf-8") as f:
+                for record in scraper.fetch_all(sample=False):
+                    count += 1
+                    f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    logger.info("[%d] %s — %d chars", count, record["title"][:60], len(record.get("text", "")))
+            logger.info("Done: %d records written to %s", count, records_file)
+
         if count == 0:
             logger.error("No records fetched — source may be blocked or down")
             sys.exit(1)

@@ -22,13 +22,30 @@ schema:
   - name: status
     required: false
     type: string
+  - name: language
+    required: false
+    type: string
+  - name: institution
+    required: false
+    type: string
+license:
+  name: CC BY 4.0
+  url: https://creativecommons.org/licenses/by/4.0/
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: ''
 source:
   auth: none
   country: LY
   data_types:
   - legislation
-  description: '2,175 Libyan legal texts from DCAF (Geneva Centre for Security Sector Governance). Covers constitutional law, decrees, laws, resolutions, judicial decisions, bylaws. Full text in Arabic,
-    partial English translations. WordPress REST API access.
+  description: 'Libyan legal texts from DCAF (Geneva Centre for Security Sector Governance).
+    Covers constitutional law, decrees, laws, resolutions, judicial decisions, bylaws.
+    WordPress REST API: 2,175 Arabic originals on /ar/wp-json plus 786 real English
+    translations on /wp-json (the other 1,369 English posts are placeholders and are
+    dropped). Incremental updates via the modified_after filter.
 
     '
   id: LY/DCAF

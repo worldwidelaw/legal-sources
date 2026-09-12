@@ -73,6 +73,18 @@ Key fields in normalized output:
 | `court` | Court name |
 | `url` | Link to official source |
 
+## Reliability
+
+`normalize()` downloads the document text, and `bootstrap-fast` runs it on several
+threads. Two things keep that honest:
+
+- Each worker thread gets its own `requests.Session` (sessions are not thread-safe),
+  and a single lock enforces the documented 60 req/min across all of them.
+- A document whose text cannot be fetched after 5 attempts is **dropped**, not written
+  with an empty `text` — a transient outage must never overwrite a stored decision
+  with an empty one. Drops are tallied by reason and printed at the end of a run.
+
 ## License
 
-Data is provided under CC BY 4.0 (Creative Commons Attribution).
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — Verkhovna Rada Open Data
+Portal terms; attribution required, commercial use permitted.

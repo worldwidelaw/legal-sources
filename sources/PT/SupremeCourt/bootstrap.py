@@ -92,16 +92,23 @@ class SupremeCourtScraper(BaseScraper):
         )
 
     def _search_decisions(
-        self, year: int, page: int = 0, must_have_text: bool = True
+        self, year: int, page: int = 1, must_have_text: bool = True
     ) -> List[Dict[str, Any]]:
         """
-        Search for decisions in a specific year.
+        Search for one page of decisions in a specific year.
 
-        Returns list of decision metadata (without full text).
+        The API serves a fixed 10 results per call — size/pageSize/limit are all
+        ignored — and pages via a lowercase `page` (1-based). `page` used to be
+        accepted here but never sent, so every year returned only its first 10
+        decisions and the whole corpus capped at ~646 (#1540).
+
+        Returns list of decision metadata (without full text). An empty list
+        means the year is exhausted.
         """
         params = {
             "MinAno": year,
             "MaxAno": year,
+            "page": page,
         }
         if must_have_text:
             params["mustHaveText"] = "true"
@@ -222,16 +229,9 @@ class SupremeCourtScraper(BaseScraper):
 
         for year in range(current_year, 1900, -1):
             logger.info(f"Processing year {year}...")
+            year_count = 0
 
-            results = self._search_decisions(year, must_have_text=True)
-            if not results:
-                logger.info(f"No results for year {year}")
-                continue
-
-            logger.info(f"Found {len(results)} decisions for year {year}")
-
-            for item in results:
-                source = item.get("_source", {})
+            for source in self._iter_year(year):
                 processo = source.get("Número de Processo", "")
                 uuid = source.get("UUID", "")
 
@@ -241,10 +241,56 @@ class SupremeCourtScraper(BaseScraper):
                 # Fetch full document
                 doc = self._fetch_document(processo, uuid)
                 if doc:
+                    year_count += 1
                     yield {
                         "raw_doc": doc,
                         "search_meta": source,
                     }
+
+            logger.info(f"Year {year}: {year_count} decisions with full text")
+
+    def _iter_year(
+        self, year: int, max_pages: int = 5000
+    ) -> Generator[Dict[str, Any], None, None]:
+        """
+        Yield every search hit for a year, walking `page` until the API runs dry.
+
+        Dedupes on UUID: the ranking is not fully stable across pages, so a hit
+        can repeat. Stops on an empty page, or on two consecutive pages that
+        contribute nothing new (a page-cap that silently re-serves results).
+        """
+        seen = set()
+        stale_pages = 0
+
+        for page in range(1, max_pages + 1):
+            results = self._search_decisions(year, page=page, must_have_text=True)
+            if not results:
+                break
+
+            new = 0
+            for item in results:
+                source = item.get("_source", {})
+                uuid = source.get("UUID", "")
+                key = uuid or json.dumps(source, sort_keys=True, ensure_ascii=False)
+                if key in seen:
+                    continue
+                seen.add(key)
+                new += 1
+                yield source
+
+            if new == 0:
+                stale_pages += 1
+                if stale_pages >= 2:
+                    logger.warning(
+                        f"Year {year}: no new hits on pages "
+                        f"{page - 1}-{page}, stopping at {len(seen)}"
+                    )
+                    break
+            else:
+                stale_pages = 0
+
+            if page % 50 == 0:
+                logger.info(f"  Year {year}: page {page}, {len(seen)} hits so far")
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """
@@ -258,12 +304,7 @@ class SupremeCourtScraper(BaseScraper):
         for year in years_to_check:
             logger.info(f"Checking year {year} for updates...")
 
-            results = self._search_decisions(year, must_have_text=True)
-            if not results:
-                continue
-
-            for item in results:
-                source = item.get("_source", {})
+            for source in self._iter_year(year):
                 processo = source.get("Número de Processo", "")
                 uuid = source.get("UUID", "")
 
@@ -470,7 +511,7 @@ def main():
 
     if len(sys.argv) < 2:
         print(
-            "Usage: python bootstrap.py [bootstrap|update|test] "
+            "Usage: python bootstrap.py [bootstrap|bootstrap-fast|update|test] "
             "[--sample] [--sample-size N]"
         )
         sys.exit(1)
@@ -485,7 +526,7 @@ def main():
     if command == "test":
         scraper.test_connection()
 
-    elif command == "bootstrap":
+    elif command in ("bootstrap", "bootstrap-fast"):
         if sample_mode:
             stats = scraper.run_sample(n=sample_size)
             print(

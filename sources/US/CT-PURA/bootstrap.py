@@ -20,9 +20,12 @@ www.dpuc.state.ct.us/FINALDEC.NSF):
      leaf viewentry carries the document `unid` plus columns AbbrevDckTitle
      (title), Decision_Date (YYYYMMDD) and DocketNumber. ~24,000 decisions.
   2. FULL TEXT: normalize() opens the Domino document
-     (/FINALDEC.NSF/0/{unid}?OpenDocument), parses the attached born-digital
-     decision PDF href (.../$FILE/{name}.pdf), downloads it and extracts the
-     full text via fitz/PyMuPDF (Tesseract OCR fallback for the rare scan).
+     (/FINALDEC.NSF/0/{unid}?OpenDocument) and downloads its born-digital
+     decision attachment (.../$FILE/{name}). Roughly 56% of the corpus is
+     PDF, extracted via fitz/PyMuPDF (Tesseract OCR fallback for the rare
+     scan); the other ~44% — most of the pre-2019 record — is a Word
+     attachment (~25% .docx, ~19% legacy .doc), extracted via
+     common.doc_extract.
 
 No auth. The Domino host serves ReadViewEntries and the $FILE attachments to
 anonymous clients.
@@ -53,7 +56,8 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
+from common.doc_extract import extract_word_text
 
 logging.basicConfig(
     level=logging.INFO,
@@ -71,9 +75,29 @@ UA = (
 
 PAGE = 200  # entries per ReadViewEntries page (Domino caps at 1000)
 
+# Leading bytes used to reject an HTML error page served with HTTP 200.
+MAGIC = {"pdf": b"%PDF-", "word": (b"PK\x03\x04", b"\xd0\xcf\x11\xe0")}
+
 VIEWENTRY_RE = re.compile(r"<viewentry\b(.*?)</viewentry>", re.S)
 UNID_RE = re.compile(r'unid="([0-9A-Fa-f]+)"')
-FILE_PDF_RE = re.compile(r'href="([^"]*\$[Ff][Ii][Ll][Ee]/[^"]+\.pdf)"')
+# PURA posts a decision as whichever format the Authority signed it in: PDF
+# for most, but ~44% of the corpus (all of the older docket record) is a Word
+# attachment. Matching only .pdf silently dropped every one of those (#1262).
+FILE_ATTACH_RE = re.compile(
+    r'href="([^"]*\$[Ff][Ii][Ll][Ee]/[^"]+\.(?:pdf|docx|doc))"', re.I
+)
+# Preference order when a document carries more than one attachment.
+ATTACH_PRIORITY = {"pdf": 0, "docx": 1, "doc": 2}
+
+
+class SourceBlockedError(RuntimeError):
+    """Raised when the Domino host will not serve this vantage.
+
+    This must NOT be swallowed. ReadViewEntries failing looks identical to
+    "the view is empty" once the error is turned into an empty string, which
+    turns a total block into a silent 0-record run and lets the fleet fall
+    back to ingesting the committed samples as a false completion (#1262).
+    """
 
 
 def clean_text(text: str) -> str:
@@ -125,19 +149,47 @@ class CTPURAScraper(BaseScraper):
     # ---- Domino plumbing ----------------------------------------------
 
     def _read_view(self, params: str, retries: int = 4) -> str:
+        """Read one ReadViewEntries page.
+
+        Raises SourceBlockedError once retries are exhausted. An exhausted
+        read is never "no more rows": Domino answers a past-the-end Start
+        with HTTP 200 and a well-formed <viewentries> element holding zero
+        <viewentry> children, so end-of-view is detected from the parsed
+        body, not from a transport failure.
+        """
         url = f"{BASE}{DB}/{VIEW}?ReadViewEntries&{params}"
+        last = "no attempt made"
         for attempt in range(retries + 1):
             time.sleep(self.delay)
             try:
                 r = self.session.get(url, timeout=90)
                 if r.status_code == 200:
-                    return r.text
-                logger.warning(f"ReadViewEntries HTTP {r.status_code}")
+                    if "<viewentries" not in r.text:
+                        # A 200 that is not the XML view = interstitial/WAF page.
+                        last = (
+                            f"HTTP 200 but body is not a Domino <viewentries> "
+                            f"document ({len(r.content)} bytes, "
+                            f"content-type {r.headers.get('Content-Type')!r})"
+                        )
+                        logger.warning(f"ReadViewEntries: {last}")
+                    else:
+                        return r.text
+                else:
+                    last = f"HTTP {r.status_code}"
+                    logger.warning(f"ReadViewEntries {last}")
             except Exception as e:
-                logger.warning(f"ReadViewEntries error (try {attempt+1}): {e}")
+                last = f"{type(e).__name__}: {e}"
+                logger.warning(f"ReadViewEntries error (try {attempt+1}): {last}")
             if attempt < retries:
                 time.sleep(2 ** attempt)
-        return ""
+        raise SourceBlockedError(
+            f"ReadViewEntries failed after {retries + 1} attempts ({last}) for "
+            f"{url} — www.dpuc.state.ct.us is not serving the Final Decision "
+            f"view to this vantage. The view returns 20 categories / ~24,900 "
+            f"rows from an unblocked (typically US) client, so this is a "
+            f"reachability problem, not an empty database; re-run from a "
+            f"residential/US proxy."
+        )
 
     def _categories(self) -> list:
         """List industry categories (text + descendant count)."""
@@ -150,6 +202,13 @@ class CTPURAScraper(BaseScraper):
             t = re.search(r"<text>([^<]*)</text>", blk)
             if m and t and int(m.group(1)) > 0:
                 cats.append((unescape(t.group(1)).strip(), int(m.group(1))))
+        if not cats:
+            raise SourceBlockedError(
+                "ReadViewEntries returned a view with no industry categories — "
+                "the Final Decision database always exposes ~20 categorised "
+                "rows, so an empty category list means the host served this "
+                "vantage a stub rather than the real view."
+            )
         return cats
 
     def _leaves(self, xml: str) -> list:
@@ -168,10 +227,9 @@ class CTPURAScraper(BaseScraper):
 
     def _category_leaves(self, cat: str, start: int) -> list:
         params = f"RestrictToCategory={quote(cat, safe='')}&Start={start}&Count={PAGE}"
-        xml = self._read_view(params)
-        if not xml:
-            return []
-        return self._leaves(xml)
+        # _read_view raises rather than returning "" on failure, so an empty
+        # list here means genuine end-of-category, not a swallowed error.
+        return self._leaves(self._read_view(params))
 
     # ---- Checkpoint ----------------------------------------------------
 
@@ -223,13 +281,13 @@ class CTPURAScraper(BaseScraper):
         finally:
             doc.close()
 
-    def _get(self, url: str, retries: int = 3, expect_pdf: bool = False):
+    def _get(self, url: str, retries: int = 3, expect: str | None = None):
         for attempt in range(retries + 1):
             time.sleep(self.delay)
             try:
                 r = self.session.get(url, timeout=90, allow_redirects=True)
                 if r.status_code == 200:
-                    if expect_pdf and r.content[:5] != b"%PDF-":
+                    if expect and not r.content.startswith(MAGIC[expect]):
                         return None
                     return r
                 if r.status_code == 404:
@@ -240,30 +298,39 @@ class CTPURAScraper(BaseScraper):
                 time.sleep(2 ** attempt)
         return None
 
-    def _pdf_url_for(self, unid: str) -> str | None:
+    def _attachment_for(self, unid: str) -> tuple[str, str] | None:
+        """Return (absolute_url, kind) of the decision attachment, if any."""
         r = self._get(f"{BASE}{DB}/0/{unid}?OpenDocument")
         if not r:
             return None
-        m = FILE_PDF_RE.search(r.text)
-        if not m:
+        hrefs = FILE_ATTACH_RE.findall(r.text)
+        if not hrefs:
             return None
-        href = unescape(m.group(1))
+        href = min(
+            hrefs, key=lambda h: ATTACH_PRIORITY[h.rsplit(".", 1)[-1].lower()]
+        )
+        kind = href.rsplit(".", 1)[-1].lower()
+        href = unescape(href)
         if href.startswith("http"):
-            return href
+            return href, kind
         if href.startswith("/"):
-            return BASE + href
-        return f"{BASE}{DB}/0/{unid}/" + href.lstrip("/")
+            return BASE + href, kind
+        return f"{BASE}{DB}/0/{unid}/" + href.lstrip("/"), kind
 
     # ---- Framework hooks -----------------------------------------------
 
     def normalize(self, raw: dict) -> dict | None:
-        pdf_url = self._pdf_url_for(raw["unid"])
-        if not pdf_url:
+        found = self._attachment_for(raw["unid"])
+        if not found:
             return None
-        r = self._get(pdf_url, expect_pdf=True)
+        doc_url, kind = found
+        r = self._get(doc_url, expect="pdf" if kind == "pdf" else "word")
         if not r:
             return None
-        text = self._extract_pdf_text(r.content)
+        if kind == "pdf":
+            text = self._extract_pdf_text(r.content)
+        else:
+            text = clean_text(extract_word_text(r.content) or "")
         if not text or len(text) < 200:
             logger.debug(f"Short/empty text for {raw['unid']}")
             return None
@@ -288,7 +355,8 @@ class CTPURAScraper(BaseScraper):
             "title": full_title,
             "text": text,
             "url": f"{BASE}{DB}/0/{raw['unid']}?OpenDocument",
-            "pdf_url": pdf_url,
+            "document_url": doc_url,
+            "document_format": kind,
             "date": raw.get("date"),
         }
 
@@ -299,6 +367,7 @@ class CTPURAScraper(BaseScraper):
         ck = self._load_ckpt()
         done = set(ck.get("done_cats", []))
         seen = set()
+        pending = [c for c, _ in cats if c not in done]
         for cat, count in cats:
             if cat in done:
                 continue
@@ -322,7 +391,22 @@ class CTPURAScraper(BaseScraper):
             done.add(cat)
             self._save_ckpt({"done_cats": sorted(done), "cat": None, "start": 1})
 
+        if pending and not seen:
+            # Every category the host reported as non-empty walked to zero
+            # leaves. That is never a real corpus state, so fail rather than
+            # let the fleet ingest sample/ and record a false completion.
+            raise SourceBlockedError(
+                f"0 decisions enumerated across {len(pending)} pending "
+                f"categories (~{sum(c for n, c in cats if n in pending)} rows "
+                f"expected) — the view listed its categories but served no "
+                f"leaf rows to this vantage."
+            )
+        logger.info(f"enumerated {len(seen)} decisions")
+
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self.fetch_all():
             if not since or (raw.get("date") and raw["date"] >= since):
                 yield raw
@@ -354,6 +438,9 @@ class CTPURAScraper(BaseScraper):
                 return True
             logger.error("  Could not extract a full-text decision")
             return False
+        except SourceBlockedError as e:
+            logger.error(f"BLOCKED: {e}")
+            return False
         except Exception as e:
             logger.error(f"API test FAILED: {e}")
             return False
@@ -378,10 +465,19 @@ def main():
     if args.command == "bootstrap-fast":
         stats = scraper.bootstrap_fast()
         logger.info(f"bootstrap-fast complete: {json.dumps(stats, default=str)}")
-        return
+    else:
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=12)
+        logger.info(f"bootstrap complete: {json.dumps(stats, default=str)}")
 
-    stats = scraper.bootstrap(sample_mode=args.sample, sample_size=12)
-    logger.info(f"bootstrap complete: {json.dumps(stats, default=str)}")
+    # BaseScraper catches fetch_all exceptions into stats["error_message"]
+    # instead of propagating, so without these checks a total block exits 0
+    # and the fleet ingests sample/ as a "success" (#1262).
+    if stats.get("error_message"):
+        logger.error(f"FAILED: {stats['error_message']}")
+        sys.exit(1)
+    if not stats.get("records_fetched"):
+        logger.error("FAILED: 0 records fetched — refusing to report success")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

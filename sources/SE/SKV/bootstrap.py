@@ -120,14 +120,27 @@ class SwedishSKVScraper(BaseScraper):
                 published = entry.findtext(f"{{{ATOM_NS}}}published", "")
                 updated = entry.findtext(f"{{{ATOM_NS}}}updated", "")
 
-                # Extract SKVFS number from title (e.g., "SKVFS 2025:3: ...")
-                skvfs_match = re.match(r"(SKVFS\s+\d{4}:\d+):\s*(.*)", title_raw)
-                if skvfs_match:
-                    skvfs_number = skvfs_match.group(1)
-                    title = skvfs_match.group(2).strip()
+                # The entry id is the canonical document URL
+                # (https://lagen.nu/skvfs/2025:3) and is the only reliable
+                # source of the regulation's own designation. Feed titles used
+                # to be prefixed "SKVFS 2025:3: ..." but no longer are, and
+                # splitting the bare title on ":" picks up the *cited*
+                # regulation in amendment/repeal titles ("...upphävande av
+                # Skatteverkets föreskrifter (SKVFS 2018:12)...") — a wrong and
+                # collision-prone _id.
+                url_match = re.search(r"/(skvfs|rsfs|tsfs)/(\d{4}:\d+)", entry_id, re.I)
+                if url_match:
+                    skvfs_number = f"{url_match.group(1).upper()} {url_match.group(2)}"
+                    title = title_raw.strip()
                 else:
-                    skvfs_number = title_raw.split(":")[0].strip() if ":" in title_raw else title_raw
-                    title = title_raw
+                    skvfs_match = re.match(r"((?:SKVFS|RSFS)\s+\d{4}:\d+):\s*(.*)", title_raw)
+                    if skvfs_match:
+                        skvfs_number = skvfs_match.group(1)
+                        title = skvfs_match.group(2).strip()
+                    else:
+                        logger.warning(f"Could not derive a designation for {entry_id}")
+                        skvfs_number = entry_id.rstrip("/").rsplit("/", 1)[-1]
+                        title = title_raw.strip()
 
                 # Skip entries with missing title
                 if "(Titel saknas)" in title:
@@ -180,63 +193,136 @@ class SwedishSKVScraper(BaseScraper):
 
     def _extract_text_from_html(self, html_content: str) -> str:
         """
-        Extract full text from lagen.nu HTML page.
-        Text is in <p class="textbox ..."> elements within <div class="pdfpage"> sections.
+        Extract full text from a lagen.nu document page.
+
+        lagen.nu was redesigned (observed 2026-09): the old
+        ``<p class="textbox">`` / ``<div class="pdfpage">`` markup is gone and
+        the body now lives directly inside ``<main class="gr-main">`` as
+        ``<section class="paragraf">`` blocks plus loose ``<p>``/``<h3
+        class="rubrik">`` elements. The frontmatter header and the
+        ``<section class="refs">`` cross-reference lists are metadata, not
+        body text, so they are dropped before flattening.
+
+        The legacy textbox path is kept as a fallback for any page still
+        served with the old markup.
         """
-        # Extract all textbox paragraphs
+        main_match = re.search(
+            r'<main[^>]*class="[^"]*gr-main[^"]*"[^>]*>(.*?)</main>',
+            html_content,
+            re.DOTALL,
+        )
+        if main_match:
+            body = main_match.group(1)
+            # Frontmatter (title + <dl class="meta">) and the "Ändrar"/
+            # "Bemyndigande" reference lists are metadata, not the norm text.
+            body = re.sub(
+                r'<header[^>]*class="[^"]*frontmatter[^"]*"[^>]*>.*?</header>',
+                '', body, flags=re.DOTALL,
+            )
+            body = re.sub(
+                r'<section[^>]*class="[^"]*refs[^"]*"[^>]*>.*?</section>',
+                '', body, flags=re.DOTALL,
+            )
+            text = self._flatten_html(body)
+            if text:
+                return text
+
+        # Legacy layout fallback: <p class="textbox"> paragraphs.
         textboxes = re.findall(
             r'<p\s+class="textbox[^"]*"[^>]*>(.*?)</p>',
             html_content,
             re.DOTALL,
         )
+        if textboxes:
+            lines = []
+            for tb in textboxes:
+                text = re.sub(r'<[^>]+>', '', tb)
+                text = html_module.unescape(text).strip()
+                if text:
+                    lines.append(text)
+            full_text = "\n".join(lines)
+            # Remove page numbers that appear alone on a line
+            full_text = re.sub(r'\n\d+\s*\n', '\n', full_text)
+            return full_text.strip()
 
-        if not textboxes:
-            # Fallback: try extracting from <article> content
-            article_match = re.search(
-                r'<article[^>]*>(.*?)</article>',
-                html_content,
-                re.DOTALL,
-            )
-            if article_match:
-                text = re.sub(r'<[^>]+>', ' ', article_match.group(1))
-                text = html_module.unescape(text)
-                text = re.sub(r'\s+', ' ', text).strip()
-                return text
-            return ""
+        article_match = re.search(
+            r'<article[^>]*>(.*?)</article>',
+            html_content,
+            re.DOTALL,
+        )
+        if article_match:
+            return self._flatten_html(article_match.group(1))
 
-        # Clean each textbox: strip tags, decode entities
-        lines = []
-        for tb in textboxes:
-            # Strip HTML tags
-            text = re.sub(r'<[^>]+>', '', tb)
-            text = html_module.unescape(text)
-            text = text.strip()
-            if text:
-                lines.append(text)
+        return ""
 
-        # Join with spaces, then clean up excessive whitespace
-        full_text = "\n".join(lines)
-        # Remove page numbers that appear alone on a line
-        full_text = re.sub(r'\n\d+\s*\n', '\n', full_text)
-        return full_text.strip()
+    @staticmethod
+    def _flatten_html(fragment: str) -> str:
+        """Strip tags from an HTML fragment, keeping block-level line breaks."""
+        fragment = re.sub(r'<(script|style)\b.*?</\1>', '', fragment, flags=re.DOTALL)
+        # "¶" permalink anchors sit next to every paragraph number and would
+        # otherwise glue onto it ("1 §¶").
+        fragment = re.sub(
+            r'<a[^>]*class="[^"]*pilcrow[^"]*"[^>]*>.*?</a>', '', fragment, flags=re.DOTALL
+        )
+        fragment = re.sub(
+            r'<(?:p|div|h[1-6]|li|tr|section|header|br)\b[^>]*>', '\n', fragment
+        )
+        text = re.sub(r'<[^>]+>', '', fragment)
+        text = html_module.unescape(text)
+        text = re.sub(r'[ \t\r\f\v]+', ' ', text)
+        text = re.sub(r'\n[ \t]*\n+', '\n', text)
+        return text.strip()
 
     def _extract_metadata_from_html(self, html_content: str) -> Dict[str, str]:
         """Extract additional metadata from the HTML page."""
         metadata = {}
 
-        # Extract title from <h2> in section#top
-        h2_match = re.search(r'<section[^>]*id="top"[^>]*>.*?<h2>(.*?)</h2>', html_content, re.DOTALL)
-        if h2_match:
-            title = re.sub(r'<[^>]+>', '', h2_match.group(1))
+        # Title: <h1> in the redesigned <header class="frontmatter">, falling
+        # back to the old <section id="top"><h2>.
+        title_match = re.search(
+            r'<header[^>]*class="[^"]*frontmatter[^"]*"[^>]*>.*?<h1[^>]*>(.*?)</h1>',
+            html_content,
+            re.DOTALL,
+        ) or re.search(
+            r'<section[^>]*id="top"[^>]*>.*?<h2>(.*?)</h2>', html_content, re.DOTALL
+        )
+        if title_match:
+            title = re.sub(r'<[^>]+>', '', title_match.group(1))
             metadata["title"] = html_module.unescape(title).strip()
 
-        # Extract source link to skatteverket.se
-        source_match = re.search(
-            r'href="(https://www4\.skatteverket\.se/[^"]*)"[^>]*>Källa',
-            html_content,
+        # The frontmatter <dl class="meta"> carries Titel/Beslutad/
+        # Ikraftträdande/Källa as <dt>/<dd> pairs.
+        meta_match = re.search(
+            r'<dl[^>]*class="[^"]*meta[^"]*"[^>]*>(.*?)</dl>', html_content, re.DOTALL
         )
-        if source_match:
-            metadata["source_url"] = source_match.group(1)
+        if meta_match:
+            pairs = re.findall(
+                r'<dt[^>]*>(.*?)</dt>\s*<dd[^>]*>(.*?)</dd>',
+                meta_match.group(1),
+                re.DOTALL,
+            )
+            fields = {
+                html_module.unescape(re.sub(r'<[^>]+>', '', k)).strip(): v
+                for k, v in pairs
+            }
+            for label, key in (("Beslutad", "decided"), ("Ikraftträdande", "in_force")):
+                raw = fields.get(label, "")
+                date_match = re.search(r'\d{4}-\d{2}-\d{2}', raw)
+                if date_match:
+                    metadata[key] = date_match.group(0)
+            kalla = fields.get("Källa", "")
+            href_match = re.search(r'href="([^"]+)"', kalla)
+            if href_match:
+                metadata["source_url"] = href_match.group(1)
+
+        # Legacy markup: source link rendered as `href="..."&gt;Källa`
+        if "source_url" not in metadata:
+            source_match = re.search(
+                r'href="(https://www4\.skatteverket\.se/[^"]*)"[^>]*>Källa',
+                html_content,
+            )
+            if source_match:
+                metadata["source_url"] = source_match.group(1)
 
         # Extract "Senast hämtad" date
         fetched_match = re.search(r'Senast hämtad:\s*(\d{4}-\d{2}-\d{2})', html_content)
@@ -248,6 +334,8 @@ class SwedishSKVScraper(BaseScraper):
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all SKVFS documents."""
         entries = self._fetch_atom_entries()
+        yielded = 0
+        skipped = 0
 
         for i, entry in enumerate(entries):
             doc_url = entry["id"]  # e.g., https://lagen.nu/skvfs/2025:3
@@ -256,14 +344,19 @@ class SwedishSKVScraper(BaseScraper):
             html_content = self._fetch_document_html(doc_url)
             if not html_content:
                 logger.warning(f"No HTML content for {doc_url}")
+                skipped += 1
                 continue
 
             text = self._extract_text_from_html(html_content)
             if not text or len(text) < 50:
+                # A minority of entries (mostly pre-2004 RSFS) are metadata-only
+                # stubs on lagen.nu with no body text upstream at all.
                 logger.warning(f"Insufficient text for {doc_url} ({len(text) if text else 0} chars)")
+                skipped += 1
                 continue
 
             html_metadata = self._extract_metadata_from_html(html_content)
+            yielded += 1
 
             yield {
                 "id": doc_url,
@@ -272,8 +365,21 @@ class SwedishSKVScraper(BaseScraper):
                 "text": text,
                 "published": entry["published"],
                 "updated": entry["updated"],
+                "decided": html_metadata.get("decided", ""),
+                "in_force": html_metadata.get("in_force", ""),
                 "source_url": html_metadata.get("source_url", ""),
             }
+
+        logger.info(f"Extracted text for {yielded} of {len(entries)} entries ({skipped} skipped)")
+        # Historically ~85-90% of the feed carries body text. A near-total
+        # wipeout means lagen.nu changed its markup again (as it did in
+        # 2026-09) — fail loud instead of exiting 0 with an empty corpus.
+        if entries and yielded < max(1, len(entries) // 10):
+            raise RuntimeError(
+                f"Only {yielded} of {len(entries)} lagen.nu pages yielded body text — "
+                "the document layout has likely changed again; "
+                "update _extract_text_from_html."
+            )
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """Yield documents updated since the given date."""
@@ -302,6 +408,8 @@ class SwedishSKVScraper(BaseScraper):
                     "text": text,
                     "published": entry["published"],
                     "updated": entry["updated"],
+                    "decided": html_metadata.get("decided", ""),
+                    "in_force": html_metadata.get("in_force", ""),
                     "source_url": html_metadata.get("source_url", ""),
                 }
 
@@ -310,6 +418,10 @@ class SwedishSKVScraper(BaseScraper):
         skvfs_number = raw.get("skvfs_number", "")
         doc_id = f"SE_SKV_{skvfs_number.replace(' ', '_').replace(':', '_')}"
 
+        # Prefer the regulation's own "Beslutad" date over the feed's
+        # publication stamp; fall back to the feed when the page omits it.
+        decision_date = raw.get("decided") or raw.get("published", "")
+
         return {
             "_id": doc_id,
             "_source": "SE/SKV",
@@ -317,10 +429,11 @@ class SwedishSKVScraper(BaseScraper):
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             "title": raw.get("title", skvfs_number),
             "text": raw.get("text", ""),
-            "date": raw.get("published", ""),
+            "date": decision_date,
             "url": raw.get("id", ""),
             "skvfs_number": skvfs_number,
-            "decision_date": raw.get("published", ""),
+            "decision_date": decision_date,
+            "in_force_date": raw.get("in_force", ""),
             "source_url": raw.get("source_url", ""),
             "language": "sv",
         }
@@ -381,4 +494,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

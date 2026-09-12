@@ -14,13 +14,16 @@ issues a **Decision** that resolves each specific contested case — i.e.
 
 ## Source
 
-- Decision library (Sitecore search-list page, server-paginated):
-  `https://www.dgs.ca.gov/OAH/Case-Types/General-Jurisdiction/Resources/DDS-Decisions?page={N}`
-- Documents: born-digital text-layer PDFs at
-  `/-/media/Divisions/OAH/General-Jurisdiction/DDS-Decisions/<name>.pdf`
+- Decision library (Sitecore MediaSearch widget):
+  `https://www.dgs.ca.gov/OAH/Case-Types/General-Jurisdiction/Resources/DDS-Decisions`
+- Pager (authoritative — the listing page itself renders only 10 rows):
+  `https://www.dgs.ca.gov/api/sitecore/MediaSearch/GetSearchResults?page={N}&folderPath=/sitecore/media library/Divisions/OAH/General Jurisdiction/DDS Decisions&sortBy=date_desc`
+- Documents: born-digital text-layer PDFs served by opaque GUID at
+  `/-/media/<32-hex-guid>.pdf`
 
-~**2,550** decisions are indexed (~25 per page, pages 1..~102,
-oldest→newest). PDF filenames begin with the 10-digit OAH case number
+~**2,551** decisions are indexed (10 per page, pages 1..256,
+newest→oldest). The human filename survives as the result-row link text
+and is used as the `doc_id`; filenames begin with the 10-digit OAH case number
 (YYYYMMNNNN) followed by the `084` DDS agency code and optional suffixes
 (`Acc`, `Adopted`, `Revised`, or a consolidated `<case1>-<case2>084`).
 Each PDF opens `BEFORE THE OFFICE OF ADMINISTRATIVE HEARINGS STATE OF
@@ -45,13 +48,17 @@ python bootstrap.py bootstrap-fast      # alias for full pull (VPS wrapper)
 
 ## Notes
 
-- Unlike the sibling **US/CA-OAH-SpecialEd** source (which uses the
-  Sitecore MediaSearch AJAX API), this page's `folderPath` MediaSearch
-  parameter is silently ignored, so the plain `?page=N` HTML listing is
-  the authoritative enumeration.
+- Enumeration matches the sibling **US/CA-OAH-SpecialEd** source: the
+  MediaSearch AJAX endpoint, called with `X-Requested-With:
+  XMLHttpRequest` and a `Referer`. Before 2026-08 this folder was a plain
+  server-side `?page=N` HTML listing linking to *named* PDFs under
+  `/-/media/Divisions/OAH/General-Jurisdiction/DDS-Decisions/`; that
+  scheme is gone and the old scraper discovered 0 documents (issue
+  [#1397](https://github.com/ZachLaik/LegalDataHunter/issues/1397)).
 - `date` prefers the **last** "Month D, YYYY" in the decision body
   (typically the cover/signature decision date; the first date is usually
-  the hearing date).
+  the hearing date), falling back to the MediaSearch row's
+  "Document Date".
 
 ## License
 

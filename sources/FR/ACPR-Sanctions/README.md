@@ -38,6 +38,28 @@ adjudication of a specific case = **case_law**.
 A small number of very old publication pages carry no attached PDF; those are
 skipped.
 
+### Internet Archive fallback (issue #1244)
+
+`acpr.banque-france.fr` refuses datacenter IPs: residential FR/EU vantages get
+`200`s, while the Hetzner fleet gets connection resets and `403`s, which made
+the listing parser find 0 decision links and abort. Every fetch (the recueil
+listing, each publication page, each decision PDF) therefore falls back to the
+Internet Archive when the live host fails. After `LIVE_FAIL_LATCH` (3)
+consecutive live failures with zero successes, the scraper latches into
+archive-only mode so a blocked vantage does not pay the live timeout on every
+subsequent request.
+
+The fallback resolves captures through the **CDX API** rather than replaying
+`/web/3000id_/` ("latest capture"): ACPR now `403`s the Internet Archive's own
+crawler too, so the most recent snapshot of a page is frequently an archived
+error body. CDX rows whose `statuscode` is an error are skipped and the newest
+remaining capture is replayed via `/web/{timestamp}id_/`. Revisit records
+(`statuscode` `-`) are kept — they replay normally, and filtering on
+`statuscode:200` would discard a large share of usable captures.
+
+Set `ACPR_FORCE_ARCHIVE=1` to skip the live host entirely and exercise the
+archive path from an unblocked vantage.
+
 ## Fields
 
 `_id`, `_source`, `_type` (`case_law`), `_fetched_at`, `title`, `text`

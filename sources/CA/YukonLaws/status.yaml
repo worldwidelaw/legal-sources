@@ -1,6 +1,11 @@
+coverage_gaps:
+- &id001
+  reason: scanned page images with no text layer — need OCR
+  snapshots: 745
+  unit: historical_statutes+ncnr
 last_bootstrap: null
 last_error: null
-last_run: '2026-04-14T09:00:25.671143+00:00'
+last_run: '2026-08-18T18:00:24.667285+00:00'
 run_history:
 - errors: 0
   finished_at: '2026-04-14T09:00:25.671143+00:00'
@@ -12,4 +17,72 @@ run_history:
   skip_exception: 0
   skip_normalize_none: 0
   started_at: '2026-04-14T08:23:52.296478+00:00'
+- errors: 0
+  finished_at: '2026-08-02T18:39:26.329535+00:00'
+  records_fetched: 10
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 10
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-02T18:38:55.264757+00:00'
+- errors: 0
+  finished_at: '2026-08-02T18:41:07.201008+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-02T18:40:29.994937+00:00'
+- errors: 0
+  finished_at: '2026-08-02T18:42:15.543959+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-02T18:41:37.560955+00:00'
+- errors: 0
+  finished_at: '2026-08-02T18:43:35.804153+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-02T18:42:52.763979+00:00'
+- coverage_gap_detail:
+  - reason: scanned page images with no text layer — need OCR
+    snapshots: 745
+    unit: historical_statutes+ncnr
+  coverage_gaps: 1
+  errors: 0
+  finished_at: '2026-08-18T17:57:07.347786+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-18T17:53:22.518746+00:00'
+- coverage_gap_detail:
+  - *id001
+  coverage_gaps: 1
+  errors: 0
+  finished_at: '2026-08-18T18:00:24.667285+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-18T17:57:46.363141+00:00'
 total_records: 0

@@ -1,0 +1,99 @@
+source:
+  id: "TT/Judiciary"
+  country: "TT"
+  name: "Trinidad and Tobago Judiciary — Judgments (Court of Appeal & High Court)"
+  url: "https://www.ttlawcourts.org/"
+  description: |
+    Written judgments of the Judiciary of Trinidad and Tobago — the Court of Appeal
+    (coa/), the High Court (HC/) and Magistrates' Court (mag/). The Judiciary
+    publishes these as PDF/RTF/HTM documents on its library server
+    webopac.ttlawcourts.org (IP 200.1.109.12), which is only reachable from
+    Trinidad networks and refuses foreign/datacenter IPs. This source therefore
+    reads the judgment corpus from the Internet Archive Wayback Machine, which has
+    captured the webopac.ttlawcourts.org/LibraryJud/Judgments/* tree. Full text in
+    English. First case-law coverage for Trinidad and Tobago in the corpus.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "rest"
+  base_url: "http://web.archive.org"
+  endpoints:
+    enumerate: "/cdx/search/cdx?url=webopac.ttlawcourts.org/LibraryJud/Judgments*&filter=statuscode:200&collapse=urlkey"
+    document: "/web/{timestamp}id_/{original_url}"
+
+data_model:
+  type: "case_law"
+  source_nature: "collection"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  versioning: "none"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Unique identifier: TT/Judiciary/{court}/{...}/{filename-stem}"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case title (parties 'A v B' if extractable, else case number) + court"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full judgment text (PyMuPDF for PDF; light strip for RTF/HTM)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the DD<ddMonyyyy> filename token"
+      type: "date"
+      role: "temporal_key"
+      required: true
+  secondary_fields:
+    - name: "url"
+      description: "Canonical URL of the judgment on webopac.ttlawcourts.org"
+    - name: "court"
+      description: "Court of Appeal / High Court / Magistrates' Court"
+    - name: "judge"
+      description: "Judge whose folder the judgment is filed under"
+    - name: "case_number"
+      description: "Human-readable case reference (e.g. 'Civil Appeal No. 45 of 2008')"
+    - name: "jurisdiction"
+      description: "Trinidad and Tobago"
+    - name: "archived_via"
+      description: "The Wayback Machine raw-capture URL the text was fetched from"
+  probably_ignorable: []
+
+license:
+  name: "Public Domain (Government Edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Court judgments are government edicts and not subject to copyright; freely reproducible. Underlying documents produced by the Judiciary of Trinidad and Tobago; text mirrored via the Internet Archive Wayback Machine."
+
+notes: |
+  - Direct host webopac.ttlawcourts.org geo-blocks foreign/datacenter IPs
+    (verified: connection timeout to 200.1.109.12 on 80/443 from off-island).
+  - Full text is retrieved from the Wayback Machine: enumerate via the CDX API,
+    download each capture through /web/<timestamp>id_/<url>, extract with PyMuPDF
+    (PDF) or a light strip (RTF/HTM). Requires PyMuPDF (fitz) on the VPS.
+  - ~620 judgment documents captured (609 PDF + 8 RTF + 3 HTM); photographs/*.jpg
+    scanned page images are skipped (no OCR). Records under MIN_TEXT_CHARS skipped.
+  - Coverage: Court of Appeal and High Court, decisions ranging from the 1990s to
+    the 2020s (path layouts coa/{year}/{judge}/ and HC/{judge}/{year}/).

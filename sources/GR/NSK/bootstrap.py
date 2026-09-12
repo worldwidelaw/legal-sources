@@ -5,41 +5,49 @@ GR/NSK -- Greek Legal Council of the State (Νομικό Συμβούλιο το
 Fetches legal opinions (γνωμοδοτήσεις) from NSK, the official legal advisory body
 that provides binding legal advice to the Greek government since 1951.
 
-Strategy:
-  - Search API via Liferay portal POST endpoint
-  - Fetch opinion detail pages for metadata extraction
-  - Optional PDF download for full document (if metadata isn't sufficient)
-  - Full text from summary (Περίληψη) field which contains the legal conclusion
+Access strategy (no API exists — Liferay portlet form POST is the only endpoint):
+  - POST the search portlet with ΕΤΟΣ (year) to list a year's opinions.
+    The result listing already carries the full record: number, year, title
+    (= the question put to NSK), Λήμματα, Διατάξεις, Πρόεδρος, Εισηγητής,
+    Κατάσταση and the Περίληψη body (= the reasoned answer). No detail-page
+    round trip is needed.
+  - The server caps every query at the FIRST 500 results
+    ("ΕΜΦΑΝΙΖΟΝΤΑΙ ΤΑ ΠΡΩΤΑ 500 ΑΠΟΤΕΛΕΣΜΑΤΑ"). Busy years (most of 1951-2010)
+    exceed that, so a capped year is re-walked per opinion number
+    (ΑΡΙΘΜΟΣ ΓΝΩΜΟΔΟΤΗΣΗΣ) until the number space runs dry.
+  - Opinions from ~2021 onwards ship a born-digital PDF via the ΛΗΨΗ ΑΡΧΕΙΟΥ
+    resource URL; that is downloaded and its text becomes the record body.
+    Older PDFs are scanned images (0 chars without OCR) so they are not
+    downloaded at all — the listing's question + Περίληψη is the text.
 
 Data types: doctrine (official government legal opinions)
 Auth: none (open data)
 License: Public domain (official government acts)
 
 Usage:
-  python bootstrap.py bootstrap          # Full initial pull
-  python bootstrap.py bootstrap --sample # Fetch 10+ sample records for validation
-  python bootstrap.py update             # Incremental update
-  python bootstrap.py test               # Quick connectivity test
+  python bootstrap.py bootstrap           # Full pull (all years, streams to data/)
+  python bootstrap.py bootstrap-fast      # Same, concurrent normalize (fleet entry point)
+  python bootstrap.py bootstrap --sample  # Fetch sample records for validation
+  python bootstrap.py update              # Incremental update (recent years)
+  python bootstrap.py test                # Quick connectivity test
 """
 
 import sys
+import os
 import json
 import logging
 import re
-import io
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Generator, Optional, Dict, Any, List, Tuple
+from typing import Generator, Optional, Dict, Any, List
 from html import unescape
-from html.parser import HTMLParser
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
-
-import requests
+from common.http_client import HttpClient
 
 logging.basicConfig(
     level=logging.INFO,
@@ -52,44 +60,77 @@ BASE_URL = "https://www.nsk.gr"
 SEARCH_URL = f"{BASE_URL}/web/nsk/anazitisi-gnomodoteseon"
 PORTLET_ID = "nskconsulatories_WAR_nskplatformportlet"
 
-# Status codes
+FIRST_YEAR = 1951
+# Server-side ceiling on results per query — a year hitting this is truncated.
+RESULT_CAP = 500
+# Consecutive empty opinion numbers before a capped year's sweep gives up.
+NUMBER_GAP_TOLERANCE = 40
+MAX_OPINION_NUMBER = 5000
+
+# Opinions published from this year on carry born-digital PDFs whose text
+# extracts cleanly. Everything earlier is a scanned image (0 chars, needs OCR),
+# so downloading ~0.5 MB per record would buy nothing.
+PDF_TEXT_FROM_YEAR = int(os.environ.get("NSK_PDF_FROM_YEAR", "2021"))
+
+# Status codes (ΚΑΤΑΣΤΑΣΗ select options)
 STATUS_MAP = {
-    "1": "Αποδεκτή",         # Accepted
-    "0": "Μη αποδεκτή",      # Not Accepted
-    "2": "Εν μέρει αποδεκτή", # Partially Accepted
-    "-1": "Εκκρεμεί αποδοχή", # Pending
-    "3": "Ανακλήθηκε το ερώτημα", # Withdrawn
-    "4": "Για την αποδοχή ή μη επικοινωνήστε με τον Σχ. Επιστ. Δραστηριοτήτων κ Δημοσίων Σχέσεων"
+    "1": "Αποδεκτή",          # Accepted
+    "0": "Μη αποδεκτή",       # Not accepted
+    "2": "Εν μέρει αποδεκτή",  # Partially accepted
+    "-1": "Εκκρεμεί αποδοχή",  # Pending
+    "3": "Ανακλήθηκε το ερώτημα",  # Withdrawn
+    "4": "Για την αποδοχή ή μη επικοινωνήστε με τον Σχ. Επιστ. Δραστηριοτήτων κ Δημοσίων Σχέσεων",
 }
 
+# --- listing parsing -------------------------------------------------------
 
-class MLStripper(HTMLParser):
-    """Simple HTML tag stripper."""
-    def __init__(self):
-        super().__init__()
-        self.reset()
-        self.fed = []
+ROW_SPLIT = re.compile(r'<div class="article_text_inner2 consultatory"')
+NUM_YEAR_RE = re.compile(
+    r'<div class="gray">\s*(\d+)\s*</div>\s*<div class="blue">\s*(\d{4})\s*</div>'
+)
+LINK_RE = re.compile(r"consultId=(\d+)'>(.*?)</a>", re.DOTALL)
+FIELD_RE = {
+    "keywords": re.compile(r"<strong>\s*Λήμματα\s*:\s*</strong>(.*?)(?:<br|</p>)", re.DOTALL),
+    "provisions": re.compile(r"<strong>\s*Διατάξεις\s*:\s*</strong>(.*?)(?:<br|</p>)", re.DOTALL),
+    "president": re.compile(
+        r"<strong>\s*Πρόεδρος/Προεδρεύων\s*:\s*</strong>(.*?)(?:<br|</p>)", re.DOTALL
+    ),
+    "rapporteur": re.compile(
+        r"<strong>\s*Εισηγητής/Γνωμοδοτών\s*:\s*</strong>(.*?)(?:<br|</p>)", re.DOTALL
+    ),
+    "status": re.compile(r"<strong>\s*Κατάσταση\s*:\s*</strong>(.*?)(?:<br|</p>)", re.DOTALL),
+}
+# The Περίληψη body sits between the metadata </p> and the ΛΗΨΗ ΑΡΧΕΙΟΥ button.
+SUMMARY_RE = re.compile(r"</p>\s*(.*?)\s*<div class=\"row\"", re.DOTALL)
 
-    def handle_data(self, d):
-        self.fed.append(d)
 
-    def get_data(self):
-        return ''.join(self.fed)
+# Words that appear in essentially every NSK opinion. If none survive
+# extraction the PDF's font cmap is broken and the text is transliterated junk.
+GREEK_SANITY_MARKERS = (
+    "ΝΟΜΙΚΟ ΣΥΜΒΟΥΛΙΟ",
+    "γνωμοδότησ",
+    "Γνωμοδότησ",
+    "ΓΝΩΜΟΔΟΤΗΣ",
+    "ΕΛΛΗΝΙΚΗ ΔΗΜΟΚΡΑΤΙΑ",
+    "Τμήμα",
+)
+
+
+def _greek_text_looks_sane(text: str) -> bool:
+    """True if extracted PDF text still reads as Greek rather than mojibake."""
+    return any(marker in text for marker in GREEK_SANITY_MARKERS)
 
 
 def strip_html(html: str) -> str:
     """Remove HTML tags and decode entities."""
     if not html:
         return ""
-    s = MLStripper()
-    try:
-        s.feed(html)
-        text = s.get_data()
-    except Exception:
-        # Fallback: regex
-        text = re.sub(r'<[^>]+>', ' ', html)
+    text = re.sub(r"<(script|style)\b.*?</\1>", " ", html, flags=re.DOTALL | re.I)
+    text = re.sub(r"<br\s*/?>", "\n", text, flags=re.I)
+    text = re.sub(r"<[^>]+>", " ", text)
     text = unescape(text)
-    text = re.sub(r'\s+', ' ', text)
+    text = re.sub(r"[ \t\xa0]+", " ", text)
+    text = re.sub(r"\n\s*\n\s*\n+", "\n\n", text)
     return text.strip()
 
 
@@ -107,378 +148,373 @@ class NSKScraper(BaseScraper):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
 
-        self.session = requests.Session()
-        self.session.headers.update({
-            "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "el-GR,el;q=0.9,en;q=0.8",
-        })
+        # www.nsk.gr sends only its leaf certificate and omits the
+        # "GeoTrust TLS RSA CA G1" intermediate, so certifi cannot complete the
+        # chain and every request raises CERTIFICATE_VERIFY_FAILED "unable to
+        # get local issuer certificate" (issue #1513). HttpClient repairs that
+        # by fetching the intermediate from the leaf's AIA caIssuers URL and
+        # retrying with an augmented CA bundle, keeping verification on.
+        self.client = HttpClient(
+            headers={
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "el-GR,el;q=0.9,en;q=0.8",
+            },
+            timeout=120,
+            wall_timeout=600,
+        )
 
-    def _search_opinions_by_year(self, year: int, status: str = "1") -> List[int]:
+        self.checkpoint_path = Path(__file__).parent / "data" / "nsk_checkpoint.json"
+        self._checkpoint = self._load_checkpoint()
+
+    # --- checkpoint --------------------------------------------------------
+
+    def _load_checkpoint(self) -> Dict[str, Any]:
+        try:
+            with open(self.checkpoint_path, encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, dict) and isinstance(data.get("completed_years"), list):
+                return {"completed_years": [int(y) for y in data["completed_years"]]}
+        except (FileNotFoundError, ValueError, TypeError):
+            pass
+        return {"completed_years": []}
+
+    def _mark_year_done(self, year: int):
+        done = set(self._checkpoint["completed_years"])
+        done.add(year)
+        self._checkpoint["completed_years"] = sorted(done)
+        try:
+            self.checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.checkpoint_path, "w", encoding="utf-8") as f:
+                json.dump(self._checkpoint, f)
+        except OSError as e:
+            logger.warning(f"Could not persist checkpoint: {e}")
+
+    # --- search ------------------------------------------------------------
+
+    def _search(
+        self,
+        year: int,
+        number: Optional[int] = None,
+        status: str = "null",
+    ) -> List[Dict[str, Any]]:
         """
-        Search for opinion IDs by year and status.
+        POST the search portlet and parse the result listing.
 
-        Args:
-            year: Year to search (e.g., 2024)
-            status: Status filter ("1" = accepted, "null" = all)
-
-        Returns:
-            List of opinion IDs (consultId values)
+        The listing carries every field we need, so this is the only network
+        call per batch of opinions.
         """
         self.rate_limiter.wait()
 
-        try:
-            # POST request to search endpoint
-            url = f"{SEARCH_URL}?p_p_id={PORTLET_ID}&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&p_p_col_id=column-4&p_p_col_pos=2&p_p_col_count=3"
+        url = (
+            f"{SEARCH_URL}?p_p_id={PORTLET_ID}&p_p_lifecycle=0&p_p_state=normal"
+            f"&p_p_mode=view&p_p_col_id=column-4&p_p_col_pos=2&p_p_col_count=3"
+        )
+        data = {
+            f"_{PORTLET_ID}_isSearch": "1",
+            f"_{PORTLET_ID}_inputDatefrom": str(year),
+            f"_{PORTLET_ID}_consulState": status,
+            f"_{PORTLET_ID}_inputKeywords": "",
+            f"_{PORTLET_ID}_inputRelated": "",
+            f"_{PORTLET_ID}_inputSuggestionNo": "" if number is None else str(number),
+        }
 
-            data = {
-                f"_{PORTLET_ID}_isSearch": "1",
-                f"_{PORTLET_ID}_inputDatefrom": str(year),
-                f"_{PORTLET_ID}_consulState": status,
-                f"_{PORTLET_ID}_inputKeywords": "",
-                f"_{PORTLET_ID}_inputRelated": "",
-                f"_{PORTLET_ID}_inputSuggestionNo": "",
-            }
+        last_error = None
+        for attempt in range(4):
+            try:
+                resp = self.client.post(url, data=data, timeout=120)
+                resp.raise_for_status()
+                return self._parse_listing(resp.text, year)
+            except Exception as e:  # noqa: BLE001 — retry any transport/HTTP fault
+                last_error = e
+                logger.warning(
+                    f"Search {year}/{number or 'all'} attempt {attempt + 1} failed: {e}"
+                )
 
-            resp = self.session.post(url, data=data, timeout=60)
-            resp.raise_for_status()
+        raise RuntimeError(
+            f"nsk.gr search failed for year={year} number={number}: {last_error}"
+        )
 
-            # Extract opinion IDs from response HTML
-            # Pattern: consultId=NNNNNN
-            ids = re.findall(r'consultId=(\d+)', resp.text)
-            # Remove duplicates while preserving order
-            seen = set()
-            unique_ids = []
-            for id_str in ids:
-                if id_str not in seen:
-                    seen.add(id_str)
-                    unique_ids.append(int(id_str))
+    def _parse_listing(self, html: str, year: int) -> List[Dict[str, Any]]:
+        """Parse the search result listing into raw opinion dicts."""
+        chunks = ROW_SPLIT.split(html)[1:]
+        out = []
+        for chunk in chunks:
+            link = LINK_RE.search(chunk)
+            if not link:
+                continue
+            consult_id = int(link.group(1))
 
-            logger.debug(f"Year {year}: found {len(unique_ids)} opinions")
-            return unique_ids
+            num_year = NUM_YEAR_RE.search(chunk)
+            number = int(num_year.group(1)) if num_year else None
+            row_year = int(num_year.group(2)) if num_year else year
 
-        except Exception as e:
-            logger.warning(f"Error searching opinions for year {year}: {e}")
-            return []
-
-    def _fetch_opinion_detail(self, consult_id: int) -> Optional[Dict[str, Any]]:
-        """
-        Fetch full details for a single opinion.
-
-        Args:
-            consult_id: The opinion ID
-
-        Returns:
-            Dict with opinion data or None if failed
-        """
-        self.rate_limiter.wait()
-
-        try:
-            url = f"{SEARCH_URL}?p_p_id={PORTLET_ID}&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&_{PORTLET_ID}_jspPage=%2Fjsps%2Fconsulatories%2Fview-consultatory.jsp&_{PORTLET_ID}_consultId={consult_id}"
-
-            resp = self.session.get(url, timeout=60)
-            resp.raise_for_status()
-
-            html = resp.text
-
-            # Extract data from HTML table
-            data = {
+            record = {
                 "consult_id": consult_id,
-                "number": None,
-                "year": None,
-                "title": None,
-                "president": None,
-                "rapporteur": None,
-                "summary": None,
-                "provisions": None,
-                "keywords": None,
-                "status": None,
+                "number": number,
+                "year": row_year,
+                "title": strip_html(link.group(2)),
             }
+            for key, pattern in FIELD_RE.items():
+                m = pattern.search(chunk)
+                record[key] = strip_html(m.group(1)) if m else None
 
-            # Parse each field from HTML
-            # Number: Αριθμός
-            number_match = re.search(r'<td[^>]*><strong>Αριθμός\s*</strong></td>\s*<td[^>]*>:</td>\s*<td[^>]*>\s*(\d+)', html)
-            if number_match:
-                data["number"] = int(number_match.group(1).strip())
+            summary = SUMMARY_RE.search(chunk)
+            record["summary"] = strip_html(summary.group(1)) if summary else None
+            out.append(record)
+        return out
 
-            # Year: Έτος
-            year_match = re.search(r'<td[^>]*><strong>Έτος\s*</strong></td>\s*<td[^>]*>:</td>\s*<td[^>]*>\s*(\d{4})', html)
-            if year_match:
-                data["year"] = int(year_match.group(1).strip())
+    # --- PDF full text -----------------------------------------------------
 
-            # Title: Τίτλος
-            title_match = re.search(r'<td[^>]*><strong>Τίτλος\s*</strong></td>\s*<td[^>]*>:</td>\s*<td[^>]*>(.*?)</td>', html, re.DOTALL)
-            if title_match:
-                data["title"] = strip_html(title_match.group(1))
+    def _pdf_url(self, consult_id: int) -> str:
+        return (
+            f"{SEARCH_URL}?p_p_id={PORTLET_ID}&p_p_lifecycle=2&p_p_state=normal"
+            f"&p_p_mode=view&p_p_cacheability=cacheLevelPage"
+            f"&_{PORTLET_ID}_consultId={consult_id}"
+            f"&_{PORTLET_ID}_jspPage=%2Fjsps%2Fconsulatories%2Fview-consultatory.jsp"
+        )
 
-            # President: Πρόεδρος/Προεδρεύων
-            pres_match = re.search(r'<td[^>]*><strong>Πρόεδρος/Προεδρεύων\s*</strong></td>\s*<td[^>]*>:</td>\s*<td[^>]*>(.*?)</td>', html, re.DOTALL)
-            if pres_match:
-                data["president"] = strip_html(pres_match.group(1))
-
-            # Rapporteur: Εισηγητής/Γνωμοδοτών
-            rapp_match = re.search(r'<td[^>]*><strong>Εισηγητής/Γνωμοδοτών\s*</strong></td>\s*<td[^>]*>:</td>\s*<td[^>]*>(.*?)</td>', html, re.DOTALL)
-            if rapp_match:
-                data["rapporteur"] = strip_html(rapp_match.group(1))
-
-            # Summary (this is the main content): Περίληψη
-            summary_match = re.search(r'<td[^>]*><strong>Περίληψη\s*</strong></td>\s*<td[^>]*>:</td>\s*<td[^>]*>(.*?)</td>', html, re.DOTALL)
-            if summary_match:
-                data["summary"] = strip_html(summary_match.group(1))
-
-            # Provisions: Διατάξεις
-            prov_match = re.search(r'<td[^>]*><strong>Διατάξεις\s*</strong></td>\s*<td[^>]*>:</td>\s*<td[^>]*>(.*?)</td>', html, re.DOTALL)
-            if prov_match:
-                data["provisions"] = strip_html(prov_match.group(1))
-
-            # Keywords: Λήμματα
-            kw_match = re.search(r'<td[^>]*><strong>Λήμματα</strong></td>\s*<td[^>]*>:</td>\s*<td[^>]*>(.*?)</td>', html, re.DOTALL)
-            if kw_match:
-                data["keywords"] = strip_html(kw_match.group(1))
-
-            # Status: Κατάσταση
-            status_match = re.search(r'<td[^>]*><strong>Κατάσταση</strong>\s*</td>\s*<td[^>]*>:</td>\s*<td[^>]*>(.*?)</td>', html, re.DOTALL)
-            if status_match:
-                data["status"] = strip_html(status_match.group(1))
-
-            # Validate we got essential fields
-            if not data["number"] or not data["year"]:
-                logger.warning(f"Missing number or year for opinion {consult_id}")
-                return None
-
-            return data
-
-        except Exception as e:
-            logger.warning(f"Error fetching opinion {consult_id}: {e}")
+    def _fetch_pdf_text(self, consult_id: int) -> Optional[str]:
+        """Download the ΛΗΨΗ ΑΡΧΕΙΟΥ PDF and extract its text, or None."""
+        try:
+            from common.pdf_extract import extract_pdf_markdown
+        except ImportError:
             return None
 
+        try:
+            self.rate_limiter.wait()
+            resp = self.client.get(self._pdf_url(consult_id), timeout=180)
+            resp.raise_for_status()
+            if "pdf" not in resp.headers.get("Content-Type", "").lower():
+                return None
+            text = extract_pdf_markdown(
+                "GR/NSK",
+                str(consult_id),
+                pdf_bytes=resp.content,
+                table="doctrine",
+                force=True,
+            )
+            if not text:
+                return None
+            if not _greek_text_looks_sane(text):
+                # A few NSK PDFs embed a non-standard Greek cmap; pdfplumber then
+                # emits transliterated mojibake ("ΓΗΜΟΚΡΑΣΙΑ" for "ΔΗΜΟΚΡΑΤΙΑ").
+                # Better to keep the clean Περίληψη than to store garbage.
+                logger.warning(
+                    f"PDF text for {consult_id} failed the Greek sanity check "
+                    f"(broken font cmap) — falling back to the listing summary"
+                )
+                return None
+            return text
+        except Exception as e:  # noqa: BLE001 — PDF is an enrichment, never fatal
+            logger.debug(f"PDF text unavailable for {consult_id}: {e}")
+            return None
+
+    # --- crawl -------------------------------------------------------------
+
+    def _fetch_year(self, year: int) -> Generator[dict, None, None]:
+        """
+        Yield every opinion of a year, working around the 500-result cap.
+
+        A year under the cap comes back in one request. A capped year is
+        complete only up to the last fully-listed opinion number, so the rest
+        of the number space is walked one ΑΡΙΘΜΟΣ ΓΝΩΜΟΔΟΤΗΣΗΣ at a time.
+        """
+        rows = self._search(year)
+        if not rows:
+            return
+
+        if len(rows) < RESULT_CAP:
+            for row in rows:
+                yield row
+            return
+
+        # Truncated: the highest number listed may itself be cut in half, so
+        # trust everything below it and re-query from that number on.
+        numbers = [r["number"] for r in rows if r["number"] is not None]
+        resume_at = max(numbers) if numbers else 1
+        logger.info(
+            f"Year {year} hit the {RESULT_CAP}-result cap at opinion no. {resume_at} "
+            f"— sweeping by opinion number from there"
+        )
+        for row in rows:
+            if row["number"] is not None and row["number"] < resume_at:
+                yield row
+
+        misses = 0
+        number = resume_at
+        while misses < NUMBER_GAP_TOLERANCE and number <= MAX_OPINION_NUMBER:
+            batch = self._search(year, number=number)
+            # inputSuggestionNo is an exact match on ΑΡΙΘΜΟΣ; keep only this year.
+            batch = [r for r in batch if r["year"] == year and r["number"] == number]
+            if batch:
+                misses = 0
+                for row in batch:
+                    yield row
+            else:
+                misses += 1
+            number += 1
+
     def fetch_all(self) -> Generator[dict, None, None]:
-        """Yield all NSK opinions from all years."""
+        """Yield all NSK opinions from 1951 to the current year."""
         current_year = datetime.now().year
+        done = set(self._checkpoint["completed_years"])
 
-        # Start from current year and go back to 1951
-        for year in range(current_year, 1950, -1):
-            logger.info(f"Fetching opinions for year {year}...")
-
-            # Get all opinion IDs for this year (all statuses)
-            opinion_ids = self._search_opinions_by_year(year, status="null")
-
-            if not opinion_ids:
-                logger.debug(f"No opinions found for year {year}")
+        for year in range(current_year, FIRST_YEAR - 1, -1):
+            if year in done:
+                logger.info(f"Year {year} already completed — skipping (checkpoint)")
                 continue
 
-            logger.info(f"Year {year}: {len(opinion_ids)} opinions to fetch")
-
-            for consult_id in opinion_ids:
-                opinion = self._fetch_opinion_detail(consult_id)
-                if opinion:
-                    yield opinion
+            logger.info(f"Fetching opinions for year {year}...")
+            count = 0
+            for row in self._fetch_year(year):
+                count += 1
+                yield row
+            logger.info(f"Year {year}: {count} opinions")
+            self._mark_year_done(year)
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
-        """Yield opinions published since the given date."""
+        """Yield opinions from the years touched since the given date."""
         current_year = datetime.now().year
-        since_year = since.year
-
-        # Fetch from current year back to since_year
-        for year in range(current_year, since_year - 1, -1):
+        for year in range(current_year, max(since.year, FIRST_YEAR) - 1, -1):
             logger.info(f"Checking updates for year {year}...")
+            yield from self._fetch_year(year)
 
-            opinion_ids = self._search_opinions_by_year(year, status="null")
-
-            for consult_id in opinion_ids:
-                opinion = self._fetch_opinion_detail(consult_id)
-                if opinion:
-                    yield opinion
+    # --- normalize ---------------------------------------------------------
 
     def normalize(self, raw: dict) -> dict:
-        """Transform raw NSK opinion data to standard schema."""
+        """Transform a raw NSK listing row into the standard schema."""
         consult_id = raw["consult_id"]
         number = raw.get("number")
         year = raw.get("year")
 
-        # Build unique ID
-        doc_id = f"NSK-{year}-{number}" if number and year else f"NSK-{consult_id}"
+        title = raw.get("title") or ""
+        display_title = title
+        if not display_title:
+            display_title = (
+                f"Γνωμοδότηση ΝΣΚ {number}/{year}" if number and year
+                else f"Γνωμοδότηση {consult_id}"
+            )
+        elif len(display_title) > 200:
+            display_title = display_title[:200] + "..."
 
-        # Build title: if no title, use number/year
-        title = raw.get("title")
-        if not title:
-            title = f"Γνωμοδότηση ΝΣΚ {number}/{year}" if number and year else f"Γνωμοδότηση {consult_id}"
-        elif len(title) > 200:
-            title = title[:200] + "..."
+        # Body: the born-digital PDF is the real opinion; before ~2021 the PDFs
+        # are scans, so the listing's question + Περίληψη is what we have.
+        full_text = None
+        if year and year >= PDF_TEXT_FROM_YEAR:
+            full_text = self._fetch_pdf_text(consult_id)
 
-        # Build full text from available content
-        # The main content is in the summary (Περίληψη) which contains the legal conclusion
-        # Plus the title which often contains the legal question
-        text_parts = []
+        if not full_text:
+            parts = []
+            if title:
+                parts.append(f"ΕΡΩΤΗΜΑ:\n{title}")
+            if raw.get("summary"):
+                parts.append(f"ΑΠΑΝΤΗΣΗ:\n{raw['summary']}")
+            if raw.get("provisions"):
+                parts.append(f"ΔΙΑΤΑΞΕΙΣ:\n{raw['provisions']}")
+            full_text = "\n\n".join(parts)
 
-        if raw.get("title"):
-            text_parts.append(f"ΕΡΩΤΗΜΑ:\n{raw['title']}")
+        if not full_text.strip():
+            return None
 
-        if raw.get("summary"):
-            text_parts.append(f"\nΑΠΑΝΤΗΣΗ:\n{raw['summary']}")
-
-        full_text = "\n".join(text_parts)
-
-        # Parse keywords into list
         keywords = []
         if raw.get("keywords"):
-            keywords = [k.strip() for k in raw["keywords"].split(",")]
+            keywords = [k.strip() for k in raw["keywords"].split(",") if k.strip()]
 
-        # Build date (year only available, use Jan 1)
         date = None
         if year:
             try:
-                date = datetime(year, 1, 1, tzinfo=timezone.utc).isoformat()
+                date = datetime(int(year), 1, 1, tzinfo=timezone.utc).isoformat()
             except (ValueError, TypeError):
                 pass
 
-        # Build URL to detail page
-        url = f"{SEARCH_URL}?p_p_id={PORTLET_ID}&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&_{PORTLET_ID}_jspPage=%2Fjsps%2Fconsulatories%2Fview-consultatory.jsp&_{PORTLET_ID}_consultId={consult_id}"
+        url = (
+            f"{SEARCH_URL}?p_p_id={PORTLET_ID}&p_p_lifecycle=0&p_p_state=normal"
+            f"&p_p_mode=view"
+            f"&_{PORTLET_ID}_jspPage=%2Fjsps%2Fconsulatories%2Fview-consultatory.jsp"
+            f"&_{PORTLET_ID}_consultId={consult_id}"
+        )
 
         return {
-            "_id": doc_id,
+            "_id": f"NSK-{consult_id}",
             "_source": "GR/NSK",
             "_type": "doctrine",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
-            "title": title,
+            "title": display_title,
             "text": full_text,
             "date": date,
             "url": url,
+            "pdf_url": self._pdf_url(consult_id),
             "consult_id": consult_id,
             "opinion_number": number,
             "year": year,
-            "president": raw.get("president"),
-            "rapporteur": raw.get("rapporteur"),
-            "provisions": raw.get("provisions"),
+            "president": raw.get("president") or None,
+            "rapporteur": raw.get("rapporteur") or None,
+            "provisions": raw.get("provisions") or None,
             "keywords": keywords,
-            "status": raw.get("status"),
+            "status": raw.get("status") or None,
         }
-
-    def _fetch_sample(self, sample_size: int = 12) -> list:
-        """Fetch sample records for validation."""
-        samples = []
-        current_year = datetime.now().year
-
-        # Sample from recent years
-        years_to_check = [current_year, current_year - 1, current_year - 2, 2020, 2010, 2000, 1990]
-
-        for year in years_to_check:
-            if len(samples) >= sample_size:
-                break
-
-            logger.info(f"Fetching sample opinions from year {year}...")
-            opinion_ids = self._search_opinions_by_year(year, status="1")  # Just accepted ones
-
-            # Take first few from each year
-            for consult_id in opinion_ids[:3]:
-                if len(samples) >= sample_size:
-                    break
-
-                opinion = self._fetch_opinion_detail(consult_id)
-                if opinion:
-                    normalized = self.normalize(opinion)
-                    samples.append(normalized)
-                    text_len = len(normalized.get("text", ""))
-                    logger.info(f"  -> {normalized['_id']}: {text_len} chars")
-
-        return samples
 
 
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description="GR/NSK Data Fetcher - Greek Legal Council of the State")
-    parser.add_argument("command", choices=["bootstrap", "update", "test"],
-                        help="Command to run")
+    parser = argparse.ArgumentParser(
+        description="GR/NSK Data Fetcher - Greek Legal Council of the State"
+    )
+    parser.add_argument(
+        "command",
+        choices=["bootstrap", "bootstrap-fast", "update", "test"],
+        help="Command to run",
+    )
     parser.add_argument("--sample", action="store_true",
                         help="Only fetch sample records for validation")
-    parser.add_argument("--full", action="store_true", help="Fetch all records")
+    parser.add_argument("--full", action="store_true",
+                        help="Fetch all records (default for bootstrap)")
+    parser.add_argument("--sample-size", type=int, default=12)
     args = parser.parse_args()
 
     scraper = NSKScraper()
 
     if args.command == "test":
-        print("Testing GR/NSK API connection...")
-
-        # Test search for recent year
-        print(f"Searching opinions for year 2024...")
-        ids = scraper._search_opinions_by_year(2024, status="1")
-        print(f"Found {len(ids)} accepted opinions")
-
-        if ids:
-            # Test fetching one opinion
-            test_id = ids[0]
-            print(f"\nFetching opinion {test_id}...")
-            opinion = scraper._fetch_opinion_detail(test_id)
-
-            if opinion:
-                print(f"SUCCESS: Retrieved opinion {test_id}")
-                print(f"  Number: {opinion.get('number')}/{opinion.get('year')}")
-                print(f"  Title: {opinion.get('title', 'N/A')[:80]}...")
-                print(f"  Summary: {len(opinion.get('summary', ''))} chars")
-                print(f"  Status: {opinion.get('status')}")
-
-                normalized = scraper.normalize(opinion)
-                print(f"\nNormalized record:")
-                print(f"  _id: {normalized['_id']}")
-                print(f"  Text length: {len(normalized.get('text', ''))} chars")
-            else:
-                print("FAILED: Could not fetch opinion details")
-                sys.exit(1)
-        else:
-            print("FAILED: Could not find any opinions")
+        print("Testing GR/NSK search portlet...")
+        rows = scraper._search(2024)
+        print(f"Year 2024: {len(rows)} opinions listed")
+        if not rows:
+            print("FAILED: no results for 2024")
             sys.exit(1)
+
+        row = rows[0]
+        print(f"  First: no. {row['number']}/{row['year']} (consultId {row['consult_id']})")
+        print(f"  Title: {(row['title'] or '')[:80]}...")
+        print(f"  Περίληψη: {len(row.get('summary') or '')} chars")
+
+        record = scraper.normalize(row)
+        if not record:
+            print("FAILED: normalize produced no text")
+            sys.exit(1)
+        print(f"\nNormalized: {record['_id']} — {len(record['text'])} chars of text")
+
+        capped = scraper._search(1990)
+        print(f"Year 1990: {len(capped)} listed (cap is {RESULT_CAP})")
 
     elif args.command == "bootstrap":
         if args.sample:
-            print("Fetching sample records from GR/NSK (Legal Council of the State)...")
-
-            samples = scraper._fetch_sample(sample_size=12)
-
-            # Save samples
-            sample_dir = scraper.source_dir / "sample"
-            sample_dir.mkdir(exist_ok=True)
-
-            for record in samples:
-                filepath = sample_dir / f"{record['_id']}.json"
-                with open(filepath, "w", encoding="utf-8") as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-
-            print(f"\nSaved {len(samples)} sample records to {sample_dir}/")
-
-            # Print summary
-            if samples:
-                text_lengths = [len(s.get("text", "")) for s in samples]
-                avg_len = sum(text_lengths) / len(text_lengths)
-                print(f"Average text length: {avg_len:.0f} characters")
-                print(f"Min text length: {min(text_lengths)} chars")
-                print(f"Max text length: {max(text_lengths)} chars")
-
-                # Verify all have text
-                empty = sum(1 for s in samples if not s.get("text"))
-                if empty:
-                    print(f"WARNING: {empty} records have no text!")
-                else:
-                    print("All records have text content.")
+            print("Fetching sample records from GR/NSK...")
+            stats = scraper.bootstrap(sample_mode=True, sample_size=args.sample_size)
         else:
-            print("Full bootstrap would fetch all opinions from 1951 to present.")
-            print("Use --sample flag to fetch sample records first.")
+            print("Bootstrapping GR/NSK (all years 1951-present)...")
+            stats = scraper.bootstrap()
+        print(json.dumps(stats, indent=2, default=str))
+
+    elif args.command == "bootstrap-fast":
+        print("Bootstrapping GR/NSK (fast mode, all years 1951-present)...")
+        stats = scraper.bootstrap_fast()
+        print(json.dumps(stats, indent=2, default=str))
 
     elif args.command == "update":
-        from datetime import timedelta
-        since = datetime.now(timezone.utc) - timedelta(days=365)
-        print(f"Fetching updates since {since.isoformat()}...")
-
-        count = 0
-        for raw in scraper.fetch_updates(since):
-            normalized = scraper.normalize(raw)
-            print(f"  {normalized['_id']}: {len(normalized.get('text', ''))} chars")
-            count += 1
-            if count >= 20:  # Limit for update demo
-                print("  ... (limited to 20 for demo)")
-                break
-
-        print(f"\nFetched {count} opinions")
+        stats = scraper.update()
+        print(json.dumps(stats, indent=2, default=str))
 
 
 if __name__ == "__main__":

@@ -245,24 +245,55 @@ class TreatyBodyDBScraper(BaseScraper):
             return html_module.unescape(matches[0])
         return None
 
+    def _fetch_via_undocs(self, symbol: str) -> Optional[str]:
+        """Fallback: fetch the born-digital PDF from the stable UN documents API.
+
+        docstore.ohchr.org's FilesHandler.ashx endpoint frequently returns
+        HTTP 500 from datacenter IPs (see issue #1166). The migrated UN
+        documents API (documents.un.org) exposes the same official record by
+        document symbol and is not datacenter-throttled, so we use it as a
+        fallback whenever the docstore route yields no usable text. General
+        Comment symbols (e.g. ``CCPR/C/GC/37``) are canonical UN doc symbols.
+        """
+        time.sleep(1)  # Rate limit
+        url = (
+            "https://documents.un.org/api/symbol/access?"
+            f"s={quote(symbol, safe='/')}&l=en&t=pdf"
+        )
+        resp = self.http.get(url)
+        if not resp or resp.status_code != 200:
+            return None
+        content = resp.content
+        ctype = (resp.headers.get("Content-Type") or "").lower()
+        # A missing document is served as a small HTML stub, not a PDF.
+        if not (content[:5] == b"%PDF-" or "application/pdf" in ctype):
+            return None
+        pdf_text = extract_pdf_markdown(
+            "UN/TreatyBodyDB", symbol,
+            pdf_bytes=content, table="doctrine", force=True,
+        )
+        if pdf_text and pdf_text.strip():
+            return pdf_text.strip()
+        return None
+
     def _fetch_full_text(self, symbol: str) -> Optional[str]:
         """Fetch full text of a document by its symbol."""
         time.sleep(1)  # Rate limit
         download_html = self._fetch_download_page(symbol)
         if not download_html:
-            logger.warning(f"Could not fetch download page for {symbol}")
-            return None
+            logger.warning(f"Could not fetch download page for {symbol}; trying UN docs API")
+            return self._fetch_via_undocs(symbol)
 
         html_url = self._extract_html_url(download_html)
         if not html_url:
-            logger.warning(f"No HTML download URL found for {symbol}")
-            return None
+            logger.warning(f"No HTML download URL found for {symbol}; trying UN docs API")
+            return self._fetch_via_undocs(symbol)
 
         time.sleep(1)  # Rate limit
         resp = self.http.get(html_url)
         if not resp or resp.status_code != 200:
-            logger.warning(f"Could not fetch HTML content for {symbol}")
-            return None
+            logger.warning(f"Could not fetch HTML content for {symbol}; trying UN docs API")
+            return self._fetch_via_undocs(symbol)
 
         content = resp.content
 
@@ -279,16 +310,15 @@ class TreatyBodyDBScraper(BaseScraper):
             )
             if pdf_text and pdf_text.strip():
                 return pdf_text.strip()
-            logger.warning(f"PDF text extraction empty for {symbol}")
-            return None
+            logger.warning(f"PDF text extraction empty for {symbol}; trying UN docs API")
+            return self._fetch_via_undocs(symbol)
 
         # Guard: legacy binary Word .doc (OLE2 compound-file magic) served as
-        # application/msword cannot be stripped as HTML — return None instead of
-        # storing thousands of replacement chars. The format selector now
-        # prefers docx/pdf, so this only fires when .doc is the sole format.
+        # application/msword cannot be stripped as HTML. Fall back to the UN
+        # documents API, which serves a born-digital PDF we can extract.
         if content[:4] == b"\xd0\xcf\x11\xe0" or "msword" in ctype:
-            logger.warning(f"Only legacy binary .doc available for {symbol}; skipping")
-            return None
+            logger.warning(f"Only legacy binary .doc available for {symbol}; trying UN docs API")
+            return self._fetch_via_undocs(symbol)
 
         # Handle UTF-16 encoding (common for OHCHR HTML documents)
         try:
@@ -469,4 +499,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

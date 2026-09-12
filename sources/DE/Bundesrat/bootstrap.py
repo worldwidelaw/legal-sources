@@ -6,7 +6,7 @@ Uses the DIP (Dokumentations- und Informationssystem) API to fetch
 Bundesrat parliamentary documents with full text.
 
 API Documentation: https://dip.bundestag.de/über-dip/hilfe/api
-Public API key valid until May 2026.
+Public API key valid until end of May 2027. Override with DIP_API_KEY.
 
 Data includes:
 - Drucksachen (printed materials: motions, reports, opinions)
@@ -30,8 +30,14 @@ logger = logging.getLogger(__name__)
 
 # Constants
 API_BASE = "https://search.dip.bundestag.de/api/v1"
-# Public demo API key valid until May 2026
-DEFAULT_API_KEY = "OSOegLs.PR2lwJ1dwCeje9vTj7FPOt3hvpYKtwKkhw"
+# Public demo API key published by the Bundestag, valid until end of May 2027.
+# The Bundestag rotates this roughly yearly; when it expires the API answers 401
+# and the current key is republished at https://dip.bundestag.de/über-dip/hilfe/api
+DEFAULT_API_KEY = "R2BZaee.DjdCyihKZMf8AOjtScubP2EVydegzjmBIQ"
+
+
+class DipAuthError(RuntimeError):
+    """Raised when the DIP API rejects our key — the corpus is unreachable, not empty."""
 
 
 class BundesratFetcher:
@@ -47,17 +53,43 @@ class BundesratFetcher:
         })
 
     def _make_request(self, endpoint: str, params: Dict[str, Any] = None) -> Optional[Dict]:
-        """Make a request to the DIP API"""
+        """Make a request to the DIP API.
+
+        Auth failures raise DipAuthError rather than returning None: an expired
+        public key otherwise looks exactly like "no more documents" and the crawl
+        exits 0 having written nothing (issue #1450).
+        """
         url = f"{API_BASE}/{endpoint}"
         params = params or {}
 
-        try:
-            response = self.session.get(url, params=params, timeout=60)
-            response.raise_for_status()
-            return response.json()
-        except requests.RequestException as e:
-            logger.error(f"API request failed: {e}")
-            return None
+        last_error = None
+        for attempt in range(5):
+            try:
+                response = self.session.get(url, params=params, timeout=60)
+                if response.status_code in (401, 403):
+                    raise DipAuthError(
+                        f"DIP API rejected the API key (HTTP {response.status_code}). "
+                        "The public key has most likely expired — fetch the current one from "
+                        "https://dip.bundestag.de/über-dip/hilfe/api or set DIP_API_KEY."
+                    )
+                if response.status_code == 429 or response.status_code >= 500:
+                    retry_after = response.headers.get('Retry-After')
+                    delay = float(retry_after) if retry_after and retry_after.isdigit() else min(60, 2 ** attempt)
+                    logger.warning(f"HTTP {response.status_code} from {endpoint}, retrying in {delay}s")
+                    time.sleep(delay)
+                    last_error = f"HTTP {response.status_code}"
+                    continue
+                response.raise_for_status()
+                return response.json()
+            except DipAuthError:
+                raise
+            except (requests.RequestException, ValueError) as e:
+                last_error = e
+                logger.warning(f"API request failed ({e}), attempt {attempt + 1}/5")
+                time.sleep(min(60, 2 ** attempt))
+
+        logger.error(f"API request to {endpoint} failed after 5 attempts: {last_error}")
+        return None
 
     def fetch_drucksache_list(self, rows: int = 100, cursor: str = None) -> Optional[Dict]:
         """Fetch list of Bundesrat Drucksachen"""
@@ -85,19 +117,23 @@ class BundesratFetcher:
         """Fetch a single document by ID"""
         return self._make_request(f'drucksache/{doc_id}')
 
-    def fetch_all(self, limit: int = None) -> Iterator[Dict[str, Any]]:
+    def fetch_all(self, limit: int = None, checkpoint_path: Path = None) -> Iterator[Dict[str, Any]]:
         """
         Fetch all Bundesrat documents with full text.
 
         Args:
             limit: Maximum number of documents to fetch (None for all)
+            checkpoint_path: If given, the DIP cursor is persisted here after every
+                page so a re-run resumes where the previous one stopped instead of
+                re-walking the ~100K document corpus from the start.
 
         Yields:
             Raw document dictionaries with full text
         """
-        cursor = None
+        cursor = self._load_checkpoint(checkpoint_path)
         count = 0
-        batch_size = 10  # API limit for text endpoint
+        pages = 0
+        batch_size = 10  # API limit for the drucksache-text endpoint
 
         while True:
             logger.info(f"Fetching batch starting at document {count}...")
@@ -105,13 +141,19 @@ class BundesratFetcher:
             result = self.fetch_drucksache_with_text(rows=batch_size, cursor=cursor)
 
             if not result or 'documents' not in result:
-                logger.error("Failed to fetch documents or no documents returned")
+                if pages == 0:
+                    raise RuntimeError(
+                        "DIP drucksache-text returned no usable response on the first page — "
+                        "the corpus is unreachable, not empty. Refusing to report success."
+                    )
+                logger.error("Failed to fetch a page; stopping with partial results")
                 break
 
             documents = result.get('documents', [])
             if not documents:
                 logger.info("No more documents to fetch")
                 break
+            pages += 1
 
             for doc in documents:
                 text = doc.get('text', '')
@@ -123,16 +165,47 @@ class BundesratFetcher:
                         logger.info(f"Reached limit of {limit} documents")
                         return
 
-            # Get cursor for next page
-            cursor = result.get('cursor')
-            if not cursor:
+            # DIP signals exhaustion by echoing back the cursor it was given.
+            next_cursor = result.get('cursor')
+            if not next_cursor or next_cursor == cursor:
                 logger.info("No more pages available")
+                self._save_checkpoint(checkpoint_path, None)
                 break
+            cursor = next_cursor
+            self._save_checkpoint(checkpoint_path, cursor)
 
             # Rate limiting
             time.sleep(0.5)
 
+        if pages > 0 and count == 0:
+            raise RuntimeError(
+                f"Walked {pages} DIP pages but every document had empty text — "
+                "the drucksache-text payload shape has changed."
+            )
         logger.info(f"Fetched {count} documents with full text")
+
+    @staticmethod
+    def _load_checkpoint(path: Path) -> Optional[str]:
+        if not path or not path.exists():
+            return None
+        try:
+            cursor = json.loads(path.read_text(encoding='utf-8')).get('cursor')
+        except (ValueError, OSError) as e:
+            logger.warning(f"Ignoring unreadable checkpoint {path}: {e}")
+            return None
+        if cursor:
+            logger.info(f"Resuming from checkpointed cursor {cursor}")
+        return cursor
+
+    @staticmethod
+    def _save_checkpoint(path: Path, cursor: Optional[str]) -> None:
+        if not path:
+            return
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps({'cursor': cursor}), encoding='utf-8')
+        except OSError as e:
+            logger.warning(f"Could not write checkpoint {path}: {e}")
 
     def fetch_updates(self, since: datetime) -> Iterator[Dict[str, Any]]:
         """
@@ -226,10 +299,43 @@ class BundesratFetcher:
         }
 
 
+def run_full(fetcher: 'BundesratFetcher') -> int:
+    """Stream the whole corpus to data/records.jsonl (the path the fleet ingests)."""
+    data_dir = Path(__file__).parent / 'data'
+    data_dir.mkdir(exist_ok=True)
+    out_path = data_dir / 'records.jsonl'
+    checkpoint = data_dir / 'bundesrat_checkpoint.json'
+
+    written = 0
+    with open(out_path, 'w', encoding='utf-8') as out:
+        for raw_doc in fetcher.fetch_all(checkpoint_path=checkpoint):
+            normalized = fetcher.normalize(raw_doc)
+            if len(normalized.get('text', '')) < 100:
+                continue
+            out.write(json.dumps(normalized, ensure_ascii=False) + '\n')
+            written += 1
+            if written % 500 == 0:
+                out.flush()
+                logger.info(f"Wrote {written} records to {out_path}")
+
+    logger.info(f"bootstrap_fast complete: {written} fetched -> {out_path}")
+    if written == 0:
+        logger.error("No records written — treating as failure")
+        return 1
+    return 0
+
+
 def main():
     """Main entry point for testing and bootstrap"""
 
-    if len(sys.argv) > 1 and sys.argv[1] == 'bootstrap':
+    command = sys.argv[1] if len(sys.argv) > 1 else None
+
+    # The fleet wrapper invokes `bootstrap-fast`; without this alias argparse-less
+    # scrapers fall through to sample-only mode (issue #1450).
+    if command == 'bootstrap-fast' or (command == 'bootstrap' and '--full' in sys.argv):
+        sys.exit(run_full(BundesratFetcher()))
+
+    if command == 'bootstrap':
         fetcher = BundesratFetcher()
         sample_dir = Path(__file__).parent / 'sample'
         sample_dir.mkdir(exist_ok=True)

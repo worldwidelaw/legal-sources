@@ -13,9 +13,24 @@ free public access to all Estonian laws, regulations, and official documents.
 
 ## Data Access Method
 
-This scraper uses:
-1. **Chronology pages** for document discovery (`/kronoloogia_tulemus.html`)
-2. **XML downloads** for full text extraction (`/akt/{id}.xml`)
+This scraper uses the official JSON API that the riigiteataja.ee front-end calls:
+
+1. **Chronology API** for document discovery —
+   `POST /api/v1/akt/kronoloogia` with
+   `{"searchAfter": <offset>, "publicationDateStart": "YYYY-MM-DD", "publicationDateEnd": "YYYY-MM-DD"}`,
+   returning `{"kokku": <total>, "tulemused": [...]}`. The server page size is
+   fixed at 10 and `searchAfter` is a plain offset. Discovery walks one calendar
+   month per window, from 1990 to the present (~244,000 acts).
+2. **XML blob download** for full text —
+   `GET /api/v1/akt/{id}/blob-xml` (`application/xml`).
+
+Completed months are checkpointed to `data/chronology_checkpoint.json`, so a
+re-launched run resumes instead of re-walking the archive.
+
+> The legacy server-rendered `/kronoloogia_tulemus.html` chronology and the
+> `/akt/{id}.xml` document URL stopped working when riigiteataja.ee was rebuilt
+> as an Angular SPA — both now return the SPA HTML shell with HTTP 200, which is
+> why the previous scraper silently discovered 0 documents (issue #1451).
 
 The XML format is well-structured with full text content including:
 - Complete legislation text with paragraph structure
@@ -41,8 +56,11 @@ python bootstrap.py bootstrap --sample
 # Fetch more samples
 python bootstrap.py bootstrap --sample --sample-size 20
 
-# Full bootstrap (WARNING: fetches from 1990 to present)
+# Full bootstrap (WARNING: fetches from 1990 to present, ~244K acts)
 python bootstrap.py bootstrap
+
+# Full bootstrap with concurrent XML downloads (what the fleet runs)
+python bootstrap.py bootstrap-fast
 
 # Incremental update (last week)
 python bootstrap.py update

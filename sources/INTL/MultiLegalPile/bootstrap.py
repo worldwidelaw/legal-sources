@@ -35,7 +35,7 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 logging.basicConfig(
     level=logging.INFO,
@@ -43,8 +43,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger("legal-data-hunter.INTL.MultiLegalPile")
 
-HF_API_BASE = "https://huggingface.co/api/datasets/joelniklaus/Multi_Legal_Pile/tree/main/data"
-HF_RESOLVE_BASE = "https://huggingface.co/datasets/joelniklaus/Multi_Legal_Pile/resolve/main/data"
+DATASET = "joelniklaus/Multi_Legal_Pile"
+HF_DATASET_API = f"https://huggingface.co/api/datasets/{DATASET}"
+HF_API_BASE = f"{HF_DATASET_API}/tree/main/data"
+HF_RESOLVE_BASE = f"https://huggingface.co/datasets/{DATASET}/resolve/main/data"
 MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB
 
 # Map file type names to our standard types
@@ -86,6 +88,10 @@ def enumerate_files(session: requests.Session) -> list[dict]:
                     "language": lang,
                     "data_type": dtype,
                     "filename": fpath.split("/")[-1],
+                    # git blob sha of this file's contents. Identical oid means
+                    # identical bytes, which is what the incremental refresh
+                    # compares against instead of re-downloading (#1502).
+                    "oid": f.get("oid", ""),
                 })
 
     return files
@@ -201,19 +207,124 @@ class MultiLegalPileScraper(BaseScraper):
         for s in skipped:
             logger.info(f"  Skipped: {s['filename']} ({s['size']/(1024*1024):.0f} MB)")
 
+        # Baseline for the incremental refresh: record each file's blob oid as
+        # it is consumed, so the first refresh after a bootstrap has something
+        # to diff against rather than re-downloading the whole corpus.
+        current_sha, _ = self._dataset_revision()
+        seen_oids = dict((self._load_checkpoint().get("file_oids") or {}))
+
         total = 0
         for file_info in eligible:
             for record in self._download_and_parse(file_info):
                 yield record
                 total += 1
 
+            seen_oids[file_info["path"]] = file_info.get("oid", "")
+            self._save_checkpoint(current_sha or "", seen_oids)
             time.sleep(1)
 
         logger.info(f"Total records yielded: {total}")
 
+    # ── Incremental refresh (#1502) ───────────────────────────────────
+
+    def _checkpoint_path(self) -> Path:
+        return self.source_dir / "data" / "hf_checkpoint.json"
+
+    def _load_checkpoint(self) -> dict:
+        try:
+            with open(self._checkpoint_path(), encoding="utf-8") as f:
+                return json.load(f)
+        except (OSError, ValueError):
+            return {}
+
+    def _save_checkpoint(self, sha: str, file_oids: dict) -> None:
+        path = self._checkpoint_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".json.tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump({"sha": sha, "file_oids": file_oids,
+                       "updated_at": datetime.now(timezone.utc).isoformat()}, f, indent=2)
+        tmp.replace(path)  # atomic: a half-written checkpoint would skip real files
+
+    def _dataset_revision(self) -> tuple:
+        """(commit sha, lastModified) of the dataset, or (None, None)."""
+        try:
+            r = self.session.get(HF_DATASET_API, timeout=60)
+            r.raise_for_status()
+            info = r.json()
+            return info.get("sha"), info.get("lastModified")
+        except Exception as e:
+            logger.warning(f"Could not read dataset revision: {e}")
+            return None, None
+
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
-        """No incremental updates — re-fetch all."""
-        yield from self.fetch_all()
+        """Yield only records from data files whose contents changed.
+
+        This is a static HuggingFace corpus with no per-document date — every
+        record normalises to `date: None` — so a date cutoff has nothing to
+        compare against. "What changed" is a revision question instead, at two
+        levels, both read from the API without downloading anything:
+
+        * the dataset commit `sha` — unchanged means nothing to do at all, one
+          request instead of re-downloading every eligible `.jsonl.xz`
+        * each file's git blob `oid` — identical oid means identical bytes, so
+          only files that actually moved are downloaded and parsed
+
+        `since` is the fallback: if the checkpoint is empty (first refresh after
+        this fix) it is compared against the dataset's `lastModified`, so a
+        corpus untouched since before the cutoff still costs zero downloads
+        rather than a full re-fetch. The previous implementation was
+        `yield from self.fetch_all()`, which re-downloaded the whole corpus on
+        every refresh slot (#1502).
+        """
+        checkpoint = self._load_checkpoint()
+        prev_sha = checkpoint.get("sha")
+        prev_oids = checkpoint.get("file_oids") or {}
+
+        current_sha, last_modified = self._dataset_revision()
+
+        if current_sha and prev_sha and current_sha == prev_sha:
+            logger.info(
+                f"Dataset revision unchanged ({current_sha[:12]}) since last run — "
+                f"no new documents. Skipped re-downloading {len(prev_oids)} data file(s)."
+            )
+            return
+
+        # No checkpoint yet: fall back to the date cutoff against the dataset's
+        # own last-modified stamp rather than re-downloading blindly.
+        cutoff = as_date_str(since)
+        if not prev_oids and cutoff and last_modified:
+            modified_day = as_date_str(last_modified)
+            if modified_day and modified_day < cutoff:
+                logger.info(
+                    f"Dataset last modified {modified_day}, before the {cutoff} cutoff "
+                    f"— no new documents."
+                )
+                return
+
+        all_files = enumerate_files(self.session)
+        eligible = [f for f in all_files if f["size"] <= MAX_FILE_SIZE]
+        changed = [f for f in eligible if f.get("oid") != prev_oids.get(f["path"])]
+
+        logger.info(
+            f"Revision {str(prev_sha)[:12]} -> {str(current_sha)[:12]}: "
+            f"{len(changed)} of {len(eligible)} eligible file(s) changed"
+        )
+
+        seen_oids = dict(prev_oids)
+        total = 0
+        for file_info in changed:
+            for record in self._download_and_parse(file_info):
+                yield record
+                total += 1
+            # Recorded only after the file is fully consumed, so an interrupted
+            # run re-reads it next time instead of skipping its tail.
+            seen_oids[file_info["path"]] = file_info.get("oid", "")
+            self._save_checkpoint(current_sha or prev_sha or "", seen_oids)
+            time.sleep(1)
+
+        self._save_checkpoint(current_sha or prev_sha or "", seen_oids)
+        logger.info(f"Incremental refresh yielded {total} record(s)")
 
 
 def main():
@@ -273,4 +384,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

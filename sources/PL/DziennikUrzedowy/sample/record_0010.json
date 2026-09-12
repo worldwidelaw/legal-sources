@@ -1,32 +1,39 @@
 {
-  "_id": "DU/2024/1974",
+  "_id": "DU/2026/1127",
   "_source": "PL/DziennikUrzedowy",
   "_type": "legislation",
-  "_fetched_at": "2026-02-10T18:05:12.306455+00:00",
-  "title": "Ustawa z dnia 5 grudnia 2024 r. o ratyfikacji Porozumienia w sprawie Środkowoeuropejskiego Programu Wymiany Uniwersyteckiej (\"CEEPUS IV\"), podpisanego w Warszawie dnia 20 września 2023 r.",
-  "text": "Ustawaz dnia 5 grudnia 2024 r.o ratyfikacji Porozumienia w sprawie Środkowoeuropejskiego Programu Wymiany Uniwersyteckiej („CEEPUS IV”), podpisanego w Warszawie dnia 20 września 2023 r.\nTreść ustawy\nArt. 1.\nArt. 2.\nWyraża się zgodę na dokonanie przez Prezydenta Rzeczypospolitej Polskiej ratyfikacji Porozumienia w sprawie Środkowoeuropejskiego Programu Wymiany Uniwersyteckiej („CEEPUS IV”), podpisanego w Warszawie dnia 20 września 2023 r.\nUstawa wchodzi w życie po upływie 14 dni od dnia ogłoszenia.",
-  "date": "2024-12-31",
-  "url": "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20241974",
-  "eli": "DU/2024/1974",
-  "address": "WDU20240001974",
-  "display_address": "Dz.U. 2024 poz. 1974",
-  "year": 2024,
-  "pos": 1974,
-  "doc_type": "Ustawa",
-  "status": "akt jednorazowy",
+  "_fetched_at": "2026-08-29T15:41:15.704276+00:00",
+  "title": "Rozporządzenie Ministra Kultury i Dziedzictwa Narodowego z dnia 20 sierpnia 2026 r. w sprawie powierzenia specjalistycznej jednostce nadzoru wydawania decyzji o cofnięciu niepublicznej szkole artystycznej uprawnień publicznej szkoły artystycznej",
+  "text": "DZIENNIK USTAW\nRZECZYPOSPOLITEJ POLSKIEJ\nWarszawa, dnia 25 sierpnia 2026 r.\nPoz. 1127\nROZPORZĄDZENIE\nMINISTRA KULTURY I DZIEDZICTWA NARODOWEGO1)\nz dnia 20 sierpnia 2026 r.\nw sprawie powierzenia specjalistycznej jednostce nadzoru wydawania decyzji o cofnięciu niepublicznej szkole\nartystycznej uprawnień publicznej szkoły artystycznej\nNa podstawie art. 168 ust. 3 ustawy z dnia 14 grudnia 2016 r. – Prawo oświatowe (Dz. U. z 2026 r. poz. 820, 904, 982,\n1036 i 1123) zarządza się, co następuje:\n§ 1. Specjalistycznej jednostce nadzoru, o której mowa w art. 53 ust. 1 ustawy z dnia 14 grudnia 2016 r. – Prawo\noświatowe, powierza się wydawanie decyzji administracyjnych, o których mowa w art. 179 ust. 1 tej ustawy.\n§ 2. Sprawy wszczęte i niezakończone w dniu wejścia w życie niniejszego rozporządzenia w zakresie wydawania de-\ncyzji administracyjnych, o których mowa w art. 179 ust. 1 ustawy z dnia 14 grudnia 2016 r. – Prawo oświatowe, urząd ob-\nsługujący ministra właściwego do spraw kultury i ochrony dziedzictwa narodowego przekaże specjalistycznej jednostce\nnadzoru, o której mowa w art. 53 ust. 1 tej ustawy, w terminie 7 dni od dnia wejścia w życie niniejszego rozporządzenia.\n§ 3. Rozporządzenie wchodzi w życie po upływie 14 dni od dnia ogłoszenia.\nMinister Kultury i Dziedzictwa Narodowego: M. Cienkowska\n1) Minister Kultury i Dziedzictwa Narodowego kieruje działem administracji rządowej – kultura i ochrona dziedzictwa narodowego, na\npodstawie § 1 ust. 2 rozporządzenia Prezesa Rady Ministrów z dnia 25 lipca 2025 r. w sprawie szczegółowego zakresu działania\nMinistra Kultury i Dziedzictwa Narodowego (Dz. U. poz. 996).",
+  "date": "2026-08-25",
+  "url": "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20261127",
+  "eli": "DU/2026/1127",
+  "address": "WDU20260001127",
+  "display_address": "Dz.U. 2026 poz. 1127",
+  "year": 2026,
+  "pos": 1127,
+  "doc_type": "Rozporządzenie",
+  "status": "obowiązujący",
   "in_force": "IN_FORCE",
-  "entry_into_force": "2025-01-15",
+  "entry_into_force": "2026-09-09",
   "keywords": [
-    "szkolnictwo wyższe",
-    "ratyfikacja"
+    "nadzór",
+    "kultura i sztuka",
+    "szkolnictwo artystyczne"
   ],
   "released_by": [
-    "SEJM"
+    "MIN. KULTURY I DZIEDZICTWA NARODOWEGO"
   ],
   "references": {
-    "Akty wykonawcze": [
+    "Podstawa prawna": [
       {
-        "id": "DU/2025/1010"
+        "id": "DU/2017/59"
+      }
+    ],
+    "Podstawa prawna z art.": [
+      {
+        "id": "DU/2017/59",
+        "art": "art. 168 ust. 3"
       }
     ]
   },

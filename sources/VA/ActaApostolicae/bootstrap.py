@@ -9,15 +9,22 @@ Adobe Experience Manager / Apache Sling JSON API.
 Data source: https://www.vatican.va/
 Method: AEM/Sling JSON API (append .N.json to any URL path)
 License: Holy See / Vatican
-Rate limit: ~2 seconds between requests
+Rate limit: ~1 second between requests
 
 Popes covered: Leo XIV, Francis, Benedict XVI, John Paul II, Paul VI,
-               John XXIII, Pius XII (~1,900 legislative documents)
+               John XXIII, Pius XII (~2,100 legislative documents)
+
+Language handling: many acts (notably the ~640 John Paul II and ~356 Paul VI
+apostolic constitutions erecting dioceses) have NO English body — the English
+node carries `isemptybody: true`. The body exists in Latin (the original) and
+the other official translations, so each document is tried across a language
+chain and the first version carrying real text wins.
 
 Usage:
   python bootstrap.py bootstrap --sample   # Fetch ~15 sample records
-  python bootstrap.py bootstrap             # Full bootstrap
-  python bootstrap.py test                  # Test connectivity
+  python bootstrap.py bootstrap --full     # Full corpus -> data/records.jsonl
+  python bootstrap.py bootstrap-fast       # Alias for the full corpus run
+  python bootstrap.py test                 # Test connectivity
 """
 
 import argparse
@@ -34,7 +41,11 @@ from typing import Generator, Optional
 import requests
 
 SOURCE_ID = "VA/ActaApostolicae"
-SAMPLE_DIR = Path(__file__).parent / "sample"
+MODULE_DIR = Path(__file__).parent
+SAMPLE_DIR = MODULE_DIR / "sample"
+DATA_DIR = MODULE_DIR / "data"
+RECORDS_FILE = DATA_DIR / "records.jsonl"
+CHECKPOINT_FILE = DATA_DIR / "checkpoint.json"
 BASE_URL = "https://www.vatican.va"
 
 HEADERS = {
@@ -44,7 +55,12 @@ HEADERS = {
     "Accept": "application/json, */*",
 }
 
-DELAY = 2  # seconds between requests
+DELAY = 1.0        # seconds between requests
+TIMEOUT = 30       # per-request timeout (connect + read)
+MAX_ATTEMPTS = 4
+MIN_TEXT_CHARS = 50
+# A body this long is unambiguously the real act, so stop walking languages.
+SUFFICIENT_TEXT_CHARS = 1000
 
 # Popes with content on vatican.va (slug -> display name)
 POPES = {
@@ -67,12 +83,22 @@ LEG_TYPES = {
     "bulls": "Papal Bull",
 }
 
+# Language site-trees on vatican.va. Used both to enumerate the union of
+# document slugs in a section and, per document, to find a version that
+# actually carries a body. English first (preferred corpus language), then
+# Latin (the promulgation language for most acts), then the translations.
+LANGS = ["en", "la", "it", "es", "fr", "pt", "de"]
+
+SKIP_PREFIXES = ("jcr:", "sling:", "cq:", "rep:")
+
 
 def strip_html(html_text: str) -> str:
     """Remove HTML tags and clean up text."""
     if not html_text:
         return ""
-    text = re.sub(r"<br\s*/?>", "\n", html_text)
+    text = re.sub(r"<script.*?</script>", " ", html_text, flags=re.S | re.I)
+    text = re.sub(r"<style.*?</style>", " ", text, flags=re.S | re.I)
+    text = re.sub(r"<br\s*/?>", "\n", text)
     text = re.sub(r"</?p[^>]*>", "\n", text)
     text = re.sub(r"</?div[^>]*>", "\n", text)
     text = re.sub(r"<[^>]+>", " ", text)
@@ -85,46 +111,55 @@ def strip_html(html_text: str) -> str:
 
 
 def fetch_json(url: str, session: requests.Session) -> Optional[dict]:
-    """Fetch JSON with retries."""
-    for attempt in range(3):
+    """Fetch JSON with a hard per-request timeout and bounded retries."""
+    for attempt in range(MAX_ATTEMPTS):
         try:
-            resp = session.get(url, headers=HEADERS, timeout=30)
+            resp = session.get(url, headers=HEADERS, timeout=(10, TIMEOUT))
             if resp.status_code == 200:
                 return resp.json()
             if resp.status_code == 404:
                 return None
-            if resp.status_code >= 500:
-                print(f"  Server error {resp.status_code}, retrying...")
-                time.sleep(DELAY * 2)
+            if resp.status_code == 429 or resp.status_code >= 500:
+                wait = min(DELAY * (2 ** attempt), 60)
+                print(f"  HTTP {resp.status_code}, retrying in {wait:.0f}s: {url}",
+                      flush=True)
+                time.sleep(wait)
                 continue
             return None
         except (requests.RequestException, json.JSONDecodeError) as e:
-            print(f"  Request error (attempt {attempt + 1}): {e}")
-            time.sleep(DELAY)
+            print(f"  Request error (attempt {attempt + 1}/{MAX_ATTEMPTS}): {e}",
+                  flush=True)
+            time.sleep(min(DELAY * (2 ** attempt), 60))
     return None
 
 
 def extract_text_from_jcr(jcr_content: dict) -> str:
-    """Extract full text from JCR content structure."""
-    container = jcr_content.get("container", {})
+    """
+    Extract the document body out of the JCR container.
 
-    # Try direct vaticanrichtext
-    if "vaticanrichtext" in container and "text" in container["vaticanrichtext"]:
-        return strip_html(container["vaticanrichtext"]["text"])
+    The AEM tree is not uniform: some nodes put the body at
+    container.vaticanrichtext.text, others directly at container.text, and a
+    few nest it one level deeper. Walk the whole container and keep the
+    longest string stored under a "text" key.
+    """
+    container = jcr_content.get("container")
+    if not isinstance(container, dict):
+        return ""
 
-    # Try any key with a 'text' field in container
-    for key, val in container.items():
-        if isinstance(val, dict) and "text" in val and len(val["text"]) > 50:
-            return strip_html(val["text"])
+    best = ""
 
-    # Try nested: container.X.Y.text
-    for key, val in container.items():
-        if isinstance(val, dict):
-            for key2, val2 in val.items():
-                if isinstance(val2, dict) and "text" in val2 and len(val2["text"]) > 50:
-                    return strip_html(val2["text"])
+    def walk(node, depth=0):
+        nonlocal best
+        if depth > 4 or not isinstance(node, dict):
+            return
+        for key, val in node.items():
+            if key == "text" and isinstance(val, str) and len(val) > len(best):
+                best = val
+            elif isinstance(val, dict):
+                walk(val, depth + 1)
 
-    return ""
+    walk(container)
+    return strip_html(best)
 
 
 def parse_date(date_str: str) -> Optional[str]:
@@ -149,44 +184,89 @@ def parse_date(date_str: str) -> Optional[str]:
 
 
 def list_documents(pope: str, section: str, session: requests.Session) -> list:
-    """List all document slugs in a section."""
-    url = f"{BASE_URL}/content/{pope}/en/{section}/documents.1.json"
-    data = fetch_json(url, session)
-    if not data:
-        return []
-    skip_prefixes = ("jcr:", "sling:", "cq:", "rep:")
-    return [k for k in data.keys() if not any(k.startswith(p) for p in skip_prefixes)]
+    """
+    List every document slug in a section, unioned across language trees.
+
+    A section's slug set is not identical between languages (e.g. Paul VI's
+    apostolic letters: 229 under /en/ but 325 under /la/), so enumerating a
+    single tree silently truncates the corpus.
+    """
+    slugs = []
+    seen = set()
+    for lang in LANGS:
+        url = f"{BASE_URL}/content/{pope}/{lang}/{section}/documents.1.json"
+        data = fetch_json(url, session)
+        time.sleep(DELAY)
+        if not data:
+            continue
+        for k in data.keys():
+            if k.startswith(SKIP_PREFIXES) or k in seen:
+                continue
+            seen.add(k)
+            slugs.append(k)
+    return slugs
 
 
 def fetch_document(pope: str, section: str, slug: str,
                    session: requests.Session) -> Optional[dict]:
-    """Fetch a single document's full content."""
-    url = f"{BASE_URL}/content/{pope}/en/{section}/documents/{slug}.3.json"
-    data = fetch_json(url, session)
-    if not data:
+    """
+    Fetch a document, walking the language chain until a version has a body.
+
+    English wins whenever it carries the act; otherwise the longest available
+    body does. Returns None if no language version has a body (a genuine
+    title-only stub).
+    """
+    candidates = {}  # lang -> (body_text, jcr)
+
+    for lang in LANGS:
+        url = f"{BASE_URL}/content/{pope}/{lang}/{section}/documents/{slug}.3.json"
+        data = fetch_json(url, session)
+        time.sleep(DELAY)
+        if not data:
+            continue
+
+        jcr = data.get("jcr:content", {})
+
+        # AEM's own marker that this translation has no body. It is serialised
+        # as the *string* "true", not a JSON boolean.
+        if str(jcr.get("isemptybody", "")).lower() == "true":
+            continue
+
+        text = extract_text_from_jcr(jcr)
+        if len(text) < MIN_TEXT_CHARS:
+            continue
+
+        candidates[lang] = (text, jcr)
+        if len(text) >= SUFFICIENT_TEXT_CHARS:
+            break
+
+    if not candidates:
         return None
 
-    jcr = data.get("jcr:content", {})
+    best = max(candidates, key=lambda l: len(candidates[l][0]))
+    # Prefer English unless it is a stub next to a fuller translation.
+    if "en" in candidates and \
+            len(candidates["en"][0]) >= 0.6 * len(candidates[best][0]):
+        best = "en"
+
+    text, jcr = candidates[best]
+
+    abstract_obj = jcr.get("abstract", {})
+    abstract_html = abstract_obj.get("text", "") if isinstance(abstract_obj, dict) else ""
+    abstract_text = strip_html(abstract_html)
+    if abstract_text:
+        text = abstract_text + "\n\n" + text
+
+    return _build_record(pope, section, slug, jcr, best, text)
+
+
+def _build_record(pope: str, section: str, slug: str, jcr: dict,
+                  lang: str, text: str) -> dict:
     title = strip_html(jcr.get("jcr:title", slug))
-    date_str = jcr.get("eventDate", "")
-    date_iso = parse_date(date_str)
+    date_iso = parse_date(jcr.get("eventDate", ""))
     tags = jcr.get("cq:tags", [])
 
-    text = extract_text_from_jcr(jcr)
-
-    # Also try abstract
-    abstract_html = ""
-    abstract_obj = jcr.get("abstract", {})
-    if isinstance(abstract_obj, dict) and "text" in abstract_obj:
-        abstract_html = abstract_obj["text"]
-
-    abstract_text = strip_html(abstract_html)
-    if abstract_text and text:
-        text = abstract_text + "\n\n" + text
-    elif abstract_text and not text:
-        text = abstract_text
-
-    doc_url = f"{BASE_URL}/content/{pope}/en/{section}/documents/{slug}.html"
+    doc_url = f"{BASE_URL}/content/{pope}/{lang}/{section}/documents/{slug}.html"
 
     doc_id = f"VA-{pope}-{slug}"
     if len(doc_id) > 100:
@@ -206,43 +286,95 @@ def fetch_document(pope: str, section: str, slug: str,
         "pope_slug": pope,
         "document_type": LEG_TYPES.get(section, section),
         "section": section,
+        "language": lang,
         "tags": tags if isinstance(tags, list) else [tags] if tags else [],
     }
 
 
-def fetch_all(session: requests.Session, sample: bool = False) -> Generator[dict, None, None]:
-    """Fetch all legislative documents."""
+# ── Checkpoint ────────────────────────────────────────────────────────────
+
+def load_checkpoint() -> set:
+    """Return the set of already-processed 'pope/section/slug' keys."""
+    if not CHECKPOINT_FILE.exists():
+        return set()
+    try:
+        with open(CHECKPOINT_FILE, encoding="utf-8") as f:
+            return set(json.load(f).get("done", []))
+    except (json.JSONDecodeError, OSError):
+        return set()
+
+
+def save_checkpoint(done: set) -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    tmp = CHECKPOINT_FILE.with_suffix(".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump({"done": sorted(done)}, f)
+    tmp.replace(CHECKPOINT_FILE)
+
+
+# ── Crawl ─────────────────────────────────────────────────────────────────
+
+def fetch_all(session: requests.Session = None,
+              sample=False,
+              resume: bool = False) -> Generator[dict, None, None]:
+    """
+    Yield every legislative document that carries full text.
+
+    `sample` is coerced: the VPS generic persister calls fetch_all(session,
+    {...}) with a config dict as the second positional argument, which must
+    NOT be read as "sample mode".
+    """
+    if session is None:
+        session = requests.Session()
+    sample = sample is True
+
     limit = 15 if sample else None
+    done = load_checkpoint() if resume else set()
     fetched = 0
     skipped = 0
+    seen = 0
+    last_beat = time.time()
 
     for pope in POPES:
-        for section, type_name in LEG_TYPES.items():
+        for section in LEG_TYPES:
             slugs = list_documents(pope, section, session)
             if not slugs:
                 continue
 
-            print(f"  {pope}/{section}: {len(slugs)} documents")
-            time.sleep(DELAY)
+            print(f"  {pope}/{section}: {len(slugs)} documents", flush=True)
 
             for slug in slugs:
-                time.sleep(DELAY)
-                record = fetch_document(pope, section, slug, session)
-                if not record:
-                    skipped += 1
+                key = f"{pope}/{section}/{slug}"
+                if key in done:
                     continue
 
-                if record["text"]:
+                record = fetch_document(pope, section, slug, session)
+                seen += 1
+
+                if record:
                     yield record
                     fetched += 1
-                    if limit and fetched >= limit:
-                        return
                 else:
                     skipped += 1
-                    if skipped <= 10:
-                        print(f"    No text: {slug[:50]}")
 
-    print(f"  Total: {fetched} fetched, {skipped} skipped")
+                if not sample:
+                    done.add(key)
+                    if seen % 50 == 0:
+                        save_checkpoint(done)
+
+                # Heartbeat regardless of whether anything was yielded — a
+                # long run of body-less stubs used to look like a hang.
+                if seen % 25 == 0 or time.time() - last_beat > 120:
+                    last_beat = time.time()
+                    print(f"    ... {seen} processed ({fetched} with text, "
+                          f"{skipped} stubs) — at {pope}/{section}", flush=True)
+
+                if limit and fetched >= limit:
+                    return
+
+    if not sample:
+        save_checkpoint(done)
+    print(f"  Total: {fetched} fetched, {skipped} stubs skipped", flush=True)
 
 
 def save_record(record: dict, sample_dir: Path) -> None:
@@ -252,9 +384,7 @@ def save_record(record: dict, sample_dir: Path) -> None:
     if len(safe_id) > 80:
         h = hashlib.md5(record["_id"].encode()).hexdigest()[:8]
         safe_id = safe_id[:70] + "_" + h
-    filename = safe_id + ".json"
-    filepath = sample_dir / filename
-    with open(filepath, "w", encoding="utf-8") as f:
+    with open(sample_dir / (safe_id + ".json"), "w", encoding="utf-8") as f:
         json.dump(record, f, ensure_ascii=False, indent=2)
 
 
@@ -263,71 +393,87 @@ def test_connectivity() -> bool:
     session = requests.Session()
     print("Testing Vatican JSON API connectivity...")
 
-    # Test section listing
-    url = f"{BASE_URL}/content/francesco/en.1.json"
-    data = fetch_json(url, session)
+    data = fetch_json(f"{BASE_URL}/content/francesco/en.1.json", session)
     if not data:
         print("FAIL: Cannot reach Vatican JSON API")
         return False
     sections = [k for k in data.keys() if k in LEG_TYPES]
     print(f"  Sections API: OK ({len(sections)} legislative sections for Pope Francis)")
 
-    # Test document listing
-    url = f"{BASE_URL}/content/francesco/en/encyclicals/documents.1.json"
-    data = fetch_json(url, session)
+    data = fetch_json(f"{BASE_URL}/content/francesco/en/encyclicals/documents.1.json",
+                      session)
     if not data:
         print("FAIL: Cannot list documents")
         return False
-    skip_prefixes = ("jcr:", "sling:", "cq:", "rep:")
-    docs = [k for k in data.keys() if not any(k.startswith(p) for p in skip_prefixes)]
+    docs = [k for k in data.keys() if not k.startswith(SKIP_PREFIXES)]
     print(f"  Document listing: OK ({len(docs)} encyclicals)")
 
-    # Test full document fetch
     if docs:
         time.sleep(DELAY)
-        url = f"{BASE_URL}/content/francesco/en/encyclicals/documents/{docs[0]}.3.json"
-        data = fetch_json(url, session)
-        if data:
-            jcr = data.get("jcr:content", {})
-            text = extract_text_from_jcr(jcr)
-            print(f"  Document fetch: OK (title: {jcr.get('jcr:title', '?')[:50]}, text: {len(text)} chars)")
+        rec = fetch_document("francesco", "encyclicals", docs[0], session)
+        if rec:
+            print(f"  Document fetch: OK ({rec['title'][:50]}, "
+                  f"{len(rec['text'])} chars, lang={rec['language']})")
         else:
             print("  Document fetch: FAIL")
             return False
+
+    # The English-empty / Latin-full case that used to silently skip.
+    time.sleep(DELAY)
+    rec = fetch_document("john-paul-ii", "apost_constitutions",
+                         "hf_jp-ii_apc_19860421_spirituali-militum-curae", session)
+    if not rec or not rec["text"]:
+        print("  Language-fallback fetch: FAIL")
+        return False
+    print(f"  Language-fallback fetch: OK ({len(rec['text'])} chars, "
+          f"lang={rec['language']})")
 
     print("All tests passed.")
     return True
 
 
 def bootstrap(sample: bool = False) -> None:
-    """Run the bootstrap process."""
+    """Sample mode writes to sample/; full mode streams to data/records.jsonl."""
     session = requests.Session()
-    sample_dir = SAMPLE_DIR
-    records_saved = 0
+    saved = 0
 
     if sample:
-        if sample_dir.exists():
-            for f in sample_dir.glob("*.json"):
+        if SAMPLE_DIR.exists():
+            for f in SAMPLE_DIR.glob("*.json"):
                 f.unlink()
+        print("Sample bootstrap starting...", flush=True)
+        for record in fetch_all(session, sample=True):
+            save_record(record, SAMPLE_DIR)
+            saved += 1
+        print(f"\nBootstrap complete: {saved} records saved to {SAMPLE_DIR}")
+    else:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        resume = CHECKPOINT_FILE.exists()
+        print(f"Full bootstrap starting"
+              f"{' (resuming from checkpoint)' if resume else ''}...", flush=True)
+        with open(RECORDS_FILE, "a", encoding="utf-8") as out:
+            for record in fetch_all(session, sample=False, resume=True):
+                out.write(json.dumps(record, ensure_ascii=False) + "\n")
+                saved += 1
+                if saved % 50 == 0:
+                    out.flush()
+                    print(f"  Written {saved} records...", flush=True)
+        print(f"\nBootstrap complete: {saved} records written to {RECORDS_FILE}")
 
-    print(f"{'Sample' if sample else 'Full'} bootstrap starting...")
-
-    for record in fetch_all(session, sample=sample):
-        save_record(record, sample_dir)
-        records_saved += 1
-        if records_saved % 50 == 0:
-            print(f"  Saved {records_saved} records...")
-
-    print(f"\nBootstrap complete: {records_saved} records saved to {sample_dir}")
-
-    if records_saved == 0:
+    if saved == 0:
         print("ERROR: No records saved!")
         sys.exit(1)
 
 
+def bootstrap_fast() -> dict:
+    """Entry point used by the fleet wrapper — full corpus, streamed."""
+    bootstrap(sample=False)
+    return {"mode": "fast", "output": str(RECORDS_FILE)}
+
+
 def main():
     parser = argparse.ArgumentParser(description="VA/ActaApostolicae bootstrap")
-    parser.add_argument("command", choices=["bootstrap", "test"],
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "test"],
                         help="Command to run")
     parser.add_argument("--sample", action="store_true",
                         help="Fetch only ~15 sample records")
@@ -335,9 +481,10 @@ def main():
     args = parser.parse_args()
 
     if args.command == "test":
-        success = test_connectivity()
-        sys.exit(0 if success else 1)
-    elif args.command == "bootstrap":
+        sys.exit(0 if test_connectivity() else 1)
+    elif args.command == "bootstrap-fast":
+        bootstrap(sample=False)
+    else:
         bootstrap(sample=args.sample)
 
 

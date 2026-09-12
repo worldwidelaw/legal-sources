@@ -1,0 +1,84 @@
+source:
+  id: "BG/ConsolidatedLegislation"
+  country: "BG"
+  name: "Bulgaria Consolidated Legislation (Кодекси и закони)"
+  url: "https://kik-info.com/normativna-baza/"
+  description: |
+    Full consolidated (in-force) text of Bulgarian normative acts: codes
+    (кодекси), laws (закони), regulations (наредби, правилници, постановления,
+    инструкции, тарифи), Bulgarian-language EU directives and regulations, and
+    double-taxation treaties (СИДДО). Fills the gap left by BG/StateGazette,
+    which indexes individual gazette items but not consolidated code text
+    (issue #1190). Language: Bulgarian. ~816 acts, amendments annotated inline.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 3
+
+api:
+  type: "html_scrape"
+  base_url: "https://kik-info.com"
+
+schema:
+  total_fields: 9
+  key_fields:
+    - name: "_id"
+      description: "Unique identifier (BG/ConsolidatedLegislation/{category}/{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Act title (e.g. КОДЕКС ЗА СОЦИАЛНО ОСИГУРЯВАНЕ)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full consolidated text of the act with inline amendment annotations"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Best-effort current-through date (latest amendment year, YYYY-01-01) or null"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "category"
+      description: "kik-info legal-base category (kodeksi, zakoni, naredbi, ...)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "url"
+      description: "Source URL of the consolidated act page"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "language"
+      description: "Always 'bg'"
+    - name: "jurisdiction"
+      description: "Always 'BG'"
+  probably_ignorable: []
+
+data_model:
+  update_strategy: upsert
+
+license:
+  id: "pd-gov"
+  name: "Public Domain (Bulgarian normative acts)"
+  url: null
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Bulgarian normative acts (laws, codes, regulations) are excluded from
+    copyright protection by Art. 4 of the Bulgarian Copyright Act (ZAPSP).
+    The consolidated text is sourced from the free legal base of kik-info.com,
+    a reachable aggregator; the underlying statutory text is public domain.

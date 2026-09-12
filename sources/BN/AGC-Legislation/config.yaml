@@ -4,9 +4,13 @@ source:
   country: BN
   url: https://www.agc.gov.bn/AGC%20Site%20Pages/Laws%20of%20Brunei.aspx
   description: >
-    Consolidated Laws of Brunei from the Attorney General's Chambers.
-    ~220 chapters with principal acts, subsidiary legislation, orders,
-    and regulations. Full text extracted from PDFs.
+    The Attorney General's Chambers legislation archive tree that the "Laws of
+    Brunei" index page never linked: alphabetical revised editions (incl. historical
+    1984/2001/2002 revisions and repeal-replacement notices), Brunei Laws Updating
+    Volume orders, historical enactments 1908-1975, subsidiary orders, and the
+    Cap. 157 statutes/regulations. ~708 PDFs. The index-page corpus itself is
+    covered by BN/AGCLaws. Inventory enumerated from the Internet Archive CDX
+    index; PDFs downloaded live from agc.gov.bn.
 
 data_model:
   types:
@@ -39,6 +43,9 @@ schema:
       type: string
       required: false
     - name: pdf_url
+      type: string
+      required: false
+    - name: collection
       type: string
       required: false
 

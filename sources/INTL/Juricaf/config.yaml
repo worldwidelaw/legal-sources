@@ -21,6 +21,16 @@ rate_limit:
   requests_per_second: 1
   burst: 2
 
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  # Keyed on _id (juricaf-{slug}) rather than the default whole-record hash:
+  # that hash covers _fetched_at, so every run looked new and a resumed run
+  # could never tell which decisions it had already stored.
+  dedup_key:
+    - _id
+  update_strategy: "upsert"
+
 schema:
   key_fields:
     - name: _id

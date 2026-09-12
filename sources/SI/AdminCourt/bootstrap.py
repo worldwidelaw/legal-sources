@@ -5,24 +5,34 @@ SI/AdminCourt -- Slovenian Administrative Court (Upravno sodišče) Fetcher
 Fetches UPRS decisions from sodnapraksa.si (Slovenia's case law database).
 
 Strategy:
-  - Search API at sodnapraksa.si with database[UPRS]=UPRS filter
-  - Paginate through results (50 per page)
-  - For each result, fetch document page and extract full text
-  - Text sections: jedro (summary), izrek (ruling), obrazložitev (reasoning)
+  sodnapraksa.si was rebuilt as a Vue SPA (the legacy /search.php now 302s to
+  /iskanje/{base64-search-state}).  The SPA is backed by an unauthenticated
+  JSON search API which returns the FULL TEXT of every hit inline, so a single
+  paged request yields 100 complete decisions -- no per-document fetch needed.
 
-Endpoints:
-  - Search: https://www.sodnapraksa.si/search.php?q=*&database[UPRS]=UPRS&rowsPerPage=50&page=N
-  - Document: https://www.sodnapraksa.si/search.php?...&id=NNNNN
+  POST https://sodnapraksa.si/backend/api/search/documents
+    {"simpleSearch": false,
+     "query": {"q": "*", "f": [{"n": "docType", "v": ["uprs"], "and": false}]},
+     "page": N, "pageSize": 100,
+     "sortField": "date", "sortDirection": "ASC"}
+
+  Response docs carry: ecli, ordinalNumber, sessionDate, court, department,
+  courtPanel, areas, keywords, legislation, plus the three text sections
+  coreText (jedro), ruling (izrek) and motivation (obrazložitev).
+
+  Ordering is by decision date ASCENDING so newly published decisions always
+  land at the tail -- earlier pages never shift, which makes the page-number
+  checkpoint in data/uprs_checkpoint.json safe to resume from.
 
 Data:
-  - ~35,650 UPRS (Administrative Court) decisions
+  - ~36,050 UPRS (Administrative Court) decisions, 2000-present
   - Language: Slovenian (SL)
   - ECLI identifiers: ECLI:SI:UPRS:YYYY:*
-  - Rate limit: 2 seconds between requests
 
 Usage:
   python bootstrap.py bootstrap          # Full initial pull
   python bootstrap.py bootstrap --sample # Fetch 10+ sample records for validation
+  python bootstrap.py bootstrap-fast     # Alias for the full pull (fleet runner)
   python bootstrap.py update             # Incremental update
   python bootstrap.py test               # Quick connectivity test
 """
@@ -36,7 +46,6 @@ import html as html_module
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Optional, Dict, Any, List
-from urllib.parse import urlencode
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -51,18 +60,32 @@ logging.basicConfig(
 )
 logger = logging.getLogger("legal-data-hunter.SI.admincourt")
 
-BASE_URL = "https://www.sodnapraksa.si"
-SEARCH_PATH = "/search.php"
-DATABASE = "UPRS"
-ROWS_PER_PAGE = 50
-RATE_LIMIT_SECONDS = 2
+BASE_URL = "https://sodnapraksa.si"
+SEARCH_API = f"{BASE_URL}/backend/api/search/documents"
+DOC_TYPE = "uprs"
+PAGE_SIZE = 100          # 200 is rejected by the backend
+RATE_LIMIT_SECONDS = 1.5
+MAX_ATTEMPTS = 6
+
+
+def _strip_html(fragment: str) -> str:
+    """Turn an HTML fragment from the API into clean plain text."""
+    if not fragment:
+        return ""
+    # Preserve paragraph/line breaks before dropping tags
+    text = re.sub(r"(?i)</p\s*>|<br\s*/?>", "\n", fragment)
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = html_module.unescape(text)
+    text = re.sub(r"[ \t ]+", " ", text)
+    text = re.sub(r"\n\s*\n\s*\n+", "\n\n", text)
+    return text.strip()
 
 
 class SlovenianAdminCourtScraper(BaseScraper):
     """
     Scraper for SI/AdminCourt -- Slovenian Administrative Court.
     Country: SI
-    URL: https://www.sodnapraksa.si
+    URL: https://sodnapraksa.si
 
     Data types: case_law
     Auth: none (Open public access)
@@ -76,255 +99,196 @@ class SlovenianAdminCourtScraper(BaseScraper):
             base_url=BASE_URL,
             headers={
                 "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
-                "Accept": "text/html,application/xhtml+xml",
+                "Accept": "application/json",
+                "Content-Type": "application/json",
                 "Accept-Language": "sl,en",
             },
-            timeout=60,
+            timeout=90,
         )
+        self.checkpoint_path = source_dir / "data" / "uprs_checkpoint.json"
 
-    def _search_page(self, page: int = 0) -> tuple:
-        """
-        Search UPRS database, return (list of doc IDs/titles, total count).
-        """
-        params = {
-            "q": "*",
-            f"database[{DATABASE}]": DATABASE,
-            "_submit": "išči",
-            "rowsPerPage": ROWS_PER_PAGE,
-            "page": page,
-            "order": "date",
-            "direction": "desc",
-        }
+    # ── checkpoint ────────────────────────────────────────────────────
 
-        url = f"{BASE_URL}{SEARCH_PATH}?{urlencode(params)}"
-        logger.info(f"Searching page {page}: {url}")
-
-        time.sleep(RATE_LIMIT_SECONDS)
-        resp = self.client.session.get(url, timeout=60, headers={
-            "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
-        })
-        resp.raise_for_status()
-        html_content = resp.text
-
-        # Extract total count from <span id="num-hits">
-        total = 0
-        total_match = re.search(r'id="num-hits"[^>]*>([^<]+)', html_content)
-        if total_match:
-            num_str = total_match.group(1).replace(".", "").replace(",", "").strip()
-            digits = re.search(r"(\d+)", num_str)
-            if digits:
-                total = int(digits.group(1))
-
-        # Extract document IDs from results table
-        results = []
-        # Links in results table contain id=NNNNN
-        for match in re.finditer(r'<a[^>]*href="[^"]*id=(\d+)[^"]*"[^>]*>([^<]+)</a>', html_content):
-            doc_id = match.group(1)
-            title = html_module.unescape(match.group(2)).strip()
-            if doc_id and title:
-                results.append({"id": doc_id, "title": title})
-
-        return results, total
-
-    def _fetch_document(self, doc_id: str) -> Optional[Dict[str, Any]]:
-        """
-        Fetch a single document by ID and extract all content.
-        """
-        params = {
-            "q": "*",
-            f"database[{DATABASE}]": DATABASE,
-            "_submit": "išči",
-            "rowsPerPage": "10",
-            "page": "0",
-            "id": doc_id,
-        }
-
-        url = f"{BASE_URL}{SEARCH_PATH}?{urlencode(params)}"
-
-        time.sleep(RATE_LIMIT_SECONDS)
+    def _load_checkpoint(self) -> int:
+        """Return the first page that still needs fetching."""
         try:
-            resp = self.client.session.get(url, timeout=60, headers={
-                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
-            })
-            resp.raise_for_status()
+            with open(self.checkpoint_path, encoding="utf-8") as f:
+                return int(json.load(f).get("next_page", 0))
+        except Exception:
+            return 0
+
+    def _save_checkpoint(self, next_page: int) -> None:
+        try:
+            self.checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.checkpoint_path, "w", encoding="utf-8") as f:
+                json.dump({"next_page": next_page}, f)
         except Exception as e:
-            logger.warning(f"Failed to fetch document {doc_id}: {e}")
-            return None
+            logger.warning(f"Could not write checkpoint: {e}")
 
-        html_content = resp.text
+    # ── API ───────────────────────────────────────────────────────────
 
-        # Check for doc-content div
-        doc_content_match = re.search(
-            r'<div\s+id="doc-content">(.*?)(?=<div\s+id="doc-footer"|<footer|</body)',
-            html_content,
-            re.DOTALL,
-        )
-        if not doc_content_match:
-            logger.warning(f"No doc-content found for {doc_id}")
-            return None
-
-        doc_html = doc_content_match.group(1)
-
-        # Extract decision number from doc-head-right
-        decision_number = ""
-        head_match = re.search(r'id="doc-head-right"[^>]*>(.*?)</p>', doc_html, re.DOTALL)
-        if head_match:
-            decision_number = re.sub(r'<[^>]+>', '', head_match.group(1)).strip()
-
-        # Extract metadata table
-        metadata = {}
-        meta_match = re.search(r'<table\s+id="doc-meta">(.*?)</table>', doc_html, re.DOTALL)
-        if meta_match:
-            for row_match in re.finditer(r'<th[^>]*>(.*?)</th>\s*<td[^>]*>(.*?)</td>', meta_match.group(1), re.DOTALL):
-                key = re.sub(r'<[^>]+>', '', row_match.group(1)).strip().rstrip(":")
-                value = re.sub(r'<[^>]+>', '', row_match.group(2)).strip()
-                metadata[key] = value
-
-        # Extract content sections by h2 headers
-        def get_section(header_text):
-            pattern = rf'<h2[^>]*>\s*{re.escape(header_text)}\s*</h2>(.*?)(?=<h2|<div\s+id="doc-|$)'
-            match = re.search(pattern, doc_html, re.DOTALL)
-            if not match:
-                return ""
-            section_html = match.group(1)
-            # Strip HTML tags
-            text = re.sub(r'<[^>]+>', ' ', section_html)
-            text = html_module.unescape(text)
-            text = re.sub(r'\s+', ' ', text).strip()
-            return text
-
-        jedro = get_section("Jedro")
-        izrek = get_section("Izrek")
-        obrazlozitev = get_section("Obrazložitev")
-
-        # Extract legal references
-        references = ""
-        ref_match = re.search(r'id="doc-connection"[^>]*>(.*?)</div>', doc_html, re.DOTALL)
-        if ref_match:
-            references = re.sub(r'<[^>]+>', ' ', ref_match.group(1)).strip()
-
-        # Parse date
-        date = metadata.get("Datum odločbe", "")
-        if date:
-            try:
-                parts = date.split(".")
-                if len(parts) == 3:
-                    date = f"{parts[2].strip()}-{parts[1].strip().zfill(2)}-{parts[0].strip().zfill(2)}"
-            except Exception:
-                pass
-
-        return {
-            "doc_id": doc_id,
-            "decision_number": decision_number,
-            "ecli": metadata.get("ECLI", ""),
-            "evidence_number": metadata.get("Evidenčna številka", ""),
-            "court": metadata.get("Sodišče", ""),
-            "department": metadata.get("Oddelek", ""),
-            "date": date,
-            "legal_area": metadata.get("Področje", ""),
-            "keywords": metadata.get("Institut", ""),
-            "jedro": jedro,
-            "izrek": izrek,
-            "obrazlozitev": obrazlozitev,
-            "references": references,
+    def _search(self, page: int, page_size: int = PAGE_SIZE,
+                direction: str = "ASC") -> Dict[str, Any]:
+        """POST one page of the UPRS result set. Raises on repeated failure."""
+        payload = {
+            "simpleSearch": False,
+            "query": {
+                "q": "*",
+                "f": [{"n": "docType", "v": [DOC_TYPE], "and": False}],
+            },
+            "page": page,
+            "pageSize": page_size,
+            "sortField": "date",
+            "sortDirection": direction,
         }
+
+        last_error = None
+        for attempt in range(MAX_ATTEMPTS):
+            time.sleep(RATE_LIMIT_SECONDS)
+            try:
+                resp = self.client.session.post(SEARCH_API, json=payload, timeout=90)
+                if resp.status_code in (429, 500, 502, 503, 504):
+                    retry_after = resp.headers.get("Retry-After")
+                    delay = int(retry_after) if (retry_after or "").isdigit() else min(120, 5 * 2 ** attempt)
+                    logger.warning(f"HTTP {resp.status_code} on page {page}, retrying in {delay}s")
+                    time.sleep(delay)
+                    last_error = f"HTTP {resp.status_code}"
+                    continue
+                resp.raise_for_status()
+                return resp.json()
+            except Exception as e:
+                last_error = e
+                delay = min(120, 5 * 2 ** attempt)
+                logger.warning(f"Search page {page} failed ({e}); retrying in {delay}s")
+                time.sleep(delay)
+
+        raise RuntimeError(
+            f"sodnapraksa.si search API unreachable for page {page} after "
+            f"{MAX_ATTEMPTS} attempts (last error: {last_error})"
+        )
+
+    # ── scraper interface ─────────────────────────────────────────────
 
     def fetch_all(self) -> Generator[dict, None, None]:
-        """Yield all UPRS documents."""
-        # Get first page to discover total
-        results, total = self._search_page(page=0)
-        logger.info(f"Total UPRS documents: {total:,}")
+        """Yield all UPRS documents (raw API dicts) oldest-first, resumable."""
+        first = self._search(page=0)
+        total = int(first.get("hits") or 0)
+        if total == 0:
+            raise RuntimeError(
+                "sodnapraksa.si search API returned 0 UPRS hits — refusing to "
+                "report success on an empty corpus"
+            )
+        total_pages = (total + PAGE_SIZE - 1) // PAGE_SIZE
+        logger.info(f"Total UPRS documents: {total:,} across {total_pages:,} pages")
 
-        total_pages = (total // ROWS_PER_PAGE) + 1
+        start_page = self._load_checkpoint()
+        if start_page:
+            logger.info(f"Resuming from checkpoint at page {start_page}")
+
         fetched = 0
-
-        for page_num in range(total_pages):
-            if page_num > 0:
-                results, _ = self._search_page(page=page_num)
-
-            if not results:
-                logger.info(f"No results on page {page_num}, stopping")
+        for page in range(start_page, total_pages):
+            data = first if page == 0 else self._search(page=page)
+            docs = data.get("docs") or []
+            if not docs:
+                logger.info(f"No results on page {page}, stopping")
                 break
 
-            for result in results:
-                doc = self._fetch_document(result["id"])
-                if doc:
-                    yield doc
-                    fetched += 1
-                    if fetched % 50 == 0:
-                        logger.info(f"Fetched {fetched} documents so far")
+            for doc in docs:
+                yield doc
+                fetched += 1
+
+            self._save_checkpoint(page + 1)
+            if page % 20 == 0:
+                logger.info(f"Page {page}/{total_pages} — {fetched:,} documents fetched")
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
-        """Yield documents modified since the given date."""
-        # Fetch recent pages and check dates
-        results, total = self._search_page(page=0)
+        """Yield documents decided since the given date (newest-first walk)."""
         since_str = since.strftime("%Y-%m-%d")
+        page = 0
+        while True:
+            data = self._search(page=page, direction="DESC")
+            docs = data.get("docs") or []
+            if not docs:
+                return
+            for doc in docs:
+                if (doc.get("sessionDate") or "") < since_str:
+                    return  # sorted newest-first, everything after is older
+                yield doc
+            page += 1
 
-        for page_num in range(min(10, (total // ROWS_PER_PAGE) + 1)):
-            if page_num > 0:
-                results, _ = self._search_page(page=page_num)
+    def normalize(self, raw: dict) -> Optional[dict]:
+        """Transform a raw API document into the standard schema."""
+        jedro = _strip_html(raw.get("coreText") or "")
+        izrek = _strip_html(raw.get("ruling") or "")
+        obrazlozitev = _strip_html(raw.get("motivation") or "")
 
-            if not results:
-                break
-
-            for result in results:
-                doc = self._fetch_document(result["id"])
-                if doc and doc.get("date", "") >= since_str:
-                    yield doc
-                elif doc and doc.get("date", "") < since_str:
-                    return  # Results are sorted by date desc, so we can stop
-
-    def normalize(self, raw: dict) -> dict:
-        """Transform raw document into standard schema."""
-        # Combine text sections
         text_parts = []
-        if raw.get("jedro"):
-            text_parts.append(f"JEDRO (Summary):\n{raw['jedro']}")
-        if raw.get("izrek"):
-            text_parts.append(f"IZREK (Ruling):\n{raw['izrek']}")
-        if raw.get("obrazlozitev"):
-            text_parts.append(f"OBRAZLOŽITEV (Reasoning):\n{raw['obrazlozitev']}")
+        if jedro:
+            text_parts.append(f"JEDRO (Summary):\n{jedro}")
+        if izrek:
+            text_parts.append(f"IZREK (Ruling):\n{izrek}")
+        if obrazlozitev:
+            text_parts.append(f"OBRAZLOŽITEV (Reasoning):\n{obrazlozitev}")
 
         full_text = "\n\n".join(text_parts)
-
-        if not full_text or len(full_text) < 50:
+        if len(full_text) < 50:
             return None
 
-        doc_id = raw.get("ecli") or raw.get("doc_id", "")
+        ecli = raw.get("ecli") or ""
+        doc_id = raw.get("id")
+        key = ecli or f"id{doc_id}"
+
+        date = raw.get("sessionDate") or ""
+        if date and not re.match(r"^\d{4}-\d{2}-\d{2}$", date):
+            date = date[:10] if re.match(r"^\d{4}-\d{2}-\d{2}", date) else ""
+
+        legislation = raw.get("legislation") or []
+        references = "; ".join(
+            f"{item.get('krap') or item.get('name', '')} {item.get('value', '')}".strip()
+            for item in legislation
+            if isinstance(item, dict)
+        )
+
         return {
-            "_id": f"SI_AdminCourt_{doc_id}",
+            "_id": f"SI_AdminCourt_{key}",
             "_source": "SI/AdminCourt",
             "_type": "case_law",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
-            "title": raw.get("decision_number", ""),
+            "title": raw.get("ordinalNumber") or ecli,
             "text": full_text,
-            "date": raw.get("date", ""),
-            "url": f"{BASE_URL}{SEARCH_PATH}?id={raw['doc_id']}",
-            "ecli": raw.get("ecli", ""),
-            "decision_number": raw.get("decision_number", ""),
-            "evidence_number": raw.get("evidence_number", ""),
-            "court": raw.get("court", ""),
-            "department": raw.get("department", ""),
-            "legal_area": raw.get("legal_area", ""),
-            "keywords": raw.get("keywords", ""),
-            "references": raw.get("references", ""),
+            "date": date or None,
+            "url": f"{BASE_URL}/dokument/{raw.get('documentType') or DOC_TYPE}/{doc_id}",
+            "ecli": ecli,
+            "decision_number": raw.get("ordinalNumber") or "",
+            "evidence_number": raw.get("registryNumber") or "",
+            "court": raw.get("court") or "",
+            "department": raw.get("department") or "",
+            "court_panel": raw.get("courtPanel") or "",
+            "legal_area": "; ".join(raw.get("areas") or []),
+            "keywords": "; ".join(raw.get("keywords") or []),
+            "references": references,
+            "published_at": raw.get("publishedAt") or "",
             "language": "sl",
         }
 
     def test(self) -> bool:
         """Quick connectivity test."""
         try:
-            results, total = self._search_page(page=0)
-            logger.info(f"Connectivity OK: {total:,} UPRS documents, {len(results)} on first page")
-
-            if results:
-                doc = self._fetch_document(results[0]["id"])
-                if doc:
-                    record = self.normalize(doc)
-                    if record:
-                        text_len = len(record.get("text", ""))
-                        logger.info(f"Document extraction OK: {text_len} chars from {doc.get('ecli', doc['doc_id'])}")
-                        return True
+            data = self._search(page=0, page_size=5)
+            total = int(data.get("hits") or 0)
+            docs = data.get("docs") or []
+            logger.info(f"Connectivity OK: {total:,} UPRS documents, {len(docs)} on first page")
+            if total == 0 or not docs:
+                logger.error("Search API returned no UPRS hits")
+                return False
+            record = self.normalize(docs[0])
+            if not record:
+                logger.error("First document produced no text")
+                return False
+            logger.info(
+                f"Document extraction OK: {len(record['text']):,} chars from "
+                f"{record['ecli'] or record['_id']}"
+            )
             return True
         except Exception as e:
             logger.error(f"Connectivity test failed: {e}")
@@ -339,7 +303,7 @@ def main():
     parser = argparse.ArgumentParser(description="SI/AdminCourt data fetcher")
     parser.add_argument(
         "command",
-        choices=["bootstrap", "update", "test"],
+        choices=["bootstrap", "bootstrap-fast", "update", "test"],
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Sample mode (10 records)")
@@ -351,7 +315,7 @@ def main():
     if args.command == "test":
         ok = scraper.test()
         sys.exit(0 if ok else 1)
-    elif args.command == "bootstrap":
+    elif args.command in ("bootstrap", "bootstrap-fast"):
         stats = scraper.bootstrap(sample_mode=args.sample)
         print(json.dumps(stats, indent=2))
     elif args.command == "update":

@@ -9,7 +9,8 @@ Fetches legal instruments from:
 
 Strategy:
   - Scrape HTML pages for PDF download links
-  - Download PDFs and extract text via pdfplumber
+  - Download PDFs and extract text via common.pdf_extract, whose RTL repair
+    puts the Arabic instruments in logical rather than visual order (#1560)
   - Normalize to standard schema
 
 Usage:
@@ -18,7 +19,6 @@ Usage:
   python bootstrap.py bootstrap-fast       # Alias for --full
 """
 
-import io
 import re
 import sys
 import json
@@ -31,12 +31,12 @@ from typing import Generator, Optional
 
 import requests
 from bs4 import BeautifulSoup
-import pdfplumber
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
     level=logging.INFO,
@@ -176,8 +176,18 @@ class COMESALegalInstrumentsScraper(BaseScraper):
 
         return None
 
-    def _download_pdf_text(self, url: str) -> str:
-        """Download PDF and extract text via pdfplumber."""
+    def _download_pdf_text(self, url: str, doc_id: str) -> str:
+        """Download a PDF and extract its text in logical order.
+
+        This went through pdfplumber directly, which emits glyphs in the order
+        the content stream lists them — visual order for the Arabic instruments
+        here, so their text was stored character-reversed and unsearchable by
+        keyword (issue #1560). The shared helper's RTL repair reorders glyph
+        clusters by geometry, so extraction has to route through it.
+
+        force=True because the rows already in Neon are the reversed ones this
+        is meant to replace; without it the helper skips them as present.
+        """
         logger.info(f"Downloading PDF: {url}")
         resp = self.session.get(url, timeout=120)
         resp.raise_for_status()
@@ -186,24 +196,18 @@ class COMESALegalInstrumentsScraper(BaseScraper):
             logger.warning(f"Not a valid PDF: {url}")
             return ""
 
-        text_parts = []
-        with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-            logger.info(f"  PDF has {len(pdf.pages)} pages")
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-                try:
-                    page.flush_cache(); page.get_textmap.cache_clear()
-                except Exception:
-                    pass
+        full_text = extract_pdf_markdown(
+            source="INTL/COMESA-LegalInstruments",
+            source_id=doc_id,
+            pdf_bytes=resp.content,
+            table="legislation",
+            force=True,
+        ) or ""
 
-        full_text = "\n\n".join(text_parts)
         # Clean up common PDF artifacts
-        full_text = re.sub(r"\n{3,}", "\n\n", full_text)
-        full_text = full_text.strip()
+        full_text = re.sub(r"\n{3,}", "\n\n", full_text).strip()
 
-        logger.info(f"  Extracted {len(full_text)} chars from {len(text_parts)} pages")
+        logger.info(f"  Extracted {len(full_text)} chars")
         return full_text
 
     def _make_id(self, doc: dict) -> str:
@@ -251,7 +255,7 @@ class COMESALegalInstrumentsScraper(BaseScraper):
             time.sleep(1.5)
 
             try:
-                text = self._download_pdf_text(doc["url"])
+                text = self._download_pdf_text(doc["url"], self._make_id(doc))
             except Exception as e:
                 logger.error(f"Failed to download {doc['url']}: {e}")
                 continue

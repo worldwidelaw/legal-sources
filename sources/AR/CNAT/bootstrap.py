@@ -125,12 +125,27 @@ def get_document_detail(uuid: str, timeout: int = 60) -> Optional[dict]:
 
 
 def extract_pdf_text(pdf_uuid: str, pdf_name: str, timeout: int = 60) -> str:
-    """Extract text from PDF using centralized extractor."""
+    """Download a PDF from SAIJ by its guid and extract its text."""
+    try:
+        r = requests.get(
+            DOWNLOAD_URL,
+            params={"guid": pdf_uuid, "name": pdf_name},
+            headers={"User-Agent": HEADERS["User-Agent"]},
+            timeout=timeout,
+        )
+        r.raise_for_status()
+        if len(r.content) < 100:
+            return ""
+    except requests.RequestException as e:
+        logger.warning(f"PDF download failed for {pdf_name}: {e}")
+        return ""
+
     return extract_pdf_markdown(
         source="AR/CNAT",
-        source_id="",
-        pdf_bytes=pdf_uuid,
+        source_id=pdf_uuid,
+        pdf_bytes=r.content,
         table="case_law",
+        force=True,
     ) or ""
 
 def normalize(raw: dict) -> dict:
@@ -392,7 +407,7 @@ def bootstrap_sample():
 
 def bootstrap_full(output_dir: Path = None):
     if output_dir is None:
-        output_dir = SOURCE_DIR
+        output_dir = SOURCE_DIR / "data"
     output_dir.mkdir(parents=True, exist_ok=True)
     output_file = output_dir / "records.jsonl"
 
@@ -404,20 +419,22 @@ def bootstrap_full(output_dir: Path = None):
 
 def main():
     parser = argparse.ArgumentParser(description="AR/CNAT Case Law Fetcher")
-    parser.add_argument("command", choices=["bootstrap", "test-api"])
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "test-api"])
     parser.add_argument("--sample", action="store_true")
     parser.add_argument("--full", action="store_true", help="Run full bootstrap on VPS")
     args = parser.parse_args()
 
     if args.command == "test-api":
         sys.exit(0 if test_api() else 1)
+    elif args.command == "bootstrap-fast":
+        # The fleet wrapper invokes `bootstrap-fast`; route it to the full crawl so
+        # it streams to data/records.jsonl instead of falling back to sample mode.
+        sys.exit(0 if bootstrap_full() else 1)
     elif args.command == "bootstrap":
         if args.sample:
             sys.exit(0 if bootstrap_sample() else 1)
-        elif args.full:
-            sys.exit(0 if bootstrap_full() else 1)
         else:
-            sys.exit(0 if bootstrap_sample() else 1)
+            sys.exit(0 if bootstrap_full() else 1)
 
 
 if __name__ == "__main__":

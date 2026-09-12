@@ -3,8 +3,9 @@
 # ===================================================================
 # Consolidated texts of Acts of Tynwald from legislation.gov.im.
 # Principal (primary) and Subordinate (secondary) legislation.
-# All documents are PDFs in open directory listings.
-# No authentication required. No API — directory crawl approach.
+# All documents are born-digital PDFs with selectable text.
+# No authentication required. No API — enumerated from the com_legislation
+# index views (current / repealed / revoked), whose rows link the latest PDF.
 # ===================================================================
 
 source:
@@ -15,8 +16,9 @@ source:
   description: |
     Consolidated legislation of the Isle of Man, including Acts of Tynwald
     (principal legislation) and statutory documents (subordinate legislation).
-    Published by the Attorney General's Chambers. PDF files served from open
-    directory listings at /cms/images/LEGISLATION/.
+    Published by the Attorney General's Chambers. PDF files live under
+    /cms/images/LEGISLATION/ and are discovered via the site's own index
+    views rather than by directory traversal.
 
 data_types:
   - legislation
@@ -29,11 +31,24 @@ rate_limit:
   burst: 2
 
 api:
-  type: "directory_listing"
+  type: "html_index"
   base_url: "https://legislation.gov.im"
   endpoints:
-    principal: "/cms/images/LEGISLATION/PRINCIPAL/"
-    subordinate: "/cms/images/LEGISLATION/SUBORDINATE/"
+    current: "/cms/legislation/current.html"        # POST submit4=<A-Z> letter filter
+    repealed: "/cms/legislation/repealed.html"
+    revoked: "/cms/legislation/revoked-legislation.html"
+
+license:
+  name: "Isle of Man Crown Copyright — private use only"
+  url: "https://legislation.gov.im/cms/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Site terms: "Legislation can be downloaded and printed for private use. Any
+    commercial entity is required to obtain permission to reuse the data from
+    the Isle of Man Attorney General's Chambers."
 
 data_model:
   type: "legislation"
@@ -46,7 +61,7 @@ schema:
   total_fields: 11
   key_fields:
     - name: "doc_id"
-      description: "Unique document identifier (e.g., PRINCIPAL/2019/2019-0003)"
+      description: "Unique document identifier (e.g., PRINCIPAL/2019-0003)"
       type: "string"
       role: "primary_key"
       required: true
@@ -76,4 +91,10 @@ schema:
     - name: "year"
       description: "Enactment year"
     - name: "reference"
-      description: "Legislative reference number"
+      description: "Legislative reference number (e.g. 2019-0001)"
+    - name: "legislation_status"
+      description: "Index the item was found in: current, repealed or revoked"
+    - name: "version"
+      description: "Consolidation version number of the PDF fetched"
+    - name: "language"
+      description: "ISO 639-3 language code (always eng)"

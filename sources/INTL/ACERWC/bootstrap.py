@@ -294,11 +294,17 @@ class ACERWCScraper(BaseScraper):
     def _extract_text(self, doc_id: str, pdf_urls: list[str]) -> str:
         parts = []
         for pdf_url in pdf_urls:
+            # force=True: the Arabic half of this corpus was stored
+            # character-reversed (issue #1560), so a refresh has to re-extract
+            # the rows already in Neon rather than skip them as present. It also
+            # keeps a multi-PDF document from stopping after its first file,
+            # since every PDF of one document shares this source_id.
             md = extract_pdf_markdown(
                 source="INTL/ACERWC",
                 source_id=doc_id,
                 pdf_url=pdf_url,
                 table="case_law",
+                force=True,
             )
             if md and md.strip():
                 label = pdf_url.rsplit("/", 1)[-1]
@@ -429,9 +435,16 @@ def main():
     bp.add_argument("--sample-size", type=int, default=15, help="Number of samples")
     bp.add_argument("--full", action="store_true", help="Fetch all records")
 
-    bf = sub.add_parser("bootstrap-fast", help="Alias for bootstrap --sample")
-    bf.add_argument("--sample", action="store_true", default=True)
-    bf.add_argument("--sample-size", type=int, default=15)
+    # `bootstrap-fast` is the fleet runner's entry point for a FULL crawl, not a
+    # sampling one — it was registered here with `--sample` defaulted to True,
+    # so every fleet run fetched 15 records and the corpus never grew past its
+    # bundled samples (issue #602/#1113 class). It is an alias for the full
+    # bootstrap; the corpus is a few hundred documents, so there is no separate
+    # fast path to route to.
+    bf = sub.add_parser("bootstrap-fast", help="Alias for the full bootstrap (fleet entry point)")
+    bf.add_argument("--sample", action="store_true", help="Fetch sample records only")
+    bf.add_argument("--sample-size", type=int, default=15, help="Number of samples")
+    bf.add_argument("--full", action="store_true", help="Fetch all records")
 
     sub.add_parser("update", help="Incremental update")
     sub.add_parser("test", help="Quick connectivity test")

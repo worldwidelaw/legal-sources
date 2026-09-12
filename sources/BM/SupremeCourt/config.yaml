@@ -4,8 +4,8 @@ source:
   country: BM
   url: https://www.gov.bm/court-judgments
   description: >
-    Supreme Court and Court of Appeal judgments from gov.bm. Covers 2017-present
-    with ~100-150 decisions per year. PDF judgments organized by year pages.
+    Supreme Court and Court of Appeal judgments from gov.bm. Covers 2007-present
+    (~2,100 judgments, 66-157 per year). PDF judgments organized by year pages.
     Key for insurance, reinsurance, corporate, and criminal law disputes.
 
 data_model:

@@ -9,7 +9,8 @@ pravo.gov.ru's IPS system (1991-2025).
 Strategy:
   - Bootstrap: Streams parquet files from HuggingFace (irlspbru/RusLawOD).
     Uses fsspec + pyarrow for efficient remote parquet reads.
-  - Update: Re-streams the dataset (no incremental API available).
+  - Update: Short-circuits on an unchanged dataset commit sha; otherwise
+    streams and emits only rows dated on or after the cutoff.
   - Sample: Fetches 15 records from the smallest parquet file for validation.
 
 Dataset: https://huggingface.co/datasets/irlspbru/RusLawOD
@@ -18,11 +19,12 @@ Paper: https://arxiv.org/html/2406.04855v2
 Usage:
   python bootstrap.py bootstrap            # Full fetch (304K+ records)
   python bootstrap.py bootstrap --sample   # Fetch sample records for validation
-  python bootstrap.py update               # Re-fetch (same as bootstrap)
+  python bootstrap.py update               # Incremental refresh
 """
 
 import sys
 import re
+import json
 import logging
 from pathlib import Path
 from datetime import datetime, timezone
@@ -30,12 +32,13 @@ from typing import Generator
 
 import fsspec
 import pyarrow.parquet as pq
+import requests
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 logging.basicConfig(
     level=logging.INFO,
@@ -45,6 +48,7 @@ logger = logging.getLogger("legal-data-hunter.RU.PravoGovRu")
 
 # HuggingFace dataset info
 HF_DATASET = "irlspbru/RusLawOD"
+HF_DATASET_API = f"https://huggingface.co/api/datasets/{HF_DATASET}"
 HF_BASE_URL = "https://huggingface.co/datasets/irlspbru/RusLawOD/resolve/main"
 PARQUET_FILES = [f"ruslawod_{i:02d}.parquet" for i in range(1, 12)]
 
@@ -138,6 +142,10 @@ class PravoGovRuScraper(BaseScraper):
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all documents from all parquet files."""
+        # Read before the walk, so a dataset revised mid-crawl is not recorded
+        # as already consumed — the next refresh should still pick it up.
+        current_sha, _ = self._dataset_revision()
+
         total = 0
         for filename in PARQUET_FILES:
             for row in self._read_parquet_file(filename):
@@ -145,12 +153,108 @@ class PravoGovRuScraper(BaseScraper):
                 yield row
                 if total % 10000 == 0:
                     logger.info(f"  Progress: {total} records yielded")
+
+        # Baseline for the incremental refresh, written only on a clean finish.
+        if current_sha:
+            self._save_checkpoint(current_sha)
         logger.info(f"Total records yielded: {total}")
 
+    # ── Incremental refresh (#1502) ───────────────────────────────────
+
+    def _checkpoint_path(self) -> Path:
+        return self.source_dir / "data" / "hf_checkpoint.json"
+
+    def _load_checkpoint(self) -> dict:
+        try:
+            with open(self._checkpoint_path(), encoding="utf-8") as f:
+                return json.load(f)
+        except (OSError, ValueError):
+            return {}
+
+    def _save_checkpoint(self, sha: str) -> None:
+        path = self._checkpoint_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".json.tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump({"sha": sha,
+                       "updated_at": datetime.now(timezone.utc).isoformat()}, f, indent=2)
+        tmp.replace(path)  # atomic: a half-written checkpoint would skip real rows
+
+    def _dataset_revision(self):
+        """(commit sha, lastModified) of the HF dataset, or (None, None)."""
+        try:
+            r = requests.get(HF_DATASET_API, timeout=60)
+            r.raise_for_status()
+            info = r.json()
+            return info.get("sha"), info.get("lastModified")
+        except Exception as e:
+            logger.warning(f"Could not read dataset revision: {e}")
+            return None, None
+
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
-        """Re-fetch all (no incremental endpoint available)."""
-        logger.info("No incremental update available; re-fetching all data")
-        yield from self.fetch_all()
+        """Yield only documents dated on or after `since`.
+
+        Two filters, cheapest first. The previous implementation was
+        `yield from self.fetch_all()`, which re-streamed all 11 parquet files
+        and re-yielded ~304K rows on every refresh slot (#1502).
+
+        * the HF dataset commit `sha` — this is a static research corpus, so an
+          unchanged sha means no new legislation exists, answered in one request
+          instead of streaming the whole dataset
+        * `docdateIPS` per row — when the sha *has* moved the files still have to
+          be read (parquet row groups are not date-partitioned), but only rows at
+          or after the cutoff are emitted, so the expensive half — text cleaning
+          and the downstream normalize/dedup of 304K rows — is skipped
+
+        A row whose date will not parse is emitted rather than dropped: an
+        unparseable date is a reason to look at the record, not to hide it.
+        """
+        checkpoint = self._load_checkpoint()
+        prev_sha = checkpoint.get("sha")
+        current_sha, last_modified = self._dataset_revision()
+
+        if current_sha and prev_sha and current_sha == prev_sha:
+            logger.info(
+                f"Dataset revision unchanged ({current_sha[:12]}) since last run — "
+                f"no new legislation. Skipped re-streaming {len(PARQUET_FILES)} parquet files."
+            )
+            return
+
+        cutoff = as_date_str(since)
+
+        # No checkpoint yet (first refresh after this fix): fall back to the
+        # dataset's own last-modified stamp before streaming anything.
+        if not prev_sha and cutoff and last_modified:
+            modified_day = as_date_str(last_modified)
+            if modified_day and modified_day < cutoff:
+                logger.info(
+                    f"Dataset last modified {modified_day}, before the {cutoff} cutoff "
+                    f"— no new legislation."
+                )
+                self._save_checkpoint(current_sha or "")
+                return
+
+        logger.info(
+            f"Revision {str(prev_sha)[:12]} -> {str(current_sha)[:12]}: "
+            f"streaming for documents dated >= {cutoff or '(no cutoff)'}"
+        )
+
+        emitted = scanned = 0
+        for filename in PARQUET_FILES:
+            for row in self._read_parquet_file(filename):
+                scanned += 1
+                if cutoff:
+                    row_date = parse_russian_date(row.get("docdateIPS", ""))
+                    if row_date and row_date < cutoff:
+                        continue
+                emitted += 1
+                yield row
+
+        self._save_checkpoint(current_sha or prev_sha or "")
+        logger.info(
+            f"Incremental refresh: {emitted} document(s) at or after {cutoff} "
+            f"from {scanned} rows scanned"
+        )
 
     def normalize(self, raw: dict) -> dict:
         """Transform a raw dataset row into standardized schema."""
@@ -249,4 +353,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

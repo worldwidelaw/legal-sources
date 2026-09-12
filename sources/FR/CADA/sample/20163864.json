@@ -1,0 +1,26 @@
+{
+  "_id": "FR/CADA/20163864",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-08-06T21:53:57.596596+00:00",
+  "opinion_id": "20163864",
+  "title": "Avis 20163864 - Centre Communal d'Action Sociale de Saint-Michel (CCAS 16)",
+  "date": "2016-10-06",
+  "url": "https://www.data.gouv.fr/explore/cada/20163864",
+  "text": "Monsieur X a saisi la commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 29 juillet 2016, à la suite du refus opposé par la présidente du centre communal d'action sociale de Saint-Michel à sa demande de communication des documents et éléments suivants :\n1) la composition du conseil de vie sociale ;\n2) les comptes-rendus de réunions de ce conseil et notamment celui dans lequel est mentionné le refus que soit présent un représentant du CODERPA ;\n3) le compte rendu de l'analyse des besoins sociaux pour l'année 2015-2016 des habitants de Saint-Michel, toutes populations confondues ;\n4) le fichier 2016 anonymisé des personnes bénéficiaires d'une prestation sociale, légale ou facultative résidant sur le territoire de la commune. \n\nLa commission, qui a pu prendre connaissance des documents sollicités, estime qu'il s'agit de documents administratifs communicables à toute personne qui en fait la demande, en application de l'article L311-1 du code des relations entre le public et l'administration s'agissant des documents visés aux points 1) à 3) et en application de l'article L311-6 du même code s'agissant du document visé au point 4) tel qu'il est demandé. \n\nElle émet donc un avis favorable.",
+  "subject": "",
+  "administration": "Centre Communal d'Action Sociale de Saint-Michel (CCAS 16)",
+  "meanings": [
+    "Favorable"
+  ],
+  "topics": [
+    "Affaires Sanitaires Et Sociales",
+    "Solidarités Et Prestations Sociales"
+  ],
+  "tags": [
+    "Gestion des établissements de santé",
+    "Aide sociale"
+  ],
+  "part": "III",
+  "type": "Avis"
+}

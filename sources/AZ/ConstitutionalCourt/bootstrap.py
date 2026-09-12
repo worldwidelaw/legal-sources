@@ -17,6 +17,7 @@ The website provides:
 import re
 import sys
 import json
+import time
 import logging
 import ssl
 from pathlib import Path
@@ -65,10 +66,46 @@ class AzerbaijanConstitutionalCourtScraper(BaseScraper):
             base_url=self.config.get("api", {}).get("base_url", "https://www.constcourt.gov.az"),
             headers={
                 **self._auth_headers,
+                # The site's WAF 403s the default LegalDataHunter agent from some
+                # vantages (issue #1386); a normal browser fingerprint gets through.
+                "User-Agent": (
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+                    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+                ),
+                "Accept": (
+                    "text/html,application/xhtml+xml,application/xml;q=0.9,"
+                    "image/avif,image/webp,*/*;q=0.8"
+                ),
                 "Accept-Language": "az,en;q=0.9",
+                "Referer": "https://www.constcourt.gov.az/az/decisions",
             },
             verify=False,  # Site has certificate issues
         )
+
+    # HttpClient's retry strategy only covers 429/5xx. constcourt.gov.az answers
+    # sporadic 403s (WAF) that used to kill an entire run on the first listing
+    # page — retry those explicitly before giving up.
+    RETRY_STATUSES = (403, 429, 500, 502, 503, 504)
+    RETRY_BACKOFF = (5, 15, 45, 90)
+
+    def _get(self, path: str):
+        """GET with explicit retry on WAF 403s and transient network errors."""
+        last_error = None
+        for attempt, delay in enumerate([0] + list(self.RETRY_BACKOFF)):
+            if delay:
+                logger.warning(f"Retrying {path} in {delay}s (attempt {attempt + 1})")
+                time.sleep(delay)
+            self.rate_limiter.wait()
+            try:
+                resp = self.client.get(path)
+            except Exception as e:
+                last_error = e
+                continue
+            if resp.status_code in self.RETRY_STATUSES:
+                last_error = RuntimeError(f"HTTP {resp.status_code} for {path}")
+                continue
+            return resp
+        raise last_error
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """
@@ -84,6 +121,15 @@ class AzerbaijanConstitutionalCourtScraper(BaseScraper):
                 decision_ids = self._fetch_list_page(page)
 
                 if not decision_ids:
+                    if page == 1:
+                        # Fail loud: an empty first page means the listing is
+                        # unreachable/blocked or the markup changed. Exiting 0
+                        # here would look like a successful empty crawl.
+                        raise RuntimeError(
+                            "No decision links on /az/decisions?page=1 — the listing is "
+                            "unreachable (IP block / WAF) or its markup changed. Refusing "
+                            "to report a successful empty crawl."
+                        )
                     logger.info(f"No more decisions found at page {page}")
                     break
 
@@ -106,6 +152,10 @@ class AzerbaijanConstitutionalCourtScraper(BaseScraper):
                 page += 1
 
             except Exception as e:
+                if page == 1:
+                    # Nothing was yielded yet — propagate so the run exits
+                    # non-zero instead of silently producing an empty corpus.
+                    raise
                 logger.error(f"Failed to fetch page {page}: {e}")
                 break
 
@@ -159,8 +209,7 @@ class AzerbaijanConstitutionalCourtScraper(BaseScraper):
 
     def _fetch_list_page(self, page: int) -> list:
         """Fetch list of decision IDs from a single page."""
-        self.rate_limiter.wait()
-        resp = self.client.get(f"/az/decisions?page={page}")
+        resp = self._get(f"/az/decisions?key=&page={page}")
         soup = BeautifulSoup(resp.text, "html.parser")
 
         # Find all decision links in format /az/decision/XXXX
@@ -184,8 +233,7 @@ class AzerbaijanConstitutionalCourtScraper(BaseScraper):
 
         Returns raw document dict with full text.
         """
-        self.rate_limiter.wait()
-        resp = self.client.get(f"/az/decision/{decision_id}")
+        resp = self._get(f"/az/decision/{decision_id}")
         soup = BeautifulSoup(resp.text, "html.parser")
 
         # Extract title from the italic paragraph
@@ -364,7 +412,7 @@ def main():
     scraper = AzerbaijanConstitutionalCourtScraper()
 
     if len(sys.argv) < 2:
-        print("Usage: python bootstrap.py [bootstrap|update] [--sample] [--sample-size N]")
+        print("Usage: python bootstrap.py [bootstrap|bootstrap-fast|update] [--sample] [--sample-size N]")
         sys.exit(1)
 
     command = sys.argv[1]
@@ -374,7 +422,10 @@ def main():
         idx = sys.argv.index("--sample-size")
         sample_size = int(sys.argv[idx + 1])
 
-    if command == "bootstrap":
+    # `bootstrap-fast` is the command the VPS fleet wrapper invokes; without it
+    # argparse-free dispatch fell through to "Unknown command" / exit 1 and the
+    # wrapper reported "No records written" (issue #1386).
+    if command in ("bootstrap", "bootstrap-fast"):
         if sample_mode:
             stats = scraper.run_sample(n=sample_size)
             print(f"\nSample complete: {stats.get('sample_records_saved', 0)} records saved to sample/")

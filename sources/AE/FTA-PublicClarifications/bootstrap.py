@@ -313,13 +313,20 @@ class FTAClarificationsScraper(BaseScraper):
         """Yield all documents (no incremental update support)."""
         yield from self.fetch_all()
 
-    def normalize(self, raw: dict) -> dict:
-        """Transform raw entry into standard schema."""
+    def normalize(self, raw: dict):
+        """Transform raw entry into standard schema, or None if it has no body."""
         pdf_url = raw.get("pdf_url", "")
         source_id = raw.get("doc_id", "")
 
         # Extract full text from PDF
         full_text = self._extract_pdf_text(pdf_url, source_id)
+
+        # A clarification with no body is a title and a link — the metadata-only
+        # record this corpus exists to avoid. Drop it rather than store an empty
+        # text field; one such record was sitting in the committed sample set.
+        if not full_text.strip():
+            logger.warning("No text extracted, skipping %s (%s)", source_id, pdf_url)
+            return None
 
         return {
             "_id": source_id,
@@ -429,4 +436,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

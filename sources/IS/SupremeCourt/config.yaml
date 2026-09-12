@@ -1,4 +1,5 @@
-auth: none
+auth:
+  type: none
 country: IS
 data_types:
 - caselaw
@@ -19,7 +20,9 @@ notes: 'The Icelandic Supreme Court (Hæstiréttur Íslands) publishes its decis
   We use a 1.5 second delay between requests to be respectful.
 
   '
-rate_limit: 1.5s
+rate_limit:
+  requests_per_second: 1.5
+  burst: 3
 schema:
   key_fields:
   - name: _id

@@ -33,7 +33,7 @@ data_model:
   update_strategy: "append_only"
   versioning: "none"
   dedup_key:
-    - "frbr_uri"
+    - "_id"
 
 schema:
   total_fields: 9
@@ -60,9 +60,7 @@ schema:
       required: true
   secondary_fields:
     - name: "law_type"
-      description: "Type of law (law, mo, reg, decree, etc.)"
-    - name: "nature"
-      description: "Nature of the instrument"
+      description: "Type of law (law, mo, reg, decree, etc.), from the AKN URL"
   probably_ignorable: []
 
 license:

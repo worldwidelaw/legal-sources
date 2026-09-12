@@ -76,8 +76,16 @@ schema:
       required: true
 
 notes: |
-  - ~86,226 decisions as of April 2026 (26,841 admin + 32,790 civil + 26,595 criminal)
+  - 88,140 decisions as of August 2026 (27,674 admin + 33,400 civil + 27,066 criminal),
+    read from the listing's own "სულ მოიძებნა N" counter at run time
   - Palata 0 = administrative, 1 = civil, 2 = criminal
   - Full text in Georgian
   - HTML content needs tag stripping
   - No authentication required
+  - RATE LIMIT (issue #1158): the AJAX routes sit behind a Laravel throttle
+    advertising X-RateLimit-Limit: 10 per minute with a real Retry-After header.
+    Past the bucket /ka/getCases answers 429 and /fullcase/ answers 403 with the
+    full page as its body. ~6.5s between requests (~9.2/min) sustains indefinitely
+    — measured 20/20 clean at that pace. At that rate a full sweep is ~160h, i.e.
+    more than one fleet slot, so bootstrap checkpoints per (palata, page) to
+    data/checkpoint.json and successive runs advance monotonically.

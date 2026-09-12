@@ -11,15 +11,22 @@
 # jurisprudence database. The database is powered by Lotus Notes/Domino.
 #
 # Access patterns:
-#   - Database listing: /jsta.nsf?OpenDatabase&Start=N (N = pagination offset, ~121 per page)
+#   - Enumeration: /jsta.nsf/Por+Ano?ReadViewEntries&Start=N&Count=M&OutputFormat=JSON
+#     (Domino view API: UNID + ISO decision date + case number + rapporteur, plus the
+#      authoritative "@toplevelentries" total). The HTML listing at
+#      /jsta.nsf?OpenDatabase&Start=N has no fixed page size — 108 view positions on
+#      page 1, 99 thereafter — so the old hardcoded page_size=121 silently skipped
+#      17.4% of the corpus (issue #1461).
 #   - Document detail: /jsta.nsf/{view_id}/{doc_id}?OpenDocument&ExpandSection=1
 #   - view_id is constant: 35fbbbf22e1bb1e680256f8e003ea931
 #
-# Coverage: ~89,300 decisions
+# Coverage: 90,047 view entries
 #   - Administrative contentious (Contencioso Administrativo) - since 1950
 #   - Tax and customs contentious (Contencioso Tributário) - since 1963
-#   - Full text available from 2002 onwards
 #   - Sections: Administrative, Tax, Plenary
+#   - Full text stops abruptly at 2002-01-09 (view position 35,005); positions
+#     35,006-90,047 are 2001-12-24 and older and carry no "Texto Integral" at all.
+#     Usable corpus: ~35,000 decisions.
 #
 # Full text is available in the "Texto Integral" section (requires ExpandSection=1).
 
@@ -63,9 +70,12 @@ schema:
 fetch:
   # Rate limiting: 1 request per 1.5 seconds (respectful scraping)
   rate_limit_delay: 1.5
-  # Pagination: ~121 records per page
-  page_size: 121
-  # Total decisions available (~89,300)
-  estimated_total: 89300
+  # View entries requested per ReadViewEntries call
+  page_size: 200
+  # Decisions carrying full text (2002-present); the view holds 90,047 entries
+  estimated_total: 35005
   # Sample mode: fetch first pages
   sample_count: 12
+  # Progress is checkpointed to data/sta_checkpoint.json so a torn-down fleet
+  # slot resumes instead of re-walking from the top
+  checkpoint: data/sta_checkpoint.json

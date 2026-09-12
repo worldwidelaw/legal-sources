@@ -1,0 +1,179 @@
+# ===================================================================
+# KR/KINS -- Korea Institute of Nuclear Safety (한국원자력안전기술원)
+# ===================================================================
+# Full text of the technical safety standards and regulatory guides that
+# KINS, the technical support organisation of the Nuclear Safety and
+# Security Commission (NSSC), writes to give effect to the Nuclear Safety
+# Act (원자력안전법). These are what a licensee's safety analysis report is
+# reviewed against — the Korean analogue of the US NRC Regulatory Guide
+# series — together with the official notices announcing their enactment,
+# amendment and repeal.
+#
+# ACCESS: everything is served from NuSSAM (원자력안전기준관리시스템) at
+# www.kins.re.kr/nussam. The apex kins.re.kr has no A record and the host
+# rejects non-browser User-Agents, so the scraper sends a desktop UA on
+# the www host. The standards tree ships inline as JSON in the page's
+# #treeStringValue input; the per-document revision table comes from
+# /krs/getAjaxLawDetlList.do and the PDFs from /common/NussamFileDownLoad.do,
+# which is POST-only (GET returns 405) and keyed by an opaque stored
+# filename — so there is no per-document permalink.
+# ===================================================================
+
+source:
+  id: "KR/KINS"
+  country: "KR"
+  name: "Korea Institute of Nuclear Safety"
+  url: "https://www.kins.re.kr/nussam/krs/KinsRgltManualReresvnSts.do"
+  description: |
+    Regulatory guidance of the Korea Institute of Nuclear Safety (KINS),
+    the statutory technical support organisation of Korea's Nuclear Safety
+    and Security Commission. Covers the KINS 규제지침 (regulatory guide)
+    series for light-water reactors — site characteristics, radiological
+    environment, reactor and plant design, materials and component
+    qualification, instrumentation and control, electrical systems, fuel
+    design and performance, accident analysis, initial testing, technical
+    specifications, radiation protection, radioactive-waste management,
+    emergency preparedness and quality assurance — the residual KINS
+    규제기준 (regulatory standard) series still awaiting transfer into the
+    guides, and the NuSSAM notices announcing enactments, amendments,
+    repeals and public consultations on drafts. Every revision of every
+    document is kept, so the version in force on a given date can be
+    recovered. Full text is extracted from the born-digital Korean PDFs
+    NuSSAM serves.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1.5
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.kins.re.kr/nussam"
+  endpoints:
+    guides_tree: "/krs/KinsRgltManualReresvnSts.do"
+    standards_tree: "/krs/KinsRgltBassReresvnSts.do"
+    revision_list: "/krs/getAjaxLawDetlList.do"
+    file_download: "/common/NussamFileDownLoad.do"
+    notice_list: "/board/NotiMtrList.do"
+    notice_detail: "/board/NotiMtrDetl.do"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 21
+  key_fields:
+    - name: "title"
+      description: "Series label, guide number, subject and revision, e.g. 'KINS 규제지침 2.1 원자로시설 부지주변 해양특성 조사 (Rev. 3)'"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the regulatory guide / standard revision, extracted from the born-digital PDF; for notices, the announcement body"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date of the revision (개정일자 / 제정일자) in ISO 8601; registration date for notices"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "code"
+      description: "Official document code stated on the first page, e.g. KINS/RG-N02.01 — null when the PDF does not carry one"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "guide_number"
+      description: "Chapter-and-section number within the series, e.g. '2.1', '18.1'"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "revision"
+      description: "Sequential revision number within the document's history (1 = 제정)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "change_type"
+      description: "What the revision did — enactment (제정), amendment (개정), repeal (폐지), deletion (삭제)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "document_type"
+      description: "regulatory_guide (규제지침), regulatory_standard (규제기준) or notice (공지사항)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "chapter_path"
+      description: "Labels of the NuSSAM tree chapters the document sits under, root first"
+      type: "array"
+      role: "metadata"
+      required: false
+    - name: "abolished"
+      description: "True when NuSSAM flags the document itself as abolished (abolition=Y)"
+      type: "boolean"
+      role: "metadata"
+      required: false
+    - name: "language"
+      description: "Document language — always 'ko'"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "authority"
+      description: "Issuing authority — always 'Korea Institute of Nuclear Safety (한국원자력안전기술원)'"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public data under the Act on Promotion of the Provision and Use of Public Data / Copyright Act art. 24-2"
+  url: "https://www.kins.re.kr/copyright"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: |
+    KINS's copyright policy states that works whose economic rights are
+    held in full by KINS may be used freely without separate permission
+    under article 24-2 of the Korean Copyright Act (자유이용 of public
+    works), and that the public data the site provides may be used by
+    anyone "including for commercial purposes" under the Public Data Act.
+    The regulatory guides and standards are authored in full by KINS and
+    fall in that class. Attribution of the source is required. The policy
+    excludes material KINS does not wholly own; the scraper collects only
+    the KINS-authored 규제지침 / 규제기준 series and NuSSAM's own notices.
+
+notes: |
+  - kins.re.kr answers only on the www host (the apex has no A record) and
+    resets connections from non-browser User-Agents; the session sends a
+    desktop Chrome UA.
+  - The standards trees are NOT paginated. Every node ships inline in the
+    listing page as a JSON blob in the #treeStringValue hidden input
+    (~230 nodes for 규제지침, of which ~210 are documents). Folder nodes
+    (folder=Y) are chapters, document nodes (folder=N) are guides.
+  - Per-guide revision history comes from POST /krs/getAjaxLawDetlList.do
+    with the node's lawSeq/parent/lawTypeCd; it returns an HTML <tr> table
+    in a JSON envelope. Roughly 2-3 revisions per guide, ~580 PDFs total.
+  - /common/NussamFileDownLoad.do is POST-only and keyed by the opaque
+    stored filename (law_0000000110003.pdf) plus the original filename and
+    folder; a GET returns HTTP 405. There is consequently no per-document
+    permalink, so `url` points at the listing page.
+  - The 규제기준 series is being wound down: the 2016-17 consistency review
+    and 2018 repeal-and-transfer plan folded almost every chapter into the
+    guides, so its tree currently holds only the chapters still awaiting
+    transfer. The scraper reads whatever the tree reports rather than
+    assuming a count.
+  - Board bodies are double HTML-escaped (spaces as &amp;nbsp;, punctuation
+    as &amp;#47;) — strip_tags() unescapes twice.
+  - The binding layer (원자력안전법, its Enforcement Decree and Rules, and the
+    NSSC 고시) is deliberately NOT duplicated here; NuSSAM links out to
+    law.go.kr for it and KR/LawGoKr already carries it.

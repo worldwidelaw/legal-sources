@@ -33,7 +33,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 import requests
 import pdfplumber
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 logging.basicConfig(
     level=logging.INFO,
@@ -249,6 +249,8 @@ class LCGovtPortalScraper(BaseScraper):
 
     def fetch_updates(self, since: str) -> Generator[Dict[str, Any], None, None]:
         """Yield documents updated since a given date."""
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         try:
             since_dt = datetime.fromisoformat(since)
         except ValueError:
@@ -283,6 +285,11 @@ class LCGovtPortalScraper(BaseScraper):
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     scraper = LCGovtPortalScraper()
 
     if len(sys.argv) < 2:

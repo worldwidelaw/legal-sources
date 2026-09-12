@@ -1,0 +1,67 @@
+source:
+  id: "EU/ParliamentaryAssemblies"
+  name: "EU Joint / Regional Parliamentary Assemblies — Acts and Resolutions"
+  country: "EU"
+  language: "en"
+
+  # Full text is retrieved from the EU Publications Office (CELLAR / EUR-Lex),
+  # where the acts of the EU's joint / regional parliamentary assemblies are
+  # stored with a CELEX number of the form 2{YYYY}P{NNNN} (sector 2 =
+  # international agreements and acts of bodies created by them; "P" = the
+  # parliamentary-assembly act class). The ~418-CELEX series (1997 onward) is
+  # dominated by the ACP-EU Joint Parliamentary Assembly (JPA) and its
+  # predecessor the ACP-EU Joint Assembly — the parliamentary institution of the
+  # ACP-EU partnership (Lomé -> Cotonou -> the post-Cotonou "Samoa Agreement"
+  # OACPS-EU framework), ~85% of the series — and also includes the Euronest
+  # Parliamentary Assembly (EU-Eastern Partnership), the EuroLat Euro-Latin
+  # American Assembly and the Union-for-the-Mediterranean assembly. These bodies
+  # adopt resolutions on development cooperation, human rights, trade, peace and
+  # security and other political questions, published in the OJ C series. This is
+  # a distinct, additive corpus: EU/EUR-Lex enumerates sector-3 legislation only,
+  # and the sector-2 siblings EU/InternationalAgreements ("A") and
+  # EU/JointBodyDecisions ("D") never cover the "P" parliamentary acts. The whole
+  # series is under the ~10K SPARQL OFFSET ceiling, so a single paged enumeration
+  # suffices; the scraper keeps only records that resolve to real full text. Full
+  # text via CELLAR content negotiation — OJ/Formex xHTML on the bare CELEX
+  # (modern), OJ HTML (bare CELEX text/html or the language-suffixed CELEX .ENG),
+  # and a born-digital PDF (PyMuPDF) fallback. This bypasses the
+  # eur-lex.europa.eu AWS-WAF that 202-challenges datacenter IPs, so it is
+  # fleet-safe. Same CELLAR recipe as EU/ESC-Opinions and
+  # EU/InternationalAgreements, narrowed to the sector-2 "P" descriptor.
+  endpoints:
+    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
+    cellar_celex: "http://publications.europa.eu/resource/celex/{celex}"
+
+  data_types:
+    - doctrine
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1
+
+  schema:
+    key_fields:
+      _id:
+        type: string
+        required: true
+      title:
+        type: string
+        required: true
+      text:
+        type: string
+        required: true
+      date:
+        type: date
+        required: false
+
+fetch:
+  sample_count: 15
+
+license:
+  name: "EU institutional reuse (Decision 2011/833/EU)"
+  url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Assembly acts published by the Publications Office are reusable under the Commission's reuse policy (Decision 2011/833/EU). Attribution to the source is requested."

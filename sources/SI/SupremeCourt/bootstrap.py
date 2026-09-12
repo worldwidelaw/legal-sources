@@ -1,514 +1,369 @@
 #!/usr/bin/env python3
 """
-SI/SupremeCourt Bootstrap
-Slovenian Case Law Database (sodnapraksa.si)
+SI/SupremeCourt -- Slovenian Supreme Court case law (sodnapraksa.si)
 
-Fetches court decisions from Slovenia's public case law database.
+Fetches the full-text decisions of the Vrhovno sodišče Republike Slovenije
+(Supreme Court of Slovenia) from the official public case-law database
+sodnapraksa.si.
 
-Databases:
-- SOVS: Supreme Court (Vrhovno sodišče)
-- IESP: Higher Courts (Višja sodišča)
-- VDSS: Higher Labor and Social Court
-- UPRS: Administrative Court
-- SEU: Court of Justice of the EU
+Strategy (2026-07 rewrite — the site migrated from a server-rendered ASP
+pager to a Vue SPA backed by a JSON search API):
+
+  - The old ``?q=*&database[SOVS]=SOVS`` HTML pager now 302-redirects to a Vue
+    SPA (``/iskanje/{base64-json}``) whose shell carries no data, so the legacy
+    ``span#num-hits`` / ``table#results-table`` scraper found 0 documents
+    (issue #1212). The new SPA talks to:
+
+        POST https://sodnapraksa.si/backend/api/search/documents
+        body: {"simpleSearch": true, "similarityCutoff": 0.75,
+               "similarityTopK": 100, "topN": 10,
+               "query": {"q": "*"},
+               "filterQueries": ["docType:vsrs"],
+               "page": N, "pageSize": 50,
+               "sortField": "date", "sortDirection": "ASC"|"DESC"}
+
+  - ``docType:vsrs`` restricts to the Supreme Court (66,710 decisions as of
+    2026-07). The search response embeds the FULL text of every hit inline
+    under ``coreText`` (Jedro / core summary), ``ruling`` (Izrek / disposition)
+    and ``motivation`` (Obrazložitev / reasoning) — no separate detail fetch is
+    needed (the ``search/documents/{type}/{id}`` detail endpoint is Keycloak
+    auth-gated and returns 401/400). Text is HTML fragments; tags are stripped.
+
+  - Full crawl paginates date-ASC (oldest first) so newly published decisions
+    append at the tail — a page checkpoint makes fleet reruns resume-safe.
+    Incremental update paginates date-DESC and stops once past the cutoff.
 
 Usage:
-    python bootstrap.py bootstrap --sample   # Fetch 10-15 sample records
-    python bootstrap.py bootstrap --full     # Fetch all records (NOT recommended)
+  python bootstrap.py bootstrap            # Full initial pull (streams to data/records.jsonl)
+  python bootstrap.py bootstrap-fast       # Alias for full bootstrap (fleet runner)
+  python bootstrap.py bootstrap --sample   # Fetch sample records for validation
+  python bootstrap.py update               # Incremental update (recent decisions)
+  python bootstrap.py test-api             # Quick connectivity test
 """
 
-import argparse
-import json
-import os
-import re
 import sys
-import time
-from datetime import datetime, timezone
+import json
+import logging
 from pathlib import Path
-from html import unescape
-from urllib.parse import urljoin, urlencode, quote
+from datetime import datetime, timezone
+from typing import Generator, Optional, Dict, Any, List
+
+# Add project root to path
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
 
 import requests
 from bs4 import BeautifulSoup
+from common.base_scraper import BaseScraper
 
-# Configuration
-BASE_URL = "https://www.sodnapraksa.si/"
-RATE_LIMIT = 2  # seconds between requests
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("legal-data-hunter.SI.SupremeCourt")
 
-# Available databases
-DATABASES = {
-    "SOVS": "Supreme Court",
-    "IESP": "Higher Courts",
-    "VDSS": "Higher Labor and Social Court",
-    "UPRS": "Administrative Court",
-    "SEU": "Court of Justice of the EU",
-}
-
-# Source directory
-SOURCE_DIR = Path(__file__).parent
-SAMPLE_DIR = SOURCE_DIR / "sample"
-
-# HTTP session with user agent
-session = requests.Session()
-session.headers.update({
-    "User-Agent": "Mozilla/5.0 (compatible; LegalDataHunter/1.0; +https://github.com/legal-data-hunter)",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.5",
-})
+API_URL = "https://sodnapraksa.si/backend/api/search/documents"
+DOC_URL = "https://sodnapraksa.si/dokument/{type}/{id}"
+DOC_TYPE = "vsrs"  # Vrhovno sodišče RS (Supreme Court)
+PAGE_SIZE = 50
+USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+)
 
 
-def search_documents(database="SOVS", query="*", page=0, rows_per_page=10):
+class SISupremeCourtScraper(BaseScraper):
     """
-    Search for documents in the specified database.
-
-    Returns list of document IDs and metadata.
+    Scraper for SI/SupremeCourt -- Slovenian Supreme Court case law.
+    Country: SI
+    URL: https://sodnapraksa.si/
+    Data types: case_law
+    Auth: none (Open Government Data)
     """
-    # Database parameter uses array notation: database[SOVS]=SOVS
-    params = {
-        "q": query,
-        f"database[{database}]": database,
-        "_submit": "išči",
-        "rowsPerPage": rows_per_page,
-        "page": page,
-        "order": "date",
-        "direction": "desc",
-    }
 
-    url = f"{BASE_URL}?{urlencode(params)}"
-    print(f"Searching: {url}")
+    def __init__(self):
+        source_dir = Path(__file__).parent
+        super().__init__(source_dir)
 
-    response = session.get(url, timeout=30)
-    response.raise_for_status()
+        self.checkpoint_file = source_dir / "checkpoint.json"
 
-    soup = BeautifulSoup(response.content, "html.parser")
+        self.session = requests.Session()
+        self.session.headers.update({
+            "User-Agent": USER_AGENT,
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Accept-Language": "sl,en;q=0.9",
+        })
 
-    # Extract total count
-    num_hits = soup.find("span", id="num-hits")
-    total = 0
-    if num_hits:
-        match = re.search(r"(\d+)", num_hits.text.replace(".", ""))
-        if match:
-            total = int(match.group(1))
+    # ── search API ───────────────────────────────────────────────────
+    def _search(self, page: int, direction: str = "ASC", timeout: int = 60) -> Dict[str, Any]:
+        """One page of the Supreme Court search API. Returns the parsed JSON."""
+        body = {
+            "simpleSearch": True,
+            "similarityCutoff": 0.75,
+            "similarityTopK": 100,
+            "topN": 10,
+            "query": {"q": "*"},
+            "filterQueries": [f"docType:{DOC_TYPE}"],
+            "page": page,
+            "pageSize": PAGE_SIZE,
+            "sortField": "date",
+            "sortDirection": direction,
+        }
+        self.rate_limiter.wait()
+        resp = self.session.post(API_URL, json=body, timeout=timeout)
+        resp.raise_for_status()
+        return resp.json()
 
-    # Extract document links from results table
-    results = []
-    table = soup.find("table", id="results-table")
-    if table:
-        for row in table.find_all("tr"):
-            link = row.find("a", href=re.compile(r"id=\d+"))
-            if link:
-                href = link.get("href", "")
-                match = re.search(r"id=(\d+)", href)
-                if match:
-                    doc_id = match.group(1)
-                    results.append({
-                        "id": doc_id,
-                        "title": link.text.strip(),
-                    })
+    # ── checkpoint (page-level, resume-safe with date-ASC crawl) ──────
+    def _load_checkpoint(self) -> int:
+        if self.checkpoint_file.exists():
+            try:
+                with open(self.checkpoint_file) as f:
+                    cp = json.load(f)
+                page = int(cp.get("next_page", 0))
+                if page > 0:
+                    logger.info(f"Resuming from page {page}")
+                return page
+            except Exception:
+                pass
+        return 0
 
-    return results, total
+    def _save_checkpoint(self, next_page: int, fetched: int):
+        try:
+            with open(self.checkpoint_file, "w") as f:
+                json.dump({
+                    "next_page": next_page,
+                    "fetched": fetched,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                }, f)
+        except Exception as e:
+            logger.warning(f"Could not write checkpoint: {e}")
 
+    def _clear_checkpoint(self):
+        if self.checkpoint_file.exists():
+            try:
+                self.checkpoint_file.unlink()
+            except Exception:
+                pass
 
-def fetch_document(doc_id, database="SOVS"):
-    """
-    Fetch a single document by ID.
+    # ── framework hooks ──────────────────────────────────────────────
+    def fetch_all(self) -> Generator[dict, None, None]:
+        """
+        Yield every Supreme Court decision (date-ASC, oldest first).
 
-    Returns dict with all extracted fields including full text.
-    """
-    params = {
-        "q": "*",
-        "database": database,
-        "_submit": "išči",
-        "rowsPerPage": "10",
-        "page": "0",
-        "id": doc_id,
-    }
+        Page-checkpointed: on restart we skip already-completed pages with no
+        network calls; the loader dedups on _id, so re-fetching an in-progress
+        page is harmless. New decisions append at the tail so the checkpoint
+        stays valid across fleet reruns.
+        """
+        start_page = self._load_checkpoint()
 
-    url = f"{BASE_URL}?{urlencode(params)}"
+        first = self._search(start_page)
+        total = first.get("hits", 0)
+        total_pages = first.get("totalPages", 0)
+        logger.info(f"Total Supreme Court decisions: {total:,} across {total_pages} pages")
 
-    response = session.get(url, timeout=30)
-    response.raise_for_status()
+        fetched = 0
+        page = start_page
+        data = first
+        while True:
+            docs = data.get("docs", []) or []
+            if not docs:
+                break
+            for doc in docs:
+                fetched += 1
+                yield doc
+            # Page fully yielded → advance checkpoint.
+            page += 1
+            self._save_checkpoint(page, fetched)
+            if page % 50 == 0:
+                logger.info(f"Progress: page {page}/{total_pages}, {fetched:,} decisions")
+            if total_pages and page >= total_pages:
+                break
+            data = self._search(page)
 
-    soup = BeautifulSoup(response.content, "html.parser")
+        self._clear_checkpoint()
+        logger.info(f"Fetched {fetched:,} Supreme Court decisions")
 
-    # Find document content container
-    doc_content = soup.find("div", id="doc-content")
-    if not doc_content:
-        return None
+    def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
+        """Yield decisions with a session date newer than `since` (date-DESC)."""
+        if since.tzinfo is None:
+            since = since.replace(tzinfo=timezone.utc)
+        page = 0
+        while True:
+            data = self._search(page, direction="DESC")
+            docs = data.get("docs", []) or []
+            if not docs:
+                break
+            crossed = False
+            for doc in docs:
+                iso = self._iso_date(doc.get("sessionDate"))
+                if iso:
+                    try:
+                        d = datetime.strptime(iso, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                        if d < since:
+                            crossed = True
+                            break
+                    except ValueError:
+                        pass
+                yield doc
+            if crossed:
+                break
+            page += 1
+            total_pages = data.get("totalPages", 0)
+            if total_pages and page >= total_pages:
+                break
 
-    # Extract header info
-    doc_head = doc_content.find("p", id="doc-head-right")
-    decision_number = ""
-    if doc_head:
-        decision_number = doc_head.get_text(separator=" ", strip=True)
-
-    # Extract metadata table
-    meta_table = doc_content.find("table", id="doc-meta")
-    metadata = {}
-    if meta_table:
-        for row in meta_table.find_all("tr"):
-            th = row.find("th")
-            td = row.find("td")
-            if th and td:
-                key = th.text.strip().rstrip(":")
-                value = td.text.strip()
-                metadata[key] = value
-
-    # Extract main content sections
-    def get_section(header_text):
-        """Find content following a specific h2 header."""
-        for h2 in doc_content.find_all("h2"):
-            if h2.text.strip() == header_text:
-                # Get all siblings until next h2 or end
-                content_parts = []
-                for sibling in h2.find_next_siblings():
-                    if sibling.name == "h2":
-                        break
-                    if sibling.name == "p":
-                        text = sibling.get_text(separator=" ", strip=True)
-                        if text:
-                            content_parts.append(text)
-                    elif sibling.name == "br":
-                        continue
-                    elif hasattr(sibling, "get_text"):
-                        text = sibling.get_text(separator=" ", strip=True)
-                        if text and sibling.name not in ["strong", "dl"]:
-                            content_parts.append(text)
-                return "\n\n".join(content_parts)
+    # ── helpers ──────────────────────────────────────────────────────
+    @staticmethod
+    def _iso_date(raw: Optional[str]) -> str:
+        """sessionDate arrives as 'YYYY-MM-DD' (occasionally with a T-suffix)."""
+        if not raw or not isinstance(raw, str):
+            return ""
+        raw = raw.strip()
+        if len(raw) >= 10 and raw[4] == "-" and raw[7] == "-":
+            return raw[:10]
         return ""
 
-    jedro = get_section("Jedro")
-    izrek = get_section("Izrek")
-    obrazlozitev = get_section("Obrazložitev")
+    @staticmethod
+    def _strip_html(fragment: Optional[str]) -> str:
+        if not fragment:
+            return ""
+        text = BeautifulSoup(fragment, "html.parser").get_text("\n")
+        # Collapse whitespace produced by the stripped markup.
+        lines = [ln.strip() for ln in text.splitlines()]
+        text = "\n".join(ln for ln in lines if ln)
+        return text.strip()
 
-    # Get legal references (Zveza)
-    references = ""
-    zveza_div = doc_content.find("div", id="doc-connection")
-    if zveza_div:
-        references = zveza_div.get_text(separator=" ", strip=True)
+    def normalize(self, raw: dict) -> Optional[dict]:
+        """Transform a raw search hit into the standard schema (with full text)."""
+        doc_id = raw.get("id")
+        if doc_id is None:
+            return None
 
-    # Get last modified date
-    last_modified = ""
-    mod_dl = doc_content.find("dl", id="doc-date-mod")
-    if mod_dl:
-        dd = mod_dl.find("dd")
-        if dd:
-            last_modified = dd.text.strip()
+        core = self._strip_html(raw.get("coreText"))
+        ruling = self._strip_html(raw.get("ruling"))
+        motivation = self._strip_html(raw.get("motivation"))
 
-    # Parse date from metadata
-    date = metadata.get("Datum odločbe", "")
-    if date:
-        # Convert from DD.MM.YYYY to YYYY-MM-DD
-        try:
-            parts = date.split(".")
-            if len(parts) == 3:
-                date = f"{parts[2]}-{parts[1].zfill(2)}-{parts[0].zfill(2)}"
-        except Exception:
-            pass
+        parts = []
+        if core:
+            parts.append(f"JEDRO (Summary):\n{core}")
+        if ruling:
+            parts.append(f"IZREK (Disposition):\n{ruling}")
+        if motivation:
+            parts.append(f"OBRAZLOŽITEV (Reasoning):\n{motivation}")
+        full_text = "\n\n".join(parts).strip()
 
-    return {
-        "doc_id": doc_id,
-        "decision_number": decision_number,
-        "ecli": metadata.get("ECLI", ""),
-        "evidence_number": metadata.get("Evidenčna številka", ""),
-        "court": metadata.get("Sodišče", ""),
-        "department": metadata.get("Oddelek", ""),
-        "date": date,
-        "legal_area": metadata.get("Področje", ""),
-        "keywords": metadata.get("Institut", ""),
-        "summary": jedro,
-        "disposition": izrek,
-        "reasoning": obrazlozitev,
-        "references": references,
-        "last_modified": last_modified,
-        "database": database,
-    }
+        if not full_text:
+            return None  # skip metadata-only stubs
 
+        ecli = (raw.get("ecli") or "").strip()
+        ordinal = (raw.get("ordinalNumber") or "").strip()
+        reg = (raw.get("registryNumber") or "").strip()
+        title = ordinal or ecli or reg or f"VSRS {doc_id}"
 
-def normalize(raw_data):
-    """Transform raw document data into standard schema."""
-    # Combine all text sections for full text
-    text_parts = []
-    if raw_data.get("summary"):
-        text_parts.append(f"JEDRO (Summary):\n{raw_data['summary']}")
-    if raw_data.get("disposition"):
-        text_parts.append(f"IZREK (Disposition):\n{raw_data['disposition']}")
-    if raw_data.get("reasoning"):
-        text_parts.append(f"OBRAZLOŽITEV (Reasoning):\n{raw_data['reasoning']}")
+        areas = raw.get("areas") or []
+        keywords = raw.get("keywords") or []
+        legislation = raw.get("legislation") or []
+        refs = "; ".join(
+            f"{l.get('name', '')} {l.get('value', '')}".strip()
+            for l in legislation if isinstance(l, dict)
+        ).strip()
 
-    full_text = "\n\n".join(text_parts)
+        doc_type = raw.get("documentType") or DOC_TYPE
 
-    # Clean HTML entities
-    full_text = unescape(full_text)
-    full_text = re.sub(r'\s+', ' ', full_text)
-    full_text = full_text.replace(" \n", "\n").replace("\n ", "\n")
+        return {
+            # Required base fields
+            "_id": f"SI/SupremeCourt/{ecli or doc_id}",
+            "_source": "SI/SupremeCourt",
+            "_type": "case_law",
+            "_fetched_at": datetime.now(timezone.utc).isoformat(),
+            # Standard fields
+            "title": title,
+            "text": full_text,
+            "date": self._iso_date(raw.get("sessionDate")) or None,
+            "url": DOC_URL.format(type=doc_type, id=doc_id),
+            # Source-specific fields
+            "ecli": ecli,
+            "decision_number": ordinal,
+            "registry_number": reg,
+            "court": raw.get("court", ""),
+            "department": raw.get("department", ""),
+            "legal_area": ", ".join(a for a in areas if isinstance(a, str)),
+            "keywords": ", ".join(k for k in keywords if isinstance(k, str)),
+            "references": refs,
+            "summary": core,
+            "disposition": ruling,
+            "reasoning": motivation,
+            "last_modified": self._iso_date(raw.get("updatedAt")),
+            "language": "sl",
+        }
 
-    return {
-        "_id": f"SI/SupremeCourt/{raw_data['ecli'] or raw_data['doc_id']}",
-        "_source": "SI/SupremeCourt",
-        "_type": "case_law",
-        "_fetched_at": datetime.now(timezone.utc).isoformat(),
-
-        # Core fields
-        "title": raw_data["decision_number"],
-        "text": full_text,
-        "date": raw_data["date"] if raw_data["date"] else None,
-        "url": f"{BASE_URL}?id={raw_data['doc_id']}",
-
-        # Case law specific
-        "ecli": raw_data.get("ecli", ""),
-        "decision_number": raw_data.get("decision_number", ""),
-        "evidence_number": raw_data.get("evidence_number", ""),
-        "court": raw_data.get("court", ""),
-        "department": raw_data.get("department", ""),
-        "legal_area": raw_data.get("legal_area", ""),
-        "keywords": raw_data.get("keywords", ""),
-
-        # Content sections
-        "summary": raw_data.get("summary", ""),
-        "disposition": raw_data.get("disposition", ""),
-        "reasoning": raw_data.get("reasoning", ""),
-        "references": raw_data.get("references", ""),
-
-        # Metadata
-        "database": raw_data.get("database", ""),
-        "last_modified": raw_data.get("last_modified", ""),
-    }
+    # ── connectivity test ────────────────────────────────────────────
+    def test_api(self):
+        print("Testing SI/SupremeCourt (sodnapraksa.si backend API)...")
+        data = self._search(0, direction="DESC")
+        print(f"\n1. Search API total hits: {data.get('hits'):,} "
+              f"({data.get('totalPages')} pages)")
+        docs = data.get("docs", [])
+        print(f"   Docs on page 0: {len(docs)}")
+        if docs:
+            rec = self.normalize(docs[0])
+            if rec:
+                print("\n2. Newest decision (normalized):")
+                print(f"   Title:   {rec['title']}")
+                print(f"   ECLI:    {rec['ecli']}")
+                print(f"   Date:    {rec['date']}")
+                print(f"   URL:     {rec['url']}")
+                print(f"   Text:    {len(rec['text']):,} chars")
+                print(f"   Preview: {rec['text'][:200]}...")
+            else:
+                print("   ERROR: newest doc normalized to None")
+        print("\nAPI test complete!")
 
 
-def fetch_all(sample_mode=False, sample_size=100, databases=None):
-    """
-    Fetch all records or a sample.
+def main():
+    scraper = SISupremeCourtScraper()
 
-    Args:
-        sample_mode: If True, only fetch sample_size records
-        sample_size: Number of records to fetch in sample mode (default: 100)
-        databases: List of database codes to query (default: ["SOVS"])
-    """
-    if databases is None:
-        databases = ["SOVS"]  # Focus on Supreme Court for main fetch
+    if len(sys.argv) < 2:
+        print("Usage: python bootstrap.py [bootstrap|bootstrap-fast|update|test-api] "
+              "[--sample] [--sample-size N]")
+        sys.exit(1)
 
-    # Checkpoint file for resumable fetching
-    checkpoint_file = SOURCE_DIR / "checkpoint.json"
+    command = sys.argv[1]
+    sample_mode = "--sample" in sys.argv
+    sample_size = 12
+    if "--sample-size" in sys.argv:
+        idx = sys.argv.index("--sample-size")
+        sample_size = int(sys.argv[idx + 1])
 
-    rows_per_page = 50  # Max per page
-    total_fetched = 0
+    if command == "test-api":
+        scraper.test_api()
 
-    for database in databases:
-        print(f"\n{'='*60}")
-        print(f"Fetching from {database} ({DATABASES.get(database, 'Unknown')})")
-        print("=" * 60)
-
-        # Get first page to find total count
-        results, total = search_documents(database=database, page=0, rows_per_page=rows_per_page)
-        print(f"Total documents in {database}: {total:,}")
-
-        if total == 0:
-            print(f"No documents found in {database}, skipping...")
-            continue
-
+    elif command in ("bootstrap", "bootstrap-fast"):
+        # bootstrap-fast is an alias for the full path (fleet runner invokes it).
         if sample_mode:
-            # For sample mode: fetch from multiple pages to show pagination works
-            # Get records spread across archive (first page, middle, recent)
-            pages_to_fetch = [0]  # Start with first page
-            total_pages = (total // rows_per_page) + 1
-
-            # Add middle page if there are enough pages
-            if total_pages > 10:
-                pages_to_fetch.append(total_pages // 2)
-
-            target_per_db = sample_size // len(databases)
-            records_per_page = (target_per_db // len(pages_to_fetch)) + 1
-
-            for page_num in pages_to_fetch:
-                print(f"\nFetching page {page_num + 1} of {total_pages}...")
-                results, _ = search_documents(
-                    database=database,
-                    page=page_num,
-                    rows_per_page=rows_per_page
-                )
-
-                for i, result in enumerate(results[:records_per_page]):
-                    if total_fetched >= sample_size:
-                        print(f"Reached sample limit of {sample_size}")
-                        return
-
-                    doc_id = result["id"]
-                    print(f"[{total_fetched+1}/{sample_size}] Fetching {result['title']}...")
-
-                    try:
-                        raw_data = fetch_document(doc_id, database=database)
-                        if raw_data:
-                            record = normalize(raw_data)
-                            text_len = len(record.get("text", ""))
-                            print(f"  Full text: {text_len:,} chars")
-                            total_fetched += 1
-                            yield record
-                        else:
-                            print(f"  ERROR: Could not parse document")
-                    except Exception as e:
-                        print(f"  ERROR: {e}")
-
-                    # Rate limiting
-                    time.sleep(RATE_LIMIT)
+            stats = scraper.bootstrap(sample_mode=True, sample_size=sample_size)
+            print(f"\nSample complete: "
+                  f"{stats.get('sample_records_saved', 0)} records saved to sample/")
         else:
-            # Full mode: paginate through entire database
-            # Load checkpoint if exists
-            start_page = 0
-            if checkpoint_file.exists():
-                try:
-                    with open(checkpoint_file, "r") as f:
-                        checkpoint = json.load(f)
-                        if checkpoint.get("database") == database:
-                            start_page = checkpoint.get("page", 0)
-                            print(f"Resuming from page {start_page}")
-                except Exception:
-                    pass
+            stats = scraper.bootstrap()
+            print(f"\nBootstrap complete: {stats['records_new']} new, "
+                  f"{stats['records_updated']} updated, "
+                  f"{stats['records_skipped']} skipped")
+        print(json.dumps(stats, indent=2))
 
-            total_pages = (total // rows_per_page) + 1
-            print(f"Total pages to fetch: {total_pages}")
+    elif command == "update":
+        stats = scraper.update()
+        print(f"\nUpdate complete: {stats['records_new']} new, "
+              f"{stats['records_updated']} updated")
+        print(json.dumps(stats, indent=2))
 
-            for page_num in range(start_page, total_pages):
-                print(f"\nFetching page {page_num + 1} of {total_pages}...")
-                results, _ = search_documents(
-                    database=database,
-                    page=page_num,
-                    rows_per_page=rows_per_page
-                )
-
-                if not results:
-                    print(f"No results on page {page_num}, stopping pagination")
-                    break
-
-                for i, result in enumerate(results):
-                    doc_id = result["id"]
-                    print(f"[{total_fetched+1}] Fetching {result['title']}...")
-
-                    try:
-                        raw_data = fetch_document(doc_id, database=database)
-                        if raw_data:
-                            record = normalize(raw_data)
-                            text_len = len(record.get("text", ""))
-                            print(f"  Full text: {text_len:,} chars")
-                            total_fetched += 1
-                            yield record
-                        else:
-                            print(f"  ERROR: Could not parse document")
-                    except Exception as e:
-                        print(f"  ERROR: {e}")
-
-                    # Rate limiting
-                    time.sleep(RATE_LIMIT)
-
-                # Save checkpoint after each page
-                with open(checkpoint_file, "w") as f:
-                    json.dump({
-                        "database": database,
-                        "page": page_num + 1,
-                        "fetched": total_fetched,
-                        "timestamp": datetime.now(timezone.utc).isoformat()
-                    }, f)
-
-            # Clear checkpoint when done with database
-            if checkpoint_file.exists():
-                checkpoint_file.unlink()
-
-    print(f"\nTotal records fetched: {total_fetched}")
-
-
-def fetch_updates(since):
-    """Fetch records modified since a given date."""
-    # The search can be filtered by date, but for now just fetch recent
-    since_date = datetime.fromisoformat(since.replace("Z", "+00:00"))
-
-    for database in ["SOVS", "IESP", "UPRS"]:
-        results, total = search_documents(
-            database=database,
-            page=0,
-            rows_per_page=50,
-        )
-
-        for result in results:
-            raw_data = fetch_document(result["id"], database=database)
-            if raw_data:
-                record = normalize(raw_data)
-
-                # Check if modified after since date
-                if raw_data.get("last_modified"):
-                    try:
-                        parts = raw_data["last_modified"].split(".")
-                        if len(parts) == 3:
-                            mod_date = datetime(
-                                int(parts[2]), int(parts[1]), int(parts[0]),
-                                tzinfo=timezone.utc
-                            )
-                            if mod_date >= since_date:
-                                yield record
-                    except Exception:
-                        yield record  # Include if can't parse date
-                else:
-                    yield record
-
-            time.sleep(RATE_LIMIT)
-
-
-def bootstrap(sample=False):
-    """Main bootstrap function."""
-    SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-
-    records = []
-    text_lengths = []
-
-    for record in fetch_all(sample_mode=sample, sample_size=100):
-        records.append(record)
-
-        # Track text lengths
-        if record.get("text"):
-            text_lengths.append(len(record["text"]))
-
-        # Save individual record
-        # Use ECLI or doc_id for filename
-        safe_id = record.get("ecli", "").replace(":", "_").replace("/", "-")
-        if not safe_id:
-            safe_id = record["_id"].split("/")[-1]
-        filename = f"{safe_id}.json"
-        filepath = SAMPLE_DIR / filename
-
-        with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(record, f, ensure_ascii=False, indent=2)
-
-    # Print summary
-    print("\n" + "=" * 60)
-    print("BOOTSTRAP SUMMARY")
-    print("=" * 60)
-    print(f"Total records: {len(records)}")
-    print(f"Records with full text: {len(text_lengths)}")
-    if text_lengths:
-        print(f"Average text length: {sum(text_lengths) // len(text_lengths):,} chars")
-        print(f"Min text length: {min(text_lengths):,} chars")
-        print(f"Max text length: {max(text_lengths):,} chars")
-
-    # Validate minimum requirements
-    if len(records) < 10:
-        print("\nWARNING: Less than 10 records fetched!")
-        return False
-
-    if len(text_lengths) < 10:
-        print("\nWARNING: Less than 10 records have full text!")
-        return False
-
-    print("\nValidation PASSED")
-    return True
+    else:
+        print(f"Unknown command: {command}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="SI/SupremeCourt Bootstrap")
-    parser.add_argument("command", choices=["bootstrap"], help="Command to run")
-    parser.add_argument("--sample", action="store_true", help="Fetch only sample records")
-    parser.add_argument("--full", action="store_true", help="Fetch all records")
-
-    args = parser.parse_args()
-
-    if args.command == "bootstrap":
-        success = bootstrap(sample=args.sample or not args.full)
-        sys.exit(0 if success else 1)
+    main()

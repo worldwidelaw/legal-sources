@@ -15,19 +15,29 @@ Strategy:
   - Fetch item metadata + full text from TEXT bundle bitstreams
   - DSpace pre-extracts text from PDFs — no PDF parsing needed
   - Uses curl subprocess for HTTPS (system Python SSL compatibility)
+  - Every request carries a connect/transfer/stall deadline and the crawl
+    checkpoints settled item UUIDs, so an interrupted run resumes instead of
+    restarting at 0 (issue #1542)
 
 Usage:
-  python bootstrap.py bootstrap          # Fetch all records
-  python bootstrap.py bootstrap --sample # Fetch 15 sample records
-  python bootstrap.py bootstrap-fast     # Same as bootstrap
-  python bootstrap.py test               # Quick connectivity test
+  python bootstrap.py bootstrap            # Fetch all records (resumes)
+  python bootstrap.py bootstrap --sample   # Fetch 15 sample records
+  python bootstrap.py bootstrap-fast       # Same as bootstrap
+  python bootstrap.py bootstrap --restart  # Discard the checkpoint, re-crawl
+  python bootstrap.py test                 # Quick connectivity test
+
+Env:
+  GH_PARLREPO_DEADLINE_HOURS  wall-clock budget for one run (default 20)
 """
 
+import os
 import sys
 import json
 import logging
 import re
+import signal
 import subprocess
+import tempfile
 import time
 from pathlib import Path
 from datetime import datetime, timezone
@@ -48,28 +58,85 @@ API_BASE = "https://repository.parliament.gh/server/api"
 REPO_BASE = "https://repository.parliament.gh"
 PAGE_SIZE = 20
 
+# Every request is bounded three ways: a connect deadline, a whole-transfer
+# deadline, and a stall detector (a connection that trickles under 1 B/s for
+# STALL_SECONDS is aborted). curl enforces these; the parent additionally
+# hard-kills the process group if curl itself ever wedges, so no single fetch
+# can freeze the crawl (issue #1542: CPU 0, log frozen ~40 min at 500 records).
+CONNECT_TIMEOUT = 15
+MAX_TIME = 60
+STALL_SECONDS = 20
+# A pre-extracted DSpace .txt this large is a runaway; skip rather than buffer it.
+MAX_FILESIZE = 64 * 1024 * 1024
 
-def _curl_get(url: str, accept: str = "application/json", timeout: int = 30) -> Optional[str]:
-    """HTTP GET via curl subprocess (bypasses Python SSL limitations)."""
+# Wall-clock budget for one full crawl. On expiry the run stops cleanly with its
+# checkpoint written, so the next fleet slot resumes instead of restarting at 0.
+DEADLINE_HOURS = float(os.environ.get("GH_PARLREPO_DEADLINE_HOURS", "20"))
+
+CHECKPOINT_FLUSH_EVERY = 25
+
+
+def _curl_get(url: str, accept: str = "application/json", timeout: int = MAX_TIME) -> Optional[str]:
+    """HTTP GET via curl subprocess (bypasses Python SSL limitations).
+
+    Writes the body to a temp file instead of a pipe: nothing to drain means the
+    kill path can never block, and a large bitstream never lands in the parent's
+    memory as both bytes and a decoded str.
+    """
+    fd, tmp_path = tempfile.mkstemp(prefix="gh-parlrepo-", suffix=".body")
+    os.close(fd)
+    proc = None
     try:
-        result = subprocess.run(
+        proc = subprocess.Popen(
             [
-                "curl", "-s", "-f",
+                "curl", "-s", "-f", "-L",
+                "--connect-timeout", str(CONNECT_TIMEOUT),
                 "--max-time", str(timeout),
+                "--speed-limit", "1", "--speed-time", str(STALL_SECONDS),
+                "--max-filesize", str(MAX_FILESIZE),
+                "-o", tmp_path,
                 "-H", f"Accept: {accept}",
                 "-H", "User-Agent: Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)",
                 url,
             ],
-            capture_output=True,
-            text=True,
-            timeout=timeout + 10,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
         )
-        if result.returncode != 0:
+        try:
+            returncode = proc.wait(timeout=timeout + 15)
+        except subprocess.TimeoutExpired:
+            logger.warning(f"curl exceeded its deadline, killing: {url[:100]}")
+            _kill_process_group(proc)
             return None
-        return result.stdout
-    except (subprocess.TimeoutExpired, Exception) as e:
+
+        if returncode != 0:
+            return None
+        return Path(tmp_path).read_text(encoding="utf-8", errors="replace")
+    except Exception as e:
         logger.warning(f"curl failed for {url[:100]}: {e}")
+        if proc is not None and proc.poll() is None:
+            _kill_process_group(proc)
         return None
+    finally:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+
+
+def _kill_process_group(proc: subprocess.Popen) -> None:
+    """SIGKILL the curl process group and reap it, bounded."""
+    for sig in (signal.SIGTERM, signal.SIGKILL):
+        try:
+            os.killpg(proc.pid, sig)
+        except (ProcessLookupError, PermissionError, OSError):
+            pass
+        try:
+            proc.wait(timeout=5)
+            return
+        except subprocess.TimeoutExpired:
+            continue
 
 
 def _curl_json(url: str, timeout: int = 30) -> Optional[Dict]:
@@ -90,6 +157,51 @@ class ParliamentRepositoryScraper(BaseScraper):
     def __init__(self):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
+        self.checkpoint_path = source_dir / "data" / "checkpoint.json"
+        self.use_checkpoint = True
+        self._done: set = set()
+        self._since_flush = 0
+        self._deadline: Optional[float] = None
+
+    # ---- checkpoint / resume -------------------------------------------------
+
+    def _load_checkpoint(self) -> None:
+        """Load the set of item UUIDs already emitted by a previous run."""
+        self._done = set()
+        if not self.use_checkpoint or not self.checkpoint_path.exists():
+            return
+        try:
+            data = json.loads(self.checkpoint_path.read_text(encoding="utf-8"))
+            self._done = set(data.get("done", []))
+            logger.info(f"Checkpoint: resuming, {len(self._done)} items already done")
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning(f"Checkpoint unreadable ({e}) — starting from scratch")
+
+    def _save_checkpoint(self, force: bool = False) -> None:
+        """Atomically persist the done-set (tmp file + rename)."""
+        if not self.use_checkpoint:
+            return
+        self._since_flush += 1
+        if not force and self._since_flush < CHECKPOINT_FLUSH_EVERY:
+            return
+        self._since_flush = 0
+        try:
+            self.checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = self.checkpoint_path.with_suffix(".json.tmp")
+            tmp.write_text(
+                json.dumps({"version": 1, "done": sorted(self._done)}),
+                encoding="utf-8",
+            )
+            os.replace(tmp, self.checkpoint_path)
+        except OSError as e:
+            logger.warning(f"Could not write checkpoint: {e}")
+
+    def _mark_done(self, uuid: str) -> None:
+        self._done.add(uuid)
+        self._save_checkpoint()
+
+    def _out_of_time(self) -> bool:
+        return self._deadline is not None and time.monotonic() > self._deadline
 
     def _api_get(self, url: str) -> Optional[Dict]:
         """GET request to DSpace API with retry and rate limiting."""
@@ -116,35 +228,39 @@ class ParliamentRepositoryScraper(BaseScraper):
         return None
 
     def _get_text_bitstream_url(self, item_uuid: str) -> Optional[str]:
-        """Find the TEXT bundle bitstream content URL for an item."""
-        bundles_url = f"{API_BASE}/core/items/{item_uuid}/bundles"
-        data = self._api_get(bundles_url)
+        """Find the TEXT bundle bitstream content URL for an item.
+
+        Uses DSpace's ``embed=bundles/bitstreams`` so one request replaces the
+        old bundles + bitstreams pair, and ``sizeBytes`` is known before we
+        spend a download on a bitstream that is obviously too small or too big.
+        """
+        data = self._api_get(f"{API_BASE}/core/items/{item_uuid}?embed=bundles/bitstreams")
         if not data:
             return None
 
-        bundles = data.get("_embedded", {}).get("bundles", [])
-        text_bundle = None
-        for b in bundles:
-            if b.get("name") == "TEXT":
-                text_bundle = b
-                break
-
-        if not text_bundle:
-            return None
-
-        bs_url = text_bundle.get("_links", {}).get("bitstreams", {}).get("href")
-        if not bs_url:
-            return None
-
-        bs_data = self._api_get(bs_url)
-        if not bs_data:
-            return None
-
-        bitstreams = bs_data.get("_embedded", {}).get("bitstreams", [])
-        if not bitstreams:
-            return None
-
-        return bitstreams[0].get("_links", {}).get("content", {}).get("href")
+        bundles = (
+            data.get("_embedded", {})
+            .get("bundles", {})
+            .get("_embedded", {})
+            .get("bundles", [])
+        )
+        for bundle in bundles:
+            if bundle.get("name") != "TEXT":
+                continue
+            bitstreams = (
+                bundle.get("_embedded", {})
+                .get("bitstreams", {})
+                .get("_embedded", {})
+                .get("bitstreams", [])
+            )
+            for bitstream in bitstreams:
+                size = bitstream.get("sizeBytes")
+                if isinstance(size, int) and not (50 <= size <= MAX_FILESIZE):
+                    continue
+                href = bitstream.get("_links", {}).get("content", {}).get("href")
+                if href:
+                    return href
+        return None
 
     def _extract_metadata(self, item: Dict) -> Dict[str, str]:
         """Extract metadata fields from a DSpace item object."""
@@ -193,6 +309,10 @@ class ParliamentRepositoryScraper(BaseScraper):
                 f"?dsoType=ITEM&size={PAGE_SIZE}&page={page}"
                 f"&sort=dc.date.accessioned,DESC"
             )
+            if self._out_of_time():
+                logger.warning(f"Wall-clock budget exhausted at page {page} — stopping")
+                break
+
             data = self._api_get(url)
             if not data:
                 break
@@ -240,28 +360,57 @@ class ParliamentRepositoryScraper(BaseScraper):
         }
 
     def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
-        """Fetch all items from the entire repository."""
+        """Fetch all items from the entire repository, resuming where we left off."""
+        self._deadline = time.monotonic() + DEADLINE_HOURS * 3600
+        self._load_checkpoint()
+        try:
+            yield from self._iter_new_items()
+        finally:
+            # Also runs when the consumer stops early or the crawl raises, so a
+            # partial run still hands its progress to the next fleet slot.
+            self._save_checkpoint(force=True)
+
+    def _iter_new_items(self) -> Generator[Dict[str, Any], None, None]:
         count = 0
         skipped = 0
+        resumed = 0
+        failed = 0
         seen_uuids = set()
 
         for item in self._search_all_items():
             uuid = item.get("uuid", "")
-            if uuid in seen_uuids:
+            if not uuid or uuid in seen_uuids:
                 continue
             seen_uuids.add(uuid)
+
+            # Resume: items settled by an earlier run cost no network calls.
+            if uuid in self._done:
+                resumed += 1
+                continue
+
+            if self._out_of_time():
+                logger.warning("Wall-clock budget exhausted — stopping, checkpoint saved")
+                break
 
             metadata = self._extract_metadata(item)
 
             text_url = self._get_text_bitstream_url(uuid)
             if not text_url:
+                # Deterministic outcome (no TEXT bundle) — settle it so later
+                # runs skip it. A transient fetch failure is left unmarked.
                 skipped += 1
+                self._mark_done(uuid)
                 logger.debug(f"No TEXT bundle: {metadata['title'][:60]}")
                 continue
 
             text = self._fetch_text(text_url)
-            if not text or len(text.strip()) < 50:
+            if text is None:
+                failed += 1
+                logger.debug(f"Text fetch failed (will retry next run): {uuid}")
+                continue
+            if len(text.strip()) < 50:
                 skipped += 1
+                self._mark_done(uuid)
                 logger.debug(f"Insufficient text: {metadata['title'][:60]}")
                 continue
 
@@ -272,11 +421,19 @@ class ParliamentRepositoryScraper(BaseScraper):
             raw = {**metadata, "text": text}
             count += 1
             yield raw
+            # Only settled once the consumer has written it.
+            self._mark_done(uuid)
 
             if count % 100 == 0:
-                logger.info(f"Progress: {count} records fetched, {skipped} skipped")
+                logger.info(
+                    f"Progress: {count} fetched, {skipped} skipped, "
+                    f"{resumed} already done, {failed} failed"
+                )
 
-        logger.info(f"Completed: {count} total records fetched, {skipped} skipped (no text)")
+        logger.info(
+            f"Completed: {count} records fetched, {skipped} skipped (no text), "
+            f"{resumed} resumed from checkpoint, {failed} transient failures"
+        )
 
     def fetch_updates(self, since: str = None) -> Generator[Dict[str, Any], None, None]:
         """Fetch most recently added items."""
@@ -393,9 +550,19 @@ def main():
         help="Only fetch a small sample (for validation)",
     )
     parser.add_argument("--full", action="store_true", help="Fetch all records")
+    parser.add_argument(
+        "--restart",
+        action="store_true",
+        help="Ignore and overwrite the resume checkpoint (re-crawl from scratch)",
+    )
     args = parser.parse_args()
 
     scraper = ParliamentRepositoryScraper()
+    # Sample runs must not consume or advance the resume checkpoint.
+    scraper.use_checkpoint = not args.sample
+    if args.restart and scraper.checkpoint_path.exists():
+        scraper.checkpoint_path.unlink()
+        logger.info("Checkpoint cleared — crawling from scratch")
 
     if args.command == "test":
         success = scraper.test()

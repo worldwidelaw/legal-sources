@@ -47,7 +47,7 @@ import fitz  # PyMuPDF
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 
 logging.basicConfig(
@@ -350,6 +350,7 @@ class VAAGOpinionsScraper(BaseScraper):
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
         """Yield raw opinion metadata for opinions on/after `since` (by year)."""
+        since = as_date_str(since)  # update() passes a datetime; #1512
         for raw in self.fetch_all():
             year = raw.get("folder_year")
             if not since or (year and f"{year:04d}-12-31" >= since):

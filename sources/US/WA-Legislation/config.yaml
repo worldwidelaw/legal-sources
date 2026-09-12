@@ -69,14 +69,27 @@ schema:
       role: "classification"
       required: true
     - name: "date"
-      description: "Date fetched (ISO 8601)"
+      description: >-
+        Publication date on the file server (ISO 8601): the RCW section file's
+        listed mtime, or the bill's HtmCreateDate
       type: "date"
       role: "temporal_key"
       required: true
+    - name: "last_modified"
+      description: >-
+        Upstream availability stamp used as the incremental cutoff: the IIS
+        listing mtime for RCW, HtmLastModifiedDate for bills
+      type: "date"
+      role: "temporal_key"
+      required: false
 
 notes: |
-  - RCW: ~91 titles with thousands of sections via HTML file server
+  - RCW: ~101 titles, ~4,700 chapters, thousands of sections via HTML file server
   - Bills: Current and historical (back to 1991) via SOAP web services + HTML
   - Directory listings enabled on lawfilesext.leg.wa.gov
   - All full text as HTML cleaned to plain text
   - Public domain, no auth needed
+  - Incremental refresh (#1502): RCW filters on the IIS listing mtime and skips
+    chapter directories older than the cutoff; bills filter on
+    HtmLastModifiedDate, one request per biennium. Title directories are NOT
+    used for pruning — their mtimes lag their chapters' and would drop updates.

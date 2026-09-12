@@ -136,12 +136,24 @@ def parse_french_date(text: str) -> Optional[str]:
     return None
 
 
-def extract_pdf_text(session: requests.Session, pdf_url: str) -> str:
-    """Extract text from PDF using centralized extractor."""
+def extract_pdf_text(session: requests.Session, pdf_url: str, source_id: str = "") -> str:
+    """Extract text from PDF using centralized extractor.
+
+    The session is used to download the PDF so the ANJ headers/cookies apply;
+    the bytes are then handed to the shared extractor.
+    """
+    try:
+        resp = session.get(pdf_url, timeout=60)
+        resp.raise_for_status()
+        pdf_bytes = resp.content
+    except Exception as exc:
+        print(f"    PDF fetch failed {pdf_url}: {exc}", file=sys.stderr)
+        return ""
+
     return extract_pdf_markdown(
         source="FR/ANJ",
-        source_id="",
-        pdf_url=session,
+        source_id=source_id or pdf_url,
+        pdf_bytes=pdf_bytes,
         table="doctrine",
     ) or ""
 
@@ -193,7 +205,10 @@ def fetch_all(session: requests.Session, max_pages: int = 500) -> Iterator[Dict]
                 continue
 
             print(f"  [{total+1}] {dec.get('title', '')[:50]}...", file=sys.stderr)
-            full_text = extract_pdf_text(session, pdf_url)
+            node_id = dec.get("node_id") or ""
+            full_text = extract_pdf_text(
+                session, pdf_url, source_id=f"FR-ANJ-{node_id}" if node_id else pdf_url
+            )
             time.sleep(REQUEST_DELAY)
 
             if len(full_text) < 100:
@@ -272,4 +287,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

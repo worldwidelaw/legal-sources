@@ -41,11 +41,29 @@ notes: 'e-Sbírka is the official Czech electronic collection of laws, launched 
 schema:
   date_format: ISO8601
   key_fields:
-  - name: akt-kód
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: citation
+    required: true
+    type: string
+  - name: year
+    required: true
+    type: integer
+  - name: number
+    required: true
+    type: integer
+  - name: eli_uri
+    required: true
+    type: string
+  - name: url
+    required: true
+    type: string
+  - name: date
     required: false
     type: string
-  - name: akt-citace
-    required: false
-    type: string
-  text_field: fragment-text
+  text_field: text
 source_id: CZ/eSbirka

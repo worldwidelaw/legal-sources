@@ -1,6 +1,6 @@
 last_bootstrap: null
 last_error: '''UKValuationTribunalEnglandScraper'' object has no attribute ''_extract_text'''
-last_run: '2026-07-17T23:11:39.003498+00:00'
+last_run: '2026-08-20T10:52:58.895254+00:00'
 run_history:
 - error_message: '''UKValuationTribunalEnglandScraper'' object has no attribute ''_extract_text'''
   errors: 0
@@ -23,4 +23,37 @@ run_history:
   skip_exception: 0
   skip_normalize_none: 0
   started_at: '2026-07-17T23:11:11.155772+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-20T10:46:45.107737+00:00'
+  records_fetched: 12
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 12
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-20T10:46:16.763769+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-20T10:50:48.967115+00:00'
+  records_fetched: 12
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 12
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-20T10:49:50.367697+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-20T10:52:58.895254+00:00'
+  records_fetched: 12
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 12
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-20T10:52:28.647020+00:00'
 total_records: 0

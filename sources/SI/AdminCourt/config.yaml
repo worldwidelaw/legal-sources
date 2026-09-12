@@ -5,12 +5,13 @@ source:
   id: SI/AdminCourt
   name: Slovenian Administrative Court (Upravno sodišče)
   country: SI
-  url: https://www.sodnapraksa.si
+  url: https://sodnapraksa.si
   description: >
     Administrative Court decisions from Slovenia's public case law database
-    (sodnapraksa.si). UPRS database with ~35,650 decisions covering tax law,
+    (sodnapraksa.si). UPRS database with ~36,050 decisions covering tax law,
     administrative disputes, and public law. Full text includes summary (jedro),
-    ruling (izrek), and reasoning (obrazložitev).
+    ruling (izrek), and reasoning (obrazložitev), all returned inline by the
+    site's unauthenticated JSON search API (/backend/api/search/documents).
 
 data_model:
   types:
@@ -47,5 +48,20 @@ schema:
       type: string
       required: false
     - name: keywords
+      type: string
+      required: false
+    - name: decision_number
+      type: string
+      required: false
+    - name: evidence_number
+      type: string
+      required: false
+    - name: department
+      type: string
+      required: false
+    - name: court_panel
+      type: string
+      required: false
+    - name: references
       type: string
       required: false

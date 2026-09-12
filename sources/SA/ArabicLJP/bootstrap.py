@@ -72,6 +72,8 @@ class SAArabicLJPScraper(BaseScraper):
         if judgment:
             parts.append(judgment)
         text = "\n\n".join(parts)
+        if not text:
+            return None
 
         url = self._extract_url(original_id)
 
@@ -91,7 +93,14 @@ class SAArabicLJPScraper(BaseScraper):
         }
 
     def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
-        """Stream all records from HuggingFace dataset (train + test splits)."""
+        """Stream all RAW records from HuggingFace dataset (train + test splits).
+
+        Per the BaseScraper contract, fetch_all yields RAW documents and the
+        framework calls normalize(). Yielding already-normalized records here
+        caused the VPS bootstrap to double-normalize (normalize reads raw keys
+        like 'input'/'output' which are absent from a normalized dict) → empty
+        text for every record. See issue #1204.
+        """
         from datasets import load_dataset
 
         count = 0
@@ -100,14 +109,12 @@ class SAArabicLJPScraper(BaseScraper):
             ds = load_dataset(DATASET_ID, split=split, streaming=True)
 
             for item in ds:
-                record = self.normalize(dict(item))
-                if record.get("text"):
-                    yield record
-                    count += 1
-                    if count % 500 == 0:
-                        logger.info("Yielded %d records so far...", count)
+                yield dict(item)
+                count += 1
+                if count % 500 == 0:
+                    logger.info("Yielded %d raw records so far...", count)
 
-        logger.info("Finished: yielded %d records total", count)
+        logger.info("Finished: yielded %d raw records total", count)
 
     def fetch_updates(self, since: str) -> Generator[Dict[str, Any], None, None]:
         """Static dataset — fetch_updates returns all records."""
@@ -148,7 +155,10 @@ def main():
 
         limit = 15 if sample_mode else None
         count = 0
-        for record in scraper.fetch_all():
+        for raw in scraper.fetch_all():
+            record = scraper.normalize(raw)
+            if record is None:
+                continue
             if sample_mode:
                 out_file = sample_dir / f"{count:04d}.json"
                 out_file.write_text(json.dumps(record, ensure_ascii=False, indent=2))

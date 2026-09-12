@@ -1,18 +1,21 @@
 {
-  "_id": "US/FERC-eLibrary/20260702-3076",
+  "_id": "US/FERC-eLibrary/20260901-3069",
   "_source": "US/FERC-eLibrary",
   "_type": "case_law",
-  "_fetched_at": "2026-07-03T05:28:18.028381+00:00",
-  "accession_number": "20260702-3076",
+  "_fetched_at": "2026-09-01T21:23:40.146759+00:00",
+  "accession_number": "20260901-3069",
   "docket_numbers": [
-    "ER26-2493-000"
+    "P-2705-000",
+    "P-2959-000",
+    "P-553-000",
+    "P-2144-000"
   ],
-  "document_type": "Delegated Order",
-  "description": "Letter order accepting PJM Interconnection, L.L.C.'s 05/08/2026 filing of an amended Interconnection Service Agreement with Mountain State Clean Energy, LLC and Keystone Appalachian Transmission Company etc. under ER26-2493.",
+  "document_type": "General Correspondence",
+  "description": "Letter to Seattle City Light acknowledging the 08/13/2026 letter transmitting the extension of time request for the External Audit Report for the Owners Dam Safety Program, acceptable; under P-553 et al.",
   "issuer": "Federal Energy Regulatory Commission",
-  "title": "FERC Delegated Order — Docket ER26-2493-000: Letter order accepting PJM Interconnection, L.L.C.'s 05/08/2026 filing of an amended Interconnection Service Agreement with Mountain State Clean Energy, LLC and Keystone Appalachian Transmission Company etc. under ER26-2493.",
-  "text": "FEDERAL ENERGY REGULATORY COMMISSION\nWASHINGTON, DC 20426\n\nOFFICE OF ENERGY MARKET REGULATION\n\nPJM Interconnection, L.L.C.\nDocket No. ER26-2493-000\n\nIssued: June 2, 2026\n\nOn May 8, 2026, PJM Interconnection, L.L.C. (PJM) submitted an amended Interconnection Service Agreement among PJM as Transmission Provider, Mountain State Clean Energy, LLC as Interconnection Customer, and Keystone Appalachian Transmission Company as Interconnected Transmission Owner, designated as Service Agreement No. 6688.  Pursuant to authority delegated to the Director, Division of Electric Power Regulation – East, under 18 C.F.R. § 375.307, the submittal is accepted for filing, effective July 8, 2026, as requested.\n\tThe filing was publicly noticed.  No protests or adverse comments were filed.     Pursuant to Rule 214 of the Commission’s regulations (18 C.F.R. § 385.214), notices of intervention, timely-filed motions to intervene, and any unopposed motions to intervene out-of-time filed before the issuance date of this order are granted.\n\nThis action does not constitute approval of any service, rate, charge, classification, or any rule, regulation, contract, or practice affecting such rate or service provided for in the filed document(s); nor shall such action be deemed as recognition of any claimed contractual right or obligation affecting or relating to such service or rate; and such action is without prejudice to any findings or orders which have been or may hereafter be made by the Commission in any proceeding now pending or hereafter instituted by or against the applicant(s).\n\nThis order constitutes final agency action.  Requests for rehearing by the Commission may be filed within 30 days of the date of issuance of this order, pursuant to 18 C.F.R. § 385.713.\n\nIssued by:  Leanne Khammal, Acting Director, Division of Electric Power Regulation – East",
-  "url": "https://elibrary.ferc.gov/eLibrary/docinfo?accession_Number=20260702-3076",
-  "date": "2026-07-02",
+  "title": "FERC General Correspondence — Docket P-2705-000, P-2959-000, P-553-000, P-2144-000: Letter to Seattle City Light acknowledging the 08/13/2026 letter transmitting the extension of time request for the External Audit Report for the Owners Dam Safety Program, acceptable; under P-553 et al.",
+  "text": "FEDERAL ENERGY REGULATORY COMMISSION\nOffice of Energy Projects\nDivision of Dam Safety and Inspections – Portland Regional Office\n9/1/2026\nIn reply refer to:\nP-553, P-2144, P-2705, P-\n2959\nVIA Electronic Mail\nAli Reza Firoozfar\nChief Dam Safety Engineer\nSeattle City Light\nAliReza.Firoozfar@seattle.gov\nSubject: Extension of Time Request for the ODSP External Audit Report, Seattle City\nLight\nDear Dr. Firoozfar:\nThis letter is to acknowledge your August 13, 2026 letter transmitting the\nextension of time request for the External Audit Report for the Owners Dam Safety\nProgram (ODSP) for Seattle City Light. The letter requested an extension of time to\nsubmit the External Audit Report of the ODSP by March 31, 2027 due to procurement\nand contracting delays. We have reviewed the extension of time request and find it to be\nacceptable.\nFile your submittal using the Commission’s eFiling system at\nhttps://www.ferc.gov/ferc-online/overview. When eFiling, select Hydro: Dam Safety and\nPortland Regional Office from the eFiling menu. The cover page of the filing must\nindicate that the material was eFiled. For assistance with eFiling, contact FERC Online\nSupport at FERCOnlineSupport@ferc.gov, (866) 208-3676 (toll free), or (202) 502-8659\n(TTY).\nThank you for your continued cooperation and interest in dam safety. If you have\nany questions, please contact Mr. Samuel Manson of this office at (503) 552-2705.\nSincerely,\nEric Kennedy, P.E.\nRegional Engineer",
+  "url": "https://elibrary.ferc.gov/eLibrary/docinfo?accession_Number=20260901-3069",
+  "date": "2026-09-01",
   "jurisdiction": "US"
 }

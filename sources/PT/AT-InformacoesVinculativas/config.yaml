@@ -41,7 +41,7 @@ schema:
 data_model:
   update_strategy: append_only
   dedup_key:
-    - pdf_url
+    - "_id"
 
 rate_limits:
   requests_per_second: 1.0

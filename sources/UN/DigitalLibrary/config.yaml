@@ -1,21 +1,24 @@
 # ===================================================================
 # UN/DigitalLibrary -- UN General Assembly Resolutions
 # ===================================================================
-# Fetches GA resolutions with full text from the UN Digital Library
-# (Invenio-based) and UN Official Document System (documents.un.org).
-# ~21,000+ resolutions. No auth required.
+# Fetches GA resolutions with full text from the UN Official Document
+# System (documents.un.org). Symbols are enumerated deterministically;
+# digitallibrary.un.org is no longer used (AWS WAF challenge, #1598).
+# ~19,000 resolutions. No auth required.
 # ===================================================================
 
 source:
   id: "UN/DigitalLibrary"
   country: "UN"
   name: "UN Digital Library - General Assembly Resolutions"
-  url: "https://digitallibrary.un.org"
+  url: "https://documents.un.org"
   description: |
-    UN General Assembly resolutions with full text. Metadata from Invenio
-    JSON search API, full text from ODS DOCX endpoint. DOCX extraction
-    works for documents from ~2015 onward (session 70+). Older documents
-    use OLE2 .doc format and are skipped.
+    UN General Assembly resolutions with full text. Discovery enumerates
+    the deterministic A/RES/{session}/{number} symbol space rather than
+    searching digitallibrary.un.org, which now answers every request with
+    an AWS WAF challenge (HTTP 202, empty body). Full text comes from the
+    ODS symbol/access endpoint: DOCX or OLE2 .doc via the shared Word
+    extractor, with a PDF fallback.
 
 data_types:
   - legislation
@@ -29,14 +32,16 @@ rate_limit:
 
 api:
   type: "rest"
-  base_url: "https://digitallibrary.un.org"
+  base_url: "https://documents.un.org"
   endpoints:
-    search: "/search?p=191:A/RES/&of=recjson&rg={count}&jrec={offset}"
-    record: "/record/{recid}?of=recjson"
-  full_text:
-    base_url: "https://documents.un.org"
-    endpoint: "/api/symbol/access?s={symbol}&l=en&t=doc"
-    format: "docx"
+    document: "/api/symbol/access?s={symbol}&l=en&t=doc"
+    document_pdf: "/api/symbol/access?s={symbol}&l=en&t=pdf"
+  discovery:
+    strategy: "symbol_enumeration"
+    pattern: "A/RES/{session}/{number}"
+    notes: |
+      Returns HTTP 200 even for absent symbols, answering with a ~1.3 KB
+      HTML stub; absence is detected from the payload, not the status code.
 
 data_model:
   type: "legislation"
@@ -69,9 +74,14 @@ schema:
       role: "temporal_key"
       required: false
     - name: "url"
-      description: "URL on UN Digital Library"
+      description: "Canonical document URL on docs.un.org"
       type: "string"
       role: "reference"
+      required: false
+    - name: "session"
+      description: "GA session the resolution belongs to (e.g. 80, ES-11)"
+      type: "string"
+      role: "classification"
       required: false
     - name: "body"
       description: "Issuing body (General Assembly)"
@@ -80,8 +90,14 @@ schema:
       required: false
 
 notes: |
-  - ~21,000+ GA resolutions searchable via Invenio JSON API
-  - Full text via DOCX from documents.un.org (session 70+ / 2015+)
-  - Older documents (pre-2015) are OLE2 .doc format, not parseable with stdlib
+  - Discovery enumerates A/RES/{session}/{number} newest-first; a session ends
+    after 15 consecutive absent numbers (sub-lettered resolutions such as
+    A/RES/80/236/A-B legitimately leave the plain number empty).
+  - Full text via ODS t=doc (DOCX or OLE2 .doc), falling back to t=pdf.
+  - Sessions <= 53 yield no usable text: pre-1993 exists only as scanned PDFs
+    with no text layer, and sessions ~48-53 ship WordPerfect 5.1 files. The
+    crawl therefore starts at session 54; ~7,000 resolutions carry full text.
+  - digitallibrary.un.org (search API, OAI-PMH, homepage) is behind an AWS WAF
+    JS challenge returning HTTP 202 with an empty body — see issue #1598.
   - SC resolutions already covered by UN/SCResolutions source
   - 6 official languages available; we fetch English only

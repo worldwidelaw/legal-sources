@@ -28,16 +28,21 @@ from urllib.parse import quote
 
 # Constants
 SOURCE_ID = "NL/Belastingdienst"
-SRU_BASE = "https://zoek.officielebekendmakingen.nl/sru/Search"
+# KOOP retired the SRU 1.2 service at zoek.officielebekendmakingen.nl/sru/Search
+# (it now answers every request with an HTML error page). The replacement is the
+# repository SRU 2.0 endpoint, which uses dt.* index names and case-sensitive
+# exact-match ("==") values. Document XML still lives under FULL_TEXT_BASE.
+SRU_BASE = "https://repository.overheid.nl/sru"
+SRU_VERSION = "2.0"
 FULL_TEXT_BASE = "https://zoek.officielebekendmakingen.nl"
 MAX_RECORDS = 100
 
 # SRU queries for tax doctrine
 SRU_QUERIES = [
-    # Beleidsbesluiten (policy decisions) - ~2354 docs
-    'creator="ministerie van financiën" AND type="ander besluit van algemene strekking"',
-    # Beleidsregels (policy rules) - ~34 docs
-    'creator="ministerie van financiën" AND type="beleidsregel"',
+    # Beleidsbesluiten (policy decisions) - ~2369 docs
+    'dt.creator=="Ministerie van Financiën" AND dt.type=="ander besluit van algemene strekking"',
+    # Beleidsregels (policy rules) - ~35 docs
+    'dt.creator=="Ministerie van Financiën" AND dt.type=="beleidsregel"',
 ]
 
 RATE_LIMIT_DELAY = 1.5
@@ -46,9 +51,12 @@ USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
 SCRIPT_DIR = Path(__file__).parent
 SAMPLE_DIR = SCRIPT_DIR / "sample"
 
-# XML namespaces used in SRU responses
+# XML namespaces used in SRU responses. SRU 2.0 moved the response envelope from
+# the old srw namespace to the OASIS one; both are declared so a record/count
+# lookup works whichever envelope comes back.
 NS = {
     'srw': 'http://www.loc.gov/zing/srw/',
+    'sru': 'http://docs.oasis-open.org/ns/search-ws/sruResponse',
     'gzd': 'http://standaarden.overheid.nl/sru',
     'dcterms': 'http://purl.org/dc/terms/',
     'overheid': 'http://standaarden.overheid.nl/owms/terms/',
@@ -82,15 +90,25 @@ def curl_fetch(url: str) -> Optional[str]:
 def sru_search(query: str, start_record: int = 1, max_records: int = MAX_RECORDS) -> Optional[ET.Element]:
     """Execute an SRU search query and return parsed XML."""
     url = (
-        f"{SRU_BASE}?version=1.2&operation=searchRetrieve"
+        f"{SRU_BASE}?version={SRU_VERSION}&operation=searchRetrieve"
         f"&query={quote(query)}"
         f"&startRecord={start_record}"
         f"&maximumRecords={max_records}"
-        f"&recordSchema=gzd"
     )
     content = curl_fetch(url)
     if not content:
         return None
+
+    # A retired/misrouted SRU endpoint answers with an HTML error page, which
+    # surfaces as an opaque "mismatched tag" ParseError. Name it explicitly so
+    # the next endpoint migration is obvious from the log.
+    if content.lstrip()[:200].lower().lstrip('﻿').startswith(('<!doctype html', '<html')):
+        print(
+            f"SRU endpoint returned an HTML page, not XML — {SRU_BASE} may have moved",
+            file=sys.stderr,
+        )
+        return None
+
     try:
         return ET.fromstring(content)
     except ET.ParseError as e:
@@ -101,8 +119,10 @@ def sru_search(query: str, start_record: int = 1, max_records: int = MAX_RECORDS
 def parse_sru_records(root: ET.Element) -> list[dict]:
     """Parse SRU response to extract document metadata."""
     records = []
-    for rec in root.findall('.//srw:record', NS):
-        data = rec.find('.//srw:recordData', NS)
+    for rec in root.findall('.//sru:record', NS) + root.findall('.//srw:record', NS):
+        data = rec.find('.//sru:recordData', NS)
+        if data is None:
+            data = rec.find('.//srw:recordData', NS)
         if data is None:
             continue
 
@@ -123,9 +143,10 @@ def parse_sru_records(root: ET.Element) -> list[dict]:
 
 def get_total_results(root: ET.Element) -> int:
     """Get total number of results from SRU response."""
-    el = root.find('.//srw:numberOfRecords', NS)
-    if el is not None and el.text:
-        return int(el.text)
+    for path in ('.//sru:numberOfRecords', './/srw:numberOfRecords'):
+        el = root.find(path, NS)
+        if el is not None and el.text:
+            return int(el.text)
     return 0
 
 
@@ -281,6 +302,11 @@ def bootstrap(sample: bool = True):
 
 
 if __name__ == '__main__':
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     parser = argparse.ArgumentParser(description='NL/Belastingdienst Bootstrap')
     sub = parser.add_subparsers(dest='command')
     boot = sub.add_parser('bootstrap')

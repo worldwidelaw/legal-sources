@@ -1,0 +1,155 @@
+# ===================================================================
+# INTL/WENRA -- Western European Nuclear Regulators Association
+# ===================================================================
+# Full text of WENRA doctrine: the Safety Reference Levels (SRLs) for
+# existing reactors, research reactors, waste storage, disposal and
+# decommissioning and the periodic national-implementation status
+# reports; working-group reports and guidance (RHWG, WGWD, WGRR, WGRSM,
+# WIG); position papers, statements and recommendations; terms of
+# reference and strategy documents; and the news items in which WENRA
+# publishes those positions. This is the harmonised regulatory doctrine
+# European nuclear safety regulators commit to transpose into their
+# national frameworks.
+#
+# ACCESS: wenra.eu (Drupal 9) is reachable without auth. fetch_all()
+# reads the single-page /publications view (title, working group and
+# publication date per row), the /news-archive node list, and a Wayback
+# CDX enumeration of wenra.org + wenra.eu PDFs for material withdrawn
+# from the live site.
+# ===================================================================
+
+source:
+  id: "INTL/WENRA"
+  country: "INTL"
+  name: "Western European Nuclear Regulators Association"
+  url: "https://wenra.eu/publications"
+  description: |
+    Publications and positions of WENRA, the association of the heads of
+    the nuclear safety regulatory authorities of European countries with
+    nuclear power plants (plus associated members). Covers the WENRA
+    Safety Reference Levels and their successive revisions, the periodic
+    "Status of the implementation of the SRLs in national regulatory
+    frameworks" reports, working-group reports and guidance from RHWG
+    (Reactor Harmonisation), WGWD (Waste and Decommissioning), WGRR
+    (Research Reactors), WGRSM (Radiation Sources and Materials) and WIG
+    (Inspection), WENRA position papers, statements and recommendations
+    (including the ENSREG-WENRA, ENSRA-WENRA and HERCA-WENRA joint
+    statements and the series of positions on the safety of Ukrainian
+    nuclear installations), the Topical Peer Review specifications, and
+    WENRA terms of reference and strategy documents. Full text comes
+    from the born-digital publication PDFs and from the HTML bodies of
+    the news items that carry WENRA's statements.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "html_scraping"
+  base_url: "https://wenra.eu"
+  endpoints:
+    publications_view: "/publications"
+    news_archive: "/news-archive"
+    news_node: "/node/{id}"
+    pdfs: "/sites/default/files/publications/{filename}.pdf"
+    cdx: "http://web.archive.org/cdx/search/cdx?url={wenra.org|wenra.eu}&matchType=domain&filter=urlkey:.*.pdf&collapse=urlkey"
+    archived_pdf: "https://web.archive.org/web/{timestamp}id_/{original_url}"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "title"
+      description: "Document title — taken from the publications view row, the news node headline, or (for archived documents) the cleaned PDF filename"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the WENRA document — extracted from the PDF, or the news node body"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication date (ISO 8601) from the publications view / news post date, falling back to the date encoded in the PDF filename and then to the earliest Internet Archive capture"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "working_group"
+      description: "WENRA body that issued the document (RHWG, WGWD, WGRR, WGRSM, WIG, or WENRA itself); inferred from the filename for archived documents"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "document_kind"
+      description: "Which stream the record came from — 'publication' (PDF on the publications view), 'news' (HTML statement node), 'archive' (PDF recovered from the Internet Archive)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "format"
+      description: "Source format of the extracted text — 'pdf' or 'html'"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "archive_url"
+      description: "Wayback Machine raw-PDF URL the text was extracted from (null for documents read from the live site)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "authority"
+      description: "Issuing body — always 'Western European Nuclear Regulators Association (WENRA)'"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "© WENRA — All rights reserved"
+  url: "https://wenra.eu/legal-information"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: |
+    WARNING — commercial use restricted. The wenra.eu legal-information
+    page states "Copyright © WENRA / All rights reserved" with no open
+    licence grant. The publications are freely readable and downloadable
+    without registration and robots.txt does not disallow the document
+    tree, but redistribution — in particular commercial redistribution —
+    is not licensed. Treat as reference-only pending written permission
+    from WENRA (site published by GRS gGmbH, Cologne).
+
+notes: |
+  - Three enumeration streams, de-duplicated on the decoded PDF filename
+    stem and round-robined so a truncated run spans all three:
+      1. /publications — a Drupal view listing every document on one page
+         (no pager) with title, issuing working group and publication
+         date; the thematic pages (/ukraine, /workinggroups, /about) are
+         swept for the few PDFs the view omits.
+      2. /news-archive → /node/{id} — the HTML body of each news item,
+         read from the `node__content` container.
+      3. Wayback CDX over wenra.org (the legacy site, whose document tree
+         is gone) and wenra.eu, for superseded SRL lists and withdrawn
+         working-group reports; replayed via /web/{ts}id_/.
+  - CDX rows with an archived status of 4xx/5xx are dropped but revisit
+    rows (statuscode "-") are KEPT — a `statuscode:200` filter hides them
+    and would truncate the corpus.
+  - A news node that links a PDF already collected from the publications
+    view is skipped, so a statement published both ways is stored once,
+    as the authoritative PDF.
+  - CVs, presentations and meeting-logistics PDFs from the legacy site are
+    skipped; documents whose extracted text is under 400 characters (PDF)
+    or 300 characters (news node) are dropped.
+  - ~220 documents. Everything WENRA issues is guidance addressed to
+    regulators rather than binding law or adjudication, so every record is
+    typed `doctrine`.

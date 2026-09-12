@@ -24,6 +24,25 @@ Belgian Labour Courts case law from JUPORTAL (juportal.be).
 - **Period**: 2017 onwards
 - **License**: Open Government Data
 
+### Crawl shape
+
+`robots.txt` lists ~14,650 daily sitemap indexes (1958 onwards), and every
+sub-sitemap under them holds exactly **one** decision for the whole of Belgium.
+A full walk is therefore one request per Belgian decision (~366K) before the
+CT/TT filter is applied. juportal answers in ~0.1s, so the crawl is bound by our
+own pacing:
+
+- sub-sitemaps are fetched through a 4-thread pool, throttled to an aggregate
+  20 req/s (`SITEMAP_RATE_PER_SEC`);
+- content pages keep the serial rate limiter;
+- the day cursor is checkpointed to `data/checkpoint.json` every 20 days, so a
+  killed or timed-out run resumes where it stopped instead of re-walking from
+  2026 (issue #1422 — the previous serial 1 req/s walk could not finish inside
+  the fleet's 100h cap).
+
+Use `python bootstrap.py status` to see how many days have been walked, and
+`clear-checkpoint` to force a full re-walk.
+
 ## Usage
 
 ```bash

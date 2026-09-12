@@ -43,15 +43,49 @@ notes: 'Gesetze im Internet provides free access to virtually the entire body of
 
   http://www.gesetze-im-internet.de/dtd/1.01/gii-norm.dtd
 
+
+  Records are emitted one per SECTION (§ / Artikel) so that a citation such as
+
+  "§ 195 BGB" resolves to a single document (issue #1621); laws with no
+
+  numbered sections are emitted whole.
+
   '
 schema:
   date_format: ISO8601
   key_fields:
-  - name: doknr
+  - name: abbreviation
     required: false
     type: string
-  - name: jurabk
+  - name: section
     required: false
+    type: string
+  - name: section_number
+    required: false
+    type: string
+  - name: heading
+    required: false
+    type: string
+  - name: law_title
+    required: false
+    type: string
+  - name: context
+    required: false
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: string
+  - name: url
+    required: false
+    type: string
+  - name: law_url
+    required: false
+    type: string
+  - name: text
+    required: true
     type: string
   text_field: Content
 source_id: DE/BGBl

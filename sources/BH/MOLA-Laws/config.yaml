@@ -5,7 +5,8 @@
 # published bilingually (English + Arabic) by the Ministry of Legal
 # Affairs (MoLA). Each law is a PDF with full consolidated text and
 # inline notes of subsequent amendments.
-# Listing: https://www.mola.gov.bh/Legislation/Laws/
+# Listing: https://www.mola.gov.bh/EN/Legislation/Laws/
+# Grid is populated by POST ?handler=GetLegislations (Razor Pages XHR).
 # Text extracted via PyMuPDF.
 # ===================================================================
 
@@ -13,13 +14,14 @@ source:
   id: "BH/MOLA-Laws"
   country: "BH"
   name: "Bahrain Ministry of Legal Affairs Consolidated Laws"
-  url: "https://www.mola.gov.bh/Legislation/Laws/"
+  url: "https://www.mola.gov.bh/EN/Legislation/Laws/"
   description: |
     Consolidated laws and legislative decrees of the Kingdom of Bahrain
     published by the Ministry of Legal Affairs (MoLA). Each entry is a
     bilingual (English + Arabic) PDF containing the full consolidated
-    text of the law, with amendments noted inline. ~58 laws/decrees.
-    Text extracted with PyMuPDF.
+    text of the law, with amendments noted inline (9 are Arabic-only).
+    ~66 laws/decrees. Metadata comes from the site's GetLegislations XHR;
+    text extracted with PyMuPDF, repairing decomposed lam-alef ligatures.
 
 data_types:
   - legislation
@@ -35,11 +37,19 @@ api:
   type: "pdf_download"
   base_url: "https://www.mola.gov.bh"
   endpoints:
-    listing: "/Legislation/Laws/"
-    law_pdf: "/MediaManager/Media/Documents/Laws/{file}.pdf"
+    listing: "/EN/Legislation/Laws/"
+    listing_handler: "/EN/Legislation/Laws/?handler=GetLegislations"
+    law_pdf: "/MediaManager/Media/MolaMedia/Documents/{batch}/{file}.pdf"
   pagination:
-    type: "single_page_listing"
-    note: "All laws listed in one structured HTML table; PDF link per row"
+    type: "page_number"
+    params:
+      page: "pageNo"
+      size: "pageSize"
+    note: >-
+      POST with the page's __RequestVerificationToken as a
+      RequestVerificationToken header. Returns {items, totalRecords};
+      pageSize is honoured to at least 500, so the whole corpus fits one page.
+      A full browser User-Agent is required (WAF rejects short UAs).
 
 data_model:
   type: "legislation"
@@ -49,10 +59,10 @@ data_model:
     - "url"
 
 schema:
-  total_fields: 12
+  total_fields: 16
   key_fields:
     - name: "_id"
-      description: "Unique ID derived from the PDF filename (BH-MOLA-{slug})"
+      description: "Unique ID derived from the detail-page slug (BH-MOLA-{slug})"
       type: "string"
       role: "primary_key"
       required: true
@@ -76,18 +86,28 @@ schema:
       type: "string"
       role: "metadata"
       required: false
-    - name: "instrument_type"
-      description: "law or decree"
+    - name: "gazette_number"
+      description: "Official Gazette issue number in which the law was published"
       type: "string"
       role: "metadata"
       required: false
+    - name: "status"
+      description: "Legal status (e.g. Valid, Repealed)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "summary"
+      description: "Official abstract of the law from the MoLA listing"
+      type: "string"
+      role: "content"
+      required: false
     - name: "date"
-      description: "Approximate date (year-01-01 when only year is known)"
+      description: "Publication date reported by the MoLA listing (ISO 8601)"
       type: "date"
       role: "temporal_key"
       required: false
     - name: "url"
-      description: "URL to the law PDF"
+      description: "URL of the law's detail page on mola.gov.bh"
       type: "string"
       role: "reference"
       required: true

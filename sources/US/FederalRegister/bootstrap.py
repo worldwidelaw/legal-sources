@@ -32,9 +32,15 @@ BASE_URL = "https://www.federalregister.gov/api/v1"
 USER_AGENT = "LegalDataHunter/1.0 (Open Data Research; contact@legaldatahunter.com)"
 REQUEST_DELAY = 0.5  # seconds between requests
 
+# Transient upstream failures worth retrying rather than aborting the crawl.
+RETRY_STATUS = {500, 502, 503, 504}
+RETRY_ATTEMPTS = 6
+MAX_BACKOFF = 120  # seconds
+
 # Paths
 SCRIPT_DIR = Path(__file__).parent
 DATA_DIR = SCRIPT_DIR / "data"
+CHECKPOINT_FILE = DATA_DIR / "checkpoint.json"
 SAMPLE_DIR = SCRIPT_DIR / "sample"
 
 
@@ -54,40 +60,62 @@ class FederalRegisterAPI:
         })
         return session
 
+    def _backoff(self, response: requests.Response, attempt: int, label: str) -> None:
+        """Sleep before retrying a throttled or failed request."""
+        wait = min(2 ** (attempt + 1), MAX_BACKOFF)
+        retry_after = response.headers.get("Retry-After") if response is not None else None
+        if retry_after:
+            try:
+                wait = min(float(retry_after), MAX_BACKOFF)
+            except ValueError:
+                pass
+        print(f"  {label}, waiting {wait:.0f}s...")
+        time.sleep(wait)
+
     def _request(self, endpoint: str, params: Optional[Dict] = None,
-                 retries: int = 3) -> Dict:
-        """Make a request to the API."""
+                 retries: int = RETRY_ATTEMPTS) -> Dict:
+        """Make a request to the API.
+
+        Retries transient upstream failures (429 plus the 5xx gateway family).
+        A 503 on the listing endpoint used to raise straight out of here and
+        abort a whole multi-hour crawl over one blip — see issue #1476.
+        """
         url = f"{self.base_url}{endpoint}"
         for attempt in range(retries):
             try:
                 response = self.session.get(url, params=params, timeout=60)
                 if response.status_code == 429:
-                    wait = 2 ** (attempt + 1)
-                    print(f"  Rate limited, waiting {wait}s...")
-                    time.sleep(wait)
+                    self._backoff(response, attempt, "Rate limited")
+                    continue
+                if response.status_code in RETRY_STATUS and attempt < retries - 1:
+                    self._backoff(response, attempt,
+                                  f"HTTP {response.status_code} from {endpoint}")
                     continue
                 response.raise_for_status()
                 return response.json()
-            except requests.exceptions.Timeout:
+            except (requests.exceptions.Timeout,
+                    requests.exceptions.ConnectionError) as e:
                 if attempt < retries - 1:
-                    print(f"  Timeout, retrying...")
-                    time.sleep(2)
+                    print(f"  {type(e).__name__}, retrying...")
+                    time.sleep(min(2 ** (attempt + 1), MAX_BACKOFF))
                     continue
                 raise
         return {}
 
-    def _fetch_url(self, url: str, retries: int = 3) -> str:
+    def _fetch_url(self, url: str, retries: int = RETRY_ATTEMPTS) -> str:
         """Fetch content from a URL."""
         for attempt in range(retries):
             try:
                 response = self.session.get(url, timeout=60)
                 if response.status_code == 429:
-                    wait = 2 ** (attempt + 1)
-                    print(f"  Rate limited on text fetch, waiting {wait}s...")
-                    time.sleep(wait)
+                    self._backoff(response, attempt, "Rate limited on text fetch")
                     continue
                 if response.status_code == 404:
                     return ""
+                if response.status_code in RETRY_STATUS and attempt < retries - 1:
+                    self._backoff(response, attempt,
+                                  f"HTTP {response.status_code} on text fetch")
+                    continue
                 response.raise_for_status()
                 return response.text
             except requests.exceptions.Timeout:
@@ -116,7 +144,14 @@ class FederalRegisterAPI:
         }
         if conditions:
             for key, value in conditions.items():
-                params[f"conditions[{key}]"] = value
+                # Each operator is its own bracket group: a key like
+                # "publication_date[gte]" must go out as
+                # conditions[publication_date][gte]. Wrapping it whole gives
+                # conditions[publication_date[gte]], which the API rejects with
+                # 400 "publication_date[gte is not a valid field".
+                field, _, operator = key.partition("[")
+                suffix = f"[{operator}" if operator else ""
+                params[f"conditions[{field}]{suffix}"] = value
 
         return self._request("/documents.json", params)
 
@@ -145,6 +180,24 @@ class FederalRegisterAPI:
                 return clean_html(html_content)
 
         return ""
+
+
+def load_checkpoint() -> set:
+    """Return the set of 'YYYY-MM' windows already fully fetched."""
+    try:
+        with open(CHECKPOINT_FILE, encoding="utf-8") as f:
+            return set(json.load(f).get("completed_months", []))
+    except (FileNotFoundError, ValueError, AttributeError):
+        return set()
+
+
+def save_checkpoint(done_months: set) -> None:
+    """Persist completed month windows so a restart can skip them."""
+    CHECKPOINT_FILE.parent.mkdir(parents=True, exist_ok=True)
+    tmp = CHECKPOINT_FILE.with_suffix(".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump({"completed_months": sorted(done_months)}, f)
+    tmp.replace(CHECKPOINT_FILE)
 
 
 def clean_html(text: str) -> str:
@@ -357,7 +410,9 @@ def fetch_recent(api: FederalRegisterAPI, days: int = 30) -> Generator[Dict, Non
 
 def fetch_updates(api: FederalRegisterAPI, since: datetime) -> Generator[Dict, None, None]:
     """Fetch documents created/modified since a given date."""
-    days = (datetime.now() - since).days + 1
+    if since.tzinfo is None:
+        since = since.replace(tzinfo=timezone.utc)
+    days = max(1, (datetime.now(timezone.utc) - since).days + 1)
     for record in fetch_recent(api, days=days):
         yield record
 
@@ -496,10 +551,22 @@ def main():
             count = 0
             current_year = datetime.now().year
             current_month = datetime.now().month
-            with open(DATA_DIR / "records.jsonl", "w", encoding="utf-8") as f:
+
+            # Resume from the last completed month. Without this a crawl that
+            # dies late (503, timeout, teardown) restarts at the current month
+            # and re-walks everything it already had (#1476).
+            done_months = load_checkpoint()
+            mode = "a" if done_months else "w"
+            if done_months:
+                print(f"Resuming: {len(done_months)} months already complete")
+
+            with open(DATA_DIR / "records.jsonl", mode, encoding="utf-8") as f:
                 for year in range(current_year, 1993, -1):
                     for month in range(12, 0, -1):
                         if year == current_year and month > current_month:
+                            continue
+                        month_key = f"{year}-{month:02d}"
+                        if month_key in done_months:
                             continue
                         start = f"{year}-{month:02d}-01"
                         if month == 12:
@@ -550,6 +617,11 @@ def main():
                             page += 1
                             time.sleep(REQUEST_DELAY)
 
+                        # Only mark the month done once every page of it landed.
+                        f.flush()
+                        done_months.add(month_key)
+                        save_checkpoint(done_months)
+
                         if month_count > 0:
                             print(f"    {month_count} documents ({count} total)")
 
@@ -568,4 +640,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

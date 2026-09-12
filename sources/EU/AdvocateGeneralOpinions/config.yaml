@@ -1,0 +1,65 @@
+source:
+  id: "EU/AdvocateGeneralOpinions"
+  name: "EU — Advocate General Opinions (CJEU)"
+  country: "EU"
+  language: "en"
+
+  # Full text is retrieved from the EU Publications Office (CELLAR / EUR-Lex),
+  # where the Opinions ("conclusions") of the Advocates General of the Court of
+  # Justice of the European Union are stored with a CELEX number in sector 6
+  # (case-law of the EU courts), document class "CC" — 6{YYYY}CC{NNNN}. Before
+  # the Court rules, an Advocate General delivers a reasoned, impartial Opinion
+  # proposing a legal solution; these are among the most influential and heavily
+  # cited legal writings in the EU order and frequently shape the judgment that
+  # follows.
+  #
+  # A distinct, additive corpus to EU/CURIA, which enumerates the Court's case-law
+  # by the JUDG resource-type only (judgments) and never pulls Advocate General
+  # Opinions (its own docstring excludes AG views and orders). The ~11,300
+  # sector-6 CC opinions (1954-present) are not otherwise captured; the pipeline
+  # loader dedups on the CELEX _id if any overlap arises.
+  #
+  # Enumeration is via the public CELLAR SPARQL endpoint, scoped per calendar year
+  # (^6{YYYY}CC[0-9]) because the ~11,300-row corpus exceeds the ~10K SPARQL
+  # OFFSET ceiling; each year holds a few hundred opinions at most. Full text via
+  # CELLAR content negotiation: xHTML for modern acts, OJ HTML on the bare CELEX
+  # for older ones, born-digital PDF (PyMuPDF) for the remainder — all of which
+  # bypass the eur-lex.europa.eu AWS-WAF that 202-challenges datacenter IPs, so it
+  # is fleet-safe. Same recipe as EU/CommissionOpinions / EU/Recommendations.
+  endpoints:
+    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
+    cellar_celex: "http://publications.europa.eu/resource/celex/{celex}"
+
+  data_types:
+    - doctrine
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1
+
+  schema:
+    key_fields:
+      _id:
+        type: string
+        required: true
+      title:
+        type: string
+        required: true
+      text:
+        type: string
+        required: true
+      date:
+        type: date
+        required: false
+
+fetch:
+  sample_count: 15
+
+license:
+  name: "EU institutional reuse (Decision 2011/833/EU)"
+  url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "CJEU Advocate General Opinions published by the Publications Office are reusable, including for commercial purposes, under the Commission's reuse policy (Decision 2011/833/EU). Attribution to the source is requested."

@@ -43,8 +43,8 @@ import re
 import sys
 import json
 import html
-import time
 import logging
+import threading
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Optional
@@ -56,6 +56,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+from common.http_client import HttpClient
+from common.rate_limiter import AdaptiveRateLimiter
 
 logging.basicConfig(
     level=logging.INFO,
@@ -76,6 +78,27 @@ HEADERS = {
 }
 
 MIN_TEXT_CHARS = 200  # below this the node carries no real body (e.g. PDF-only)
+
+# Highest Drupal node id seen on the site, plus headroom. Used only by the
+# node-id sweep, which is the fallback when the sitemap is unreachable or
+# truncated (the sitemap is the primary, cheaper enumeration).
+MAX_NODE_ID = 1600
+
+# Fail-loud thresholds. The site answers every node in well under a second from
+# an unblocked vantage, so a sustained hard-failure rate is a block or an
+# outage, never the corpus. Issue #1599: 814 of 874 nodes failed to fetch on the
+# VPS and every one was swallowed by `return None`, so the run exited 0 having
+# written 7% of the corpus and looked like a success.
+FAILURE_SAMPLE_MIN = 40   # don't judge before this many fetches have finished
+FAILURE_RATIO_ABORT = 0.5  # abort the crawl above this hard-failure ratio
+
+
+class NodeFetchError(RuntimeError):
+    """A node could not be fetched (HTTP error, block, or unparseable body).
+
+    Distinct from a node that was fetched fine but is not a legal document —
+    the latter is a legitimate skip, this is lost data.
+    """
 
 # Document-type taxonomy slug -> normalized data type.
 # Binding administrative/regulatory acts -> legislation; explanatory /
@@ -102,18 +125,65 @@ class BulletinsOfficielsSociauxScraper(BaseScraper):
     def __init__(self):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
-        self.session = requests.Session()
-        self.session.headers.update(HEADERS)
+        # HttpClient retries 429/5xx with capped backoff and honours
+        # Retry-After, so a throttled node is re-fetched instead of dropped.
+        self.client = HttpClient(
+            base_url=BASE,
+            headers=HEADERS,
+            max_retries=4,
+            backoff_factor=2.0,
+            timeout=60,
+        )
+        # Sustained throttling slows the crawl down rather than shredding it.
+        self.limiter = AdaptiveRateLimiter(start_rate=4.0, min_rate=0.25, max_rate=8.0)
+        # Fetch outcome counters, read by the producer to abort a doomed crawl.
+        self._counts_lock = threading.Lock()
+        self._fetch_ok = 0
+        self._fetch_fail = 0
+
+    # ── fetch bookkeeping ───────────────────────────────────────────
+    def _record_fetch(self, ok: bool) -> None:
+        with self._counts_lock:
+            if ok:
+                self._fetch_ok += 1
+            else:
+                self._fetch_fail += 1
+
+    def _check_health(self) -> None:
+        """Abort loudly once most node fetches are failing.
+
+        normalize() runs in the framework's worker pool, where a raised
+        exception is only counted (`skip_exception`) and the run still exits 0.
+        fetch_all() is the one part on the main thread, so the kill switch lives
+        here: raising propagates out of bootstrap and gives the fleet a
+        non-zero exit instead of a silent 93% loss (#1599).
+        """
+        with self._counts_lock:
+            ok, fail = self._fetch_ok, self._fetch_fail
+        done = ok + fail
+        if done < FAILURE_SAMPLE_MIN:
+            return
+        if fail / done > FAILURE_RATIO_ABORT:
+            raise NodeFetchError(
+                f"{fail} of {done} node fetches failed "
+                f"({fail / done:.0%}) — bulletins-officiels.social.gouv.fr is "
+                "refusing this vantage or is down. Aborting rather than "
+                "writing a partial corpus; needs a residential/FR vantage."
+            )
 
     # ── sitemap enumeration ─────────────────────────────────────────
     def _list_paths(self) -> list[str]:
-        """Return every node path from the sitemap (public-host-relative)."""
+        """Return every node path from the sitemap (public-host-relative).
+
+        Falls back to sweeping Drupal node ids when the sitemap is unreachable:
+        returning [] there used to mean a 0-record run that still exited 0.
+        """
         try:
-            r = self.session.get(SITEMAP_URL, timeout=60)
+            r = self.client.get(SITEMAP_URL, rate_limiter=self.limiter)
             r.raise_for_status()
         except requests.RequestException as e:
-            logger.warning(f"Sitemap fetch failed: {e}")
-            return []
+            logger.warning(f"Sitemap fetch failed ({e}) — falling back to node-id sweep")
+            return self._sweep_node_paths()
 
         locs = re.findall(r"<loc>([^<]+)</loc>", r.text)
         paths: list[str] = []
@@ -135,6 +205,43 @@ class BulletinsOfficielsSociauxScraper(BaseScraper):
             seen.add(path)
             paths.append(path)
         logger.info(f"Collected {len(paths)} candidate node paths from sitemap")
+        if not paths:
+            logger.warning("Sitemap listed no node paths — falling back to node-id sweep")
+            return self._sweep_node_paths()
+        return paths
+
+    def _sweep_node_paths(self) -> list[str]:
+        """Enumerate nodes by id: /node/{nid}?_format=json answers directly.
+
+        Independent of the sitemap (which is generated by a contrib module and
+        emits the internal cegedim host), so it survives a sitemap outage.
+        """
+        paths = []
+        misses = 0  # consecutive ids that answered 404 — the tail of the range
+        for nid in range(1, MAX_NODE_ID + 1):
+            self.limiter.wait()
+            try:
+                r = self.client.get(f"{BASE}/node/{nid}", params={"_format": "json"},
+                                    rate_limiter=self.limiter)
+                status = r.status_code
+            except requests.RequestException:
+                status = None
+            if status == 200:
+                paths.append(f"node/{nid}")
+                misses = 0
+                continue
+            misses += 1
+            # Ids are dense up to the newest node; a long unbroken 404 run means
+            # we are past the end of the range, not in a gap.
+            if misses >= 200 and paths:
+                logger.info(f"Node-id sweep stopping at {nid}: 200 consecutive misses")
+                break
+        logger.info(f"Node-id sweep found {len(paths)} nodes")
+        if not paths:
+            raise NodeFetchError(
+                "Neither the sitemap nor the node-id sweep returned any node — "
+                "the site is unreachable from this vantage."
+            )
         return paths
 
     # ── helpers ─────────────────────────────────────────────────────
@@ -172,14 +279,44 @@ class BulletinsOfficielsSociauxScraper(BaseScraper):
         return "doctrine"
 
     # ── schema ──────────────────────────────────────────────────────
+    def _fetch_node(self, url: str) -> Optional[dict]:
+        """Fetch one node's JSON.
+
+        Returns None only for a genuine 404 (the node is gone). Any other
+        failure raises NodeFetchError: it is a lost document, and conflating it
+        with "this page is not a legal act" is what hid #1599.
+        """
+        self.limiter.wait()
+        try:
+            r = self.client.get(url, params={"_format": "json"},
+                                rate_limiter=self.limiter)
+        except requests.RequestException as e:
+            self._record_fetch(False)
+            raise NodeFetchError(f"{url}: {e}") from e
+
+        if r.status_code == 404:
+            self._record_fetch(True)  # a real answer, just an empty one
+            return None
+        if r.status_code != 200:
+            self._record_fetch(False)
+            raise NodeFetchError(f"{url}: HTTP {r.status_code}")
+        try:
+            data = r.json()
+        except ValueError as e:
+            # An HTML body here is an interstitial/WAF page, not a node.
+            self._record_fetch(False)
+            raise NodeFetchError(
+                f"{url}: expected JSON, got "
+                f"{r.headers.get('content-type', '?')} ({len(r.content)} bytes)"
+            ) from e
+
+        self._record_fetch(True)
+        return data
+
     def normalize(self, raw: dict) -> Optional[dict]:
         url = raw["url"]
-        try:
-            r = self.session.get(url + "?_format=json", timeout=60)
-            if r.status_code != 200:
-                return None
-            data = r.json()
-        except (requests.RequestException, ValueError):
+        data = self._fetch_node(url)
+        if data is None:
             return None
 
         # Must be a real legal document (carries a document-type taxonomy).
@@ -240,8 +377,10 @@ class BulletinsOfficielsSociauxScraper(BaseScraper):
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield RAW node refs; normalize() fetches JSON + extracts full text."""
         for path in self._list_paths():
+            # Raises out of the crawl if the host has started refusing us, so a
+            # blocked run fails instead of quietly writing a fraction (#1599).
+            self._check_health()
             yield {"url": f"{BASE}/{path}"}
-            time.sleep(0.5)  # politeness between node fetches
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """No incremental feed; re-scan sitemap (idempotent via Neon)."""
@@ -288,12 +427,38 @@ def main():
     elif args.command == "bootstrap":
         stats = scraper.bootstrap(sample_mode=args.sample, sample_size=args.sample_size)
         logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2)}")
+        _exit_on_degraded_run(scraper, stats, sample_mode=args.sample)
     elif args.command in ("bootstrap-fast", "bootstrap_fast"):
         stats = scraper.bootstrap_fast()
         logger.info(f"Fast bootstrap complete: {json.dumps(stats, indent=2)}")
+        _exit_on_degraded_run(scraper, stats)
     elif args.command == "update":
         stats = scraper.update()
         logger.info(f"Update complete: {json.dumps(stats, indent=2)}")
+        _exit_on_degraded_run(scraper, stats)
+
+
+def _exit_on_degraded_run(scraper, stats: dict, sample_mode: bool = False) -> None:
+    """Exit non-zero when a large share of node fetches failed.
+
+    The health check in fetch_all() only fires while the producer is still
+    running; failures concentrated in the drain phase would otherwise still
+    exit 0. Content skips (the ~8 utility pages) never reach this counter, so
+    the threshold only sees genuine fetch losses.
+    """
+    if sample_mode:
+        return
+    ok, fail = scraper._fetch_ok, scraper._fetch_fail
+    done = ok + fail
+    if done >= FAILURE_SAMPLE_MIN and fail / done > FAILURE_RATIO_ABORT:
+        logger.error(
+            f"Degraded run: {fail} of {done} node fetches failed "
+            f"({fail / done:.0%}); only {stats.get('records_new', 0)} records "
+            "written. Failing loud rather than reporting a partial corpus."
+        )
+        sys.exit(1)
+    if fail:
+        logger.warning(f"{fail} of {done} node fetches failed (below abort threshold)")
 
 
 if __name__ == "__main__":

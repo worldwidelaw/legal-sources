@@ -5,8 +5,9 @@ source:
   url: "https://droitguineen.com/"
   description: |
     Droitguinéen — the legal reference portal of the Republic of Guinea.
-    278 legal texts (codes, laws, decrees, ordinances, OHADA uniform acts)
-    and 156 court decisions (Supreme Court, Court of Appeal, CCJA).
+    4,931 documents in the sitemap as of 2026-08: 4,775 legal texts (32 codes
+    plus laws, decrees, arrêtés, ordinances, OHADA uniform acts) and 156 court
+    decisions (Supreme Court, Court of Appeal, TPI, CCJA).
     Full text in French. Free and open access.
 
 data_types:

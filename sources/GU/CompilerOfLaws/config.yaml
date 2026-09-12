@@ -2,8 +2,19 @@ auth: none
 country: GU
 data_types:
 - legislation
+license:
+  attribution_required: false
+  commercial_use: true
+  name: US Public Domain
+  no_derivatives: false
+  notes: Edicts of government of a U.S. territory; not subject to copyright.
+  share_alike: false
+  url: https://www.law.cornell.edu/uscode/text/17/105
 name: Guam Compiler of Laws
-notes: 'Guam Code Annotated (22 titles + Organic Act) via PDF chapter downloads from guamcourts.gov. Updated through P.L. 38-058 (August 18, 2025).
+notes: 'Guam Code Annotated (22 titles) + Guam Administrative Rules & Regulations
+  (32 titles) + Organic Act note, published as chapter PDFs on col.guamcourts.gov.
+  ~1,069 documents, full text via pdfplumber. Updated through P.L. 38-133 (June 4,
+  2026).
 
   '
 schedule: monthly
@@ -12,14 +23,23 @@ schema:
   - name: _id
     required: true
     type: string
+  - name: collection
+    required: true
+    type: string
   - name: title_number
     required: false
-    type: string
-  - name: chapter_number
-    required: false
-    type: string
+    type: integer
   - name: title_name
     required: false
     type: string
+  - name: division
+    required: false
+    type: string
+  - name: chapter_code
+    required: false
+    type: string
+  - name: chapter_name
+    required: false
+    type: string
 source_id: GU/CompilerOfLaws
-url: https://guamcourts.gov/CompilerofLaws/index.html
+url: https://col.guamcourts.gov/

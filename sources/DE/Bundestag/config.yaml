@@ -1,5 +1,5 @@
 auth:
-  demo_key: OSOegLs.PR2lwJ1dwCeje9vTj7FPOt3hvpYKtwKkhw
+  demo_key: R2BZaee.DjdCyihKZMf8AOjtScubP2EVydegzjmBIQ
   header: Authorization
   header_prefix: 'ApiKey '
   type: api_key
@@ -46,7 +46,7 @@ notes: 'The Bundestag is the German federal parliament (lower house).
 
   API documentation: https://dip.bundestag.de/über-dip/hilfe/api
 
-  Public API key valid until May 2026.
+  Public API key valid until end of May 2027; override with DIP_API_KEY.
 
   '
 schema:

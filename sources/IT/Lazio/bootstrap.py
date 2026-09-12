@@ -63,6 +63,17 @@ BASE_URL = "https://www.consiglio.regione.lazio.it"
 START_YEAR = 1971
 CURRENT_YEAR = datetime.now().year
 
+# Tags that should be newline-separated when flattening the law body to text.
+BLOCK_TAGS = [
+    'p', 'div', 'table', 'tr', 'td', 'th', 'li', 'ul', 'ol',
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'section', 'article',
+]
+
+# Boilerplate footer repeated on every law page.
+DISCLAIMER_RE = re.compile(
+    r"\n*Il testo non ha valore legale[^\n]*\n*", re.IGNORECASE
+)
+
 
 class LazioScraper(BaseScraper):
     """
@@ -246,28 +257,50 @@ class LazioScraper(BaseScraper):
         Extract clean text from HTML element.
 
         Preserves article/paragraph structure while removing HTML.
+
+        Older laws (mostly 1971-1990) are laid out as a single <table> where the
+        article headings sit inside <div align="center"> blocks and the article
+        *bodies* are bare text nodes directly under the <td>, separated by <br/>.
+        Collecting only <p>/<div> text therefore returned the rubrics ("Art. 2")
+        with no body at all (issue #1408). Walking the whole subtree — turning
+        <br/> into newlines and fencing block-level tags with newlines — captures
+        both layouts.
+
+        Using get_text() with no separator (rather than separator=' ') also avoids
+        the "Ar t. 1 1" spacing noise produced when a word is split across inline
+        <b>/<i> tags.
         """
-        # Get text with some structure
-        lines = []
+        # Work on a detached copy so the caller's soup stays intact.
+        el = BeautifulSoup(str(element), 'html.parser')
 
-        for p in element.find_all(['p', 'div'], recursive=True):
-            text = p.get_text(separator=' ', strip=True)
-            if text:
-                lines.append(text)
+        # Drop non-content nodes.
+        for junk in el.find_all(['script', 'style']):
+            junk.decompose()
 
-        # If no paragraphs found, get all text
-        if not lines:
-            lines = [element.get_text(separator=' ', strip=True)]
+        # <br/> is the real line break in this markup.
+        for br in el.find_all('br'):
+            br.replace_with('\n')
 
-        # Join and clean
-        full_text = '\n\n'.join(lines)
+        # Fence block-level tags so adjacent blocks don't run together.
+        for tag in el.find_all(BLOCK_TAGS):
+            tag.insert_before('\n')
+            tag.insert_after('\n')
 
-        # Clean up whitespace
+        full_text = el.get_text()
+
+        # Decode HTML entities (incl. the &nbsp; that pads these pages)
+        full_text = html.unescape(full_text)
+        full_text = full_text.replace('\xa0', ' ')
+
+        # Clean up whitespace: collapse runs of spaces, strip per-line,
+        # collapse blank-line runs.
         full_text = re.sub(r'[ \t]+', ' ', full_text)
+        full_text = '\n'.join(line.strip() for line in full_text.split('\n'))
         full_text = re.sub(r'\n{3,}', '\n\n', full_text)
 
-        # Decode HTML entities
-        full_text = html.unescape(full_text)
+        # Older laws carry the "no legal value" boilerplate inside the table
+        # rather than in the <p id="firma_legge"> the caller already removed.
+        full_text = DISCLAIMER_RE.sub('', full_text)
 
         return full_text.strip()
 
@@ -479,7 +512,7 @@ def main():
 
     if len(sys.argv) < 2:
         print(
-            "Usage: python bootstrap.py [bootstrap|update|test] "
+            "Usage: python bootstrap.py [bootstrap|bootstrap-fast|update|test] "
             "[--sample] [--sample-size N]"
         )
         sys.exit(1)
@@ -508,6 +541,14 @@ def main():
                 f"{stats['records_updated']} updated, "
                 f"{stats['records_skipped']} skipped"
             )
+        print(json.dumps(stats, indent=2))
+
+    elif command in ("bootstrap-fast", "bootstrap_fast"):
+        stats = scraper.bootstrap_fast()
+        print(
+            f"\nBootstrap-fast complete: {stats.get('records_new', 0)} new, "
+            f"{stats.get('records_updated', 0)} updated"
+        )
         print(json.dumps(stats, indent=2))
 
     elif command == "update":

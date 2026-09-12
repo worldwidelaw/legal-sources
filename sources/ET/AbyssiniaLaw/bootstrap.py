@@ -31,7 +31,9 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from lib.neon_client import upsert_records
+# NOTE: `lib.neon_client` is only needed for the standalone `--full` upsert path
+# below; it is absent on the fleet image, so import it lazily at point of use
+# rather than at module load (the fleet's generic runner only calls fetch_all()). #1555
 
 logging.basicConfig(
     level=logging.INFO,
@@ -326,6 +328,7 @@ def main():
 
     if args.full and records:
         log.info(f"Upserting {len(records)} records to Neon...")
+        from lib.neon_client import upsert_records  # lazy: standalone-only dep (#1555)
         upsert_records(records)
         log.info("Upsert complete.")
     elif records:
@@ -338,4 +341,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

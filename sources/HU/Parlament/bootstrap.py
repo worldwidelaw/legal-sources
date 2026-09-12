@@ -70,6 +70,30 @@ CYCLES = {
 # Default to current cycle for sample mode
 DEFAULT_CYCLE = 42
 
+# A document that is known to exist, used to preflight the site before a long sweep.
+PREFLIGHT_DOC = (DEFAULT_CYCLE, 1)
+
+# www.parlament.hu answers *every* path with HTTP 200 and a ~33 KB image-CAPTCHA
+# interstitial when it does not like the client, so a status code alone says nothing
+# about whether a document exists. These markers identify that page.
+CAPTCHA_MARKERS = (b"captcha_resp", b"captcha.gif", b"CAPTCHA")
+
+# Upper bound on probes in _find_max_doc_number. The upward walk only shrinks its
+# step on a miss, so a host that never reports a miss would otherwise loop forever.
+MAX_PROBES = 80
+
+
+class SourceBlockedError(RuntimeError):
+    """Raised when the upstream host refuses to serve documents to this vantage."""
+
+
+def _looks_like_captcha(body: bytes) -> bool:
+    """True if a response body is the parlament.hu CAPTCHA interstitial."""
+    if body.startswith(b"%PDF"):
+        return False
+    head = body[:4096]
+    return any(marker in head for marker in CAPTCHA_MARKERS)
+
 
 class ParlamentScraper(BaseScraper):
     """
@@ -104,17 +128,34 @@ class ParlamentScraper(BaseScraper):
         return f"/irom{cycle}/{formatted}/{formatted}.pdf"
 
     def _check_pdf_exists(self, cycle: int, doc_num: int) -> bool:
-        """Check if a PDF exists using a HEAD request."""
+        """
+        Check whether a document PDF really exists.
+
+        A HEAD request is useless here: the host answers 200 for every path,
+        including nonexistent ones, so existence has to be decided on the body.
+        Fetch just the first bytes and require the PDF magic number.
+        """
         url = self._build_pdf_url(cycle, doc_num)
         full_url = f"{BASE_URL}{url}"
         try:
             import requests
-            resp = requests.head(full_url, timeout=10, headers={
-                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)"
+            resp = requests.get(full_url, timeout=15, stream=True, headers={
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
+                "Range": "bytes=0-4095",
             })
-            return resp.status_code == 200
+            head = resp.raw.read(4096, decode_content=True) or b""
+            resp.close()
         except Exception:
             return False
+
+        if resp.status_code not in (200, 206):
+            return False
+        if _looks_like_captcha(head):
+            raise SourceBlockedError(
+                f"www.parlament.hu served its CAPTCHA interstitial instead of "
+                f"{full_url} — the site is anti-bot gated from this vantage"
+            )
+        return head.startswith(b"%PDF")
 
     def _parse_metadata_from_text(self, text: str) -> Dict[str, Any]:
         """
@@ -197,10 +238,15 @@ class ParlamentScraper(BaseScraper):
 
             resp.raise_for_status()
 
-            # Check content type is PDF
-            content_type = resp.headers.get('Content-Type', '')
-            if 'pdf' not in content_type.lower() and len(resp.content) < 1000:
-                # Might be an error page
+            if _looks_like_captcha(resp.content):
+                raise SourceBlockedError(
+                    f"www.parlament.hu served its CAPTCHA interstitial instead of "
+                    f"{BASE_URL}{url} — the site is anti-bot gated from this vantage"
+                )
+
+            # The host returns 200 + an HTML error page for missing documents,
+            # so trust the PDF magic number rather than the status code.
+            if not resp.content.startswith(b"%PDF"):
                 return None
 
             # Extract text from PDF via centralized extractor
@@ -235,6 +281,8 @@ class ParlamentScraper(BaseScraper):
 
             return doc
 
+        except SourceBlockedError:
+            raise
         except Exception as e:
             logger.warning(f"Failed to fetch document cycle {cycle} doc {doc_num}: {e}")
             return None
@@ -245,15 +293,22 @@ class ParlamentScraper(BaseScraper):
 
         Starts from known_max and searches around it.
         """
+        probes = 0
+
+        def exists(num: int) -> bool:
+            nonlocal probes
+            probes += 1
+            return self._check_pdf_exists(cycle, num)
+
         # First verify known_max works
-        if not self._check_pdf_exists(cycle, known_max):
+        if not exists(known_max):
             # Binary search downward to find any existing document
             low, high = 1, known_max
             found = None
 
-            while low <= high:
+            while low <= high and probes < MAX_PROBES:
                 mid = (low + high) // 2
-                if self._check_pdf_exists(cycle, mid):
+                if exists(mid):
                     found = mid
                     low = mid + 1  # Search higher
                 else:
@@ -263,16 +318,41 @@ class ParlamentScraper(BaseScraper):
                 return 1  # Nothing found
             known_max = found
 
-        # Now search upward to find actual max using binary search
+        # Now search upward to find the actual max. The step only shrinks on a
+        # miss, so bound the walk: a host that answers "exists" for every number
+        # (soft-200 error pages, anti-bot interstitials) would otherwise spin
+        # here forever without ever yielding a record.
         step = 100
-        while step >= 1:
+        while step >= 1 and probes < MAX_PROBES:
             test_num = known_max + step
-            if self._check_pdf_exists(cycle, test_num):
+            if exists(test_num):
                 known_max = test_num
             else:
                 step = step // 2
 
+        if probes >= MAX_PROBES:
+            logger.warning(
+                f"Cycle {cycle}: gave up locating the max document number after "
+                f"{probes} probes; using {known_max}"
+            )
+
         return known_max
+
+    def _preflight(self) -> None:
+        """
+        Confirm the host will actually serve a PDF before starting a long sweep.
+
+        Raises SourceBlockedError if it will not, so the fleet records a real
+        failure in seconds instead of walking the whole ID space against a
+        CAPTCHA wall.
+        """
+        cycle, doc_num = PREFLIGHT_DOC
+        if not self._check_pdf_exists(cycle, doc_num):
+            raise SourceBlockedError(
+                f"Preflight failed: {BASE_URL}{self._build_pdf_url(cycle, doc_num)} "
+                f"did not return a PDF — www.parlament.hu is unreachable or gated "
+                f"from this vantage"
+            )
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """
@@ -281,6 +361,8 @@ class ParlamentScraper(BaseScraper):
         Iterates through cycles from newest to oldest, checking each
         document number sequentially.
         """
+        self._preflight()
+
         for cycle in sorted(CYCLES.keys(), reverse=True):
             start_doc, end_estimate, start_year, end_year = CYCLES[cycle]
             logger.info(f"Processing cycle {cycle} ({start_year}-{end_year or 'present'})...")
@@ -310,6 +392,8 @@ class ParlamentScraper(BaseScraper):
 
         Only checks the current cycle for new documents.
         """
+        self._preflight()
+
         cycle = DEFAULT_CYCLE
         _, end_estimate, _, _ = CYCLES[cycle]
 
@@ -423,31 +507,59 @@ def main():
         sample_size = int(sys.argv[idx + 1])
 
     if command == "test":
-        scraper.test_connection()
+        try:
+            scraper.test_connection()
+        except SourceBlockedError as e:
+            print(f"\nERROR: {e}", file=sys.stderr)
+            sys.exit(1)
 
-    elif command == "bootstrap":
-        if sample_mode:
-            stats = scraper.run_sample(n=sample_size)
-            print(
-                f"\nSample complete: "
-                f"{stats.get('sample_records_saved', 0)} records saved to sample/"
-            )
-        else:
-            stats = scraper.bootstrap()
-            print(
-                f"\nBootstrap complete: {stats['records_new']} new, "
-                f"{stats['records_updated']} updated, "
-                f"{stats['records_skipped']} skipped"
-            )
+    # "bootstrap-fast" is what the fleet wrapper invokes; route it to the full
+    # bootstrap so an unrecognised command can't silently fall back to samples.
+    elif command in ("bootstrap", "bootstrap-fast"):
+        try:
+            if sample_mode:
+                stats = scraper.run_sample(n=sample_size)
+                print(
+                    f"\nSample complete: "
+                    f"{stats.get('sample_records_saved', 0)} records saved to sample/"
+                )
+                written = stats.get("sample_records_saved", 0)
+            else:
+                stats = scraper.bootstrap()
+                print(
+                    f"\nBootstrap complete: {stats['records_new']} new, "
+                    f"{stats['records_updated']} updated, "
+                    f"{stats['records_skipped']} skipped"
+                )
+                written = stats.get("records_new", 0) + stats.get("records_updated", 0)
+        except SourceBlockedError as e:
+            print(f"\nERROR: {e}", file=sys.stderr)
+            sys.exit(1)
+
         print(json.dumps(stats, indent=2))
+        if stats.get("error_message"):
+            print(f"\nERROR: {stats['error_message']}", file=sys.stderr)
+            sys.exit(1)
+        if not written:
+            print("\nERROR: no records written", file=sys.stderr)
+            sys.exit(1)
 
     elif command == "update":
-        stats = scraper.update()
+        try:
+            stats = scraper.update()
+        except SourceBlockedError as e:
+            print(f"\nERROR: {e}", file=sys.stderr)
+            sys.exit(1)
         print(
             f"\nUpdate complete: {stats['records_new']} new, "
             f"{stats['records_updated']} updated"
         )
         print(json.dumps(stats, indent=2))
+        # Same fail-loud contract as bootstrap: an update that hit the CAPTCHA
+        # wall mid-walk must not exit 0 with a handful of records (#1583).
+        if stats.get("error_message"):
+            print(f"\nERROR: {stats['error_message']}", file=sys.stderr)
+            sys.exit(1)
 
     else:
         print(f"Unknown command: {command}")

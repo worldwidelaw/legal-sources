@@ -41,11 +41,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger("legal-data-hunter.INTL.ILO-ILOAT")
 
-BASE_URL = "https://www.ilo.org/dyn/triblex/triblexmain"
+# TRIBLEX moved from www.ilo.org to wwwex.ilo.org. www.ilo.org still answers, but
+# its redirect inserts a trailing slash before the query string
+# (".detail/?p_lang=en&...") which the Oracle PL/SQL gateway rejects with a 404 —
+# that redirect is why an entire ID walk returned zero records (#1306).
+BASE_URL = "https://wwwex.ilo.org/dyn/triblex/triblexmain"
 DETAIL_URL = f"{BASE_URL}.detail?p_lang=en&p_judgment_no={{}}"
 PDF_URL = f"{BASE_URL}.fullText?p_lang=en&p_judgment_no={{}}"
-MAX_JUDGMENT_NO = 5203
-RATE_LIMIT = 2  # seconds between requests
+# Highest live judgment was ~5,325 as of 2026-08; walk a little past it so newly
+# published judgments are picked up without a code change. Missing IDs in the
+# range are simply skipped (the detail page 200s with no Organization).
+MAX_JUDGMENT_NO = 5400
+RATE_LIMIT = 1  # seconds between requests
+
+# If the site moves again, fail loudly after this many consecutive misses with no
+# successes rather than burning a 10h fleet slot walking every ID for nothing.
+MAX_CONSECUTIVE_FAILURES = 150
 
 
 def _parse_triblex_date(date_str: str) -> Optional[str]:
@@ -164,20 +175,38 @@ class ILOILOATScraper(BaseScraper):
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all TRIBLEX judgments from 1 to MAX_JUDGMENT_NO."""
+        yielded = 0
+        consecutive_failures = 0
+
         for no in range(1, MAX_JUDGMENT_NO + 1):
             try:
                 raw = self._fetch_judgment(no)
                 if raw:
                     yield raw
+                    yielded += 1
+                    consecutive_failures = 0
                 else:
+                    consecutive_failures += 1
                     logger.info(f"Skipping judgment #{no} (no data)")
             except Exception as e:
+                consecutive_failures += 1
                 logger.error(f"Error processing judgment #{no}: {e}")
+
+            # A long miss streak with nothing at all extracted means the site
+            # moved again (#1306). Abort loudly instead of spending ~10h of a
+            # fleet slot walking every remaining ID for nothing. Gaps later in
+            # the range are normal, so only bail while yielded is still zero.
+            if yielded == 0 and consecutive_failures >= MAX_CONSECUTIVE_FAILURES:
+                raise RuntimeError(
+                    f"Aborting: {consecutive_failures} consecutive judgments returned no "
+                    f"data and nothing has been extracted. The TRIBLEX URL template is "
+                    f"probably stale again — re-verify {DETAIL_URL.format(4000)}"
+                )
 
             time.sleep(RATE_LIMIT)
 
             if no % 100 == 0:
-                logger.info(f"Progress: {no}/{MAX_JUDGMENT_NO}")
+                logger.info(f"Progress: {no}/{MAX_JUDGMENT_NO} ({yielded} extracted)")
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """Fetch recent judgments. Iterate from MAX down until we hit older dates."""
@@ -209,8 +238,8 @@ class ILOILOATScraper(BaseScraper):
             "title": title,
             "text": text,
             "date": date_iso,
-            "url": f"https://www.ilo.org/dyn/triblex/triblexmain.detail?p_lang=en&p_judgment_no={judgment_no}",
-            "judgment_no": judgment_no,
+            "url": DETAIL_URL.format(judgment_no),
+            "judgment_no": str(judgment_no),
             "organization": org,
             "judges": raw.get("judges", ""),
             "original_language": raw.get("original_language", ""),
@@ -224,7 +253,7 @@ if __name__ == "__main__":
     scraper = ILOILOATScraper()
 
     if len(sys.argv) < 2:
-        print("Usage: python bootstrap.py [bootstrap|test] [--sample]")
+        print("Usage: python bootstrap.py [bootstrap|bootstrap-fast|test] [--sample]")
         sys.exit(1)
 
     cmd = sys.argv[1]
@@ -243,7 +272,7 @@ if __name__ == "__main__":
             print(f"FAIL: {e}")
             sys.exit(1)
 
-    elif cmd == "bootstrap":
+    elif cmd in ("bootstrap", "bootstrap-fast"):
         stats = scraper.bootstrap(sample_mode="--sample" in sys.argv, sample_size=15)
         fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
         logger.info(f"Bootstrap complete: {fetched} records — {stats}")

@@ -1,0 +1,27 @@
+{
+  "_id": "FR/CADA/20155407",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-08-06T21:53:57.040485+00:00",
+  "opinion_id": "20155407",
+  "title": "Avis 20155407 - Centre hospitalier universitaire d'Amiens Picardie",
+  "date": "2015-12-03",
+  "url": "https://www.data.gouv.fr/explore/cada/20155407",
+  "text": "Monsieur X, Monsieur X X et Monsieur X X ont saisi la commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 28 octobre 2015, à la suite du refus opposé par le directeur général du centre hospitalier universitaire d'Amiens Picardie à leur demande de communication, afin de connaître les causes de la mort, et sur le fondement de l'article L1110-4 du code de la santé publique, de l'intégralité du dossier médical de leur père, Monsieur XXX X, décédé le 26 décembre 2013, notamment les pièces relatives aux interventions de mai, septembre et décembre 2012.\n\nLa commission rappelle que le dernier alinéa de l'article L1110-4 du code de la santé publique, auquel renvoie l'article L1111-7 du même code, prévoit que le secret médical ne fait pas obstacle à ce que les informations médicales concernant une personne décédée soient délivrées à ses ayants droit, dans la mesure où elles leur sont nécessaires pour leur permettre de connaître les causes de la mort, défendre la mémoire du défunt ou faire valoir leurs droits, sauf volonté contraire opposée par la personne avant son décès. La commission souligne que l’application de ces dispositions à chaque dossier d’espèce relève de l’équipe médicale qui a suivi le patient décédé, ou, à défaut, d’autres médecins compétents pour apprécier si l’ensemble du dossier médical ou seulement certaines pièces se rattachent à l’objectif invoqué. Il n’appartient pas aux médecins chargés de cet examen du dossier d’apprécier l’opportunité de la communication de tout ou partie du dossier, mais seulement l’adéquation des pièces communiquées aux motifs légaux de communication invoqués par le demandeur. L’établissement peut ainsi être conduit, selon les cas, à transmettre l’ensemble du dossier ou bien à se limiter à la communication des pièces répondant strictement à l’objectif poursuivi. L’équipe médicale n’est, en outre, nullement liée par une éventuelle liste de pièces réclamées par le demandeur. \n\nEn l'espèce, la commission relève que par un courrier du 21 mars 2014, le directeur général du centre hospitalier universitaire a transmis à Monsieur X X les documents du dossier médical relatifs à la dernière prise en charge de son père permettant de connaître les causes du décès. La commission ne peut donc que déclarer sans objet, dans cette mesure, la demande d'avis. Elle estime, en outre, que les éléments du dossiers médical relatifs aux hospitalisations antérieures du patient, dans la mesure où ces éléments permettraient de connaître les causes de la mort, sont également communicable aux demandeurs, en application des dispositions de l'article L1110-4 du code de la santé publique. Elle émet donc, dans cette mesure, un avis favorable.",
+  "subject": "",
+  "administration": "Centre hospitalier universitaire d'Amiens Picardie",
+  "meanings": [
+    "Sans objet",
+    "Communiqué",
+    "Favorable"
+  ],
+  "topics": [
+    "Affaires Sanitaires Et Sociales",
+    "Dossiers Médicaux"
+  ],
+  "tags": [
+    "Ayant droit"
+  ],
+  "part": "III",
+  "type": "Avis"
+}

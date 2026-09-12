@@ -34,7 +34,7 @@ data_model:
   primary_key: "judgment_id"
   update_strategy: "append_only"
   dedup_key:
-    - "judgment_id"
+    - "_id"
 
 schema:
   total_fields: 12

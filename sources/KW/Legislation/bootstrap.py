@@ -25,6 +25,11 @@ from typing import Dict, Generator, List
 import pdfplumber
 import requests
 
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
+
 SOURCE_ID = "KW/Legislation"
 BASE_URL = "https://e.gov.kw"
 REQUEST_DELAY = 2.0
@@ -183,23 +188,35 @@ def get_session() -> requests.Session:
     return session
 
 
-def extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract full text from PDF bytes using pdfplumber."""
-    text_parts = []
+def extract_pdf_text(pdf_bytes: bytes, source_id: str) -> str:
+    """Extract full text from PDF bytes via the shared helper.
+
+    This used to call pdfplumber directly. pdfplumber emits glyphs in the order
+    the content stream lists them, which for these PDFs is *visual* order, so
+    every Arabic line came out character-reversed — ``قانون`` stored as
+    ``نوناق`` (issue #1560). Keyword search over the corpus then matches
+    nothing, silently: the semantic half of a hybrid index still returns
+    something, so the source looks healthy while ranking against gibberish.
+
+    ``common.pdf_extract`` routes RTL-heavy output back through
+    ``common.arabic_pdf``, which orders glyph clusters by x-geometry instead of
+    trusting the emitted sequence, so going through the shared helper is what
+    fixes the reading order. force=True because this corpus is 20 documents and
+    a refresh must re-extract all of them rather than skip the ones already in
+    Neon with (reversed) text.
+    """
     try:
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            for page in pdf.pages:
-                page_text = page.extract_text() or ""
-                if page_text.strip():
-                    text_parts.append(page_text)
-                try:
-                    page.flush_cache(); page.get_textmap.cache_clear()
-                except Exception:
-                    pass
+        text = extract_pdf_markdown(
+            SOURCE_ID,
+            source_id,
+            pdf_bytes=pdf_bytes,
+            table="legislation",
+            force=True,
+        )
     except Exception as e:
         print(f"  PDF extraction error: {e}", file=sys.stderr)
         return ""
-    return "\n\n".join(text_parts)
+    return text or ""
 
 
 def normalize(law_info: Dict, full_text: str, pdf_pages: int) -> Dict:
@@ -242,7 +259,7 @@ def fetch_all() -> Generator[Dict, None, None]:
         except Exception:
             pdf_pages = 0
 
-        full_text = extract_pdf_text(pdf_bytes)
+        full_text = extract_pdf_text(pdf_bytes, f"KW-LEG-{law['id']}")
         if not full_text or len(full_text) < 100:
             print(f"  SKIPPING {law['id']} — insufficient text ({len(full_text)} chars)")
             continue
@@ -285,7 +302,7 @@ def bootstrap_sample(sample_dir: Path, count: int = 15):
         except Exception:
             pdf_pages = 0
 
-        full_text = extract_pdf_text(pdf_bytes)
+        full_text = extract_pdf_text(pdf_bytes, f"KW-LEG-{law['id']}")
         text_len = len(full_text)
 
         if text_len < 100:
@@ -376,4 +393,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

@@ -140,18 +140,60 @@ class _HTMLTextExtractor(HTMLParser):
             self.parts.append(data)
 
 
-def _html_to_text(html: str) -> str:
-    """Convert HTML to clean text."""
-    extractor = _HTMLTextExtractor()
-    extractor.feed(html)
-    raw = "".join(extractor.parts)
-    # Collapse whitespace
+def _html_to_text(html_doc: str) -> str:
+    """Convert HTML to clean text.
+
+    The former HTMLParser-based extractor tracked a ``_skip_depth`` for
+    script/style/nav/header/footer and leaked that state on the NSS-OUI pages
+    (unbalanced tags), so several standards — e.g. the legacy Safety Guides
+    GS-G-2.1/GSG-1 — extracted only the 94-char top nav and were dropped as
+    "insufficient text (0 chars)". Strip only <script>/<style> *blocks* (their
+    content really is noise), then remove the remaining tags; the body — incl.
+    a little nav boilerplate — survives intact.
+    """
+    import html as _htmlmod
+    # Drop script/style blocks entirely (tags + content).
+    doc = re.sub(r"(?is)<(script|style)\b[^>]*>.*?</\1>", " ", html_doc)
+    # Turn block-ish tags into newlines, then drop all remaining tags.
+    doc = re.sub(r"(?is)<(br|/p|/div|/li|/tr|/h[1-6])\s*>", "\n", doc)
+    doc = re.sub(r"(?s)<[^>]+>", " ", doc)
+    doc = _htmlmod.unescape(doc)
     lines = []
-    for line in raw.split("\n"):
+    for line in doc.split("\n"):
         cleaned = " ".join(line.split())
         if cleaned:
             lines.append(cleaned)
     return "\n".join(lines)
+
+
+class _LegacyTLSAdapter(requests.adapters.HTTPAdapter):
+    """Permit the legacy TLS/ciphers that nucleus-apps.iaea.org negotiates.
+
+    Modern OpenSSL 3.x (fleet VPS *and* Homebrew Python on macOS) rejects the
+    NSS-OUI server's handshake with ``SSLZeroReturnError``/``SSLError`` — every
+    Content/Index fetch died and the whole run yielded 0 records. Lowering the
+    security level to 1 and allowing legacy server connect lets the handshake
+    complete (curl already accepts it). Same fix pattern as LB/BDL (#1160).
+    """
+
+    def _ctx(self):
+        import ssl
+        from urllib3.util.ssl_ import create_urllib3_context
+        ctx = create_urllib3_context()
+        try:
+            ctx.set_ciphers("DEFAULT@SECLEVEL=1")
+        except ssl.SSLError:
+            pass
+        ctx.options |= getattr(ssl, "OP_LEGACY_SERVER_CONNECT", 0x4)
+        return ctx
+
+    def init_poolmanager(self, *args, **kwargs):
+        kwargs["ssl_context"] = self._ctx()
+        return super().init_poolmanager(*args, **kwargs)
+
+    def proxy_manager_for(self, *args, **kwargs):
+        kwargs["ssl_context"] = self._ctx()
+        return super().proxy_manager_for(*args, **kwargs)
 
 
 class IAEASafetyStandardsScraper(BaseScraper):
@@ -167,18 +209,33 @@ class IAEASafetyStandardsScraper(BaseScraper):
                           "Chrome/131.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         })
+        # nucleus-apps.iaea.org requires legacy TLS that OpenSSL 3.x rejects.
+        self.session.mount("https://", _LegacyTLSAdapter())
 
     def _fetch_nss_oui_text(self, collection_id: str) -> Optional[str]:
-        """Fetch full text from NSS-OUI HTML page."""
+        """Fetch full text from an NSS-OUI collection page.
+
+        Two page templates exist. The Fundamentals/Requirements render the full
+        standard as inline HTML. The legacy Safety Guides (GS-G-*, GSG-*) render
+        their body client-side from an embedded ``<script id="fo-fragment">``
+        XHTML blob (a Web Component), so the static body is just ~600 chars of
+        nav/footer. Extract both the inline body and the fo-fragment and keep the
+        richer of the two.
+        """
+        import html as _htmlmod
         url = (f"{NSS_OUI_BASE}/Content/Index"
                f"?CollectionId={collection_id}&type=PublishedCollection")
         try:
             resp = self.session.get(url, timeout=60)
             resp.raise_for_status()
-            text = _html_to_text(resp.text)
-            # Remove navigation boilerplate from start/end
-            # The content starts after "Content" header and the ToC
-            return text.strip()
+            main = _html_to_text(resp.text)
+            frag_text = ""
+            m = re.search(r'<script id="fo-fragment"[^>]*>(.*?)</script>',
+                          resp.text, re.S)
+            if m:
+                frag_text = _html_to_text(_htmlmod.unescape(m.group(1)))
+            best = frag_text if len(frag_text) > len(main) else main
+            return best.strip()
         except Exception as e:
             logger.error(f"Failed to fetch NSS-OUI collection {collection_id}: {e}")
             return None

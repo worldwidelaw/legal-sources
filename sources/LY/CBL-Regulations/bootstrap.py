@@ -17,8 +17,10 @@ Usage:
 """
 
 import argparse
+import hashlib
 import json
 import logging
+import os
 import re
 import subprocess
 import sys
@@ -31,6 +33,15 @@ from urllib.parse import urljoin, unquote
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
+
+# Most of the CBL back-catalogue (the pre-2015 circulars especially) is scanned
+# image-only PDF with no text layer at all, so it reaches pdf_extract's OCR
+# fallback. That fallback defaults to the English tesseract model, which reads
+# an Arabic scan as nothing — every one of those documents came back "all
+# backends returned empty" and was skipped as untextable. Selecting the Arabic
+# model recovers them. Must be set before common.pdf_extract is imported: it
+# snapshots PDF_OCR_LANG into a module-level constant at import time.
+os.environ.setdefault("PDF_OCR_LANG", "ara")
 
 from common.base_scraper import BaseScraper
 from common.pdf_extract import extract_pdf_markdown
@@ -119,17 +130,26 @@ def _normalize_url(url: str) -> str:
 
 
 def _make_id(url: str) -> str:
-    """Create a stable ID from a PDF URL."""
+    """Create a stable ID from a PDF URL.
+
+    Digested with SHA-256, not the builtin ``hash()``: string hashing is
+    salt-randomized per interpreter process (PEP 456), so the previous
+    ``abs(hash(slug))`` handed every document a different ``_id`` on every run
+    \u2014 each fleet crawl would have re-inserted the whole corpus under fresh
+    keys instead of upserting onto the existing rows.
+    """
     normalized = _normalize_url(url)
     m = re.search(r"/([^/]+\.pdf)", normalized, re.IGNORECASE)
     if m:
-        slug = m.group(1)
-        slug = re.sub(r"\.pdf$", "", slug, flags=re.IGNORECASE)
-        slug = re.sub(r"[^a-zA-Z0-9\u0600-\u06FF]+", "_", slug).strip("_")
-        if len(slug) > 80:
-            slug = slug[:80]
-        return f"LY_CBL_{abs(hash(slug)) % 10**10}"
-    return f"LY_CBL_{abs(hash(normalized)) % 10**10}"
+        key = m.group(1)
+        key = re.sub(r"\.pdf$", "", key, flags=re.IGNORECASE)
+        key = re.sub(r"[^a-zA-Z0-9\u0600-\u06FF]+", "_", key).strip("_")
+        if len(key) > 80:
+            key = key[:80]
+    else:
+        key = normalized
+    digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
+    return f"LY_CBL_{int(digest[:16], 16) % 10**10:010d}"
 
 
 def _title_from_filename(url: str) -> str:
@@ -151,6 +171,25 @@ def _extract_year(text: str) -> Optional[str]:
         if 1950 <= year <= 2030:
             return f"{year}-01-01"
     return None
+
+
+_CID_RE = re.compile(r"\(cid:\d+\)")
+
+
+def _is_undecodable(text: str) -> bool:
+    """True when a text layer decoded to placeholders rather than to letters.
+
+    A few CBL PDFs embed a legacy non-Unicode Arabic font with no ToUnicode
+    CMap, so the extractors emit `(cid:N)` for most glyphs and mojibake Latin
+    for the rest — e.g. `القانون المالي للدولة` came out as 129,422 chars that
+    contain no Arabic word at all. That sails past a bare length check and gets
+    stored as a statute's full text, but it is exactly as unsearchable as the
+    character-reversed text this source was flagged for (#1560), so treat it as
+    no text rather than as a long document.
+    """
+    if not text:
+        return True
+    return len(_CID_RE.findall(text)) * 7 > 0.25 * len(text)
 
 
 def _classify_doc(title: str, category: str) -> str:
@@ -250,13 +289,21 @@ class CBLRegulationsScraper(BaseScraper):
         laws = self._scrape_laws_page()
         pubs = self._scrape_publications()
 
+        # Dedup on the same key `_make_id` uses — the PDF filename — not on the
+        # full URL. WordPress multisite serves one upload under several alias
+        # paths (`/micifaf/2022/07/x.pdf`, `/en/micifaf/sites/4/2022/07/x.pdf`,
+        # `/en/wp-content/uploads/2022/07/x.pdf`), which a URL-keyed set treats
+        # as three documents: the crawl downloaded and extracted each copy, and
+        # since they already share an `_id` two of the three were destined to be
+        # discarded at ingest anyway. Keying the list the way the id is keyed
+        # keeps the two consistent.
         seen = set()
         all_docs = []
         for doc in laws + pubs:
-            norm = _normalize_url(doc["url"])
-            if norm in seen:
+            key = _make_id(doc["url"])
+            if key in seen:
                 continue
-            seen.add(norm)
+            seen.add(key)
             all_docs.append(doc)
 
         logger.info("Total unique documents: %d", len(all_docs))
@@ -316,6 +363,12 @@ class CBLRegulationsScraper(BaseScraper):
             if not text or len(text) < 50:
                 logger.warning("Insufficient text (%d chars): %s",
                              len(text or ""), title[:50])
+                continue
+
+            if _is_undecodable(text):
+                logger.warning(
+                    "Undecodable font — text layer is (cid:N) placeholders "
+                    "(%d chars): %s", len(text), title[:50])
                 continue
 
             date = _extract_year(title) or _extract_year(url)
@@ -384,4 +437,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

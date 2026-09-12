@@ -1,6 +1,6 @@
 last_bootstrap: null
 last_error: '''NoneType'' object has no attribute ''lower'''
-last_run: '2026-05-12T14:02:12.940147+00:00'
+last_run: '2026-09-05T15:05:11.915636+00:00'
 run_history:
 - error_message: '''NoneType'' object has no attribute ''lower'''
   errors: 0
@@ -53,4 +53,37 @@ run_history:
   skip_exception: 0
   skip_normalize_none: 0
   started_at: '2026-05-12T13:56:24.456256+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-09-05T14:49:07.922346+00:00'
+  records_fetched: 11
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 11
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-09-05T14:43:29.971017+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-09-05T14:58:29.363522+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-09-05T14:52:24.544759+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-09-05T15:05:11.915636+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-09-05T14:59:03.697550+00:00'
 total_records: 0

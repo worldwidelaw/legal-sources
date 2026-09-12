@@ -7,6 +7,10 @@ description: 'Official Turkish legislation database maintained by the Presidency
   and presidential decrees (cumhurbaşkanlığı kararnameleri).
 
   '
+discovery:
+  # MevzuatTur=6 is the aggregate lane: it enumerates the whole corpus (~19,069
+  # docs) including the tur 8/9/17/20 types no single-type query returns.
+  aggregate_mevzuat_tur: 6
 endpoints:
   content_iframe: /anasayfa/MevzuatFihristDetayIframe
   datatable: /Anasayfa/MevzuatDatatable
@@ -29,6 +33,9 @@ schema:
     required: false
     type: string
   - name: mevzuat_tur
+    required: false
+    type: integer
+  - name: mevzuat_tur_name
     required: false
     type: string
   - name: mevzuat_tertip

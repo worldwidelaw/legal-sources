@@ -41,14 +41,46 @@ The Federal Register provides a free REST API compliant with OpenAPI v3.0.1:
 | `/v1/versions` | List all document versions |
 | `/v1/documents/find(...)` | Download document files |
 
+## Crawl Strategy
+
+The full pass walks `/v1/Documents` directly rather than iterating titles:
+
+```
+/v1/Documents?$filter=type eq 'Primary' and (format eq 'Epub' or format eq 'Word')
+              &$orderby=titleId,start desc&$top=100
+```
+
+Every row already carries `registerId`, `compilationNumber` and the exact
+download parameters, so a record costs one listing slot plus one download
+instead of the four round-trips (count, titles page, versions, documents) the
+per-title walk needed. Rows for one title arrive together, newest compilation
+first; the scraper keeps the latest, preferring EPUB over Word. Title metadata
+comes from a single pass over `/v1/titles`, cached in
+`data/au_titles_index.json` for 30 days.
+
+### Checkpoint and resume
+
+The register is too large to crawl inside the fleet's 100-hour cap in one run,
+so progress is checkpointed on the `titleId` cursor in
+`data/au_federalregister_checkpoint.json` (flushed every 50 titles). A run
+killed by the cap resumes at the next title, so successive slots advance
+monotonically instead of restarting. Paging uses a `titleId gt '<cursor>'`
+filter rather than `$skip`, so newly registered documents cannot shift the
+offset and hide unseen rows.
+
+Delete the checkpoint file to force a full re-crawl. `--sample` neither reads
+nor writes it.
+
 ## Full Text Extraction
 
-The scraper downloads Word documents (.docx) and extracts text from the embedded XML:
+Both EPUB and Word documents are ZIP archives:
 
-1. Download `.docx` file via `/v1/documents/find(...)`
-2. Extract `word/document.xml` from the ZIP archive
-3. Parse XML and extract all `<w:t>` text elements
+1. Download the file via `/v1/documents(titleid=...,format=...)`
+2. **EPUB** (preferred): read the `.html`/`.xhtml` entries, strip tags, decode entities
+3. **Word**: extract `word/document.xml` and concatenate the `<w:t>` text elements
 4. Clean and normalize whitespace
+
+Text shorter than 100 characters is treated as an extraction failure and skipped.
 
 ## Usage
 
@@ -68,7 +100,7 @@ python bootstrap.py update
 
 ## Rate Limiting
 
-- Conservative: 1 request/second with burst of 3
+- 2 requests/second with burst of 3
 - Avoid bulk downloads during 0800-2000 AEST (UTC+10)
 - Contact feedback@legislation.gov.au before large-scale crawls
 

@@ -69,7 +69,7 @@ from typing import Generator
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common import pdf_extract
 
 logging.basicConfig(
@@ -180,8 +180,18 @@ class INCADDNARScraper(BaseScraper):
     def discover_documents(self, sample: bool = False) -> list[dict]:
         code, blob = self._curl(INDEX_PDF)
         if not blob or blob[:4] != b"%PDF":
-            logger.error(f"Index PDF fetch failed (http {code}, {len(blob)} bytes)")
-            return []
+            # The whole corpus hangs off this one PDF, so a refused fetch used
+            # to degrade into a calm "0 records" that the fleet wrapper then
+            # backfilled with the committed samples (#1207).
+            raise RuntimeError(
+                f"Could not fetch the CADDNAR citation index {INDEX_PDF} "
+                f"(HTTP {code}, {len(blob)} bytes, "
+                f"{'not a PDF' if blob else 'empty body'}). The index answers "
+                f"200 with ~542 KB from a US/residential vantage and every "
+                f"decision is discovered from it, so an unreadable index means "
+                f"in.gov refused this vantage — failing loud rather than "
+                f"reporting an empty corpus."
+            )
         text = pdf_extract.extract_pdf_markdown(
             "US/IN-CADDNAR", "caddnar_index", pdf_bytes=blob,
             table="case_law", force=True,
@@ -206,6 +216,13 @@ class INCADDNARScraper(BaseScraper):
             if sample and len(out) >= 16:
                 break
         logger.info(f"Discovered {len(out)} CADDNAR decisions from the citation index")
+        if not out:
+            raise RuntimeError(
+                f"Read the citation index ({len(blob)} bytes, {len(text)} chars "
+                f"extracted) but matched 0 decision rows. The index carries 751 "
+                f"decisions, so 0 rows means the PDF text layer or the row "
+                f"format changed — not an empty corpus."
+            )
         return out
 
     # ------------------------------------------------------- build record
@@ -288,13 +305,24 @@ class INCADDNARScraper(BaseScraper):
     # ------------------------------------------------------------- fetch
     def _iter_raw(self, sample: bool = False) -> Generator[dict, None, None]:
         emitted = 0
-        for doc in self.discover_documents(sample=sample):
+        docs = self.discover_documents(sample=sample)
+        for doc in docs:
             raw = self._build_raw(doc)
             if raw:
                 yield raw
                 emitted += 1
                 if sample and emitted >= 12:
                     return
+
+        if not emitted:
+            # The index PDF and the decision pages are separate paths, so a
+            # readable index is not proof the decisions are being served.
+            raise RuntimeError(
+                f"Discovered {len(docs)} decisions from the citation index but "
+                f"built 0 records — the index parsed, so the break is in the "
+                f"per-decision .html/.htm fetches on in.gov, not an empty "
+                f"corpus."
+            )
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield RAW records (framework normalizes via normalize())."""
@@ -304,6 +332,9 @@ class INCADDNARScraper(BaseScraper):
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self.fetch_all():
             if not since or (raw.get("date") and raw["date"] >= since):
                 yield raw

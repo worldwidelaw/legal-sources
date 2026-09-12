@@ -1,0 +1,92 @@
+# ═══════════════════════════════════════════════════════════════════
+# US/NavajoCourts — Navajo Nation Supreme Court — Opinions
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "US/NavajoCourts"
+  country: "US"
+  name: "Navajo Nation Supreme Court — Opinions"
+  url: "https://courts.navajo-nsn.gov/suctopinions.htm"
+  description: |
+    Full-text published slip opinions of the Supreme Court of the Navajo
+    Nation, the highest court of the largest tribal judiciary in the United
+    States (reservation territory in Arizona, New Mexico and Utah). Each
+    opinion disposes of a docketed appeal — SC-CV-* civil, SC-CR-* criminal,
+    SC-SP-* special proceeding, SC-NB-* bar admission — and is therefore
+    case_law. Sourced from the Judicial Branch's static opinion index at
+    courts.navajo-nsn.gov/suctopinions.htm and the born-digital opinion PDFs
+    it links under NNSC{year}/ and SupCtMisc/. English. Coverage: 2013–2021
+    plus two standing court orders (1995, 2004); pre-2013 opinions were
+    published only in the print Navajo Reporter and are not online.
+    The court's own opinion *summaries* (NNSCSummaries/) are excluded — they
+    are disclaimed paraphrases that may not be cited.
+
+data_types:
+  - case_law
+
+jurisdictions:
+  - code: US-AZ
+    scope: partial
+  - code: US-NM
+    scope: partial
+  - code: US-UT
+    scope: partial
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_scrape"   # static index page + born-digital opinion PDFs
+  base_url: "https://courts.navajo-nsn.gov"
+
+# ── Output Schema ─────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "case_number"
+      type: "string"
+      required: false
+    - name: "case_name"
+      type: "string"
+      required: false
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "year"
+      type: "integer"
+      required: false
+    - name: "court"
+      type: "string"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Public Domain (tribal government edict)"
+  url: "https://courts.navajo-nsn.gov/disclaimer.htm"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Opinions of the Navajo Nation Supreme Court are edicts of a sovereign
+    tribal government published as public records by the Judicial Branch of
+    the Navajo Nation. Under the government edicts doctrine judicial opinions
+    are not subject to copyright, and the Judicial Branch publishes them for
+    public access without a reuse restriction. The site disclaimer limits the
+    court's warranty of accuracy; it does not restrict reuse.

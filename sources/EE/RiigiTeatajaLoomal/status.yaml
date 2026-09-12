@@ -1,0 +1,25 @@
+last_bootstrap: '2026-08-19T05:14:48.867298+00:00'
+last_error: null
+last_run: '2026-08-19T05:14:48.867298+00:00'
+run_history:
+- batch_size: 100
+  coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-19T05:14:48.867298+00:00'
+  max_workers: 5
+  mode: fast
+  rate_limiter:
+    current_rate: 5.0
+    rate_changes: 0
+    start_rate: 5.0
+    total_429s: 0
+    total_wait_time_seconds: 56.2
+    total_waits: 291
+  records_fetched: 144
+  records_new: 144
+  records_skipped: 0
+  records_updated: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-19T05:13:57.765077+00:00'
+total_records: 144

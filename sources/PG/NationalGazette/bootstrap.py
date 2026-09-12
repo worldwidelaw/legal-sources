@@ -222,8 +222,33 @@ class PGNationalGazetteScraper(BaseScraper):
 
         logger.info(f"Completed: {count} gazette compilations fetched")
 
-    def fetch_updates(self, since: str = None) -> Generator[Dict[str, Any], None, None]:
-        yield from self.fetch_all(max_records=10)
+    def fetch_updates(self, since=None) -> Generator[Dict[str, Any], None, None]:
+        """Yield gazette compilations from `since`'s year onward.
+
+        The bucket exposes only CommonPrefixes for the gazette directories, so
+        there is no per-directory LastModified to compare against. The year
+        parsed from the directory name is the closest available proxy: new
+        compilations land in the current or previous year, so re-walking from
+        `since`'s year forward covers anything newly published without
+        re-reading the whole 1975-onward archive. append_only dedup on _id
+        absorbs the overlap.
+        """
+        if since is None:
+            yield from self.fetch_all()
+            return
+
+        if isinstance(since, str):
+            since = datetime.fromisoformat(since)
+        since_year = since.year
+
+        for raw in self.fetch_all():
+            year = raw.get("year")
+            try:
+                if year and int(year) >= since_year:
+                    yield raw
+            except (TypeError, ValueError):
+                # Undated compilation: yield it rather than silently drop it.
+                yield raw
 
     def test(self) -> bool:
         dirs = self._list_gazette_dirs()
@@ -264,36 +289,25 @@ def main():
         sys.exit(0 if success else 1)
 
     elif args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        count = 0
-        max_records = 15 if args.sample else None
-
-        for record in scraper.fetch_all(max_records=max_records):
-            out_path = sample_dir / f"record_{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            text_len = len(record.get("text", ""))
-            logger.info(
-                f"[{count + 1}] {record.get('title', '?')[:80]} "
-                f"({text_len:,} chars, {record.get('pages', 0)} pages)"
-            )
-            count += 1
-
-        logger.info(f"Bootstrap complete: {count} records saved to sample/")
+        # Delegate to BaseScraper rather than writing records by hand: the
+        # hand-rolled loop this replaces dumped *raw* fetch_all() output into
+        # sample/, so normalize() never ran (records carried no _id/_source/
+        # _type/_fetched_at) and no data/records.jsonl was produced for the
+        # fleet to ingest. See issue #1596.
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+        logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2)}")
 
     elif args.command == "update":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-        count = 0
-        for record in scraper.fetch_updates():
-            out_path = sample_dir / f"update_{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-        logger.info(f"Update complete: {count} records")
+        # BaseScraper.update() derives `since` from status.yaml:last_run and
+        # routes through fetch_updates().
+        stats = scraper.update()
+        logger.info(f"Update complete: {json.dumps(stats, indent=2)}")
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

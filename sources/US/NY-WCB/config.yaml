@@ -10,19 +10,33 @@
 # resolving the contested case = case_law. These are official New York
 # state-government works in the public domain (government edicts).
 #
-# BUILD RECIPE (no auth, no CAPTCHA): two openly-browsable decision sets
-# on wcb.ny.gov:
-#   * "Select Board Panel Decisions" — an index at
-#     /content/main/Decisions/board-panel-decisions.jsp linking one
-#     server-rendered HTML page per decision under
-#     /content/main/Decisions/board-panel-decisions/{Matter...}.jsp ;
-#     the full decision body is inside <div id="mainContent">.
-#   * "Significant Full Board Decisions" — an index at
-#     /content/main/Decisions/board-decisions.jsp linking born-digital
-#     decision PDFs under /content/main/Decisions/{YYYYMon}/*.pdf .
+# BUILD RECIPE (no auth, no CAPTCHA): four openly-browsable decision
+# indexes on wcb.ny.gov, plus an Internet Archive sweep for the series the
+# Board rotates off its indexes each month:
+#   * "Select Board Panel Decisions" — /content/main/Decisions/
+#     board-panel-decisions.jsp links one server-rendered HTML page per
+#     decision under .../board-panel-decisions/{Matter...}.jsp ; the full
+#     decision body is inside <div id="mainContent">.
+#   * "Significant Full Board Decisions" — /content/main/Decisions/
+#     board-decisions.jsp links born-digital decision PDFs under
+#     /content/main/Decisions/{YYYYMon}/*.pdf . This index shows only the
+#     few most recent months.
+#   * "COVID-19 Decisions" — /content/main/Decisions/covid-19-decisions.jsp
+#     links Board Panel decisions on COVID-19 claims (.jsp pages).
+#   * "Appellate Court Decisions" — /content/main/Decisions/
+#     appellate-court-decisions.jsp links the Appellate Division, Third
+#     Department memoranda and orders deciding appeals from the Board,
+#     under /content/main/Decisions/court-decisions/*.pdf .
+# HISTORICAL ENUMERATION (issue #1393): each month the Board publishes a
+# new set of Significant Full Board decisions and DELETES the previous
+# ones — the month directories 404 live — so the pre-current series is
+# reachable only through the Internet Archive. A Wayback CDX sweep of
+# wcb.ny.gov/content/main/Decisions* recovers every archived decision
+# document; each is fetched live first and replayed from /web/{ts}id_/
+# only when the live URL is gone.
 # The Board's complete corpus is served only through the case-number-keyed
-# "eCase" system (not openly enumerable); these curated Board Panel and
-# Full Board decision sets are the openly-published full-text decisions.
+# "eCase" system (not openly enumerable); these curated decision sets are
+# the openly-published full-text decisions.
 # ===================================================================
 
 source:
@@ -38,8 +52,12 @@ source:
     Decision resolving the contested workers'-compensation, disability-
     benefits or paid-family-leave case. Each decision resolves a specific
     contested case = case_law. Captured from the Board's "Select Board
-    Panel Decisions" (per-decision HTML pages) and "Significant Full Board
-    Decisions" (born-digital PDFs) indexes; matter caption, WCB case
+    Panel Decisions" (per-decision HTML pages), "Significant Full Board
+    Decisions" (born-digital PDFs), "COVID-19 Decisions" and "Appellate
+    Court Decisions" (Appellate Division, Third Department memoranda and
+    orders deciding appeals from the Board) indexes, plus an Internet
+    Archive sweep that recovers the Full Board series the Board deletes
+    when it rotates each month off the index. Matter caption, WCB case
     number, NY Wrk Comp citation, decision date and full decision text are
     captured. No CAPTCHA, no auth.
 
@@ -59,16 +77,22 @@ api:
   endpoints:
     panel_index: "/content/main/Decisions/board-panel-decisions.jsp"
     fullboard_index: "/content/main/Decisions/board-decisions.jsp"
+    covid_index: "/content/main/Decisions/covid-19-decisions.jsp"
+    appellate_index: "/content/main/Decisions/appellate-court-decisions.jsp"
+    archive_cdx: "https://web.archive.org/cdx/search/cdx?url=wcb.ny.gov/content/main/Decisions*"
 
 data_model:
   type: "case_law"
   primary_key: "record_id"
 
 schema:
-  total_fields: 11
+  total_fields: 13
   key_fields:
     - name: "_id"
-      description: "Stable id (US/NY-WCB/{matter-slug})"
+      description: >
+        Stable id — US/NY-WCB/{matter-slug} for the curated indexes,
+        US/NY-WCB/{YYYYMon}-{matter-slug} for the archived Full Board
+        series, prefixed covid-/court- for the other two series
       type: "string"
       role: "primary_key"
       required: true
@@ -86,6 +110,13 @@ schema:
       description: "Full text of the decision (mainContent HTML or PDF extract)"
       type: "string"
       role: "content"
+      required: true
+    - name: "decision_type"
+      description: >
+        Which series the decision belongs to: board_panel, full_board,
+        board_panel_covid or appellate_court
+      type: "string"
+      role: "classification"
       required: true
     - name: "case_number"
       description: "WCB case number (e.g. 'G1917469'), parsed from the body"

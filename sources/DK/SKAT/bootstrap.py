@@ -5,22 +5,29 @@ DK/SKAT -- Danish Tax Authority Rulings (Skatterådet/Skattestyrelsen)
 Fetches Danish tax rulings and binding answers (bindende svar) from Retsinformation.
 
 Strategy:
-  - Scan ELI URIs /eli/retsinfo/{year}/{number}/dan/xml
-  - Filter for documents from Skatteministeriet
-  - Include AFG (Afgørelser) document types - these are tax rulings
+  - Enumerate via Retsinformation's own search API
+    GET /api/documentsearch?ps=100&dt=230&page=N
+    (dt=230 is the "Afgørelse" / AFG document type; ~6,000 documents)
+  - Keep the entries whose ressortName is a tax ministry
+    ("Skatteministeriet" / "Skatte- og Vækstministeriet")
+  - Download the LexDania XML per hit via its ELI link and extract full text
 
-Document types covered:
-  - AFG: Afgørelser (Decisions/Rulings from Skatterådet)
-  - Includes: Binding rulings (bindende svar), tax decisions
+This replaces the previous brute-force scan of /eli/retsinfo/{year}/{number}
+(2,500 numbers x 7 years = ~17,500 blind requests), which was the cause of
+issue #1389: the scan wedged for ~29 minutes on a single year with nothing
+written. The search API needs ~61 requests to enumerate the whole corpus and
+covers 1954-present rather than 2020-present.
 
-API endpoint:
-  - XML: https://www.retsinformation.dk/eli/retsinfo/{year}/{number}/dan/xml
+API endpoints:
+  - Search:  https://www.retsinformation.dk/api/documentsearch?dt=230&ps=100&page=N
+  - XML:     https://www.retsinformation.dk{retsinfoLink}/dan/xml
 
 Usage:
-  python bootstrap.py bootstrap          # Full initial pull
+  python bootstrap.py bootstrap           # Full initial pull
   python bootstrap.py bootstrap --sample  # Fetch sample records for validation
-  python bootstrap.py update             # Incremental update
-  python bootstrap.py test-api           # Quick API connectivity test
+  python bootstrap.py bootstrap-fast      # Full pull, concurrent + batched writes
+  python bootstrap.py update              # Incremental update
+  python bootstrap.py test-api            # Quick API connectivity test
 """
 
 import sys
@@ -49,14 +56,18 @@ logger = logging.getLogger("legal-data-hunter.DK.SKAT")
 # API endpoint
 RETSINFORMATION_BASE = "https://www.retsinformation.dk"
 
-# Scan range - AFG documents for Skatteministeriet typically in this range
-# The number range varies by year, so we scan broadly
-NUMBER_START = 9000
-NUMBER_END = 11500
+# Retsinformation search API: document type id for "Afgørelse" (ELI code AFG)
+DOCUMENT_TYPE_AFG = 230
 
-# Years to scan
-START_YEAR = 2020
-END_YEAR = datetime.now().year
+# Server caps page size at 100 regardless of a larger ps
+PAGE_SIZE = 100
+
+# Hard stop so a runaway pager can never spin forever (61 pages as of 2026-08)
+MAX_PAGES = 400
+
+# ressortName values that mark a document as tax doctrine. Retsinformation has
+# used several names for the tax ministry over the decades.
+TAX_RESSORT_MARKER = "skatte"
 
 
 class SKATScraper(BaseScraper):
@@ -69,65 +80,104 @@ class SKATScraper(BaseScraper):
     Auth: none (Open Data)
     """
 
-    def __init__(self):
-        source_dir = Path(__file__).parent
-        super().__init__(source_dir)
+    def __init__(self, source_dir=None):
+        # source_dir is optional so the VPS bootstrap-fast wrapper can construct
+        # SKATScraper() by introspection.
+        super().__init__(Path(source_dir) if source_dir else Path(__file__).parent)
 
-        self.xml_client = HttpClient(
+        # (connect, read) timeouts plus a wall-clock deadline: a host that
+        # trickles bytes must never wedge the run the way #1389 did.
+        self.client = HttpClient(
             base_url=RETSINFORMATION_BASE,
-            headers={"User-Agent": "LegalDataHunter/1.0 (Open Data Research)"},
-            timeout=60,
+            headers={
+                "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
+                "Accept": "application/json, application/xml;q=0.9, */*;q=0.8",
+            },
+            timeout=(10, 45),
+            wall_timeout=180,
         )
 
-    def _fetch_xml_document(self, year: int, number: int) -> Optional[dict]:
-        """
-        Fetch a single document via ELI retsinfo endpoint.
+    # -- Enumeration --------------------------------------------------------
 
-        Returns parsed document dict or None if document doesn't exist or
-        is not from Skatteministeriet.
-        """
-        url = f"/eli/retsinfo/{year}/{number}/dan/xml"
+    def _search_page(self, page: int) -> list:
+        """Fetch one page of AFG search results. Returns [] on failure/end."""
+        url = f"/api/documentsearch?ps={PAGE_SIZE}&dt={DOCUMENT_TYPE_AFG}&page={page}"
 
         try:
             self.rate_limiter.wait()
-            resp = self.xml_client.get(url)
+            resp = self.client.get(url)
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as e:
+            logger.warning(f"Search page {page} failed: {e}")
+            return []
+
+        if data.get("isError"):
+            logger.warning(f"Search page {page} returned isError")
+            return []
+
+        return data.get("documents") or []
+
+    @staticmethod
+    def _is_tax_document(entry: dict) -> bool:
+        return TAX_RESSORT_MARKER in (entry.get("ressortName") or "").lower()
+
+    @staticmethod
+    def _parse_dk_date(value: str) -> Optional[str]:
+        """'05/08/2026' (dd/mm/yyyy) -> '2026-08-05'."""
+        if not value:
+            return None
+        m = re.match(r"^(\d{2})/(\d{2})/(\d{4})$", value.strip())
+        if not m:
+            return None
+        day, month, year = m.groups()
+        return f"{year}-{month}-{day}"
+
+    def _iter_search_entries(self) -> Generator[dict, None, None]:
+        """Page through the AFG result set, yielding tax-ministry entries."""
+        page = 1
+        seen = 0
+        kept = 0
+
+        while page <= MAX_PAGES:
+            documents = self._search_page(page)
+            if not documents:
+                logger.info(f"Search exhausted at page {page}")
+                break
+
+            seen += len(documents)
+            for entry in documents:
+                if self._is_tax_document(entry):
+                    kept += 1
+                    yield entry
+
+            if page % 10 == 0:
+                logger.info(f"Search page {page}: {seen} scanned, {kept} tax rulings")
+
+            page += 1
+
+        logger.info(f"Enumeration complete: {seen} AFG scanned, {kept} tax rulings kept")
+
+    # -- Full text ----------------------------------------------------------
+
+    def _fetch_xml(self, retsinfo_link: str) -> Optional[ET.Element]:
+        """Download and parse the LexDania XML for one ELI link."""
+        url = f"{retsinfo_link.rstrip('/')}/dan/xml"
+
+        try:
+            self.rate_limiter.wait()
+            resp = self.client.get(url)
 
             if resp.status_code == 404:
                 return None
 
             resp.raise_for_status()
-
-            # Parse XML
-            root = ET.fromstring(resp.content)
-
-            # Check if this is from Skatteministeriet
-            ministry_elem = root.find(".//Ministry")
-            ministry = ministry_elem.text if ministry_elem is not None else ""
-
-            if ministry != "Skatteministeriet":
-                return None
-
-            # Check document type - we want AFG (Afgørelser)
-            doc_type_elem = root.find(".//DocumentType")
-            doc_type = doc_type_elem.text if doc_type_elem is not None else ""
-
-            if not doc_type.upper().startswith("AFG"):
-                return None
-
-            return {
-                "_raw_xml": resp.content,
-                "_root": root,
-                "_year": year,
-                "_number": number,
-                "_eli_uri": f"/eli/retsinfo/{year}/{number}",
-            }
+            return ET.fromstring(resp.content)
 
         except ET.ParseError as e:
             logger.warning(f"XML parse error for {url}: {e}")
             return None
         except Exception as e:
-            if "404" in str(e) or "Not Found" in str(e):
-                return None
             logger.warning(f"Error fetching {url}: {e}")
             return None
 
@@ -241,92 +291,104 @@ class SKATScraper(BaseScraper):
 
         return meta
 
-    def _scan_year_for_documents(
-        self, year: int, number_start: int = NUMBER_START, number_end: int = NUMBER_END
-    ) -> Generator[dict, None, None]:
-        """
-        Scan a year for tax ruling documents.
-
-        Iterates through number range looking for Skatteministeriet AFG documents.
-        """
-        found_count = 0
-        consecutive_misses = 0
-
-        for number in range(number_start, number_end + 1):
-            doc = self._fetch_xml_document(year, number)
-
-            if doc is not None:
-                found_count += 1
-                consecutive_misses = 0
-                yield doc
-            else:
-                consecutive_misses += 1
-
-            # If we've found documents but hit a long streak of misses, we may be past the range
-            # However, AFG documents are scattered, so we need to keep scanning
-            if found_count > 0 and consecutive_misses > 500:
-                logger.info(f"Stopping year {year} scan after {consecutive_misses} consecutive misses")
-                break
-
-        logger.info(f"Year {year}: found {found_count} tax rulings")
-
     # -- Abstract method implementations ------------------------------------
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """
-        Yield all tax rulings from Retsinformation.
+        Yield search-result stubs for every Skatteministeriet AFG document.
 
-        Scans years from END_YEAR down to START_YEAR.
+        The XML download happens in normalize() so that bootstrap_fast's worker
+        threads overlap the per-document fetches with the sequential paging.
         """
-        for year in range(END_YEAR, START_YEAR - 1, -1):
-            logger.info(f"Scanning year {year} for tax rulings...")
-
-            for doc in self._scan_year_for_documents(year):
-                yield doc
+        yield from self._iter_search_entries()
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """
-        Yield documents from the current year.
+        Yield documents published on or after `since`.
 
-        Since we don't have a reliable update API, re-scan current year.
+        Results are ordered newest-first, so stop as soon as a full page of
+        older publications has gone by.
         """
-        logger.info(f"Scanning current year {END_YEAR} for updates...")
-        for doc in self._scan_year_for_documents(END_YEAR):
-            yield doc
+        cutoff = since.date().isoformat()
+        page = 1
+        stale_pages = 0
 
-    def normalize(self, raw: dict) -> dict:
+        while page <= MAX_PAGES:
+            documents = self._search_page(page)
+            if not documents:
+                break
+
+            fresh_on_page = 0
+            for entry in documents:
+                pub = self._parse_dk_date(entry.get("offentliggoerelsesDato", ""))
+                if pub and pub < cutoff:
+                    continue
+                fresh_on_page += 1
+                if self._is_tax_document(entry):
+                    yield entry
+
+            if fresh_on_page == 0:
+                stale_pages += 1
+                # One fully-stale page is enough with a date-sorted feed; allow
+                # a second in case of out-of-order publication dates.
+                if stale_pages >= 2:
+                    logger.info(f"Reached documents older than {cutoff} at page {page}")
+                    break
+            else:
+                stale_pages = 0
+
+            page += 1
+
+    def normalize(self, raw: dict) -> Optional[dict]:
         """
-        Transform raw XML document into standard schema.
+        Download the document XML and transform it into the standard schema.
 
         CRITICAL: Extracts and includes FULL TEXT from XML content.
+        Returns None when the document has no retrievable body.
         """
-        root = raw["_root"]
-        year = raw["_year"]
-        number = raw["_number"]
-        eli_uri = raw["_eli_uri"]
+        eli_uri = (raw.get("retsinfoLink") or "").rstrip("/")
+        if not eli_uri:
+            return None
 
-        # Parse metadata
+        root = self._fetch_xml(eli_uri)
+        if root is None:
+            return None
+
         meta = self._parse_meta(root)
-
-        # Extract full text
         full_text = self._extract_text_from_xml(root)
 
-        # Get title
-        title = meta.get("title", "")
+        if not full_text:
+            logger.debug(f"No text extracted for {eli_uri}")
+            return None
+
+        # Title: prefer the XML metadata, fall back to the search hit
+        title = meta.get("title") or raw.get("title") or ""
         if not title:
             titel_elem = root.find(".//Titel")
             if titel_elem is not None:
                 title = "".join(titel_elem.itertext()).strip()
 
-        # Get date (prefer signature date, fall back to publication)
-        date = meta.get("signature_date") or meta.get("publication_date") or ""
+        date = (
+            meta.get("signature_date")
+            or meta.get("publication_date")
+            or self._parse_dk_date(raw.get("offentliggoerelsesDato", ""))
+            or ""
+        )
 
-        # Build ID
+        # Year/number from the ELI path, e.g. /eli/retsinfo/2026/9740
+        year = number = None
+        m = re.search(r"/eli/retsinfo/(\d{4})/(\d+)", eli_uri)
+        if m:
+            year, number = int(m.group(1)), int(m.group(2))
+
         accession = meta.get("accession_number", "")
-        doc_id = accession or f"DK-SKAT-{year}-{number}"
+        doc_id = accession or f"DK-SKAT-{raw.get('id') or f'{year}-{number}'}"
 
-        # Build canonical URL
-        url = f"{RETSINFORMATION_BASE}{eli_uri}"
+        def _as_int(value, fallback):
+            try:
+                return int(value)
+            except (TypeError, ValueError):
+                return fallback
 
         return {
             # Required base fields
@@ -338,20 +400,23 @@ class SKATScraper(BaseScraper):
             "title": title,
             "text": full_text,  # MANDATORY FULL TEXT
             "date": date,
-            "url": url,
+            "url": f"{RETSINFORMATION_BASE}{eli_uri}",
             # Source-specific fields
             "accession_number": accession,
             "document_id": meta.get("document_id", ""),
-            "unique_document_id": meta.get("unique_document_id", ""),
-            "year": int(meta.get("year", year)),
-            "number": int(meta.get("number", number)),
+            "unique_document_id": meta.get("unique_document_id", str(raw.get("id", ""))),
+            "year": _as_int(meta.get("year"), year),
+            "number": _as_int(meta.get("number"), number),
+            "short_name": raw.get("shortName", ""),
             "document_type": "AFG",
             "document_type_raw": meta.get("document_type_raw", ""),
             "eli_uri": eli_uri,
-            "ministry": meta.get("ministry", "Skatteministeriet"),
+            "ministry": meta.get("ministry") or raw.get("ressortName", ""),
             "administrative_authority": meta.get("administrative_authority", ""),
             "status": meta.get("status", ""),
-            "publication_date": meta.get("publication_date", ""),
+            "publication_date": meta.get("publication_date")
+            or self._parse_dk_date(raw.get("offentliggoerelsesDato", ""))
+            or "",
             "signature_date": meta.get("signature_date", ""),
             "journal_number": meta.get("journal_number", ""),
             "references": meta.get("references", []),
@@ -361,34 +426,27 @@ class SKATScraper(BaseScraper):
 
     def test_api(self):
         """Quick connectivity and API test."""
-        print("Testing Retsinformation endpoints for tax rulings...")
+        print("Testing Retsinformation search API for tax rulings...")
 
-        # Test known tax ruling
-        print("\n1. Testing ELI retsinfo endpoint...")
-        doc = self._fetch_xml_document(2024, 9335)
-        if doc:
-            meta = self._parse_meta(doc["_root"])
-            print(f"   Document found: {meta.get('title', 'Unknown')[:60]}...")
-            print(f"   Ministry: {meta.get('ministry', 'Unknown')}")
-            print(f"   Authority: {meta.get('administrative_authority', 'Unknown')}")
-            text = self._extract_text_from_xml(doc["_root"])
-            print(f"   Text length: {len(text)} characters")
-            print(f"   First 300 chars: {text[:300]}...")
-        else:
-            print("   ERROR: Could not fetch known tax ruling 2024/9335")
+        print("\n1. Search API, page 1...")
+        documents = self._search_page(1)
+        print(f"   {len(documents)} AFG hits returned")
+        tax = [d for d in documents if self._is_tax_document(d)]
+        print(f"   {len(tax)} of them from a tax ministry")
+        if not tax:
+            print("   ERROR: no tax rulings on page 1")
+            return
 
-        # Quick scan
-        print("\n2. Quick scan for tax rulings in 2024...")
-        count = 0
-        for num in range(9250, 9500, 25):
-            doc = self._fetch_xml_document(2024, num)
-            if doc:
-                count += 1
-                if count <= 3:
-                    meta = self._parse_meta(doc["_root"])
-                    print(f"   Found: {num} - {meta.get('title', 'Unknown')[:50]}...")
+        print("\n2. Full-text download for the first hit...")
+        record = self.normalize(tax[0])
+        if not record:
+            print(f"   ERROR: could not normalize {tax[0].get('retsinfoLink')}")
+            return
+        print(f"   Title: {record['title'][:70]}")
+        print(f"   Date: {record['date']}  URL: {record['url']}")
+        print(f"   Text length: {len(record['text'])} characters")
+        print(f"   First 300 chars: {record['text'][:300]}...")
 
-        print(f"   Found {count} tax rulings in sample range")
         print("\nAPI test complete!")
 
 
@@ -396,14 +454,14 @@ class SKATScraper(BaseScraper):
 
 
 def main():
-    scraper = SKATScraper()
-
     if len(sys.argv) < 2:
         print(
-            "Usage: python bootstrap.py [bootstrap|update|test-api] "
-            "[--sample] [--sample-size N]"
+            "Usage: python bootstrap.py [bootstrap|bootstrap-fast|update|test-api] "
+            "[--sample] [--full] [--sample-size N]"
         )
         sys.exit(1)
+
+    scraper = SKATScraper()
 
     command = sys.argv[1]
     sample_mode = "--sample" in sys.argv
@@ -415,12 +473,19 @@ def main():
     if command == "test-api":
         scraper.test_api()
 
-    elif command == "bootstrap":
+    elif command in ("bootstrap", "bootstrap-fast"):
         if sample_mode:
             stats = scraper.run_sample(n=sample_size)
             print(
                 f"\nSample complete: "
                 f"{stats.get('sample_records_saved', 0)} records saved to sample/"
+            )
+        elif command == "bootstrap-fast":
+            stats = scraper.bootstrap_fast()
+            print(
+                f"\nbootstrap_fast complete: {stats.get('records_fetched', 0)} fetched, "
+                f"{stats.get('records_new', 0)} new, "
+                f"{stats.get('records_updated', 0)} updated"
             )
         else:
             stats = scraper.bootstrap()

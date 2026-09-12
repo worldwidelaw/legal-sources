@@ -1,0 +1,166 @@
+# ===================================================================
+# BE/DBRC -- Dienst van de Bestuursrechtscolleges (Flemish Administrative
+#            Courts) — arresten
+# ===================================================================
+# Full text of the judgments (arresten) of the four Flemish administrative
+# courts administered by the DBRC: the Raad voor Vergunningsbetwistingen
+# (planning-permit disputes), the Handhavingscollege (environmental
+# enforcement), the Raad voor Verkiezingsbetwistingen (local election
+# disputes) and the Raad voor Studievoortgangsbetwistingen (study-progress
+# disputes). Each arrest adjudicates a specific case = case_law.
+#
+# ⚠️ COMMERCIAL USE RESTRICTED — the DBRC disclaimer requires prior express
+# written consent for commercial reuse, reproduction or publication of the
+# arresten.
+#
+# ACCESS: www.dbrc.be/rechtspraak is a server-rendered Drupal Views listing
+# with facets — no auth, no JS, no WAF from a residential vantage. 20
+# judgment PDF links per page, ~19,410 arresten (work-years 2009-10 ..
+# 2025-26). Use www.dbrc.be, NOT the www.rvvb.be mirror, which rewrites
+# direct PDF requests into a JS-aggregator redirect.
+# ===================================================================
+
+source:
+  id: "BE/DBRC"
+  country: "BE"
+  name: "Belgium (Flanders) — Dienst van de Bestuursrechtscolleges (Flemish Administrative Courts)"
+  url: "https://www.dbrc.be/rechtspraak"
+  description: |
+    Judgments (arresten) of the Flemish administrative courts administered
+    by the Dienst van de Bestuursrechtscolleges: Raad voor
+    Vergunningsbetwistingen (planning-permit disputes, annulment /
+    suspension / extremely-urgent-suspension procedures),
+    Handhavingscollege (environmental enforcement fines), Raad voor
+    Verkiezingsbetwistingen (local election disputes) and Raad voor
+    Studievoortgangsbetwistingen (higher-education study-progress
+    disputes). Full text is extracted from the born-digital arrest PDFs
+    published on dbrc.be; the decision number, roll number and
+    pronouncement date are parsed from the arrest header.
+
+data_types:
+  - case_law
+
+jurisdictions:
+  - code: BE-VLG
+    scope: full
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.dbrc.be"
+  endpoints:
+    listing: "/rechtspraak?page={page}"
+    listing_by_type: "/rechtspraak?f[0]=document_type:{type_id}&page={page}"
+    document: "/sites/default/files/{YYYY-MM}/{COURT}[.{PROC}].{WORKYEAR}.{NNNN}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 17
+  key_fields:
+    - name: "title"
+      description: "Arrest number, court and procedure, e.g. 'Arrest RvVb-UDN-2526-0627 — Raad voor Vergunningsbetwistingen (schorsing bij uiterst dringende noodzakelijkheid)'"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the arrest, extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the arrest was pronounced (ISO 8601), parsed from the 'ARREST van {D} {maand} {YYYY}' header"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "decision_number"
+      description: "Official arrest number, e.g. 'RvVb-UDN-2526-0627' (from 'met nummer ...')"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "roll_number"
+      description: "Case roll number, e.g. '2526-RvVb-0613-UDN' (from 'in de zaak met rolnummer ...')"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "court"
+      description: "Issuing court — Raad voor Vergunningsbetwistingen, Handhavingscollege, Raad voor Verkiezingsbetwistingen or Raad voor Studievoortgangsbetwistingen"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "court_code"
+      description: "Court code from the PDF filename (RVVB, MHHC, RSTVB, RVERKB)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "procedure"
+      description: "Procedure type — vernietigingsprocedure, schorsingsprocedure, UDN or handhavingsprocedure"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "document_type"
+      description: "DBRC document_type facet label the record was discovered under"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "work_year"
+      description: "Judicial work-year the arrest belongs to, e.g. '2025-2026'"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "url"
+      description: "Direct URL of the arrest PDF on dbrc.be"
+      type: "string"
+      role: "metadata"
+      required: true
+
+license:
+  name: "DBRC disclaimer — commercial reuse requires prior express written consent"
+  url: "https://www.dbrc.be/disclaimer"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: |
+    ⚠️ Commercial use restricted. The DBRC disclaimer states that
+    reproduction, publication or any commercial reuse of the arresten
+    requires the prior express written consent of the DBRC. The judgments
+    are freely consultable for personal and non-commercial use.
+
+notes: |
+  - fetch_all() partitions the walk by the ``document_type`` facet — one
+    unit per court/procedure (6 units covering 19,402 of the 19,410
+    arresten) — followed by an unfaceted sweep that picks up the handful
+    of arresten carrying no document_type term. Each record therefore
+    arrives with its court/procedure label straight from the facet, and a
+    restart does not re-walk completed units.
+  - Completed units, the in-progress page and the set of already-seen PDF
+    URLs are persisted to data/checkpoint.json, so a relaunched fleet slot
+    resumes without re-downloading PDFs it has already processed.
+  - The listing yields 20 judgment PDF links per page (~971 pages). The
+    site footer also carries a toegankelijkheidsverklaring.pdf; links are
+    taken from the result <article> cards, and the regex fallback keeps
+    only filenames matching the judgment pattern, so the footer PDF never
+    leaks in.
+  - Filenames follow {COURT}[.{PROC}].{WORKYEAR}.{NNNN}.pdf — e.g.
+    RVVB.UDN.2526.0627, RVVB.S.2526.0633, MHHC.M.1718.0069_0,
+    RSTVB.2526.0870, RVERKB.2425.0041 — and supply the court code,
+    procedure, work-year and sequence.
+  - Documents are born-digital; text is extracted with PyMuPDF (fitz) and
+    falls back to pdfplumber. No OCR path is needed.
+  - If the listing returns no judgment links the run raises instead of
+    reporting an empty corpus, so a future block fails loud.
+  - Use www.dbrc.be, NOT www.rvvb.be — the rvvb.be mirror rewrites direct
+    PDF requests into a JS-aggregator redirect.

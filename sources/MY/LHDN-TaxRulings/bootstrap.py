@@ -52,10 +52,19 @@ logger = logging.getLogger("legal-data-hunter.MY.LHDN-TaxRulings")
 
 BASE_URL = "https://www.hasil.gov.my"
 
+# LHDN moved its legislation section from /en/legislation/<english-slug>/ to
+# /en/perundangan/<malay-slug>/; the old paths now 404 (see issue #1366).
+# category -> (path, record type)
 PAGES = {
-    "Public Ruling": "/en/legislation/public-rulings/",
-    "Guideline": "/en/legislation/guidelines/",
-    "Practice Note": "/en/legislation/practice-note/",
+    "Public Ruling": ("/en/perundangan/ketetapan-umum/", "doctrine"),
+    "Guideline": ("/en/perundangan/garis-panduan/", "doctrine"),
+    "Practice Note": ("/en/perundangan/nota-amalan/", "doctrine"),
+    "Framework": ("/en/perundangan/rangka-kerja/", "doctrine"),
+    "Withholding Tax": ("/en/perundangan/cukai-pegangan/", "doctrine"),
+    "Budget": ("/en/perundangan/bajet/", "doctrine"),
+    "Dialogue Minutes": ("/en/perundangan/minit-dialog-isu-isu-operasi-dan-teknikal/", "doctrine"),
+    "Act": ("/en/perundangan/akta/", "legislation"),
+    "Tax Case": ("/en/perundangan/kes-cukai/", "case_law"),
 }
 
 
@@ -110,7 +119,8 @@ class LHDNTaxRulingsScraper(BaseScraper):
             },
         )
 
-    def _extract_table_rows(self, html: str, category: str, page_url: str) -> List[Dict[str, Any]]:
+    def _extract_table_rows(self, html: str, category: str, page_url: str,
+                            doc_type: str = "doctrine") -> List[Dict[str, Any]]:
         """Extract document entries from HTML tables on LHDN pages."""
         results = []
         seen_urls = set()
@@ -171,6 +181,7 @@ class LHDNTaxRulingsScraper(BaseScraper):
                 "ref_number": ref_number,
                 "date_str": date_str,
                 "category": category,
+                "doc_type": doc_type,
                 "page_url": page_url,
             })
 
@@ -216,6 +227,7 @@ class LHDNTaxRulingsScraper(BaseScraper):
                 "ref_number": "",
                 "date_str": date_str,
                 "category": category,
+                "doc_type": doc_type,
                 "page_url": page_url,
             })
 
@@ -226,14 +238,17 @@ class LHDNTaxRulingsScraper(BaseScraper):
         all_docs = []
         seen_urls = set()
 
-        for category, page_path in PAGES.items():
+        failures = []
+        for category, (page_path, doc_type) in PAGES.items():
             logger.info(f"Fetching {category} page: {page_path}")
             resp = self.client.get(page_path)
             if not resp or resp.status_code != 200:
-                logger.warning(f"  Failed to fetch {page_path}: {resp.status_code if resp else 'no response'}")
+                status = resp.status_code if resp else "no response"
+                logger.warning(f"  Failed to fetch {page_path}: {status}")
+                failures.append(f"{page_path} ({status})")
                 continue
 
-            items = self._extract_table_rows(resp.text, category, page_path)
+            items = self._extract_table_rows(resp.text, category, page_path, doc_type)
             for item in items:
                 if item["url"] not in seen_urls:
                     seen_urls.add(item["url"])
@@ -241,6 +256,14 @@ class LHDNTaxRulingsScraper(BaseScraper):
 
             logger.info(f"  Found {len(items)} documents")
             time.sleep(1.5)
+
+        if not all_docs:
+            # A silent 0 here is what made issue #1366 look like an empty corpus
+            # instead of a moved URL scheme -- fail loud instead.
+            raise RuntimeError(
+                "hasil.gov.my enumeration produced 0 documents; unreachable pages: "
+                + (", ".join(failures) or "none")
+            )
 
         logger.info(f"Total documents to process: {len(all_docs)}")
         return all_docs
@@ -298,15 +321,16 @@ class LHDNTaxRulingsScraper(BaseScraper):
                 logger.warning(f"  Insufficient text ({len(text) if text else 0} chars)")
                 continue
 
-            yield self.normalize({
+            yield {
                 "url": url,
                 "title": title,
                 "ref_number": doc.get("ref_number", ""),
                 "date": _parse_date_ddmmyyyy(doc.get("date_str", "")),
                 "text": text,
                 "category": doc.get("category", ""),
+                "doc_type": doc.get("doc_type", "doctrine"),
                 "page_url": doc.get("page_url", ""),
-            })
+            }
 
             time.sleep(1.5)
 
@@ -322,7 +346,7 @@ class LHDNTaxRulingsScraper(BaseScraper):
         return {
             "_id": f"MY/LHDN-TaxRulings/{doc_id}",
             "_source": "MY/LHDN-TaxRulings",
-            "_type": "doctrine",
+            "_type": raw.get("doc_type", "doctrine"),
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             "title": raw["title"],
             "text": raw["text"],
@@ -340,46 +364,33 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="MY/LHDN-TaxRulings scraper")
-    parser.add_argument("command", choices=["bootstrap", "update", "test"])
-    parser.add_argument("--sample", action="store_true", help="Fetch only 10+ sample records")
+    parser.add_argument(
+        "command",
+        choices=["bootstrap", "bootstrap-fast", "update", "test"],
+    )
+    parser.add_argument("--sample", action="store_true", help="Fetch only 15 sample records")
+    parser.add_argument("--full", action="store_true", help="No-op; the full pull is the default")
     args = parser.parse_args()
 
     scraper = LHDNTaxRulingsScraper()
 
     if args.command == "test":
         logger.info("Testing connectivity to hasil.gov.my...")
-        resp = scraper.client.get("/en/legislation/public-rulings/")
-        if resp and resp.status_code == 200:
-            logger.info(f"OK — got {len(resp.text)} bytes from public rulings page")
-        else:
-            logger.error(f"FAIL — status {resp.status_code if resp else 'no response'}")
+        path, _ = PAGES["Public Ruling"]
+        resp = scraper.client.get(path)
+        if not resp or resp.status_code != 200:
+            logger.error(f"FAIL — status {resp.status_code if resp else 'no response'} for {path}")
+            sys.exit(1)
+        items = scraper._extract_table_rows(resp.text, "Public Ruling", path, "doctrine")
+        if not items:
+            logger.error(f"FAIL — {path} returned {len(resp.text)} bytes but no PDF links")
+            sys.exit(1)
+        logger.info(f"OK — {len(items)} public rulings found at {path}")
         return
 
-    if args.command in ("bootstrap", "update"):
-        sample_dir = scraper.source_dir / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        count = 0
-        max_records = 15 if args.sample else 999999
-
-        for doc in scraper.fetch_all():
-            count += 1
-            text_len = len(doc.get("text", ""))
-            logger.info(
-                f"  #{count} {doc['title'][:50]}... "
-                f"({text_len} chars, {doc['category']})"
-            )
-
-            # Save sample
-            if count <= 20:
-                fname = re.sub(r'[^\w\-]', '_', doc["_id"])[:80] + ".json"
-                with open(sample_dir / fname, "w", encoding="utf-8") as f:
-                    json.dump(doc, f, ensure_ascii=False, indent=2)
-
-            if count >= max_records:
-                break
-
-        logger.info(f"Done — {count} records fetched")
+    # BaseScraper.bootstrap streams every record to data/records.jsonl; the old
+    # CLI only ever wrote sample/, which is why fleet runs ingested samples.
+    scraper.bootstrap(sample_mode=args.sample, sample_size=15)
 
 
 if __name__ == "__main__":

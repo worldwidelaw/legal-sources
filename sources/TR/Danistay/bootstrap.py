@@ -12,6 +12,7 @@ Coverage: Recent precedent-setting decisions from administrative chambers
 import re
 import sys
 import json
+import argparse
 import logging
 import tempfile
 from pathlib import Path
@@ -101,7 +102,13 @@ class TurkishCouncilOfStateScraper(BaseScraper):
                     yield doc
 
     def _fetch_current_decisions(self) -> Generator[dict, None, None]:
-        """Fetch decisions from the guncelKararlar API endpoint."""
+        """
+        Fetch decision metadata from the guncelKararlar API endpoint.
+
+        Only the listing is fetched here — the PDF download and text extraction
+        happen in normalize(), so that bootstrap_fast's worker threads overlap
+        them instead of serialising every PDF on the main thread.
+        """
         try:
             self.rate_limiter.wait()
             resp = self.api_client.get("/tr/guncelKararlar")
@@ -114,39 +121,46 @@ class TurkishCouncilOfStateScraper(BaseScraper):
             logger.info(f"Found {len(decisions)} decisions in API")
 
             for decision in decisions:
-                try:
-                    # Extract PDF full text
-                    pdf_filename = decision.get("dokuman", "")
-                    full_text = ""
-
-                    if pdf_filename:
-                        full_text = self._extract_pdf_text(pdf_filename)
-
-                    if not full_text or len(full_text) < 100:
-                        # Fall back to summary if PDF extraction fails
-                        full_text = decision.get("ozet", "")
-                        logger.warning(
-                            f"Could not extract PDF text for {pdf_filename}, using summary"
-                        )
-
-                    decision["full_text"] = full_text
-                    decision["pdf_url"] = f"{self.PDF_BASE}/{pdf_filename}" if pdf_filename else None
-                    yield decision
-
-                except Exception as e:
-                    logger.warning(f"Failed to process decision {decision.get('id')}: {e}")
+                pdf_filename = decision.get("dokuman", "")
+                decision["pdf_url"] = f"{self.PDF_BASE}/{pdf_filename}" if pdf_filename else None
+                yield decision
 
         except Exception as e:
             logger.error(f"Failed to fetch current decisions: {e}")
 
-    def _extract_pdf_text(self, pdf_filename: str) -> str:
-        """Extract text from PDF using centralized extractor."""
-        return extract_pdf_markdown(
-            source="TR/Danistay",
-            source_id="",
-            pdf_bytes=pdf_filename,
-            table="case_law",
-        ) or ""
+    def _extract_pdf_text(self, pdf_filename: str, decision_id: str) -> str:
+        """
+        Download the decision PDF and extract its text.
+
+        `extract_pdf_markdown` takes raw bytes (`pdf_bytes`) or a URL
+        (`pdf_url`) — passing the bare filename yields no text at all.
+        """
+        if not pdf_filename:
+            return ""
+
+        try:
+            self.rate_limiter.wait()
+            resp = self.pdf_client.get(f"/{pdf_filename}")
+            pdf_bytes = resp.content
+        except Exception as e:
+            logger.warning(f"PDF download failed for {pdf_filename}: {e}")
+            return ""
+
+        if not pdf_bytes or not pdf_bytes.startswith(b"%PDF"):
+            logger.warning(f"Not a PDF response for {pdf_filename}")
+            return ""
+
+        try:
+            return extract_pdf_markdown(
+                source="TR/Danistay",
+                source_id=decision_id,
+                pdf_bytes=pdf_bytes,
+                table="case_law",
+                force=True,
+            ) or ""
+        except Exception as e:
+            logger.warning(f"PDF extraction failed for {pdf_filename}: {e}")
+            return ""
 
     def _clean_text(self, text: str) -> str:
         """Clean extracted text."""
@@ -248,9 +262,19 @@ class TurkishCouncilOfStateScraper(BaseScraper):
         CRITICAL: Includes FULL TEXT from PDF documents.
         """
         decision_id = str(raw.get("id", ""))
-        full_text = raw.get("full_text", "")
         summary = raw.get("ozet", "")
         date_str = raw.get("tarih", "")
+
+        full_text = raw.get("full_text") or self._clean_text(
+            self._extract_pdf_text(raw.get("dokuman", ""), decision_id)
+        )
+        if len(full_text) < 100:
+            # Fall back to the API summary if the PDF yielded nothing usable.
+            logger.warning(
+                f"No PDF text for decision {decision_id} "
+                f"({raw.get('dokuman')}), falling back to summary"
+            )
+            full_text = summary
 
         # Extract additional info from full text
         extracted = self._extract_decision_info(full_text) if full_text else {}
@@ -298,32 +322,31 @@ class TurkishCouncilOfStateScraper(BaseScraper):
 # ── CLI Entry Point ───────────────────────────────────────────────
 
 def main():
+    parser = argparse.ArgumentParser(description="TR/Danistay Data Fetcher")
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "update"])
+    parser.add_argument("--sample", action="store_true")
+    parser.add_argument("--sample-size", type=int, default=12)
+    parser.add_argument("--full", action="store_true",
+                        help="Fetch the full corpus (accepted for VPS wrapper compatibility)")
+    parser.add_argument("--workers", type=int, default=None)
+    parser.add_argument("--batch-size", type=int, default=100)
+
+    args = parser.parse_args()
     scraper = TurkishCouncilOfStateScraper()
 
-    if len(sys.argv) < 2:
-        print("Usage: python bootstrap.py [bootstrap|update] [--sample] [--sample-size N]")
-        sys.exit(1)
-
-    command = sys.argv[1]
-    sample_mode = "--sample" in sys.argv
-    sample_size = 12
-    if "--sample-size" in sys.argv:
-        idx = sys.argv.index("--sample-size")
-        sample_size = int(sys.argv[idx + 1])
-
-    if command == "bootstrap":
-        if sample_mode:
-            stats = scraper.run_sample(n=sample_size)
+    if args.command in ("bootstrap", "bootstrap-fast"):
+        if args.sample:
+            stats = scraper.run_sample(n=args.sample_size)
             print(f"\nSample complete: {stats.get('sample_records_saved', 0)} records saved to sample/")
+        elif args.command == "bootstrap-fast":
+            stats = scraper.bootstrap_fast(max_workers=args.workers, batch_size=args.batch_size)
+            print(f"\nBootstrap complete: {stats['records_new']} new, {stats['records_updated']} updated, {stats['records_skipped']} skipped")
         else:
             stats = scraper.bootstrap()
             print(f"\nBootstrap complete: {stats['records_new']} new, {stats['records_updated']} updated, {stats['records_skipped']} skipped")
-    elif command == "update":
+    else:
         stats = scraper.update()
         print(f"\nUpdate complete: {stats['records_new']} new, {stats['records_updated']} updated")
-    else:
-        print(f"Unknown command: {command}")
-        sys.exit(1)
 
     print(json.dumps(stats, indent=2))
 

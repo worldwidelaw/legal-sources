@@ -10,8 +10,13 @@ Strategy:
   - For each journal issue, extract PDF URL, title, and date
   - Download PDF and extract full text via common/pdf_extract
 
+Most issues are born-digital, but the older ones are multi-hundred-page scans
+that fall through to OCR. That path is bounded by common/pdf_extract's per-PDF
+OCR budget so one gazette cannot stall the crawl (issue #1358).
+
 Usage:
   python bootstrap.py bootstrap          # Fetch all journal issues
+  python bootstrap.py bootstrap-fast     # Same, invoked by the fleet wrapper
   python bootstrap.py bootstrap --sample # Fetch 15 sample records
   python bootstrap.py test               # Quick connectivity test
 """
@@ -144,6 +149,7 @@ class GuineaJOScraper(BaseScraper):
                     continue
 
                 logger.info(f"Extracting: {entry['title'][:60]}")
+                started = time.monotonic()
                 try:
                     text = extract_pdf_markdown(
                         source="GN/JournalOfficiel",
@@ -154,6 +160,14 @@ class GuineaJOScraper(BaseScraper):
                 except Exception as e:
                     logger.warning(f"PDF extraction failed for {entry['title']}: {e}")
                     text = None
+                elapsed = time.monotonic() - started
+                if elapsed > 60:
+                    # Scanned gazettes go through OCR; surface the cost so a slow
+                    # issue is distinguishable from a wedged crawl.
+                    logger.info(
+                        f"{entry['doc_id']} took {elapsed:.0f}s "
+                        f"({len(text) if text else 0} chars)"
+                    )
 
                 if not text or len(text) < 50:
                     logger.warning(f"Insufficient text for {entry['title']}: {len(text) if text else 0} chars")
@@ -223,7 +237,9 @@ def main():
     parser = argparse.ArgumentParser(description="GN/JournalOfficiel data fetcher")
     parser.add_argument(
         "command",
-        choices=["bootstrap", "update", "test"],
+        # "bootstrap-fast" is what the fleet wrapper invokes; without it argparse
+        # rejected the run and the wrapper fell back to ingesting sample/ only.
+        choices=["bootstrap", "bootstrap-fast", "update", "test"],
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample records")
@@ -235,8 +251,13 @@ def main():
     if args.command == "test":
         success = scraper.test()
         sys.exit(0 if success else 1)
-    elif args.command == "bootstrap":
-        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+    elif args.command in ("bootstrap", "bootstrap-fast"):
+        # Route both to the sequential bootstrap: it appends each record to
+        # data/records.jsonl as it lands, so a teardown mid-crawl keeps the
+        # partial corpus. bootstrap_fast batches writes, and with OCR-bound
+        # gazettes a 100-record batch can take hours to accumulate.
+        sample_mode = args.sample and args.command == "bootstrap"
+        stats = scraper.bootstrap(sample_mode=sample_mode, sample_size=15)
         fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
         logger.info(f"Bootstrap complete: {fetched} records — {stats}")
         if fetched == 0:

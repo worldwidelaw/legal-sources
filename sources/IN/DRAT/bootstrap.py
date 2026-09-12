@@ -83,6 +83,50 @@ class DRATScraper(BaseScraper):
         })
         self._tribunals = None
         self._case_types_cache = {}
+        # Checkpoint/resume: the full scan (44 tribunals × 3 case types ×
+        # 7 years × case-no walk, each a 1s-throttled API call + per-order PDF
+        # download) cannot finish inside the 100h fleet window (exit 124). We
+        # persist a per-unit "done" set keyed by (tribunal_id, case_type, year)
+        # plus the last case_no reached in the in-progress unit, so successive
+        # fleet slots skip completed units with NO network calls and resume the
+        # current unit where it left off — the run advances monotonically to
+        # completion instead of restarting from scratch each slot (#1103).
+        self._checkpoint_path = self.source_dir / "data" / "drat_checkpoint.json"
+        self._completed_units, self._unit_progress = self._load_checkpoint()
+
+    @staticmethod
+    def _unit_key(tid: str, ct_id: str, year: int) -> str:
+        return f"{tid}|{ct_id}|{year}"
+
+    def _load_checkpoint(self):
+        """Load (completed unit keys, in-progress {unit_key: last_case_no})."""
+        try:
+            with open(self._checkpoint_path) as f:
+                data = json.load(f)
+            completed = set(data.get("completed_units", []))
+            progress = data.get("unit_progress", {})
+            if completed or progress:
+                logger.info(
+                    "Resuming from checkpoint: %d units done, %d in progress",
+                    len(completed), len(progress),
+                )
+            return completed, progress
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
+            return set(), {}
+
+    def _save_checkpoint(self) -> None:
+        """Persist completed units + in-progress case-no positions."""
+        try:
+            self._checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = self._checkpoint_path.with_suffix(".json.tmp")
+            with open(tmp, "w") as f:
+                json.dump({
+                    "completed_units": sorted(self._completed_units),
+                    "unit_progress": self._unit_progress,
+                }, f)
+            tmp.replace(self._checkpoint_path)
+        except OSError as e:
+            logger.warning("Could not write checkpoint: %s", e)
 
     def _api_post(self, endpoint: str, data: dict, retries: int = 2) -> Optional[dict]:
         """POST to drtapi with multipart form data."""
@@ -226,8 +270,16 @@ class DRATScraper(BaseScraper):
                     continue
 
                 for year in range(END_YEAR, START_YEAR - 1, -1):
+                    unit = self._unit_key(tid, ct_id, year)
+
+                    # Skip fully-completed units with NO network calls (resume).
+                    if unit in self._completed_units:
+                        continue
+
                     empty_streak = 0
-                    case_no = 1
+                    # Resume the in-progress unit at its last position (re-fetch
+                    # only the last case_no; the loader dedups on item_no).
+                    case_no = self._unit_progress.get(unit, 1)
 
                     while empty_streak < MAX_EMPTY_STREAK:
                         orders = self._get_daily_orders(tid, ct_id, case_no, year)
@@ -252,6 +304,17 @@ class DRATScraper(BaseScraper):
                             }
 
                         case_no += 1
+                        # Persist progress every 25 case numbers to bound disk
+                        # writes; a crash mid-unit re-fetches only from here.
+                        if case_no % 25 == 0:
+                            self._unit_progress[unit] = case_no
+                            self._save_checkpoint()
+
+                    # Unit exhausted (hit MAX_EMPTY_STREAK): mark done so future
+                    # slots skip it entirely.
+                    self._completed_units.add(unit)
+                    self._unit_progress.pop(unit, None)
+                    self._save_checkpoint()
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """Fetch recent orders — scan current year across all tribunals."""
@@ -393,4 +456,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

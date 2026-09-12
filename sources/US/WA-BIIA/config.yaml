@@ -1,0 +1,87 @@
+source:
+  id: US/WA-BIIA
+  name: Washington Board of Industrial Insurance Appeals — Significant Decisions
+  country: US
+  url: https://biia.wa.gov/BoardDecisions.html
+  auth: none
+  data_types:
+  - case_law
+  description: >
+    Significant Decisions of the Washington State Board of Industrial Insurance
+    Appeals, the agency that hears appeals from orders of the Department of
+    Labor & Industries under the Industrial Insurance Act (Title 51 RCW). Most
+    Board decisions are unpublished Decisions and Orders; the Significant
+    Decisions designated under RCW 51.52.160 and WAC 263-12-195 are the Board's
+    precedential workers' compensation case law and are cited as
+    "In re Christopher Aalmo, BIIA Dec., 87 4382 (1989)". Roughly 960 decisions
+    from the 1970s to the present, each a born-digital PDF at
+    /SDPDF/{docket}.pdf carrying the published headnote followed by the full
+    Board order. Enumerated from the two static index pages — /SDNameIndex.html
+    (case name, docket, year) and /SDSubjectIndex.html (the Board's own subject
+    headings plus the headnote text) — which are unioned because neither is a
+    superset of the other. Crawled in year partitions with a completed-year
+    checkpoint. NOTE: www.biia.wa.gov never completes a TLS handshake; the
+    apex host biia.wa.gov is the reachable one.
+license:
+  name: Public domain — 17 U.S.C. § 105
+  url: https://www.law.cornell.edu/uscode/text/17/105
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    US state government edict; decisions of a state adjudicative body are not
+    subject to copyright.
+fetch:
+  rate_limit_delay: 1
+  sample_size: 15
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string
+  - name: docket_number
+    required: false
+    type: string
+  - name: citation
+    required: false
+    type: string
+  - name: case_name
+    required: false
+    type: string
+  - name: subjects
+    required: false
+    type: array
+  - name: headnote
+    required: false
+    type: string
+  - name: significant
+    required: false
+    type: boolean
+  - name: year
+    required: false
+    type: integer
+  - name: source_format
+    required: false
+    type: string

@@ -22,6 +22,7 @@ Usage:
 """
 
 import sys
+import hashlib
 import json
 import logging
 import re
@@ -34,7 +35,7 @@ from typing import Generator, Optional, Dict, Any, List
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 
 logging.basicConfig(
@@ -45,6 +46,14 @@ logger = logging.getLogger("legal-data-hunter.NO.Skatteetaten-Uttalelser")
 
 BASE_URL = "https://www.skatteetaten.no"
 DELAY = 1.0
+
+# Every catalog entry carries the SAME `productId` (276) — it is Episerver's
+# content-*type* id, not a document id. Using it as `_id`/dedup_key gave all
+# ~1,250 documents one key, so append_only wrote a single batch and skipped the
+# rest (the 100-row cap of issue #1596). The url path is the only per-document
+# unique value the catalog exposes (955/955 distinct for BFU alone), so `_id`
+# is derived from it, with this shared listing prefix stripped for brevity.
+URL_PREFIX = "/rettskilder/type/uttalelser/"
 
 # Listing pages with their category names
 LISTING_PAGES = {
@@ -145,10 +154,29 @@ class SkatteetatenUttalelser(BaseScraper):
 
         return strip_html(content)
 
+    @staticmethod
+    def _doc_id(raw: Dict[str, Any]) -> str:
+        """Stable per-document id derived from the url path (see URL_PREFIX)."""
+        url = (raw.get("url") or "").strip()
+        if url:
+            path = url.split("?", 1)[0].split("#", 1)[0]
+            if path.startswith(URL_PREFIX):
+                path = path[len(URL_PREFIX):]
+            path = path.strip("/")
+            if path:
+                return path
+        # No url — fall back to the serial number, which is unique per category
+        # ("BFU 10/2022 Skattekontoret"), then to the title.
+        props = raw.get("properties") or {}
+        return (props.get("wholeSerialNumber") or raw.get("title") or "").strip()
+
     def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
         """Normalize a catalog item into the standard schema."""
         props = raw.get("properties", {})
-        product_id = raw.get("productId", "")
+        doc_id = self._doc_id(raw)
+        if not doc_id:
+            logger.warning("Skipping entry with no url/serial/title: %s", str(raw)[:120])
+            return None
 
         # Date: prefer metadataDate, then startPublish
         date_str = props.get("metadataDate") or props.get("startPublish", "")
@@ -163,7 +191,7 @@ class SkatteetatenUttalelser(BaseScraper):
         serial = props.get("wholeSerialNumber", "")
 
         return {
-            "_id": str(product_id),
+            "_id": doc_id,
             "_source": self.SOURCE_ID,
             "_type": "doctrine",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
@@ -223,6 +251,7 @@ class SkatteetatenUttalelser(BaseScraper):
 
     def fetch_updates(self, since: str) -> Generator[Dict[str, Any], None, None]:
         """Fetch documents published since a given date."""
+        since = as_date_str(since)  # update() passes a datetime; #1512
         for listing_path, category in LISTING_PAGES.items():
             logger.info("Checking updates for %s since %s...", category, since)
             catalog = self.get_catalog(listing_path)
@@ -277,7 +306,14 @@ def main():
             count = 0
             for raw in scraper.fetch_all(sample=True):
                 record = scraper.normalize(raw)
+                if record is None:
+                    continue
                 safe_name = re.sub(r'[^\w\-.]', '_', str(record['_id']))
+                if len(safe_name) > 120:
+                    # url slugs run long; keep the head readable and a hash of the
+                    # full id so two truncated names can't collide.
+                    digest = hashlib.sha1(record['_id'].encode("utf-8")).hexdigest()[:10]
+                    safe_name = f"{safe_name[:120]}-{digest}"
                 out_file = sample_dir / f"{safe_name}.json"
                 out_file.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
                 count += 1
@@ -297,11 +333,21 @@ def main():
     if args.command == "update":
         since = args.since or "2026-01-01"
         count = 0
-        for record in scraper.fetch_updates(since):
+        for raw in scraper.fetch_updates(since):
+            # fetch_updates yields RAW catalog items per the BaseScraper
+            # contract; normalize before reading `date`, which raw items lack.
+            record = scraper.normalize(raw)
+            if record is None:
+                continue
             count += 1
             logger.info("  [%d] %s: %s", count, record["date"], record["title"][:60])
         logger.info("Update complete: %d new records since %s", count, since)
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

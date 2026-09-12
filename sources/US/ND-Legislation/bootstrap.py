@@ -12,7 +12,8 @@ Strategy:
 
 Usage:
   python bootstrap.py bootstrap --sample   # ~15 sample sections
-  python bootstrap.py bootstrap             # Full extraction
+  python bootstrap.py bootstrap             # Full extraction -> data/records.jsonl
+  python bootstrap.py bootstrap-fast        # Alias the fleet wrapper calls
   python bootstrap.py test-api              # Test connectivity
 """
 
@@ -43,6 +44,9 @@ except ImportError:
 SOURCE_ID = "US/ND-Legislation"
 SOURCE_DIR = Path(__file__).parent
 SAMPLE_DIR = SOURCE_DIR / "sample"
+DATA_DIR = SOURCE_DIR / "data"
+RECORDS_PATH = DATA_DIR / "records.jsonl"
+CHECKPOINT_PATH = DATA_DIR / "chapter_checkpoint.txt"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -207,12 +211,30 @@ def normalize(section: dict) -> dict:
     }
 
 
-def fetch_all() -> Generator[dict, None, None]:
+def load_checkpoint() -> set:
+    """Chapter PDFs already extracted by an earlier run."""
+    if not CHECKPOINT_PATH.exists():
+        return set()
+    done = {ln.strip() for ln in CHECKPOINT_PATH.read_text().splitlines() if ln.strip()}
+    logger.info(f"Checkpoint: {len(done)} chapters already done, skipping")
+    return done
+
+
+def mark_done(pdf_name: str) -> None:
+    """Record a finished chapter so a restart does not re-download it."""
+    CHECKPOINT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(CHECKPOINT_PATH, "a", encoding="utf-8") as f:
+        f.write(f"{pdf_name}\n")
+
+
+def fetch_all(resume: bool = True) -> Generator[dict, None, None]:
     """Yield all statute sections with full text."""
     title_links = fetch_title_links()
     if not title_links:
-        logger.error("No title links found")
-        return
+        raise RuntimeError(
+            f"No title pages found at {INDEX_URL} — ndlegis.gov is unreachable or "
+            "the index layout changed; refusing to report an empty corpus"
+        )
 
     total = 0
     all_pdfs = []
@@ -225,8 +247,17 @@ def fetch_all() -> Generator[dict, None, None]:
 
     all_pdfs = list(dict.fromkeys(all_pdfs))  # dedupe
     logger.info(f"Found {len(all_pdfs)} chapter PDFs across {len(title_links)} titles")
+    if not all_pdfs:
+        raise RuntimeError(
+            "Title pages carried no chapter PDF links — ndlegis.gov changed its "
+            "layout or is serving a stripped page to this vantage"
+        )
+
+    done = load_checkpoint() if resume else set()
 
     for i, pdf_name in enumerate(all_pdfs):
+        if pdf_name in done:
+            continue
         logger.info(f"Processing {i+1}/{len(all_pdfs)}: {pdf_name}")
 
         pdf_bytes = download_pdf(pdf_name)
@@ -240,17 +271,31 @@ def fetch_all() -> Generator[dict, None, None]:
                 total += 1
                 yield record
 
+        # Only after the chapter's sections are out the door, so a crash
+        # re-fetches this chapter rather than losing it.
+        mark_done(pdf_name)
         time.sleep(CRAWL_DELAY)
 
     logger.info(f"Total sections with full text: {total}")
 
 
 def fetch_sample(count: int = 15) -> list:
-    """Fetch sample records from a couple of chapter PDFs."""
+    """Fetch sample records spread across chapters from several titles.
+
+    Title 1 chapter 1 alone yields 54 sections, so drawing the whole sample
+    from it gave 15 one-line definitions that said nothing about how the
+    substantive titles extract. Take a few from each chapter instead.
+    """
     records = []
 
-    # Download first two chapters of Title 1
-    sample_pdfs = ["t01c01.pdf", "t01c02.pdf", "t14c02.pdf"]
+    sample_pdfs = [
+        "t01c01.pdf",   # general provisions / definitions
+        "t12c01.pdf",   # criminal code
+        "t18c01.pdf",   # fire protection
+        "t14c03.pdf",   # domestic relations
+        "t47c01.pdf",   # property
+    ]
+    per_pdf = max(1, count // len(sample_pdfs) + 1)
 
     for pdf_name in sample_pdfs:
         if len(records) >= count:
@@ -261,13 +306,18 @@ def fetch_sample(count: int = 15) -> list:
         if not pdf_bytes:
             continue
 
+        taken = 0
         sections = extract_sections_from_pdf(pdf_bytes, pdf_name)
+        # Longest first so the sample shows real statutory text, not the
+        # "Repealed by omission from this code." stubs.
+        sections.sort(key=lambda s: len(s["text"]), reverse=True)
         for section in sections:
-            if len(records) >= count:
+            if taken >= per_pdf or len(records) >= count:
                 break
             record = normalize(section)
             if len(record["text"]) >= 20:
                 records.append(record)
+                taken += 1
 
         time.sleep(CRAWL_DELAY)
 
@@ -339,32 +389,58 @@ def bootstrap_sample():
     return len(records) >= 10 and avg_text > 50
 
 
+def bootstrap_full(resume: bool = True) -> bool:
+    """Stream the whole Century Code to data/records.jsonl."""
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    if not resume:
+        RECORDS_PATH.unlink(missing_ok=True)
+        CHECKPOINT_PATH.unlink(missing_ok=True)
+
+    count = 0
+    # Append: on resume the checkpoint suppresses the chapters already written,
+    # so truncating here would throw away every earlier run's records.
+    with open(RECORDS_PATH, "a", encoding="utf-8") as f:
+        for record in fetch_all(resume=resume):
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+            count += 1
+            if count % 500 == 0:
+                f.flush()
+                logger.info(f"  ... {count} sections written")
+
+    logger.info(f"Wrote {count} sections to {RECORDS_PATH}")
+    # A resumed run that finds every chapter already done writes nothing new but
+    # is still a success — judge on the file, not on this run's delta.
+    return RECORDS_PATH.stat().st_size > 0
+
+
 def main():
     parser = argparse.ArgumentParser(description="US/ND-Legislation Data Fetcher")
-    parser.add_argument("command", choices=["bootstrap", "test-api"])
+    parser.add_argument(
+        "command", choices=["bootstrap", "bootstrap-fast", "test-api"]
+    )
     parser.add_argument("--sample", action="store_true")
     parser.add_argument("--full", action="store_true", help="Fetch all records")
+    parser.add_argument(
+        "--restart",
+        action="store_true",
+        help="Ignore the chapter checkpoint and re-crawl from scratch",
+    )
 
     args = parser.parse_args()
 
     if args.command == "test-api":
         success = test_api()
         sys.exit(0 if success else 1)
-    elif args.command == "bootstrap":
+
+    # `bootstrap-fast` is what the fleet wrapper invokes; without it argparse
+    # exited 2 and the wrapper fell back to re-ingesting sample/ (#1459).
+    if args.command in ("bootstrap", "bootstrap-fast"):
         if args.sample:
             success = bootstrap_sample()
             sys.exit(0 if success else 1)
-        else:
-            logger.info("Full bootstrap mode")
-            count = 0
-            SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-            for record in fetch_all():
-                count += 1
-                safe_id = re.sub(r'[^\w\-]', '_', record["_id"])[:80]
-                filepath = SAMPLE_DIR / f"record_{safe_id}.json"
-                with open(filepath, "w", encoding="utf-8") as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-            logger.info(f"Processed {count} records")
+        logger.info("Full bootstrap mode")
+        success = bootstrap_full(resume=not args.restart)
+        sys.exit(0 if success else 1)
 
 
 if __name__ == "__main__":

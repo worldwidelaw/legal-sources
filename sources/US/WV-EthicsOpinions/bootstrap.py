@@ -54,7 +54,7 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.pdf_extract import _extract as _pdf_extract_bytes
 
 try:
@@ -319,6 +319,7 @@ class WVEthicsScraper(BaseScraper):
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        since = as_date_str(since)  # update() passes a datetime; #1512
         for raw in self.fetch_all():
             date = raw.get("date")
             if not since or (date and date >= since):

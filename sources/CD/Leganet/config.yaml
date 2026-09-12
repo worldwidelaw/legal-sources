@@ -9,7 +9,7 @@ source:
   id: "CD/Leganet"
   country: "CD"
   name: "DRC (Congo) Legislation Portal"
-  url: "https://www.leganet.cd/"
+  url: "https://www.leganet.be/"
   description: |
     DRC legislation from 1886 to present. Static HTML site maintained by
     Partenariat pour le développement social (PPDS). Full text in HTML pages.
@@ -28,7 +28,7 @@ rate_limit:
 
 api:
   type: "scraping"
-  base_url: "https://www.leganet.cd"
+  base_url: "https://www.leganet.be"
   endpoints:
     categories: "/Legislation/Tables/{category}.htm"
     document: "/Legislation/{path}"

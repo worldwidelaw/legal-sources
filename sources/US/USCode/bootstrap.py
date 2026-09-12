@@ -20,7 +20,7 @@ import re
 import sys
 import time
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Dict, Generator, List, Optional, Tuple
@@ -33,8 +33,16 @@ GOVINFO_BASE = "https://www.govinfo.gov"
 USER_AGENT = "LegalDataHunter/1.0 (Open Data Research; contact@legaldatahunter.com)"
 REQUEST_DELAY = 1.0  # seconds between requests
 
-# Most recent complete edition year
+# Fallback edition year, used only if the GovInfo sitemap index is unreachable.
+# The live edition list comes from available_edition_years() — do not hardcode a
+# newer year here, it is discovered.
 CURRENT_YEAR = 2024
+
+# Sitemap index listing one entry per published USC edition
+SITEMAP_INDEX_URL = f"{GOVINFO_BASE}/sitemap/USCODE_sitemap_index.xml"
+
+# Editions older than this are not worth backfilling through the refresh lane
+EARLIEST_EDITION = 1994
 
 # All USC title numbers (no title 53)
 ALL_TITLES = list(range(1, 55))  # 1-54
@@ -246,6 +254,47 @@ class USCodeClient:
             return []
 
 
+_EDITION_YEARS: Optional[List[int]] = None
+
+
+def available_edition_years(client: Optional[USCodeClient] = None) -> List[int]:
+    """Return every USC edition year GovInfo currently publishes, oldest first.
+
+    The US Code is republished annually, so the newest edition is whatever the
+    sitemap index lists last — hardcoding it freezes the corpus at that year.
+    """
+    global _EDITION_YEARS
+    if _EDITION_YEARS is not None:
+        return _EDITION_YEARS
+
+    client = client or USCodeClient()
+    resp = client._get(SITEMAP_INDEX_URL, timeout=60)
+    years = []
+    if resp:
+        for match in re.finditer(r"USCODE_(\d{4})_sitemap", resp.text):
+            year = int(match.group(1))
+            if EARLIEST_EDITION <= year and year not in years:
+                years.append(year)
+
+    if not years:
+        print(f"  WARNING: could not read {SITEMAP_INDEX_URL}, "
+              f"falling back to edition {CURRENT_YEAR}")
+        years = [CURRENT_YEAR]
+
+    _EDITION_YEARS = sorted(years)
+    return _EDITION_YEARS
+
+
+def latest_edition_year(client: Optional[USCodeClient] = None) -> int:
+    """Newest USC edition published on GovInfo."""
+    return available_edition_years(client)[-1]
+
+
+def edition_date(year: int) -> datetime:
+    """The date stamped on every record of a given edition."""
+    return datetime(year, 1, 1, tzinfo=timezone.utc)
+
+
 def parse_title_html(html_content: str, title_num: int, year: int = CURRENT_YEAR) -> List[Dict]:
     """Parse a USC title HTML file into individual section records."""
     parser = USCHTMLParser()
@@ -365,6 +414,18 @@ def fetch_sample(client: USCodeClient) -> List[Dict]:
     return all_records
 
 
+def fetch_edition(client: USCodeClient, year: int) -> Generator[Dict, None, None]:
+    """Yield every section of a single USC edition."""
+    print(f"Fetching US Code edition {year} (all titles)...")
+    for title_num in ALL_TITLES:
+        try:
+            for record in fetch_title_sections(client, title_num, year):
+                yield record
+        except Exception as e:
+            print(f"  Error on Title {title_num} (edition {year}): {e}")
+        time.sleep(REQUEST_DELAY)
+
+
 def fetch_all(sample: bool = False) -> Generator[Dict, None, None]:
     """Fetch all USC sections. Standard interface for VPS bootstrap runner."""
     client = USCodeClient()
@@ -373,15 +434,49 @@ def fetch_all(sample: bool = False) -> Generator[Dict, None, None]:
         for record in fetch_sample(client):
             yield record
     else:
-        print("Starting full US Code fetch (all titles)...")
-        for title_num in ALL_TITLES:
-            try:
-                records = fetch_title_sections(client, title_num)
-                for record in records:
-                    yield record
-            except Exception as e:
-                print(f"  Error on Title {title_num}: {e}")
-            time.sleep(REQUEST_DELAY)
+        for record in fetch_edition(client, latest_edition_year(client)):
+            yield record
+
+
+def _coerce_since(since) -> datetime:
+    """Accept a datetime or a YYYY-MM-DD string — the refresh runner passes both."""
+    if isinstance(since, datetime):
+        return since if since.tzinfo else since.replace(tzinfo=timezone.utc)
+    return datetime.strptime(str(since)[:10], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+
+
+def fetch_updates(since, full: bool = False) -> Generator[Dict, None, None]:
+    """Yield every section of each USC edition newer than the one already held.
+
+    The US Code is a consolidation republished once a year, so "updates" means
+    "a newer annual edition exists", not "individual sections changed".
+
+    Every record of edition Y carries date = Y-01-01, and the refresh runner
+    passes since = max(date) - 14 days. A plain `edition_date(y) > since` test
+    would therefore re-fetch the current edition on every single refresh, so the
+    comparison allows a one-month grace: an edition counts as new only if it is
+    dated more than a month after `since`.
+    """
+    since_dt = _coerce_since(since)
+    client = USCodeClient()
+    cutoff = since_dt + timedelta(days=31)
+
+    years = available_edition_years(client)
+    if full:
+        new_years = [years[-1]]
+    else:
+        new_years = [y for y in years if edition_date(y) > cutoff]
+
+    if not new_years:
+        print(f"US Code is up to date: latest GovInfo edition is {years[-1]}, "
+              f"already covered by since={since_dt.date()}.")
+        return
+
+    print(f"New US Code edition(s) since {since_dt.date()}: "
+          f"{', '.join(str(y) for y in new_years)}")
+    for year in new_years:
+        for record in fetch_edition(client, year):
+            yield record
 
 
 def save_samples(records: List[Dict]) -> None:
@@ -455,7 +550,8 @@ def main():
 
     updates_parser = subparsers.add_parser("updates", help="Fetch updates")
     updates_parser.add_argument("--since", required=True, help="Date (YYYY-MM-DD)")
-    updates_parser.add_argument("--full", action="store_true", help="Fetch all records")
+    updates_parser.add_argument("--full", action="store_true",
+                                help="Re-fetch the latest edition regardless of --since")
 
     subparsers.add_parser("validate", help="Validate sample records")
 
@@ -511,9 +607,18 @@ def main():
             sys.exit(1)
 
     elif args.command == "updates":
-        print(f"Checking for USC updates since {args.since}...")
-        # The US Code is updated annually; check if a newer edition year exists
-        print("Note: US Code editions are annual. Check GovInfo for newer edition years.")
+        since = datetime.strptime(args.since, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        print(f"Checking for USC editions newer than {since.date()}...")
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        jsonl_path = DATA_DIR / "records.jsonl"
+        count = 0
+        with open(jsonl_path, "w", encoding="utf-8") as f:
+            for record in fetch_updates(since, full=args.full):
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                count += 1
+                if count % 100 == 0:
+                    print(f"  Written {count} sections...")
+        print(f"\nTotal: {count} sections written -> {jsonl_path}")
         sys.exit(0)
 
 

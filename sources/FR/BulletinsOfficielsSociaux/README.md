@@ -36,6 +36,26 @@ The site is a Drupal install that exposes each node as JSON via the
 No PDF extraction is required for the binding body — annexes are linked PDFs but
 the act text itself is in `field_body_text`.
 
+If the sitemap is unreachable or returns nothing, the scraper falls back to
+sweeping Drupal node ids (`/node/{nid}?_format=json`), which enumerates the same
+corpus independently. Verified 2026-09-09: sitemap → 874 paths, node-id sweep →
+877 nodes, both yielding the same 872 documents.
+
+### Failing loud (issue #1599)
+
+Node fetches are separated from content decisions. A page that is fetched fine
+but carries no `field_institutional` term is a legitimate skip; an HTTP error,
+a WAF interstitial or a connection failure is a *lost document* and raises
+`NodeFetchError`. If more than half of the completed fetches fail, the crawl
+aborts and the CLI exits non-zero.
+
+This matters because the first fleet run wrote 60 of 874 documents and still
+exited 0: every failed fetch was swallowed by `return None`, so a 93% loss was
+indistinguishable from a small corpus. Requests now go through the shared
+`HttpClient` (retries 429/5xx with capped backoff, honours `Retry-After`) paced
+by an `AdaptiveRateLimiter`, so throttling slows the crawl instead of shredding
+it.
+
 Covers public-repo source requests **#1036** (Ministères chargés des affaires
 sociales) and **#1037** (Ministère de la Santé — BO Santé).
 

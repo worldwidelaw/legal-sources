@@ -57,7 +57,7 @@ from typing import Generator
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common import pdf_extract
 
 logging.basicConfig(
@@ -124,19 +124,43 @@ class COOACScraper(BaseScraper):
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
         )
+        # Count WAF rejections so a wholly-refused vantage fails loudly
+        # instead of reporting a bland "0 discovered" (#1398).
+        self.blocked_responses = 0
 
     # ---------------------------------------------------------------- http
     def _curl_bytes(self, url: str) -> bytes | None:
+        # oac.colorado.gov fingerprints the whole request header SET, not
+        # just the User-Agent — a browser UA carrying only "Accept: */*" is
+        # what the fleet was sending when it discovered 0 compilations.
+        headers = [
+            "-H", "Accept: text/html,application/xhtml+xml,application/xml;"
+                  "q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "-H", "Accept-Language: en-US,en;q=0.9",
+            "-H", "Sec-Fetch-Dest: document",
+            "-H", "Sec-Fetch-Mode: navigate",
+            "-H", "Sec-Fetch-Site: none",
+            "-H", "Sec-Fetch-User: ?1",
+            "-H", "Upgrade-Insecure-Requests: 1",
+        ]
         for attempt in range(4):
             time.sleep(self.delay)
             try:
                 out = subprocess.run(
                     ["curl", "-s", "-L", "--max-time", "120", "-A", self._ua,
-                     "-H", "Accept: */*", url],
+                     *headers, "-w", "%{http_code}", url],
                     capture_output=True, timeout=150,
                 )
-                if out.returncode == 0 and out.stdout:
-                    return out.stdout
+                if out.returncode == 0 and len(out.stdout) >= 3:
+                    body, code = out.stdout[:-3], out.stdout[-3:].decode("ascii", "replace")
+                    if code == "200" and body:
+                        return body
+                    # 403 here is the WAF, not a permanent 'gone' — the block
+                    # is sometimes per-connection, so retry before giving up.
+                    if code in ("403", "429"):
+                        self.blocked_responses += 1
+                    logger.warning(f"GET {url} -> HTTP {code} "
+                                   f"(attempt {attempt + 1})")
             except Exception as e:
                 logger.warning(f"curl failed for {url} (attempt {attempt + 1}): {e}")
             time.sleep(2 ** attempt)
@@ -199,8 +223,11 @@ class COOACScraper(BaseScraper):
     def discover_documents(self) -> list[dict]:
         html = self._curl_text(LISTING_URL)
         if not html:
-            logger.error("Listing page returned no content")
-            return []
+            raise RuntimeError(
+                f"{LISTING_URL} returned no content after retries "
+                f"({self.blocked_responses} WAF 403/429 responses) — this "
+                f"vantage is being refused."
+            )
         seen: set[str] = set()
         out: list[dict] = []
         for href in PDF_HREF_RE.findall(html):
@@ -221,6 +248,16 @@ class COOACScraper(BaseScraper):
         # newest first (period label sorts reasonably)
         out.sort(key=lambda r: (r["period"] or ""), reverse=True)
         logger.info(f"Discovered {len(out)} OAC compilation PDFs")
+        if not out:
+            # The decisions page always lists ~35 monthly compilations; an
+            # empty parse means the page we got back was a WAF interstitial,
+            # not the real listing. Raise so the run fails loudly instead of
+            # falling back to the committed samples (#1398).
+            raise RuntimeError(
+                f"{LISTING_URL} parsed to 0 compilation PDFs — the listing "
+                f"is never empty, so this vantage is being served a block "
+                f"page ({self.blocked_responses} WAF 403/429 responses)."
+            )
         return out
 
     # ------------------------------------------------- split a compilation
@@ -350,6 +387,9 @@ class COOACScraper(BaseScraper):
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self.fetch_all():
             if not since or (raw.get("date") and raw["date"] >= since):
                 yield raw

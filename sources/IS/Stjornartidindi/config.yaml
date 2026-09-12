@@ -20,6 +20,22 @@ fetch:
   rate_limit: 0.5
   timeout: 60
 
+# The rate limiter gates record processing, not HTTP: one API call returns 100
+# adverts with their full text inline, and page fetches are separately paced by
+# a 0.3s sleep in _iter_department. Throttling normalization at the default
+# 2 rec/s would stretch a ~39,600-doc run to hours for no politeness gain.
+rate_limit:
+  requests_per_second: 50
+  min_rate: 5
+  max_rate: 200
+  burst: 100
+  max_workers: 8
+
+data_model:
+  # Resuming from a checkpoint re-reads the page it stopped on; skip records
+  # already in the index instead of appending a second copy.
+  update_strategy: append_only
+
 schema:
   key_fields:
     - name: _id

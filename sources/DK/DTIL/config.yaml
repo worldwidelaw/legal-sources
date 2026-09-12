@@ -12,9 +12,11 @@ source:
     type: none
 
 # Discovery strategy:
-# 1. Parse sitemap at /Handlers/Sitemap.ashx for decision URLs
-# 2. Filter URLs matching /afgoerelser/afgoerelser/YYYY/mon/slug pattern
-# 3. Fetch each HTML page and extract full text content
+# 1. Parse sitemap at /sitemap.xml for decision URLs
+# 2. Filter URLs matching
+#    /afgoerelser/{afgoerelser|historiske-afgoerelser|tilladelser}/YYYY/mon/slug
+# 3. Fetch each HTML page and extract full text from div.news-page
+#    (p.lead + div.rich-text)
 
 data_model:
   update_strategy: upsert
@@ -40,6 +42,9 @@ schema:
     - name: case_number
       type: string
       required: false
+    - name: section
+      type: string
+      required: true
     - name: url
       type: string
       required: true

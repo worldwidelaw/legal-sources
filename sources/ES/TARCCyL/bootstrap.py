@@ -61,6 +61,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+from common.ssl_aia import ca_bundle_for, is_missing_issuer_error
 
 logging.basicConfig(
     level=logging.INFO,
@@ -123,12 +124,46 @@ class TARCCyLScraper(BaseScraper):
             "User-Agent": "Legal-Data-Hunter/1.0 (Open Data Research)",
             "Accept": "text/html,application/xhtml+xml,application/pdf,*/*",
         })
+        # Set once the AIA-augmented CA bundle has been built for this host;
+        # see _get(). None means "use the default certifi bundle".
+        self._ca_bundle: Optional[str] = None
 
     # ── helpers ────────────────────────────────────────────────────────
 
     def _get(self, url: str, timeout: int = 90) -> requests.Response:
+        """GET with an AIA repair path for cccyl.es's incomplete TLS chain.
+
+        www.cccyl.es sends ONLY its leaf certificate and omits the intermediate
+        CA (verified with ``openssl s_client``: the chain is a single
+        ``s:/CN=cccyl.es`` entry). Clients that happen to have the intermediate
+        cached verify fine, but a clean Linux host using certifi fails with
+        ``CERTIFICATE_VERIFY_FAILED: unable to get local issuer certificate``
+        — which is what killed the fleet run in issue #1257.
+
+        certifi cannot fix a *missing intermediate*, so on that specific error
+        we fetch the intermediate from the leaf's AIA caIssuers URL, build an
+        augmented bundle and retry with verification still ON. No verify=False.
+        """
         self.rate_limiter.wait()
-        return self.session.get(url, timeout=timeout, allow_redirects=True)
+        try:
+            return self.session.get(
+                url, timeout=timeout, allow_redirects=True, verify=self._ca_bundle or True
+            )
+        except requests.exceptions.SSLError as exc:
+            if self._ca_bundle is not None or not is_missing_issuer_error(exc):
+                raise
+            bundle = ca_bundle_for(url)
+            if not bundle:
+                raise
+            logger.warning(
+                "%s omitted its TLS intermediate; retrying with an AIA-augmented "
+                "CA bundle (verification stays enabled)", url,
+            )
+            self._ca_bundle = bundle
+            self.rate_limiter.wait()
+            return self.session.get(
+                url, timeout=timeout, allow_redirects=True, verify=self._ca_bundle
+            )
 
     def _year_urls(self) -> list:
         """Discover the per-year listing URLs from the resoluciones index."""

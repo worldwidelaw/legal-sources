@@ -41,8 +41,8 @@ schema:
     type: string
 source:
   base_url: https://data.public.lu/api/1
-  dataset_id: cour-de-cassation
-  dataset_slug: cour-de-cassation
+  dataset_id: cour-de-cassation-1
+  dataset_slug: cour-de-cassation-1
   organization: Administration judiciaire
   type: open_data_api
 update_frequency: weekly

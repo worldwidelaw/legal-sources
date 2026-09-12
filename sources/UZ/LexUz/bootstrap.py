@@ -5,11 +5,21 @@ Uzbekistan Legislation (Lex.uz) Data Fetcher
 Official national database of legislative information of the Republic of Uzbekistan.
 https://lex.uz/
 
-Content is server-rendered inside <div id="divCont"> with semantic CSS classes:
-ACT_FORM, ACT_TITLE, ACT_TEXT, SIGNATURE, etc.
-Text lives in <a id="NNNN">...</a> tags after the lx_elem2 UI chrome.
+Document pages are server-rendered inside <div id="divCont">.  Each element is a
+`<div class="{CLASS} lx_elem">` wrapper holding a `<div class="lx_elem2">` UI chrome
+block followed by the payload container.  The payload container used to be
+`<a id="NNNN">…</a>`; lex.uz now emits `<div name="NNNN" id="NNNN">…</div>` (issue
+#1289 — the old anchor-shaped regex matched nothing, so every document extracted
+empty text).  The parser below walks the wrapper with a balanced-div scan and takes
+whatever survives after the chrome is removed, so it is agnostic to the payload tag.
 
-50K+ legislative acts. No authentication required. Russian language used.
+Search enumeration uses the ASP.NET results grid at /ru/search/nat with a date range.
+Pagination is a WebForms postback: the "Следующий" (next) link posts
+`ucFoundActsControl$LinkButton1` with the page's __VIEWSTATE, and the server keeps the
+result cursor in the session — so a cookie jar is mandatory.  Crawling one year at a
+time keeps each cursor short and lets the checkpoint resume year by year.
+
+~70K acts across all languages.  No authentication required.
 """
 
 import json
@@ -18,11 +28,12 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.parse
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Iterator, Optional, List
+from typing import Dict, Any, Iterator, Optional, List, Set
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -30,101 +41,129 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://lex.uz"
 SEARCH_URL = f"{BASE_URL}/ru/search/nat"
 DOC_URL = f"{BASE_URL}/ru/docs/{{}}"
-PAGE_SIZE = 20
 
-# Content classes to extract (in order of document structure)
-CONTENT_CLASSES = {
-    'ACT_FORM', 'ACT_TITLE', 'ACT_TEXT', 'ACCEPTING_BODY', 'SIGNATURE',
-    'DEPARTMENTAL', 'ACT_ESSENTIAL_ELEMENTS', 'ACT_ESSENTIAL_ELEMENTS_NUM',
-    'GRIF_PARLAMENT', 'BY_DEFAULT', 'ACT_TITLE_APPL', 'UNOFFIAL',
-    'COMMENT_FOR_WARNING',
+# Oldest acts in the national database
+FIRST_YEAR = 1991
+
+DATA_DIR = Path(__file__).parent / 'data'
+RECORDS_PATH = DATA_DIR / 'records.jsonl'
+CHECKPOINT_PATH = DATA_DIR / 'checkpoint.json'
+
+# Postback targets on the results grid
+NEXT_PAGE_TARGET = 'ucFoundActsControl$LinkButton1'
+LAST_PAGE_TARGET = 'ucFoundActsControl$lblpage'
+
+# lx_elem classes that carry header/metadata rather than body text
+META_CLASSES = {
+    'ACT_FORM', 'ACT_TITLE', 'ACCEPTING_BODY', 'SIGNATURE', 'DEPARTMENTAL',
+    'ACT_ESSENTIAL_ELEMENTS', 'ACT_ESSENTIAL_ELEMENTS_NUM', 'UNOFFIAL',
 }
 
-# Classes that carry body text
-BODY_CLASSES = {'ACT_TEXT', 'GRIF_PARLAMENT', 'BY_DEFAULT', 'COMMENT_FOR_WARNING'}
+# lx_elem classes that are page furniture, never document content
+SKIP_CLASS_RE = re.compile(r'^(APPL_BANNER|BANNER|ADV)')
 
 
 def strip_html(text: str) -> str:
     """Remove HTML tags and decode entities."""
     text = re.sub(r'<br\s*/?>', '\n', text)
+    text = re.sub(r'</(p|div|tr|h\d)>', '\n', text)
     text = re.sub(r'<[^>]+>', '', text)
     text = text.replace('&nbsp;', ' ').replace('&amp;', '&')
     text = text.replace('&lt;', '<').replace('&gt;', '>')
     text = text.replace('&quot;', '"').replace('&#39;', "'")
+    text = text.replace('&laquo;', '«').replace('&raquo;', '»')
+    text = text.replace('&mdash;', '—').replace('&ndash;', '–')
     return text
 
 
 def extract_divCont(html: str) -> str:
-    """Extract raw HTML inside <div id="divCont">."""
-    m = re.search(r'<div\s+id="divCont"[^>]*>(.*)', html, re.DOTALL)
+    """Return the HTML from <div id="divCont"> onwards."""
+    m = re.search(r'<div\s+id="divCont"[^>]*>', html)
     if not m:
         return ''
-    content = m.group(1)
-    # Find matching closing — rough heuristic: take until the enclosing container ends
-    # divCont is a single very long div; just take everything after it
-    return content
+    return html[m.end():]
+
+
+def iter_lx_elements(html: str) -> Iterator[tuple]:
+    """Yield (css_class, inner_html) for every `<div class="X lx_elem">` wrapper.
+
+    Uses a balanced <div> scan so nested markup (tables, appendices) stays intact.
+    """
+    for m in re.finditer(r'<div\s+class="([A-Z_0-9]+)\s+lx_elem"[^>]*>', html):
+        start = m.end()
+        depth = 1
+        end = len(html)
+        for t in re.finditer(r'<div\b|</div>', html[start:]):
+            if t.group(0) == '</div>':
+                depth -= 1
+                if depth == 0:
+                    end = start + t.start()
+                    break
+            else:
+                depth += 1
+        yield m.group(1), html[start:end]
+
+
+def _strip_chrome(inner: str) -> str:
+    """Drop the lx_elem2 toolbar (comment/audio/permalink buttons) from an element."""
+    m = re.search(r'<div\s+class="lx_elem2"[^>]*>', inner)
+    if not m:
+        return inner
+    start = m.start()
+    depth = 1
+    end = len(inner)
+    for t in re.finditer(r'<div\b|</div>', inner[m.end():]):
+        if t.group(0) == '</div>':
+            depth -= 1
+            if depth == 0:
+                end = m.end() + t.end()
+                break
+        else:
+            depth += 1
+    return inner[:start] + inner[end:]
 
 
 def parse_document_content(html: str) -> Dict[str, Any]:
-    """Parse the full document page and return structured fields."""
+    """Parse a document page and return structured fields."""
     divcont = extract_divCont(html)
     if not divcont:
         return {}
 
-    # Build regex for elements with lx_elem class
-    # Pattern: <div class="CLASS lx_elem" ...><div class="lx_elem2"><div class="lx_elem3">...buttons...</div></div><a id="NNN">CONTENT</a></div>
-    cls_pattern = '|'.join(CONTENT_CLASSES)
-    pattern = re.compile(
-        r'<div\s+class="(' + cls_pattern + r')\s+lx_elem"[^>]*>'
-        r'<div\s+class="lx_elem2">.*?</div></div>'
-        r'<a\s+id="\d+">(.*?)</a></div>',
-        re.DOTALL
-    )
-
-    elements = []
-    for m in pattern.finditer(divcont):
-        cls = m.group(1)
-        raw_text = strip_html(m.group(2)).strip()
-        if raw_text:
-            elements.append((cls, raw_text))
-
-    if not elements:
-        return {}
-
-    # Build structured output
     doc_type = ''
     title = ''
-    body_parts = []
     signature = ''
-    meta_parts = []
+    body_parts: List[str] = []
+    meta_parts: List[str] = []
 
-    for cls, text in elements:
+    for cls, inner in iter_lx_elements(divcont):
+        if SKIP_CLASS_RE.match(cls):
+            continue
+        text = strip_html(_strip_chrome(inner)).strip()
+        if not text:
+            continue
+
         if cls == 'ACT_FORM':
-            doc_type = text
+            doc_type = doc_type or text
         elif cls == 'ACT_TITLE':
-            if not title:
-                title = text
-        elif cls == 'ACT_TITLE_APPL':
-            body_parts.append(f"\n{text}\n")
-        elif cls in BODY_CLASSES:
-            body_parts.append(text)
-        elif cls == 'ACCEPTING_BODY':
-            meta_parts.append(text)
+            title = title or text
         elif cls == 'SIGNATURE':
-            signature = text
-        elif cls == 'DEPARTMENTAL':
-            meta_parts.append(text)
-        elif cls in ('ACT_ESSENTIAL_ELEMENTS', 'ACT_ESSENTIAL_ELEMENTS_NUM'):
-            meta_parts.append(text)
+            signature = signature or text
         elif cls == 'UNOFFIAL':
             meta_parts.append(f"[{text}]")
+        elif cls in META_CLASSES:
+            meta_parts.append(text)
+        else:
+            # ACT_TEXT, TEXT_HEADER_DEFAULT, BY_DEFAULT, FOOTNOTE, ACT_TITLE_APPL,
+            # GRIF_PARLAMENT, COMMENT_FOR_WARNING and any class lex.uz adds later.
+            body_parts.append(text)
 
-    # Assemble full text
+    if not body_parts and not title:
+        return {}
+
     full_text = '\n\n'.join(body_parts)
     if signature:
         full_text += f"\n\n{signature}"
 
-    # Clean up whitespace
     full_text = re.sub(r'[ \t]+', ' ', full_text)
     full_text = re.sub(r'\n{3,}', '\n\n', full_text)
     full_text = full_text.strip()
@@ -149,8 +188,7 @@ def parse_title_meta(html: str) -> Dict[str, str]:
     if dm:
         date_str = dm.group(2)
         try:
-            dt = datetime.strptime(date_str, '%d.%m.%Y')
-            iso_date = dt.strftime('%Y-%m-%d')
+            iso_date = datetime.strptime(date_str, '%d.%m.%Y').strftime('%Y-%m-%d')
         except ValueError:
             iso_date = date_str
         return {
@@ -168,100 +206,108 @@ class LexUzFetcher:
         self.slow_mode = slow_mode
         self.doc_delay = 3.0 if slow_mode else 1.5
         self.page_delay = 5.0 if slow_mode else 2.0
+        self._jar = Path(tempfile.mkdtemp(prefix='lexuz_')) / 'cookies.txt'
+
+    # ------------------------------------------------------------------ HTTP
+
+    def _curl(self, url: str, post_data: Optional[str] = None,
+              max_attempts: int = 3) -> Optional[str]:
+        """GET or POST via curl, sharing one cookie jar for the ASP.NET session."""
+        for attempt in range(max_attempts):
+            cmd = ['curl', '-s', '-L', '--max-time', '60',
+                   '-c', str(self._jar), '-b', str(self._jar),
+                   '-H', 'User-Agent: Mozilla/5.0 (compatible; LegalDataHunter/1.0)',
+                   '-H', 'Accept: text/html,application/xhtml+xml',
+                   '-H', 'Accept-Language: ru,en;q=0.5']
+            if post_data is not None:
+                cmd += ['-X', 'POST',
+                        '-H', 'Content-Type: application/x-www-form-urlencoded',
+                        '--data', post_data]
+            cmd.append(url)
+            try:
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
+                if result.returncode == 0 and result.stdout:
+                    return result.stdout
+            except subprocess.TimeoutExpired:
+                pass
+            delay = min(5 * (2 ** attempt), 30)
+            logger.warning(f"Request failed (attempt {attempt+1}/{max_attempts}) "
+                           f"for {url}, waiting {delay}s...")
+            time.sleep(delay)
+        return None
 
     def _curl_get(self, url: str, max_attempts: int = 3) -> Optional[str]:
-        """GET HTML content via curl."""
-        for attempt in range(max_attempts):
-            try:
-                result = subprocess.run(
-                    ['curl', '-s', '-L', '--max-time', '30',
-                     '-H', 'User-Agent: Mozilla/5.0 (compatible; LegalDataHunter/1.0)',
-                     '-H', 'Accept: text/html,application/xhtml+xml',
-                     '-H', 'Accept-Language: ru,en;q=0.5',
-                     url],
-                    capture_output=True, text=True, timeout=40
-                )
-                if result.returncode == 0 and result.stdout:
-                    return result.stdout
-                delay = min(5 * (2 ** attempt), 30)
-                logger.warning(f"GET failed attempt {attempt+1} for {url}, waiting {delay}s...")
-                time.sleep(delay)
-            except subprocess.TimeoutExpired:
-                delay = min(5 * (2 ** attempt), 30)
-                logger.warning(f"GET timeout attempt {attempt+1}, waiting {delay}s...")
-                time.sleep(delay)
-        return None
+        return self._curl(url, None, max_attempts)
 
-    def _curl_post(self, url: str, form_data: Dict[str, str], cookies: str = '',
-                   max_attempts: int = 3) -> Optional[str]:
-        """POST form data via curl."""
-        encoded = urllib.parse.urlencode(form_data)
-        for attempt in range(max_attempts):
-            try:
-                cmd = ['curl', '-s', '-L', '--max-time', '30',
-                       '-X', 'POST',
-                       '-H', 'User-Agent: Mozilla/5.0 (compatible; LegalDataHunter/1.0)',
-                       '-H', 'Content-Type: application/x-www-form-urlencoded',
-                       '-H', 'Accept: text/html,application/xhtml+xml',
-                       '-d', encoded,
-                       url]
-                if cookies:
-                    cmd.insert(-1, '-H')
-                    cmd.insert(-1, f'Cookie: {cookies}')
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=40)
-                if result.returncode == 0 and result.stdout:
-                    return result.stdout
-                delay = min(5 * (2 ** attempt), 30)
-                logger.warning(f"POST failed attempt {attempt+1}, waiting {delay}s...")
-                time.sleep(delay)
-            except subprocess.TimeoutExpired:
-                delay = min(5 * (2 ** attempt), 30)
-                logger.warning(f"POST timeout attempt {attempt+1}, waiting {delay}s...")
-                time.sleep(delay)
-        return None
-
-    def _extract_asp_fields(self, html: str) -> Dict[str, str]:
+    @staticmethod
+    def _extract_asp_fields(html: str) -> Dict[str, str]:
         """Extract ASP.NET hidden form fields from HTML."""
         fields = {}
         for m in re.finditer(r'<input[^>]+name="(__[^"]+)"[^>]+value="([^"]*)"', html):
             fields[m.group(1)] = m.group(2)
-        # Also check value before name
         for m in re.finditer(r'<input[^>]+value="([^"]*)"[^>]+name="(__[^"]+)"', html):
-            fields[m.group(2)] = m.group(1)
+            fields.setdefault(m.group(2), m.group(1))
         return fields
 
-    def _parse_search_doc_ids(self, html: str) -> List[Dict[str, str]]:
+    def _postback(self, url: str, html: str, target: str) -> Optional[str]:
+        """Fire an ASP.NET __doPostBack against the current results page."""
+        fields = self._extract_asp_fields(html)
+        form = {
+            '__VIEWSTATE': fields.get('__VIEWSTATE', ''),
+            '__VIEWSTATEGENERATOR': fields.get('__VIEWSTATEGENERATOR', ''),
+            '__EVENTVALIDATION': fields.get('__EVENTVALIDATION', ''),
+            '__EVENTTARGET': target,
+            '__EVENTARGUMENT': '',
+        }
+        return self._curl(url, urllib.parse.urlencode(form))
+
+    # ---------------------------------------------------------------- search
+
+    @staticmethod
+    def _has_next_page(html: str) -> bool:
+        """True when the "Следующий" link is an active postback (not disabled)."""
+        m = re.search(r'<a\s+id="ucFoundActsControl_LinkButton1"([^>]*)>', html)
+        return bool(m) and '__doPostBack' in m.group(1)
+
+    @staticmethod
+    def _parse_search_doc_ids(html: str) -> List[Dict[str, str]]:
         """Extract document IDs and basic info from search results HTML."""
-        results = []
+        results: List[Dict[str, str]] = []
+        seen: Set[str] = set()
         # Links like: <a class="lx_link" href="/ru/docs/7965945?query=...">TITLE</a>
         for m in re.finditer(
             r'<a[^>]+class="lx_link"[^>]+href="(/ru/docs/(\d+)[^"]*)"[^>]*>(.*?)</a>',
             html, re.DOTALL
         ):
-            title = strip_html(m.group(3)).strip()
+            doc_id = m.group(2)
+            if doc_id in seen:
+                continue
+            seen.add(doc_id)
             results.append({
-                'doc_id': m.group(2),
-                'title': title,
+                'doc_id': doc_id,
+                'title': strip_html(m.group(3)).strip(),
                 'href': m.group(1),
             })
 
-        # Extract dates from result rows
         dates = re.findall(r'dd-table__main-item_date[^>]*>([^<]+)<', html)
         for i, r in enumerate(results):
             if i < len(dates):
                 raw_date = dates[i].strip()
                 try:
-                    dt = datetime.strptime(raw_date, '%d.%m.%Y')
-                    r['date'] = dt.strftime('%Y-%m-%d')
+                    r['date'] = datetime.strptime(raw_date, '%d.%m.%Y').strftime('%Y-%m-%d')
                 except ValueError:
                     r['date'] = raw_date
 
         return results
 
     def search_legislation(self, date_from: str = "", date_to: str = "",
-                           lang: str = "1", form_id: str = "",
+                           lang: str = "", form_id: str = "",
                            max_pages: int = 0) -> Iterator[Dict[str, str]]:
-        """Search for legislation and yield results across pages."""
+        """Search for legislation and yield result stubs across all pages.
+
+        `lang` is left empty by default: filtering to lang=1 (Russian) drops ~72% of
+        the corpus (2025: 65 pages filtered vs 234 unfiltered).
+        """
         params = {}
         if date_from:
             params['from'] = date_from
@@ -272,12 +318,12 @@ class LexUzFetcher:
         if form_id:
             params['form_id'] = form_id
 
-        url = SEARCH_URL + '?' + urllib.parse.urlencode(params) if params else SEARCH_URL
+        url = SEARCH_URL + ('?' + urllib.parse.urlencode(params) if params else '')
 
         logger.info(f"Searching: {url}")
         html = self._curl_get(url)
         if not html:
-            logger.error("Failed to load search page")
+            logger.error(f"Failed to load search page: {url}")
             return
 
         page = 1
@@ -287,7 +333,7 @@ class LexUzFetcher:
                 logger.info(f"No results on page {page}, stopping")
                 break
 
-            logger.info(f"Page {page}: found {len(results)} results")
+            logger.info(f"Page {page}: {len(results)} results")
             for r in results:
                 yield r
 
@@ -295,29 +341,19 @@ class LexUzFetcher:
                 logger.info(f"Reached max pages ({max_pages})")
                 break
 
-            # Check for next page link
-            next_target = f'rptPaging$ctl{page:02d}$lbPaging'
-            if next_target not in html:
-                logger.info(f"No more pages after page {page}")
+            if not self._has_next_page(html):
+                logger.info(f"Last page reached ({page})")
                 break
 
-            # ASP.NET PostBack pagination
             page += 1
-            asp_fields = self._extract_asp_fields(html)
-            form_data = {
-                '__VIEWSTATE': asp_fields.get('__VIEWSTATE', ''),
-                '__VIEWSTATEGENERATOR': asp_fields.get('__VIEWSTATEGENERATOR', ''),
-                '__EVENTVALIDATION': asp_fields.get('__EVENTVALIDATION', ''),
-                '__EVENTTARGET': f'ucFoundActsControl$rptPaging$ctl{(page-1):02d}$lbPaging',
-                '__EVENTARGUMENT': '',
-            }
-
-            logger.info(f"Navigating to page {page}...")
             time.sleep(self.page_delay)
-            html = self._curl_post(url, form_data)
-            if not html:
-                logger.warning(f"Failed to load page {page}")
+            nxt = self._postback(url, html, NEXT_PAGE_TARGET)
+            if not nxt:
+                logger.warning(f"Failed to load page {page}; stopping this window")
                 break
+            html = nxt
+
+    # -------------------------------------------------------------- document
 
     def fetch_document(self, doc_id: str) -> Optional[Dict[str, Any]]:
         """Fetch a single document with full text."""
@@ -326,44 +362,98 @@ class LexUzFetcher:
         if not html:
             return None
 
-        # Parse content from divCont
         content = parse_document_content(html)
         if not content or not content.get('text'):
             logger.warning(f"Doc {doc_id}: no text extracted")
             return None
 
-        # Parse title metadata
         title_meta = parse_title_meta(html)
-
-        title = content.get('title') or title_meta.get('title_from_meta', '')
-        date = title_meta.get('date', '')
-        doc_number = title_meta.get('doc_number', '')
-        doc_type = content.get('doc_type', '')
 
         return {
             'doc_id': doc_id,
-            'title': title,
+            'title': content.get('title') or title_meta.get('title_from_meta', ''),
             'text': content['text'],
-            'date': date,
-            'doc_number': doc_number,
-            'doc_type': doc_type,
-            'url': f"{BASE_URL}/ru/docs/{doc_id}",
+            'date': title_meta.get('date', ''),
+            'doc_number': title_meta.get('doc_number', ''),
+            'doc_type': content.get('doc_type', ''),
+            'url': url,
         }
 
-    def fetch_all(self) -> Iterator[Dict[str, Any]]:
-        """Fetch all legislation documents."""
+    # ----------------------------------------------------------- checkpoints
+
+    @staticmethod
+    def _load_checkpoint() -> Dict[str, Any]:
+        if CHECKPOINT_PATH.exists():
+            try:
+                with open(CHECKPOINT_PATH, encoding='utf-8') as fh:
+                    cp = json.load(fh)
+                cp.setdefault('completed_years', [])
+                cp.setdefault('seen_ids', [])
+                return cp
+            except (json.JSONDecodeError, OSError) as exc:
+                logger.warning(f"Ignoring unreadable checkpoint: {exc}")
+        return {'completed_years': [], 'seen_ids': []}
+
+    @staticmethod
+    def _save_checkpoint(completed_years: List[int], seen: Set[str]) -> None:
+        DATA_DIR.mkdir(exist_ok=True)
+        tmp = CHECKPOINT_PATH.with_suffix('.tmp')
+        with open(tmp, 'w', encoding='utf-8') as fh:
+            json.dump({'completed_years': sorted(completed_years),
+                       'seen_ids': sorted(seen)}, fh)
+        tmp.replace(CHECKPOINT_PATH)
+
+    # ------------------------------------------------------------- crawlers
+
+    def fetch_all(self, first_year: int = FIRST_YEAR,
+                  last_year: Optional[int] = None) -> Iterator[Dict[str, Any]]:
+        """Fetch every act, one publication year at a time, resuming from checkpoint.
+
+        Completed years are skipped with no network calls; within a partially-crawled
+        year the page walk is replayed (cheap) but already-fetched documents are
+        skipped (expensive part), so restarts advance monotonically.
+        """
+        last_year = last_year or datetime.now().year
+        cp = self._load_checkpoint()
+        completed = set(cp['completed_years'])
+        seen: Set[str] = set(cp['seen_ids'])
+        if completed:
+            logger.info(f"Resuming: {len(completed)} years done, {len(seen)} docs seen")
+
         count = 0
-        for result in self.search_legislation():
-            doc_id = result.get('doc_id')
-            if not doc_id:
+        for year in range(last_year, first_year - 1, -1):
+            if year in completed:
+                logger.info(f"Year {year}: already complete, skipping")
                 continue
-            doc = self.fetch_document(doc_id)
-            if doc:
-                if not doc.get('date') and result.get('date'):
-                    doc['date'] = result['date']
-                yield doc
-                count += 1
-            time.sleep(self.doc_delay)
+
+            logger.info(f"=== Year {year} ===")
+            year_new = 0
+            for result in self.search_legislation(
+                date_from=f'01.01.{year}', date_to=f'31.12.{year}'
+            ):
+                doc_id = result.get('doc_id')
+                if not doc_id or doc_id in seen:
+                    continue
+                doc = self.fetch_document(doc_id)
+                seen.add(doc_id)
+                if doc:
+                    if not doc.get('date') and result.get('date'):
+                        doc['date'] = result['date']
+                    yield doc
+                    count += 1
+                    year_new += 1
+                # Flush on documents *visited*, not documents yielded: a year full of
+                # Russian-shell records (body published Uzbek-only) yields little but
+                # still costs a fetch each, and re-walking it on restart is wasteful.
+                if len(seen) % 50 == 0:
+                    self._save_checkpoint(sorted(completed), seen)
+                time.sleep(self.doc_delay)
+
+            completed.add(year)
+            self._save_checkpoint(sorted(completed), seen)
+            logger.info(f"Year {year} complete: {year_new} new documents "
+                        f"({count} this run)")
+
         logger.info(f"Fetched {count} documents total")
 
     def fetch_updates(self, since: datetime) -> Iterator[Dict[str, Any]]:
@@ -400,12 +490,34 @@ class LexUzFetcher:
         }
 
 
+def bootstrap_full(slow_mode: bool = False):
+    """Stream the whole corpus to data/records.jsonl (fleet path)."""
+    DATA_DIR.mkdir(exist_ok=True)
+    fetcher = LexUzFetcher(slow_mode=slow_mode)
+
+    written = 0
+    with open(RECORDS_PATH, 'a', encoding='utf-8') as out:
+        for doc in fetcher.fetch_all():
+            normalized = fetcher.normalize(doc)
+            if not normalized.get('text') or len(normalized['text']) < 100:
+                continue
+            out.write(json.dumps(normalized, ensure_ascii=False) + '\n')
+            out.flush()
+            written += 1
+            if written % 100 == 0:
+                logger.info(f"[+] {written} records written to {RECORDS_PATH}")
+
+    logger.info(f"bootstrap complete: {written} records written to {RECORDS_PATH}")
+    if written == 0:
+        logger.error("No records written!")
+        sys.exit(1)
+
+
 def bootstrap_sample(slow_mode: bool = False):
     """Fetch a sample of documents for testing."""
     sample_dir = Path(__file__).parent / 'sample'
     sample_dir.mkdir(exist_ok=True)
 
-    # Clear old samples
     for f in sample_dir.glob('*.json'):
         f.unlink()
 
@@ -414,12 +526,8 @@ def bootstrap_sample(slow_mode: bool = False):
     count = 0
     target = 15
 
-    # Search recent legislation (laws specifically for richer text)
     for result in fetcher.search_legislation(
-        date_from='01.01.2024',
-        date_to='31.12.2025',
-        lang='1',
-        max_pages=10,
+        date_from='01.01.2024', date_to='31.12.2025', max_pages=10,
     ):
         if count >= target:
             break
@@ -428,7 +536,8 @@ def bootstrap_sample(slow_mode: bool = False):
         if not doc_id:
             continue
 
-        logger.info(f"[{count+1}/{target}] Fetching doc {doc_id}: {result.get('title', '')[:60]}...")
+        logger.info(f"[{count+1}/{target}] Fetching doc {doc_id}: "
+                    f"{result.get('title', '')[:60]}...")
         doc = fetcher.fetch_document(doc_id)
         if not doc:
             logger.warning(f"Skipping doc {doc_id} - no content")
@@ -437,7 +546,8 @@ def bootstrap_sample(slow_mode: bool = False):
         normalized = fetcher.normalize(doc)
 
         if not normalized.get('text') or len(normalized['text']) < 100:
-            logger.warning(f"Skipping doc {doc_id} - text too short ({len(normalized.get('text', ''))} chars)")
+            logger.warning(f"Skipping doc {doc_id} - text too short "
+                           f"({len(normalized.get('text', ''))} chars)")
             continue
 
         out_path = sample_dir / f"{doc_id}.json"
@@ -496,7 +606,7 @@ def validate_sample(sample_dir: Path):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Uzbekistan LexUz Legislation Fetcher')
-    parser.add_argument('command', choices=['bootstrap', 'validate'],
+    parser.add_argument('command', choices=['bootstrap', 'bootstrap-fast', 'validate'],
                         help='Command to run')
     parser.add_argument('--sample', action='store_true',
                         help='Fetch sample data only')
@@ -505,11 +615,11 @@ if __name__ == '__main__':
     parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
-    if args.command == 'bootstrap':
+    if args.command in ('bootstrap', 'bootstrap-fast'):
         if args.sample:
             bootstrap_sample(slow_mode=args.slow)
         else:
-            logger.info("Full fetch not implemented in bootstrap mode. Use --sample.")
+            bootstrap_full(slow_mode=args.slow)
     elif args.command == 'validate':
         sample_dir = Path(__file__).parent / 'sample'
         validate_sample(sample_dir)

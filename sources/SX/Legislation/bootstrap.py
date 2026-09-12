@@ -35,7 +35,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 import requests
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 logging.basicConfig(
     level=logging.INFO,
@@ -307,6 +307,8 @@ class SXLegislationScraper(BaseScraper):
         logger.info(f"Total records yielded: {count}")
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         query = f'{JURISDICTION_QUERY} AND dcterms.modified>="{since}"'
         for raw in self._paginate(query):
             record = self.normalize(raw)
@@ -315,6 +317,11 @@ class SXLegislationScraper(BaseScraper):
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     scraper = SXLegislationScraper()
 
     if len(sys.argv) < 2:

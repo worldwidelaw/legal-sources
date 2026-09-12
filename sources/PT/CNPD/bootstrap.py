@@ -45,7 +45,7 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.pdf_extract import extract_pdf_markdown
+from common.pdf_extract import extract_pdf_markdown, preload_existing_ids
 
 
 # Setup logging
@@ -73,6 +73,11 @@ DECISION_TYPES = {
 YEARS = list(range(2026, 1993, -1))
 
 
+def record_id(doc_id: str) -> str:
+    """The canonical `_id` for a decision — must match normalize()."""
+    return f"PT-CNPD-{doc_id}"
+
+
 class CNPDFetcher:
     """Fetcher for Portuguese Data Protection Authority decisions"""
 
@@ -83,11 +88,11 @@ class CNPDFetcher:
             'Accept': 'text/html',
         })
 
-    def _extract_text_from_pdf(self, content: bytes) -> str:
+    def _extract_text_from_pdf(self, doc_id: str, content: bytes) -> str:
         """Extract text from PDF using centralized extractor."""
         return extract_pdf_markdown(
             source="PT/CNPD",
-            source_id="",
+            source_id=record_id(doc_id),
             pdf_bytes=content,
             table="doctrine",
         ) or ""
@@ -213,18 +218,35 @@ class CNPDFetcher:
             logger.warning(f"Skipping oversized PDF ({len(response.content)} bytes) for id={doc_id}")
             return ""
 
-        return self._extract_text_from_pdf(response.content)
+        return self._extract_text_from_pdf(doc_id, response.content)
 
     def fetch_all(self, limit: int = None) -> Iterator[Dict[str, Any]]:
         """Fetch all decisions with full text"""
         count = 0
         skipped = 0
+        already = 0
+
+        # Decisions already stored with text are skipped before the download, so
+        # a refresh costs one listing walk instead of re-downloading and — for
+        # the scanned pareceres, which are a majority — re-OCR-ing the whole
+        # ~90K corpus. At ~1.5 min per OCR'd document that re-run took months
+        # and never finished inside a fleet slot (issue #1458).
+        existing = preload_existing_ids("PT/CNPD", "doctrine")
+        if existing:
+            logger.info(f"{len(existing):,} decisions already stored — will skip those")
 
         for meta in self.discover_decisions(limit=limit * 3 if limit else None):
             if limit and count >= limit:
                 return
 
             doc_id = meta['doc_id']
+
+            if record_id(doc_id) in existing:
+                already += 1
+                if already % 500 == 0:
+                    logger.info(f"Skipped {already:,} already-stored decisions so far")
+                continue
+
             logger.info(f"Fetching [{count+1}] id={doc_id}: {meta['title']}...")
 
             text = self.fetch_decision_text(doc_id)
@@ -239,7 +261,10 @@ class CNPDFetcher:
 
             time.sleep(1.5)  # Rate limiting
 
-        logger.info(f"Fetched {count} decisions with full text ({skipped} skipped - scanned PDFs)")
+        logger.info(
+            f"Fetched {count} decisions with full text "
+            f"({skipped} skipped - scanned PDFs, {already} already stored)"
+        )
 
     def _classify_decision(self, title: str) -> str:
         """Classify decision type from title"""
@@ -356,4 +381,9 @@ def main():
 
 
 if __name__ == '__main__':
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

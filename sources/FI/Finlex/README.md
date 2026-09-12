@@ -47,8 +47,9 @@ python bootstrap.py test-api
 # Fetch sample records (10 documents)
 python bootstrap.py bootstrap --sample
 
-# Full bootstrap (large dataset)
+# Full bootstrap (large dataset; resumes from its checkpoint if relaunched)
 python bootstrap.py bootstrap
+python bootstrap.py bootstrap-fast   # alias the fleet wrapper calls
 
 # Incremental update
 python bootstrap.py update
@@ -62,7 +63,31 @@ python bootstrap.py update
 
 ## Technical Notes
 
-- Pagination: `page` and `limit` parameters (max 100 per page)
+- Pagination: `page` and `limit` parameters — **max 10 per page**; a larger
+  `limit` is rejected with a non-JSON error body
 - Rate limiting: API may return HTTP 429 on excessive requests
 - TLS 1.2+ required (no HTTP)
 - Documents are in Akoma Ntoso XML format with full structured text
+- Some documents (mostly Swedish renderings of recent treaties) carry a
+  `<componentRef src="main.pdf"/>` body instead of marked-up sections. The
+  text lives in the PDF at `{akn_uri}/main.pdf` and is extracted from there;
+  without that step the record would be a ~200-character preface.
+
+### Ordering, and how the refresh works
+
+The list endpoint returns entries in the order the API store last **wrote**
+them, not by document date — so the newest arrivals are on the **last** page,
+not page 1. As of 2026-08-30, `doc/treaty` page 1 is a 2025 entry while its
+last page (833) holds 2026/29-34, and `doc/government-proposal` ends on
+2026/135-136. The final pages of `act/statute` are 1917-2022 acts that were
+rewritten recently, which is also why a document's own date is useless as a
+freshness test.
+
+There is no modification date, no sitemap `lastmod`, no date-range parameter,
+and the API Gateway sends neither `ETag` nor `Last-Modified`. So the refresh
+compares against position plus a record of what has already been read:
+`data/finlex_checkpoint.json` holds every AKN URI seen and its `NEW`/`MODIFIED`
+status, and `fetch_updates` walks **backwards** from the last page, stopping
+after 20 consecutive pages that contain nothing unrecorded. The last 20 pages
+are always re-read, because an edit to an already-`MODIFIED` record moves it to
+the tail without changing its status and would otherwise be invisible.

@@ -8,23 +8,25 @@ Strategy:
   1. Fetch the circulars HTML page and parse the TablePress table
      for metadata (date, number, description, addressee, PDF URL)
   2. Download each Arabic PDF
-  3. Extract full text via pdfplumber
+  3. Extract full text through common.pdf_extract, which applies the
+     geometry-based RTL reorder and presentation-form normalization
 
-If the main page is unavailable (503), falls back to probing known
-PDF URL patterns directly.
+The site answers 503 for the listing page far more often than not, so
+there is a fallback list of the circular numbers whose PDFs are known to
+resolve. That list carries *only* numbers — every other field is read out
+of the circular's own first page (see `parse_pdf_header`).
 
 Data:
   - ~90+ circulars from 1967-2025
-  - Language: Arabic (PDFs), English (metadata)
+  - Language: Arabic (PDFs), English (metadata, when the listing page is up)
   - License: Lebanese government publication
 
 Usage:
-  python bootstrap.py bootstrap          # Full initial pull
-  python bootstrap.py bootstrap --sample # Fetch 15 sample records
+  python bootstrap.py bootstrap          # Full pull → data/records.jsonl
+  python bootstrap.py bootstrap --sample # 15 sample records → sample/
 """
 
 import argparse
-import io
 import json
 import logging
 import re
@@ -33,15 +35,14 @@ import time
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional
 
 import requests
 
-try:
-    import pdfplumber
-    HAS_PDF = True
-except ImportError:
-    HAS_PDF = False
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -49,7 +50,9 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://bccl.gov.lb"
 SOURCE_ID = "LB/BCCL"
 SAMPLE_DIR = Path(__file__).parent / "sample"
+DATA_DIR = Path(__file__).parent / "data"
 REQUEST_DELAY = 2.0
+MIN_TEXT_LENGTH = 50
 
 
 # ── HTML table parser ──────────────────────────────────────────────
@@ -65,7 +68,6 @@ class _TableParser(HTMLParser):
         self._in_cell = False
         self._current_row: List[str] = []
         self._current_cell: List[str] = []
-        self._current_href: Optional[str] = None
         self._cell_href: Optional[str] = None
         self._skip_header = True
 
@@ -118,10 +120,6 @@ def parse_circulars_table(html_content: str) -> List[Dict[str, str]]:
     for row in parser.rows:
         if len(row) < 5:
             continue
-        date_str = row[0].strip()
-        number = row[1].strip()
-        description = row[2].strip()
-        addressee = row[3].strip()
         pdf_url = row[4].strip()
         if not pdf_url.startswith("http"):
             if pdf_url.startswith("/"):
@@ -129,38 +127,99 @@ def parse_circulars_table(html_content: str) -> List[Dict[str, str]]:
             elif pdf_url.endswith(".pdf"):
                 pdf_url = BASE_URL + "/" + pdf_url
             else:
-                pdf_url = ""
+                continue
         circulars.append({
-            "date": date_str,
-            "number": number,
-            "description": description,
-            "addressee": addressee,
+            "date": row[0].strip(),
+            "number": row[1].strip(),
+            "description": row[2].strip(),
+            "addressee": row[3].strip(),
             "pdf_url": pdf_url,
         })
     return circulars
 
 
-# ── PDF extraction ─────────────────────────────────────────────────
+# ── Reading the circular's own header ──────────────────────────────
 
-def extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using pdfplumber."""
-    if not HAS_PDF:
-        return ""
+_ARABIC_DIGITS = str.maketrans("٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹", "01234567890123456789")
+
+# "بيروت في <date>" / "بيروت، في <date>" — the dateline.
+_DATELINE_RE = re.compile(r"بيروت[،\s]*\s*في")
+# "الموضوع: <subject>" — the subject line.
+_SUBJECT_RE = re.compile(r"الموضوع\s*:\s*(.+)")
+# "موجه إلى <addressee>" / "موجهّ إلى <addressee>".
+_ADDRESSEE_RE = re.compile(r"موجه\S*\s*إلى\s*(.+)")
+# Arabic letters only — no digits, diacritics or punctuation.
+_ARABIC_LETTER_RE = re.compile(r"[ء-ي]")
+
+
+def _parse_dateline(line: str) -> Optional[str]:
+    """Pull an ISO date out of a circular's ``بيروت في ...`` line.
+
+    The digits survive the RTL reorder but their *grouping* does not always:
+    a justified dateline can arrive as ``١٩٨١١٢ /١٧ /`` rather than
+    ``١٩٨١/١٢/١٧``. So work from the ordered digit groups instead of a format
+    string, and only commit to a date when the four-digit year sits at one end
+    — year-in-the-middle is genuinely ambiguous and gets a null rather than a
+    coin flip.
+    """
+    groups = re.findall(r"\d+", line.translate(_ARABIC_DIGITS))
+    # A run like "198112" is a year glued to its month by the lost spacing.
+    if len(groups) == 2 and len(groups[0]) in (5, 6):
+        groups = [groups[0][:4], groups[0][4:], groups[1]]
+    if len(groups) != 3:
+        return None
+
+    if len(groups[0]) == 4:
+        year, a, b = groups
+    elif len(groups[2]) == 4:
+        b, a, year = groups
+    else:
+        return None
+
+    month, day = a, b
+    if int(month) > 12 >= int(day):
+        month, day = day, month
     try:
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            pages = []
-            for page in pdf.pages:
-                text = page.extract_text()
-                if text:
-                    pages.append(text)
-                try:
-                    page.flush_cache(); page.get_textmap.cache_clear()
-                except Exception:
-                    pass
-            return "\n\n".join(pages)
-    except Exception as e:
-        logger.warning("PDF extraction failed: %s", e)
-        return ""
+        return datetime(int(year), int(month), int(day)).strftime("%Y-%m-%d")
+    except ValueError:
+        return None
+
+
+def _is_subject(candidate: str) -> bool:
+    """Reject a subject that is really a stray cross-reference date.
+
+    A wrapped subject can leave the ``الموضوع:`` line holding nothing but the
+    tail of an inline citation — circular 1-IEF renders as
+    ``الموضوع: تاريخ ١٨/٨/٢٠٠٠`` with the actual subject on the line below.
+    Twelve Arabic letters is comfortably more than ``تاريخ`` and comfortably
+    less than the shortest real subject in the corpus.
+    """
+    return len(_ARABIC_LETTER_RE.findall(candidate)) >= 12
+
+
+def parse_pdf_header(text: str) -> Dict[str, Optional[str]]:
+    """Read date, Arabic subject and addressee off a circular's first page."""
+    out: Dict[str, Optional[str]] = {"date": None, "subject": None, "addressee": None}
+    lines = [ln.strip() for ln in text.split("\n")[:20]]
+    for i, line in enumerate(lines):
+        if not line:
+            continue
+        if out["date"] is None and _DATELINE_RE.search(line):
+            out["date"] = _parse_dateline(line)
+        if out["subject"] is None:
+            m = _SUBJECT_RE.search(line)
+            if m:
+                candidates = [m.group(1)] + [ln for ln in lines[i + 1:i + 3] if ln]
+                for cand in candidates:
+                    cand = cand.strip().rstrip(".").strip()
+                    if _is_subject(cand):
+                        out["subject"] = cand
+                        break
+        if out["addressee"] is None:
+            m = _ADDRESSEE_RE.search(line)
+            if m and m.group(1).strip():
+                out["addressee"] = m.group(1).strip()
+    return out
 
 
 # ── Fetching ───────────────────────────────────────────────────────
@@ -187,197 +246,36 @@ def fetch_circulars_page(session: requests.Session) -> Optional[str]:
     return None
 
 
-# Known circulars from the archived page (fallback when site is 503)
-KNOWN_CIRCULARS = [
-    ("2025/12/26", "302", "Periodic templates required by the Banking Control Commission of Lebanon",
-     "Banks; Financial Institutions", "BCCLCircularNo302.pdf"),
-    ("2025/07/29", "301", "Appointment of Chairman and Board Members of the BCCL",
-     "Banks; Specialized Lending Entities (Credit Counters); Financial Institutions; Exchange Institutions; External Auditors; Institutions Engaged with Electronic Financial Operations; Other Institutions", "BCCLCircularNo301.pdf"),
-    ("2024/02/07", "4", "Foreign Exchange Positions",
-     "Financial Institutions; External Auditors", "BCCLCircularNo4.pdf"),
-    ("2023/11/27", "300", "Foreign Exchange Positions",
-     "Banks; External Auditors", "BCCLCircularNo300.pdf"),
-    ("2021/09/03", "1-IEF", "Implementation of BCCL circular 222 and 272 by Institutions Engaged with Electronic Financial Operations",
-     "Institutions Engaged with Electronic Financial Operations", "BCCLCircularNo1IEF.pdf"),
-    ("2020/10/01", "299", "Computation of Capital Adequacy Ratios",
-     "Banks; External Auditors", "BCCLCircularNo299.pdf"),
-    ("2020/06/16", "298", "Appointment of Chairman and Board Members of the BCCL",
-     "Banks; Financial Institutions; Exchange Institutions; External Auditors", "BCCLCircularNo298.pdf"),
-    ("2018/09/13", "297", "Computation of LBP Loan to Deposits Ratio",
-     "Banks", "BCCLCircularNo297.pdf"),
-    ("2018/06/04", "296", "Profits allocated to non Distributable General Reserves",
-     "Banks; Financial Institutions", "BCCLCircularNo296.pdf"),
-    ("2018/04/26", "295", "Liquidity Coverage Ratio",
-     "Banks", "BCCLCircularNo295.pdf"),
-    ("2017/12/28", "294", "Recovery plan",
-     "Banks", "BCCLCircularNo294.pdf"),
-    ("2017/12/28", "293", "IFRS9 and related disclosures",
-     "Banks; Financial Institutions; External Auditors", "BCCLCircularNo293.pdf"),
-    ("2017/12/28", "292", "Strategy and Business Plan",
-     "Banks", "BCCLCircularNo292.pdf"),
-    ("2017/12/05", "291", "Monitoring of interest subsidized loans",
-     "Banks; Financial Institutions", "BCCLCircularNo291.pdf"),
-    ("2017/12/04", "290", "Fixed Long FX Positions",
-     "Banks", "BCCLCircularNo290.pdf"),
-    ("2017/10/25", "289", "Academic, Professional, and Ethical Qualifications",
-     "Banks; Financial Institutions", "BCCLCircularNo289.pdf"),
-    ("2017/08/10", "9", "Financial Statements of Exchange Institutions",
-     "Exchange Institutions", "BCCLCircularNo9.pdf"),
-    ("2017/03/21", "288", "Computation of maximum limit of loans and placements ratio",
-     "Banks", "BCCLCircularNo288.pdf"),
-    ("2017/03/15", "287", "Participation of banks in startup companies, incubators, accelerators",
-     "Banks; External Auditors", "BCCLCircularNo287.pdf"),
-    ("2017/01/27", "1-Comptoirs", "Conditions for lending as per articles 183 and 184 of the Law of Money and Credit",
-     "Specialized Lending Entities (Credit Counters)", "BCCLCircularNo1Comptoirs.pdf"),
-    ("2016/09/05", "3", "Reporting to BCCL on fraud, misconduct and material incidents",
-     "Financial Institutions", "BCCLCircularNo3.pdf"),
-    ("2016/05/13", "286", "Borrowers accounts frozen or closed in conformity with international sanctions",
-     "Banks; Financial Institutions", "BCCLCircularNo286.pdf"),
-    ("2016/03/31", "285", "Subsidized Loans in arrears",
-     "Banks; Financial Institutions", "BCCLCircularNo285.pdf"),
-    ("2016/02/15", "284", "Restructuring of Loans",
-     "Banks; Financial Institutions", "BCCLCircularNo284.pdf"),
-    ("2015/12/15", "283", "Reporting on Financial Auditing Firms and their Partners",
-     "Banks; Financial Institutions", "BCCLCircularNo283.pdf"),
-    ("2015/07/27", "282", "Customer Due Diligence for Correspondent Banks",
-     "Banks", "BCCLCircularNo282.pdf"),
-    ("2015/04/07", "281", "FATCA Compliance",
-     "Banks; Financial Institutions", "BCCLCircularNo281.pdf"),
-    ("2015/03/09", "280", "New Reporting Templates",
-     "Banks", "BCCLCircularNo280.pdf"),
-    ("2014/12/08", "279", "Appointment of Board Members",
-     "Banks; Financial Institutions; Exchange Institutions; External Auditors", "BCCLCircularNo279.pdf"),
-    ("2014/06/13", "277", "Stress Testing Framework",
-     "Banks", "BCCLCircularNo277.pdf"),
-    ("2014/03/14", "276", "Pillar 3 Market Discipline Disclosures",
-     "Banks; External Auditors", "BCCLCircularNo276.pdf"),
-    ("2014/02/10", "275", "Financial Holding Companies",
-     "Banks", "BCCLCircularNo275.pdf"),
-    ("2013/12/31", "274", "Computation of Capital Adequacy Ratios — Basel III",
-     "Banks; External Auditors", "BCCLCircularNo274.pdf"),
-    ("2013/06/21", "273", "Banks Governance and Transparency",
-     "Banks", "BCCLCircularNo273.pdf"),
-    ("2013/03/14", "272", "AML/CFT Compliance for Banks",
-     "Banks; External Auditors", "BCCLCircularNo272.pdf"),
-    ("2012/12/10", "271", "Capital Conservation Buffer",
-     "Banks; External Auditors", "BCCLCircularNo271.pdf"),
-    ("2012/06/07", "269", "Internal Capital Adequacy Assessment Process (ICAAP)",
-     "Banks", "BCCLCircularNo269.pdf"),
-    ("2012/03/12", "267", "Consolidated Supervision",
-     "Banks; External Auditors", "BCCLCircularNo267.pdf"),
-    ("2011/12/22", "266", "Operational Risk Management",
-     "Banks", "BCCLCircularNo266.pdf"),
-    ("2011/06/14", "264", "Country Risk and Transfer Risk",
-     "Banks; External Auditors", "BCCLCircularNo264.pdf"),
-    ("2011/03/10", "263", "Stress Testing",
-     "Banks", "BCCLCircularNo263.pdf"),
-    ("2010/12/28", "262", "Related Party Transactions",
-     "Banks; External Auditors", "BCCLCircularNo262.pdf"),
-    ("2010/06/08", "261", "Interest Rate Risk in the Banking Book",
-     "Banks", "BCCLCircularNo261.pdf"),
-    ("2009/12/28", "257", "Credit Risk Management",
-     "Banks", "BCCLCircularNo257.pdf"),
-    ("2009/09/04", "256", "Capital Adequacy Computation Update",
-     "Banks; External Auditors", "BCCLCircularNo256.pdf"),
-    ("2009/06/09", "255", "Market Risk Management",
-     "Banks", "BCCLCircularNo255.pdf"),
-    ("2008/12/30", "254", "Corporate Governance",
-     "Banks", "BCCLCircularNo254.pdf"),
-    ("2008/09/04", "253", "External Auditors Requirements",
-     "Banks; Financial Institutions; Exchange Institutions; External Auditors", "BCCLCircularNo253.pdf"),
-    ("2008/06/04", "252", "Liquidity Risk Management",
-     "Banks", "BCCLCircularNo252.pdf"),
-    ("2008/03/12", "251", "Internal Audit Function",
-     "Banks; Financial Institutions", "BCCLCircularNo251.pdf"),
-    ("2007/12/28", "250", "Internal Control Framework",
-     "Banks; Financial Institutions", "BCCLCircularNo250.pdf"),
-    ("2007/09/10", "249", "AML/CFT Updates",
-     "Banks; Financial Institutions", "BCCLCircularNo249.pdf"),
-    ("2007/06/05", "247", "Reporting Requirements Update",
-     "Banks", "BCCLCircularNo247.pdf"),
-    ("2007/03/15", "246", "Risk Management",
-     "Banks", "BCCLCircularNo246.pdf"),
-    ("2006/09/12", "243", "Disclosure Requirements",
-     "Banks", "BCCLCircularNo243.pdf"),
-    ("2006/06/15", "242", "Capital Adequacy Framework",
-     "Banks; External Auditors", "BCCLCircularNo242.pdf"),
-    ("2006/03/16", "241", "Credit Concentration",
-     "Banks", "BCCLCircularNo241.pdf"),
-    ("2005/06/10", "238", "Banking Secrecy Compliance",
-     "Banks; Financial Institutions", "BCCLCircularNo238.pdf"),
-    ("2004/12/14", "236", "Compliance Function",
-     "Banks", "BCCLCircularNo236.pdf"),
-    ("2004/06/10", "233", "Loan Classification and Provisioning",
-     "Banks; Financial Institutions; External Auditors", "BCCLCircularNo233.pdf"),
-    ("2003/06/05", "222", "Periodic Templates Required",
-     "Banks; Financial Institutions", "BCCLCircularNo222.pdf"),
-    ("2003/03/10", "221", "Risk-Based Supervision",
-     "Banks", "BCCLCircularNo221.pdf"),
-    ("2002/12/10", "219", "AML Compliance",
-     "Banks; Financial Institutions", "BCCLCircularNo219.pdf"),
-    ("2001/06/05", "214", "Financial Derivatives",
-     "Banks", "BCCLCircularNo214.pdf"),
-    ("2000/06/05", "208", "Y2K Follow-up",
-     "Banks", "BCCLCircularNo208.pdf"),
-    ("2000/03/08", "206", "Risk Weighted Assets",
-     "Banks; External Auditors", "BCCLCircularNo206.pdf"),
-    ("1999/12/15", "205", "Banking Operations Reporting",
-     "Banks", "BCCLCircularNo205.pdf"),
-    ("1999/06/08", "199", "Foreign Currency Operations",
-     "Banks", "BCCLCircularNo199.pdf"),
-    ("1998/06/10", "195", "Off-Balance Sheet Items",
-     "Banks", "BCCLCircularNo195.pdf"),
-    ("1997/03/11", "188", "Classified Loans",
-     "Banks", "BCCLCircularNo188.pdf"),
-    ("1995/06/15", "180", "Quarterly Reports",
-     "Banks; Financial Institutions", "BCCLCircularNo180.pdf"),
-    ("1994/06/09", "174", "Reserves Requirements",
-     "Banks", "BCCLCircularNo174.pdf"),
-    ("1994/03/10", "173", "Loan Concentration Limits",
-     "Banks", "BCCLCircularNo173.pdf"),
-    ("1990/09/11", "157", "Capital Adequacy Reporting",
-     "Banks", "BCCLCircularNo157.pdf"),
-    ("1983/06/14", "94", "Loan Documentation",
-     "Banks", "BCCLCircularNo94.pdf"),
-    ("1980/09/10", "80", "Foreign Exchange Reporting",
-     "Banks", "BCCLCircularNo80.pdf"),
-    ("1974/06/12", "68", "Banking Supervision Procedures",
-     "Banks", "BCCLCircularNo68.pdf"),
-    ("", "31", "Periodic Reports",
-     "Banks", "BCCLCircularNo31.pdf"),
-    ("", "30", "Audit Requirements",
-     "Banks; External Auditors", "BCCLCircularNo30.pdf"),
-    ("", "29", "Loan Portfolio Reporting",
-     "Banks", "BCCLCircularNo29.pdf"),
-    ("", "27", "Banking Statistics",
-     "Banks", "BCCLCircularNo27.pdf"),
-    ("", "26", "Financial Statements Format",
-     "Banks", "BCCLCircularNo26.pdf"),
-    ("", "25", "Branch Reporting",
-     "Banks", "BCCLCircularNo25.pdf"),
-    ("", "23", "Capital Requirements",
-     "Banks", "BCCLCircularNo23.pdf"),
-    ("", "21", "Inspection Procedures",
-     "Banks", "BCCLCircularNo21.pdf"),
-    ("", "20", "Account Classification",
-     "Banks", "BCCLCircularNo20.pdf"),
-    ("", "19", "Off-Site Supervision",
-     "Banks", "BCCLCircularNo19.pdf"),
-    ("", "17", "Reporting Schedules",
-     "Banks", "BCCLCircularNo17.pdf"),
-    ("", "15", "Supervisory Returns",
-     "Banks", "BCCLCircularNo15.pdf"),
-    ("", "11", "Bank Examination Standards",
-     "Banks", "BCCLCircularNo11.pdf"),
-    ("", "8", "AML Reporting",
-     "Banks; Financial Institutions", "BCCLCircularNo8.pdf"),
-    ("", "7", "Audit Committee Requirements",
-     "Banks", "BCCLCircularNo7.pdf"),
+# Circular numbers whose PDF resolves under /Documents/ArabicCirculars/,
+# newest first. Used only when the listing page is down — which is most of the
+# time, so this list deliberately holds numbers and nothing else. It used to
+# carry a hand-written English description and date per circular, and for the
+# older entries those were invented: no. 68 is about booking clients'
+# precious-metal transactions, not "Banking Supervision Procedures"; no. 254 is
+# about Istisna'a operations by Islamic banks dated 2007-07-18, not "Corporate
+# Governance" dated 2008-12-30; no. 222 is IT-security guidance dated
+# 2000-08-18, not "Periodic Templates Required" dated 2003-06-05. Every field
+# below the number now comes from the circular itself.
+KNOWN_CIRCULAR_NUMBERS = [
+    "302", "301", "4", "300", "1-IEF", "299", "298", "297", "296", "295",
+    "294", "293", "292", "291", "290", "289", "9", "288", "287", "1-Comptoirs",
+    "3", "286", "285", "284", "283", "282", "281", "280", "279", "277",
+    "276", "275", "274", "273", "272", "271", "269", "267", "266", "264",
+    "263", "262", "261", "257", "256", "255", "254", "253", "252", "251",
+    "250", "249", "247", "246", "243", "242", "241", "238", "236", "233",
+    "222", "221", "219", "214", "208", "206", "205", "199", "195", "188",
+    "180", "174", "173", "157", "94", "80", "68", "31", "30", "29",
+    "27", "26", "25", "23", "21", "20", "19", "17", "15", "11",
+    "8", "7",
 ]
 
 
+def _pdf_url(number: str) -> str:
+    return f"{BASE_URL}/Documents/ArabicCirculars/BCCLCircularNo{number.replace('-', '')}.pdf"
+
+
 def get_circulars_metadata(session: requests.Session) -> List[Dict[str, str]]:
-    """Get circular metadata from live page or fallback to known list."""
+    """Get circular metadata from the live page, or the number list as fallback."""
     html = fetch_circulars_page(session)
     if html:
         circulars = parse_circulars_table(html)
@@ -386,18 +284,11 @@ def get_circulars_metadata(session: requests.Session) -> List[Dict[str, str]]:
             return circulars
         logger.warning("No circulars parsed from live page, using fallback")
 
-    logger.info("Using known circulars list (fallback)")
-    circulars = []
-    for date_str, number, desc, addressee, filename in KNOWN_CIRCULARS:
-        pdf_url = f"{BASE_URL}/Documents/ArabicCirculars/{filename}"
-        circulars.append({
-            "date": date_str,
-            "number": number,
-            "description": desc,
-            "addressee": addressee,
-            "pdf_url": pdf_url,
-        })
-    return circulars
+    logger.info("Listing page unavailable — using the known circular numbers")
+    return [
+        {"date": "", "number": n, "description": "", "addressee": "", "pdf_url": _pdf_url(n)}
+        for n in KNOWN_CIRCULAR_NUMBERS
+    ]
 
 
 # ── Normalize ──────────────────────────────────────────────────────
@@ -405,30 +296,36 @@ def get_circulars_metadata(session: requests.Session) -> List[Dict[str, str]]:
 def normalize(circular: Dict[str, str], pdf_text: str) -> Dict[str, Any]:
     """Normalize a circular record into standard schema."""
     number = circular["number"]
-    date_str = circular["date"]
+    header = parse_pdf_header(pdf_text)
 
-    # Parse date: YYYY/MM/DD → ISO 8601
     iso_date = None
-    if date_str:
+    if circular.get("date"):
         try:
-            dt = datetime.strptime(date_str, "%Y/%m/%d")
-            iso_date = dt.strftime("%Y-%m-%d")
+            iso_date = datetime.strptime(circular["date"], "%Y/%m/%d").strftime("%Y-%m-%d")
         except ValueError:
             pass
+    if iso_date is None:
+        iso_date = header["date"]
 
-    doc_id = f"BCCL-Circular-{number}"
+    # The listing page's English description is authoritative when we have it;
+    # otherwise the circular's own Arabic الموضوع line is the real subject.
+    subject = circular.get("description") or header["subject"]
+    title = f"BCCL Circular No. {number}"
+    if subject:
+        title = f"{title}: {subject}"
 
     return {
-        "_id": doc_id,
+        "_id": f"BCCL-Circular-{number}",
         "_source": SOURCE_ID,
         "_type": "legislation",
         "_fetched_at": datetime.now(timezone.utc).isoformat(),
-        "title": f"BCCL Circular No. {number}: {circular['description']}",
+        "title": title,
         "text": pdf_text,
         "date": iso_date,
         "url": circular["pdf_url"],
         "circular_number": number,
-        "addressee": circular.get("addressee", ""),
+        "subject_ar": header["subject"],
+        "addressee": circular.get("addressee") or header["addressee"] or "",
     }
 
 
@@ -436,10 +333,6 @@ def normalize(circular: Dict[str, str], pdf_text: str) -> Dict[str, Any]:
 
 def fetch_all(sample: bool = False) -> Iterator[Dict[str, Any]]:
     """Fetch all BCCL circulars with full text."""
-    if not HAS_PDF:
-        logger.error("pdfplumber not available — cannot extract PDF text")
-        sys.exit(1)
-
     session = _session()
     circulars = get_circulars_metadata(session)
     logger.info("Found %d circulars to process", len(circulars))
@@ -455,8 +348,8 @@ def fetch_all(sample: bool = False) -> Iterator[Dict[str, Any]]:
             errors += 1
             continue
 
-        logger.info("[%d/%d] Fetching circular %s: %s",
-                    i + 1, min(limit, len(circulars)), circ["number"], circ["description"][:60])
+        logger.info("[%d/%d] Fetching circular %s",
+                    i + 1, min(limit, len(circulars)), circ["number"])
 
         try:
             resp = session.get(pdf_url, timeout=60)
@@ -466,17 +359,25 @@ def fetch_all(sample: bool = False) -> Iterator[Dict[str, Any]]:
                 time.sleep(REQUEST_DELAY)
                 continue
 
-            pdf_text = extract_pdf_text(resp.content)
-            if not pdf_text or len(pdf_text) < 50:
+            # force=True: the rows this replaces are exactly the ones already in
+            # Neon holding the old character-reversed text, and without it the
+            # helper skips them as present and the refresh emits nothing.
+            pdf_text = extract_pdf_markdown(
+                source=SOURCE_ID,
+                source_id=f"BCCL-Circular-{circ['number']}",
+                pdf_bytes=resp.content,
+                table="legislation",
+                force=True,
+            )
+            if not pdf_text or len(pdf_text.strip()) < MIN_TEXT_LENGTH:
                 logger.warning("Insufficient text from circular %s (%d chars)",
-                               circ["number"], len(pdf_text) if pdf_text else 0)
+                               circ["number"], len(pdf_text or ""))
                 errors += 1
                 time.sleep(REQUEST_DELAY)
                 continue
 
-            record = normalize(circ, pdf_text)
             success += 1
-            yield record
+            yield normalize(circ, pdf_text.strip())
 
         except Exception as e:
             logger.error("Error fetching circular %s: %s", circ["number"], e)
@@ -486,6 +387,21 @@ def fetch_all(sample: bool = False) -> Iterator[Dict[str, Any]]:
 
     logger.info("Done: %d success, %d errors out of %d attempted",
                 success, errors, min(limit, len(circulars)))
+
+
+def fetch_updates(since) -> Iterator[Dict[str, Any]]:
+    """Yield circulars dated on or after `since`.
+
+    BCCL issues sequentially numbered circulars and does not revise one in
+    place, so the date the circular carries is also the date it became
+    available to us.
+    """
+    if isinstance(since, datetime):
+        since = since.strftime("%Y-%m-%d")
+    since = str(since)[:10]
+    for record in fetch_all():
+        if record["date"] and record["date"] >= since:
+            yield record
 
 
 def main():
@@ -499,21 +415,37 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
     count = 0
+    if args.sample:
+        SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
+        for record in fetch_all(sample=True):
+            (SAMPLE_DIR / f"{record['_id']}.json").write_text(
+                json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
+            count += 1
+            logger.info("Saved %s (%d chars text)", record["_id"], len(record["text"]))
+    else:
+        # Stream to data/records.jsonl: a full run used to write only the first
+        # 15 records into sample/ and persist nothing else, so a fleet run had
+        # nothing to ingest and the pipeline fell back to the bundled samples
+        # (issue #798 class).
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        with (DATA_DIR / "records.jsonl").open("w", encoding="utf-8") as fh:
+            for record in fetch_all():
+                fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+                fh.flush()
+                count += 1
+                logger.info("Wrote %s (%d chars text)", record["_id"], len(record["text"]))
 
-    for record in fetch_all(sample=args.sample):
-        out = SAMPLE_DIR / f"{record['_id']}.json"
-        out.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
-        count += 1
-        text_len = len(record.get("text", ""))
-        logger.info("Saved %s (%d chars text)", record["_id"], text_len)
-
-    logger.info("Total records saved: %d", count)
+    logger.info("Total records: %d", count)
     if count == 0:
         logger.error("No records fetched — check connectivity and PDF access")
         sys.exit(1)
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

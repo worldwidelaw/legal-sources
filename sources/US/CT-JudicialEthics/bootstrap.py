@@ -53,7 +53,7 @@ from typing import Generator
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
@@ -108,18 +108,49 @@ class CTJudicialEthicsScraper(BaseScraper):
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
         )
+        # Count refused responses so a wholly-blocked vantage fails loudly
+        # instead of reporting a calm "0 discovered" (#1403).
+        self.blocked_responses = 0
 
     # ---------------------------------------------------------------- http
     def _curl_bytes(self, url: str) -> bytes | None:
-        for attempt in range(3):
+        # jud.ct.gov serves this vantage fine with any UA, so the fleet's
+        # empty discovery is an IP-level refusal rather than a UA sniff;
+        # send a full browser header set anyway and, crucially, read the
+        # real status code instead of treating any body as success.
+        headers = [
+            "-H", "Accept: text/html,application/xhtml+xml,application/xml;"
+                  "q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "-H", "Accept-Language: en-US,en;q=0.9",
+            "-H", "Sec-Fetch-Dest: document",
+            "-H", "Sec-Fetch-Mode: navigate",
+            "-H", "Sec-Fetch-Site: none",
+            "-H", "Sec-Fetch-User: ?1",
+            "-H", "Upgrade-Insecure-Requests: 1",
+        ]
+        for attempt in range(4):
             time.sleep(self.delay)
             try:
                 out = subprocess.run(
-                    ["curl", "-s", "-L", "--max-time", "60", "-A", self._ua, url],
+                    ["curl", "-s", "-L", "--max-time", "60", "-A", self._ua,
+                     *headers, "-w", "%{http_code}", url],
                     capture_output=True, timeout=90,
                 )
-                if out.returncode == 0 and out.stdout:
-                    return out.stdout
+                if out.returncode == 0 and len(out.stdout) >= 3:
+                    body = out.stdout[:-3]
+                    code = out.stdout[-3:].decode("ascii", "replace")
+                    if code == "200" and body:
+                        return body
+                    # 403/429 is the WAF refusing this client, 5xx is the
+                    # host wobbling — both are worth another attempt, and
+                    # both must be counted so the caller can explain a
+                    # zero-result run.
+                    if code in ("403", "429") or code.startswith("5"):
+                        self.blocked_responses += 1
+                    elif code == "404":
+                        return None  # genuinely absent, don't burn retries
+                    logger.warning(
+                        f"GET {url} -> HTTP {code} (attempt {attempt + 1})")
             except Exception as e:
                 logger.warning(f"curl failed for {url} (attempt {attempt + 1}): {e}")
             time.sleep(2 ** attempt)
@@ -130,13 +161,26 @@ class CTJudicialEthicsScraper(BaseScraper):
         """Return [(number, ext)] in index order, deduped by number."""
         raw = self._curl_bytes(INDEX_URL)
         if not raw:
-            logger.error("could not fetch the summaries index")
-            return []
+            raise RuntimeError(
+                f"{INDEX_URL} returned no content after retries "
+                f"({self.blocked_responses} refused responses) — this vantage "
+                f"is being blocked, the index is not empty."
+            )
         html = raw.decode("utf-8", "replace")
         seen: dict[str, str] = {}
         for m in LINK_RE.finditer(html):
             number, ext = m.group(1), m.group(2).lower()
             seen.setdefault(number, ext)  # keep first (index-listed) extension
+        if not seen:
+            # The index has listed every opinion since 2008 (340+ links) for
+            # years; parsing zero means we were served a block page, not the
+            # real index. Raise so the run fails loudly instead of quietly
+            # yielding nothing and letting the pipeline re-ingest samples.
+            raise RuntimeError(
+                f"{INDEX_URL} parsed to 0 opinion links ({len(html)} bytes, "
+                f"{self.blocked_responses} refused responses) — the summaries "
+                f"index is never empty, so this vantage is being refused."
+            )
         return list(seen.items())
 
     # -------------------------------------------------------- extraction
@@ -214,6 +258,7 @@ class CTJudicialEthicsScraper(BaseScraper):
     # ------------------------------------------------------------- fetch
     def _iter_raw(self, sample: bool = False) -> Generator[dict, None, None]:
         ops = self._list_opinions()
+        logger.info(f"Discovered {len(ops)} judicial-ethics opinions")
         emitted = 0
         for number, ext in ops:
             rec = self._fetch_one(number, ext)
@@ -224,6 +269,14 @@ class CTJudicialEthicsScraper(BaseScraper):
             emitted += 1
             if sample and emitted >= 12:
                 return
+        if not emitted:
+            # Index readable but every opinion body empty = the documents are
+            # being refused (or moved). Never a legitimate outcome.
+            raise RuntimeError(
+                f"0 of {len(ops)} discovered opinions yielded text "
+                f"({self.blocked_responses} refused responses) — opinion "
+                f"bodies are unreachable from this vantage."
+            )
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield RAW records (framework normalizes via normalize())."""
@@ -233,6 +286,9 @@ class CTJudicialEthicsScraper(BaseScraper):
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self.fetch_all():
             if not since or (raw.get("date") and raw["date"] >= since):
                 yield raw

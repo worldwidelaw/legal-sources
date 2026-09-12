@@ -86,12 +86,16 @@ class LexUzCaseLawScraper(BaseScraper):
         return data_str
 
     def _fetch_pdf_text(self, claim_id: int) -> str:
-        """Extract text from PDF using centralized extractor."""
+        """Download the decision PDF for a criminal case and extract its text."""
+        resp = self.http.get(f"{CRIMINAL_PDF}/{claim_id}", timeout=60)
+        if not resp or resp.status_code != 200 or len(resp.content) < 100:
+            return ""
         return extract_pdf_markdown(
             source="UZ/LexUzCaseLaw",
-            source_id="",
-            pdf_url=claim_id,
+            source_id=str(claim_id),
+            pdf_bytes=resp.content,
             table="case_law",
+            force=True,
         ) or ""
 
     def test_api(self):

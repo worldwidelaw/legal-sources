@@ -39,7 +39,7 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.pdf_extract import _extract as extract_pdf_text
 
 logging.basicConfig(
@@ -207,6 +207,7 @@ class QueretaroCourtScraper(BaseScraper):
 
     def fetch_updates(self, since: str = None) -> Generator[Dict[str, Any], None, None]:
         """Fetch decisions from the current year only."""
+        since = as_date_str(since)  # update() passes a datetime; #1512
         year = datetime.now(timezone.utc).year
         fecINI = f"{year}-01-01"
         fecFIN = f"{year}-12-31"

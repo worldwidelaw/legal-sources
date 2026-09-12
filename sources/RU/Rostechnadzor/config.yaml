@@ -1,0 +1,178 @@
+# ===================================================================
+# RU/Rostechnadzor -- Federal Environmental, Industrial and Nuclear
+# Supervision Service (Ростехнадзор)
+# ===================================================================
+# The service's own site www.gosnadzor.ru answers 403 to every request from
+# outside Russia (edge WAF, bare "<h1>Forbidden</h1>"), and the acts on
+# publication.pravo.gov.ru are scanned signature PDFs with no text layer.
+# The acts are collected instead from "Законодательство России" — the state
+# legal-information retrieval system (ИПС) at pravo.gov.ru/proxy/ips/ — which
+# serves the CONSOLIDATED text of each act in HTML, i.e. the wording currently
+# in force with its amendment chain stated in the preamble.
+#
+# Search is by issuing body (card-search attribute a6, classifier nclassif=6).
+# Three classifier ids cover the whole Rostechnadzor lineage:
+#   102000224  Федеральная служба по экологическому, технологическому
+#              и атомному надзору (Rostechnadzor itself)
+#   102000228  Федеральный горный и промышленный надзор (Gosgortekhnadzor,
+#              the industrial/mining-safety predecessor merged in 2004)
+#   102000229  Федеральный надзор по ядерной и радиационной безопасности
+#              (Gosatomnadzor, the nuclear/radiation-safety predecessor)
+# ===================================================================
+
+source:
+  id: "RU/Rostechnadzor"
+  country: "RU"
+  name: "Federal Environmental, Industrial and Nuclear Supervision Service"
+  url: "http://pravo.gov.ru/proxy/ips/"
+  description: |
+    Normative acts of Ростехнадзор — the Russian federal service that
+    licenses and supervises nuclear installations, hazardous industrial
+    facilities, hydraulic structures and energy plant. Covers the
+    федеральные нормы и правила (federal norms and rules) in the fields of
+    atomic-energy use and industrial safety, the safety guides and
+    administrative regulations that implement them, the licensing and
+    permitting procedures, the registers of hazardous production facilities,
+    the certification and attestation rules, and the service's own
+    organisational acts. Includes the acts of its two predecessor
+    authorities, Gosgortekhnadzor (industrial and mining safety) and
+    Gosatomnadzor (nuclear and radiation safety), which were merged into the
+    service in 2004 and whose norms remain in force or remain the reference
+    edition for later amendments. Full consolidated text in Russian, with the
+    in-force state (действует / утратил силу) and the official-publication
+    reference recorded per act.
+
+data_types:
+  - legislation
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1.5
+  burst: 3
+  max_workers: 3
+  min_rate: 0.4
+  max_rate: 4.0
+
+api:
+  type: "html_scrape"
+  base_url: "http://pravo.gov.ru/proxy/ips/"
+  encoding: "windows-1251"
+  endpoints:
+    # `docs_per_page` is ignored by the server: a listing page is always
+    # 20 rows, so paging walks `start` in steps of 20. `top.listSize = N`
+    # in the response body carries the hit count.
+    list: "?list_itself=&bpas=cd00000&a6={classifier_id}&a6type=1&a6value={label}&flagFind=0&sort=7&start={start}"
+    # Omitting `rdk` (the edition index) serves the current consolidated
+    # edition. Long acts are split across `page=1..N`.
+    text: "?doc_itself=&nd={nd}&page={page}"
+    detail: "?docbody=&nd={nd}"
+    # POST, body `query=<prefix>`, answers "<label>\t<id>"; prefix match only.
+    authority_autocomplete: "?autocomplete&bpa=cd00000&nclassif=6&area=110"
+  notes: |
+    The frame endpoints answer HTTP 500 while still returning a complete
+    page, so the scraper keys off body length rather than status code.
+    HTTP 204 with an empty body is the genuine "no results" answer.
+
+schema:
+  total_fields: 17
+  key_fields:
+    - name: "_id"
+      description: "ips-{nd}, from the ИПС document id"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "_type"
+      description: "legislation for приказ/постановление/распоряжение; doctrine for письмо/информация/разъяснение"
+      type: "string"
+      role: "classification"
+      required: true
+    - name: "title"
+      description: "Subject line of the act (its 'Об утверждении ...' heading)"
+      type: "string"
+      role: "title"
+      required: true
+    - name: "text"
+      description: "Full consolidated text, concatenated across the act's ИПС pages"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Signature date, ISO 8601 (YYYY-MM-DD)"
+      type: "string"
+      role: "date"
+      required: false
+    - name: "authority"
+      description: "Issuing body as stated in the act heading"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "issuing_body"
+      description: "Canonical classifier label of the issuing body (one of the three AUTHORITIES)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "instrument_type"
+      description: "Act type — Приказ, Постановление, Распоряжение, Письмо ..."
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "instrument_number"
+      description: "Act number as promulgated; null for unnumbered (б/н) acts"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "in_force_state"
+      description: "Действует без изменений / Действует c изменениями / Утратил силу"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "official_publication"
+      description: "Official-publication reference (Бюллетень нормативных актов, pravo.gov.ru ...)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "ips_id"
+      description: "ИПС document id (`nd`), stable across editions"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "language"
+      description: "Document language — always 'ru'"
+      type: "string"
+      role: "metadata"
+      required: false
+
+updates:
+  strategy: "incremental"
+  # Listings are sorted by signature date descending (sort=7), so an update
+  # run walks each authority from the newest act and stops after a long run
+  # of acts older than the last run.
+  frequency: "weekly"
+
+license:
+  name: "Russian official document — public domain (Civil Code art. 1259(6))"
+  url: "http://pravo.gov.ru/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: |
+    Article 1259(6)(1) of the Civil Code of the Russian Federation excludes
+    official documents of state bodies — laws, other normative acts, judicial
+    decisions and their official translations — from copyright protection.
+    Every record here is a normative act of a federal executive body, so the
+    text is in the public domain. pravo.gov.ru is the state's own official
+    publication and legal-information system.
+
+notes: |
+  - Discovery is by issuing body, not by keyword: a free-text search for
+    "Ростехнадзор" caps at ~1,300 hits and mixes in acts of other bodies that
+    merely mention the service. The a6 classifier filter returns exactly the
+    acts the body itself issued (817 + 92 + 21 = ~930 across the lineage).
+  - The consolidated edition is preferred over the signed PDF on
+    publication.pravo.gov.ru because the latter has no text layer at all.
+  - Repealed acts (Утратил силу) are kept: they remain the reference edition
+    for the acts that superseded them, and in_force_state records the status.

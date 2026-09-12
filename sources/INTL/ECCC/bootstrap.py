@@ -94,13 +94,36 @@ class ECCCScraper(BaseScraper):
         return resp.json()
 
     def _download_pdf_text(self, doc_id: int) -> Optional[str]:
-        """Extract text from PDF using centralized extractor."""
+        """Download a document PDF from the ECCC archive and extract its text."""
+        url = DOWNLOAD_URL.format(id=doc_id, matter_id=MATTER_ID)
+        try:
+            resp = self.session.get(url, timeout=120, stream=True, headers={"Content-Type": ""})
+            resp.raise_for_status()
+            # Read with size limit so one huge exhibit can't exhaust memory.
+            chunks = []
+            total = 0
+            for chunk in resp.iter_content(chunk_size=65536):
+                chunks.append(chunk)
+                total += len(chunk)
+                if total > MAX_PDF_BYTES:
+                    logger.warning(
+                        f"PDF for doc {doc_id} exceeds {MAX_PDF_BYTES // (1024*1024)}MB, skipping"
+                    )
+                    return None
+            content = b"".join(chunks)
+            if len(content) < 100:
+                return None
+        except Exception as e:
+            logger.warning(f"Failed to download PDF for doc {doc_id}: {e}")
+            return None
+
         return extract_pdf_markdown(
             source="INTL/ECCC",
-            source_id="",
-            pdf_bytes=doc_id,
+            source_id=str(doc_id),
+            pdf_bytes=content,
             table="case_law",
-        ) or ""
+            force=True,
+        )
 
     def _iterate_documents(self, record_types: list = None) -> Generator[dict, None, None]:
         """Iterate through all matching documents via pagination."""
@@ -294,4 +317,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

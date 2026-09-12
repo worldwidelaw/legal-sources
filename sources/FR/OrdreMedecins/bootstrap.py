@@ -15,7 +15,7 @@ contains metadata + abstract. Full decision text is obtained via PDF export
 Usage:
   python bootstrap.py bootstrap --sample  # Fetch 15 sample records
   python bootstrap.py bootstrap            # Full bootstrap (all ~20K+ decisions)
-  python bootstrap.py updates --since YYYY-MM-DD  # Not supported (no date filter API)
+  python bootstrap.py updates --since YYYY-MM-DD  # Decisions dated on/after a date
 """
 
 import argparse
@@ -45,9 +45,22 @@ HEADERS = {
 SAMPLE_DIR = Path(__file__).parent / "sample"
 DATA_DIR = Path(__file__).parent / "data"
 
-# Known valid ficId range (non-sequential, with gaps)
+# Known valid ficId range (non-sequential, with gaps).
+# MAX_FIC_ID is only a starting hint — the real ceiling is probed at runtime by
+# find_max_fic_id(), otherwise the corpus silently freezes once the site issues
+# ids beyond the hint.
 MIN_FIC_ID = 1
 MAX_FIC_ID = 23000
+
+# Upward probing is bounded so an always-answering site can never loop forever.
+FIC_ID_PROBE_STEP = 500
+FIC_ID_PROBE_MAX_STEPS = 40
+
+# ficIds run roughly, but not strictly, in date order: sampling the live site
+# showed neighbours up to ~18 months apart (22824 = 2025-12-18 sits next to
+# 22823 = 2025-04-10). fetch_updates therefore keeps walking until this many
+# consecutive decisions are all older than `since`.
+UPDATE_STOP_AFTER_OLDER = 300
 
 
 def clean_html(html_text: str) -> str:
@@ -246,6 +259,122 @@ def fetch_decision(session: requests.Session, fic_id: int) -> Optional[dict]:
     return normalize(metadata, full_text)
 
 
+def fic_id_exists(session: requests.Session, fic_id: int) -> bool:
+    """True if the site serves a real decision page for this ficId.
+
+    Missing ids answer with HTTP 500 and a short error page, but the check is on
+    parsed content rather than status so a soft-200 error page cannot be mistaken
+    for a decision.
+    """
+    try:
+        resp = session.get(DETAIL_URL.format(fic_id=fic_id), headers=HEADERS, timeout=30)
+    except requests.RequestException:
+        return False
+    if resp.status_code != 200:
+        return False
+    return parse_detail_page(resp.text, fic_id) is not None
+
+
+def find_max_fic_id(session: requests.Session, hint: int = MAX_FIC_ID) -> int:
+    """Probe for the highest ficId the site currently serves.
+
+    Walks up from `hint` in fixed steps until a whole step lands in empty space,
+    then binary-searches the boundary. Bounded by FIC_ID_PROBE_MAX_STEPS so the
+    loop terminates even if the site starts answering every id.
+    """
+    print(f"Probing for the highest ficId (hint {hint})...")
+
+    # Find a known-good floor at or below the hint.
+    lo = None
+    probe = hint
+    for _ in range(FIC_ID_PROBE_MAX_STEPS):
+        if fic_id_exists(session, probe):
+            lo = probe
+            break
+        probe -= FIC_ID_PROBE_STEP
+        if probe < MIN_FIC_ID:
+            break
+    if lo is None:
+        print(f"  No live ficId found near {hint}; falling back to {hint}")
+        return hint
+
+    # Walk up until a step lands past the end.
+    hi = lo + FIC_ID_PROBE_STEP
+    for _ in range(FIC_ID_PROBE_MAX_STEPS):
+        if not fic_id_exists(session, hi):
+            break
+        lo, hi = hi, hi + FIC_ID_PROBE_STEP
+    else:
+        print(f"  Upward probe hit its step limit at {lo}; using it as the ceiling")
+        return lo
+
+    while hi - lo > 1:
+        mid = (lo + hi) // 2
+        if fic_id_exists(session, mid):
+            lo = mid
+        else:
+            hi = mid
+
+    print(f"  Highest ficId: {lo}")
+    return lo
+
+
+def _coerce_since(since) -> str:
+    """Accept a datetime or a YYYY-MM-DD string — the refresh runner passes both."""
+    if isinstance(since, datetime):
+        return since.strftime("%Y-%m-%d")
+    return str(since)[:10]
+
+
+def fetch_updates(since) -> Generator[dict, None, None]:
+    """Yield decisions dated on or after `since`.
+
+    The site has no date-filtered query, so this walks the ficId space downward
+    from the live ceiling — new decisions get new, higher ids. Because ids are
+    only roughly date-ordered, the walk does not stop at the first old decision
+    but after UPDATE_STOP_AFTER_OLDER consecutive ones.
+    """
+    since_str = _coerce_since(since)
+    session = requests.Session()
+    max_fic_id = find_max_fic_id(session)
+
+    print(f"Fetching decisions dated on or after {since_str} "
+          f"(walking down from ficId {max_fic_id})...")
+
+    yielded = 0
+    consecutive_older = 0
+
+    for fic_id in range(max_fic_id, MIN_FIC_ID - 1, -1):
+        record = fetch_decision(session, fic_id)
+        if record is None:
+            continue
+
+        date = record.get("date")
+        if date and date < since_str:
+            consecutive_older += 1
+            if consecutive_older >= UPDATE_STOP_AFTER_OLDER:
+                print(f"  Stopping at ficId={fic_id}: {consecutive_older} consecutive "
+                      f"decisions older than {since_str}")
+                break
+            time.sleep(2.0)
+            continue
+
+        consecutive_older = 0
+
+        if len(record.get("text", "")) < 100:
+            print(f"  [SKIP] ficId={fic_id}: text too short ({len(record.get('text', ''))} chars)")
+            time.sleep(2.0)
+            continue
+
+        yielded += 1
+        print(f"  [{yielded}] ficId={fic_id} ({date}): {record['title'][:60]}... "
+              f"({len(record['text'])} chars)")
+        yield record
+        time.sleep(2.0)
+
+    print(f"\nTotal updated records: {yielded}")
+
+
 def fetch_all(sample: bool = False) -> Generator[dict, None, None]:
     """Yield all decisions, iterating through ficId values."""
     session = requests.Session()
@@ -258,7 +387,7 @@ def fetch_all(sample: bool = False) -> Generator[dict, None, None]:
         # Scan from recent IDs backward to find valid ones quickly
         fic_ids = range(22500, 19000, -1)
     else:
-        fic_ids = range(MAX_FIC_ID, MIN_FIC_ID - 1, -1)
+        fic_ids = range(find_max_fic_id(session), MIN_FIC_ID - 1, -1)
 
     for fic_id in fic_ids:
         if count >= target:
@@ -309,8 +438,8 @@ def main():
     fast_parser = subparsers.add_parser("bootstrap-fast", help="Full fetch (VPS wrapper alias)")
     fast_parser.add_argument("--sample", action="store_true", help="Fetch 15 sample records only")
 
-    updates_parser = subparsers.add_parser("updates", help="Fetch updates (not supported)")
-    updates_parser.add_argument("--since", required=True, help="Date (not used)")
+    updates_parser = subparsers.add_parser("updates", help="Fetch decisions since a date")
+    updates_parser.add_argument("--since", required=True, help="Date (YYYY-MM-DD)")
 
     args = parser.parse_args()
 
@@ -338,8 +467,18 @@ def main():
             print(f"\nFull bootstrap complete: {count} records -> {jsonl_path}")
 
     elif args.command == "updates":
-        print("Updates not supported for this source (no date-filtered API).")
-        sys.exit(1)
+        since = datetime.strptime(args.since, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        print(f"FR/OrdreMedecins updates since {since.date()}")
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        jsonl_path = DATA_DIR / "records.jsonl"
+        count = 0
+        with open(jsonl_path, "w", encoding="utf-8") as f:
+            for record in fetch_updates(since):
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                count += 1
+                if count % 25 == 0:
+                    print(f"Progress: {count} records written")
+        print(f"\nUpdates complete: {count} records -> {jsonl_path}")
     else:
         parser.print_help()
         sys.exit(1)

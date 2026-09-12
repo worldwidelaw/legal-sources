@@ -1,0 +1,103 @@
+# ═══════════════════════════════════════════════════════════════════
+# US/CherokeeNationCourts — Cherokee Nation Supreme Court opinions
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "US/CherokeeNationCourts"
+  country: "US"
+  name: "Cherokee Nation Supreme Court Opinions"
+  url: "https://www.cherokeecourts.org/Supreme-Court"
+  description: |
+    Decisions of the Supreme Court of the Cherokee Nation, the highest court
+    of a federally recognized sovereign tribe headquartered in Tahlequah,
+    Oklahoma, and of its predecessor the Judicial Appeals Tribunal (JAT).
+    Opinions, judgments, orders, minute orders and dismissals from 1975 to
+    the present, together with the Court's own administrative directives
+    (the SC-AD series) and the Supreme Court and District Court Rules.
+    English.
+    Sourced from the Judicial Branch's own site, which publishes the corpus
+    as seven era archives — 1975-1995, 1996-1997, 1998-2001, 2002-2006,
+    2007-2012, 2013-2016 and 2017-to-current — each a plain list of decision
+    PDFs. One document is one record: a docket's papers are cited separately,
+    so an opinion and the orders in the same case share a case_number rather
+    than being merged.
+    Every PDF the Court publishes is an image-only scan, so the text comes
+    from OCR (tesseract, via common/pdf_extract). The source therefore
+    requires OCR on the host; without it the run fails loud instead of
+    writing empty records.
+    Cherokee Nation District Court records live on a Tyler Odyssey docket
+    portal, not a published-opinion database, and are out of scope, as is the
+    third-party aggregator ODCR.
+
+data_types:
+  - case_law
+  - doctrine
+
+jurisdictions:
+  - code: US-OK
+    scope: partial
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_scrape"   # static DNN era archives + scanned decision PDFs
+  base_url: "https://www.cherokeecourts.org"
+
+# ── Output Schema ─────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "court"
+      type: "string"
+      required: false
+    - name: "case_number"
+      type: "string"
+      required: false
+    - name: "case_name"
+      type: "string"
+      required: false
+    - name: "document_type"
+      type: "string"
+      required: false
+    - name: "filing_sequence"
+      type: "integer"
+      required: false
+    - name: "docket_year"
+      type: "integer"
+      required: false
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Public Domain (tribal government edict)"
+  url: "https://www.cherokeecourts.org/Supreme-Court"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Opinions and orders of the Supreme Court of the Cherokee Nation and of the
+    Judicial Appeals Tribunal are judicial edicts of a sovereign tribal
+    government, published in full and without restriction on the Judicial
+    Branch's own site for public access. Under the government edicts doctrine
+    judicial opinions are not subject to copyright. Freely reusable, including
+    commercially.

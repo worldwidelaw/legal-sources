@@ -26,6 +26,8 @@ from typing import Generator, Optional
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
+import requests
+
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
 
@@ -40,6 +42,27 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 }
+
+# The /fsa-news/ archive holds the Authority's statutory notices alongside
+# ordinary announcements. Only the two enforcement categories are in scope for
+# this source; "Press Release" and "Sanctions Notices" are general news and
+# sanctions-list pointers, not enforcement decisions.
+NEWS_CATEGORIES = {
+    "Public Warning": "public_warning",
+    "Public Notice": "public_notice",
+}
+# Captures smaller than this are the ~900-byte "page not found" tombstone the
+# Authority left behind, not the statement itself.
+WAYBACK_MIN_CAPTURE_BYTES = 3000
+NEWS_LINK_RE = re.compile(r'href="(/fsa-news/\d{4}/[a-z]{3}/[^"#?]+/)"')
+
+_DATE = r"(\d{1,2}\s+[A-Za-z]+\s+\d{4})"
+ACCORDION_DATE_PATTERNS = [
+    re.compile(r"Dates?\s+of\s+Disqualification\s*:?\s*(?:From\s+)?" + _DATE, re.I),
+    re.compile(r"Date\s+on\s+which\s+(?:the\s+)?prohibition\s+takes\s+effect\s*:?\s*" + _DATE, re.I),
+    re.compile(r"Date\s+of\s+(?:the\s+)?prohibition\s*:?\s*" + _DATE, re.I),
+    re.compile(r"Date\s+of\s+public\s+statement\s*:?\s*" + _DATE, re.I),
+]
 
 
 def strip_html(html: str) -> str:
@@ -84,6 +107,8 @@ class FSAEnforcementScraper(BaseScraper):
     def __init__(self):
         source_dir = Path(__file__).resolve().parent
         super().__init__(source_dir)
+        self._seen_press_urls = set()
+        self._archived_urls = set()
         self.client = HttpClient(
             base_url=BASE_URL,
             headers=HEADERS,
@@ -92,21 +117,78 @@ class FSAEnforcementScraper(BaseScraper):
             timeout=30,
         )
 
-    def _get_page(self, url: str) -> Optional[str]:
+    def _get_page(self, url: str, params: Optional[dict] = None) -> Optional[str]:
         """Fetch an HTML page (HttpClient handles retries)."""
         try:
-            resp = self.client.get(url)
+            resp = self.client.get(url, params=params)
             resp.raise_for_status()
             return resp.text
         except Exception as e:
             logger.warning(f"Failed to fetch {url}: {e}")
             return None
 
+    def _fetch_from_wayback(self, url: str) -> Optional[str]:
+        """Recover a public statement the Authority has since removed.
+
+        Six of the civil-penalty rows link to /fsa-news/ pages that now 404 —
+        the Authority retires older public statements but leaves the table
+        entry in place. The Internet Archive holds verbatim captures from when
+        they were live, so the decision text is still recoverable.
+        """
+        cdx = (
+            "http://web.archive.org/cdx/search/cdx"
+            f"?url={url.replace('https://', '').replace('http://', '')}"
+            "&output=text&fl=timestamp,statuscode,length&filter=statuscode:200"
+        )
+        try:
+            resp = requests.get(cdx, headers=HEADERS, timeout=30)
+            resp.raise_for_status()
+        except Exception as e:
+            logger.warning(f"Wayback CDX lookup failed for {url}: {e}")
+            return None
+
+        # The newest capture is often the tombstone the Authority replaced the
+        # statement with (~900 bytes), so take the newest *substantive* one.
+        best = None
+        for line in resp.text.strip().splitlines():
+            parts = line.split()
+            if len(parts) != 3:
+                continue
+            timestamp, _, length = parts
+            if length.isdigit() and int(length) >= WAYBACK_MIN_CAPTURE_BYTES:
+                best = timestamp
+        if not best:
+            return None
+
+        time.sleep(1.0)
+        try:
+            # `id_` serves the original bytes without the archive's toolbar.
+            snap = requests.get(
+                f"http://web.archive.org/web/{best}id_/{url}",
+                headers=HEADERS, timeout=60,
+            )
+            snap.raise_for_status()
+        except Exception as e:
+            logger.warning(f"Wayback capture {best} failed for {url}: {e}")
+            return None
+
+        logger.info(f"Recovered removed statement from Wayback capture {best}: {url}")
+        return snap.text
+
     def _fetch_press_release(self, url: str) -> Optional[dict]:
         """Fetch full text from a press release page."""
+        # Remember it so the news-archive pass doesn't re-yield a release the
+        # enforcement tables already linked.
+        self._seen_press_urls.add(url)
         if not url.startswith("http"):
             url = BASE_URL + url
         html = self._get_page(url)
+        archived = False
+        if not html:
+            html = self._fetch_from_wayback(url)
+            archived = html is not None
+            if archived:
+                self._archived_urls.add(url)
         if not html:
             return None
 
@@ -135,6 +217,7 @@ class FSAEnforcementScraper(BaseScraper):
             "title": title,
             "date": parse_date(date_str),
             "text": text,
+            "archived": archived,
         }
 
     def _parse_civil_penalties(self, html: str) -> list:
@@ -189,23 +272,39 @@ class FSAEnforcementScraper(BaseScraper):
             html, re.DOTALL
         )
 
-        for section in sections:
-            # Extract name from accordion header
-            header_match = re.search(r'<(?:h[2-4]|button|span)[^>]*class="[^"]*accordion[^"]*"[^>]*>(.*?)</(?:h[2-4]|button|span)>', section, re.DOTALL)
+        for idx, section in enumerate(sections, start=1):
+            # The subject's name is the accordion's <label for="item-N">, not a
+            # heading — the old h2-4/button/span regexes never matched, so every
+            # entry fell back to "Unknown" and all of them collapsed onto a single
+            # `{type}/unknown` _id (issue #1580).
+            header_match = re.search(r'<label[^>]*>(.*?)</label>', section, re.DOTALL)
             if not header_match:
                 header_match = re.search(r'<h[2-4][^>]*>(.*?)</h[2-4]>', section, re.DOTALL)
-            name = strip_html(header_match.group(1)) if header_match else "Unknown"
+            name = strip_html(header_match.group(1)) if header_match else ""
+            if not name:
+                name = f"{enforcement_type}-{idx}"
 
-            # Extract all content
-            content = strip_html(section)
+            # The body lives in the accordion's rich-text div; fall back to the
+            # whole section so a markup tweak degrades instead of dropping text.
+            rte_match = re.search(r'<div\s+class="rte"[^>]*>(.*)', section, re.DOTALL)
+            content = strip_html(rte_match.group(1) if rte_match else section)
 
             # Look for press release/public statement links
             link_match = re.search(r'href="(/fsa-news/[^"]+)"', section)
             press_url = link_match.group(1) if link_match else ""
 
-            # Try to extract date
-            date_match = re.search(r"Date\s+of\s+(?:prohibition|disqualification)[:\s]*([\d\w\s,]+?)(?:\.|<|$)", section, re.IGNORECASE)
-            date_str = strip_html(date_match.group(1)) if date_match else ""
+            # Extract the effective date. `date` is a required temporal_key, so
+            # a miss discards the record — the old regex matched neither of the
+            # two labels the site actually uses ("Dates of Disqualification:
+            # From <d>", "Date on which the prohibition takes effect: <d>") and
+            # every accordion entry failed validation (issue #1580). "Date of
+            # Birth" must not match.
+            date_str = ""
+            for pattern in ACCORDION_DATE_PATTERNS:
+                date_match = pattern.search(content)
+                if date_match:
+                    date_str = date_match.group(1).strip()
+                    break
 
             entries.append({
                 "enforcement_type": enforcement_type,
@@ -217,11 +316,84 @@ class FSAEnforcementScraper(BaseScraper):
 
         return entries
 
+    def _iter_news_urls(self, category: str) -> Generator[str, None, None]:
+        """Yield every /fsa-news/ document URL in a category, oldest page last.
+
+        The listing is 10 items per page via `?page=N`; an out-of-range page
+        silently serves page 1 again rather than an empty list, so wrap-around
+        is detected by comparing against the first page's leading link.
+        """
+        seen = set()
+        first_link = None
+        page = 1
+        while True:
+            html = self._get_page(
+                "/fsa-news/", params={"category": category, "page": page}
+            )
+            if html is None:
+                raise RuntimeError(
+                    f"iomfsa.im /fsa-news/ unreachable for category "
+                    f"{category!r} page {page} — refusing to report a short corpus"
+                )
+            links = list(dict.fromkeys(NEWS_LINK_RE.findall(html)))
+            if not links:
+                if page == 1:
+                    raise RuntimeError(
+                        f"No /fsa-news/ links on page 1 of category {category!r} — "
+                        "listing layout changed or the request was blocked"
+                    )
+                break
+            if page == 1:
+                first_link = links[0]
+            elif links[0] == first_link:
+                break  # paged past the end, server wrapped to page 1
+
+            new = [l for l in links if l not in seen]
+            if not new:
+                break
+            seen.update(new)
+            for link in new:
+                yield link
+            page += 1
+            time.sleep(0.5)
+
+        logger.info(f"Category {category!r}: {len(seen)} documents across {page} pages")
+
+    def _fetch_news_entries(self) -> Generator[dict, None, None]:
+        """Yield the statutory public warnings and public notices archive."""
+        for category in NEWS_CATEGORIES:
+            enforcement_type = NEWS_CATEGORIES[category]
+            for url in self._iter_news_urls(category):
+                if url in self._seen_press_urls:
+                    continue
+                self._seen_press_urls.add(url)
+                time.sleep(0.5)
+                pr = self._fetch_press_release(url)
+                if not pr or not pr.get("text"):
+                    logger.warning(f"No text extracted from {url}")
+                    continue
+                yield {
+                    "enforcement_type": enforcement_type,
+                    "news_category": category,
+                    "subject_name": pr.get("title") or url.strip("/").split("/")[-1],
+                    "title": pr.get("title", ""),
+                    "press_release_url": url,
+                    "date_parsed": pr.get("date"),
+                    "full_text": pr["text"],
+                }
+
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all enforcement actions with full text."""
+        self._seen_press_urls = set()
+
         # 1. Civil penalties and prohibited persons from enforcement-action page
         logger.info("Fetching enforcement actions page...")
         ea_html = self._get_page(f"{BASE_URL}/enforcement/enforcement-action/")
+        if not ea_html:
+            raise RuntimeError(
+                "iomfsa.im /enforcement/enforcement-action/ unreachable — "
+                "refusing to report a short corpus"
+            )
         if ea_html:
             # Civil penalties
             penalties = self._parse_civil_penalties(ea_html)
@@ -271,6 +443,15 @@ class FSAEnforcementScraper(BaseScraper):
                             entry["date_parsed"] = pr["date"]
                 yield entry
 
+        # 3. The /fsa-news/ archive back to 2006 — the two enforcement pages
+        # only carry currently-in-force penalties, prohibitions and
+        # disqualifications (~44 entries). The statutory public warnings
+        # (s.30 Financial Services Act 2008) and public notices
+        # (s.12 Designated Businesses (Registration & Oversight) Act 2015)
+        # are published there and were never discovered (issue #1580).
+        logger.info("Fetching public warnings / public notices archive...")
+        yield from self._fetch_news_entries()
+
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """Re-fetch all (small dataset)."""
         yield from self.fetch_all()
@@ -280,8 +461,14 @@ class FSAEnforcementScraper(BaseScraper):
         enforcement_type = raw.get("enforcement_type", "unknown")
         subject = raw.get("subject_name", "Unknown")
 
-        # Build doc_id
-        slug = re.sub(r"[^a-z0-9]+", "-", subject.lower()).strip("-")[:60]
+        # Build doc_id. Archive notices are keyed on their permalink — the same
+        # firm can be warned about or de-registered more than once, so the
+        # subject name alone is not unique.
+        news_url = raw.get("press_release_url", "")
+        if enforcement_type in NEWS_CATEGORIES.values() and news_url:
+            slug = news_url.strip("/").replace("fsa-news/", "", 1).replace("/", "-")
+        else:
+            slug = re.sub(r"[^a-z0-9]+", "-", subject.lower()).strip("-")[:60]
         doc_id = f"{enforcement_type}/{slug}"
 
         # Determine title
@@ -312,6 +499,7 @@ class FSAEnforcementScraper(BaseScraper):
 
         return {
             "_id": doc_id,
+            "text_from_web_archive": url in self._archived_urls,
             "_source": "IM/FSA-Enforcement",
             "_type": "doctrine",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
@@ -344,6 +532,11 @@ class FSAEnforcementScraper(BaseScraper):
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     scraper = FSAEnforcementScraper()
 
     if len(sys.argv) < 2:

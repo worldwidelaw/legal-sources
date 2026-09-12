@@ -5,8 +5,13 @@ fetch:
     download: /downloadFile (POST with JSON path)
     filters: /filters
     search: /api (GraphQL getSearchResult)
+  checkpoint: data/checkpoint.json (room/year unit + paging offset + phase)
+  deferred_ocr: data/deferred_ocr.jsonl (image-only PDFs parked for phase 2)
   page_size: 10
-  rate_limit: 1.5s between requests
+  phases:
+  - text (docx XML / PyMuPDF text layer)
+  - ocr (image-only .doc-era renditions)
+  rate_limit: 1.5s between listing pages, 0.4s between documents
   rooms:
   - Civil
   - Laboral
@@ -53,8 +58,9 @@ source:
   country: CO
   data_types:
   - case_law
-  description: 'Decisions from Colombia''s Supreme Court of Justice (Corte Suprema de Justicia), covering Civil, Labor, Criminal, and Tutela chambers. Full text extracted from .docx files via GraphQL API
-    at consultaprovidenciasbk.cortesuprema.gov.co. Nearly 1 million documents dating back to 1886.
+  description: 'Decisions from Colombia''s Supreme Court of Justice (Corte Suprema de Justicia), covering Civil, Labor, Criminal, and Tutela chambers. Full text extracted from .docx XML or from the
+    server-rendered PDF via GraphQL API at consultaprovidenciasbk.cortesuprema.gov.co. The index covers ~961K documents back to 1886, but a large share have no downloadable
+    rendition upstream (the whole Penal chamber, plus assorted room/year subtrees) — see README.md and issue #1431.
 
     '
   id: CO/CorteSuprema

@@ -1,6 +1,8 @@
 last_bootstrap: null
-last_error: null
-last_run: '2026-04-17T00:04:54.125252+00:00'
+last_error: Discovered 0 document URLs across 8 category pages on https://www.leganet.cd
+  — expected ~2,200. Transport failure or site layout change; check the category page
+  fetches above.
+last_run: '2026-09-08T01:27:23.852293+00:00'
 run_history:
 - errors: 0
   finished_at: '2026-04-16T23:21:59.026889+00:00'
@@ -22,4 +24,62 @@ run_history:
   skip_exception: 0
   skip_normalize_none: 0
   started_at: '2026-04-17T00:03:58.417883+00:00'
+- coverage_gaps: 0
+  error_message: Discovered 0 document URLs across 8 category pages on https://www.leganet.cd
+    — expected ~2,200. Transport failure or site layout change; check the category
+    page fetches above.
+  errors: 0
+  finished_at: '2026-09-08T01:21:16.572623+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-09-08T01:20:56.522412+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-09-08T01:23:04.271221+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-09-08T01:22:11.629519+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-09-08T01:24:34.906580+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-09-08T01:23:42.410521+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-09-08T01:26:06.705972+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-09-08T01:25:13.663186+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-09-08T01:27:23.852293+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-09-08T01:26:31.017085+00:00'
 total_records: 0

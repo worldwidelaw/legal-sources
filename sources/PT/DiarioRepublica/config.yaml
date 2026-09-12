@@ -1,27 +1,39 @@
 # PT/DiarioRepublica Configuration
-# Portuguese Official Journal (Diário da República)
+# Portuguese Official Journal (Diário da República) — Série I
 
 source:
   id: PT/DiarioRepublica
   name: Diário da República
   country: PT
-  description: Portuguese Official Journal - legislation and official acts
+  description: Portuguese Official Journal — Série I legislation and official acts
   url: https://diariodarepublica.pt
-  mirror_url: https://dre.tretas.org
+  data_source: https://github.com/legalize-dev/legalize-pt
   data_types:
     - legislation
   language: pt
-  license: Open Government Data
   auth: none
 
+license:
+  name: "Public Domain (official state publications)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Diário da República content is "domínio público — publicações oficiais do
+    Estado" under Portuguese law (Código do Direito de Autor, art. 7 excludes
+    official state texts from copyright). Sourced via the open legalize-dev/
+    legalize-pt GitHub mirror (MIT-licensed pipeline; content public domain).
+
 endpoints:
-  # Community mirror with structured access
-  rss_feed: https://dre.tretas.org/dre/rss/
-  browse_date: https://dre.tretas.org/dre/data/{yyyy}/{m}/{d}/
-  document_html: https://dre.tretas.org/dre/{id}/{slug}
-  document_jsonld: https://dre.tretas.org/dre/{id}.jsonld
-  # Official ELI URIs
-  eli_base: https://data.dre.pt/eli/
+  # Open GitHub mirror of the official gazette (clean Markdown + YAML front matter)
+  tarball: https://codeload.github.com/legalize-dev/legalize-pt/tar.gz/refs/heads/main
+  raw_file: https://raw.githubusercontent.com/legalize-dev/legalize-pt/main/{path}
+  tree_api: https://api.github.com/repos/legalize-dev/legalize-pt/git/trees/main?recursive=1
+  commits_api: https://api.github.com/repos/legalize-dev/legalize-pt/commits
+  # Official source recorded per-document in each file's front matter (dre.pt)
+  official_home: https://diariodarepublica.pt
 
 schema:
   key_fields:
@@ -36,7 +48,7 @@ schema:
       required: true
     - name: "date"
       type: "date"
-      required: true
+      required: false
     - name: "url"
       type: "string"
       required: true
@@ -46,13 +58,16 @@ schema:
     - name: "creator"
       type: "string"
       required: false
-    - name: "summary"
+    - name: "law_number"
+      type: "string"
+      required: false
+    - name: "gazette_number"
       type: "string"
       required: false
     - name: "eli_uri"
       type: "string"
       required: false
-    - name: "official_url"
+    - name: "status"
       type: "string"
       required: false
     - name: "language"
@@ -61,17 +76,18 @@ schema:
 
 rate_limits:
   requests_per_minute: 30
-  delay_between_requests: 2.0
+  delay_between_requests: 0.2
 
 notes: |
-  Uses dre.tretas.org community mirror which provides structured access to the
-  official Diário da República content. The mirror is updated frequently and
-  contains full text of all legislation published in the official gazette.
+  Sources the full text of Diário da República Série I from the open
+  legalize-dev/legalize-pt GitHub repository (~90,000 normative acts since 1911,
+  regenerated daily from the official OutSystems API of diariodarepublica.pt).
 
-  Document discovery:
-  - RSS feed for recent documents
-  - Browse by date for historical discovery
+  Rewritten 2026-07-28: the former dre.tretas.org mirror is now behind a
+  Cloudflare challenge (403 to all clients incl. residential); the official
+  diariodarepublica.pt is a locked OutSystems SPA.
 
-  Full text access:
-  - HTML pages contain complete document text in <div itemprop="articleBody">
-  - JSON-LD provides structured metadata including ELI URIs
+  Full pull: stream the repo tarball (single bulk download < 2 GB, no git
+  history) and iterate pt/*.md. Each file embeds full born-digital text, so
+  normalize() does no network. Sample: raw.githubusercontent.com per file.
+  Incremental update: GitHub commits API since a date.

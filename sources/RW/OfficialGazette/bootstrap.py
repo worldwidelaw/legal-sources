@@ -3,11 +3,12 @@
 RW/OfficialGazette -- Rwanda Legislation via RwandaLII (Laws.Africa)
 
 Fetches ~500 Rwandan laws with full text from rwandalii.org.
-Laws are in Akoma Ntoso (AKN) markup; we extract clean text from the HTML.
 
 Strategy:
   - Paginated listing at /legislation/?page=N (50 per page, ~10 pages)
-  - Each law page has full AKN HTML; extract text from akn-body div
+  - Most law pages carry Akoma Ntoso (AKN) markup; extract text from akn-body
+  - The rest were never marked up and only link the typeset original, so fall
+    back to the attached {path}/source.pdf (issue #1596)
 
 Usage:
   python bootstrap.py bootstrap --sample
@@ -32,6 +33,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
     level=logging.INFO,
@@ -107,7 +109,7 @@ class RwandaLIIScraper(BaseScraper):
 
     def _extract_law_content(self, html: str) -> Dict[str, str]:
         """Extract title, text, date, and metadata from a law page."""
-        result = {"text": "", "title": "", "date": "", "nature": ""}
+        result = {"text": "", "title": "", "date": ""}
 
         # Extract title from h1
         m = re.search(r"<h1[^>]*>(.*?)</h1>", html, re.DOTALL)
@@ -124,11 +126,6 @@ class RwandaLIIScraper(BaseScraper):
             m = re.search(r'"datePublished"\s*:\s*"([^"]+)"', html)
             if m:
                 result["date"] = m.group(1)[:10]
-
-        # Extract nature (Act, Regulation, etc.)
-        m = re.search(r'"nature"\s*:\s*"([^"]+)"', html)
-        if m:
-            result["nature"] = m.group(1)
 
         # Extract full text from akn-body
         body_match = re.search(
@@ -149,6 +146,34 @@ class RwandaLIIScraper(BaseScraper):
                 result["text"] = strip_html(akn_match.group(1))
 
         return result
+
+    def _extract_source_pdf(self, path: str, frbr_uri: str) -> str:
+        """Extract text from a law's attached source PDF.
+
+        Roughly a third of RwandaLII's laws were never marked up in Akoma
+        Ntoso — the page carries only metadata plus a link to the scanned/typeset
+        original at {path}/source.pdf. Reading only akn-body silently dropped
+        every one of them, which is a format boundary rather than a genuine
+        absence of text.
+        """
+        resp = self._request(f"{BASE_URL}{path}/source.pdf")
+        if resp is None:
+            return ""
+        if not resp.content.startswith(b"%PDF"):
+            logger.warning(f"Attachment is not a PDF: {path}/source.pdf")
+            return ""
+        try:
+            text = extract_pdf_markdown(
+                "RW/OfficialGazette",
+                frbr_uri,
+                pdf_bytes=resp.content,
+                table="legislation",
+                force=True,
+            )
+        except Exception as e:
+            logger.warning(f"PDF extraction failed for {path}: {e}")
+            return ""
+        return text or ""
 
     def _parse_date_from_url(self, url_path: str) -> str:
         """Try to extract a date from the AKN URL path."""
@@ -180,12 +205,21 @@ class RwandaLIIScraper(BaseScraper):
             "text": raw.get("text", ""),
             "date": raw.get("date", ""),
             "law_type": raw.get("law_type", ""),
-            "nature": raw.get("nature", ""),
             "url": raw.get("url", ""),
         }
 
-    def fetch_all(self, max_records: int = None) -> Generator[Dict[str, Any], None, None]:
+    def fetch_all(
+        self, max_records: int = None, skip_stored: bool = False
+    ) -> Generator[Dict[str, Any], None, None]:
+        """Walk the listing pages and yield each law with its full AKN text.
+
+        skip_stored: skip the detail fetch for FRBR URIs already in the storage
+        index. The listing is ~10 cheap requests while the details are ~340, so
+        this turns a re-crawl into a near no-op — see fetch_updates().
+        """
         count = 0
+        skipped_stored = 0
+        from_pdf = 0
         seen_uris = set()
 
         for page_num in range(1, MAX_PAGES + 1):
@@ -206,6 +240,13 @@ class RwandaLIIScraper(BaseScraper):
                     continue
                 seen_uris.add(frbr_uri)
 
+                # The dedup key is _id, which is the FRBR URI, so the storage
+                # index answers "have we already got this law?" without paying
+                # for the detail page.
+                if skip_stored and self.storage.exists(frbr_uri):
+                    skipped_stored += 1
+                    continue
+
                 detail_url = f"{BASE_URL}{path}"
                 resp = self._request(detail_url)
                 if resp is None:
@@ -213,9 +254,16 @@ class RwandaLIIScraper(BaseScraper):
                     continue
 
                 extracted = self._extract_law_content(resp.text)
-                if not extracted["text"] or len(extracted["text"]) < 50:
+                if len(extracted["text"]) < 50:
+                    # No AKN markup for this law — fall back to its source PDF.
+                    extracted["text"] = self._extract_source_pdf(path, frbr_uri)
+                    if len(extracted["text"]) >= 50:
+                        from_pdf += 1
+
+                if len(extracted["text"]) < 50:
                     logger.warning(
-                        f"Insufficient text ({len(extracted.get('text', ''))} chars): {path}"
+                        f"Insufficient text ({len(extracted.get('text', ''))} chars): "
+                        f"{path} (no AKN body and no usable source PDF)"
                     )
                     continue
 
@@ -227,16 +275,25 @@ class RwandaLIIScraper(BaseScraper):
                     "text": extracted["text"],
                     "date": date,
                     "law_type": self._classify_law_type(path),
-                    "nature": extracted["nature"],
                     "url": detail_url,
                 }
                 count += 1
                 yield raw
 
-        logger.info(f"Completed: {count} laws fetched")
+        if skipped_stored:
+            logger.info(f"Skipped {skipped_stored} laws already in the storage index")
+        logger.info(f"Completed: {count} laws fetched ({from_pdf} from source PDFs)")
 
-    def fetch_updates(self, since: str = None) -> Generator[Dict[str, Any], None, None]:
-        yield from self.fetch_all(max_records=20)
+    def fetch_updates(self, since=None) -> Generator[Dict[str, Any], None, None]:
+        """Yield only laws we have not stored yet.
+
+        `since` is deliberately unused: RwandaLII is a *consolidated* corpus, so
+        a law's own enactment date says nothing about when Laws.Africa published
+        it here (1959 agreements were added in 2023). The listing carries no
+        published-at stamp either, so the only honest availability comparator is
+        the seen-id checkpoint — which is also what append_only dedups on.
+        """
+        yield from self.fetch_all(skip_stored=True)
 
     def test(self) -> bool:
         law_paths = self._fetch_law_urls(1)
@@ -278,30 +335,24 @@ def main():
         sys.exit(0 if success else 1)
 
     elif args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        count = 0
-        max_records = 15 if args.sample else None
-
-        for record in scraper.fetch_all(max_records=max_records):
-            normalized = scraper.normalize(record)
-            out_path = sample_dir / f"record_{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(normalized, f, ensure_ascii=False, indent=2)
-            logger.info(
-                f"[{count+1}] {normalized['title'][:60]} "
-                f"({len(normalized['text'])} chars)"
-            )
-            count += 1
-
-        logger.info(f"Saved {count} records to {sample_dir}")
+        # Delegate to BaseScraper rather than writing records by hand: the
+        # hand-rolled loop this replaces only ever wrote sample/*.json, so a
+        # full crawl produced no data/records.jsonl for the fleet to ingest and
+        # no storage index for dedup to stand on. See issue #1596.
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+        logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2)}")
 
     elif args.command == "update":
-        for record in scraper.fetch_updates():
-            normalized = scraper.normalize(record)
-            logger.info(f"Update: {normalized['title'][:60]}")
+        # BaseScraper.update() derives `since` from status.yaml:last_run and
+        # routes through fetch_updates(), writing like bootstrap does.
+        stats = scraper.update()
+        logger.info(f"Update complete: {json.dumps(stats, indent=2)}")
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

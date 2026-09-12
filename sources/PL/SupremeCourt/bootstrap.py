@@ -60,6 +60,28 @@ DETAIL_URL = f"{API_BASE}/judgments"
 # Checkpoint file for resuming across sessions
 CHECKPOINT_FILE = Path(__file__).parent / "checkpoint.json"
 
+# A SUPREME search page routinely takes 25-35s to build server-side, so the old
+# 60s ceiling sat right on top of the real latency: one slow page raised, the
+# handler returned an empty item list, and pagination read that as
+# end-of-corpus (issue #1547 -- 16,700 of 38,081, an exact page boundary).
+REQUEST_TIMEOUT = 180
+
+# Retry budget for both search and detail calls. A non-JSON body counts as a
+# retryable failure: saos.org.pl answers an overloaded request with an HTML
+# error page, which surfaces as "Expecting value: line 1 column 1 (char 0)".
+MAX_ATTEMPTS = 5
+BACKOFF_BASE = 4
+BACKOFF_CAP = 120
+
+# Detail fetches degrade to the (truncated) search item, but a sustained run of
+# failures means the host has stopped serving us and the corpus would silently
+# fill with stubs. Fail loud instead.
+MAX_CONSECUTIVE_DETAIL_FAILURES = 50
+
+
+class SaosUnavailableError(RuntimeError):
+    """Raised when SAOS stops answering, so a truncated crawl exits non-zero."""
+
 
 class SupremeCourtScraper(BaseScraper):
     """
@@ -82,8 +104,9 @@ class SupremeCourtScraper(BaseScraper):
                 "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "application/json",
             },
-            timeout=60,
+            timeout=REQUEST_TIMEOUT,
         )
+        self._consecutive_detail_failures = 0
 
     # -- Checkpoint helpers -------------------------------------------------
 
@@ -117,6 +140,38 @@ class SupremeCourtScraper(BaseScraper):
 
     # -- API helpers --------------------------------------------------------
 
+    def _get_json(self, path: str, params: Optional[dict] = None, what: str = "") -> dict:
+        """GET ``path`` and decode JSON, retrying transient SAOS failures.
+
+        Retries timeouts, connection drops, 429/5xx and non-JSON bodies (the
+        host serves an HTML error page under load). Raises
+        :class:`SaosUnavailableError` once the attempt budget is spent -- no
+        caller may mistake a dead endpoint for an exhausted corpus.
+        """
+        last_error = None
+
+        for attempt in range(1, MAX_ATTEMPTS + 1):
+            self.rate_limiter.wait()
+            try:
+                resp = self.client.get(path, params=params)
+                resp.raise_for_status()
+                return resp.json()
+            except Exception as e:  # noqa: BLE001 - transport and decode alike
+                last_error = e
+                if attempt == MAX_ATTEMPTS:
+                    break
+                delay = min(BACKOFF_BASE * (2 ** (attempt - 1)), BACKOFF_CAP)
+                logger.warning(
+                    f"{what or path} attempt {attempt}/{MAX_ATTEMPTS} failed "
+                    f"({type(e).__name__}: {e}); retrying in {delay}s"
+                )
+                time.sleep(delay)
+
+        raise SaosUnavailableError(
+            f"{what or path} failed after {MAX_ATTEMPTS} attempts: "
+            f"{type(last_error).__name__}: {last_error}"
+        )
+
     def _search_judgments(
         self,
         page_number: int = 0,
@@ -142,23 +197,9 @@ class SupremeCourtScraper(BaseScraper):
         if judgment_date_to:
             params["judgmentDateTo"] = judgment_date_to
 
-        self.rate_limiter.wait()
-
-        try:
-            resp = self.client.get("/search/judgments", params=params)
-            resp.raise_for_status()
-            return resp.json()
-        except Exception as e:
-            logger.error(f"Search API error on page {page_number}: {e}")
-            # Retry once after a pause
-            time.sleep(3)
-            try:
-                resp = self.client.get("/search/judgments", params=params)
-                resp.raise_for_status()
-                return resp.json()
-            except Exception as e2:
-                logger.error(f"Retry failed: {e2}")
-                return {"items": [], "info": {"totalResults": 0}}
+        return self._get_json(
+            "/search/judgments", params=params, what=f"search page {page_number}"
+        )
 
     def _get_judgment_detail(self, judgment_id: int) -> Optional[dict]:
         """
@@ -166,17 +207,29 @@ class SupremeCourtScraper(BaseScraper):
 
         The search API returns truncated text, so we need to fetch
         the detail endpoint for full text.
-        """
-        self.rate_limiter.wait()
 
+        Returns None only after the retry budget is spent; the caller then
+        falls back to the search item. A long unbroken run of such fallbacks
+        means the host has stopped serving detail at all, which raises rather
+        than quietly filling the corpus with truncated stubs.
+        """
         try:
-            resp = self.client.get(f"/judgments/{judgment_id}")
-            resp.raise_for_status()
-            data = resp.json()
-            return data.get("data", data)
-        except Exception as e:
-            logger.warning(f"Failed to fetch detail for judgment {judgment_id}: {e}")
+            data = self._get_json(
+                f"/judgments/{judgment_id}", what=f"detail for judgment {judgment_id}"
+            )
+        except SaosUnavailableError as e:
+            self._consecutive_detail_failures += 1
+            if self._consecutive_detail_failures >= MAX_CONSECUTIVE_DETAIL_FAILURES:
+                raise SaosUnavailableError(
+                    f"{self._consecutive_detail_failures} consecutive detail fetches "
+                    f"failed (last: {e}) -- SAOS is not serving full text, aborting "
+                    f"rather than storing truncated search snippets"
+                ) from e
+            logger.warning(f"Falling back to search snippet: {e}")
             return None
+
+        self._consecutive_detail_failures = 0
+        return data.get("data", data)
 
     def _paginate_search(
         self,
@@ -236,12 +289,23 @@ class SupremeCourtScraper(BaseScraper):
 
             items = data.get("items", [])
             if not items:
+                # Only the tail of the corpus may legitimately come back empty.
+                # An empty page while pages remain means SAOS stopped serving
+                # results, and treating it as end-of-corpus is what truncated
+                # the crawl at 16,700 of 38,081 (#1547).
+                if page * page_size < total_results:
+                    raise SaosUnavailableError(
+                        f"search page {page} returned no items, but only "
+                        f"{page * page_size} of {total_results} judgments have been "
+                        f"paged through -- refusing to report a truncated corpus "
+                        f"as complete"
+                    )
                 logger.info(f"No more items on page {page}")
                 break
 
             for item in items:
                 judgment_id = item.get("id")
-                if not judgment_id:
+                if judgment_id is None:
                     continue
 
                 # Skip already fetched IDs (for checkpoint resume)

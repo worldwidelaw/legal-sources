@@ -2,21 +2,28 @@
 """
 CO/DIAN-TaxDoctrine -- Colombian Tax Authority Doctrine (Conceptos y Oficios)
 
-Fetches tax doctrine documents from DIAN's Normograma legal compilation.
-5,000+ conceptos and oficios covering income tax, VAT, withholding, transfer pricing,
-customs, and exchange controls. Documents from 1987 to present.
+Fetches tax doctrine documents from DIAN's Normograma legal compilation
+(built by Avance Juridico for the Direccion de Impuestos y Aduanas Nacionales).
 
-Source: https://normograma.dian.gov.co/dian/compilacion/t_2_doctrina_tributaria.html
-  - Individual documents at: /dian/compilacion/docs/oficio_dian_{NUMBER}_{YEAR}.htm
-  - Numbers < 1000 are zero-padded to 4 digits (e.g., 0207)
-  - Numbers >= 1000 are unpadded (e.g., 5035, 13272)
-  - Full text in HTML, extracted by stripping tags from panel-documento div
+Discovery is INDEX-DRIVEN, not brute-force:
+  The tree page t_2_doctrina_tributaria.html lazily loads its branches from
+  sibling files t_2_doctrina_tributaria_parte_NN.html (NN = 01, 02, ... until
+  404). Those parts hold an <a href="docs/....htm"> for every document in the
+  compilation -- ~15,960 of them. Fetching 13 index pages replaces the old
+  100,000-HEAD-request number sweep, and it also picks up documents the sweep
+  could never reach: six-digit numbers (oficio_dian_915014_2022), letter
+  suffixes (oficio_dian_8937a_2025), the concepto_tributario_dian_* family, and
+  Consejo de Estado concepts (CE-SC-RAD2005-N1650).
+
+Full text lives in the .panel-documento div of each document page and is
+extracted by stripping tags. Pages are served as ISO-8859-1.
 
 Usage:
-  python bootstrap.py bootstrap          # Full scan and fetch
-  python bootstrap.py bootstrap --sample # Fetch 15 sample records
-  python bootstrap.py update             # Fetch recent records (last 2 years)
-  python bootstrap.py test               # Quick connectivity test
+  python bootstrap.py bootstrap             # Full corpus -> data/records.jsonl
+  python bootstrap.py bootstrap-fast        # Alias used by the fleet wrapper
+  python bootstrap.py bootstrap --sample    # 15 sample records -> sample/
+  python bootstrap.py update                # Recent documents only
+  python bootstrap.py test                  # Quick connectivity test
 """
 
 import re
@@ -42,129 +49,159 @@ logging.basicConfig(
 )
 logger = logging.getLogger("legal-data-hunter.CO.DIAN-TaxDoctrine")
 
-BASE_URL = "https://normograma.dian.gov.co/dian/compilacion/docs/"
+COMPILATION_URL = "https://normograma.dian.gov.co/dian/compilacion/"
+BASE_URL = COMPILATION_URL + "docs/"
+INDEX_STEM = "t_2_doctrina_tributaria"
 SOURCE_ID = "CO/DIAN-TaxDoctrine"
-SAMPLE_DIR = Path(__file__).parent / "sample"
-CHECKPOINT_FILE = Path(__file__).parent / "checkpoint.json"
+
+SOURCE_DIR = Path(__file__).parent
+SAMPLE_DIR = SOURCE_DIR / "sample"
+DATA_DIR = SOURCE_DIR / "data"
+CHECKPOINT_FILE = DATA_DIR / "fetch_checkpoint.json"
+INDEX_CACHE_FILE = DATA_DIR / "doc_index.json"
 
 HEADERS = {
     "User-Agent": "Legal-Data-Hunter/1.0 (https://github.com/ZachLaik/LegalDataHunter)",
     "Accept": "text/html",
 }
 
-DELAY = 1.5  # seconds between requests
-HEAD_DELAY = 0.3  # faster for HEAD requests (discovery)
+# (connect, read) -- a bare int timeout still lets a slow-drip server hold the
+# socket indefinitely between bytes, which is what wedged the 2026-08 run.
+TIMEOUT = (10, 30)
+DELAY = 0.6           # seconds between document requests
+MAX_PARTS = 60        # safety ceiling on index-part probing
+CHECKPOINT_EVERY = 100
+INDEX_MAX_AGE_DAYS = 7
 
-# Known valid document numbers for sample mode (verified to exist)
+# Known valid documents for sample mode (verified to exist), spanning the
+# oficio / concepto_tributario / six-digit / Consejo de Estado variants.
 SAMPLE_DOCS = [
-    (207, 2025), (991, 2025), (3524, 2025), (4510, 2025),
-    (5035, 2025), (11861, 2025), (13272, 2025), (18226, 2025),
-    (1513, 2024), (3028, 2024), (3093, 2024), (4772, 2024),
-    (5917, 2024), (7058, 2024), (8660, 2024), (9485, 2024),
+    "oficio_dian_0207_2025.htm",
+    "oficio_dian_0991_2025.htm",
+    "oficio_dian_3524_2025.htm",
+    "oficio_dian_5035_2025.htm",
+    "oficio_dian_11861_2025.htm",
+    "oficio_dian_13272_2025.htm",
+    "oficio_dian_18226_2025.htm",
+    "oficio_dian_8937a_2025.htm",
+    "oficio_dian_1513_2024.htm",
+    "oficio_dian_3028_2024.htm",
+    "oficio_dian_4772_2024.htm",
+    "oficio_dian_9485_2024.htm",
+    "oficio_dian_915014_2022.htm",
+    "concepto_tributario_dian_0000001_2002.htm",
+    "CE-SC-RAD2005-N1650.htm",
 ]
 
+DOC_HREF_RE = re.compile(r'href="(docs/[^"]+\.htm)"', re.IGNORECASE)
+LINK_RE = re.compile(
+    r'<a\b[^>]*href="(docs/[^"]+\.htm)"[^>]*>(.*?)</a>',
+    re.IGNORECASE | re.DOTALL,
+)
+# e.g. oficio_dian_915014_2022 / concepto_tributario_dian_0000001_2002
+NUM_YEAR_RE = re.compile(r'_0*(\d+[a-z]?)_(\d{4})$', re.IGNORECASE)
 
-def format_doc_number(number: int) -> str:
-    """Format document number: zero-pad to 4 digits if < 1000."""
-    if number < 1000:
-        return f"{number:04d}"
-    return str(number)
+MONTHS_ES = {
+    'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04',
+    'mayo': '05', 'junio': '06', 'julio': '07', 'agosto': '08',
+    'septiembre': '09', 'setiembre': '09', 'octubre': '10',
+    'noviembre': '11', 'diciembre': '12',
+}
 
 
-def build_url(number: int, year: int) -> str:
-    """Build the URL for a DIAN doctrine document."""
-    return f"{BASE_URL}oficio_dian_{format_doc_number(number)}_{year}.htm"
+def slug_of(doc_path: str) -> str:
+    """'docs/oficio_dian_207_2025.htm' -> 'oficio_dian_207_2025'."""
+    return doc_path.rsplit("/", 1)[-1][: -len(".htm")]
+
+
+def parse_number_year(slug: str) -> tuple:
+    """Extract (concept_number, year) from a document slug, if present."""
+    match = NUM_YEAR_RE.search(slug)
+    if match:
+        return match.group(1), int(match.group(2))
+    year_match = re.search(r'(19|20)\d{2}', slug)
+    return None, int(year_match.group(0)) if year_match else None
 
 
 def extract_text(html_content: str) -> str:
-    """Extract clean text from DIAN normograma HTML page."""
-    # Find the panel-documento div
+    """Extract clean text from a DIAN normograma document page."""
     start = html_content.find('class="panel-documento"')
     if start < 0:
         return ""
+    # Skip past the opening tag itself so its attributes don't leak into the text.
+    tag_end = html_content.find('>', start)
+    start = tag_end + 1 if tag_end > 0 else start + len('class="panel-documento"')
 
-    # Find end boundary
     end = len(html_content)
     for marker in ['class="ir-arriba"', 'class="contenedor-barra-creditos"',
                    'class="contenedor-footer"']:
-        idx = html_content.find(marker, start + 100)
+        idx = html_content.find(marker, start)
         if 0 < idx < end:
             end = idx
 
     chunk = html_content[start:end]
 
-    # Remove script/style blocks
     chunk = re.sub(r'<style[^>]*>.*?</style>', '', chunk, flags=re.DOTALL)
     chunk = re.sub(r'<script[^>]*>.*?</script>', '', chunk, flags=re.DOTALL)
-
-    # Replace block elements with newlines
     chunk = re.sub(r'<br\s*/?>', '\n', chunk, flags=re.IGNORECASE)
     chunk = re.sub(r'</(?:p|div|h[1-6]|li|tr|td)>', '\n', chunk, flags=re.IGNORECASE)
-
-    # Strip remaining tags
     chunk = re.sub(r'<[^>]+>', ' ', chunk)
 
-    # Decode HTML entities
     text = htmlmod.unescape(chunk)
 
-    # Clean whitespace
+    text = text.replace('\r\n', '\n').replace('\r', '\n')
     text = re.sub(r'[ \t]+', ' ', text)
     text = re.sub(r'\n[ \t]+', '\n', text)
     text = re.sub(r'\n{3,}', '\n\n', text)
-    text = text.strip()
-
-    # Remove leading div class noise
-    text = re.sub(r'^panel-documento">\s*', '', text)
-
-    return text
+    return text.strip()
 
 
 def extract_title(html_content: str) -> str:
-    """Extract document title from HTML title tag."""
+    """Extract document title from the HTML <title> tag."""
     match = re.search(r'<title[^>]*>(.*?)</title>', html_content, re.DOTALL | re.IGNORECASE)
     if match:
-        title = htmlmod.unescape(match.group(1).strip())
-        # Remove prefix
-        title = re.sub(r'^Compilación Jurídica de la DIAN\s*-\s*', '', title)
-        return title
+        title = htmlmod.unescape(match.group(1)).strip()
+        title = re.sub(r'^Compilaci[oó]n Jur[ií]dica de la DIAN\s*-\s*', '', title)
+        return re.sub(r'\s+', ' ', title)
     return ""
 
 
 def extract_date(text: str) -> Optional[str]:
-    """Extract date from document text. Returns ISO format or None."""
-    # Pattern: "(mes DD)" or "(DD de mes de YYYY)" near the top
-    months_es = {
-        'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04',
-        'mayo': '05', 'junio': '06', 'julio': '07', 'agosto': '08',
-        'septiembre': '09', 'octubre': '10', 'noviembre': '11', 'diciembre': '12',
-    }
+    """Extract the issue date from document text. Returns ISO format or None."""
+    head = text[:600]
 
-    # Try "DE YYYY (mes DD)" pattern at the beginning
-    match = re.search(r'DE\s+(\d{4})\s*\n?\s*\((\w+)\s+(\d{1,2})\)', text[:500])
+    # "OFICIO 915014 DE 2022 (octubre 14)"
+    match = re.search(r'DE\s+((?:19|20)\d{2})\s*\n?\s*\(\s*(\w+)\s+(\d{1,2})\s*\)', head)
     if match:
-        year = match.group(1)
-        month = months_es.get(match.group(2).lower())
-        day = match.group(3).zfill(2)
+        month = MONTHS_ES.get(match.group(2).lower())
         if month:
-            return f"{year}-{month}-{day}"
+            return f"{match.group(1)}-{month}-{match.group(3).zfill(2)}"
 
-    # Try "(DD de mes de YYYY)"
-    match = re.search(r'\((\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})\)', text[:500])
+    # "CONCEPTO TRIBUTARIO 1 DE 2002 (19 de Febrero)"
+    match = re.search(
+        r'DE\s+((?:19|20)\d{2})\s*\n?\s*\(\s*(\d{1,2})\s+de\s+(\w+)\s*\)', head,
+        re.IGNORECASE,
+    )
     if match:
-        day = match.group(1).zfill(2)
-        month = months_es.get(match.group(2).lower())
-        year = match.group(3)
+        month = MONTHS_ES.get(match.group(3).lower())
         if month:
-            return f"{year}-{month}-{day}"
+            return f"{match.group(1)}-{month}-{match.group(2).zfill(2)}"
+
+    # "(DD de mes de YYYY)"
+    match = re.search(r'\((\d{1,2})\s+de\s+(\w+)\s+de\s+((?:19|20)\d{2})\)', head, re.IGNORECASE)
+    if match:
+        month = MONTHS_ES.get(match.group(2).lower())
+        if month:
+            return f"{match.group(3)}-{month}-{match.group(1).zfill(2)}"
 
     return None
 
 
 def extract_subject(text: str) -> str:
     """Extract subject/descriptors from the document text."""
-    match = re.search(r'Descriptores?\s+(.*?)(?:\n|Fuentes)', text[:1000])
+    match = re.search(r'Descriptores?\s+(.*?)(?:\n|Fuentes)', text[:1500])
     if match:
-        return match.group(1).strip()
+        return re.sub(r'\s+', ' ', match.group(1)).strip()
     return ""
 
 
@@ -172,215 +209,289 @@ class DIANTaxDoctrineScraper(BaseScraper):
     """Scraper for CO/DIAN-TaxDoctrine -- Colombian tax doctrine documents."""
 
     def __init__(self):
-        source_dir = Path(__file__).parent
-        super().__init__(source_dir)
+        super().__init__(SOURCE_DIR)
         self.session = requests.Session()
         self.session.headers.update(HEADERS)
+        self._checkpoint = None
+        # BaseScraper.bootstrap() calls fetch_all() with no arguments, so sample
+        # mode has to be signalled out of band.
+        self.sample_mode = False
 
-    def _load_checkpoint(self) -> dict:
-        if CHECKPOINT_FILE.exists():
-            with open(CHECKPOINT_FILE, 'r') as f:
-                return json.load(f)
-        return {"last_year": None, "last_number": 0}
+    # ------------------------------------------------------------------ http
 
-    def _save_checkpoint(self, checkpoint: dict):
-        with open(CHECKPOINT_FILE, 'w') as f:
-            json.dump(checkpoint, f, indent=2)
-
-    def _fetch_document(self, number: int, year: int) -> Optional[dict]:
-        """Fetch and parse a single DIAN doctrine document."""
-        url = build_url(number, year)
-
-        for attempt in range(3):
+    def _get(self, url: str, attempts: int = 4) -> Optional[requests.Response]:
+        """GET with a real (connect, read) timeout and bounded backoff."""
+        for attempt in range(attempts):
             try:
-                time.sleep(DELAY)
-                resp = self.session.get(url, timeout=20)
-                if resp.status_code == 404:
-                    return None
-                resp.raise_for_status()
-                return {"html": resp.text, "number": number, "year": year, "url": url}
-            except requests.exceptions.ConnectionError as e:
-                wait = 3 * (attempt + 1)
-                logger.warning("Attempt %d failed for %s: %s. Retrying in %ds...",
-                               attempt + 1, url, e, wait)
+                resp = self.session.get(url, timeout=TIMEOUT)
+            except (requests.exceptions.ConnectionError,
+                    requests.exceptions.Timeout) as exc:
+                wait = min(30, 3 * (attempt + 1))
+                logger.warning("GET %s failed (%s); retry %d/%d in %ds",
+                               url, exc.__class__.__name__, attempt + 1, attempts, wait)
                 time.sleep(wait)
-            except Exception as e:
-                logger.error("Failed to fetch %s: %s", url, e)
+                continue
+            except Exception as exc:
+                logger.error("GET %s failed: %s", url, exc)
                 return None
+
+            if resp.status_code == 404:
+                return resp
+            if resp.status_code >= 500 or resp.status_code == 429:
+                wait = min(60, 5 * (attempt + 1))
+                logger.warning("GET %s -> HTTP %d; retry %d/%d in %ds",
+                               url, resp.status_code, attempt + 1, attempts, wait)
+                time.sleep(wait)
+                continue
+
+            resp.encoding = resp.encoding or "ISO-8859-1"
+            return resp
 
         return None
 
-    def _check_exists(self, number: int, year: int) -> bool:
-        """Check if a document exists using HEAD request (fast discovery)."""
-        url = build_url(number, year)
-        try:
-            time.sleep(HEAD_DELAY)
-            resp = self.session.head(url, timeout=10)
-            return resp.status_code == 200
-        except Exception:
-            return False
+    # ----------------------------------------------------------------- index
 
-    def normalize(self, doc: dict) -> dict:
+    def _fetch_index(self, refresh: bool = False) -> list:
+        """
+        Return [{"path": "docs/x.htm", "title": "..."}] for the whole
+        compilation, walking the lazily-loaded tree parts.
+        """
+        if not refresh and INDEX_CACHE_FILE.exists():
+            try:
+                cached = json.loads(INDEX_CACHE_FILE.read_text(encoding="utf-8"))
+                built = datetime.fromisoformat(cached["built_at"])
+                age = (datetime.now(timezone.utc) - built).days
+                if age <= INDEX_MAX_AGE_DAYS and cached.get("documents"):
+                    logger.info("Using cached index: %d documents (%d days old)",
+                                len(cached["documents"]), age)
+                    return cached["documents"]
+            except Exception as exc:
+                logger.warning("Ignoring unreadable index cache: %s", exc)
+
+        documents = {}
+        for part in range(1, MAX_PARTS + 1):
+            url = f"{COMPILATION_URL}{INDEX_STEM}_parte_{part:02d}.html"
+            resp = self._get(url)
+            if resp is None:
+                raise RuntimeError(f"Index part unreachable after retries: {url}")
+            if resp.status_code == 404:
+                logger.info("Index walk stopped at part %02d (404)", part)
+                break
+            resp.raise_for_status()
+
+            found = 0
+            for path, label in LINK_RE.findall(resp.text):
+                title = re.sub(r'<[^>]+>', ' ', label)
+                title = re.sub(r'\s+', ' ', htmlmod.unescape(title)).strip()
+                if path not in documents or (title and not documents[path]):
+                    documents[path] = title
+                found += 1
+            # Some entries are plain hrefs without an <a> body we can match.
+            for path in DOC_HREF_RE.findall(resp.text):
+                documents.setdefault(path, "")
+            logger.info("Index part %02d: %d links (%d unique so far)",
+                        part, found, len(documents))
+            time.sleep(0.3)
+
+        if not documents:
+            raise RuntimeError(
+                "DIAN index walk yielded 0 documents -- normograma.dian.gov.co is "
+                "unreachable or the tree layout changed. Refusing to report success."
+            )
+
+        entries = [{"path": p, "title": t} for p, t in sorted(documents.items())]
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        INDEX_CACHE_FILE.write_text(
+            json.dumps(
+                {"built_at": datetime.now(timezone.utc).isoformat(), "documents": entries},
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        logger.info("Index built: %d unique documents", len(entries))
+        return entries
+
+    # ------------------------------------------------------------ checkpoint
+
+    def _load_checkpoint(self) -> set:
+        if self._checkpoint is None:
+            done = set()
+            if CHECKPOINT_FILE.exists():
+                try:
+                    done = set(json.loads(CHECKPOINT_FILE.read_text(encoding="utf-8"))["done"])
+                except Exception as exc:
+                    logger.warning("Ignoring unreadable checkpoint: %s", exc)
+            self._checkpoint = done
+        return self._checkpoint
+
+    def _save_checkpoint(self):
+        if self._checkpoint is None:
+            return
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        tmp = CHECKPOINT_FILE.with_suffix(".tmp")
+        tmp.write_text(json.dumps({"done": sorted(self._checkpoint)}), encoding="utf-8")
+        tmp.replace(CHECKPOINT_FILE)
+
+    # ------------------------------------------------------------- documents
+
+    def _fetch_document(self, path: str, index_title: str = "") -> Optional[dict]:
+        url = COMPILATION_URL + path
+        resp = self._get(url)
+        if resp is None or resp.status_code == 404:
+            return None
+        if resp.status_code != 200:
+            logger.warning("Unexpected HTTP %d for %s", resp.status_code, url)
+            return None
+        return {"html": resp.text, "path": path, "url": url, "index_title": index_title}
+
+    def normalize(self, raw: dict) -> Optional[dict]:
         """Transform a fetched document into the standard schema."""
-        html_content = doc["html"]
-        number = doc["number"]
-        year = doc["year"]
-        url = doc["url"]
+        html_content = raw["html"]
+        slug = slug_of(raw["path"])
 
         text = extract_text(html_content)
-        title = extract_title(html_content)
+        if not text or len(text) < 100:
+            return None
+
+        title = extract_title(html_content) or raw.get("index_title") or slug
+        number, year = parse_number_year(slug)
         date = extract_date(text)
-        subject = extract_subject(text)
-
-        if not title:
-            title = f"Concepto {number} de {year} DIAN"
-
-        doc_id = f"CO-DIAN-{number}-{year}"
+        if not date and year:
+            date = f"{year}-01-01"
 
         return {
-            "_id": doc_id,
+            "_id": f"CO-DIAN-{slug}",
             "_source": SOURCE_ID,
             "_type": "doctrine",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             "title": title,
             "text": text,
-            "date": date or f"{year}-01-01",
-            "url": url,
+            "date": date,
+            "url": raw["url"],
             "language": "es",
-            "concept_number": str(number),
+            "concept_number": number,
             "year": year,
-            "subject": subject,
+            "subject": extract_subject(text),
         }
 
-    def fetch_all(self, sample: bool = False) -> Generator[dict, None, None]:
-        """Fetch DIAN tax doctrine documents."""
-        if sample:
-            yield from self._fetch_sample()
+    def fetch_all(self, sample: bool = None) -> Generator[dict, None, None]:
+        """Yield RAW documents; BaseScraper.bootstrap() calls normalize()."""
+        if self.sample_mode if sample is None else sample:
+            for name in SAMPLE_DOCS:
+                raw = self._fetch_document("docs/" + name)
+                if raw:
+                    yield raw
+                time.sleep(DELAY)
             return
 
-        # Full bootstrap: scan number ranges for recent years
-        checkpoint = self._load_checkpoint()
-        current_year = datetime.now().year
-        years = list(range(current_year, current_year - 5, -1))  # Last 5 years
-        total_yielded = 0
+        entries = self._fetch_index()
+        done = self._load_checkpoint()
+        if done:
+            logger.info("Checkpoint: %d documents already fetched, skipping", len(done))
 
-        for year in years:
-            logger.info("Scanning year %d...", year)
-            found_in_year = 0
-
-            # Scan ranges: 1-20000 using HEAD to discover, then GET to fetch
-            for number in range(1, 20001):
-                if self._check_exists(number, year):
-                    raw = self._fetch_document(number, year)
-                    if raw:
-                        record = self.normalize(raw)
-                        if record["text"] and len(record["text"]) >= 100:
-                            yield record
-                            total_yielded += 1
-                            found_in_year += 1
-                            if total_yielded % 50 == 0:
-                                logger.info("Progress: %d docs fetched (%d in %d)",
-                                            total_yielded, found_in_year, year)
-
-                checkpoint["last_year"] = year
-                checkpoint["last_number"] = number
-                if number % 500 == 0:
-                    self._save_checkpoint(checkpoint)
-
-            logger.info("Year %d complete: %d documents found", year, found_in_year)
-
-        logger.info("Fetch complete. Total: %d documents", total_yielded)
-
-    def _fetch_sample(self) -> Generator[dict, None, None]:
-        """Fetch a sample of known valid documents."""
-        count = 0
-        for number, year in SAMPLE_DOCS:
-            if count >= 15:
-                break
-            raw = self._fetch_document(number, year)
-            if not raw:
-                logger.warning("Sample doc %d/%d not found", number, year)
+        fetched = 0
+        errors = 0
+        since_flush = 0
+        for i, entry in enumerate(entries, 1):
+            path = entry["path"]
+            if path in done:
                 continue
-            record = self.normalize(raw)
-            if not record["text"] or len(record["text"]) < 100:
-                logger.warning("Sample doc %d/%d has insufficient text (%d chars)",
-                               number, year, len(record["text"]))
-                continue
-            yield record
-            count += 1
-            logger.info("  [%d] %s | %s | text=%d chars",
-                        count, record["date"], record["title"][:60], len(record["text"]))
 
-        logger.info("Sample complete: %d documents fetched", count)
+            raw = self._fetch_document(path, entry.get("title", ""))
+            time.sleep(DELAY)
 
-    def fetch_updates(self, since: Optional[str] = None) -> Generator[dict, None, None]:
-        """Fetch documents from recent years."""
+            if raw is None:
+                errors += 1
+                # A dead link is permanent; mark it done so restarts don't re-probe.
+                done.add(path)
+            else:
+                fetched += 1
+                done.add(path)
+                yield raw
+
+            since_flush += 1
+            if since_flush >= CHECKPOINT_EVERY:
+                self._save_checkpoint()
+                since_flush = 0
+                logger.info("Progress: %d/%d indexed, %d fetched, %d errors",
+                            i, len(entries), fetched, errors)
+
+        self._save_checkpoint()
+        logger.info("Fetch complete: %d documents, %d unreachable", fetched, errors)
+
+    def fetch_updates(self, since=None) -> Generator[dict, None, None]:
+        """Yield RAW documents from the two most recent years in the index."""
+        entries = self._fetch_index(refresh=True)
         current_year = datetime.now().year
-        years = [current_year, current_year - 1]
-        total = 0
+        recent = []
+        for entry in entries:
+            _, year = parse_number_year(slug_of(entry["path"]))
+            if year and year >= current_year - 1:
+                recent.append(entry)
 
-        for year in years:
-            logger.info("Scanning year %d for updates...", year)
-            for number in range(1, 20001):
-                if self._check_exists(number, year):
-                    raw = self._fetch_document(number, year)
-                    if raw:
-                        record = self.normalize(raw)
-                        if record["text"] and len(record["text"]) >= 100:
-                            yield record
-                            total += 1
-
-        logger.info("Update complete: %d new records", total)
+        logger.info("Update: %d documents from %d-%d", len(recent), current_year - 1, current_year)
+        for entry in recent:
+            raw = self._fetch_document(entry["path"], entry.get("title", ""))
+            time.sleep(DELAY)
+            if raw:
+                yield raw
 
     def test(self) -> bool:
-        """Quick connectivity test."""
+        """Quick connectivity test: index part 01 + one known document."""
         logger.info("Testing connectivity to DIAN Normograma...")
         try:
-            raw = self._fetch_document(207, 2025)
+            resp = self._get(f"{COMPILATION_URL}{INDEX_STEM}_parte_01.html")
+            if resp is None or resp.status_code != 200:
+                logger.error("Test failed: index part 01 unreachable")
+                return False
+            links = set(DOC_HREF_RE.findall(resp.text))
+            logger.info("Index part 01: %d document links", len(links))
+            if not links:
+                logger.error("Test failed: index part 01 has no document links")
+                return False
+
+            raw = self._fetch_document("docs/oficio_dian_0207_2025.htm")
             if not raw:
                 logger.error("Test failed: could not fetch known document")
                 return False
             record = self.normalize(raw)
-            logger.info("OK: '%s' (%d chars text)", record["title"][:60], len(record["text"]))
+            if not record:
+                logger.error("Test failed: known document produced no text")
+                return False
+            logger.info("OK: '%s' (%d chars, date=%s)",
+                        record["title"][:60], len(record["text"]), record["date"])
             logger.info("Test PASSED")
             return True
-        except Exception as e:
-            logger.error("Test FAILED: %s", e)
+        except Exception as exc:
+            logger.error("Test FAILED: %s", exc)
             return False
 
 
 def main():
     import argparse
     parser = argparse.ArgumentParser(description='CO/DIAN-TaxDoctrine fetcher')
-    parser.add_argument('command', choices=['bootstrap', 'update', 'test'])
+    parser.add_argument('command', choices=['bootstrap', 'bootstrap-fast', 'update', 'test'])
     parser.add_argument('--sample', action='store_true', help='Fetch 15 sample records')
     parser.add_argument('--since', type=str, help='Date for update (YYYY-MM-DD)')
-    parser.add_argument("--full", action="store_true", help="Fetch all records")
+    parser.add_argument('--full', action='store_true', help='Fetch all records (default)')
     args = parser.parse_args()
 
     scraper = DIANTaxDoctrineScraper()
 
     if args.command == 'test':
-        success = scraper.test()
-        sys.exit(0 if success else 1)
+        sys.exit(0 if scraper.test() else 1)
 
-    elif args.command == 'bootstrap':
-        SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-        count = 0
-        for record in scraper.fetch_all(sample=args.sample):
-            safe_name = re.sub(r'[^\w\-.]', '_', record['_id'])
-            out_file = SAMPLE_DIR / f"{safe_name}.json"
-            out_file.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding='utf-8')
-            count += 1
-        logger.info("Bootstrap complete: %d records saved to sample/", count)
-        sys.exit(0 if count >= 10 else 1)
+    if args.command in ('bootstrap', 'bootstrap-fast'):
+        scraper.sample_mode = args.sample
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+        logger.info("Bootstrap stats: %s", json.dumps(stats, indent=2, default=str))
+        written = (stats.get("sample_records_saved")
+                   if args.sample else stats.get("records_fetched", 0))
+        sys.exit(0 if (written or 0) >= 10 else 1)
 
-    elif args.command == 'update':
-        count = 0
-        for record in scraper.fetch_updates(since=args.since):
-            count += 1
-            logger.info("  [%d] %s: %s", count, record["date"], record["title"][:60])
-        logger.info("Update complete: %d new records", count)
+    if args.command == 'update':
+        stats = scraper.update()
+        logger.info("Update stats: %s", json.dumps(stats, indent=2, default=str))
 
 
 if __name__ == '__main__':

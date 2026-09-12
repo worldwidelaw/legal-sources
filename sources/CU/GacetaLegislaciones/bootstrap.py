@@ -12,14 +12,15 @@ Strategy:
   - ~55 curated laws: Constitution, Penal Code, Family Code, Labor Code, etc.
 
 Usage:
-  python bootstrap.py bootstrap          # Full initial pull
-  python bootstrap.py bootstrap --sample # Fetch 15 sample records
-  python bootstrap.py bootstrap-fast     # Alias for bootstrap --sample
+  python bootstrap.py bootstrap          # Full pull -> data/records.jsonl
+  python bootstrap.py bootstrap --sample # Fetch 15 sample records -> sample/
+  python bootstrap.py bootstrap-fast     # Alias for the full bootstrap (fleet entry point)
   python bootstrap.py test               # Quick connectivity test
 """
 
 import sys
 import json
+import hashlib
 import logging
 import re
 import time
@@ -42,6 +43,8 @@ logger = logging.getLogger("legal-data-hunter.CU.GacetaLegislaciones")
 BASE_URL = "https://www.gacetaoficial.gob.cu"
 LISTING_URL = BASE_URL + "/es/algunas-legislaciones-cubanas"
 CRAWL_DELAY = 2
+# Below this a "law" is really just the scanned issue's cover page.
+MIN_TEXT_CHARS = 1000
 
 
 class CubaGacetaLegislacionesScraper(BaseScraper):
@@ -98,14 +101,22 @@ class CubaGacetaLegislacionesScraper(BaseScraper):
             return None
 
     def _extract_pdf_text(self, pdf_bytes: bytes) -> str:
-        """Extract text from PDF using pdfplumber."""
+        """Extract text from PDF, reading each column top-to-bottom.
+
+        The gazette is typeset in two columns and pdfplumber's plain
+        `extract_text` reads straight across the gutter, splicing the columns
+        together mid-sentence (#1407). `_extract_page_columnwise` splits the
+        words on the detected gutter first; it is a no-op on single-column
+        pages such as the cover.
+        """
         try:
             import pdfplumber
             import io
+            from common.pdf_extract import _extract_page_columnwise
             pages_text = []
             with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
                 for page in pdf.pages:
-                    t = page.extract_text()
+                    t = _extract_page_columnwise(page)
                     if t:
                         pages_text.append(t)
                     try:
@@ -178,7 +189,8 @@ class CubaGacetaLegislacionesScraper(BaseScraper):
 
     def _parse_law_metadata(self, title: str) -> Dict[str, Any]:
         """Extract law number, type, and date from title string."""
-        meta = {"law_number": None, "law_type": None, "date": None}
+        meta = {"law_number": None, "law_type": None, "date": None,
+                "date_precision": None}
 
         # Match patterns like "Ley No. 151", "Decreto-Ley 86/2024", etc.
         num_match = re.search(
@@ -213,16 +225,52 @@ class CubaGacetaLegislacionesScraper(BaseScraper):
             day, month_name, year = date_match.groups()
             month = months.get(month_name.lower(), "01")
             meta["date"] = f"{year}-{month}-{day.zfill(2)}"
+            meta["date_precision"] = "day"
         else:
+            # Only a year is available (from "86/2024" or a bare year in the
+            # title), so this is a placeholder January 1st — the masthead of
+            # the gazette itself carries the real day, see _process_law.
             year_match = re.search(r'/(\d{4})\b', title)
             if year_match:
                 meta["date"] = f"{year_match.group(1)}-01-01"
+                meta["date_precision"] = "year"
             else:
                 year_match2 = re.search(r'\b(19\d{2}|20\d{2})\b', title)
                 if year_match2:
                     meta["date"] = f"{year_match2.group(1)}-01-01"
+                    meta["date_precision"] = "year"
 
         return meta
+
+    MONTHS = {
+        "enero": "01", "febrero": "02", "marzo": "03", "abril": "04",
+        "mayo": "05", "junio": "06", "julio": "07", "agosto": "08",
+        "septiembre": "09", "octubre": "10", "noviembre": "11", "diciembre": "12",
+    }
+
+    def _date_from_document(self, text: str, pdf_url: str) -> Optional[str]:
+        """Recover a publication date when the listing title carries no year.
+
+        Roughly 40% of the curated titles are bare ("Ley No. 133 …"), which left
+        `date` null. The gazette masthead always states the issue date, so read
+        it from the document; fall back to the year in the filename
+        (`goc-2020-o87` → 2020) when the masthead is unreadable.
+        """
+        head = text[:3000]
+        m = re.search(r'\b(\d{1,2})\s+DE\s+(\w+)\s+DE\s+(\d{4})', head, re.IGNORECASE)
+        if m:
+            day, month_name, year = m.groups()
+            month = self.MONTHS.get(month_name.lower())
+            if month:
+                return f"{year}-{month}-{day.zfill(2)}"
+        m = re.search(r'\b(\d{2})/(\d{2})/(\d{4})\b', head)
+        if m:
+            day, month, year = m.groups()
+            return f"{year}-{month}-{day}"
+        m = re.search(r'goc-(\d{4})-', pdf_url, re.IGNORECASE)
+        if m:
+            return f"{m.group(1)}-01-01"
+        return None
 
     def _make_id(self, pdf_url: str) -> str:
         """Create a stable ID from the PDF URL."""
@@ -233,6 +281,7 @@ class CubaGacetaLegislacionesScraper(BaseScraper):
     def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
         """Fetch all curated Cuban laws."""
         seen_urls = set()
+        seen_hashes = set()
         page = 0
 
         while True:
@@ -249,6 +298,7 @@ class CubaGacetaLegislacionesScraper(BaseScraper):
                 break
 
             new_items = 0
+            page_records: Dict[str, Dict[str, Any]] = {}
             for title, pdf_url in items:
                 if pdf_url in seen_urls:
                     continue
@@ -256,8 +306,30 @@ class CubaGacetaLegislacionesScraper(BaseScraper):
                 new_items += 1
 
                 record = self._process_law(title, pdf_url)
-                if record:
-                    yield record
+                if not record:
+                    continue
+
+                # The site lists each law in a gazette issue separately but
+                # serves the *whole issue* PDF behind every one of those links
+                # (goc-2024-o78, _1 … _4 are byte-identical 514K files covering
+                # Decreto-Ley 88 through 92). Storing them all duplicated the
+                # issue five times. Keep one record per distinct text and keep
+                # the sibling titles on it so each law is still findable.
+                digest = hashlib.sha256(record["text"].encode("utf-8")).hexdigest()
+                if digest in seen_hashes:
+                    kept = page_records.get(digest)
+                    if kept is not None:
+                        kept.setdefault("also_published_as", []).append(record["title"])
+                    logger.info(f"  duplicate issue PDF, folded into {digest[:12]}: {title[:60]}")
+                    continue
+
+                seen_hashes.add(digest)
+                page_records[digest] = record
+
+            # Yielded only once the page is fully processed, so the sibling
+            # titles collected above are already on the record when it is written.
+            for record in page_records.values():
+                yield record
 
             logger.info(f"Page {page}: {new_items} new items")
 
@@ -275,11 +347,26 @@ class CubaGacetaLegislacionesScraper(BaseScraper):
             return None
 
         text = self._extract_pdf_text(pdf_bytes)
-        if not text or len(text) < 100:
-            logger.warning(f"No text extracted from {pdf_url} ({len(text) if text else 0} chars)")
+        # A scanned issue still yields its cover page, which has a real text
+        # layer, so the old 100-char floor let through a masthead-only stub
+        # with no law in it (ord_o_062_2012: 33 pages, text on page 1 only).
+        # Every genuine law here runs to 21K+ chars.
+        if not text or len(text) < MIN_TEXT_CHARS:
+            logger.warning(
+                f"Image-only or empty PDF, skipping {pdf_url} "
+                f"({len(text) if text else 0} chars, needs OCR)"
+            )
             return None
 
         meta = self._parse_law_metadata(title)
+        # A title that names no day gives us a placeholder January 1st; the
+        # gazette masthead states the actual issue date, so prefer it — but
+        # only when it agrees with the year the title does give, otherwise the
+        # two are talking about different events (enactment vs publication).
+        if meta["date_precision"] != "day":
+            doc_date = self._date_from_document(text, pdf_url)
+            if doc_date and (meta["date"] is None or doc_date[:4] == meta["date"][:4]):
+                meta["date"] = doc_date
         doc_id = self._make_id(pdf_url)
 
         return {
@@ -329,8 +416,9 @@ def main():
             sys.exit(1)
         return
 
-    sample_mode = args.sample or args.command == "bootstrap-fast"
-    max_records = 15 if sample_mode else 9999
+    # bootstrap-fast is the fleet's entry point and must run the FULL crawl;
+    # only --sample caps the run (#1532).
+    max_records = 15 if args.sample else 9999
 
     sample_dir = Path(__file__).parent / "sample"
     sample_dir.mkdir(exist_ok=True)

@@ -1,0 +1,103 @@
+# ═══════════════════════════════════════════════════════════════════
+# US/ChickasawNationCode — Chickasaw Nation Code and Constitution
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "US/ChickasawNationCode"
+  country: "US"
+  name: "Chickasaw Nation Code and Constitution"
+  url: "https://code.chickasaw.net/Table-of-Contents"
+  description: |
+    The codified law of the Chickasaw Nation, a federally recognized sovereign
+    tribe headquartered in Ada, Oklahoma: the Constitution of the Chickasaw
+    Nation and the 21 titles of the Chickasaw Nation Code — general
+    provisions, administration of tribal affairs, business regulation,
+    community and economic development, courts and procedures, domestic
+    relations and families, education, elections and campaigns, enterprises,
+    finance and taxation, fish and game, the Governor, health and social
+    services, labor and employment, lands and natural resources, the
+    Legislature, offences and penalties, property, safety and law enforcement,
+    utilities, and vehicles and highways. English.
+    Sourced from the Nation's own code portal, which serves each title as a
+    born-digital PDF at code.chickasaw.net/Title-NN, plus the Constitution PDF
+    published on chickasaw.net. Titles are split to section level on the
+    upper-case SECTION headings the PDFs print above each provision, so one
+    record is one section as cited (e.g. 10 C.N.C. § 10-101.4); dates come
+    from each section's own legislative history.
+    Chickasaw court opinions are not published online by the Judicial
+    Department and third-party docket aggregation (ODCR) is deliberately out
+    of scope — this source is legislation only.
+
+data_types:
+  - legislation
+
+jurisdictions:
+  - code: US-OK
+    scope: partial
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_scrape"   # static code index + born-digital statute PDFs
+  base_url: "https://code.chickasaw.net"
+
+# ── Output Schema ─────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "document_type"
+      type: "string"
+      required: false
+    - name: "title_number"
+      type: "integer"
+      required: false
+    - name: "citation"
+      type: "string"
+      required: false
+    - name: "section"
+      type: "string"
+      required: false
+    - name: "chapter"
+      type: "string"
+      required: false
+    - name: "article"
+      type: "string"
+      required: false
+    - name: "section_heading"
+      type: "string"
+      required: false
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Public Domain (tribal government edict)"
+  url: "https://code.chickasaw.net/Table-of-Contents"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    The Chickasaw Nation Code and the Constitution of the Chickasaw Nation are
+    enacted law of a sovereign tribal government, published in full and without
+    restriction by the Nation's own code portal for public access. Under the
+    government edicts doctrine enacted law is not subject to copyright. Freely
+    reusable, including commercially.

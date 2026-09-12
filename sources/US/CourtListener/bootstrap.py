@@ -565,10 +565,13 @@ def fetch_recent(api: CourtListenerAPI, days: int = 30) -> Generator[Dict, None,
 
 def fetch_updates(api: CourtListenerAPI, since: datetime) -> Generator[Dict, None, None]:
     """Fetch opinions created/modified since a given date."""
+    if since.tzinfo is None:
+        since = since.replace(tzinfo=timezone.utc)
     since_str = since.strftime("%Y-%m-%d")
     print(f"Fetching opinions updated since {since_str}...")
 
-    for record in fetch_recent(api, days=(datetime.now() - since).days + 1):
+    days = max(1, (datetime.now(timezone.utc) - since).days + 1)
+    for record in fetch_recent(api, days=days):
         yield record
 
 

@@ -204,6 +204,13 @@ class WIPOLexNRScraper(BaseScraper):
                         source_id=doc_id,
                         pdf_url=url,
                         table="legislation",
+                        # force: without it, extract_pdf_markdown returns None for any doc
+                        # already in Neon with text, which this loop cannot tell apart from a
+                        # scanned PDF. Once the (small, born-digital) WIPO Lex corpus is
+                        # ingested, every later crawl reported all of it as scanned and emitted
+                        # 0 records, so the fleet fell back to the bundled samples (#1520).
+                        # Re-extraction is cheap here and a full run has to emit every record.
+                        force=True,
                     )
                 except Exception as e:
                     logger.warning("PDF extraction failed for %s: %s", url, e)

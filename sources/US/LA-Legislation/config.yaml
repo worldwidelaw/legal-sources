@@ -8,18 +8,24 @@ endpoints:
   print: https://legis.la.gov/legis/LawPrint.aspx?d={doc_id}
   toc: https://legis.la.gov/legis/Laws_Toc.aspx?folder={folder_id}
 license: Public Domain (government works)
-name: Louisiana Revised Statutes (legis.la.gov)
-notes: 'Louisiana Revised Statutes from legis.la.gov.
+name: Louisiana Revised Statutes and Codes (legis.la.gov)
+notes: 'Louisiana statutory law from legis.la.gov.
 
-  54 titles (folders 77-130), ~46,000 sections.
+  54 Revised Statutes titles (folders 77-130), ~46,300 sections, plus the
 
-  Full text extracted from LawPrint.aspx HTML endpoint.
+  separately-numbered codes: Constitution Ancillaries (66), Civil Code (67),
 
-  Also includes Civil Code (67), Code of Civil Procedure (68),
+  Code of Civil Procedure (68), Code of Criminal Procedure (69), Code of
 
-  Code of Criminal Procedure (69), Code of Evidence (70),
+  Evidence (70), Children''s Code (71), House Rules (73) and Joint Rules (74)
 
-  Children''s Code (71), and Constitution Ancillaries (66).
+  -- ~6,200 further articles. The codes were named here from the start but
+
+  were not actually crawled until issue #1200; Louisiana is the one civil-law
+
+  state in the US, so the Civil Code is core rather than supplementary.
+
+  Full text extracted from the LawPrint.aspx HTML endpoint.
 
   '
 rate_limit:
@@ -40,6 +46,9 @@ schema:
     required: true
     type: string
   - name: section_num
+    required: false
+    type: string
+  - name: code
     required: false
     type: string
   - name: chapter

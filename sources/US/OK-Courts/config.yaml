@@ -1,4 +1,5 @@
-auth: none
+auth:
+  type: none
 country: US
 data_types:
 - case_law

@@ -1,0 +1,18 @@
+last_bootstrap: null
+last_error: common.http_client.HttpClient._request() got multiple values for keyword
+  argument 'json'
+last_run: '2026-08-11T10:57:16.177501+00:00'
+run_history:
+- error_message: common.http_client.HttpClient._request() got multiple values for
+    keyword argument 'json'
+  errors: 0
+  finished_at: '2026-08-11T10:57:16.177501+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-11T10:57:16.177292+00:00'
+total_records: 0

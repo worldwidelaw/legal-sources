@@ -1,13 +1,13 @@
 {
-  "_id": "lazio_lr_1973_36",
+  "_id": "lazio_lr_1973_40",
   "_source": "IT/Lazio",
   "_type": "legislation",
-  "_fetched_at": "2026-02-21T04:06:50.369882+00:00",
-  "title": "Variazioni al bilancio di previsione per l'anno finanziario 1973.",
-  "text": "L.R. 7 Settembre 1973, n. 36 Variazioni al bilancio di previsione per l'anno finanziario 1973. Art. 1 - Art. 2 (Omissis). Note : ( 1 ) Pubblicata sul BUR 20 settembre 1973, n. 24. Riprodotta sulla G.U. della Repubblica 8 ottobre 1973, n. 260. Il testo non ha valore legale; rimane, dunque, inalterata l'efficacia degli atti legislativi originari.",
-  "date": "1973-09-07",
-  "url": "https://www.consiglio.regione.lazio.it/?vw=leggiregionalidettaglio&id=8262&sv=vigente",
-  "law_number": "36",
+  "_fetched_at": "2026-08-07T14:47:05.830934+00:00",
+  "title": "Piano per l'incremento del numero e l'efficienza degli impianti sportivi nel Lazio - Norme per la concessione di particolari agevolazioni.(1) (2)",
+  "text": "L.R. 28 Dicembre 1973, n. 40\n\nPiano per l'incremento del numero e l'efficienza degli impianti sportivi nel Lazio - Norme per la concessione di particolari agevolazioni.(1) (2)\n\nOmissis\n\nNote :\n\n(1) Pubblicata sul Bollettino Ufficiale della Regione Lazio 10 gennaio 1974, n. 1.\n\n(2) Legge abrogata dall'articolo 44, comma 1, lettera a) della legge regionale 20 giugno 2002, n. 15",
+  "date": "1973-12-28",
+  "url": "https://www.consiglio.regione.lazio.it/?vw=leggiregionalidettaglio&id=8002&sv=vigente",
+  "law_number": "40",
   "year": "1973",
   "bur_number": "",
   "bur_date": "",
@@ -15,5 +15,5 @@
   "language": "it",
   "region": "Lazio",
   "country": "IT",
-  "internal_id": "8262"
+  "internal_id": "8002"
 }

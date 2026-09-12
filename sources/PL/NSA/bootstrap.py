@@ -54,6 +54,15 @@ DOC_URL = f"{BASE_URL}/doc"
 # Checkpoint file for resuming across sessions
 CHECKPOINT_FILE = Path(__file__).parent / "checkpoint.json"
 
+# CBOSA drops connections for datacenter IPs after a handful of pages (GH-184,
+# GH-280, GH-1308). A truncated crawl must fail loudly rather than look like a
+# clean finish, or the checkpoint gets cleared and the shortfall goes unnoticed.
+MIN_COVERAGE_RATIO = 0.9
+
+
+class SearchUnavailable(RuntimeError):
+    """The CBOSA search endpoint could not be reached — distinct from an empty page."""
+
 
 class NSAScraper(BaseScraper):
     """
@@ -282,6 +291,12 @@ class NSAScraper(BaseScraper):
         Search for administrative court judgments.
 
         Returns (list of document IDs, total results count).
+
+        Raises:
+            SearchUnavailable: if the search endpoint could not be reached after
+                retries. A page that legitimately holds no results returns
+                ``([], total)`` instead — the caller must be able to tell the two
+                apart, otherwise a mid-crawl block reads as "end of results".
         """
         # Form data for POST request
         form_data = {
@@ -306,30 +321,29 @@ class NSAScraper(BaseScraper):
             "wPrzS": "on",
         }
 
-        self.rate_limiter.wait()
-
-        try:
-            resp = self.client.post("/cbo/search", data=form_data)
-            resp.raise_for_status()
-            html_content = resp.text
-
-            doc_ids = self._extract_doc_ids(html_content)
-            total = self._extract_total_results(html_content)
-
-            return doc_ids, total
-        except Exception as e:
-            logger.error(f"Search error on page {page}: {e}")
-            time.sleep(3)
+        last_error = None
+        for attempt in range(4):
+            if attempt:
+                time.sleep(min(3 * 2 ** (attempt - 1), 30))
+            self.rate_limiter.wait()
             try:
                 resp = self.client.post("/cbo/search", data=form_data)
                 resp.raise_for_status()
                 html_content = resp.text
-                doc_ids = self._extract_doc_ids(html_content)
-                total = self._extract_total_results(html_content)
-                return doc_ids, total
-            except Exception as e2:
-                logger.error(f"Retry failed: {e2}")
-                return [], 0
+                return (
+                    self._extract_doc_ids(html_content),
+                    self._extract_total_results(html_content),
+                )
+            except Exception as e:
+                last_error = e
+                logger.error(f"Search error on page {page} (attempt {attempt + 1}/4): {e}")
+
+        raise SearchUnavailable(
+            f"CBOSA search failed on page {page} after 4 attempts: {last_error}. "
+            f"orzeczenia.nsa.gov.pl drops datacenter IPs after a few pages "
+            f"(GH-184/GH-280/GH-1308) — re-run from a residential/PL vantage. "
+            f"Checkpoint preserved so the re-run resumes from here."
+        )
 
     def _fetch_document(self, doc_id: str) -> Optional[dict]:
         """Fetch a single document by ID."""
@@ -401,9 +415,25 @@ class NSAScraper(BaseScraper):
                 total_results = total
                 logger.info(f"Total NSA judgments: {total_results}")
                 if total_results == 0:
-                    return
+                    # A 200 that carries no result count is a block/interstitial
+                    # page, not an empty corpus — CBOSA always reports a total.
+                    raise SearchUnavailable(
+                        "CBOSA search returned a page with no result count. "
+                        "orzeczenia.nsa.gov.pl is serving this vantage a block or "
+                        "interstitial page (GH-184/GH-280/GH-1308) — needs a "
+                        "residential/PL vantage."
+                    )
 
             if not doc_ids:
+                # A blocked/empty listing mid-crawl is a truncation, not the end
+                # of the corpus — only accept it once we are past total_results.
+                if page * page_size < total_results:
+                    raise SearchUnavailable(
+                        f"CBOSA returned an empty listing on page {page} but reports "
+                        f"{total_results} judgments (only {total_fetched} fetched). "
+                        f"This is the datacenter-IP truncation from GH-1308, not the "
+                        f"end of the corpus. Checkpoint preserved."
+                    )
                 logger.info(f"No more documents on page {page}")
                 break
 
@@ -440,10 +470,25 @@ class NSAScraper(BaseScraper):
             if page % 5 == 0:
                 logger.info(f"  Page {page} ({total_fetched} fetched so far)")
 
-        # Clear checkpoint on completion
+        # Only clear the checkpoint on a genuinely complete crawl. Clearing it
+        # after a partial made every re-run restart from page 1 and re-hit the
+        # same block (GH-1308).
         if use_checkpoint:
-            self._clear_checkpoint()
-            logger.info("Bootstrap complete - checkpoint cleared")
+            expected = total_results or 0
+            if total_fetched >= expected * MIN_COVERAGE_RATIO:
+                self._clear_checkpoint()
+                logger.info(
+                    f"Bootstrap complete - {total_fetched}/{expected} fetched, "
+                    f"checkpoint cleared"
+                )
+            else:
+                raise SearchUnavailable(
+                    f"Crawl ended with only {total_fetched} of {expected} judgments "
+                    f"({total_fetched / expected:.1%} coverage). Keeping the checkpoint "
+                    f"so a re-run resumes at page {page}. orzeczenia.nsa.gov.pl "
+                    f"throttles datacenter IPs (GH-184/GH-280/GH-1308) — this needs a "
+                    f"residential/PL vantage."
+                )
 
     # -- Abstract method implementations ------------------------------------
 
@@ -646,4 +691,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

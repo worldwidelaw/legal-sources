@@ -68,6 +68,22 @@ schema:
       role: "identifier"
       required: true
 
+license:
+  name: "Energy Community Secretariat reuse notice"
+  url: "https://www.energy-community.org/disclaimer.html"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    The site disclaimer states: "Reproduction is authorised, provided the source
+    is acknowledged, save where otherwise stated. Where prior permission must be
+    obtained for the reproduction or use of textual information, such permission
+    shall cancel the above-mentioned general permission and shall clearly indicate
+    any restrictions on use." This is the standard EU-institution reuse notice —
+    commercial reuse is permitted so long as the Energy Community is credited.
+    Verified 2026-08-25.
+
 notes: |
   - Registry index at /enc-lex/cases/registry.html links every per-case page
     /enc-lex/cases/registry/YYYY/caseNNYYCC.html (CC = ISO-2 country code)

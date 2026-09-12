@@ -120,10 +120,16 @@ python bootstrap.py update
 
 ## License
 
-[Open Government Data](https://dados.gov.pt) — the official Diario da Republica is freely reusable. The dre.tretas.org mirror operates under GPL v3 with its source code available on GitLab.
+[Public Domain](https://www.law.cornell.edu/uscode/text/17/105) — Diário da República content is *domínio público* (official state publications) under Portuguese law (Código do Direito de Autor, art. 7, which excludes official state texts from copyright). Commercial use permitted.
+
+Sourced via the open [legalize-dev/legalize-pt](https://github.com/legalize-dev/legalize-pt) GitHub mirror. The mirror's generation pipeline is MIT-licensed; the legislative content it reproduces is public-domain state publication. Each file records the original official `source` URL (dre.pt) in its YAML front matter.
+
+## Data Source (2026-07 rewrite)
+
+The former `dre.tretas.org` mirror is now behind a Cloudflare challenge (HTTP 403 to all non-browser clients, including residential vantages), and the official `diariodarepublica.pt` is a locked OutSystems SPA. This source now reads the ~90,000-act Série I corpus from `legalize-dev/legalize-pt`, which is regenerated daily from the official OutSystems API and published as clean Markdown with rich YAML front matter.
 
 ## Notes
 
-- Rate limiting: 2 second delay between requests
-- The mirror may lag the official source by a few hours
-- For legal purposes, always verify against the official source
+- Full pull streams the repo tarball (single bulk download < 2 GB, no git history) and iterates `pt/*.md`; each file embeds full born-digital text.
+- Sample mode fetches individual files via `raw.githubusercontent.com`; incremental updates use the GitHub commits API.
+- For legal purposes, always verify against the official source (dre.pt link in each record's `url`).

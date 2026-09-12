@@ -321,7 +321,8 @@ def main():
     parser = argparse.ArgumentParser(description="IR/ABCenterLaws data fetcher")
     parser.add_argument(
         "command",
-        choices=["bootstrap", "update", "test"],
+        # "bootstrap-fast" is the VPS pipeline alias for a full bootstrap.
+        choices=["bootstrap", "bootstrap-fast", "update", "test"],
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
@@ -334,31 +335,45 @@ def main():
         success = scraper.test()
         sys.exit(0 if success else 1)
 
-    elif args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        count = 0
-        max_records = 15 if args.sample else None
-
-        for record in scraper.fetch_all(max_records=max_records):
-            out_path = sample_dir / f"record_{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            text_len = len(record.get("text", ""))
-            logger.info(
-                f"[{count + 1}] {record.get('title', '?')[:80]} "
-                f"({text_len:,} chars)"
-            )
-            count += 1
-
-        logger.info(f"Bootstrap complete: {count} records saved to sample/")
+    elif args.command in ("bootstrap", "bootstrap-fast"):
+        # Sample mode only when explicitly requested; the VPS pipeline runs the
+        # full path and ingests data/records.jsonl.
+        if args.sample:
+            sample_dir = Path(__file__).parent / "sample"
+            sample_dir.mkdir(exist_ok=True)
+            count = 0
+            for raw in scraper.fetch_all(max_records=15):
+                record = scraper.normalize(raw)
+                out_path = sample_dir / f"record_{count:04d}.json"
+                with open(out_path, "w", encoding="utf-8") as f:
+                    json.dump(record, f, ensure_ascii=False, indent=2)
+                logger.info(
+                    f"[{count + 1}] {record.get('title', '?')[:80]} "
+                    f"({len(record.get('text', '')):,} chars)"
+                )
+                count += 1
+            logger.info(f"Bootstrap complete: {count} records saved to sample/")
+        else:
+            # Stream normalized full records to data/records.jsonl for VPS ingest.
+            data_dir = Path(__file__).parent / "data"
+            data_dir.mkdir(exist_ok=True)
+            jsonl_path = data_dir / "records.jsonl"
+            count = 0
+            with open(jsonl_path, "w", encoding="utf-8") as f:
+                for raw in scraper.fetch_all():
+                    record = scraper.normalize(raw)
+                    f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    count += 1
+                    if count % 10 == 0:
+                        logger.info(f"Progress: {count} records written")
+            logger.info(f"Full bootstrap complete: {count} records -> {jsonl_path}")
 
     elif args.command == "update":
         sample_dir = Path(__file__).parent / "sample"
         sample_dir.mkdir(exist_ok=True)
         count = 0
-        for record in scraper.fetch_updates():
+        for raw in scraper.fetch_updates():
+            record = scraper.normalize(raw)
             out_path = sample_dir / f"update_{count:04d}.json"
             with open(out_path, "w", encoding="utf-8") as f:
                 json.dump(record, f, ensure_ascii=False, indent=2)

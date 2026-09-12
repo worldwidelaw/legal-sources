@@ -1,11 +1,11 @@
 fetcher:
-  base_url: https://vbpl.vn
-  dvid: 13
-  fulltext_page: /TW/Pages/vbpq-toanvan.aspx
-  metadata_endpoint: /VBQPPL_UserControls/Publishing_22/pLoadAjaxVN.aspx
-  rate_limit: 1.5
+  base_url: https://vanban.chinhphu.vn
+  detail_page: /?pageid=27160&docid={docid}&classid=1
+  file_host: https://datafiles.chinhphu.vn
+  listing_endpoint: /he-thong-van-ban?classid=1&mode=1
+  pagination: aspnet_postback
+  rate_limit: 1.0
   rows_per_page: 50
-  search_endpoint: /VBQPPL_UserControls/Publishing/TimKiem/pKetQuaTimKiem.aspx
 schema:
   key_fields:
   - name: _id
@@ -29,9 +29,9 @@ schema:
   - name: issuing_authority
     required: false
     type: string
-  - name: effective_date
+  - name: file_url
     required: false
-    type: date
+    type: string
   - name: url
     required: true
     type: string
@@ -40,12 +40,16 @@ source:
   country: VN
   data_types:
   - legislation
-  description: '46,273 central-level Vietnamese legal documents from the Ministry of Justice National Legal Document Database (vbpl.vn). Includes constitutions, laws, decrees, circulars, and other regulatory
-    documents. Full text in Vietnamese.
+  description: 'Central-level Vietnamese legal instruments (~47,700) from the Government
+    Office "Hệ thống văn bản" at vanban.chinhphu.vn: constitutions, laws, ordinances,
+    decrees, decisions, circulars and joint circulars. Full text comes from the official
+    signed attachment on datafiles.chinhphu.vn (PDF, plus DOC/DOCX/RTF for older acts).
+    Rebuilt off vbpl.vn in 2026-08 (issue #1445) after that host moved behind a
+    JavaScript security challenge.
 
     '
   format: html
   id: VN/PhapLuatGov
   language: vi
-  name: Vietnam National Legal Document Database (VBPL)
-  url: https://vbpl.vn/
+  name: Vietnam National Legal Document Database (Hệ thống văn bản)
+  url: https://vanban.chinhphu.vn/

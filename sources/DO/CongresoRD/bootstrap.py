@@ -48,6 +48,9 @@ from common.http_client import HttpClient
 
 from common.pdf_extract import extract_pdf_markdown
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from pdf_clean import extract_clean_text
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -78,7 +81,17 @@ SPANISH_MONTHS = {
 
 
 def _extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from PDF using centralized extractor."""
+    """Extract text from a Gaceta Oficial scan.
+
+    Goes through the page-aware cleaner first (issue #1413): these PDFs repeat the
+    same pages up to 8x and some are two-column, both of which flat page
+    concatenation turns into scrambled, duplicated text. The shared extractor stays
+    as the fallback for PDFs with no usable text layer.
+    """
+    cleaned = extract_clean_text(pdf_bytes)
+    if cleaned and len(cleaned) >= 50:
+        return cleaned
+
     return extract_pdf_markdown(
         source="DO/CongresoRD",
         source_id="",
@@ -411,4 +424,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

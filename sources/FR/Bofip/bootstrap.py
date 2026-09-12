@@ -161,6 +161,69 @@ def normalize(fields: dict) -> dict:
     }
 
 
+MIN_TEXT_CHARS = 50
+
+
+def fetch_all(sample: bool = False, max_docs: Optional[int] = None
+              ) -> Generator[dict, None, None]:
+    """Yield every in-force BOFiP publication as a normalized record.
+
+    This is the entry point the fleet wrapper probes for; without a
+    module-level fetch_all it found no compatible fetcher and fell through to
+    the committed samples (issue #1314).
+    """
+    limit = max_docs if max_docs is not None else (15 if sample else None)
+    emitted = 0
+    for fields in fetch_records():
+        record = normalize(fields)
+        if not record["text"] or len(record["text"]) < MIN_TEXT_CHARS:
+            continue
+        yield record
+        emitted += 1
+        if limit and emitted >= limit:
+            return
+
+
+def fetch_updates(since: str) -> Generator[dict, None, None]:
+    """Yield records whose validity start date is on or after `since`."""
+    start = 0
+    while True:
+        params = {
+            "rows": PAGE_SIZE,
+            "start": start,
+            "sort": "debut_de_validite",
+            "q": f"debut_de_validite >= {since}",
+        }
+        try:
+            data = api_get(params)
+        except Exception as e:
+            print(f"Error fetching updates at start={start}: {e}", file=sys.stderr)
+            break
+        records = data.get("records", [])
+        if not records:
+            break
+        for rec in records:
+            record = normalize(rec.get("fields", {}))
+            if record["text"] and len(record["text"]) >= MIN_TEXT_CHARS:
+                yield record
+        start += PAGE_SIZE
+        if start >= data.get("nhits", 0):
+            break
+        time.sleep(RATE_LIMIT_DELAY)
+
+
+def write_records_jsonl(records_path: Path) -> int:
+    """Stream the full corpus to data/records.jsonl, which the pipeline ingests."""
+    records_path.parent.mkdir(parents=True, exist_ok=True)
+    count = 0
+    with records_path.open("w", encoding="utf-8") as stream:
+        for record in fetch_all():
+            stream.write(json.dumps(record, ensure_ascii=False) + "\n")
+            stream.flush()
+            count += 1
+    return count
+
+
 def bootstrap_sample(sample_dir: Path, count: int = 15) -> None:
     """Generate sample data files."""
     sample_dir.mkdir(parents=True, exist_ok=True)
@@ -215,7 +278,8 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="BOFiP tax doctrine fetcher")
-    parser.add_argument("command", choices=["bootstrap", "fetch", "updates"],
+    parser.add_argument("command",
+                        choices=["bootstrap", "bootstrap-fast", "fetch", "updates"],
                         help="Command to run")
     parser.add_argument("--sample", action="store_true",
                         help="Generate sample data only")
@@ -230,18 +294,18 @@ def main():
     script_dir = Path(__file__).parent
     sample_dir = script_dir / "sample"
 
-    if args.command == "bootstrap":
+    if args.command in ("bootstrap", "bootstrap-fast"):
         if args.sample:
             bootstrap_sample(sample_dir, args.count)
         else:
-            # Full bootstrap: emit JSONL to stdout
-            count = 0
-            for fields in fetch_records():
-                record = normalize(fields)
-                if record["text"] and len(record["text"]) >= 50:
-                    print(json.dumps(record, ensure_ascii=False))
-                    count += 1
-            print(f"Full bootstrap: {count} records emitted.", file=sys.stderr)
+            # A full run streams to data/records.jsonl, which is what the
+            # pipeline ingests. It used to emit JSONL on stdout, which the
+            # fleet wrapper does not collect (issue #1314).
+            records_path = script_dir / "data" / "records.jsonl"
+            count = write_records_jsonl(records_path)
+            print(f"{args.command} complete: {count} records written to "
+                  f"{records_path}", file=sys.stderr)
+            sys.exit(0 if count else 1)
 
     elif args.command == "fetch":
         limit = args.count if args.sample else None
@@ -254,36 +318,11 @@ def main():
         if not args.since:
             print("Error: --since is required for updates command", file=sys.stderr)
             sys.exit(1)
-        since_str = args.since
-        # Use API filter for date range
-        start = 0
         count = 0
-        while True:
-            params = {
-                "rows": PAGE_SIZE,
-                "start": start,
-                "sort": "debut_de_validite",
-                "q": f"debut_de_validite >= {since_str}",
-            }
-            try:
-                data = api_get(params)
-            except Exception as e:
-                print(f"Error: {e}", file=sys.stderr)
-                break
-            records = data.get("records", [])
-            if not records:
-                break
-            for rec in records:
-                fields = rec.get("fields", {})
-                record = normalize(fields)
-                if record["text"]:
-                    print(json.dumps(record, ensure_ascii=False))
-                    count += 1
-            start += PAGE_SIZE
-            if start >= data.get("nhits", 0):
-                break
-            time.sleep(RATE_LIMIT_DELAY)
-        print(f"Updates: {count} records since {since_str}.", file=sys.stderr)
+        for record in fetch_updates(args.since):
+            print(json.dumps(record, ensure_ascii=False))
+            count += 1
+        print(f"Updates: {count} records since {args.since}.", file=sys.stderr)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,148 @@
+# ===================================================================
+# EE/VAKO -- Estonia, Riigihangete vaidlustuskomisjon (Public
+#            Procurement Review Committee), VAKO otsused
+# ===================================================================
+# Full text of the decisions of the Estonian Public Procurement Review
+# Committee, published by the Ministry of Finance. Each decision
+# adjudicates a specific challenge = case_law.
+#
+# ACCESS: server-rendered HTML index, no auth, no captcha, no WAF.
+#   GET /riigihanked-riigiabi-osalused/riigihanked/vaidlustusmenetlus
+#       -> three tables; two are decision registers (väikehange,
+#          minikonkurss) with 6 columns each; the third lists annual
+#          statistical reports and is skipped.
+#   GET /sites/default/files/documents/{YYYY-MM}/{file}.pdf -> decision
+#
+# SCOPE CAVEAT: this is the curated subset the Ministry publishes (~83
+# decisions, 2017 -> 2026), not the complete VAKO corpus. The full set
+# lives in the Riigihangete register SPA whose dispute-search API is
+# auth-gated (POST riigihanked.riik.ee/rhr/api/public/v1/search/disputes
+# -> 401, re-verified 2026-08-02).
+# ===================================================================
+
+source:
+  id: "EE/VAKO"
+  country: "EE"
+  name: "Estonia — Riigihangete vaidlustuskomisjon (Public Procurement Review Committee), VAKO otsused"
+  url: "https://fin.ee/riigihanked-riigiabi-osalused/riigihanked/vaidlustusmenetlus"
+  description: |
+    Decisions (otsused) of the Estonian Public Procurement Review
+    Committee (Riigihangete vaidlustuskomisjon, VAKO), the administrative
+    review body that hears challenges against contracting authorities'
+    procurement decisions. The register published by the Ministry of
+    Finance covers small procurements (väikehange) and mini-competitions
+    under framework agreements (minikonkurss) from 2017 to the present,
+    with the procedure type, decision date, decision number, subject of
+    the challenge and outcome given per row and the full decision text in
+    a born-digital PDF.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 3
+  max_workers: 4
+
+api:
+  type: "html"
+  base_url: "https://fin.ee"
+  endpoints:
+    index: "GET /riigihanked-riigiabi-osalused/riigihanked/vaidlustusmenetlus"
+    document: "GET /sites/default/files/documents/{YYYY-MM}/{file}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 16
+  key_fields:
+    - name: "title"
+      description: "Decision number, parties and subject of the challenge, e.g. 'VAKO otsus 198-25/298996 — Skyproff OÜ vs Enefit Power OÜ — riigihanke alusdokumendid'"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (Estonian), extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the register's DD.MM.YYYY column"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "decision_number"
+      description: "VAKO case number, e.g. '198-25/298996' (older entries carry no procurement reference and read '55-22/-')"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "parties"
+      description: "Challenger and contracting authority, from the decision file name"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "procedure_type"
+      description: "Procurement procedure — Väikehange (small procurement) or Minikonkurss (mini-competition under a framework agreement)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "challenge_object"
+      description: "What was challenged, e.g. 'edukaks tunnistamise otsus' (award decision), 'riigihanke alusdokumendid' (tender documents)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "outcome"
+      description: "Operative outcome, e.g. 'jätta rahuldamata' (dismissed), 'jätta läbi vaatamata' (not examined)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "court"
+      description: "Deciding body — Riigihangete vaidlustuskomisjon"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "url"
+      description: "Direct URL of the decision PDF"
+      type: "string"
+      role: "metadata"
+      required: true
+
+license:
+  name: "Estonian public information — Public Information Act (Avaliku teabe seadus)"
+  url: "https://www.riigiteataja.ee/en/eli/522032023003/consolide"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: |
+    Decisions of the Public Procurement Review Committee are official acts
+    of an Estonian public authority, published by the Ministry of Finance
+    for unrestricted public access under the Public Information Act. The
+    Estonian Copyright Act (§ 5) excludes acts of public authorities and
+    their official translations from copyright protection. No registration
+    and no reuse-restricting terms are imposed by the site.
+
+notes: |
+  - The index page carries three tables. The two decision registers are
+    identified by an 'Otsuse nr' header column; the third table (annual
+    statistical reports of the Committee) has no such column and is
+    skipped, since the reports are not decisions.
+  - Estonian diacritics in the PDF file names are percent-encoded. The
+    exact href bytes from the HTML are fetched unchanged and never
+    re-typed, which would 404 under a different Unicode normalisation.
+  - Records de-duplicate on the decision number, falling back to the file
+    path for the older rows whose number column reads '{case}-{yy}/-'.
+  - If the index yields no decision rows the run raises instead of
+    reporting an empty corpus, so a future block or layout change fails
+    loud rather than silently ingesting only the committed samples.
+  - The corpus is small (83 decisions) because the Ministry publishes a
+    curated selection. Expanding to the full VAKO corpus requires
+    credentials for the Riigihangete register dispute-search API.

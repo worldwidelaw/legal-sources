@@ -6,19 +6,34 @@ BaFin (Bundesanstalt für Finanzdienstleistungsaufsicht) is Germany's integrated
 
 ## Data Source
 
-This fetcher retrieves **regulatory circulars (Rundschreiben)** from BaFin's official website. These circulars provide binding regulatory guidance including:
+This fetcher retrieves BaFin's **Verwaltungspraxis** (administrative practice) corpus — the binding
+guidance the authority issues to supervised institutions:
 
-- **MaRisk** - Minimum Requirements for Risk Management
-- **MaComp** - Minimum Compliance Requirements
-- **Anti-Money Laundering** - High-risk country lists and AML guidance
-- **Supervisory practices** - Fit and proper requirements, capital requirements
+- **Rundschreiben** (circulars) — MaRisk, MaComp, AML high-risk country lists, fit-and-proper requirements
+- **Auslegungsentscheidungen** (interpretative decisions)
+- **Merkblätter** (guidance notices)
+- **Aufsichtsmitteilungen** (supervisory notices)
 
 ## Technical Details
 
-- **Method**: HTML scraping of search results and document pages
-- **Documents**: ~126 active circulars
-- **URL Pattern**: `https://www.bafin.de/SharedDocs/Veroeffentlichungen/DE/Rundschreiben/{YEAR}/{filename}.html`
+- **Method**: HTML scraping of the Servicesuche result pages and document pages
+- **Documents**: ~430 across the four format facets
+- **Search endpoint**: `https://www.bafin.de/SiteGlobals/Forms/Suche/Expertensuche/Servicesuche_Formular.html?cl2Categories_Format={facet}`
+- **Document URLs**:
+  - `https://www.bafin.de/SharedDocs/Veroeffentlichungen/DE/{Format}/{YEAR}/{slug}.html` — full text in `div.l-article`
+  - `https://www.bafin.de/SharedDocs/Downloads/DE/{Format}/{slug}.html` — landing page whose PDF is extracted via `common/pdf_extract`
 - **Rate Limit**: 1.5 seconds between requests
+
+### Pagination gotcha (issue #1571)
+
+BaFin migrated to a new site in 2026. The previous
+`/SiteGlobals/Forms/Suche/Expertensuche_Formular.html` endpoint now returns 404 for every
+client, and result items moved from `div.search-result` to `div.c-teaser-search-result`.
+
+More subtly, the new search **accepts `pageNo` with HTTP 200 but always serves page 0** —
+paging is driven by an opaque `gtp=<node>_list%3D<n>` token. The fetcher therefore follows
+the rendered `c-pagination__button--next` link and asserts that each page contributes new
+URLs, rather than incrementing a counter (which would silently cap the corpus at 50 docs).
 
 ## Usage
 
@@ -26,7 +41,7 @@ This fetcher retrieves **regulatory circulars (Rundschreiben)** from BaFin's off
 # Test mode (3 documents)
 python3 bootstrap.py
 
-# Full bootstrap (100 documents)
+# Full bootstrap (whole corpus -> data/records.jsonl)
 python3 bootstrap.py bootstrap
 
 # Sample bootstrap (15 documents)
@@ -39,12 +54,13 @@ python3 bootstrap.py bootstrap --sample
 |-------|-------------|
 | `_id` | Unique document identifier |
 | `_source` | Always "DE/BaFin" |
-| `_type` | Always "regulatory_decisions" |
+| `_type` | Always "doctrine" |
 | `title` | Circular title |
 | `text` | Full text content |
 | `date` | Publication date (ISO 8601) |
 | `url` | Original document URL |
-| `topic` | Subject area (e.g., Risk Management, Compliance) |
+| `topic` | Document format (Rundschreiben / Auslegungsentscheidung / Merkblatt / Aufsichtsmitteilung) |
+| `pdf_url` | Source PDF, when the body came from a Downloads landing page |
 | `reference` | Reference number if available |
 | `authority` | Always "BaFin" |
 | `language` | Always "de" |

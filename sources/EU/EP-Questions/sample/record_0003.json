@@ -1,0 +1,11 @@
+{
+  "_id": "E-10-2026-000006",
+  "_source": "EU/EP-Questions",
+  "_type": "doctrine",
+  "_fetched_at": "2026-07-21T06:24:48.215698+00:00",
+  "identifier": "E-10-2026-000006",
+  "title": "Publication of people’s real-time geolocation data under Spain’s compulsory V16 system",
+  "text": "QUESTION\n\nPE780.976v01-00\nQuestion for written answer E-000006/2026\nto the Commission\nRule 144\nAlvise Pérez (NI)\nSubject:\nPublication of people’s real-time geolocation data under Spain’s compulsory V16\nsystem\nSpanish legislation requires the use of connected V16 devices to indicate vehicles that have\nbroken down or are stopped on the public highway. The devices also transmit geolocation\ndata to systems managed by the Directorate-General for Traffic.\nReal-time location information is publicly available on a web-based map – access is\nunrestricted and no login is required. As a result, anyone can look up the location of people\nwho find themselves in potentially vulnerable situations.\nWhile national authorities argue that data is ‘anonymised’, exact and real-time geolocation\ncan constitute personal data when it indirectly enables natural persons to be identified or\nposes a risk to their safety.\nIn light of Regulation (EU) 2016/679 (General Data Protection Regulation):\n1.\nDoes the Commission believe that a Member State making real-time geolocation\ninformation provided under a mandatory system is consistent with the GDPR?\n2.\nIs the mere claim of anonymisation enough, when the precise nature of the data\nindirectly allows a person to be identified or could generate risks?\n3.\nWould such processing necessarily require a data protection impact assessment and\nrestriction of access strictly to competent authorities? Does the Commission intend to\nrequest information from the Spanish authorities regarding the applicable legal basis\nand safeguards?\nSubmitted: 5.1.2026",
+  "date": "2026-01-05",
+  "url": "https://data.europarl.europa.eu/eli/dl/doc/E-10-2026-000006"
+}

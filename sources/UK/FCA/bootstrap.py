@@ -49,14 +49,17 @@ HEADERS = {
 }
 
 
-def fetch_sitemap_index() -> List[str]:
+def fetch_sitemap_index(index_url: str = SITEMAP_INDEX_URL) -> List[str]:
     """
-    Fetch the sitemap index to get all sitemap page URLs.
+    Fetch a sitemap index to get its child sitemap URLs.
+
+    Returns an empty list when `index_url` is a leaf <urlset> rather than a
+    <sitemapindex>, which is how callers tell the two apart.
 
     Returns:
         List of sitemap page URLs
     """
-    resp = requests.get(SITEMAP_INDEX_URL, headers=HEADERS, timeout=60)
+    resp = requests.get(index_url, headers=HEADERS, timeout=60)
     resp.raise_for_status()
 
     root = ET.fromstring(resp.content)
@@ -112,35 +115,181 @@ def fetch_sitemap() -> List[Tuple[str, str, str]]:
     """
     Fetch and parse all FCA sitemap pages to extract notice URLs.
 
+    The sitemap index is now two levels deep (sitemap.xml -> sitemap-main.xml
+    -> sitemap-main.xml?page=N), so recurse into nested <sitemapindex> docs.
+
     Returns:
         List of tuples: (url, lastmod, notice_type)
     """
-    # First get all sitemap page URLs
-    sitemap_urls = fetch_sitemap_index()
-    print(f"Found {len(sitemap_urls)} sitemap pages")
-
     all_notices = []
-    for sitemap_url in sitemap_urls:
-        print(f"  Fetching: {sitemap_url}")
+    seen_sitemaps = set()
+    queue = list(fetch_sitemap_index())
+    print(f"Found {len(queue)} top-level sitemap entries")
+
+    while queue:
+        sitemap_url = queue.pop(0)
+        if sitemap_url in seen_sitemaps:
+            continue
+        seen_sitemaps.add(sitemap_url)
         try:
+            nested = fetch_sitemap_index(sitemap_url)
+            if nested:
+                # This entry is itself a sitemap index — descend into it.
+                queue.extend(nested)
+                time.sleep(0.5)
+                continue
             notices = fetch_sitemap_page(sitemap_url)
             all_notices.extend(notices)
-            print(f"    Found {len(notices)} notices")
+            if notices:
+                print(f"    {sitemap_url}: {len(notices)} notices")
             time.sleep(0.5)  # Rate limiting between sitemap pages
-        except requests.RequestException as e:
+        except (requests.RequestException, ET.ParseError) as e:
             print(f"    Warning: Failed to fetch {sitemap_url}: {e}")
             continue
 
     return all_notices
 
 
+def fetch_search_notices(max_pages: int = 60) -> List[Tuple[str, str, str]]:
+    """
+    Sweep the live FCA site search for notice PDFs.
+
+    `/publications/search-results` (the category-filtered publications search)
+    returns 403 to non-UK/datacenter vantages, but the plain `/search-results`
+    keyword search is open and returns ~10 notice PDFs per page via `start=N`.
+    """
+    notices = []
+    seen = set()
+    pdf_re = re.compile(
+        r'href="((?:https://www\.fca\.org\.uk)?/publication/'
+        r'(final-notices|decision-notices)/[^"]+\.pdf)"',
+        re.IGNORECASE,
+    )
+
+    for term in ("final+notice", "decision+notice", "supervisory+notice"):
+        empty_pages = 0
+        for page in range(max_pages):
+            start = page * 10 + 1
+            url = f"{BASE_URL}/search-results?search_term={term}&start={start}"
+            try:
+                resp = requests.get(url, headers=HEADERS, timeout=60)
+                resp.raise_for_status()
+            except requests.RequestException as e:
+                print(f"    Warning: search {term} start={start}: {e}")
+                break
+
+            found_here = 0
+            for m in pdf_re.finditer(resp.text):
+                href = m.group(1)
+                if href.startswith("/"):
+                    href = BASE_URL + href
+                if href in seen:
+                    continue
+                seen.add(href)
+                kind = "final_notice" if "final-notices" in m.group(2) else "decision_notice"
+                notices.append((href, None, kind))
+                found_here += 1
+
+            empty_pages = empty_pages + 1 if found_here == 0 else 0
+            if empty_pages >= 3:
+                break
+            time.sleep(0.5)
+
+    print(f"    Live search: {len(notices)} notice PDFs")
+    return notices
+
+
+CDX_URL = "http://web.archive.org/cdx/search/cdx"
+
+
+def fetch_cdx_notices() -> List[Tuple[str, str, str]]:
+    """
+    Enumerate the historical notice corpus from the Internet Archive CDX index.
+
+    FCA's own sitemap stopped listing /publication/*-notices/*.pdf (the
+    sitemap-main page is capped at 25,000 URLs and the PDFs fell off the end),
+    so the archive is now the only complete index of notice URLs. The PDFs
+    themselves are still served live by fca.org.uk, so this is used purely for
+    URL discovery.
+    """
+    notices = []
+    seen = set()
+    for category, kind in (
+        ("final-notices", "final_notice"),
+        ("decision-notices", "decision_notice"),
+    ):
+        params = {
+            "url": f"fca.org.uk/publication/{category}*",
+            "output": "text",
+            "fl": "original",
+            "collapse": "urlkey",
+            "filter": r"original:.*\.pdf$",
+        }
+        try:
+            resp = requests.get(CDX_URL, params=params, headers=HEADERS, timeout=300)
+            resp.raise_for_status()
+        except requests.RequestException as e:
+            print(f"    Warning: CDX {category}: {e}")
+            continue
+
+        for line in resp.text.splitlines():
+            line = line.strip()
+            if not line.lower().endswith(".pdf"):
+                continue
+            # Normalise to canonical https://www. form so live fetches work.
+            line = re.sub(r"^https?://(www\.)?fca\.org\.uk", BASE_URL, line)
+            if line in seen:
+                continue
+            seen.add(line)
+            notices.append((line, None, kind))
+        print(f"    CDX {category}: {len(seen)} cumulative URLs")
+
+    return notices
+
+
+def discover_notices() -> List[Tuple[str, str, str]]:
+    """
+    Build the notice URL list from every available index, newest-first.
+
+    Order matters: sitemap and live-search entries carry lastmod/recency and
+    are preferred; CDX fills in the historical tail.
+    """
+    notices = []
+    seen = set()
+    for label, fn in (
+        ("sitemap", fetch_sitemap),
+        ("live search", fetch_search_notices),
+        ("wayback CDX", fetch_cdx_notices),
+    ):
+        print(f"  Discovering via {label}...")
+        try:
+            found = fn()
+        except Exception as e:  # discovery is best-effort per channel
+            print(f"    Warning: {label} discovery failed: {e}")
+            continue
+        for url, lastmod, kind in found:
+            if url in seen:
+                continue
+            seen.add(url)
+            notices.append((url, lastmod, kind))
+
+    if not notices:
+        raise RuntimeError(
+            "No FCA notice URLs discovered from sitemap, live search, or Wayback CDX "
+            "— all three discovery channels failed (likely a WAF/IP block)."
+        )
+    return notices
+
+
 def extract_text_from_pdf(url: str) -> Optional[str]:
     """Extract text from PDF using centralized extractor."""
+    doc_id = unquote(url.split("/")[-1]).replace(".pdf", "")
     return extract_pdf_markdown(
         source="UK/FCA",
-        source_id="",
+        source_id=doc_id,
         pdf_url=url,
         table="doctrine",
+        force=True,
     ) or ""
 
 def parse_notice_metadata(url: str, text: str, notice_type: str, lastmod: str) -> dict:
@@ -261,9 +410,9 @@ def fetch_all(max_records: int = None) -> Generator[dict, None, None]:
     Yields:
         Normalized notice records
     """
-    print("Fetching FCA sitemap...")
-    notices = fetch_sitemap()
-    print(f"Found {len(notices)} notices in sitemap")
+    print("Discovering FCA notices...")
+    notices = discover_notices()
+    print(f"Found {len(notices)} notices")
 
     # Sort by lastmod (newest first)
     notices.sort(key=lambda x: x[1] or "", reverse=True)
@@ -316,9 +465,9 @@ def bootstrap_sample(sample_count: int = 15):
     print(f"Fetching {sample_count} sample records from UK/FCA...")
     print("=" * 60)
 
-    print("\nFetching FCA sitemap...")
-    notices = fetch_sitemap()
-    print(f"Found {len(notices)} notices in sitemap")
+    print("\nDiscovering FCA notices...")
+    notices = discover_notices()
+    print(f"Found {len(notices)} notices")
 
     # Get a mix of decision notices and final notices
     decision_notices = [n for n in notices if n[2] == "decision_notice"]
@@ -412,10 +561,10 @@ def test_api():
     """Test API connectivity and PDF extraction."""
     print("Testing UK FCA data source...")
 
-    # Test sitemap fetch
-    print("\n1. Testing sitemap fetch...")
+    # Test notice discovery
+    print("\n1. Testing notice discovery...")
     try:
-        notices = fetch_sitemap()
+        notices = discover_notices()
         decision_count = sum(1 for n in notices if n[2] == "decision_notice")
         final_count = sum(1 for n in notices if n[2] == "final_notice")
         print(f"   OK: Found {len(notices)} notices ({decision_count} decision, {final_count} final)")
@@ -492,4 +641,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

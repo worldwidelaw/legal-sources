@@ -1,0 +1,116 @@
+# ═══════════════════════════════════════════════════════════════════
+# US/CherokeeNationCode — Cherokee Nation Code Annotated
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "US/CherokeeNationCode"
+  country: "US"
+  name: "Cherokee Nation Code Annotated"
+  url: "https://attorneygeneral.cherokee.org/tribal-code/"
+  description: |
+    The codified law of the Cherokee Nation, a federally recognized sovereign
+    tribe headquartered in Tahlequah, Oklahoma: the Act of Union of 1839, the
+    Constitutions of 1839, 1975 and 1999, and the 85 titles of the Cherokee
+    Nation Code Annotated — administrative procedure, children, citizenship,
+    civil procedure, the Council, courts, crimes and punishments, criminal
+    procedure, environmental quality, ethics, gaming, motor vehicles, revenue
+    and taxation, sovereignty, and the rest. English.
+    Sourced from the Office of the Attorney General, which publishes the whole
+    code as one born-digital word-searchable PDF (1,788 pages, ~4.6M chars)
+    plus four post-codification amendment volumes (titles 10A, 21, 22, 47).
+    Titles are split to section level on the § anchors the PDF prints above
+    each provision, so one record is one section as cited (e.g. 21 CNCA §
+    1289.6); chapter, article and part context is carried down from the
+    headings above. Dates come from each file's own Created/Updated stamp on
+    the AG's download listing.
+    The statutes-at-large (cherokee.legistar.com) are a separate corpus and
+    are deliberately out of scope; this source is the consolidated code.
+
+data_types:
+  - legislation
+
+jurisdictions:
+  - code: US-OK
+    scope: partial
+
+auth:
+  type: "none"
+
+# BaseScraper's rate limiter throttles per RECORD, not per request, and this
+# source emits ~4,000 records out of 5 PDFs it has already downloaded — pacing
+# those would be ~2 hours of pure sleeping. Politeness towards the host is
+# enforced where the requests actually happen: _get() sleeps 1s before every
+# HTTP call, so the whole run is 6 requests at 1 req/s no matter what is set here.
+rate_limit:
+  requests_per_second: 50
+  min_rate: 10
+  max_rate: 50
+  burst: 50
+  max_workers: 4
+
+api:
+  type: "html_scrape"   # static download listing + born-digital code PDF
+
+  base_url: "https://attorneygeneral.cherokee.org"
+
+# ── Output Schema ─────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "document_type"
+      type: "string"
+      required: false
+    - name: "citation"
+      type: "string"
+      required: false
+    - name: "title_number"
+      type: "string"
+      required: false
+    - name: "title_name"
+      type: "string"
+      required: false
+    - name: "section"
+      type: "string"
+      required: false
+    - name: "chapter"
+      type: "string"
+      required: false
+    - name: "article"
+      type: "string"
+      required: false
+    - name: "part"
+      type: "string"
+      required: false
+    - name: "section_heading"
+      type: "string"
+      required: false
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Public Domain (tribal government edict)"
+  url: "https://attorneygeneral.cherokee.org/tribal-code/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    The Cherokee Nation Code Annotated, the Act of Union and the Constitutions
+    of the Cherokee Nation are enacted law of a sovereign tribal government,
+    published in full and without restriction by the Nation's own Office of the
+    Attorney General for public access. Under the government edicts doctrine
+    enacted law is not subject to copyright. Freely reusable, including
+    commercially.

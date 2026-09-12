@@ -34,7 +34,7 @@ data_model:
   update_strategy: "append_only"
   versioning: "none"
   dedup_key:
-    - "gazette_id"
+    - "_id"
 
 schema:
   total_fields: 11

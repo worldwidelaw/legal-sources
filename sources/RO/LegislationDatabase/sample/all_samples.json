@@ -14,7 +14,7 @@
     "publicatie": "Buletinul Oficial"
   },
   {
-    "_id": "CODUL_COMERCIAL_0_1840",
+    "_id": "CODUL_COMERCIAL_0-1840-01-01_1840",
     "_source": "RO/LegislationDatabase",
     "_type": "legislation",
     "_fetched_at": "2026-05-07T19:45:06.437503+00:00",
@@ -28,7 +28,7 @@
     "publicatie": "Buletinul Oficial"
   },
   {
-    "_id": "CONVENȚIE_0_1858",
+    "_id": "CONVENȚIE_0-1858-08-07_1858",
     "_source": "RO/LegislationDatabase",
     "_type": "legislation",
     "_fetched_at": "2026-05-07T19:45:09.451443+00:00",
@@ -70,7 +70,7 @@
     "publicatie": "Buletinul Oficial"
   },
   {
-    "_id": "LEGE_0_1864",
+    "_id": "LEGE_0-1864-01-24_1864",
     "_source": "RO/LegislationDatabase",
     "_type": "legislation",
     "_fetched_at": "2026-05-07T19:45:18.756632+00:00",
@@ -154,7 +154,7 @@
     "publicatie": "Buletinul Oficial"
   },
   {
-    "_id": "LEGE_0_1864",
+    "_id": "LEGE_0-1864-07-15_1864",
     "_source": "RO/LegislationDatabase",
     "_type": "legislation",
     "_fetched_at": "2026-05-07T19:45:40.404404+00:00",

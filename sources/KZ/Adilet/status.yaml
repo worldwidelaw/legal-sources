@@ -1,0 +1,27 @@
+last_bootstrap: null
+last_error: null
+last_run: '2026-08-21T16:33:42.365296+00:00'
+run_history:
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-21T16:30:49.791525+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-21T16:30:31.152164+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-21T16:33:42.365296+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-21T16:33:24.259922+00:00'
+total_records: 0

@@ -1,0 +1,90 @@
+# GN/GuineeLex - Le droit guineen en vigueur (guineelex.com)
+# Consolidated Guinean legislation article by article, enumerated from the
+# site's published sitemap index and read out of static server-rendered HTML.
+
+source_id: GN/GuineeLex
+name: "Guinea — GuinéeLex (consolidated law in force)"
+country: GN
+source_type: legislation
+
+base_url: "https://guineelex.com"
+official_url: "https://guineelex.com/methodologie"
+
+# Access route (no API needed — statically rendered Astro build):
+#   GET /sitemap-index.xml       -> nine per-category sitemaps
+#   GET /{category}/{slug}       -> full text in <article data-pagefind-body>
+#                                   + schema.org Legislation JSON-LD metadata
+# Pages carrying no `article-head` heading are "reference documentaire" stubs
+# (cited-but-not-transcribed texts) and are dropped, not emitted as metadata.
+
+data_types:
+  - legislation
+
+languages:
+  - fr
+
+coverage:
+  start_year: 1958
+  end_year: 2026
+  total_texts: ~5620
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 2
+  burst: 4
+
+license:
+  name: "Guinean official legal texts — no re-use terms published"
+  url: "https://guineelex.com/methodologie"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    The documents are official legal texts of the Republic of Guinea
+    (Constitution, codes, laws, decrees, OHADA uniform acts), reproduced from
+    the Journal Officiel and the Secrétariat Général du Gouvernement. Official
+    acts of state are not protected by copyright. GuinéeLex is a private
+    publisher and does not publish terms of use, a CGU or a copyright notice;
+    its robots.txt explicitly allows every crawler including AI agents. Only
+    the JORG version is authoritative. Compilation metadata added by the
+    publisher (cross-references, status flags) is not re-used as such.
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "identifier"
+      type: "string"
+      required: false
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "category"
+      type: "string"
+      required: true
+    - name: "legislation_type"
+      type: "string"
+      required: false
+    - name: "in_force"
+      type: "boolean"
+      required: false
+    - name: "article_count"
+      type: "int"
+      required: false
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - url

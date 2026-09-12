@@ -1,0 +1,61 @@
+source:
+  id: "EU/ConsolidatedLegislation"
+  name: "EU — Consolidated Legislation (In-force Texts)"
+  country: "EU"
+  language: "en"
+
+  # Full text is retrieved from the EU Publications Office (CELLAR / EUR-Lex),
+  # sector 0 of the EUR-Lex taxonomy: the official *consolidated* versions of EU
+  # legal acts, in which every subsequent amendment has been editorially
+  # integrated back into the base act so the reader sees the law as it currently
+  # stands. A sector-0 CELEX has the form 0{YYYY}{TYPE}{NNNN}-{YYYYMMDD} — the
+  # base act's year/type/number followed by the consolidated version's date
+  # (e.g. 02000L0060-20260510 = Water Framework Directive consolidated to
+  # 10.05.2026). Each base act is re-consolidated on every amendment, so CELLAR
+  # holds many point-in-time consolidations per act; this source keeps the single
+  # most recent consolidation per base act (~11,200 documents) — the current
+  # in-force integrated text. A distinct, additive corpus to EU/EUR-Lex, which
+  # holds sector-3 secondary legislation in its as-adopted (un-amended) form.
+  # Enumeration is via the public CELLAR SPARQL endpoint, scoped per original
+  # year (the full ~32,800-consolidation corpus exceeds the ~10K OFFSET ceiling;
+  # the busiest single year is ~1,400 rows). Full text via CELLAR content
+  # negotiation (Accept application/xhtml+xml, Accept-Language en), which bypasses
+  # the eur-lex.europa.eu AWS-WAF that 202-challenges datacenter IPs, so it is
+  # fleet-safe. Closes issue #1187 (consolidated WFD amendments missing).
+  endpoints:
+    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
+    cellar_celex: "http://publications.europa.eu/resource/celex/{celex}"
+
+  data_types:
+    - legislation
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1
+
+  schema:
+    key_fields:
+      _id:
+        type: string
+        required: true
+      title:
+        type: string
+        required: true
+      text:
+        type: string
+        required: true
+      date:
+        type: date
+        required: false
+
+fetch:
+  sample_count: 15
+
+license:
+  name: "EU institutional reuse (Decision 2011/833/EU)"
+  url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Consolidated EU legal texts published by the Publications Office are reusable, including for commercial purposes, under the Commission's reuse policy (Decision 2011/833/EU). Attribution to the source is requested. The consolidated versions are editorial documentation tools; the authentic text remains the Official Journal version."

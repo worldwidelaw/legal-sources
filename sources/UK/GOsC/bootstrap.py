@@ -16,28 +16,30 @@ UK/GPhC (pharmacists), UK/SDT (solicitors), UK/BTAS (barristers), UK/HCPTS
 (health & care professions), UK/NMC (nurses/midwives), UK/SocialWorkEngland.
 
 Access & structure (all public, no auth):
-  - osteopathy.org.uk publishes a single "Decisions" listing page:
-      https://www.osteopathy.org.uk/raise-a-concern/hearings/decisions/
-    grouping published cases (undertakings, interim suspension orders, hearing
-    outcomes) as links to per-osteopath decision pages under
-      /news-and-resources/document-library/fitness-to-practise/{slug}/
-    (a few older ones live under .../document-library/about-the-gosc/{slug}/).
-    The slug encodes the osteopath name, committee (PCC / HC / IC-ISO) and the
-    decision date, e.g. "gosc-v-amine-el-bacha-pcc-final-determination-20-june-2024".
-  - Each decision page is a thin document-library wrapper that auto-downloads the
-    reasoned decision as a BORN-DIGITAL PDF linked with a relative href
-    ("./{file}.pdf", content-type application/pdf, real text layer, no OCR): a
-    structured header (Case No / committee / hearing date / case-of name /
-    committee members / legal assessor) followed by the numbered reasoned
-    decision.
-  - The listing exposes a rolling window of published decisions (older ones
-    removed under the GOsC fitness-to-practise publication policy), so one run
-    captures the current window (~40 decisions) and re-runs accumulate the record
-    (the pipeline dedups on _id = the stable decision slug).
+  - osteopathy.org.uk was rebuilt on WordPress in 2026; the decisions listing
+    moved from /raise-a-concern/... to
+      https://www.osteopathy.org.uk/raising-a-concern/hearings/decisions/
+    and every published case is now a `hearing_decision` custom post type,
+    exposed through the site's open WP REST API:
+      /wp-json/wp/v2/hearing_decision?per_page=100
+    (id, slug, link, title, date + a `hearing_decision_type` taxonomy giving
+    undertaking / interim-suspension-order / council-decision / professional-
+    conduct-committee-and-health-committee-decisions). Enumerating the API is
+    preferred over scraping the listing tables: it is paginated, stable and
+    returns the same set the page renders.
+  - Each decision post lives at /hearing-decision/{slug}/ and its body links the
+    reasoned decision as a BORN-DIGITAL PDF under /wp-content/uploads/YYYY/MM/
+    (content-type application/pdf, real text layer, no OCR): a structured header
+    (Case No / committee / hearing date / case-of name / committee members /
+    legal assessor) followed by the numbered reasoned decision.
+  - The API exposes a rolling window of published decisions (older ones removed
+    under the GOsC fitness-to-practise publication policy), so one run captures
+    the current window (~46 decisions) and re-runs accumulate the record (the
+    pipeline dedups on _id = the stable decision slug).
 
 Strategy:
-  - Fetch the decisions listing page; collect every decision-page URL; for each,
-    fetch the page, resolve its ".pdf" link, download the PDF, extract the text
+  - Page the WP REST `hearing_decision` collection; for each post fetch its page,
+    resolve the ".pdf" link inside <main>, download the PDF, extract the text
     layer (PyMuPDF, with a shared pdfplumber/pypdf fallback) and yield full text.
 
 Data:
@@ -79,22 +81,28 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.UK.GOsC")
 
 SITE_BASE = "https://www.osteopathy.org.uk"
-DECISIONS_URL = SITE_BASE + "/raise-a-concern/hearings/decisions/"
+DECISIONS_URL = SITE_BASE + "/raising-a-concern/hearings/decisions/"
+API_URL = SITE_BASE + "/wp-json/wp/v2/hearing_decision"
+TAXONOMY_URL = SITE_BASE + "/wp-json/wp/v2/hearing_decision_type"
 
 _WS_RE = re.compile(r"[ \t]+")
 _MONTHS = {m.lower(): i for i, m in enumerate(
     ["January", "February", "March", "April", "May", "June", "July",
      "August", "September", "October", "November", "December"], start=1)}
-# per-osteopath decision pages in the document library
+# per-osteopath decision pages (WordPress `hearing_decision` post type)
 _DECISION_HREF_RE = re.compile(
-    r'href="(https?://www\.osteopathy\.org\.uk'
-    r'/news-and-resources/document-library/[^"]+)"', re.I)
-# a per-decision page slug always carries a committee / decision-type token;
-# policy & guidance pages do not — use this as a positive allowlist
-_DECISION_SLUG_RE = re.compile(
-    r"(pcc|-hc-|iso|council-decision|decision-of-council|rule-\d|"
-    r"determination|website-notice|professional-conduct)", re.I)
+    r'href="(https?://www\.osteopathy\.org\.uk/hearing-decision/[^"]+)"', re.I)
 _PDF_HREF_RE = re.compile(r'href="([^"]+\.pdf(?:\?[^"]*)?)"', re.I)
+_TITLE_DATE_RE = re.compile(r"(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})\s*$")
+
+
+def _main_region(page_html: str) -> str:
+    """The <main> content region, so site-wide footer/policy PDFs are ignored."""
+    i = page_html.find("<main")
+    if i < 0:
+        return page_html
+    j = page_html.find("</main>", i)
+    return page_html[i:j if j > 0 else len(page_html)]
 
 
 def _pdf_text(pdf_bytes: bytes) -> str:
@@ -179,6 +187,32 @@ def _date_from_text(text: str) -> Optional[str]:
     return None
 
 
+def _date_from_title(title: Optional[str]) -> Optional[str]:
+    """WP post titles end with the decision date, e.g.
+    'Ms Poonam Shah – PCC Review Decision – 01 July 2026'."""
+    if not title:
+        return None
+    m = _TITLE_DATE_RE.search(title.strip())
+    if not m:
+        return None
+    mi = _MONTHS.get(m.group(2).lower())
+    if not mi:
+        return None
+    try:
+        return f"{int(m.group(3)):04d}-{mi:02d}-{int(m.group(1)):02d}"
+    except Exception:
+        return None
+
+
+def _name_from_title(title: Optional[str]) -> Optional[str]:
+    """Registrant name = the segment before the first dash separator."""
+    if not title:
+        return None
+    name = re.split(r"\s+[–—-]\s+", title.strip(), 1)[0].strip()
+    name = re.sub(r"^GOsC\s+v\s+", "", name, flags=re.I).strip()
+    return name or None
+
+
 def _date_from_slug(slug: str) -> Optional[str]:
     m = re.search(r"(\d{1,2})-([a-z]+)-(\d{4})$", slug)
     if m:
@@ -205,6 +239,7 @@ class GOsCScraper(BaseScraper):
     def __init__(self):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
+        self._types: Optional[Dict[int, str]] = None
         self.client = HttpClient(
             base_url=SITE_BASE,
             headers={
@@ -220,7 +255,7 @@ class GOsCScraper(BaseScraper):
         )
 
     # -- HTTP ------------------------------------------------------------
-    def _get(self, url: str) -> Optional[bytes]:
+    def _get_resp(self, url: str):
         self.rate_limiter.wait()
         try:
             resp = self.client.get(url)
@@ -230,50 +265,107 @@ class GOsCScraper(BaseScraper):
         if resp.status_code != 200:
             logger.debug(f"{url}: HTTP {resp.status_code}")
             return None
-        return resp.content
+        return resp
+
+    def _get(self, url: str) -> Optional[bytes]:
+        resp = self._get_resp(url)
+        return resp.content if resp is not None else None
 
     # -- enumeration -----------------------------------------------------
-    def _list_decision_urls(self) -> List[str]:
+    def _type_labels(self) -> Dict[int, str]:
+        """hearing_decision_type term id -> human label."""
+        if self._types is None:
+            self._types = {}
+            resp = self._get_resp(TAXONOMY_URL + "?per_page=100")
+            if resp is not None:
+                try:
+                    for term in resp.json():
+                        self._types[int(term["id"])] = _strip_tags(
+                            term.get("name") or "").strip()
+                except Exception as e:
+                    logger.debug(f"taxonomy fetch failed: {e}")
+        return self._types
+
+    def _list_from_listing_page(self) -> List[Dict[str, Any]]:
+        """Fallback enumeration: scrape the rendered decisions listing page."""
         body = self._get(DECISIONS_URL)
         if not body:
-            raise RuntimeError(
-                "GOsC decisions page unreachable — osteopathy.org.uk blocked or "
-                "the URL changed")
+            return []
         page_html = body.decode("utf-8", errors="replace")
-        urls = []
-        seen = set()
+        out, seen = [], set()
         for m in _DECISION_HREF_RE.finditer(page_html):
             u = m.group(1).replace("http://", "https://").rstrip("/") + "/"
-            slug = _slug_of(u)
-            # keep only per-decision pages: slug carries a committee token and is
-            # not a policy/guidance page
-            if "policy" in slug.lower() or "guidance" in slug.lower():
-                continue
-            if not _DECISION_SLUG_RE.search(slug):
-                continue
             if u in seen:
                 continue
             seen.add(u)
-            urls.append(u)
-        if not urls:
+            out.append({"link": u, "slug": _slug_of(u), "title": None,
+                        "type": None})
+        return out
+
+    def _list_decisions(self) -> List[Dict[str, Any]]:
+        """Every published hearing_decision post, newest first (WP REST API)."""
+        labels = self._type_labels()
+        items: List[Dict[str, Any]] = []
+        seen = set()
+        page, total_pages = 1, 1
+        while page <= total_pages:
+            resp = self._get_resp(
+                f"{API_URL}?per_page=100&orderby=date&order=desc&page={page}"
+                "&_fields=id,slug,link,title,date,hearing_decision_type")
+            if resp is None:
+                break
+            try:
+                batch = resp.json()
+            except Exception as e:
+                logger.warning(f"hearing_decision page {page} not JSON: {e}")
+                break
+            if not isinstance(batch, list) or not batch:
+                break
+            for post in batch:
+                link = (post.get("link") or "").replace(
+                    "http://", "https://").rstrip("/") + "/"
+                if not link or link in seen:
+                    continue
+                seen.add(link)
+                terms = post.get("hearing_decision_type") or []
+                items.append({
+                    "link": link,
+                    "slug": post.get("slug") or _slug_of(link),
+                    "title": _strip_tags(
+                        (post.get("title") or {}).get("rendered") or "").strip()
+                    or None,
+                    "type": labels.get(terms[0]) if terms else None,
+                })
+            try:
+                total_pages = int(resp.headers.get("X-WP-TotalPages") or 1)
+            except (TypeError, ValueError):
+                total_pages = 1
+            page += 1
+        if not items:
+            logger.warning("WP REST hearing_decision returned nothing — "
+                           "falling back to the rendered listing page")
+            items = self._list_from_listing_page()
+        if not items:
             raise RuntimeError(
-                "GOsC decisions page returned no decision links — the listing "
-                "layout changed")
-        logger.info(f"GOsC decisions: {len(urls)} decision pages")
-        return urls
+                "GOsC returned no decision links — the wp-json hearing_decision "
+                "API and the decisions listing both came back empty")
+        logger.info(f"GOsC decisions: {len(items)} decision pages")
+        return items
 
     def _decision_pdf_url(self, page_url: str) -> Optional[str]:
         body = self._get(page_url)
         if not body:
             return None
-        page_html = body.decode("utf-8", errors="replace")
+        page_html = _main_region(body.decode("utf-8", errors="replace"))
         for m in _PDF_HREF_RE.finditer(page_html):
             href = html.unescape(m.group(1))
             return urljoin(page_url, href)
         return None
 
-    def _build_raw(self, page_url: str) -> Optional[Dict[str, Any]]:
-        slug = _slug_of(page_url)
+    def _build_raw(self, item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        page_url = item["link"]
+        slug = item.get("slug") or _slug_of(page_url)
+        title = item.get("title")
         pdf_url = self._decision_pdf_url(page_url)
         text = ""
         if pdf_url:
@@ -282,7 +374,8 @@ class GOsCScraper(BaseScraper):
                 text = _clean(_pdf_text(pdf))
         if len(text) < 150:
             return None
-        date = _date_from_text(text) or _date_from_slug(slug)
+        date = (_date_from_title(title) or _date_from_slug(slug)
+                or _date_from_text(text))
         case_no = None
         mc = re.search(r"Case\s*No[:.]?\s*([0-9A-Za-z/\-]+)", text[:800])
         if mc:
@@ -293,15 +386,17 @@ class GOsCScraper(BaseScraper):
             "pdf_url": pdf_url,
             "text": text,
             "date": date,
-            "name": _name_from_slug(slug),
+            "name": _name_from_title(title) or _name_from_slug(slug),
             "case_no": case_no,
+            "post_title": title,
+            "decision_type": item.get("type"),
         }
 
     # -- core ------------------------------------------------------------
     def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
         produced = 0
-        for url in self._list_decision_urls():
-            raw = self._build_raw(url)
+        for item in self._list_decisions():
+            raw = self._build_raw(item)
             if raw:
                 produced += 1
                 yield raw
@@ -312,8 +407,8 @@ class GOsCScraper(BaseScraper):
 
     def fetch_updates(self, since: datetime) -> Generator[Dict[str, Any], None, None]:
         since_date = since.date()
-        for url in self._list_decision_urls():
-            raw = self._build_raw(url)
+        for item in self._list_decisions():
+            raw = self._build_raw(item)
             if not raw:
                 continue
             d = raw.get("date")
@@ -330,13 +425,17 @@ class GOsCScraper(BaseScraper):
         if len(text) < 150:
             return None
         name = raw.get("name") or "GOsC registrant"
-        # committee / decision type readable label from the slug
-        slug = raw.get("slug", "")
-        label = slug.replace("gosc-v-", "").replace("-", " ").strip()
-        label = re.sub(r"\b\d{1,2} [a-z]+ \d{4}\b", "", label).strip().title() \
-            or "Fitness to Practise decision"
-        title = f"{name} — General Osteopathic Council decision"
-        if raw.get("date"):
+        # committee / decision type readable label: prefer the WP taxonomy term,
+        # fall back to the slug with the trailing date stripped
+        label = raw.get("decision_type")
+        if not label:
+            slug = raw.get("slug", "")
+            label = slug.replace("gosc-v-", "").replace("-", " ").strip()
+            label = re.sub(r"\b\d{1,2} [a-z]+ \d{4}\b", "", label).strip().title()
+        label = label or "Fitness to Practise decision"
+        title = raw.get("post_title") or (
+            f"{name} — General Osteopathic Council decision")
+        if raw.get("date") and raw["date"][:4] not in title:
             title += f" ({raw['date']})"
         return {
             "_id": f"UK-GOsC-{raw['slug']}",
@@ -358,12 +457,12 @@ class GOsCScraper(BaseScraper):
 
     # -- diagnostics -----------------------------------------------------
     def test_connection(self):
-        print("Testing GOsC decisions page...")
-        urls = self._list_decision_urls()
-        print(f"  Listed {len(urls)} decision pages")
+        print("Testing GOsC hearing_decision API...")
+        items = self._list_decisions()
+        print(f"  Listed {len(items)} decision pages")
         got = 0
-        for url in urls:
-            raw = self._build_raw(url)
+        for item in items:
+            raw = self._build_raw(item)
             if raw:
                 got += 1
                 print(f"  {raw.get('name')} {raw.get('date')} "

@@ -57,6 +57,22 @@ DATA_NS = "http://schemas.datacontract.org/2004/07/FreeWebService"
 # API returns max 10 results per page regardless of RezultatePagina value
 API_PAGE_SIZE = 10
 
+# Romanian month names, used to parse the act's official promulgation year from
+# its title ("... din <zi> <luna> <an>"). The canonical citation of a Romanian
+# act is by its adoption number/year (e.g. "HG nr. 1589/2023"), which is the
+# promulgation year -- NOT the in-force date (DataVigoare). These diverge for
+# year-end acts that enter force the following January and for republished/
+# consolidated acts, which is why documents such as OG 26/2000 (#1192) and the
+# annual minimum-wage HGs (#1191) were stored under a mismatched _id and failed
+# get_document / reference resolution. See issues #1191, #1192.
+RO_MONTHS = (
+    "ianuarie|februarie|martie|aprilie|mai|iunie|iulie|august|"
+    "septembrie|octombrie|noiembrie|decembrie"
+)
+PROMULGATION_YEAR_RE = re.compile(
+    r"\bdin\s+\d{1,2}\s+(?:%s)\s+(\d{4})" % RO_MONTHS, re.IGNORECASE
+)
+
 
 class RoLegislationScraper(BaseScraper):
     """
@@ -388,13 +404,26 @@ class RoLegislationScraper(BaseScraper):
 
         # Generate unique ID
         # Format: TipAct_Numar_Year (e.g., LEGE_123_2024)
+        #
+        # The year MUST be the act's official promulgation year (as cited), not
+        # the in-force date (DataVigoare). Prefer the "din <zi> <luna> <an>"
+        # date embedded in the title; fall back to DataVigoare only when the
+        # title has no promulgation date. This keeps the _id aligned with how
+        # documents are cited and looked up (fixes #1191, #1192).
         year = ""
-        if data_vigoare:
-            try:
-                year = data_vigoare.split("-")[0]
-            except (ValueError, IndexError):
-                pass
-        doc_id = f"{tip_act}_{numar}_{year}".replace(" ", "_")
+        m = PROMULGATION_YEAR_RE.search(titlu)
+        if m:
+            year = m.group(1)
+        elif data_vigoare:
+            year = data_vigoare.split("-")[0]
+
+        # Unnumbered acts (Numar == "0" / empty) would otherwise collide on
+        # {tip_act}_0_{year} and silently overwrite one another; disambiguate
+        # them with the full in-force date.
+        numar_key = numar
+        if numar in ("", "0") and data_vigoare:
+            numar_key = f"0-{data_vigoare}"
+        doc_id = f"{tip_act}_{numar_key}_{year}".replace(" ", "_")
 
         return {
             # Required base fields
@@ -501,4 +530,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

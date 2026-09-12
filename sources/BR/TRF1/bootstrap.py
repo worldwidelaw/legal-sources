@@ -11,10 +11,18 @@ Endpoint: POST https://portal.trf1.jus.br/pesquisadocumentos/index.jsf
   - No authentication required
   - 5 results per page, AJAX pagination
 
+The portal caps *every* query's result set at 10,000 rows (verified: even Roraima,
+the smallest section, reports rowCount:10000 for a "Todos" search). The cap is per
+query, not per corpus, so the crawl slices section x document type — each slice
+gets its own 10,000-row window. Searching tipoDocumento="Todos" instead returns
+one undifferentiated 10,000-row window that in practice is all Sentenças, which is
+why Acórdãos and Decisões were almost entirely missing from earlier crawls.
+
 Usage:
   python bootstrap.py bootstrap          # Full initial pull
+  python bootstrap.py bootstrap-fast     # VPS fleet entrypoint (alias of full)
   python bootstrap.py bootstrap --sample # Fetch 15 sample records
-  python bootstrap.py update             # Fetch recent records
+  python bootstrap.py update             # Incremental refresh (seen-ID checkpoint)
   python bootstrap.py test               # Quick connectivity test
 """
 
@@ -73,15 +81,35 @@ SECTIONS = [
     ("4300", "Tocantins"),
 ]
 
-# Document types
-DOC_TYPES = {
-    "0": "Todos",
-    "1": "Acórdão",
-    "32": "Decisão",
-    "33": "Decisão de Antecipação de Tutela",
-    "136": "Decisão Liminar",
-    "128": "Sentença",
+# Document types. "0" (Todos) is deliberately excluded from the crawl: it shares
+# the same 10,000-row cap as any other query, so it returns a single truncated
+# window rather than the union of the specific types. Crawling the five concrete
+# types instead multiplies the reachable ceiling by five per section.
+DOC_TYPES = [
+    ("1", "Acórdão"),
+    ("32", "Decisão"),
+    ("33", "Decisão de Antecipação de Tutela"),
+    ("136", "Decisão Liminar"),
+    ("128", "Sentença"),
+]
+
+# Server-side cap on any single result set. Used only for logging that a slice
+# was truncated, so a coverage hole is visible in the crawl log.
+RESULT_CAP = 10000
+
+# Short, stable suffixes used in _id. Keyed on the label the portal renders in the
+# results table, which is what normalize() receives.
+DOC_TYPE_CODES = {
+    "Acórdão": "ac",
+    "Decisão": "dec",
+    "Decisão de Antecipação de Tutela": "dat",
+    "Decisão Liminar": "lim",
+    "Sentença": "sen",
 }
+
+# How many consecutive already-seen documents an incremental slice tolerates
+# before giving up on it. Generous because the listing is not date-ordered.
+STOP_AFTER_SEEN = 400
 
 # Regex to extract clipboard text from PrimeFaces ExtClipboard widget
 RE_CLIP_TEXT = re.compile(r',text:"(.*?)"(?:,onSuccess)', re.DOTALL)
@@ -172,6 +200,7 @@ class TRF1Scraper(BaseScraper):
         self.session.headers.update(HEADERS)
         self.viewstate = None
         self._last_search_params = {}  # Preserve search context for pagination
+        self.sample_mode = False       # Set by main(); see fetch_all()
 
     def _init_session(self) -> bool:
         """Get a session cookie and ViewState by visiting the search form."""
@@ -359,9 +388,17 @@ class TRF1Scraper(BaseScraper):
             except ValueError:
                 date = None
 
-        # Create stable ID from process number
+        # Stable ID from process number + document type. The type is part of the
+        # key because one process number carries several documents (a Sentença at
+        # first instance, an Acórdão on appeal, interlocutory Decisões along the
+        # way). Keying on the process alone collapsed them onto one row and kept
+        # whichever the crawl happened to reach first.
         safe_proc = proc.replace(".", "").replace("-", "")
-        doc_id = f"BR-TRF1-{safe_proc}" if safe_proc else f"BR-TRF1-{hash(text) & 0xFFFFFFFF:08x}"
+        type_code = DOC_TYPE_CODES.get(dtype, "x")
+        if safe_proc:
+            doc_id = f"BR-TRF1-{safe_proc}-{type_code}"
+        else:
+            doc_id = f"BR-TRF1-{hash(text) & 0xFFFFFFFF:08x}-{type_code}"
 
         return {
             "_id": doc_id,
@@ -379,101 +416,205 @@ class TRF1Scraper(BaseScraper):
             "section": section,
         }
 
-    def _fetch_section(self, section_code: str, section_name: str,
-                       sample_limit: int, count_so_far: int,
-                       global_seen: set) -> Generator[dict, None, None]:
-        """Fetch all decisions for a given judicial section."""
-        # Re-init session for each section to get fresh ViewState
+    @staticmethod
+    def _key(doc: dict) -> tuple:
+        """Dedup key: a process number is only unique within a document type."""
+        return (doc.get("process_number", ""), doc.get("document_type", ""))
+
+    def _fetch_slice(self, section_code: str, section_name: str,
+                     doc_type: str, doc_type_name: str,
+                     global_seen: set) -> Generator[dict, None, None]:
+        """Walk one section x document-type slice of the portal.
+
+        Each slice is its own 10,000-row window server-side, which is the whole
+        reason the crawl is sliced rather than issuing one "Todos" query.
+        """
+        # Re-init session per slice to get a fresh ViewState
         if not self._init_session():
-            logger.error("Failed to init session for section %s", section_name)
+            logger.error("Failed to init session for %s / %s",
+                         section_name, doc_type_name)
             return
 
-        html_text = self._search(section=section_code, doc_type="0", query="*")
+        html_text = self._search(section=section_code, doc_type=doc_type, query="*")
         if not html_text:
             return
 
         total = self._get_total(html_text)
         if total == 0:
-            logger.info("Section %s: no results", section_name)
+            logger.info("%s / %s: no results", section_name, doc_type_name)
             return
 
-        logger.info("Section %s: %d documents", section_name, total)
+        if total >= RESULT_CAP:
+            logger.warning(
+                "%s / %s: %d documents — at the portal's %d-row cap, so this "
+                "slice is truncated upstream and some documents are unreachable",
+                section_name, doc_type_name, total, RESULT_CAP,
+            )
+        else:
+            logger.info("%s / %s: %d documents", section_name, doc_type_name, total)
 
-        # Parse first page
-        records = self._parse_results(html_text)
         count = 0
-        for doc in records:
-            if count_so_far + count >= sample_limit:
-                return
-            proc = doc["process_number"]
-            if proc in global_seen:
-                continue
-            global_seen.add(proc)
-            doc["section_name"] = section_name
-            yield doc
-            count += 1
+        max_pages = min((total + PAGE_SIZE - 1) // PAGE_SIZE, RESULT_CAP // PAGE_SIZE)
 
-        # Paginate through remaining
-        max_pages = min((total + PAGE_SIZE - 1) // PAGE_SIZE, 2000)
-        for page_idx in range(1, max_pages):
-            if count_so_far + count >= sample_limit:
-                return
+        for page_idx in range(max_pages):
+            if page_idx == 0:
+                page_html = html_text
+            else:
+                page_html = self._paginate(page_idx * PAGE_SIZE)
+                if not page_html:
+                    break
 
-            first = page_idx * PAGE_SIZE
-            html_text = self._paginate(first)
-            if not html_text:
-                break
-
-            records = self._parse_results(html_text)
-            if not records:
+            records = self._parse_results(page_html)
+            if page_idx > 0 and not records:
                 # Empty page means we've reached the end
                 break
 
             for doc in records:
-                if count_so_far + count >= sample_limit:
-                    return
-                proc = doc["process_number"]
-                if proc in global_seen:
-                    continue
-                global_seen.add(proc)
                 doc["section_name"] = section_name
+                key = self._key(doc)
+                if key in global_seen:
+                    continue
+                global_seen.add(key)
                 yield doc
                 count += 1
 
-            if page_idx % 50 == 0:
-                logger.info("Section %s: page %d/%d, %d records so far",
-                            section_name, page_idx, max_pages, count)
+            if page_idx and page_idx % 50 == 0:
+                logger.info("%s / %s: page %d/%d, %d records so far",
+                            section_name, doc_type_name, page_idx, max_pages, count)
 
-        logger.info("Section %s complete: %d records", section_name, count)
+        logger.info("%s / %s complete: %d records", section_name, doc_type_name, count)
 
-    def fetch_all(self, sample: bool = False) -> Generator[dict, None, None]:
-        """Fetch all TRF1 decisions, iterating by judicial section."""
+    def fetch_all(self, sample: bool = None) -> Generator[dict, None, None]:
+        """Fetch all TRF1 decisions, iterating section x document type.
+
+        `BaseScraper.bootstrap()` calls this with no arguments and enforces the
+        sample cap itself by counting records, so the `sample` flag has to reach
+        us out of band via `self.sample_mode` — passing it as an argument looked
+        like it worked but never fired.
+        """
         count = 0
-        sample_limit = 15 if sample else 999999
+        if sample is None:
+            sample = self.sample_mode
+        sample_limit = 15 if sample else None
+        # Spread a sample across the document types instead of filling it from
+        # whichever slice comes first. Taking 15 straight off Acre/Acórdão would
+        # validate one slice and leave the other four — the ones this crawl was
+        # changed to reach — untested.
+        per_slice_cap = 3 if sample else None
         global_seen = set()
 
         for section_code, section_name in SECTIONS:
-            if count >= sample_limit:
-                return
-            for record in self._fetch_section(
-                section_code, section_name, sample_limit, count, global_seen
-            ):
-                yield record
-                count += 1
+            for doc_type, doc_type_name in DOC_TYPES:
+                if sample_limit is not None and count >= sample_limit:
+                    logger.info("Sample limit reached: %d records", count)
+                    return
+                slice_count = 0
+                for record in self._fetch_slice(
+                    section_code, section_name, doc_type, doc_type_name, global_seen
+                ):
+                    yield record
+                    count += 1
+                    slice_count += 1
+                    if sample_limit is not None and count >= sample_limit:
+                        logger.info("Sample limit reached: %d records", count)
+                        return
+                    if per_slice_cap is not None and slice_count >= per_slice_cap:
+                        break
 
         logger.info("Total records yielded: %d", count)
 
-    def fetch_updates(self, since: str) -> Generator[dict, None, None]:
-        """Fetch recent decisions (no date filter available, re-fetches all)."""
-        logger.info("TRF1 portal has no date filter — re-fetching all")
-        yield from self.fetch_all()
+    # ── Incremental refresh (#1502) ───────────────────────────────────
+
+    def _checkpoint_path(self) -> Path:
+        return Path(__file__).parent / "data" / "trf1_checkpoint.json"
+
+    def _load_seen(self) -> set:
+        try:
+            with open(self._checkpoint_path(), encoding="utf-8") as f:
+                return {tuple(k) for k in json.load(f).get("seen_keys") or []}
+        except (OSError, ValueError, TypeError):
+            return set()
+
+    def _save_seen(self, seen: set) -> None:
+        path = self._checkpoint_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".json.tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump({"seen_keys": sorted(list(k) for k in seen),
+                       "count": len(seen),
+                       "updated_at": datetime.now(timezone.utc).isoformat()}, f)
+        tmp.replace(path)  # atomic: a truncated checkpoint would re-yield the corpus
+
+    def fetch_updates(self, since: str = None) -> Generator[dict, None, None]:
+        """Yield only documents no previous run has emitted.
+
+        The comparator is a seen-key checkpoint rather than a date, and that is
+        forced by the portal rather than chosen. The search form exposes no date
+        field, the results table has no date column, and its three columns are
+        not sortable — so there is no way to ask for "documents since X" and no
+        ordering that would let a walk stop once it is past the cutoff. The dates
+        in normalize() are scraped out of the decision text itself, which makes
+        them a property of the document, not of when it became available to us;
+        filtering on them would drop anything the portal indexed late.
+
+        So this does not shorten the walk, and it is not pretending to: the
+        listing still has to be paged through, because that listing is also where
+        the full text lives (there is no per-document fetch to skip). What it
+        does fix is the re-emission — the previous implementation handed the
+        entire ~126K corpus back to the loader on every refresh, so a refresh run
+        could not be distinguished from a first crawl, and #1502's "no incremental
+        path" degradation looked from the fleet's side like a slow host. Now a
+        refresh emits new documents only, and a zero-record refresh is a real
+        signal that nothing new appeared.
+
+        STOP_AFTER_SEEN bounds a slice that is entirely known territory so a
+        refresh does not always cost a full crawl, but it is set high because
+        the ordering is not recency-based and new documents can appear anywhere
+        in a slice.
+        """
+        seen = self._load_seen()
+        if not seen:
+            logger.info(
+                "No checkpoint — this first incremental run walks the whole "
+                "corpus so nothing is missed; later runs emit only new documents."
+            )
+
+        crawl_seen = set()
+        emitted = 0
+
+        for section_code, section_name in SECTIONS:
+            for doc_type, doc_type_name in DOC_TYPES:
+                consecutive_seen = 0
+                for doc in self._fetch_slice(
+                    section_code, section_name, doc_type, doc_type_name, crawl_seen
+                ):
+                    key = self._key(doc)
+                    if key in seen:
+                        consecutive_seen += 1
+                        if consecutive_seen >= STOP_AFTER_SEEN:
+                            logger.info(
+                                "%s / %s: %d consecutive known documents — "
+                                "abandoning this slice",
+                                section_name, doc_type_name, consecutive_seen,
+                            )
+                            break
+                        continue
+                    consecutive_seen = 0
+                    seen.add(key)
+                    emitted += 1
+                    yield doc
+
+        logger.info("Update complete: %d new documents (checkpoint holds %d)",
+                    emitted, len(seen))
+        self._save_seen(seen)
 
 
 def main():
     scraper = TRF1Scraper()
 
     if len(sys.argv) < 2:
-        print("Usage: python bootstrap.py [bootstrap|update|test] [--sample]")
+        print("Usage: python bootstrap.py "
+              "[bootstrap|bootstrap-fast|update|test] [--sample]")
         sys.exit(1)
 
     command = sys.argv[1]
@@ -501,15 +642,20 @@ def main():
             sys.exit(1)
         return
 
-    if command == "bootstrap":
-        stats = scraper.bootstrap(sample_mode=sample)
+    # bootstrap-fast is the VPS fleet entrypoint. Without this alias the wrapper's
+    # invocation exited 1 on "Unknown command" and fell back to re-ingesting
+    # sample/, so the fleet never ran a real crawl of this source (#1113/#1363).
+    if command in ("bootstrap", "bootstrap-fast"):
+        scraper.sample_mode = sample
+        stats = scraper.bootstrap(sample_mode=sample, sample_size=15)
         logger.info("Bootstrap complete: %s", json.dumps(stats, indent=2))
 
     elif command == "update":
-        since = (sys.argv[2] if len(sys.argv) > 2
-                 and not sys.argv[2].startswith("-") else "2025-01-01")
-        count = sum(1 for _ in scraper.fetch_updates(since))
-        logger.info("Update complete: %d records since %s", count, since)
+        # Route through BaseScraper.update() so new records are written to
+        # data/records.jsonl. Counting the generator, as this used to, ran the
+        # whole refresh and then threw the results away.
+        stats = scraper.update()
+        logger.info("Update complete: %s", json.dumps(stats, indent=2, default=str))
 
     else:
         print(f"Unknown command: {command}")

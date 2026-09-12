@@ -1,0 +1,131 @@
+# ===================================================================
+# US/AFCCA -- United States Air Force Court of Criminal Appeals
+# ===================================================================
+# Opinions and orders of the U.S. Air Force Court of Criminal Appeals
+# (AFCCA), the intermediate military appellate court that reviews Air
+# Force and Space Force courts-martial (findings and sentence) under
+# Article 66, UCMJ. Its decisions are in turn reviewable by the U.S.
+# Court of Appeals for the Armed Forces (see US/CAAF). Each opinion/
+# order decides a specific court-martial appeal = case_law. The court
+# publishes every decision as a born-digital PDF on its website,
+# enumerated from per-year "opinions_date_{year}.html" indexes; the PDF
+# hrefs are root-relative and resolved against the site root. No CAPTCHA,
+# no auth. Federal-government works in the public domain (17 U.S.C.
+# Sec. 105).
+# ===================================================================
+
+source:
+  id: "US/AFCCA"
+  country: "US"
+  name: "United States Air Force Court of Criminal Appeals — Opinions & Orders"
+  url: "https://afcca.law.af.mil/"
+  description: |
+    Opinions and orders of the U.S. Air Force Court of Criminal Appeals
+    (AFCCA), the intermediate military appellate court that reviews Air
+    Force and Space Force courts-martial (findings and sentence) under
+    Article 66, UCMJ. Its decisions are reviewable by the U.S. Court of
+    Appeals for the Armed Forces (US/CAAF). Each opinion/order resolves a
+    specific court-martial appeal = case_law. Decisions are enumerated
+    from per-year index pages (opinions_date_{year}.html) and downloaded
+    as born-digital text-layer PDFs from /afcca_opinions/{cat}/*.pdf,
+    extracted via common.pdf_extract (no OCR). Digitised coverage runs
+    from ~2002 to the present.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_index"
+  base_url: "https://afcca.law.af.mil"
+  endpoints:
+    index: "/opinions_date_{year}.html"
+    document: "/afcca_opinions/{cat}/{name}.pdf"
+
+data_model:
+  type: "case_law"
+  source_nature: "bulk_archive"
+  primary_key: "slug"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "_id"
+      description: "Stable document id (US/AFCCA/{pdf-filename-slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "docket_number"
+      description: "AFCCA docket ('ACM 40809', 'ACM S32806', 'Misc. Dkt. No. 2025-16'), parsed from the PDF body"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "court"
+      description: "Issuing court (U.S. Air Force Court of Criminal Appeals)"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "title"
+      description: "Case caption ('United States v. {party}') with docket, or 'In re ...' matter caption"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (PDF text layer, no OCR)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the 'Decided ...' line in the body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "year"
+      description: "Index year the decision was discovered under"
+      type: "integer"
+      role: "metadata"
+      required: false
+  secondary_fields: []
+  probably_ignorable: []
+
+license:
+  id: "pd-us"
+  name: "Public Domain (US Government Work — federal court decisions)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Decisions of the U.S. Air Force Court of Criminal Appeals are works of the United States federal government and are not subject to copyright under 17 U.S.C. Sec. 105; judicial opinions are also public domain under the government-edicts doctrine. Commercial use permitted."
+
+notes: |
+  - Discovery: per-year index pages GET /opinions_date_{year}.html list each
+    decision that year as a direct PDF link. Coverage ~2002-present, crawled
+    newest year first.
+  - URL resolution: the PDF hrefs are ROOT-RELATIVE
+    ("afcca_opinions/{cat}/{name}.pdf") and MUST be joined against the site
+    root (BASE_URL), NOT against the index-page URL. Joining against
+    opinions_date_{year}.html produced 404s like
+    ".../opinions_date_2026.html/afcca_opinions/x.pdf".
+  - The opinions_date_{year}.html indexes are intermittent (sometimes 404) —
+    a missing/failed index year is skipped and the crawl moves on; the URL fix
+    is what makes each discovered link resolve to a real 200 PDF.
+  - Full text: born-digital text-layer PDFs extracted via common.pdf_extract
+    (no OCR). A <400-char guard skips empty/non-PDF responses.
+  - Docket: parsed from the PDF body ("ACM 40809", "ACM S32806",
+    "Misc. Dkt. No. 2025-16"). Date from the "Decided DD Month YYYY" /
+    "Decided Month DD, YYYY" line. Party from the caption after "v.", with the
+    PDF filename as a fallback.
+  - Reviewed by the U.S. Court of Appeals for the Armed Forces (US/CAAF).
+  - Public domain federal-government works.

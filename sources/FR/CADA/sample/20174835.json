@@ -1,0 +1,28 @@
+{
+  "_id": "FR/CADA/20174835",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-08-06T21:53:58.841224+00:00",
+  "opinion_id": "20174835",
+  "title": "Avis 20174835 - Direction départementale de la cohésion sociale et de la protection des populations d'Ille-et Vilaine (DDCSPP 35)",
+  "date": "2017-10-19",
+  "url": "https://www.data.gouv.fr/explore/cada/20174835",
+  "text": "Monsieur XX, X, a saisi la commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 24 juillet 2017, à la suite du refus opposé par le directeur départemental de la cohésion sociale et de la protection des populations d'Ille-et-Vilaine à sa demande de communication de la base de données des accueils collectifs de mineurs, indiquant notamment leur numéro de déclaration et leur code organisateur.\n\nEn l'absence de réponse de l'administration, à la date de sa séance, la commission estime que ces documents administratifs sont communicables à toute personne qui en fait la demande en application de l'article L311-1 du code des relations entre le public et l'administration. Elle souligne toutefois qu'en application de l'article L311-6 du même code, les mentions dont la communication porterait atteinte à la vie privée d'une personne, telles qu'une adresse ou un numéro de téléphone personnels, ne sont communicables qu'à l'intéressé. Sous réserve de l'occultation de telles mentions, la commission émet donc un avis favorable.",
+  "subject": "",
+  "administration": "Direction départementale de la cohésion sociale et de la protection des populations d'Ille-et Vilaine (DDCSPP 35)",
+  "meanings": [
+    "Favorable",
+    "Sauf vie privée"
+  ],
+  "topics": [
+    "Enseignement",
+    "Culture",
+    "Loisirs",
+    "Jeux"
+  ],
+  "tags": [
+    "Centre de loisirs"
+  ],
+  "part": "III",
+  "type": "Avis"
+}

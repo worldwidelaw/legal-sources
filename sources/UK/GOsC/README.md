@@ -26,28 +26,45 @@ UK/BTAS (barristers), UK/HCPTS (health & care professions), UK/NMC
 
 ## Access & structure
 
-`osteopathy.org.uk` publishes a single **"Decisions"** listing page:
+`osteopathy.org.uk` was rebuilt on WordPress in 2026. The **"Decisions"** listing
+moved to
 
 ```
-https://www.osteopathy.org.uk/raise-a-concern/hearings/decisions/
+https://www.osteopathy.org.uk/raising-a-concern/hearings/decisions/
 ```
 
-grouping published cases (undertakings, interim suspension orders, hearing
-outcomes) as links to per-osteopath decision pages under
-`/news-and-resources/document-library/fitness-to-practise/{slug}/`. The slug
-encodes the osteopath name, committee (PCC / HC / IC-ISO) and the decision date.
+and every published case (undertakings, interim suspension orders, council
+decisions, PCC/HC hearing outcomes) is now a `hearing_decision` custom post type
+served by the site's open **WP REST API**:
 
-Each decision page is a thin document-library wrapper that auto-downloads the
-reasoned decision as a **born-digital PDF** linked with a relative `./{file}.pdf`
-href (content-type `application/pdf`, real text layer, no OCR): a structured
-header (Case No / committee / hearing date / case-of name / committee members /
-legal assessor) followed by the numbered reasoned decision.
+```
+https://www.osteopathy.org.uk/wp-json/wp/v2/hearing_decision?per_page=100
+```
 
-The scraper fetches the listing, collects every decision-page URL (a positive
-committee-token allowlist filters out the policy / guidance pages), resolves each
-page's `.pdf` link, downloads the PDF and extracts the text layer (PyMuPDF, with
-a shared pdfplumber/pypdf fallback). The listing is a rolling window, so re-runs
-accumulate (the pipeline dedups on `_id` = the stable decision slug).
+Each item carries `id`, `slug`, `link`, `title` (which ends with the decision
+date, e.g. *"Ms Poonam Shah – PCC Review Decision – 01 July 2026"*) and a
+`hearing_decision_type` taxonomy term (undertaking / interim-suspension-order /
+council-decision / professional-conduct-committee-and-health-committee-decisions).
+Enumerating the API is preferred over scraping the listing tables: it is
+paginated (`X-WP-TotalPages`), stable and returns the same set the page renders.
+The rendered listing remains as a fallback enumeration path.
+
+Each decision post lives at `/hearing-decision/{slug}/` and its body links the
+reasoned decision as a **born-digital PDF** under `/wp-content/uploads/YYYY/MM/`
+(content-type `application/pdf`, real text layer, no OCR): a structured header
+(Case No / committee / hearing date / case-of name / committee members / legal
+assessor) followed by the numbered reasoned decision.
+
+The scraper pages the API, resolves each post's `.pdf` link inside `<main>` (so
+site-wide policy PDFs are ignored), downloads the PDF and extracts the text layer
+(PyMuPDF, with a shared pdfplumber/pypdf fallback). The published set is a
+rolling window, so re-runs accumulate (the pipeline dedups on `_id` = the stable
+decision slug).
+
+**Yield:** 44 of the 46 currently published decisions extract full text
+(643–303,945 chars, avg ~43K). The 2 skipped are image-only scans with no text
+layer (`mr-alexander-taylor-ic-iso-decision-22-april-2024`, `undertaking`) and
+would need OCR.
 
 ## Usage
 

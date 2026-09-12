@@ -14,7 +14,7 @@ Strategy:
 Usage:
   python bootstrap.py bootstrap          # Full initial pull
   python bootstrap.py bootstrap --sample # Fetch sample records
-  python bootstrap.py bootstrap-fast     # Alias for bootstrap --sample
+  python bootstrap.py bootstrap-fast     # High-throughput full pull (VPS)
   python bootstrap.py update             # Re-scan listing
   python bootstrap.py test               # Quick connectivity test
 """
@@ -108,6 +108,14 @@ class AUPAPScraper(BaseScraper):
             if not new_links:
                 break
             time.sleep(1.5)
+        else:
+            # Loop ran to max_pages without an empty page, so the listing may
+            # hold more. Say so rather than reporting a truncated corpus as
+            # the whole thing.
+            logger.warning(
+                f"{doc_type}: hit the {max_pages}-page cap while still finding new "
+                f"URIs — listing may be truncated, raise max_pages"
+            )
 
         logger.info(f"Collected {len(all_uris)} {doc_type} URIs")
         return all_uris
@@ -230,9 +238,8 @@ def main():
     bp.add_argument("--sample-size", type=int, default=15, help="Number of samples")
     bp.add_argument("--full", action="store_true", help="Fetch all records")
 
-    bf = sub.add_parser("bootstrap-fast", help="Alias for bootstrap --sample")
-    bf.add_argument("--sample", action="store_true", default=True)
-    bf.add_argument("--sample-size", type=int, default=15)
+    bf = sub.add_parser("bootstrap-fast", help="High-throughput full fetch (VPS)")
+    bf.add_argument("--full", action="store_true", default=True)
 
     sub.add_parser("update", help="Incremental update")
     sub.add_parser("test", help="Quick connectivity test")
@@ -253,12 +260,15 @@ def main():
                     logger.info(f"OK: {doc_type} — {doc['title'][:80]} ({len(doc['text'])} chars)")
                 else:
                     logger.warning(f"FAIL: could not fetch {uris[0]}")
-    elif args.command in ("bootstrap", "bootstrap-fast"):
+    elif args.command == "bootstrap":
         stats = scraper.bootstrap(
             sample_mode=getattr(args, "sample", False),
             sample_size=getattr(args, "sample_size", 15),
         )
         logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2)}")
+    elif args.command in ("bootstrap-fast", "bootstrap_fast"):
+        stats = scraper.bootstrap_fast()
+        logger.info(f"Fast bootstrap complete: {json.dumps(stats, indent=2)}")
     elif args.command == "update":
         stats = scraper.update()
         logger.info(f"Update complete: {json.dumps(stats, indent=2)}")

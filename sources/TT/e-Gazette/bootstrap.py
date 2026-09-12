@@ -19,14 +19,34 @@ Access strategy (no API; open directory of per-document PDFs):
 
 Records whose PDF yields no extractable text (scanned-image documents) are
 skipped — this source only contributes full-text records.
+
+Two upstream quirks are corrected here (#1412):
+
+  * **Bundled Legal Notices.** A handful of PDFs in the "Legal Notices"
+    folders carry a *range* in the filename ("Legal Notice No. 177-190 of
+    2023.pdf") and contain many separate statutory instruments in one file.
+    Stored as a single record they defeat article-level segmentation, since
+    fourteen instruments' section numbering collides inside one "document".
+    Such files are split on their `LEGAL NOTICE NO. n` headers into one
+    record per notice, each with the same `_id` shape a standalone notice
+    would have (`TT-GAZ-Legal-Notice-No-{n}-of-{year}`).
+
+  * **Overlaid duplicate text.** Some Acts (e.g. Act No. 2 of 2026) ship
+    schedule pages whose text is drawn twice at a slight x/y offset. Because
+    the two copies land inside pdfplumber's line-merge tolerance, their glyphs
+    sort together and the line comes out interleaved
+    ("ItIetmem FIFRIRSTS TC COOLULUMMNN"). `_page_text` detects that signature
+    and drops the redundant copy before extracting.
 """
 
 import io
 import re
 import sys
 import time
+import difflib
 import logging
 from pathlib import Path
+from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Generator, Optional
 from urllib.parse import urljoin, unquote
@@ -53,6 +73,19 @@ MIN_TEXT_CHARS = 400
 
 # Folder names (case-insensitive substring match) we treat as legislation.
 WANTED_FOLDERS = ("act", "legal notice")
+
+# "Legal Notice No. 177-190 of 2023.pdf" — a single PDF holding a run of
+# separate instruments. Matched on the filename so only these few files pay
+# for an extra download during enumeration.
+BUNDLE_RANGE_RE = re.compile(r"No\.?\s*(\d+)\s*[-–—]\s*(\d+)")
+
+# Start-of-notice header inside a bundled Legal Supplement PDF.
+NOTICE_HEADER_RE = re.compile(r"^[ \t]*LEGAL\s+NOTICE\s+NO\.?\s*(\d+)\b", re.M)
+
+# The running header the Government Printer puts at the top of every page; it
+# belongs to the page, not to the notice that happens to start below it.
+SUPPLEMENT_HEADER_RE = re.compile(
+    r"^\s*(?:\d+\s+)?Legal Supplement Part [A-Z]\b.*$", re.M | re.I)
 
 MONTHS = {
     "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
@@ -153,7 +186,7 @@ class SourceScraper(BaseScraper):
             data = data[head:]
         try:
             with pdfplumber.open(io.BytesIO(data)) as pdf:
-                parts = [(page.extract_text() or "") for page in pdf.pages]
+                parts = [_page_text(page) for page in pdf.pages]
         except Exception as e:
             logger.debug(f"PDF parse failed for {pdf_url}: {e}")
             return ""
@@ -164,6 +197,41 @@ class SourceScraper(BaseScraper):
 
     # ── Abstract methods ──────────────────────────────────────────
 
+    def _emit(self, year: int, category: str, pdf_url: str) -> Generator[dict, None, None]:
+        """Yield one raw item per *instrument* in a PDF.
+
+        Ordinary files yield a single item and leave the download to
+        normalize(). Files whose name carries a notice range hold several
+        instruments, so they are fetched here and split; each segment carries
+        its own text so the PDF is still downloaded only once.
+        """
+        filename = unquote(pdf_url.rsplit("/", 1)[-1])
+        base = {"year": year, "category": category, "pdf_url": pdf_url, "filename": filename}
+
+        if not BUNDLE_RANGE_RE.search(filename):
+            yield base
+            return
+
+        text = self._extract_pdf_text(pdf_url)
+        segments = _split_bundle(text)
+        if not segments:
+            # Range in the name but no per-notice headers to cut on — keep it
+            # whole rather than silently dropping the document.
+            logger.warning(f"Bundled name but no notice headers, storing whole: {filename}")
+            yield dict(base, text=text)
+            return
+
+        logger.info(f"Split {filename} into {len(segments)} notices")
+        bundle_date = _first_date(text)
+        for number, body in segments:
+            yield dict(
+                base,
+                text=body,
+                notice_number=number,
+                bundle_filename=filename,
+                fallback_date=bundle_date,
+            )
+
     def fetch_all(self) -> Generator[dict, None, None]:
         for year in self._list_years():
             folders = self._list_wanted_folders(year)
@@ -173,12 +241,7 @@ class SourceScraper(BaseScraper):
                 pdfs = self._list_pdfs(folder_url)
                 logger.info(f"Year {year} / {category}: {len(pdfs)} PDFs")
                 for pdf_url in pdfs:
-                    yield {
-                        "year": year,
-                        "category": category,
-                        "pdf_url": pdf_url,
-                        "filename": unquote(pdf_url.rsplit("/", 1)[-1]),
-                    }
+                    yield from self._emit(year, category, pdf_url)
                     time.sleep(0.3)
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
@@ -190,26 +253,35 @@ class SourceScraper(BaseScraper):
                 break
             for category, folder_url in self._list_wanted_folders(year):
                 for pdf_url in self._list_pdfs(folder_url):
-                    yield {
-                        "year": year,
-                        "category": category,
-                        "pdf_url": pdf_url,
-                        "filename": unquote(pdf_url.rsplit("/", 1)[-1]),
-                    }
+                    yield from self._emit(year, category, pdf_url)
                     time.sleep(0.3)
 
     def normalize(self, raw: dict) -> Optional[dict]:
-        text = self._extract_pdf_text(raw["pdf_url"])
+        # Bundled notices arrive pre-split with their own text; everything else
+        # is downloaded here so the concurrent path can overlap the fetches.
+        text = raw.get("text") or self._extract_pdf_text(raw["pdf_url"])
         if len(text) < MIN_TEXT_CHARS:
             # Scanned-image document without OCR-able text — skip (no full text).
             return None
 
         filename = raw["filename"]
-        title, doc_number = _title_from_filename(filename, text)
-        date = _first_date(text) or f"{raw['year']}-01-01"
+        notice_number = raw.get("notice_number")
+        if notice_number is not None:
+            doc_number = f"Legal Notice No. {notice_number} of {raw['year']}"
+            subject = _subject_from_text(text)
+            title = f"{doc_number} — {subject}" if subject else doc_number
+            doc_id = f"TT-GAZ-{_slug(doc_number)}"
+        else:
+            title, doc_number = _title_from_filename(filename, text)
+            doc_id = f"TT-GAZ-{_slug(filename)}"
 
-        return {
-            "_id": f"TT-GAZ-{_slug(filename)}",
+        # For a split notice the gazette's own supplement header is the
+        # publication date; the first date inside the body is often a survey or
+        # plan date years earlier, so the header wins when we have it.
+        date = raw.get("fallback_date") or _first_date(text) or f"{raw['year']}-01-01"
+
+        record = {
+            "_id": doc_id,
             "_source": "TT/e-Gazette",
             "_type": "legislation",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
@@ -224,6 +296,138 @@ class SourceScraper(BaseScraper):
             "language": "en",
             "jurisdiction": "TT",
         }
+        if raw.get("bundle_filename"):
+            record["bundle_filename"] = raw["bundle_filename"]
+        return record
+
+
+# ── Overlaid-duplicate-text removal ───────────────────────────────
+
+def _draw_runs(page) -> list:
+    """Group a page's characters into draw runs — one entry per distinct text
+    baseline. Two overlaid copies of the same line sit on baselines a fraction
+    of a point apart, so they stay separate here even though pdfplumber's
+    3pt line tolerance would merge (and interleave) them."""
+    by_top = defaultdict(list)
+    for ch in page.chars:
+        by_top[round(ch["top"], 2)].append(ch)
+    runs = []
+    for top in sorted(by_top):
+        chars = sorted(by_top[top], key=lambda c: c["x0"])
+        text = re.sub(r"\s+", " ", "".join(c["text"] for c in chars)).strip()
+        if not text:
+            continue
+        runs.append({
+            "top": top,
+            "x0": chars[0]["x0"],
+            "x1": max(c["x1"] for c in chars),
+            "text": text,
+            "chars": chars,
+        })
+    return runs
+
+
+def _x_overlap(a: dict, b: dict) -> float:
+    """Overlap of two runs' x-extents as a fraction of the narrower run."""
+    overlap = min(a["x1"], b["x1"]) - max(a["x0"], b["x0"])
+    return overlap / max(1.0, min(a["x1"] - a["x0"], b["x1"] - b["x0"]))
+
+
+def _redundant_runs(runs: list) -> set:
+    """Return the `top` keys of runs that are a second rendering of another
+    run, or None if the page carries no overlaid text at all.
+
+    Pass 1 only looks for an exact repeat within 2pt — that is the unambiguous
+    signature of a doubled draw. The looser passes run *only* on pages where
+    pass 1 found something, so ordinary pages are never touched.
+    """
+    drop = set()
+    for i, a in enumerate(runs):
+        for b in runs[i + 1:]:
+            if b["top"] - a["top"] > 2:
+                break
+            if len(a["text"]) < 8 or len(b["text"]) < 8 or _x_overlap(a, b) < 0.5:
+                continue
+            if a["text"] == b["text"] or b["text"] in a["text"]:
+                drop.add(b["top"])
+            elif a["text"] in b["text"]:
+                drop.add(a["top"])
+    if not drop:
+        return None
+
+    # Pass 2: the two copies often wrap their cell text differently, so the
+    # repeat is near-identical rather than identical. Keep the longer line.
+    live = [r for r in runs if r["top"] not in drop]
+    for i, a in enumerate(live):
+        if a["top"] in drop:
+            continue
+        for b in live[i + 1:]:
+            if b["top"] - a["top"] > 13:
+                break
+            if b["top"] in drop or len(a["text"]) < 8 or len(b["text"]) < 8:
+                continue
+            if abs(a["x0"] - b["x0"]) > 15 or _x_overlap(a, b) < 0.5:
+                continue
+            if difflib.SequenceMatcher(None, a["text"], b["text"]).ratio() < 0.75:
+                continue
+            drop.add((b if len(b["text"]) <= len(a["text"]) else a)["top"])
+
+    # Pass 3: the two copies wrap differently, so a line of one can land on top
+    # of an unrelated line of the other and interleave again. Only sub-point
+    # offsets at an identical font size qualify — small capitals sit ~2pt below
+    # their leading capital at a different size, and marginal markers like "(a)"
+    # share a band with the row text they annotate; neither is a shadow copy.
+    live = [r for r in runs if r["top"] not in drop]
+    for i, a in enumerate(live):
+        if a["top"] in drop:
+            continue
+        for b in live[i + 1:]:
+            if b["top"] - a["top"] > 1.0:
+                break
+            if b["top"] in drop or _x_overlap(a, b) < 0.5:
+                continue
+            if len(a["text"]) < 8 or len(b["text"]) < 8:
+                continue
+            if round(a["chars"][0]["size"], 1) != round(b["chars"][0]["size"], 1):
+                continue
+            drop.add((b if len(b["text"]) <= len(a["text"]) else a)["top"])
+    return drop
+
+
+def _page_text(page) -> str:
+    """Extract a page's text, first removing overlaid duplicate renderings."""
+    try:
+        drop = _redundant_runs(_draw_runs(page))
+    except Exception as e:  # geometry is best-effort; never lose the page
+        logger.debug(f"Overlay detection failed: {e}")
+        drop = None
+    if not drop:
+        return page.extract_text() or ""
+    kept = page.filter(
+        lambda obj: obj.get("object_type") != "char"
+        or round(obj["top"], 2) not in drop
+    )
+    return kept.extract_text() or ""
+
+
+# ── Bundled Legal Notices ─────────────────────────────────────────
+
+def _split_bundle(text: str) -> list:
+    """Split a Legal Supplement PDF holding several notices into
+    [(notice_number, notice_text), ...]. Returns [] if it holds only one."""
+    marks = list(NOTICE_HEADER_RE.finditer(text))
+    if len(marks) < 2:
+        return []
+    segments = []
+    for i, mark in enumerate(marks):
+        end = marks[i + 1].start() if i + 1 < len(marks) else len(text)
+        body = text[mark.start():end]
+        # The page header printed above the *next* notice was swept into this
+        # segment by the split; it names the following page, not this notice.
+        body = SUPPLEMENT_HEADER_RE.sub("", body).strip()
+        body = re.sub(r"\n{3,}", "\n\n", body)
+        segments.append((int(mark.group(1)), body))
+    return segments
 
 
 # ── Helpers ───────────────────────────────────────────────────────
@@ -257,9 +461,95 @@ def _title_from_filename(filename: str, text: str) -> tuple:
     return title, doc_number
 
 
+# The instrument's own citation, set in caps in the notice head, e.g.
+# "THE LAND ACQUISITION (POSSESSION OF LAND PRIOR TO / FORMAL VESTING IN THE
+# STATE) (NO. 2) ORDER, 2024" — wrapped over two lines, so the class spans \s.
+# Anchored at a line start because the head also names the parent Act and the
+# making power ("MADE BY THE PRESIDENT UNDER SECTION 4(1) OF THE ...") and only
+# the citation begins its own line.
+CITATION_RE = re.compile(
+    r"^THE\s+[A-Z0-9''‘’()./\-–,:;\s]{5,200}?"
+    r"(?:ORDER|REGULATIONS|RULES|BY-?LAWS|NOTICE|PROCLAMATION|ACT)"
+    r"\s*,\s*\d{4}\b", re.M)
+
+# Standalone instrument-type headings used when there is no cited short title.
+HEADING_WORDS = {
+    "A PROCLAMATION", "PROCLAMATION", "ORDER", "ORDERS", "NOTICE",
+    "RESOLUTION", "ERRATUM", "REGULATIONS", "RULES", "DIRECTIONS",
+    "APPOINTMENT", "WARRANT",
+}
+
+
+# Head lines that are furniture rather than the notice's subject.
+BOILERPLATE_RE = re.compile(
+    r"^\s*(?:LEGAL NOTICE NO|REPUBLIC OF TRINIDAD|PRINTED AND PUBLISHED|\[|"
+    r"No\.\s*\d+\s+of\s+\d{4}\.?\s*$)|CHAP\.", re.I)
+
+
+def _last_caps_block(text: str) -> str:
+    """The final run of consecutive capitalised heading lines before the body —
+    e.g. "NOTICE OF LAND LIKELY TO BE REQUIRED / FOR A PUBLIC PURPOSE" — used
+    when the instrument has no cited short title."""
+    blocks, current = [], []
+    for line in text.splitlines()[:30]:
+        stripped = line.strip()
+        letters = [c for c in stripped if c.isalpha()]
+        is_heading = (
+            len(letters) >= 3
+            and sum(c.isupper() for c in letters) / len(letters) >= 0.9
+            and not BOILERPLATE_RE.search(stripped)
+        )
+        if is_heading:
+            current.append(stripped)
+            continue
+        if current:
+            blocks.append(" ".join(current))
+            current = []
+        # Stop at the first line of running prose — anything in caps below it
+        # is a schedule heading or the signatory block, not the subject.
+        if len(stripped) > 60 and any(c.islower() for c in stripped):
+            break
+    if current:
+        blocks.append(" ".join(current))
+    return blocks[-1][:200] if blocks else ""
+
+
 def _subject_from_text(text: str) -> str:
-    """Best-effort subject line for a Legal Notice: the first ALL-CAPS or
-    'Act'-referencing line after the notice header."""
+    """Best-effort subject line for a Legal Notice.
+
+    The notice head carries the instrument's own short title in capitals; that
+    is a far better subject than any body line, so try it first. Body prose is
+    only a last resort because line wrapping means an arbitrary body line
+    usually starts mid-sentence.
+    """
+    head = text[:2000]
+    # Candidate citations nest: one starting at the parent Act's line runs all
+    # the way through to the instrument's own trailing year. The latest-starting
+    # candidate is therefore the instrument itself.
+    citation, pos = None, 0
+    while True:
+        found = CITATION_RE.search(head, pos)
+        if not found:
+            break
+        citation, pos = found.group(0), found.start() + 1
+    if citation:
+        return re.sub(r"\s+", " ", citation).strip()
+
+    for line in text.splitlines()[:20]:
+        if line.strip().upper() in HEADING_WORDS:
+            return line.strip()
+
+    # Acts printed without a descriptive filename carry their long title in the
+    # enacting formula ("AN ACT to amend the Motor Vehicles and Road Traffic
+    # Act, Chap. 48:50, ..."), which runs past several abbreviating periods.
+    long_title = re.search(r"\bAN ACT\b.{5,220}", re.sub(r"\s+", " ", text[:2000]))
+    if long_title:
+        return long_title.group(0).rsplit(" ", 1)[0].rstrip(",;") + "…"
+
+    heading = _last_caps_block(text)
+    if heading:
+        return heading
+
     for line in text.splitlines():
         line = line.strip()
         if len(line) < 8 or len(line) > 160:

@@ -1,0 +1,23 @@
+last_bootstrap: '2026-08-01T15:28:38.183858+00:00'
+last_error: null
+last_run: '2026-08-01T15:28:38.183858+00:00'
+run_history:
+- errors: 0
+  finished_at: '2026-08-01T14:15:05.459926+00:00'
+  records_fetched: 4
+  records_new: 4
+  records_skipped: 0
+  records_updated: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-01T14:14:55.700261+00:00'
+- errors: 0
+  finished_at: '2026-08-01T15:28:38.183858+00:00'
+  records_fetched: 12
+  records_new: 12
+  records_skipped: 0
+  records_updated: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-01T15:28:24.886000+00:00'
+total_records: 16

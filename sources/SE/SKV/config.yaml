@@ -43,9 +43,12 @@ schema:
     - name: decision_date
       type: string
       required: false
-    - name: entry_into_force
+    - name: in_force_date
       type: string
       required: false
-    - name: issn
+    - name: source_url
+      type: string
+      required: false
+    - name: language
       type: string
       required: false

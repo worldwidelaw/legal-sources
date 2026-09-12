@@ -1,0 +1,90 @@
+# TN/ARP - Assemblee des representants du peuple (Tunisian Parliament)
+# Bills (projets/propositions de loi) and the laws they became, from the
+# parliament's own Odoo 12 site at arp.tn via its public JSON-RPC endpoint.
+
+source_id: TN/ARP
+name: "Tunisia — Assemblée des représentants du peuple (bills)"
+country: TN
+source_type: legislation
+
+base_url: "https://www.arp.tn"
+official_url: "https://www.arp.tn/loi/project/list"
+
+# Public Odoo RPC used by the site's own search widget:
+#   POST /web/dataset/call_kw  {model: gpl.law.project, method: search_read}
+# Full text sources per bill:
+#   - gpl.law.item.item        (HTML, article-by-article)
+#   - ir.attachment PDFs at /document/download/<id>
+# The download route rejects a JSON Content-Type, so it must be requested
+# with a plain/binary Accept (see bootstrap.py). Roughly a third of bills
+# yield text; the rest attach only scans of paper originals with no text
+# layer and are skipped rather than emitted as metadata-only records.
+
+data_types:
+  - legislation
+
+languages:
+  - ar
+
+coverage:
+  start_year: 2011
+  end_year: 2026
+  total_texts: ~584
+
+auth:
+  type: none
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+license:
+  name: "Public sector information — Tunisian Parliament (arp.tn)"
+  url: "https://www.arp.tn/relation_societe_civile/access_information"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Bills, committee reports and enacted laws are Tunisian official legal
+    texts. Under Organic Law 2016-22 on the right of access to information,
+    public bodies must publish and allow re-use of such documents. No
+    restrictive terms of use are published on arp.tn.
+
+data_model:
+  update_strategy: upsert
+  dedup_key:
+    - _id
+
+schema:
+  key_fields:
+    - name: "project_id"
+      type: "int"
+      required: true
+    - name: "ref"
+      type: "string"
+      required: false
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "law_type"
+      type: "string"
+      required: false
+    - name: "state"
+      type: "string"
+      required: false
+    - name: "committee"
+      type: "string"
+      required: false
+  required_fields:
+    - _id
+    - _source
+    - _type
+    - _fetched_at
+    - title
+    - text
+    - date
+    - url

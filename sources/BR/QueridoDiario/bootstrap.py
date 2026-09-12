@@ -27,7 +27,7 @@ from typing import Generator, Optional, Dict, Any
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 logging.basicConfig(
     level=logging.INFO,
@@ -110,6 +110,8 @@ class QueridoDiarioScraper(BaseScraper):
         date = raw.get("date", "")
         edition = raw.get("edition", "")
         text = raw.get("_full_text", "")
+        if not text:
+            return None
 
         title = f"Diário Oficial de {territory_name}"
         if state_code:
@@ -176,10 +178,14 @@ class QueridoDiarioScraper(BaseScraper):
                     time.sleep(1)
                     full_text = self._fetch_full_text(txt_url)
                     if full_text and len(full_text) > 100:
+                        # Yield the RAW gazette (with full text attached); the
+                        # framework calls normalize(). Yielding a normalized
+                        # record here caused the VPS bootstrap to double-normalize
+                        # (normalize reads raw key '_full_text', absent from a
+                        # normalized dict) → empty text for all records. Issue #1203.
                         gazette["_full_text"] = full_text
-                        normalized = self.normalize(gazette)
                         count += 1
-                        yield normalized
+                        yield gazette
 
                 total = data.get("total_gazettes", 0)
                 offset += page_size
@@ -194,6 +200,8 @@ class QueridoDiarioScraper(BaseScraper):
 
     def fetch_updates(self, since: str = None) -> Generator[Dict[str, Any], None, None]:
         """Fetch gazettes from recent days."""
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         today = datetime.now()
         days = 7
         if since:
@@ -220,9 +228,8 @@ class QueridoDiarioScraper(BaseScraper):
                 full_text = self._fetch_full_text(txt_url)
                 if full_text and len(full_text) > 100:
                     gazette["_full_text"] = full_text
-                    normalized = self.normalize(gazette)
                     count += 1
-                    yield normalized
+                    yield gazette
             offset += 10
             if offset >= data.get("total_gazettes", 0) or offset >= 100:
                 break
@@ -263,7 +270,7 @@ def main():
     parser = argparse.ArgumentParser(description="BR/QueridoDiario data fetcher")
     parser.add_argument(
         "command",
-        choices=["bootstrap", "update", "test"],
+        choices=["bootstrap", "bootstrap-fast", "update", "test"],
         help="Command to run",
     )
     parser.add_argument(
@@ -280,7 +287,13 @@ def main():
         success = scraper.test()
         sys.exit(0 if success else 1)
 
-    elif args.command == "bootstrap":
+    elif args.command in ("bootstrap", "bootstrap-fast"):
+        # The fleet invokes `bootstrap-fast`. Route it through the framework's
+        # normalize path (base_scraper.bootstrap) so the records written to
+        # data/records.jsonl are NORMALIZED (they carry the `text` field). The
+        # previous CLI omitted `bootstrap-fast`, so the VPS wrapper fell back to
+        # dumping RAW gazette dicts (which only carry `_full_text`, not `text`)
+        # → every record read as empty text at ingest (issue #1203).
         stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
         fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
         logger.info(f"Bootstrap complete: {fetched} records — {stats}")

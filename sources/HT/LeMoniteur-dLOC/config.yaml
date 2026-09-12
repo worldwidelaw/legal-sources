@@ -33,7 +33,7 @@ data_model:
   update_strategy: "append_only"
   versioning: "none"
   dedup_key:
-    - "issue_id"
+    - "_id"
 
 schema:
   total_fields: 10

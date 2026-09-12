@@ -179,11 +179,17 @@ class MoroccoBulletinOfficielScraper(BaseScraper):
                     continue
 
                 self.rate_limiter.wait()
+                # force=True: the rows already in Neon hold this corpus in
+                # character-reversed visual order (issue #1560), and the helper
+                # skips any document it finds stored with non-empty text — so
+                # without it the re-crawl that is supposed to replace them
+                # emits nothing at all.
                 text = extract_pdf_markdown(
                     source="MA/SGG-BulletinOfficiel",
                     source_id=doc_id,
                     pdf_url=pdf_url,
                     table="legislation",
+                    force=True,
                 )
 
                 if not text or len(text) < 50:
@@ -271,4 +277,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

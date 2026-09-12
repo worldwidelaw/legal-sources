@@ -35,7 +35,7 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 logging.basicConfig(
     level=logging.INFO,
@@ -258,6 +258,8 @@ class ERTDecisionsScraper(BaseScraper):
         logger.info(f"fetch_all complete: {yielded} decisions with full text, {skipped} skipped")
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         entries = self._discover()
         yielded = 0
         for entry in entries:

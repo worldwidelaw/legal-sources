@@ -9,7 +9,9 @@ Strategy:
   1. Fetch the /laws-and-regulations/ page
   2. Parse the 4 HTML tables (laws, decisions, regulations, announcements)
      to extract PDF URLs and metadata
-  3. Download each PDF and extract full text via pdfplumber
+  3. Download each PDF and extract full text through common.pdf_extract,
+     which applies the geometry-based RTL reorder and presentation-form
+     normalization the Arabic half of this corpus needs (issue #1560)
 
 Data:
   - ~154 documents (8 laws, 38 decisions, 8 regulation series, 100 announcements)
@@ -22,7 +24,6 @@ Usage:
 """
 
 import argparse
-import io
 import json
 import logging
 import re
@@ -36,11 +37,11 @@ from urllib.parse import urljoin
 
 import requests
 
-try:
-    import pdfplumber
-    HAS_PDF = True
-except ImportError:
-    HAS_PDF = False
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.arabic_pdf import looks_arabic
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -48,6 +49,7 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://www.cma.gov.lb"
 SOURCE_ID = "LB/CMA"
 SAMPLE_DIR = Path(__file__).parent / "sample"
+DATA_DIR = Path(__file__).parent / "data"
 REQUEST_DELAY = 2.0
 
 
@@ -229,29 +231,6 @@ class _DecisionPostParser(HTMLParser):
             self._current_title.append(data)
 
 
-# ── PDF extraction ─────────────────────────────────────────────────
-
-def extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using pdfplumber."""
-    if not HAS_PDF:
-        return ""
-    try:
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            pages = []
-            for page in pdf.pages:
-                text = page.extract_text()
-                if text:
-                    pages.append(text)
-                try:
-                    page.flush_cache(); page.get_textmap.cache_clear()
-                except Exception:
-                    pass
-            return "\n\n".join(pages)
-    except Exception as e:
-        logger.warning("PDF extraction failed: %s", e)
-        return ""
-
-
 # ── Fetching ───────────────────────────────────────────────────────
 
 def _session() -> requests.Session:
@@ -296,19 +275,54 @@ def _detect_lang(pdf_url: str) -> str:
     return "en"
 
 
-def _make_id(category: str, number: str, pdf_url: str) -> str:
+def _filename_slug(pdf_url: str) -> str:
+    """The PDF's own filename, cleaned — the only per-document key CMA gives."""
+    from urllib.parse import unquote
+    filename = unquote(pdf_url.rsplit("/", 1)[-1].rsplit(".", 1)[0])
+    return re.sub(r'[^\w\-.]', '-', filename)[:60]
+
+
+def ambiguous_numbers(documents: List[Dict[str, str]]) -> set:
+    """
+    The ``(category, number, lang)`` keys that more than one PDF answers to.
+
+    A CMA table row carries one decision number but links several PDFs: the
+    Arabic and English versions of the same text, and for a few decisions its
+    superseded editions too (no. 13 links a 2015 and a 2016 Arabic version
+    alongside the English one). Only the filename tells those apart, and the
+    Arabic files are named ``Decision-No.-13-27-01-2015.pdf`` with nothing the
+    URL language heuristic can see — so 28 of the 269 documents shared an id
+    with a sibling and only the last one crawled survived the upsert.
+
+    Keyed on the full old id, not on the number, so the pairs the language
+    suffix already separated keep the ids Neon holds; only the 28 that were
+    genuinely colliding take the filename instead.
+    """
+    from collections import Counter
+    counts = Counter(
+        (d["category"], re.sub(r'^#\s*', '', d.get("number", "")).strip(),
+         _detect_lang(d["pdf_url"]))
+        for d in documents
+    )
+    return {key for key, n in counts.items() if n > 1 and key[1]}
+
+
+def _make_id(category: str, number: str, pdf_url: str, ambiguous: set = frozenset()) -> str:
     """Generate a unique document ID."""
     lang = _detect_lang(pdf_url)
     # Clean "# " prefix from number
-    clean_number = re.sub(r'^#\s*', '', number).strip() if number else ""
-    if clean_number:
-        clean_num = re.sub(r'[^\w\-.]', '-', clean_number)
-        return f"CMA-{category}-{clean_num}-{lang}"
-    # Fallback: use filename from URL
-    from urllib.parse import unquote
-    filename = unquote(pdf_url.rsplit("/", 1)[-1].rsplit(".", 1)[0])
-    clean_name = re.sub(r'[^\w\-.]', '-', filename)[:60]
-    return f"CMA-{category}-{clean_name}-{lang}"
+    clean_num = re.sub(r'^#\s*', '', number).strip() if number else ""
+    if clean_num and (category, clean_num, lang) not in ambiguous:
+        slug = re.sub(r'[^\w\-.]', '-', clean_num)
+        return f"CMA-{category}-{slug}-{lang}"
+    if clean_num:
+        # The colliding case. No language tag: these are exactly the documents
+        # the URL heuristic gets wrong (law75.pdf is the Arabic one), and the
+        # filename is already unique on its own. The honest language lives in
+        # the record's `language` field, read off the text.
+        return f"CMA-{category}-{_filename_slug(pdf_url)}"
+    # No number at all — the filename is the only key there has ever been.
+    return f"CMA-{category}-{_filename_slug(pdf_url)}-{lang}"
 
 
 # ── Normalize ──────────────────────────────────────────────────────
@@ -321,7 +335,7 @@ def _clean_field(value: str, prefixes: List[str]) -> str:
     return value.strip()
 
 
-def normalize(doc: Dict[str, str], pdf_text: str) -> Dict[str, Any]:
+def normalize(doc: Dict[str, str], pdf_text: str, ambiguous: set = frozenset()) -> Dict[str, Any]:
     """Normalize a document record into standard schema."""
     category = doc["category"]
     number = _clean_field(doc.get("number", ""), ["# ", "#"])
@@ -331,7 +345,7 @@ def normalize(doc: Dict[str, str], pdf_text: str) -> Dict[str, Any]:
     date_str = _clean_field(doc.get("date", ""), ["Date ", "التاريخ "])
     pdf_url = doc["pdf_url"]
 
-    doc_id = _make_id(category, number, pdf_url)
+    doc_id = _make_id(category, number, pdf_url, ambiguous)
     iso_date = _parse_date(date_str)
 
     # Build title if missing
@@ -349,6 +363,9 @@ def normalize(doc: Dict[str, str], pdf_text: str) -> Dict[str, Any]:
         "url": pdf_url,
         "category": category,
         "document_number": number,
+        # Read off the text, not the filename: CMA names the Arabic and English
+        # PDFs of a decision identically bar a numeric suffix.
+        "language": "ar" if looks_arabic(pdf_text) else "en",
     }
 
 
@@ -356,10 +373,6 @@ def normalize(doc: Dict[str, str], pdf_text: str) -> Dict[str, Any]:
 
 def fetch_all(sample: bool = False) -> Iterator[Dict[str, Any]]:
     """Fetch all CMA documents with full text."""
-    if not HAS_PDF:
-        logger.error("pdfplumber not available — cannot extract PDF text")
-        sys.exit(1)
-
     session = _session()
 
     # Fetch the main laws page
@@ -377,6 +390,14 @@ def fetch_all(sample: bool = False) -> Iterator[Dict[str, Any]]:
     if not documents:
         logger.error("No documents parsed from page")
         sys.exit(1)
+
+    # Computed over the whole listing, not the sampled slice, so a document's
+    # id does not depend on how many of its siblings a given run happened to
+    # reach.
+    ambiguous = ambiguous_numbers(documents)
+    if ambiguous:
+        logger.info("%d decision/law numbers link several PDFs — keyed by filename",
+                    len(ambiguous))
 
     limit = 15 if sample else len(documents)
     success = 0
@@ -404,7 +425,16 @@ def fetch_all(sample: bool = False) -> Iterator[Dict[str, Any]]:
                 time.sleep(REQUEST_DELAY)
                 continue
 
-            pdf_text = extract_pdf_text(resp.content)
+            # force=True: the rows this replaces are exactly the ones already
+            # in Neon with character-reversed Arabic, so the skip-if-stored
+            # guard would keep every one of them (issue #1560).
+            pdf_text = extract_pdf_markdown(
+                SOURCE_ID,
+                _make_id(doc["category"], doc.get("number", ""), pdf_url, ambiguous),
+                pdf_bytes=resp.content,
+                table="legislation",
+                force=True,
+            )
             if not pdf_text or len(pdf_text) < 50:
                 logger.warning("Insufficient text from %s (%d chars)",
                                pdf_url, len(pdf_text) if pdf_text else 0)
@@ -412,7 +442,7 @@ def fetch_all(sample: bool = False) -> Iterator[Dict[str, Any]]:
                 time.sleep(REQUEST_DELAY)
                 continue
 
-            record = normalize(doc, pdf_text)
+            record = normalize(doc, pdf_text, ambiguous)
             success += 1
             yield record
 
@@ -437,15 +467,28 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
     count = 0
 
-    for record in fetch_all(sample=args.sample):
-        out = SAMPLE_DIR / f"{record['_id']}.json"
-        out.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
-        count += 1
-        text_len = len(record.get("text", ""))
-        logger.info("Saved %s (%d chars text)", record["_id"], text_len)
+    if args.sample:
+        SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
+        for record in fetch_all(sample=True):
+            out = SAMPLE_DIR / f"{record['_id']}.json"
+            out.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
+            count += 1
+            logger.info("Saved %s (%d chars text)", record["_id"], len(record.get("text", "")))
+    else:
+        # A full run streams to data/records.jsonl. Writing the whole corpus
+        # into sample/ instead left the fleet with nothing to ingest, so the
+        # pipeline fell back to the bundled samples (issue #798 class).
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        out_path = DATA_DIR / "records.jsonl"
+        with out_path.open("w", encoding="utf-8") as fh:
+            for record in fetch_all(sample=False):
+                fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+                fh.flush()
+                count += 1
+                logger.info("Wrote %s (%d chars text)", record["_id"], len(record.get("text", "")))
+        logger.info("Wrote %d records to %s", count, out_path)
 
     logger.info("Total records saved: %d", count)
     if count == 0:
@@ -454,4 +497,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

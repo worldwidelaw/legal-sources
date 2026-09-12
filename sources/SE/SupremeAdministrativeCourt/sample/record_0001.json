@@ -1,0 +1,29 @@
+{
+  "_id": "HFD-d037ce95-4fd8-4ab0-bdcb-c73c0f6f82fd",
+  "_source": "SE/SupremeAdministrativeCourt",
+  "_type": "case_law",
+  "_fetched_at": "2026-08-19T07:28:46.550899+00:00",
+  "title": "Mål: 1202-26",
+  "text": "Den fråga i målet som har lett till att Högsta förvaltningsdomstolen meddelat prövningstillstånd gäller om en försäkrad som har återkallat en ansökan om en förmån som utgår enligt socialförsäkringsbalken, kan återta återkallelsen efter tidpunkten för Försäkringskassans beslut om avskrivning av ärendet men före det att beslutet har omprövats av myndigheten (Mål nr 1202-26, Kammarrätten i Jönköpings mål nr 1324-24). ",
+  "date": "2026-07-02",
+  "url": "https://rattspraxis.etjanst.domstol.se/sok/?id=d037ce95-4fd8-4ab0-bdcb-c73c0f6f82fd",
+  "court": "Högsta förvaltningsdomstolen",
+  "court_code": "HFD",
+  "case_numbers": [
+    "1202-26"
+  ],
+  "case_number": "1202-26",
+  "publication_type": "PROVNINGSTILLSTAND",
+  "publication_type_label": "Leave to appeal decision",
+  "is_precedent": false,
+  "document_type": "decision",
+  "published_at": "2026-07-02T13:55:00",
+  "reference_numbers": [],
+  "legal_provisions": [],
+  "sfs_numbers": [],
+  "keywords": [],
+  "summary": "Den fråga i målet som har lett till att Högsta förvaltningsdomstolen meddelat prövningstillstånd gäller om en försäkrad som har återkallat en ansökan om en förmån som utgår enligt socialförsäkringsbalken, kan återta återkallelsen efter tidpunkten för Försäkringskassans beslut om avskrivning av ärendet men före det att beslutet har omprövats av myndigheten (Mål nr 1202-26, Kammarrätten i Jönköpings mål nr 1324-24). ",
+  "text_source": "summary",
+  "pdf_filename": "",
+  "language": "sv"
+}

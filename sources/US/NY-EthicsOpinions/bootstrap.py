@@ -56,7 +56,7 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.pdf_extract import _extract as _pdf_extract_bytes
 
 try:
@@ -130,26 +130,59 @@ class NYEthicsOpinionsScraper(BaseScraper):
         self.delay = 1.0
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": UA})
+        # Refusal bookkeeping, so a blocked vantage is reported rather than
+        # silently degraded into "0 records" (issue #1400).
+        self._refusals: dict[int, int] = {}
+        self._transport_errors = 0
 
     # ---------------------------------------------------------------- http
+    def _note_refusal(self, status: int) -> None:
+        self._refusals[status] = self._refusals.get(status, 0) + 1
+
+    def _refusal_summary(self) -> str:
+        parts = [f"HTTP {s}×{n}" for s, n in sorted(self._refusals.items())]
+        if self._transport_errors:
+            parts.append(f"transport errors×{self._transport_errors}")
+        return ", ".join(parts) if parts else "no HTTP errors seen"
+
     def _get(self, url: str, **kw):
-        for attempt in range(3):
+        """GET with status-aware retries. Returns a 200 response or None."""
+        for attempt in range(4):
             time.sleep(self.delay)
             try:
-                return self.session.get(url, timeout=60, allow_redirects=True, **kw)
+                r = self.session.get(url, timeout=60, allow_redirects=True, **kw)
             except Exception as e:
+                self._transport_errors += 1
                 logger.warning(f"GET failed for {url} (attempt {attempt + 1}): {e}")
                 time.sleep(2 ** attempt)
+                continue
+            if r.status_code == 200:
+                return r
+            self._note_refusal(r.status_code)
+            if r.status_code == 404:
+                logger.warning(f"GET {url}: HTTP 404 — not retrying")
+                return None
+            logger.warning(f"GET {url}: HTTP {r.status_code} (attempt {attempt + 1})")
+            time.sleep(2 ** attempt)
         return None
 
     # ---------------------------------------------------------- discovery
-    def _parse_listing_page(self, page: int) -> list[dict]:
+    def _parse_listing_page(self, page: int) -> list[dict] | None:
+        """Rows on a listing page, or None when the page was never reached.
+
+        The None/[] distinction matters: an empty list means "past the last
+        page of the pager" and legitimately stops pagination, whereas a
+        refused page must not be mistaken for the end of the corpus.
+        """
         r = self._get(LISTING_URL.format(page=page))
-        if r is None or r.status_code != 200:
-            return []
+        if r is None:
+            return None
         if BeautifulSoup is None:
-            logger.error("BeautifulSoup unavailable — cannot parse listing")
-            return []
+            raise RuntimeError(
+                "BeautifulSoup unavailable — cannot parse the ethics.ny.gov "
+                "listing; install beautifulsoup4 rather than reporting an "
+                "empty corpus."
+            )
         soup = BeautifulSoup(r.text, "html.parser")
         rows: list[dict] = []
         for a in soup.find_all("a", href=True):
@@ -175,8 +208,22 @@ class NYEthicsOpinionsScraper(BaseScraper):
     def _collect_index(self) -> list[dict]:
         by_url: dict[str, dict] = {}
         empty_streak = 0
+        unreachable = 0
         for page in range(0, MAX_PAGE + 1):
             rows = self._parse_listing_page(page)
+            if rows is None:
+                unreachable += 1
+                # Every page refused with nothing collected is a blocked
+                # vantage, not a pager that ran out.
+                if unreachable >= 3 and not by_url:
+                    raise RuntimeError(
+                        f"ethics.ny.gov listing unreachable for the first "
+                        f"{unreachable} pages with 0 opinions collected "
+                        f"({self._refusal_summary()}). The host is refusing "
+                        f"this vantage — needs a US residential/proxied slot; "
+                        f"not a parse break."
+                    )
+                continue
             if not rows:
                 empty_streak += 1
                 if empty_streak >= 2:
@@ -192,6 +239,15 @@ class NYEthicsOpinionsScraper(BaseScraper):
             key=lambda r: (_year_from_yy(r["num_year"]), r["num_seq"]),
             reverse=True,
         )
+        if not ordered:
+            raise RuntimeError(
+                f"ethics.ny.gov discovery collected 0 advisory opinions across "
+                f"pages 0-{MAX_PAGE} ({unreachable} unreachable; "
+                f"{self._refusal_summary()}). The Views listing has ~359 "
+                f"opinions, so an empty index means the host refused this "
+                f"vantage or the listing moved — failing loud rather than "
+                f"reporting an empty corpus."
+            )
         logger.info(f"Index collected: {len(ordered)} distinct opinions")
         return ordered
 
@@ -238,7 +294,9 @@ class NYEthicsOpinionsScraper(BaseScraper):
 
     def _iter_raw(self, sample: bool = False) -> Generator[dict, None, None]:
         emitted = 0
+        attempted = 0
         for row in self._collect_index():
+            attempted += 1
             rec = self._fetch_one(row)
             if rec:
                 yield rec
@@ -247,11 +305,22 @@ class NYEthicsOpinionsScraper(BaseScraper):
                             f"date={rec['date']})")
                 if sample and emitted >= 12:
                     return
+        if attempted and not emitted:
+            raise RuntimeError(
+                f"0 of {attempted} discovered NY advisory opinions yielded text "
+                f"({self._refusal_summary()}). Opinion nodes and their PDFs both "
+                f"extract cleanly from a reachable vantage, so an all-empty "
+                f"fetch is a refusal, not a text-free corpus."
+            )
 
     # -------------------------------------------------------------- test
     def test_api(self) -> bool:
         logger.info("Testing NY ethics advisory opinions...")
         rows = self._parse_listing_page(0)
+        if rows is None:
+            logger.error(f"API test FAILED: listing page 0 unreachable "
+                         f"({self._refusal_summary()})")
+            return False
         if len(rows) < 5:
             logger.error(f"API test FAILED: listing page 0 too small ({len(rows)})")
             return False
@@ -296,6 +365,7 @@ class NYEthicsOpinionsScraper(BaseScraper):
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        since = as_date_str(since)  # update() passes a datetime; #1512
         for raw in self.fetch_all():
             date = raw.get("date")
             if not since or (date and date >= since):

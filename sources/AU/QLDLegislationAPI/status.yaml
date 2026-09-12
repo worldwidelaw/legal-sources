@@ -1,6 +1,13 @@
 last_bootstrap: null
-last_error: 'HTTP Error 406: '
-last_run: '2026-07-12T11:12:34.254797+00:00'
+last_error: 'QLD_LEGISLATION_PASSWORD not set — cannot authenticate to the Queensland
+  Legislation API, so this run would yield 0 of the ~18,769 in-force consolidated
+  acts and subordinate legislation. An account is ALREADY PROVISIONED: the credentials
+  live in Infisical at prod:/source-credentials as QLD_LEGISLATION_USERNAME / QLD_LEGISLATION_PASSWORD
+  and were verified against POST /v1/auth/token. A fleet worker that hits this has
+  not had them injected (see the base64 credential argument to vps-bootstrap.sh) —
+  this is a provisioning gap, not a dead source or a scraper bug. New accounts register
+  at https://api.legislation.qld.gov.au/api/signup'
+last_run: '2026-08-07T05:36:47.608104+00:00'
 run_history:
 - error_message: 'HTTP Error 500: '
   errors: 0
@@ -34,4 +41,76 @@ run_history:
   skip_exception: 0
   skip_normalize_none: 0
   started_at: '2026-07-12T11:11:43.828886+00:00'
+- error_message: Set QLD_LEGISLATION_USERNAME and QLD_LEGISLATION_PASSWORD to authenticate
+    to the Queensland Legislation API. Register at https://api.legislation.qld.gov.au/api/signup
+  errors: 0
+  finished_at: '2026-07-26T09:47:56.290483+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-07-26T09:47:56.290414+00:00'
+- error_message: Set QLD_LEGISLATION_USERNAME and QLD_LEGISLATION_PASSWORD to authenticate
+    to the Queensland Legislation API. Register at https://api.legislation.qld.gov.au/api/signup
+  errors: 0
+  finished_at: '2026-07-26T10:54:11.850383+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-07-26T10:54:11.850321+00:00'
+- error_message: Set QLD_LEGISLATION_USERNAME and QLD_LEGISLATION_PASSWORD to authenticate
+    to the Queensland Legislation API. Register at https://api.legislation.qld.gov.au/api/signup
+  errors: 0
+  finished_at: '2026-08-07T05:35:54.643063+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-07T05:35:54.642971+00:00'
+- error_message: 'QLD_LEGISLATION_USERNAME and QLD_LEGISLATION_PASSWORD not set —
+    cannot authenticate to the Queensland Legislation API, so this run would yield
+    0 of the ~18,769 in-force consolidated acts and subordinate legislation. An account
+    is ALREADY PROVISIONED: the credentials live in Infisical at prod:/source-credentials
+    as QLD_LEGISLATION_USERNAME / QLD_LEGISLATION_PASSWORD and were verified against
+    POST /v1/auth/token. A fleet worker that hits this has not had them injected (see
+    the base64 credential argument to vps-bootstrap.sh) — this is a provisioning gap,
+    not a dead source or a scraper bug. New accounts register at https://api.legislation.qld.gov.au/api/signup'
+  errors: 0
+  finished_at: '2026-08-07T05:36:47.517495+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-07T05:36:47.517408+00:00'
+- error_message: 'QLD_LEGISLATION_PASSWORD not set — cannot authenticate to the Queensland
+    Legislation API, so this run would yield 0 of the ~18,769 in-force consolidated
+    acts and subordinate legislation. An account is ALREADY PROVISIONED: the credentials
+    live in Infisical at prod:/source-credentials as QLD_LEGISLATION_USERNAME / QLD_LEGISLATION_PASSWORD
+    and were verified against POST /v1/auth/token. A fleet worker that hits this has
+    not had them injected (see the base64 credential argument to vps-bootstrap.sh)
+    — this is a provisioning gap, not a dead source or a scraper bug. New accounts
+    register at https://api.legislation.qld.gov.au/api/signup'
+  errors: 0
+  finished_at: '2026-08-07T05:36:47.608104+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-07T05:36:47.608018+00:00'
 total_records: 0

@@ -380,37 +380,43 @@ class RISScraper(BaseScraper):
                             section_heading = heading
                             break  # Use the first paragraph-level heading
 
-                # Extract text from all <absatz> (paragraph) elements
-                for absatz in root.iter(f"{ns}absatz" if ns else "absatz"):
-                    text = absatz.text or ""
-                    # Also get text from child elements
-                    for child in absatz.iter():
-                        if child.text:
-                            text += " " + child.text
-                        if child.tail:
-                            text += " " + child.tail
-                    text = text.strip()
-                    if text:
-                        text_parts.append(text)
+                # Header/footer boilerplate ("Bundesrecht konsolidiert",
+                # "www.ris.bka.gv.at Seite ...") lives inside <kzinhalt>/<fzinhalt>.
+                # Collect those element ids so we can skip them entirely.
+                skip_ids = set()
+                for boiler_tag in ("kzinhalt", "fzinhalt"):
+                    for boiler in root.iter(f"{ns}{boiler_tag}" if ns else boiler_tag):
+                        for descendant in boiler.iter():
+                            skip_ids.add(id(descendant))
 
-                # If no paragraphs found with namespace, try without
-                if not text_parts and ns:
-                    for absatz in root.iter("absatz"):
-                        text = absatz.text or ""
-                        for child in absatz.iter():
-                            if child.text:
-                                text += " " + child.text
-                            if child.tail:
-                                text += " " + child.tail
-                        text = text.strip()
+                # Extract text from all block-level content elements in document
+                # order. Crucially this includes <listelem> (enumerated list items
+                # under <liste>/<aufzaehlung>) and <schlussteil>, which are siblings
+                # of <absatz> and were previously dropped (issue #1194). These block
+                # tags do not nest within one another, so itertext() on each yields
+                # non-overlapping text with no duplication.
+                content_tags = {"absatz", "listelem", "schlussteil"}
+                for elem in root.iter():
+                    if id(elem) in skip_ids:
+                        continue
+                    tag = elem.tag.split("}")[-1] if "}" in elem.tag else elem.tag
+                    if tag in content_tags:
+                        text = "".join(elem.itertext()).strip()
+                        # The enumeration marker <symbol>1.</symbol> often abuts the
+                        # item text with no whitespace ("1.die Firma") — insert a
+                        # space after the leading marker for readability.
+                        if tag == "listelem":
+                            text = re.sub(r"^(\d+[a-z]?\.)(?=\S)", r"\1 ", text)
                         if text:
                             text_parts.append(text)
 
-                # If no paragraphs, try other text-containing elements
+                # Last-resort fallback for documents without the above structure
                 if not text_parts:
                     for elem in root.iter():
+                        if id(elem) in skip_ids:
+                            continue
                         tag = elem.tag.split("}")[-1] if "}" in elem.tag else elem.tag
-                        if tag in ["titel", "untertitel", "absatz", "text", "betreff"]:
+                        if tag in ["titel", "untertitel", "text", "betreff"]:
                             text = "".join(elem.itertext()).strip()
                             if text:
                                 text_parts.append(text)

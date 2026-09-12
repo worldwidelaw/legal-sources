@@ -59,11 +59,37 @@ Conservative approach: 1 request/second to respect the parliamentary infrastruct
 
 ## Bootstrap Strategy
 
-1. Fetch RSS feed for recent official section materials
-2. For each RSS item, fetch full issue contents page
-3. Extract document metadata from issue table
-4. Match RSS and scraped data by description
-5. Store normalized records
+The full crawl walks the sequential `idMat` document-ID space:
+
+1. Read the resume point (see below) to find the first ID to scan
+2. Read the newest published `idMat` from the RSS feed's latest issue, and scan
+   up to it plus a margin for materials issued mid-run
+3. Fetch `/showMaterialDV.jsp?idMat={id}` for each ID and extract the full text
+4. Store normalized records, persisting progress as it goes
+
+Only about a third of the ID space is live, in clusters separated by dead runs of
+10–40 IDs (wider bands exist, e.g. around 231300–231500), so misses are expected
+and do not mean the corpus has ended.
+
+### Resume / checkpointing
+
+The corpus is ~245,000 IDs, which does not fit in a single fleet slot: a run from
+scratch hits the 100h wall around `idMat=200000` (issue #1433). The crawl is
+therefore resumable:
+
+- `resume_point.json` — committed to git, so a **fresh clone on a new VPS**
+  continues from the last completed position instead of restarting from
+  `idMat=1000`. After a fleet run, copy `last_id` from that run's progress file
+  into this file so the next worker picks up where this one stopped.
+- `data/fetch_all_progress.json` — live progress, written every 250 scanned IDs.
+  Survives restarts on the same box (gitignored, lost on teardown).
+
+The resume point is the last ID that actually **yielded a document**, not the last
+scanned — the tail past the final document is where new materials appear, so it is
+re-scanned on every run. An interrupted run may re-fetch up to ~250 IDs of already
+ingested ground; the loader dedups on `doc_id`.
+
+Force a full re-crawl from the beginning with `--restart`.
 
 ## Update Strategy
 

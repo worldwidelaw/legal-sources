@@ -6,20 +6,24 @@ Fetches Australian Commonwealth legislation from the official REST API.
 
 Strategy:
   - Uses the official REST API at https://api.prod.legislation.gov.au/v1/
-  - Lists titles with OData pagination ($top, $skip)
-  - For each title, finds the current version
-  - Downloads Word document and extracts full text from XML
+  - Walks the /v1/Documents collection directly, ordered by (titleId, start desc),
+    so every document's download parameters, registerId and compilation number
+    arrive with the listing. This costs one request per document instead of the
+    four (count / titles page / versions / documents) the per-title walk needed.
+  - Title metadata comes from a single cached pass over /v1/titles.
+  - Progress is checkpointed on the titleId cursor, so a run killed by the fleet's
+    100-hour cap resumes where it stopped instead of restarting (issue #1481).
 
 Endpoints:
-  - Titles listing: /v1/titles?$top=100&$skip=0
-  - Version find: /v1/versions?$filter=titleId eq 'X' and isLatest eq true
-  - Document download: /v1/documents/find(registerId='X',type='Primary',format='Word',...)
+  - Titles listing: /v1/titles?$orderby=id&$top=100&$filter=id gt 'X'
+  - Documents listing: /v1/Documents?$filter=type eq 'Primary' and ...&$orderby=titleId,start desc
+  - Document download: /v1/documents(titleid='X',start=...,type='Primary',format='Epub',...)
 
 Data:
   - Acts from 1901 to present
   - Legislative Instruments, Notifiable Instruments, etc.
   - Language: English
-  - Rate limit: conservative 1 request/second
+  - Rate limit: 2 requests/second
 
 Usage:
   python bootstrap.py bootstrap          # Full initial pull
@@ -31,14 +35,16 @@ Usage:
 import sys
 import json
 import logging
+import time
 import zipfile
 import io
 from html import unescape
 import re
 import xml.etree.ElementTree as ET
+from itertools import groupby
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Generator, Optional, Dict, Any, List
+from typing import Generator, Optional, Dict, Any, List, Tuple
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -57,19 +63,35 @@ logger = logging.getLogger("legal-data-hunter.AU.FederalRegister")
 API_BASE_URL = "https://api.prod.legislation.gov.au"
 WEBSITE_URL = "https://www.legislation.gov.au"
 
-# Collections to fetch (in order of priority)
-COLLECTIONS = [
-    "Act",
-    "LegislativeInstrument",
-    "NotifiableInstrument",
-    "Constitution",
-    "AdministrativeArrangementsOrder",
-    "ContinuedLaw",
-    "PrerogativeInstrument",
-]
-
-# Page size for OData queries
+# Page size for OData queries. The API rejects anything above 100.
 PAGE_SIZE = 100
+
+# Only these formats carry extractable full text; EPUB is preferred because its
+# HTML is cleaner than the Word XML fallback.
+DOCUMENT_FILTER = (
+    "type eq 'Primary' and (format eq 'Epub' or format eq 'Word')"
+)
+FORMAT_PREFERENCE = {"Epub": 0, "Word": 1}
+
+# Slim projection of a title kept in the in-memory index; the full payload
+# carries nameHistory/statusHistory blobs that would balloon a 132K-entry map.
+TITLE_FIELDS = (
+    "name",
+    "collection",
+    "status",
+    "makingDate",
+    "year",
+    "number",
+    "isPrincipal",
+    "seriesType",
+)
+
+CHECKPOINT_FILENAME = "au_federalregister_checkpoint.json"
+TITLES_CACHE_FILENAME = "au_titles_index.json"
+# Re-pull the titles index if the cached copy is older than this.
+TITLES_CACHE_MAX_AGE_DAYS = 30
+# Persist the cursor this often (in titles) so a hard kill loses at most this much.
+CHECKPOINT_EVERY = 50
 
 
 class AustraliaFederalRegisterScraper(BaseScraper):
@@ -85,6 +107,9 @@ class AustraliaFederalRegisterScraper(BaseScraper):
     def __init__(self):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
+
+        # Set by main() for --sample runs: samples read and write no checkpoint.
+        self.sample_mode = False
 
         self.client = HttpClient(
             base_url=API_BASE_URL,
@@ -103,62 +128,300 @@ class AustraliaFederalRegisterScraper(BaseScraper):
             timeout=120,
         )
 
-    def _get_titles_page(
-        self, skip: int = 0, top: int = PAGE_SIZE, filter_str: str = None
-    ) -> List[Dict[str, Any]]:
-        """
-        Fetch a page of titles from the API.
+    # ------------------------------------------------------------------
+    # Low-level API access
+    # ------------------------------------------------------------------
 
-        Args:
-            skip: Number of records to skip (OData $skip)
-            top: Number of records to return (OData $top)
-            filter_str: Optional OData filter string
+    def _api_get(self, path: str, attempts: int = 5) -> Dict[str, Any]:
+        """GET a JSON listing, retrying transient failures and raising loudly.
 
-        Returns:
-            List of title objects
+        Enumeration must never swallow an error: a listing that quietly returns
+        an empty page ends the crawl early and reports success, which is how a
+        truncated corpus passes for a complete one.
         """
+        last_error = None
+
+        for attempt in range(attempts):
+            try:
+                self.rate_limiter.wait()
+                resp = self.client.get(path)
+
+                if resp.status_code == 200:
+                    return resp.json()
+
+                # 4xx other than throttling is a query bug, not a blip.
+                if resp.status_code < 500 and resp.status_code != 429:
+                    raise RuntimeError(
+                        f"HTTP {resp.status_code} for {path}: {resp.text[:300]}"
+                    )
+
+                last_error = RuntimeError(f"HTTP {resp.status_code} for {path}")
+
+            except RuntimeError:
+                raise
+            except Exception as e:  # network/JSON errors are worth retrying
+                last_error = e
+
+            if attempt < attempts - 1:
+                delay = min(60, 2 ** attempt)
+                logger.warning(
+                    f"Listing request failed ({last_error}); retrying in {delay}s "
+                    f"[{attempt + 1}/{attempts}]"
+                )
+                time.sleep(delay)
+
+        raise RuntimeError(f"Listing request failed after {attempts} attempts: {last_error}")
+
+    def _api_list(self, path: str) -> List[Dict[str, Any]]:
+        """One page of an OData collection, failing closed on a malformed body.
+
+        Every walk below stops when a page comes back empty, so `.get("value",
+        [])` is dangerous: it cannot tell an empty page from a 200 that carries
+        no collection at all, and the second case would end the crawl early and
+        still report success. Anything that is not a genuine list of rows, or a
+        count that contradicts the rows, raises instead (issue #1626).
+        """
+        payload = self._api_get(path)
+
+        rows = payload.get("value")
+        if not isinstance(rows, list):
+            raise RuntimeError(
+                f"Listing {path} returned no OData collection "
+                f"(top-level keys: {sorted(payload)[:10]}). Refusing to read "
+                f"that as an empty page and stop the crawl."
+            )
+
+        # legislation.gov.au answers a count it cannot compute with the
+        # Int64.MinValue sentinel rather than an error, so an inline count is
+        # only usable once it has been sanity-checked.
+        count = payload.get("@odata.count")
+        if count is not None:
+            if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+                raise RuntimeError(
+                    f"Listing {path} reported an invalid @odata.count ({count!r}); "
+                    f"the API could not compute the collection size, so the page "
+                    f"cannot be trusted to be complete."
+                )
+            if count > 0 and not rows:
+                raise RuntimeError(
+                    f"Listing {path} reported @odata.count={count} but returned no "
+                    f"rows. Treating that as the end of the collection would drop "
+                    f"{count} documents silently."
+                )
+
+        return rows
+
+    # ------------------------------------------------------------------
+    # Checkpoint / resume (issue #1481)
+    # ------------------------------------------------------------------
+
+    @property
+    def _checkpoint_path(self) -> Path:
+        return self.source_dir / "data" / CHECKPOINT_FILENAME
+
+    def _load_checkpoint(self) -> Dict[str, Any]:
+        path = self._checkpoint_path
+        if self.sample_mode or not path.exists():
+            return {"last_title_id": "", "documents_yielded": 0}
+
         try:
-            self.rate_limiter.wait()
-
-            params = f"$top={top}&$skip={skip}"
-            if filter_str:
-                params += f"&$filter={filter_str}"
-
-            resp = self.client.get(f"/v1/titles?{params}")
-            resp.raise_for_status()
-
-            data = resp.json()
-            titles = data.get("value", [])
-            logger.debug(f"Fetched {len(titles)} titles (skip={skip})")
-            return titles
-
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(data, dict) and isinstance(data.get("last_title_id"), str):
+                return data
+            logger.warning("Checkpoint file malformed; starting from the beginning")
         except Exception as e:
-            logger.error(f"Failed to fetch titles page (skip={skip}): {e}")
-            return []
+            logger.warning(f"Could not read checkpoint ({e}); starting from the beginning")
 
-    def _get_total_count(self, filter_str: str = None) -> int:
-        """Get total count of titles matching the filter.
+        return {"last_title_id": "", "documents_yielded": 0}
 
-        The dedicated ``/v1/titles/$count`` endpoint returns a bogus
-        Int64.MinValue for filtered queries, so read the ``@odata.count``
-        field embedded in a regular titles response instead.
+    def _save_checkpoint(self, last_title_id: str, documents_yielded: int) -> None:
+        # A 12-record sample must not advance the fleet's crawl cursor.
+        if self.sample_mode:
+            return
+
+        path = self._checkpoint_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "last_title_id": last_title_id,
+            "documents_yielded": documents_yielded,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(payload), encoding="utf-8")
+        tmp.replace(path)
+
+    # ------------------------------------------------------------------
+    # Titles index
+    # ------------------------------------------------------------------
+
+    @property
+    def _titles_cache_path(self) -> Path:
+        return self.source_dir / "data" / TITLES_CACHE_FILENAME
+
+    def _load_titles_index(self) -> Dict[str, Dict[str, Any]]:
+        """Return {titleId: slim title dict} for the whole register.
+
+        Cached on disk so a resumed run does not repeat the ~1,300-request pass.
         """
+        cache = self._titles_cache_path
+
+        if self.sample_mode:
+            # A 12-record sample does not justify a ~1,300-request index pass;
+            # _build_record falls back to a per-title lookup instead.
+            return {}
+
+        if cache.exists():
+            try:
+                payload = json.loads(cache.read_text(encoding="utf-8"))
+                fetched_at = datetime.fromisoformat(payload["fetched_at"])
+                age_days = (datetime.now(timezone.utc) - fetched_at).days
+                if age_days <= TITLES_CACHE_MAX_AGE_DAYS and payload.get("titles"):
+                    logger.info(
+                        f"Using cached titles index ({len(payload['titles'])} titles, "
+                        f"{age_days}d old)"
+                    )
+                    return payload["titles"]
+                logger.info(f"Titles cache is {age_days}d old; refreshing")
+            except Exception as e:
+                logger.warning(f"Could not read titles cache ({e}); refreshing")
+
+        titles: Dict[str, Dict[str, Any]] = {}
+        cursor = ""
+
+        while True:
+            path = f"/v1/titles?$orderby=id&$top={PAGE_SIZE}"
+            if cursor:
+                path += f"&$filter=id gt '{cursor}'"
+
+            rows = self._api_list(path)
+            if not rows:
+                break
+
+            for row in rows:
+                title_id = row.get("id")
+                if title_id:
+                    titles[title_id] = {k: row.get(k) for k in TITLE_FIELDS}
+
+            cursor = rows[-1].get("id") or cursor
+            if len(titles) % 10000 < PAGE_SIZE:
+                logger.info(f"  Titles indexed: {len(titles)}")
+
+            if len(rows) < PAGE_SIZE:
+                break
+
+        logger.info(f"Titles index built: {len(titles)} titles")
+
         try:
-            self.rate_limiter.wait()
-
-            params = "$top=1&$count=true"
-            if filter_str:
-                params += f"&$filter={filter_str}"
-
-            resp = self.client.get(f"/v1/titles?{params}")
-            resp.raise_for_status()
-            count = resp.json().get("@odata.count", 0)
-            # Guard against the broken sentinel value some endpoints still emit.
-            return count if isinstance(count, int) and count >= 0 else 0
-
+            cache.parent.mkdir(parents=True, exist_ok=True)
+            cache.write_text(
+                json.dumps(
+                    {
+                        "fetched_at": datetime.now(timezone.utc).isoformat(),
+                        "titles": titles,
+                    }
+                ),
+                encoding="utf-8",
+            )
         except Exception as e:
-            logger.error(f"Failed to get title count: {e}")
-            return 0
+            logger.warning(f"Could not write titles cache: {e}")
+
+        return titles
+
+    def _fetch_title(self, title_id: str) -> Optional[Dict[str, Any]]:
+        """Look up one title, for ids the cached index does not cover."""
+        try:
+            row = self._api_get(f"/v1/titles/{title_id}")
+            return {k: row.get(k) for k in TITLE_FIELDS}
+        except Exception as e:
+            logger.warning(f"Could not fetch title {title_id}: {e}")
+            return None
+
+    # ------------------------------------------------------------------
+    # Document enumeration
+    # ------------------------------------------------------------------
+
+    def _documents_page(self, after_title_id: str) -> List[Dict[str, Any]]:
+        """One page of Primary documents with titleId strictly after the cursor."""
+        filter_str = DOCUMENT_FILTER
+        if after_title_id:
+            filter_str += f" and titleId gt '{after_title_id}'"
+
+        path = (
+            f"/v1/Documents?$filter={filter_str}"
+            f"&$orderby=titleId,start desc&$top={PAGE_SIZE}"
+        )
+        return self._api_list(path)
+
+    def _all_documents_for_title(self, title_id: str) -> List[Dict[str, Any]]:
+        """Every Primary document row for one title (pages past the 100 cap)."""
+        rows: List[Dict[str, Any]] = []
+        skip = 0
+
+        while True:
+            path = (
+                f"/v1/Documents?$filter={DOCUMENT_FILTER} and titleId eq '{title_id}'"
+                f"&$orderby=start desc&$top={PAGE_SIZE}&$skip={skip}"
+            )
+            page = self._api_list(path)
+            rows.extend(page)
+            if len(page) < PAGE_SIZE:
+                return rows
+            skip += PAGE_SIZE
+
+    def _iter_title_groups(
+        self, start_after: str
+    ) -> Generator[Tuple[str, List[Dict[str, Any]]], None, None]:
+        """Yield (titleId, document rows) groups in ascending titleId order.
+
+        Rows for one title can straddle a page boundary, so the last group on a
+        full page is held back and re-read on the next request rather than being
+        yielded half-complete.
+        """
+        cursor = start_after
+
+        while True:
+            rows = self._documents_page(cursor)
+            if not rows:
+                return
+
+            groups = [(k, list(g)) for k, g in groupby(rows, key=lambda r: r.get("titleId"))]
+            is_last_page = len(rows) < PAGE_SIZE
+
+            if not is_last_page and len(groups) == 1:
+                # A single title owns the whole page — fetch it in full so the
+                # cursor can advance instead of re-reading the same page forever.
+                title_id = groups[0][0]
+                yield title_id, self._all_documents_for_title(title_id)
+                cursor = title_id
+                continue
+
+            # On a full page the trailing group may be truncated; leave it for
+            # the next round (the cursor stops before it).
+            complete = groups if is_last_page else groups[:-1]
+
+            for title_id, docs in complete:
+                if title_id:
+                    yield title_id, docs
+                    cursor = title_id
+
+            if is_last_page:
+                return
+
+    @staticmethod
+    def _pick_best_document(docs: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        """Latest compilation for a title, preferring EPUB over Word."""
+        candidates = [d for d in docs if d.get("format") in FORMAT_PREFERENCE]
+        if not candidates:
+            return None
+
+        return max(
+            candidates,
+            key=lambda d: (
+                d.get("start") or "",
+                -FORMAT_PREFERENCE[d["format"]],
+                d.get("rectificationVersionNumber") or 0,
+            ),
+        )
 
     def _get_latest_version(self, title_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -327,88 +590,97 @@ class AustraliaFederalRegisterScraper(BaseScraper):
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """
-        Yield all legislation documents from the Federal Register.
+        Yield the current version of every title in the Federal Register.
 
-        Iterates through all collections and pages, fetching current
-        versions and their full text.
+        Walks /v1/Documents in titleId order and keeps the latest Primary
+        document per title, so each record costs one listing slot plus one
+        download instead of four metadata round-trips.
+
+        The titleId cursor is checkpointed to disk, so a run cut short by the
+        fleet's 100-hour cap resumes at the next title rather than restarting
+        (issue #1481). Delete data/au_federalregister_checkpoint.json to force a
+        full re-crawl.
         """
-        documents_yielded = 0
+        checkpoint = self._load_checkpoint()
+        cursor = checkpoint.get("last_title_id", "")
+        documents_yielded = int(checkpoint.get("documents_yielded", 0) or 0)
 
-        # Build filter for in-force legislation
-        # We'll fetch all statuses but prioritize InForce
-        for collection in COLLECTIONS:
-            logger.info(f"Processing collection: {collection}")
+        if cursor:
+            logger.info(
+                f"Resuming after titleId {cursor} "
+                f"({documents_yielded} documents from previous runs)"
+            )
 
-            # Count total in this collection
-            filter_str = f"collection eq '{collection}'"
-            total = self._get_total_count(filter_str)
-            logger.info(f"  Total titles in {collection}: {total}")
+        titles = self._load_titles_index()
+        titles_seen = 0
 
-            if total == 0:
-                continue
+        for title_id, docs in self._iter_title_groups(cursor):
+            titles_seen += 1
 
-            # Paginate through titles
-            skip = 0
-            while skip < total:
-                titles = self._get_titles_page(skip=skip, top=PAGE_SIZE, filter_str=filter_str)
-
-                if not titles:
-                    break
-
-                for title in titles:
-                    title_id = title.get("id")
-                    if not title_id:
-                        continue
-
-                    # Get the latest version
-                    version = self._get_latest_version(title_id)
-                    if not version:
-                        logger.debug(f"No version found for {title_id}, skipping")
-                        continue
-
-                    register_id = version.get("registerId")
-                    if not register_id:
-                        # Some titles don't have a registerId in version
-                        # Try using title's id
-                        register_id = title_id
-                        logger.debug(f"Using title_id as register_id for {title_id}")
-
-                    # Get document info (prefer EPUB)
-                    doc_info = self._get_document_info(title_id)
-                    if not doc_info:
-                        logger.debug(f"No document info for {title_id}, skipping")
-                        continue
-
-                    # Download document
-                    doc_bytes = self._download_document(doc_info)
-                    if not doc_bytes:
-                        logger.debug(f"No document for {title_id}, skipping")
-                        continue
-
-                    # Extract full text
-                    fmt = doc_info.get("format", "Epub")
-                    full_text = self._extract_text_from_archive(doc_bytes, fmt)
-
-                    if not full_text or len(full_text) < 100:
-                        logger.debug(f"Insufficient text for {register_id} ({len(full_text) if full_text else 0} chars)")
-                        continue
-
-                    yield {
-                        "title": title,
-                        "version": version,
-                        "register_id": register_id,
-                        "full_text": full_text,
-                    }
-
+            doc_info = self._pick_best_document(docs)
+            if doc_info:
+                record = self._build_record(title_id, doc_info, titles.get(title_id))
+                if record:
+                    yield record
                     documents_yielded += 1
 
-                    # Log progress periodically
                     if documents_yielded % 50 == 0:
-                        logger.info(f"Progress: {documents_yielded} documents fetched")
+                        logger.info(
+                            f"Progress: {documents_yielded} documents fetched "
+                            f"(at titleId {title_id})"
+                        )
 
-                skip += PAGE_SIZE
+            # The cursor advances past every title we have finished, whether or
+            # not it produced a record — a title with no usable document would
+            # otherwise be retried on every resume.
+            cursor = title_id
+            if titles_seen % CHECKPOINT_EVERY == 0:
+                self._save_checkpoint(cursor, documents_yielded)
 
-        logger.info(f"Fetch complete: {documents_yielded} total documents")
+        if cursor:
+            self._save_checkpoint(cursor, documents_yielded)
+
+        logger.info(
+            f"Fetch complete: {documents_yielded} total documents "
+            f"({titles_seen} titles processed this run)"
+        )
+
+    def _build_record(
+        self,
+        title_id: str,
+        doc_info: Dict[str, Any],
+        title: Optional[Dict[str, Any]],
+    ) -> Optional[dict]:
+        """Download one document and package it for normalize(), or None."""
+        register_id = doc_info.get("registerId") or title_id
+
+        doc_bytes = self._download_document(doc_info)
+        if not doc_bytes:
+            logger.debug(f"No document bytes for {title_id}, skipping")
+            return None
+
+        fmt = doc_info.get("format", "Epub")
+        full_text = self._extract_text_from_archive(doc_bytes, fmt)
+
+        if not full_text or len(full_text) < 100:
+            logger.debug(
+                f"Insufficient text for {register_id} "
+                f"({len(full_text) if full_text else 0} chars)"
+            )
+            return None
+
+        if title is None:
+            title = self._fetch_title(title_id)
+
+        title_payload = dict(title or {})
+        title_payload["id"] = title_id
+
+        return {
+            "title": title_payload,
+            "version": doc_info,
+            "register_id": register_id,
+            "full_text": full_text,
+        }
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """
@@ -501,17 +773,19 @@ class AustraliaFederalRegisterScraper(BaseScraper):
         register_id = raw.get("register_id", "")
         full_text = raw.get("full_text", "")
 
-        title_id = title.get("id", "")
-        name = title.get("name", "") or version.get("name", "")
-        collection = title.get("collection", "")
-        status = title.get("status", "") or version.get("status", "")
+        # Slim cached titles store missing values as null, so fall back through
+        # `or` rather than dict defaults.
+        title_id = title.get("id") or ""
+        name = title.get("name") or version.get("name") or ""
+        collection = title.get("collection") or ""
+        status = title.get("status") or version.get("status") or ""
 
         # Parse dates
-        making_date = title.get("makingDate", "")
+        making_date = title.get("makingDate") or ""
         if making_date:
             making_date = making_date[:10]  # ISO date only
 
-        start_date = version.get("start", "")
+        start_date = version.get("start") or ""
         if start_date:
             start_date = start_date[:10]
 
@@ -634,6 +908,7 @@ def main():
     # path so it runs the full corpus instead of falling back to sample mode.
     elif command in ("bootstrap", "bootstrap-fast"):
         if sample_mode:
+            scraper.sample_mode = True
             stats = scraper.run_sample(n=sample_size)
             print(
                 f"\nSample complete: "

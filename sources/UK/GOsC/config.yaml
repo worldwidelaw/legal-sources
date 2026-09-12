@@ -5,7 +5,7 @@
 #         are heard by the independent Professional Conduct Committee (PCC) and
 #         Health Committee (HC), with interim orders made by the Investigating
 #         Committee (IC/ISO).
-# URL: https://www.osteopathy.org.uk/raise-a-concern/hearings/decisions/
+# URL: https://www.osteopathy.org.uk/raising-a-concern/hearings/decisions/
 # Data type: case_law  (UK statutory professional-regulator adjudications —
 #            distinct from UK/GMC doctors, UK/GDC dentists, UK/GOC opticians,
 #            UK/GPhC pharmacists, UK/SDT solicitors, UK/BTAS barristers,
@@ -13,21 +13,23 @@
 #            UK/SocialWorkEngland).
 # Auth: none
 #
-# osteopathy.org.uk publishes a single "Decisions" listing page grouping
-# published cases (undertakings, interim suspension orders, hearing outcomes) as
-# links to per-osteopath decision pages under
-#     /news-and-resources/document-library/fitness-to-practise/{slug}/
-# The slug encodes the osteopath name, committee (PCC / HC / IC-ISO) and the
-# decision date. Each decision page is a thin wrapper that auto-downloads the
-# reasoned decision as a BORN-DIGITAL PDF linked with a relative "./{file}.pdf"
-# href (content-type application/pdf, real text layer, no OCR): a structured
-# header (Case No / committee / hearing date / case-of name / committee members /
-# legal assessor) followed by the numbered reasoned decision. The listing is a
-# rolling window (older removed under the GOsC publication policy), so one run
-# captures the current window (~40 decisions) and re-runs accumulate (the
-# pipeline dedups on _id = the stable decision slug).
+# osteopathy.org.uk was rebuilt on WordPress in 2026: every published case
+# (undertakings, interim suspension orders, council decisions, PCC/HC hearing
+# outcomes) is a `hearing_decision` custom post type exposed through the site's
+# open WP REST API:
+#     /wp-json/wp/v2/hearing_decision?per_page=100
+# giving id, slug, link, title (ending with the decision date) and a
+# hearing_decision_type taxonomy term. Each post lives at
+# /hearing-decision/{slug}/ and links the reasoned decision as a BORN-DIGITAL PDF
+# under /wp-content/uploads/YYYY/MM/ (content-type application/pdf, real text
+# layer, no OCR): a structured header (Case No / committee / hearing date /
+# case-of name / committee members / legal assessor) followed by the numbered
+# reasoned decision. The published set is a rolling window (older removed under
+# the GOsC publication policy), so one run captures the current window and
+# re-runs accumulate (the pipeline dedups on _id = the stable decision slug).
 #
-# Total: ~40 full-text decisions in the live published window.
+# Total: 44 full-text decisions of the 46 currently published (2 are image-only
+# scans needing OCR).
 
 source:
   id: UK/GOsC
@@ -35,7 +37,7 @@ source:
   country: UK
   data_types:
     - case_law
-  url: https://www.osteopathy.org.uk/raise-a-concern/hearings/decisions/
+  url: https://www.osteopathy.org.uk/raising-a-concern/hearings/decisions/
   language: en
   auth: none
   license: custom-terms

@@ -31,6 +31,13 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.pdf_extract import extract_pdf_markdown
 
+# PDF extraction is delegated to common.pdf_extract.extract_pdf_markdown, which picks
+# among opendataloader/pdfplumber/pypdf/OCR at call time. These flags survive from the
+# pre-refactor per-library imports; keep them defined so the old call sites don't NameError.
+HAS_PYMUPDF = True
+HAS_PDFMINER = True
+
+
 logger = logging.getLogger("legal-data-hunter")
 
 S3_BASE = "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com"

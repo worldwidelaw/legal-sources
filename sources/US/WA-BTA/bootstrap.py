@@ -49,7 +49,7 @@ from typing import Generator
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common import pdf_extract
 
 logging.basicConfig(
@@ -69,6 +69,16 @@ UNIVERSAL_TERM = "board"
 FULL_MAXFILES = 25000
 SAMPLE_MAXFILES = 40
 
+# Primary enumeration: IIS directory browsing is enabled on the PDF store, so
+# the whole corpus can be walked without the dtSearch index (which the server
+# periodically loses — see issue #1478, "$E 0001 Unable to access index").
+ROOT_DIR = "/Decision%20PDF/"
+# Walked first in sample mode: small (~1.2K files) and covers the modern
+# "Formal Docket" decisions.
+SAMPLE_DIR = "/Decision%20PDF/Formal%20Dockets/"
+# Fail loud rather than reporting a thin corpus as a successful refresh.
+MIN_EXPECTED_DOCS = 15000
+
 MON = ["January", "February", "March", "April", "May", "June", "July",
        "August", "September", "October", "November", "December"]
 DATE_RE = re.compile(r"\b(" + "|".join(MON) + r")\s+(\d{1,2}),\s+(\d{4})")
@@ -81,6 +91,15 @@ FDATE_RE = re.compile(r"<B>Date:</B>\s*([0-9/]+)", re.I)
 TITLE_RE = re.compile(r"<B>Title:</B>\s*(.*?)<BR>", re.I | re.S)
 INDEX_FIELD_RE = re.compile(
     r'name="index"[^>]*value="([^"]*)"', re.I)
+
+# IIS directory listing row:
+#   " 8/27/2019 10:33 AM   &lt;dir&gt; <A HREF="/Decision%20PDF/Fiche%20Scans/">..."
+#   " 8/27/2019  1:29 PM       736 <A HREF="/Decision%20PDF/Exceptions.ix">..."
+LISTING_ROW_RE = re.compile(
+    r"(\d{1,2}/\d{1,2}/\d{4})\s+\d{1,2}:\d{2}\s*[AP]M\s+"
+    r"(&lt;dir&gt;|[\d,]+)\s*<A\s+HREF=\"([^\"]+)\"",
+    re.I,
+)
 
 
 class WABTAScraper(BaseScraper):
@@ -136,8 +155,11 @@ class WABTAScraper(BaseScraper):
                     body = out.stdout.decode("utf-8", "replace")
                     if "Decision%20PDF" in body or "ResultsTable" in body:
                         return body
+                    err = re.search(r'SearchErrorMessage">(.{0,400}?)</p>', body, re.S)
+                    detail = (re.sub(r"<[^>]+>", " ", err.group(1)).strip()
+                              if err else body[:200])
                     logger.warning("dtSearch returned no results page "
-                                   f"(try {attempt + 1}); first 200: {body[:200]}")
+                                   f"(try {attempt + 1}): {detail}")
             except Exception as e:
                 logger.warning(f"dtSearch POST failed (try {attempt + 1}): {e}")
             time.sleep(2 ** attempt)
@@ -183,7 +205,84 @@ class WABTAScraper(BaseScraper):
             return f"{y:04d}-{mo:02d}-{d:02d}"
         return None
 
+    # ---- enumeration: IIS directory walk (primary) -----------------------
+
+    def _list_dir(self, path: str) -> tuple[list[str], list[tuple[str, str]]]:
+        """Return (subdirectory paths, [(file path, M/D/YYYY)]) for an IIS listing."""
+        raw = self._curl_get(BASE_URL + path)
+        if not raw:
+            logger.warning(f"Directory listing unreachable: {path}")
+            return [], []
+        body = raw.decode("utf-8", "replace")
+        if "[To Parent Directory]" not in body:
+            # 403/404 error page, or directory browsing disabled for this folder.
+            logger.warning(f"Not a directory listing (skipped): {path}")
+            return [], []
+        subdirs: list[str] = []
+        files: list[tuple[str, str]] = []
+        for fdate, size, href in LISTING_ROW_RE.findall(body):
+            href = html_lib.unescape(href)
+            if size.lower() == "&lt;dir&gt;":
+                if href.rstrip("/") != path.rstrip("/"):
+                    subdirs.append(href if href.endswith("/") else href + "/")
+            elif href.lower().endswith(".pdf"):
+                files.append((href, fdate))
+        return subdirs, files
+
+    def _walk_pdfs(self, root: str, max_depth: int = 3) -> list[tuple[str, str]]:
+        """Depth-first walk of the PDF store; returns [(path, M/D/YYYY)]."""
+        found: list[tuple[str, str]] = []
+        seen_dirs: set[str] = set()
+        stack = [(root, 0)]
+        while stack:
+            path, depth = stack.pop()
+            if path in seen_dirs:
+                continue
+            seen_dirs.add(path)
+            subdirs, files = self._list_dir(path)
+            found.extend(files)
+            logger.info(f"  {path}: {len(files)} PDFs, {len(subdirs)} subdirs")
+            if depth < max_depth:
+                stack.extend((d, depth + 1) for d in subdirs)
+        return found
+
     def discover_documents(self, sample: bool = False) -> list[dict]:
+        root = SAMPLE_DIR if sample else ROOT_DIR
+        out: list[dict] = []
+        seen: set[str] = set()
+        for href, fdate in self._walk_pdfs(root):
+            pdf_url = BASE_URL + href
+            if pdf_url in seen:
+                continue
+            seen.add(pdf_url)
+            fname = html_lib.unescape(href.rsplit("/", 1)[-1])
+            out.append({
+                "pdf_url": pdf_url,
+                "docket": self._docket_from_fname(fname),
+                "slug": self._slug(pdf_url),
+                "index_title": "",
+                "file_date": self._fdate_iso(fdate),
+                "formal": "Formal%20Dockets" in pdf_url or "Formal Dockets" in pdf_url,
+            })
+            if sample and len(out) >= 25:
+                break
+        if out:
+            if not sample and len(out) < MIN_EXPECTED_DOCS:
+                # A partial listing (403'd folders, truncated response) must not
+                # be mistaken for a successful refresh of a ~25K-document corpus.
+                raise RuntimeError(
+                    f"Directory walk found only {len(out)} decisions "
+                    f"(expected >= {MIN_EXPECTED_DOCS}) — listing is incomplete"
+                )
+            logger.info(f"Discovered {len(out)} WA Board of Tax Appeals decisions "
+                        f"(directory walk)")
+            return out
+        logger.warning("Directory walk found no PDFs — falling back to dtSearch")
+        return self._discover_via_dtsearch(sample=sample)
+
+    # ---- enumeration: dtSearch (fallback) --------------------------------
+
+    def _discover_via_dtsearch(self, sample: bool = False) -> list[dict]:
         body = self._curl_search(SAMPLE_MAXFILES if sample else FULL_MAXFILES)
         if not body:
             logger.error("dtSearch query returned no body")
@@ -213,7 +312,8 @@ class WABTAScraper(BaseScraper):
             })
             if sample and len(out) >= 25:
                 break
-        logger.info(f"Discovered {len(out)} WA Board of Tax Appeals decisions")
+        logger.info(f"Discovered {len(out)} WA Board of Tax Appeals decisions "
+                    f"(dtSearch)")
         return out
 
     @staticmethod
@@ -346,6 +446,9 @@ class WABTAScraper(BaseScraper):
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self.fetch_all():
             if not since or (raw.get("date") and raw["date"] >= since):
                 yield raw

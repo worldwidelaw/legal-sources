@@ -1,0 +1,26 @@
+{
+  "_id": "FR/CADA/20144729",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-08-06T21:53:56.330002+00:00",
+  "opinion_id": "20144729",
+  "title": "Avis 20144729 - Ministère de la défense",
+  "date": "2015-01-08",
+  "url": "https://www.data.gouv.fr/explore/cada/20144729",
+  "text": "Madame X X a saisi la commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 14 novembre 2014, à la suite du refus opposé par le ministre de la défense à sa demande de communication de la lettre datée de mars 2014 et signée par le Docteur X X, demandant à son encontre une hospitalisation psychiatrique sous contrainte, détenue par la gendarmerie d'Autun.\n\nEn réponse à la demande qui lui a été adressée, le ministre de la défense a informé la commission que les seuls documents existants ont été établis par les services de gendarmerie dans le cadre d'une enquête de police judiciaire conduite sous la direction du parquet. La commission en déduit que ces pièces présentent le caractère de documents judiciaires et non un caractère administratif au sens de l'article 2 de la loi du 17 juillet 1978. \n\nLa commission se déclare, en conséquence, incompétente pour se prononcer sur la demande.",
+  "subject": "",
+  "administration": "Ministère de la défense",
+  "meanings": [
+    "Incompétence",
+    "Judiciaire"
+  ],
+  "topics": [
+    "Affaires Sanitaires Et Sociales",
+    "Dossiers Médicaux"
+  ],
+  "tags": [
+    "Hospitalisation sous contrainte ou HDT"
+  ],
+  "part": "III",
+  "type": "Avis"
+}

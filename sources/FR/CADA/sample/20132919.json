@@ -1,0 +1,29 @@
+{
+  "_id": "FR/CADA/20132919",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-08-06T21:53:55.338145+00:00",
+  "opinion_id": "20132919",
+  "title": "Avis 20132919 - Mairie de Dijon",
+  "date": "2013-09-12",
+  "url": "https://www.data.gouv.fr/explore/cada/20132919",
+  "text": "Madame XXX XXX a saisi la commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 31 juillet 2013, à la suite du refus opposé par le maire de Dijon à sa demande de communication d'une copie du rapport d'inspection sanitaire établi après le passage du cirque Pinder sur le mail Delaborde, le 14 juin 2013. \n\nEn l'absence de réponse de l'administration, la commission estime que ce document administratif, s'il existe, est communicable à toute personne qui en fait la demande, en application de l'article 2 de la loi du 17 juillet 1978 et des articles L. 124-1 à L. 124-8 du code de l'environnement, sous réserve, s'agissant des informations qu'ils comportent autres que les informations relatives à des émissions dans l'environnement, de l'occultation des mentions dont la communication porterait atteinte à la protection de la vie privée de tiers, ou qui feraient apparaître le comportement d'une personne, dès lors que la divulgation de ce comportement pourrait lui porter préjudice. Elle émet donc, sous cette réserve, un avis favorable.",
+  "subject": "",
+  "administration": "Mairie de Dijon",
+  "meanings": [
+    "Favorable",
+    "Sauf comportement",
+    "Favorable",
+    "Sauf vie privée"
+  ],
+  "topics": [
+    "Affaires Sanitaires Et Sociales",
+    "Santé Publique Et Questions Sanitaires"
+  ],
+  "tags": [
+    "Contrôle",
+    "Sécurité sanitaire"
+  ],
+  "part": "III",
+  "type": "Avis"
+}

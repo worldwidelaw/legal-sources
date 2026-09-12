@@ -2,21 +2,26 @@
 """
 FI/SupremeAdministrativeCourt -- Finnish Supreme Administrative Court (Korkein hallinto-oikeus)
 
-Fetches case law decisions with full text from the LawSampo Linked Open Data service.
+Fetches KHO case law with full text from two complementary lanes.
 
-Data source: LawSampo SPARQL endpoint (http://ldf.fi/lawsampo/sparql)
-Coverage: KHO precedents and other published decisions (10,000+ judgments)
-Data range: Historical through 2021 (LawSampo data update)
+  1. Finlex (https://www.finlex.fi) -- PRIMARY, live.
+     Official Ministry of Justice service. Covers ennakkopaatokset (1944-),
+     lyhyet-ratkaisuselosteet (1946-2021) and muut-paatokset (2013-), including
+     everything published after LawSampo froze. See finlex_web.py for why the
+     page body has to be read out of the Next.js RSC payload.
 
-Strategy:
-  - Discovery: SPARQL query for all KHO Judgment records
-  - Full text: lss:html property contains the full HTML text
-  - Metadata: ECLI, date, keywords, procedure from SPARQL
+  2. LawSampo SPARQL (http://ldf.fi/lawsampo/sparql) -- SECONDARY, historical.
+     A frozen research snapshot: 10,114 KHO judgments, MAX(dateIssued) =
+     2021-08-04. Kept because it carries clean pre-2021 full text, but it can
+     never yield anything newer (issue #1503).
+
+Records from both lanes key on the ECLI identifier, so the overlap dedupes.
 
 Usage:
   python bootstrap.py bootstrap           # Full initial pull
   python bootstrap.py bootstrap --sample  # Fetch 10+ sample records
-  python bootstrap.py update              # Incremental update
+  python bootstrap.py bootstrap-fast      # Concurrent full pull (fleet entry point)
+  python bootstrap.py update              # Incremental update (newest-first)
   python bootstrap.py test-api            # Quick connectivity test
 """
 
@@ -36,6 +41,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+
+sys.path.insert(0, str(Path(__file__).parent))
+import finlex_web  # noqa: E402  (local module, needs the path insert above)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -100,6 +108,20 @@ class SupremeAdministrativeCourtScraper(BaseScraper):
             "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
             "Accept": "application/json",
         })
+
+        # finlex.fi is a Next.js app that only serves the RSC payload to a
+        # browser-shaped request; the SPARQL UA above gets a stripped shell.
+        self.web_session = requests.Session()
+        self.web_session.headers.update({
+            "User-Agent": (
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
+            ),
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "fi,en;q=0.8",
+        })
+
+        self._years_cache: Optional[Dict[str, List[int]]] = None
 
     # -- SPARQL helpers --------------------------------------------------------
 
@@ -212,29 +234,189 @@ class SupremeAdministrativeCourtScraper(BaseScraper):
 
     # -- Abstract method implementations ---------------------------------------
 
+    # -- Finlex web lane -------------------------------------------------------
+
+    def _get_html(self, url: str) -> str:
+        """Fetch a finlex.fi page. Returns "" on failure."""
+        self.rate_limiter.wait()
+        try:
+            resp = self.web_session.get(url, timeout=60)
+            if resp.status_code == 404:
+                return ""
+            resp.raise_for_status()
+            return resp.text
+        except Exception as e:
+            logger.warning(f"Fetch failed for {url}: {e}")
+            return ""
+
+    def _discover_years(self) -> Dict[str, List[int]]:
+        """
+        Map each KHO collection to the years Finlex publishes for it.
+
+        Cached on the instance so bootstrap_fast's worker threads don't each
+        re-request the collection index pages.
+        """
+        if self._years_cache is not None:
+            return self._years_cache
+
+        years_by_collection: Dict[str, List[int]] = {}
+        for collection in finlex_web.COLLECTIONS:
+            html_text = self._get_html(finlex_web.collection_url(collection))
+            years = finlex_web.parse_years(html_text, collection)
+            if years:
+                years_by_collection[collection] = years
+                logger.info(
+                    f"{collection}: {len(years)} years ({min(years)}-{max(years)})"
+                )
+            else:
+                logger.warning(f"{collection}: no years discovered")
+
+        if not years_by_collection:
+            raise RuntimeError(
+                "Finlex year discovery returned nothing for all three KHO "
+                "collections -- the site layout changed or the host is blocking us."
+            )
+
+        self._years_cache = years_by_collection
+        return years_by_collection
+
+    def _iter_finlex_stubs(
+        self, min_year: Optional[int] = None
+    ) -> Generator[dict, None, None]:
+        """
+        Yield lightweight `{lane, collection, year, number}` stubs, newest first.
+
+        The per-decision page fetch deliberately happens in normalize() so that
+        bootstrap_fast's worker pool actually parallelises it -- base_scraper
+        only threads normalize(), not fetch_all().
+        """
+        years_by_collection = self._discover_years()
+
+        if min_year is not None:
+            years_by_collection = {
+                collection: [y for y in years if y >= min_year]
+                for collection, years in years_by_collection.items()
+            }
+
+        for stub in finlex_web.iter_stubs(years_by_collection):
+            collection, year = stub["collection"], stub["year"]
+            html_text = self._get_html(finlex_web.collection_url(collection, year))
+            numbers = finlex_web.parse_decision_numbers(html_text, collection, year)
+            if not numbers:
+                logger.info(f"{collection}/{year}: 0 decisions")
+                continue
+            logger.info(f"{collection}/{year}: {len(numbers)} decisions")
+            for number in numbers:
+                yield {
+                    "lane": "finlex",
+                    "collection": collection,
+                    "year": year,
+                    "number": number,
+                }
+
+    def _normalize_finlex(self, raw: dict) -> Optional[dict]:
+        """Fetch and parse one finlex.fi decision page into the standard schema."""
+        collection = raw["collection"]
+        year = raw["year"]
+        number = raw["number"]
+        url = finlex_web.decision_url(collection, year, number)
+
+        html_text = self._get_html(url)
+        if not html_text:
+            return None
+
+        text = finlex_web.extract_decision_text(html_text)
+        if len(text) < 200:
+            logger.warning(f"Text too short for {collection}/{year}/{number}: {len(text)}")
+            return None
+
+        meta = finlex_web.parse_metadata(text)
+        ecli = meta.get("ecli") or ""
+
+        if not ecli and collection == "ennakkopaatokset":
+            # Pages from the pre-ECLI era don't render an ECLI, but LawSampo
+            # assigns yearbook decisions ECLI:FI:KHO:{year}:{number} all the way
+            # back to 1944. Synthesising it keeps both lanes on one dedup key.
+            ecli = f"ECLI:FI:KHO:{year}:{number}"
+
+        doc_id = ecli.replace(":", "_") if ecli else f"KHO_{collection}_{year}_{number}"
+
+        # The first rendered line is the decision's own label, e.g. "KHO:2026:1".
+        first_line = text.split("\n", 1)[0].strip()
+        label = first_line if len(first_line) <= 120 else ""
+        title = label or (ecli or f"KHO {year}/{number}")
+        keywords = meta.get("keywords") or []
+        if keywords:
+            title = f"{title} - {keywords[0]}"
+
+        date = meta.get("date")
+        if not date:
+            # Fall back to the collection year rather than inventing a month/day.
+            date = None
+
+        return {
+            "_id": doc_id,
+            "_source": "FI/SupremeAdministrativeCourt",
+            "_type": "case_law",
+            "_fetched_at": datetime.now(timezone.utc).isoformat(),
+            "title": title,
+            "text": text,
+            "date": date,
+            "url": url,
+            "ecli": ecli,
+            "judgment_number": label,
+            "year": year,
+            "diary_number": meta.get("diary_number"),
+            "archival_record": meta.get("archival_record"),
+            "keywords": keywords,
+            "collection": collection,
+            "decision_type": finlex_web.COLLECTION_LABELS.get(collection, ""),
+            "court": "Korkein hallinto-oikeus",
+            "court_en": "Supreme Administrative Court",
+            "language": "fi",
+            "provenance": "finlex.fi",
+        }
+
+    # -- Abstract method implementations ---------------------------------------
+
     def fetch_all(self) -> Generator[dict, None, None]:
         """
-        Yield all KHO judgments from LawSampo.
+        Yield every KHO decision, Finlex first (live, all years) then LawSampo.
+
+        LawSampo runs second so that its frozen pre-2021 snapshot only fills
+        gaps; identical ECLIs dedupe against the Finlex records already written.
         """
+        yielded_finlex = 0
+        for stub in self._iter_finlex_stubs():
+            yielded_finlex += 1
+            yield stub
+        logger.info(f"Finlex lane: {yielded_finlex} decisions queued")
+
         for binding in self._paginate_judgments(page_size=100):
+            binding["lane"] = {"value": "lawsampo"}
             yield binding
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """
-        Yield judgments from recent pages.
+        Yield decisions published on or after `since`, newest first.
 
-        Since LawSampo is updated periodically (not real-time), we just
-        fetch the most recent pages and let deduplication handle the rest.
+        LawSampo is deliberately excluded: it stopped at 2021-08-04, so
+        including it would re-crawl 10K frozen rows on every refresh and write
+        nothing (the failure reported in issue #1503).
         """
-        for binding in self._paginate_judgments(page_size=50, max_pages=5):
-            yield binding
+        min_year = since.year if since else None
+        for stub in self._iter_finlex_stubs(min_year=min_year):
+            yield stub
 
     def normalize(self, raw: dict) -> Optional[dict]:
         """
-        Transform SPARQL binding into standard schema.
+        Transform a stub or SPARQL binding into the standard schema.
 
-        CRITICAL: Extracts and includes FULL TEXT from HTML.
+        CRITICAL: Both lanes emit full document text.
         """
+        if raw.get("lane") == "finlex":
+            return self._normalize_finlex(raw)
+
         # Extract values from SPARQL binding
         judgment_uri = raw.get("judgment", {}).get("value", "")
         label = raw.get("label", {}).get("value", "")
@@ -296,6 +478,7 @@ class SupremeAdministrativeCourtScraper(BaseScraper):
             "court": "Korkein hallinto-oikeus",
             "court_en": "Supreme Administrative Court",
             "language": "fi",
+            "provenance": "lawsampo",
         }
 
     # -- Custom commands -------------------------------------------------------
@@ -358,15 +541,17 @@ WHERE {
         errors = []
         text_lengths = []
 
-        for binding in self._paginate_judgments(page_size=50, max_pages=1):
+        # Sample from the live Finlex lane so the check exercises the path that
+        # actually covers the post-2021 years.
+        for stub in self._iter_finlex_stubs():
             if saved >= n:
                 break
 
             checked += 1
-            ecli = binding.get("ecli", {}).get("value", "")
+            ecli = f"{stub['collection']}/{stub['year']}/{stub['number']}"
 
             try:
-                normalized = self.normalize(binding)
+                normalized = self.normalize(stub)
 
                 if not normalized:
                     errors.append(f"{ecli}: Normalization returned None")
@@ -415,7 +600,7 @@ def main():
 
     if len(sys.argv) < 2:
         print(
-            "Usage: python bootstrap.py [bootstrap|update|test-api] "
+            "Usage: python bootstrap.py [bootstrap|bootstrap-fast|update|test-api] "
             "[--sample] [--sample-size N]"
         )
         sys.exit(1)
@@ -446,6 +631,15 @@ def main():
                 f"{stats['records_skipped']} skipped"
             )
             print(json.dumps(stats, indent=2))
+
+    elif command in ("bootstrap-fast", "bootstrap_fast"):
+        stats = scraper.bootstrap_fast()
+        print(
+            f"\nbootstrap_fast complete: {stats.get('records_fetched', 0)} fetched, "
+            f"{stats.get('records_new', 0)} new, "
+            f"{stats.get('records_updated', 0)} updated"
+        )
+        print(json.dumps(stats, indent=2))
 
     elif command == "update":
         stats = scraper.update()

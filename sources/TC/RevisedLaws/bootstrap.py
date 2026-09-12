@@ -114,6 +114,28 @@ def _extract_doc_id(href: str) -> str:
     return m.group(1) if m else ""
 
 
+def _fdocument_path(href: str) -> str:
+    """
+    Map an eDocman ``viewdocument`` link to the raw-PDF ``fdocument`` endpoint.
+
+    ``/viewdocument/{id}`` only 303-redirects to the Google Docs viewer
+    (``docs.google.com/viewer?url=.../fdocument?Itemid=9999``), so following it
+    yields the viewer's HTML rather than the PDF (issue #1369). The redirect
+    target is derived from the same slug, so build it directly and skip a hop.
+    """
+    path = re.sub(r"\?.*$", "", href)
+    path = re.sub(r"/viewdocument/\d+/?$", "/fdocument", path)
+    return f"{path}?Itemid=9999"
+
+
+def _pdf_url_from_viewer_redirect(location: str) -> Optional[str]:
+    """Pull the raw-PDF URL out of a Google Docs viewer redirect Location."""
+    if not location or "url=" not in location:
+        return None
+    raw = unquote(location.split("url=", 1)[1])
+    return raw or None
+
+
 def _clean_title(text: str) -> str:
     """Clean up link text to a proper title."""
     text = re.sub(r"\s+", " ", text).strip()
@@ -148,23 +170,46 @@ class TCRevisedLawsScraper(BaseScraper):
             logger.warning(f"Failed to fetch page {path}: {e}")
             return ""
 
+    def _fetch_bytes(self, path: str) -> Optional[bytes]:
+        """GET a URL and return its body if it looks like a PDF."""
+        self.rate_limiter.wait()
+        resp = self.client.get(path)
+        resp.raise_for_status()
+        content = resp.content
+        if content and content[:5] == b"%PDF-":
+            return content
+        if content and b"<html" in content[:500].lower():
+            return None
+        # Accept even if not starting with %PDF (some have a BOM)
+        if content and len(content) > 100:
+            return content
+        return None
+
+    def _resolve_via_viewer(self, view_path: str) -> Optional[bytes]:
+        """
+        Fallback hop: ask ``viewdocument`` where the PDF lives.
+
+        It answers 303 → ``docs.google.com/viewer?url=<raw pdf>``; take that
+        ``url`` parameter and fetch it directly instead of following into the
+        viewer page.
+        """
+        self.rate_limiter.wait()
+        resp = self.client.get(view_path, allow_redirects=False)
+        pdf_url = _pdf_url_from_viewer_redirect(resp.headers.get("Location", ""))
+        if not pdf_url:
+            return None
+        return self._fetch_bytes(pdf_url)
+
     def _download_pdf(self, path: str) -> Optional[bytes]:
-        """Download a PDF and return raw bytes."""
+        """Download a document PDF, taking the viewer→raw-PDF hop if needed."""
         try:
-            self.rate_limiter.wait()
-            resp = self.client.get(path)
-            resp.raise_for_status()
-            content = resp.content
-            if content and content[:5] == b"%PDF-":
+            content = self._fetch_bytes(_fdocument_path(path))
+            if content:
                 return content
-            # Some eDocman links redirect or serve HTML — check
-            if content and b"<html" in content[:500].lower():
-                logger.warning(f"Got HTML instead of PDF for {path}")
-                return None
-            # Accept even if not starting with %PDF (some have BOM)
-            if content and len(content) > 100:
+            content = self._resolve_via_viewer(path)
+            if content:
                 return content
-            logger.warning(f"Empty or invalid response for {path}")
+            logger.warning(f"No PDF payload for {path}")
             return None
         except Exception as e:
             logger.warning(f"Failed to download PDF {path}: {e}")
@@ -337,6 +382,8 @@ if __name__ == "__main__":
 
     elif command == "bootstrap":
         scraper.bootstrap(sample_mode=sample_mode, sample_size=15)
+    elif command == "bootstrap-fast":
+        scraper.bootstrap_fast()
     elif command == "update":
         scraper.bootstrap(sample_mode=False)
     else:

@@ -41,6 +41,13 @@ from common.http_client import HttpClient
 
 from common.pdf_extract import extract_pdf_markdown
 
+# PDF extraction is delegated to common.pdf_extract.extract_pdf_markdown, which picks
+# among opendataloader/pdfplumber/pypdf/OCR at call time. These flags survive from the
+# pre-refactor per-library imports; keep them defined so the old call sites don't NameError.
+HAS_PDFPLUMBER = True
+HAS_PYPDF = True
+
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -506,4 +513,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

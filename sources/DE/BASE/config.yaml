@@ -1,0 +1,28 @@
+source_id: DE/BASE
+name: Federal Office for the Safety of Nuclear Waste Management (BASE)
+country: DE
+url: https://www.base.bund.de
+data_types:
+  - doctrine
+auth: none
+schedule: weekly
+schema:
+  key_fields:
+    - doc_type
+    - topic
+    - publisher
+    - date
+license:
+  name: "§ 5 UrhG (amtliches Werk)"
+  url: "https://www.gesetze-im-internet.de/urhg/__5.html"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >-
+    Published by BASE under its statutory duty in § 6 StandAG to make the
+    repository site-selection record available to the public. § 63 UrhG requires
+    the source to be credited and § 62 UrhG prohibits altering the text. The
+    site-wide Impressum reserves rights over general web content, and part of the
+    register is authored by BGE mbH (a state-owned company, not an authority), so
+    the § 5(2) analysis is strongest for the BASE-authored documents.

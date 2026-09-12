@@ -105,23 +105,38 @@ def html_to_text(html_content: str) -> str:
 
 
 def extract_section_text(html_content: str) -> str:
-    """Extract the statutory text from a USC section page."""
+    """Extract the statutory text from a USC section page.
+
+    Cornell LII renders the full statute inside the active text tab
+    `<div class="tab-pane active" id="tab_default_1">` and places editorial
+    matter (source credits split out, amendment notes, etc.) in sibling tabs
+    (`id="tab_default_2"`, ...). The statute body is the region between the
+    opening of tab_default_1 and the next tab_default_N div.
+
+    A previous implementation used a non-greedy `(.*?)</div></div></div>` match,
+    which stopped at the first nested closing-div run — truncating any section
+    with more than a couple of subsections (e.g. 12 USC §1828 was cut to ~500
+    chars, dropping subsection (c), the Bank Merger Act). See issues #1188/#1184.
+    """
     if not html_content:
         return ""
 
-    # The main statute text on Cornell LII is in div with class containing
-    # "field-name-body" or within the main content block
-    # Look for the statute text specifically
-
-    # Try to find the tab content with the actual statute
-    tab_match = re.search(
-        r'<div[^>]*class="[^"]*tab-pane[^"]*active[^"]*"[^>]*>(.*?)</div>\s*</div>\s*</div>',
-        html_content, re.DOTALL | re.IGNORECASE
+    # Preferred: the active statute-text tab, bounded by the next tab div.
+    open_match = re.search(
+        r'<div[^>]*class="[^"]*tab-pane[^"]*active[^"]*"[^>]*id="tab_default_1"[^>]*>',
+        html_content, re.IGNORECASE
     )
-    if tab_match:
-        return html_to_text(tab_match.group(1))
+    if open_match:
+        start = open_match.end()
+        next_tab = re.search(
+            r'<div[^>]*id="tab_default_[2-9]', html_content[start:], re.IGNORECASE
+        )
+        end = start + next_tab.start() if next_tab else len(html_content)
+        text = html_to_text(html_content[start:end])
+        if text:
+            return text
 
-    # Try field-name-body
+    # Fallback: field-name-body (older LII layout).
     body_match = re.search(
         r'<div[^>]*class="[^"]*field-name-body[^"]*"[^>]*>(.*?)</div>\s*</div>',
         html_content, re.DOTALL | re.IGNORECASE
@@ -129,7 +144,7 @@ def extract_section_text(html_content: str) -> str:
     if body_match:
         return html_to_text(body_match.group(1))
 
-    # Fallback: extract from the whole page
+    # Last resort: extract from the whole page.
     return html_to_text(html_content)
 
 
@@ -287,11 +302,17 @@ class CornellLIIScraper(BaseScraper):
         sample_limit = 15 if sample else None
         count = 0
 
-        # For sample mode, fetch from a few diverse titles
+        # For sample mode, fetch from a few diverse titles. Include Title 12
+        # (Banks) so long multi-subsection sections such as §1828 (Bank Merger
+        # Act) exercise the full-statute extraction path — see issues #1188/#1184.
         if sample:
-            sample_titles = [1, 5, 18, 26, 42]  # General, Gov Org, Crimes, Tax, Public Health
+            sample_titles = [12, 26, 42, 15, 5]  # Banks, Tax, Public Health, Commerce, Gov Org
+            # Cap sections per chapter in sample mode so the run spans multiple
+            # titles/chapters (variety) instead of exhausting one short chapter.
+            per_chapter_cap = 3
         else:
             sample_titles = list(range(1, 55))  # All 54 titles
+            per_chapter_cap = None
 
         for title_num in sample_titles:
             logger.info(f"Processing Title {title_num}...")
@@ -310,6 +331,9 @@ class CornellLIIScraper(BaseScraper):
                     continue
 
                 logger.info(f"  Chapter {chapter}: {len(sections)} sections")
+
+                if per_chapter_cap:
+                    sections = sections[:per_chapter_cap]
 
                 for section in sections:
                     raw = self.fetch_section(title_num, section)
@@ -371,4 +395,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

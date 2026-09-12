@@ -1,0 +1,73 @@
+source:
+  id: US/CA-WCAB
+  name: California Workers' Compensation Appeals Board — En Banc, Significant Panel & Panel Decisions
+  country: US
+  url: https://www.dir.ca.gov/wcab/
+  auth: none
+  data_types:
+  - case_law
+  description: >
+    En banc, significant panel and ordinary panel decisions of the California
+    Workers' Compensation Appeals Board (~5,790), published as born-digital PDFs
+    on the Department of Industrial Relations site. En banc decisions bind all
+    workers' compensation judges and the Board itself; significant panel
+    decisions are persuasive authority; panel decisions (2021-) are the Board's
+    routine appellate output.
+license:
+  name: Public domain — 17 U.S.C. § 105
+  url: https://www.law.cornell.edu/uscode/text/17/105
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: US state government edict; not subject to copyright.
+fetch:
+  rate_limit_delay: 1
+  sample_size: 15
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: decision_series
+    required: false
+    type: string
+  - name: citation
+    required: false
+    type: string
+  - name: reporter_citation
+    required: false
+    type: string
+  - name: case_numbers
+    required: false
+    type: array
+  - name: parties
+    required: false
+    type: string
+  - name: summary
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string
+  - name: year
+    required: false
+    type: integer

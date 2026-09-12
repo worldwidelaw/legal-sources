@@ -23,9 +23,16 @@ auth:
   type: "none"
 
 rate_limit:
-  requests_per_second: 0.1
-  burst: 1
-  notes: "API enforces 1 req/10 sec. Available 03:00-23:45 Danish time."
+  requests_per_second: 12
+  burst: 24
+  max_workers: 8
+  notes: >
+    Two hosts, two limits. The documented 1 req/10 sec applies only to the
+    harvest API (api.retsinformation.dk/v1/Documents, available 03:00-23:45
+    Danish time) and is enforced separately in bootstrap.py. The crawl host
+    retsinformation.dk (sitemap + ELI /xml) serves ~20 req/s; this value
+    governs BaseScraper's per-record limiter, which previously sat at 0.1
+    and capped the whole bootstrap at 0.1 rec/s (issue #1460).
 
 api:
   type: "rest"

@@ -1,0 +1,155 @@
+# ===================================================================
+# SK/UVO-Namietky -- Slovakia, Úrad pre verejné obstarávanie,
+#                    rozhodnutia o námietkach (objection decisions)
+# ===================================================================
+# Full text of the decisions on objections issued by the Slovak Public
+# Procurement Office in review proceedings under Act No. 343/2015 Coll.
+# Each decision adjudicates a specific review case = case_law.
+#
+# ACCESS: public TYPO3 HTML register, no auth, no captcha, no WAF.
+#   GET  {LIST_PATH}?page=N                       -> 20-row table
+#   GET  {LIST_PATH}/rozhodnutie-download/{id}?cHash={hash} -> decision PDF
+#
+# The register table already carries every metadata field (contracting
+# authority, contract subject, Vestník notice reference, statutory ground,
+# decision number, decision date, operative outcome), so nothing has to be
+# mined out of the PDF body.
+#
+# Distinct from CZ/UOHS (Czech competition/procurement office) and from
+# the ÚVO kontrola and správne-delikty registers, which are separate
+# sources to be added later.
+# ===================================================================
+
+source:
+  id: "SK/UVO-Namietky"
+  country: "SK"
+  name: "Slovakia — Úrad pre verejné obstarávanie, Rozhodnutia o námietkach (Public Procurement Office objection decisions)"
+  url: "https://www.uvo.gov.sk/dohlad/namietky/prehlad-rozhodnuti-o-namietkach-vseobecna-agenda"
+  description: |
+    Decisions on objections (rozhodnutia o námietkach) of the Slovak
+    Public Procurement Office (Úrad pre verejné obstarávanie), the
+    national review body for public procurement. The register covers the
+    general agenda (všeobecná agenda) from 2002 to the present; entries
+    from roughly 2011 onwards publish the full decision as a born-digital
+    PDF, which is what this source ingests. Older entries are summary-only
+    in the register and are skipped as having no full text.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1.5
+  burst: 3
+  max_workers: 4
+
+api:
+  type: "html"
+  base_url: "https://www.uvo.gov.sk"
+  endpoints:
+    list: "GET /dohlad/namietky/prehlad-rozhodnuti-o-namietkach-vseobecna-agenda?page=N"
+    document: "GET /dohlad/namietky/prehlad-rozhodnuti-o-namietkach-vseobecna-agenda/rozhodnutie-download/{id}?cHash={hash}"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 18
+  key_fields:
+    - name: "title"
+      description: "Decision number, contracting authority and contract subject, e.g. 'Rozhodnutie o námietkach 12002-6000/2026 — Ministerstvo vnútra SR — Košele pre príslušníkov Policajného zboru'"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (Slovak), extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the register's DD.MM.YYYY column"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "decision_number"
+      description: "Office file number of the decision, e.g. '12002-6000/2026'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "notice_reference"
+      description: "Reference of the contract notice in the Vestník verejného obstarávania, e.g. '7146-MST - 81/2025'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "contracting_authority"
+      description: "Contracting authority whose procedure was challenged"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "contract_subject"
+      description: "Subject of the challenged public contract"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "legal_ground"
+      description: "Statutory ground of the objection, e.g. '§ 170 ods. 3 písm. d) proti vylúčeniu'"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "outcome"
+      description: "Operative outcome of the decision as summarised in the register"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "court"
+      description: "Deciding body — Úrad pre verejné obstarávanie"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "url"
+      description: "Direct URL of the decision PDF (includes the mandatory cHash token)"
+      type: "string"
+      role: "metadata"
+      required: true
+
+license:
+  name: "Slovak official decisions — reuse terms not stated"
+  url: "https://www.uvo.gov.sk/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: |
+    ⚠️ Licence unverified. The site footer asserts "© ÚVO … Všetky práva
+    vyhradené" and publishes no reuse statement. Slovak copyright law
+    (Act No. 185/2015 Coll., § 5) excludes official decisions and other
+    acts of public authorities from copyright protection, which strongly
+    suggests the decision texts themselves are freely reusable, but with
+    no published statement the source is flagged commercial_use: false
+    pending confirmation from the Office.
+
+notes: |
+  - The cHash token on each download URL is MANDATORY and can only be
+    harvested from the listing row that owns it; the numeric id alone does
+    not resolve. Ids are therefore never enumerated.
+  - Two id spaces exist: positive (recent) and NEGATIVE (pre-~2015). A
+    naive \d+ regex silently drops the whole historical corpus, so the
+    download regex matches an optional leading minus.
+  - Downloads are served as application/octet-stream, so the %PDF- magic
+    is sniffed rather than trusting the Content-Type header.
+  - Listing pages are NOT strictly chronological and PDF-backed rows are
+    not contiguous (pages 400 and 450 hold 20 rows with no PDF, page 470
+    holds one), so every page up to the last is walked. Stopping at the
+    first PDF-less page would truncate the corpus.
+  - The page count is read from the pagination widget rather than being
+    hardcoded, so the walk follows the register as it grows.
+  - Completed listing pages are persisted to data/checkpoint.json so a
+    relaunched fleet slot resumes without re-walking the register.
+  - If the whole walk yields zero PDF-backed rows the run raises instead
+    of reporting an empty corpus, so a future block fails loud.

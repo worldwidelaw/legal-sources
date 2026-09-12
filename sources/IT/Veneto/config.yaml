@@ -1,7 +1,7 @@
 source_id: IT/Veneto
 country: IT
 name: Veneto Regional Legislation (BUR)
-url: http://bur.regione.veneto.it/BurvServices/
+url: https://bur.regione.veneto.it/BurvServices/
 
 data_types:
   - legislation
@@ -10,8 +10,8 @@ license: CC0 1.0 Universal (Italian public sector information)
 language: it
 
 endpoints:
-  search: http://bur.regione.veneto.it/BurvServices/Pubblica/SommarioRicerca.aspx
-  detail: http://bur.regione.veneto.it/BurvServices/Pubblica/DettaglioLegge.aspx
+  search: https://bur.regione.veneto.it/BurvServices/Pubblica/SommarioRicerca.aspx
+  detail: https://bur.regione.veneto.it/BurvServices/Pubblica/DettaglioLegge.aspx
 
 schema:
   key_fields:

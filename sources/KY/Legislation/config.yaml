@@ -2,11 +2,14 @@
 # KY/Legislation -- Cayman Islands Legislation (legislation.gov.ky)
 # ===================================================================
 # Official consolidated laws from the Cayman Islands Law Revision
-# Commissioner. Browse principal acts and subordinate legislation
-# from the OLRC CMS directory structure. PDF documents organized
-# by year (1961-present).
+# Commissioner: principal Acts, subordinate legislation and amending
+# instruments, every revision of each item, 1961-present.
 #
-# Discovery: Directory listing at /cms/images/LEGISLATION/PRINCIPAL/
+# Discovery: CMS index pages -- /cms/legislation/current/by-title.html
+#            POSTed once per letter A-Z (submit4 alphabet filter), plus the
+#            repealed / revoked / not-in-force listings. The old Apache
+#            directory listings under /cms/images/LEGISLATION/ now return an
+#            empty index and can no longer be crawled.
 # Full text: PDF download, extracted via pdfplumber/pypdf
 # License: Free public access
 # ===================================================================
@@ -33,26 +36,45 @@ rate_limit:
   burst: 2
 
 api:
-  type: "directory_crawl"
+  type: "html_index"
   base_url: "https://legislation.gov.ky"
-  principal_dir: "/cms/images/LEGISLATION/PRINCIPAL/"
-  subordinate_dir: "/cms/images/LEGISLATION/SUBORDINATE/"
+  by_title_path: "/cms/legislation/current/by-title.html"
+  alphabet_param: "submit4"
+  static_index_paths:
+    - "/cms/legislation/repealed.html"
+    - "/cms/legislation/revoked-secondary-legislation.html"
+    - "/cms/legislation/not-in-force-menu.html"
 
 data_model:
   type: "legislation"
-  primary_key: "legislation_id"
+  primary_key: "_id"
   update_strategy: "upsert"
   dedup_key:
-    - "legislation_id"
+    - "_id"
 
 schema:
-  total_fields: 10
+  total_fields: 12
   key_fields:
-    - name: "legislation_id"
-      description: "Legislation identifier (e.g., 2020-0001)"
+    - name: "_id"
+      description: "KY/Legislation/{CATEGORY}/{item}/{version-slug}"
       type: "string"
       role: "primary_key"
       required: true
+    - name: "legislation_id"
+      description: "Legislation item number (e.g., 1961-0003)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "legislation_type"
+      description: "principal | subordinate | amending"
+      type: "string"
+      role: "category"
+      required: true
+    - name: "version"
+      description: "Revision label (e.g., '2026 Revision', 'Act 6 of 2016')"
+      type: "string"
+      role: "content"
+      required: false
     - name: "title"
       description: "Act or regulation title"
       type: "string"
@@ -64,7 +86,7 @@ schema:
       role: "content"
       required: true
     - name: "date"
-      description: "Year of enactment"
+      description: "Revision/enactment year as ISO date (YYYY-01-01)"
       type: "string"
       role: "temporal_key"
       required: true
@@ -75,7 +97,12 @@ schema:
       required: true
 
 notes: |
-  - PDFs organized in /cms/images/LEGISLATION/PRINCIPAL/{year}/{id}/
-  - Multiple revisions per act; latest revision preferred
-  - Subordinate legislation in /cms/images/LEGISLATION/SUBORDINATE/
-  - ~67 years of legislation (1961-2026)
+  - ~1,764 PDFs discovered: principal Acts, subordinate legislation, amending
+    instruments, plus repealed/revoked/not-in-force items
+  - Every revision of an item is a separate record (Companies Act alone has
+    ~20 revisions from 1995 to 2026)
+  - Crawl order is newest-revision-first across items, principal Acts ahead of
+    subordinate and amending, so a truncated run stays broad
+  - The `_g.pdf` twins are the gazette-typeset reprint of the same text and are
+    skipped as duplicates
+  - A handful of pre-1995 amending instruments are scanned images and need OCR

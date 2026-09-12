@@ -6,13 +6,18 @@ Fetches supreme court decisions from juricaf.org, the AHJUCAF database of
 francophone judicial decisions covering 48 countries/institutions.
 
 Strategy:
-  - Paginate search results by country: /recherche/+/facet_pays:{COUNTRY}?page=N
-  - Extract decision links from search results (/arret/{ID} pattern)
+  - Enumerate decision URLs from the published sitemap: /sitemap.xml fans out to
+    38 chunks of up to 50,000 <loc> entries each (~1.85M decisions total)
   - Fetch each decision page and extract full text from <article> tag
   - Parse metadata from header (date, court, case number)
 
+The sitemap replaced search pagination (`/recherche/+/facet_pays:X?page=N`) for
+two reasons: robots.txt disallows `?page=` and `?tri=` for `User-agent: *` while
+explicitly publishing the sitemap, and paginating 10 results at a time cost
+~186,000 requests just to learn the URLs.
+
 Data Coverage:
-  - ~1.86M decisions from 48 francophone jurisdictions
+  - ~1.85M decisions from 48 francophone jurisdictions
   - Supreme/cassation courts of France, Belgium, Luxembourg, Switzerland,
     Canada, Monaco, Senegal, Madagascar, Benin, Mali, Niger, etc.
   - International courts: OHADA, UEMOA, CEMAC, ECOWAS, ECHR, CJEU
@@ -28,7 +33,6 @@ import json
 import logging
 import re
 import time
-import urllib.parse
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Optional
@@ -48,42 +52,33 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.INTL.Juricaf")
 
 BASE_URL = "https://juricaf.org"
+SITEMAP_INDEX = f"{BASE_URL}/sitemap.xml"
 
-# Countries available on Juricaf with their URL-encoded names
-# Only include countries with >5 decisions for efficiency
-JURICAF_COUNTRIES = [
-    "France", "Suisse", "Luxembourg", "Sénégal", "Belgique",
-    "Canada", "Monaco", "Bénin", "Madagascar", "Maroc",
-    "OHADA", "CEDH", "CJUE", "Mali", "Niger",
-    "Tchad", "Cameroun", "Burkina_Faso", "Togo", "CEDEAO",
-    "Côte_d'Ivoire", "Congo", "Guinée", "CEMAC", "Haïti",
-    "Congo_démocratique", "Bulgarie", "Mauritanie", "Gabon",
-    "République_centrafricaine", "République_Tchèque", "Roumanie",
-    "Liban", "Tunisie", "Cambodge", "Burundi", "UEMOA",
-    "Comores", "Andorre",
-]
+# Save progress every N decision URLs so a killed run replays at most this many.
+CHECKPOINT_EVERY = 25
 
-# Map Juricaf country names to our ISO codes
+# Map the country prefix of a decision slug (FRANCE-CONSEILDETAT-18850213-62565)
+# to our ISO code. Covers all 48 jurisdictions Juricaf facets on — the previous
+# hand-maintained search list omitted nine of them (Egypte, Hongrie, Maurice,
+# Pologne, Rwanda, Sao Tomé, Vietnam, CADHP, OEA).
 COUNTRY_MAP = {
-    "France": "FR", "Suisse": "CH", "Luxembourg": "LU",
-    "Sénégal": "SN", "Belgique": "BE", "Canada": "CA",
-    "Monaco": "MC", "Bénin": "BJ", "Madagascar": "MG",
-    "Maroc": "MA", "Mali": "ML", "Niger": "NE",
-    "Tchad": "TD", "Cameroun": "CM", "Burkina_Faso": "BF",
-    "Togo": "TG", "Côte_d'Ivoire": "CI", "Congo": "CG",
-    "Guinée": "GN", "Haïti": "HT", "Congo_démocratique": "CD",
-    "Bulgarie": "BG", "Mauritanie": "MR", "Gabon": "GA",
-    "République_centrafricaine": "CF", "République_Tchèque": "CZ",
-    "Roumanie": "RO", "Liban": "LB", "Tunisie": "TN",
-    "Cambodge": "KH", "Burundi": "BI", "Comores": "KM",
-    "Andorre": "AD",
-    # International courts
-    "OHADA": "INTL", "CEDH": "CoE", "CJUE": "EU",
-    "CEDEAO": "INTL", "CEMAC": "INTL", "UEMOA": "INTL",
+    "ANDORRE": "AD", "BELGIQUE": "BE", "BENIN": "BJ", "BULGARIE": "BG",
+    "BURKINAFASO": "BF", "BURUNDI": "BI", "CAMBODGE": "KH", "CAMEROUN": "CM",
+    "CANADA": "CA", "COMORES": "KM", "CONGO": "CG",
+    "CONGODEMOCRATIQUE": "CD", "COTEDIVOIRE": "CI", "EGYPTE": "EG",
+    "FRANCE": "FR", "GABON": "GA", "GUINEE": "GN", "HAITI": "HT",
+    "HONGRIE": "HU", "LIBAN": "LB", "LUXEMBOURG": "LU", "MADAGASCAR": "MG",
+    "MALI": "ML", "MAROC": "MA", "MAURICE": "MU", "MAURITANIE": "MR",
+    "MONACO": "MC", "NIGER": "NE", "POLOGNE": "PL",
+    "REPUBLIQUECENTRAFRICAINE": "CF", "REPUBLIQUETCHEQUE": "CZ",
+    "ROUMANIE": "RO", "RWANDA": "RW", "SAOTOMEETPRINCIPE": "ST",
+    "SENEGAL": "SN", "SUISSE": "CH", "TCHAD": "TD", "TOGO": "TG",
+    "TUNISIE": "TN", "VIETNAM": "VN",
+    # Regional and international courts
+    "CADHP": "INTL", "CEDEAO": "INTL", "CEMAC": "INTL", "OEA": "INTL",
+    "OHADA": "INTL", "UEMOA": "INTL",
+    "CEDH": "CoE", "CJUE": "EU",
 }
-
-# For sample mode, use smaller countries
-SAMPLE_COUNTRIES = ["Burundi", "Comores", "Andorre", "Mauritanie", "UEMOA"]
 
 
 class JuricafScraper(BaseScraper):
@@ -94,6 +89,8 @@ class JuricafScraper(BaseScraper):
             source_dir = str(Path(__file__).parent)
         super().__init__(source_dir)
         self._sample_mode = sample_mode
+        self._checkpoint_path = self.source_dir / "data" / "checkpoint.json"
+        self._checkpoint = self._load_checkpoint()
         self.session = requests.Session()
         self.session.headers.update({
             "User-Agent": "LegalDataHunter/1.0 (legal research; +https://github.com/worldwidelaw/legal-sources)",
@@ -101,48 +98,100 @@ class JuricafScraper(BaseScraper):
             "Accept-Language": "fr,en",
         })
 
-    def _search_country(self, country: str, max_pages: int = None) -> list[str]:
-        """Get all decision URLs for a country by paginating search results."""
-        encoded = urllib.parse.quote(country, safe='')
-        decision_urls = []
-        page = 1
+    # ── Checkpoint ────────────────────────────────────────────────────
 
-        while True:
-            url = f"{BASE_URL}/recherche/+/facet_pays:{encoded}"
-            params = {"tri": "DESC", "pays": country, "page": page}
-            time.sleep(1.5)
+    def _load_checkpoint(self) -> dict:
+        """Resume state: which sitemap chunks are done, and where the current one stopped."""
+        empty = {"sitemaps_done": [], "cursor": {}}
+        if self._sample_mode or not self._checkpoint_path.exists():
+            return empty
+        try:
+            with open(self._checkpoint_path) as f:
+                data = json.load(f)
+            return {
+                "sitemaps_done": list(data.get("sitemaps_done", [])),
+                "cursor": dict(data.get("cursor", {})),
+            }
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning(f"Ignoring unreadable checkpoint ({e}); starting from scratch")
+            return empty
 
-            try:
-                resp = self.session.get(url, params=params, timeout=30)
-                if resp.status_code != 200:
-                    logger.warning(f"  Page {page} returned {resp.status_code}")
-                    break
-            except requests.RequestException as e:
-                logger.error(f"  Error fetching page {page}: {e}")
-                break
+    def _save_checkpoint(self):
+        if self._sample_mode:
+            return
+        self._checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = self._checkpoint_path.with_suffix(".tmp")
+        with open(tmp, "w") as f:
+            json.dump(self._checkpoint, f)
+        tmp.replace(self._checkpoint_path)
 
-            # Extract decision links
-            links = re.findall(r'href="(/arret/[^"]+)"', resp.text)
-            if not links:
-                break
+    # ── Enumeration ───────────────────────────────────────────────────
 
-            for link in links:
-                full_url = f"{BASE_URL}{link}"
-                if full_url not in decision_urls:
-                    decision_urls.append(full_url)
+    def _get(self, url: str, timeout: int = 60):
+        """Rate-limited GET. Returns the response, or None on error/non-200."""
+        time.sleep(1)
+        try:
+            resp = self.session.get(url, timeout=timeout)
+        except requests.RequestException as e:
+            logger.error(f"  Error fetching {url}: {e}")
+            return None
+        if resp.status_code != 200:
+            logger.warning(f"  {url} returned {resp.status_code}")
+            return None
+        return resp
 
-            logger.info(f"  {country} page {page}: {len(links)} links (total {len(decision_urls)})")
+    def _sitemap_chunks(self) -> list:
+        """Return the sitemap chunk URLs listed in the sitemap index."""
+        resp = self._get(SITEMAP_INDEX)
+        if resp is None:
+            raise RuntimeError(f"Could not read sitemap index {SITEMAP_INDEX}")
+        chunks = re.findall(r"<loc>\s*([^<]+?)\s*</loc>", resp.text)
+        if not chunks:
+            raise RuntimeError(f"Sitemap index {SITEMAP_INDEX} listed no chunks")
+        logger.info(f"Sitemap index: {len(chunks)} chunks")
+        return chunks
 
-            # Check for next page
-            if f"page={page + 1}" not in resp.text:
-                break
+    def _sitemap_entries(self, chunk_url: str) -> list:
+        """Return ``[(decision_url, lastmod), ...]`` for one sitemap chunk."""
+        resp = self._get(chunk_url)
+        if resp is None:
+            return []
+        entries = []
+        for block in re.finditer(r"<url>(.*?)</url>", resp.text, re.DOTALL):
+            body = block.group(1)
+            loc = re.search(r"<loc>\s*([^<]+?)\s*</loc>", body)
+            if not loc or "/arret/" not in loc.group(1):
+                continue
+            lastmod = re.search(r"<lastmod>\s*([^<]+?)\s*</lastmod>", body)
+            entries.append((loc.group(1), lastmod.group(1) if lastmod else None))
+        logger.info(f"  {chunk_url.rsplit('/', 1)[-1]}: {len(entries)} decision URLs")
+        return entries
 
-            if max_pages and page >= max_pages:
-                break
+    @staticmethod
+    def _resume_index(entries: list, cursor: dict) -> int:
+        """Where to restart inside a sitemap chunk we were part-way through.
 
-            page += 1
+        Juricaf regenerates its sitemaps as decisions are added, so a stored
+        offset can drift. Trust it only if the URL still sits at that offset;
+        otherwise look the URL up, and fall back to replaying the chunk (already
+        stored decisions are skipped without a fetch anyway).
+        """
+        idx = cursor.get("index")
+        last_url = cursor.get("last_url")
+        if not last_url:
+            return 0
+        if isinstance(idx, int) and 0 <= idx < len(entries) and entries[idx][0] == last_url:
+            return idx + 1
+        for i, (url, _lastmod) in enumerate(entries):
+            if url == last_url:
+                return i + 1
+        logger.warning("  Checkpointed URL is gone from this chunk; replaying it")
+        return 0
 
-        return decision_urls
+    def _id_for_url(self, url: str) -> str:
+        """The ``_id`` normalize() will assign, derivable without fetching the page."""
+        slug = url.split("/arret/")[-1] if "/arret/" in url else url
+        return f"juricaf-{slug}"
 
     def _fetch_decision(self, url: str) -> Optional[dict]:
         """Fetch and parse a single decision page."""
@@ -234,51 +283,104 @@ class JuricafScraper(BaseScraper):
         }
 
     def fetch_all(self) -> Generator[dict, None, None]:
-        """Yield all decisions across all Juricaf countries."""
-        countries = SAMPLE_COUNTRIES if self._sample_mode else JURICAF_COUNTRIES
-        max_pages = 2 if self._sample_mode else None
-        for country in countries:
-            logger.info(f"Processing country: {country}")
-            urls = self._search_country(country, max_pages=max_pages)
-            logger.info(f"  Found {len(urls)} decisions for {country}")
+        """Yield every decision listed in the sitemap.
 
-            for i, url in enumerate(urls):
-                try:
-                    decision = self._fetch_decision(url)
-                    if decision and decision.get("text") and len(decision["text"]) > 50:
-                        decision["juricaf_country"] = country
-                        yield decision
-                    else:
-                        logger.warning(f"  [{i+1}/{len(urls)}] No text for {url}")
-                except Exception as e:
-                    logger.error(f"  [{i+1}/{len(urls)}] Error: {e}")
+        Enumeration and fetching are interleaved, so records reach storage from
+        the first chunk onward and a run cut short by the fleet's 100-hour cap
+        still leaves a usable partial corpus. At ~1.85M decisions and one
+        request per second this source cannot finish in a single slot, so
+        successive runs must continue rather than restart (#1425): progress is
+        checkpointed every CHECKPOINT_EVERY URLs, and any decision already in
+        storage is skipped without a request.
+        """
+        chunks = self._sitemap_chunks()
+        if self._sample_mode:
+            # The trailing chunk is the short one (~3K URLs vs 50K).
+            chunks = chunks[-1:]
+
+        done = set(self._checkpoint["sitemaps_done"])
+        cursor = self._checkpoint["cursor"]
+        if done:
+            logger.info(f"Resuming: {len(done)}/{len(chunks)} sitemap chunks already complete")
+
+        for chunk in chunks:
+            if chunk in done:
+                continue
+
+            entries = self._sitemap_entries(chunk)
+            if not entries:
+                continue
+
+            start = self._resume_index(entries, cursor) if cursor.get("sitemap") == chunk else 0
+            if start:
+                logger.info(f"  Resuming at entry {start}/{len(entries)}")
+            if self._sample_mode:
+                # Stride so the samples span several jurisdictions, not just
+                # the first court in the chunk.
+                entries = entries[start::max(1, len(entries) // 15)]
+                start = 0
+
+            fetched = skipped = 0
+            for offset, (url, _lastmod) in enumerate(entries[start:], start=start):
+                if not self._sample_mode and self.storage.exists(self._id_for_url(url)):
+                    skipped += 1
+                else:
+                    try:
+                        decision = self._fetch_decision(url)
+                        if decision and decision.get("text") and len(decision["text"]) > 50:
+                            fetched += 1
+                            yield decision
+                        else:
+                            # Juricaf carries metadata-only stubs for some older
+                            # decisions (empty <article>); nothing to extract.
+                            logger.debug(f"  No text for {url}")
+                    except Exception as e:
+                        logger.error(f"  Error on {url}: {e}")
+
+                if not self._sample_mode and offset % CHECKPOINT_EVERY == 0:
+                    self._checkpoint["cursor"] = {
+                        "sitemap": chunk, "index": offset, "last_url": url,
+                    }
+                    self._save_checkpoint()
+
+            logger.info(
+                f"  {chunk.rsplit('/', 1)[-1]}: {fetched} decisions fetched, "
+                f"{skipped} already stored"
+            )
+            # New decisions are appended to the trailing chunk until it fills up,
+            # so never retire it — re-walking costs nothing once its decisions
+            # are stored, since the exists() check skips them without a request.
+            if chunk != chunks[-1]:
+                self._checkpoint["sitemaps_done"].append(chunk)
+            self._checkpoint["cursor"] = {}
+            cursor = {}
+            self._save_checkpoint()
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
-        """Yield decisions imported since the given date."""
-        # Juricaf doesn't have a date-filtered API, so we fetch recent pages
-        for country in JURICAF_COUNTRIES:
-            logger.info(f"Checking updates for {country}")
-            urls = self._search_country(country, max_pages=2)
-            for url in urls:
+        """Yield decisions whose sitemap <lastmod> is on or after ``since``."""
+        cutoff = since.date().isoformat()
+        for chunk in self._sitemap_chunks():
+            for url, lastmod in self._sitemap_entries(chunk):
+                if lastmod and lastmod < cutoff:
+                    continue
                 try:
                     decision = self._fetch_decision(url)
                     if decision and decision.get("text") and len(decision["text"]) > 50:
-                        decision["juricaf_country"] = country
                         yield decision
                 except Exception as e:
-                    logger.error(f"  Error: {e}")
+                    logger.error(f"  Error on {url}: {e}")
 
     def normalize(self, raw: dict) -> dict:
         """Transform raw decision data into standard schema."""
         slug = raw.get("slug", "unknown")
         country_origin = raw.get("country_origin", "")
-        iso_code = COUNTRY_MAP.get(raw.get("juricaf_country", ""), "INTL")
+        iso_code = COUNTRY_MAP.get(country_origin.upper(), "INTL")
         court = raw.get("court", "")
 
         # Build a readable court name
         court_name = court.replace("COUR", "Cour").replace("SUPREME", "suprême")
         if not court_name:
-            court_name = raw.get("juricaf_country", "Unknown Court")
+            court_name = country_origin or "Unknown Court"
 
         title = raw.get("title", "")
         if not title:
@@ -304,7 +406,7 @@ class JuricafScraper(BaseScraper):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python bootstrap.py [bootstrap|update|test] [--sample]")
+        print("Usage: python bootstrap.py [bootstrap|bootstrap-fast|update|test] [--sample]")
         sys.exit(1)
 
     command = sys.argv[1]
@@ -312,9 +414,10 @@ if __name__ == "__main__":
     scraper = JuricafScraper(sample_mode=sample)
 
     if command == "test":
-        # Quick connectivity test
-        urls = scraper._search_country("Burundi", max_pages=1)
-        print(f"Found {len(urls)} Burundi decisions on page 1")
+        # Quick connectivity test against the smallest sitemap chunk
+        chunks = scraper._sitemap_chunks()
+        urls = [u for u, _lm in scraper._sitemap_entries(chunks[-1])]
+        print(f"Found {len(urls)} decisions in {chunks[-1]}")
         if urls:
             decision = scraper._fetch_decision(urls[0])
             if decision:
@@ -324,8 +427,11 @@ if __name__ == "__main__":
                 print(f"Text preview: {decision.get('text', '')[:200]}...")
         sys.exit(0)
 
-    if command == "bootstrap":
-        result = scraper.bootstrap(sample_mode=sample, sample_size=15)
+    if command in ("bootstrap", "bootstrap-fast", "bootstrap_fast"):
+        if sample or command == "bootstrap":
+            result = scraper.bootstrap(sample_mode=sample, sample_size=15)
+        else:
+            result = scraper.bootstrap_fast()
         print(json.dumps(result, indent=2, default=str))
     elif command == "update":
         result = scraper.update()

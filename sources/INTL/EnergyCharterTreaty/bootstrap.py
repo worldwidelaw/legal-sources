@@ -34,7 +34,7 @@ import time
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Optional
-from urllib.parse import urljoin, unquote
+from urllib.parse import urljoin, unquote, urlsplit
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -43,6 +43,23 @@ from common.base_scraper import BaseScraper
 from common.pdf_extract import extract_pdf_markdown
 
 import requests
+
+# www.energychartertreaty.org (GlobalSign AlphaSSL leaf) is served from a pool
+# whose nodes intermittently omit the intermediate CA. Clients whose trust
+# store lacks a cached copy of that intermediate — typically the fleet Linux
+# VPS, whose certifi bundle has only the GlobalSign root — then get
+# SSL: CERTIFICATE_VERIFY_FAILED ("unable to get local issuer certificate")
+# even though the leaf is valid. Python's ssl does not do AIA chasing to
+# recover the missing intermediate, so for this one known Energy Charter
+# Secretariat host only we fall back to an unverified retry on a
+# certification-verification error. Verification stays ON for every other host.
+# See issue #1241 (same class as VN/CongBao #1236).
+_INCOMPLETE_CHAIN_HOSTS = ("energychartertreaty.org",)
+
+
+def _host_allows_unverified(url: str) -> bool:
+    host = urlsplit(url).hostname or ""
+    return any(host == h or host.endswith("." + h) for h in _INCOMPLETE_CHAIN_HOSTS)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -102,6 +119,29 @@ class EnergyCharterTreatyScraper(BaseScraper):
             "Accept": "text/html,application/xhtml+xml",
             "Accept-Language": "en",
         })
+
+    # ── http ─────────────────────────────────────────────────────────
+
+    def _get(self, url: str, timeout: int) -> requests.Response:
+        """GET with certifi verification, falling back to an unverified retry
+        for the known incomplete-chain Energy Charter host on a TLS-verify
+        error (the server intermittently omits its intermediate CA)."""
+        try:
+            return self.session.get(url, timeout=timeout)
+        except requests.exceptions.SSLError:
+            if not _host_allows_unverified(url):
+                raise
+            logger.warning(
+                f"TLS verify failed for {url[:80]} — retrying unverified "
+                "(server omits intermediate CA)"
+            )
+            try:
+                requests.packages.urllib3.disable_warnings(
+                    requests.packages.urllib3.exceptions.InsecureRequestWarning
+                )
+            except Exception:
+                pass
+            return self.session.get(url, timeout=timeout, verify=False)
 
     # ── parsing helpers ──────────────────────────────────────────────
 
@@ -169,7 +209,7 @@ class EnergyCharterTreatyScraper(BaseScraper):
         return None
 
     def _get_entries(self) -> list[dict]:
-        resp = self.session.get(LISTING_URL, timeout=60)
+        resp = self._get(LISTING_URL, timeout=60)
         resp.raise_for_status()
         html = resp.content.decode("utf-8", errors="replace")
 
@@ -219,7 +259,7 @@ class EnergyCharterTreatyScraper(BaseScraper):
     def _fetch_pdf_text(self, entry: dict) -> Optional[str]:
         try:
             time.sleep(1.0)
-            resp = self.session.get(entry["pdf_url"], timeout=120)
+            resp = self._get(entry["pdf_url"], timeout=120)
             resp.raise_for_status()
         except Exception as e:
             logger.error(f"  PDF fetch failed for {entry['doc_id']}: {e}")

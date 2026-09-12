@@ -37,6 +37,9 @@ schema:
     - name: consult_id
       type: integer
       required: true
+    - name: pdf_url
+      type: string
+      required: false
     - name: opinion_number
       type: integer
       required: true

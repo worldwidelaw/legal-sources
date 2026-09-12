@@ -5,9 +5,9 @@
 # Office of the Attorney-General. Contains principal acts and
 # subsidiary legislation organised alphabetically.
 #
-# Discovery: Alphabetical listing at /acts/actlist/{letter} (A-Z)
-# Act TOC: /Acts/DisplayAct/{act_id} with section data-id attributes
-# Section text: /Acts/ViewSection/{section_id} returns full HTML text
+# Discovery: JSON API /api/get_all_acts (act index)
+# Act TOC: /api/get_act_by_id/{act_id} -> nested Sections tree of LegalIds
+# Section text: /api/retrieve_html/{LegalId} -> section_html
 # License: Free public access
 # ===================================================================
 
@@ -19,7 +19,8 @@ source:
   description: |
     Official consolidated legislation for Fiji. Covers all principal
     acts and subsidiary legislation since the 2016 consolidation.
-    Full text extracted from per-section HTML pages.
+    Full text assembled from the site's JSON API: the nested section
+    tree per act, then each node's section_html.
 
 data_types:
   - legislation
@@ -28,30 +29,43 @@ auth:
   type: "none"
 
 rate_limit:
-  requests_per_second: 1
-  burst: 3
+  requests_per_second: 6
+  burst: 10
+  max_workers: 6
+  min_rate: 1
+  max_rate: 12
 
 api:
-  type: "html_scraping"
+  type: "rest_json"
   base_url: "https://www.laws.gov.fj"
-  listing_pattern: "/acts/actlist/{letter}"
-  act_page_pattern: "/Acts/DisplayAct/{act_id}"
-  section_pattern: "/Acts/ViewSection/{section_id}"
+  index_pattern: "/api/get_all_acts"
+  act_tree_pattern: "/api/get_act_by_id/{act_id}"
+  section_pattern: "/api/retrieve_html/{legal_id}"
+  published_index: "/api/toc_lawsaspublished"
+  published_pdf: "/api/show_pdf_lawsaspublished/{id}"
+  omitted_index: "/api/toc_omittedrepealed"
+  omitted_pdf: "/api/show_pdf_omittedrepealed/{id}"
+  constitution: "/api/retrieve_constitution"
 
 data_model:
   type: "legislation"
-  primary_key: "act_id"
+  primary_key: "_id"
   update_strategy: "upsert"
   dedup_key:
-    - "act_id"
+    - "_id"
 
 schema:
-  total_fields: 12
+  total_fields: 13
   key_fields:
-    - name: "act_id"
-      description: "Numeric act ID from laws.gov.fj URL"
+    - name: "_id"
+      description: "FJ/Laws/{kind}/{id} — kind is act, published or omittedrepealed"
       type: "string"
       role: "primary_key"
+      required: true
+    - name: "document_class"
+      description: "consolidated_act | law_as_published | omitted_or_repealed | constitution"
+      type: "string"
+      role: "category"
       required: true
     - name: "title"
       description: "Act title"
@@ -75,7 +89,10 @@ schema:
       required: true
 
 notes: |
-  - Full text via /Acts/ViewSection/{section_id} for each section
-  - Alphabetical listing at /acts/actlist/{letter}
-  - No API — HTML scraping of listing + section pages
+  - Rebuilt 2026-08-03 (issue #1355): laws.gov.fj became an Angular SPA and the
+    old /acts/actlist + /Acts/DisplayAct + /Acts/ViewSection scheme now 404s.
+  - Full text via the SPA's JSON API: /api/get_all_acts -> /api/get_act_by_id/{id}
+    -> /api/retrieve_html/{LegalId} per node (pre-order concatenation).
+  - Parent nodes return only their heading; leaves carry the body text.
+  - Checkpoint of completed act IDs in data/checkpoint.json so fleet restarts advance.
   - Free public access, Office of the Attorney-General

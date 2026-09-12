@@ -1,0 +1,127 @@
+# ===================================================================
+# US/ID-PUC -- Idaho Public Utilities Commission Orders
+# ===================================================================
+# Full text of Orders issued by the Idaho Public Utilities Commission
+# (IPUC) adjudicating utility cases — electric, natural gas, water,
+# telecommunications and railroad matters: rate cases, certificates of
+# public convenience and necessity, integrated resource plans, PURPA /
+# avoided-cost dockets, fuel and power-cost adjustments, tariff filings
+# and rulemaking. Each Commission Order is an administrative adjudication
+# / edict of a specific case = case_law. Public domain (US state
+# government edict).
+#
+# ACCESS: puc.idaho.gov firewall-drops all traffic from non-Idaho /
+# datacenter vantages (no ICMP, TCP 443 filtered). The corpus is read
+# from the Internet Archive (Wayback Machine), which has a substantial
+# crawl of the Commission's public Fileroom order PDFs.
+# ===================================================================
+
+source:
+  id: "US/ID-PUC"
+  country: "US"
+  name: "Idaho Public Utilities Commission — Orders"
+  url: "https://puc.idaho.gov/case"
+  description: |
+    Orders issued by the Idaho Public Utilities Commission (IPUC)
+    resolving utility cases — electric, natural gas, water,
+    telecommunications and railroad rate cases, certificates of public
+    convenience and necessity, integrated resource plans, PURPA /
+    avoided-cost dockets, fuel and power-cost adjustments, tariff filings
+    and rulemaking. Each Order is an administrative adjudication of a
+    specific case (case_law). Full text is extracted from the
+    born-digital order PDFs the Commission publishes in its Fileroom,
+    read via the Internet Archive because puc.idaho.gov firewall-blocks
+    non-Idaho vantages.
+
+data_types:
+  - case_law
+
+jurisdictions:
+  - code: US-ID
+    scope: full
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "html_scraping"
+  base_url: "https://web.archive.org"
+  endpoints:
+    cdx: "/cdx/search/cdx?url=puc.idaho.gov&matchType=domain&filter=urlkey:.*ordnotc.*.pdf&filter=statuscode:200&collapse=urlkey"
+    raw_pdf: "/web/{timestamp}id_/{original_url}"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 11
+  key_fields:
+    - name: "case_number"
+      description: "IPUC case number, e.g. IPC-E-26-03, AVU-E-00-01 (reconstructed from the Fileroom path segment)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "order_number"
+      description: "Commission order number, e.g. '37018' (from 'Order No. 37018')"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "title"
+      description: "Case number plus order number"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Order, extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order service/issued date (ISO 8601), from the filename date prefix or the PDF body 'Service Date'"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "archive_url"
+      description: "Wayback Machine raw-PDF URL the text was extracted from"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Idaho)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Idaho Public Utilities Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - puc.idaho.gov firewall-drops traffic from non-Idaho / datacenter IPs
+    (HTTP 000 from every build vantage and from Anthropic's fetch vantage,
+    2026-07-23; no ICMP, TCP 443 filtered). The corpus is therefore read
+    from the Internet Archive.
+  - fetch_all() enumerates archived ``.../OrdNotc/*.pdf`` snapshots via the
+    Wayback CDX API (case-insensitive urlkey filter, statuscode 200,
+    collapsed to one snapshot per URL). Two historical path schemes exist:
+    ``/Fileroom/PublicFiles/{TYPE}/{UTIL}/{CASESEG}/OrdNotc/`` (new) and
+    ``/fileroom/cases/{type}/{util}/{caseseg}/ordnotc/`` (old).
+  - Only genuine Orders are kept (filename carries an "Order No NNNNN");
+    procedural "Notice of ..." documents are dropped. Records are
+    de-duplicated on (case number, order number), preferring the final /
+    amended order over a workshop notice and the newer Fileroom scheme.
+  - ~4,900 unique orders, 1989–present. The case number is reconstructed
+    from the path segment (IPCE2603 => IPC-E-26-03); the order date is
+    parsed from the filename YYYYMMDD prefix, falling back to the PDF body
+    "Service Date".
+  - normalize() downloads the raw archived PDF and extracts full text via
+    fitz/PyMuPDF (Tesseract OCR fallback for the rare scanned order).

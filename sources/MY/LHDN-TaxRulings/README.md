@@ -5,4 +5,6 @@
 
 ## License
 
-Open government data — [https://www.hasil.gov.my/en/legislation/](https://www.hasil.gov.my/en/legislation/)
+Open government data — [https://www.hasil.gov.my/en/perundangan/](https://www.hasil.gov.my/en/perundangan/)
+
+Published by Lembaga Hasil Dalam Negeri Malaysia (Inland Revenue Board of Malaysia). Commercial use permitted.

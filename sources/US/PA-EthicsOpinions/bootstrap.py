@@ -60,7 +60,7 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 logging.basicConfig(
     level=logging.INFO,
@@ -134,23 +134,53 @@ class PAEthicsOpinionsScraper(BaseScraper):
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": UA})
         self._ready = False
+        # Refusal bookkeeping, so a blocked vantage is reported rather than
+        # silently degraded into "0 records" (issue #1401).
+        self._refusals: dict[int, int] = {}
+        self._transport_errors = 0
 
     # ------------------------------------------------------------ session
+    def _note_refusal(self, status: int) -> None:
+        self._refusals[status] = self._refusals.get(status, 0) + 1
+
+    def _refusal_summary(self) -> str:
+        parts = [f"HTTP {s}x{n}" for s, n in sorted(self._refusals.items())]
+        if self._transport_errors:
+            parts.append(f"transport errors x{self._transport_errors}")
+        return ", ".join(parts) if parts else "no HTTP errors seen"
+
     def _ensure_session(self) -> bool:
         if self._ready:
             return True
-        try:
-            self.session.get(f"{WL}/Welcome.aspx?cr=1", timeout=60)
-            self.session.get(
-                f"{WL}/Browse.aspx?dbid=0&repo={REPO}", timeout=60
-            )
-        except Exception as e:
-            logger.error(f"Session setup failed: {e}")
-            return False
+        for url in (f"{WL}/Welcome.aspx?cr=1",
+                    f"{WL}/Browse.aspx?dbid=0&repo={REPO}"):
+            try:
+                r = self.session.get(url, timeout=60)
+            except Exception as e:
+                self._transport_errors += 1
+                logger.error(f"Session setup failed on {url}: {e}")
+                return False
+            if r.status_code != 200:
+                self._note_refusal(r.status_code)
+                logger.error(f"Session setup: {url} returned "
+                             f"HTTP {r.status_code}")
         self._ready = bool(self.session.cookies.get("WebLinkSession"))
         if not self._ready:
-            logger.error("Could not obtain WebLinkSession cookie")
+            logger.error("Could not obtain WebLinkSession cookie "
+                         f"({self._refusal_summary()})")
         return self._ready
+
+    def _require_session(self) -> None:
+        """Session or a loud failure — never an empty generator."""
+        if self._ensure_session():
+            return
+        raise RuntimeError(
+            f"Could not open a WebLink session on {WL} "
+            f"({self._refusal_summary()}). Every WebLink API call 500s "
+            f"without the WebLinkSession + AcceptsCookies cookies, so this "
+            f"is a refused vantage, not an empty corpus — the eLibrary needs "
+            f"a US residential/proxied slot."
+        )
 
     def _api(self, path: str, payload: dict) -> dict | None:
         headers = {
@@ -165,13 +195,19 @@ class PAEthicsOpinionsScraper(BaseScraper):
                     f"{WL}/{path}", data=json.dumps(payload),
                     headers=headers, timeout=60,
                 )
-                if r.status_code == 200:
-                    try:
-                        return r.json()
-                    except Exception:
-                        return None
             except Exception as e:
+                self._transport_errors += 1
                 logger.warning(f"POST {path} failed (attempt {attempt + 1}): {e}")
+                time.sleep(2 ** attempt)
+                continue
+            if r.status_code == 200:
+                try:
+                    return r.json()
+                except Exception:
+                    return None
+            self._note_refusal(r.status_code)
+            logger.warning(f"POST {path}: HTTP {r.status_code} "
+                           f"(attempt {attempt + 1})")
             time.sleep(2 ** attempt)
         return None
 
@@ -278,6 +314,17 @@ class PAEthicsOpinionsScraper(BaseScraper):
         for series, root in (("Opinion", ROOT_OPINIONS), ("Advice", ROOT_ADVICES)):
             years = self._year_folders(root)
             logger.info(f"{series}: {len(years)} year folders")
+            if not years:
+                # Both roots have carried year folders back to 1979 since the
+                # eLibrary went online; zero of them means the API refused us.
+                raise RuntimeError(
+                    f"{series} root {root} listed 0 year folders "
+                    f"({self._refusal_summary()}). The eLibrary holds 48 year "
+                    f"folders (1979-present) per series, so an empty listing "
+                    f"means ethicsrulings.pa.gov refused this vantage or the "
+                    f"root folder id moved — failing loud rather than "
+                    f"reporting an empty corpus."
+                )
             for year, yfid in years:
                 ids = self._folder_ids(yfid)
                 meta = self._listing_meta(yfid)
@@ -311,6 +358,14 @@ class PAEthicsOpinionsScraper(BaseScraper):
                         logger.info(f"    ... {emitted} rulings emitted")
                     if sample and emitted >= 12:
                         return
+
+        if not emitted:
+            raise RuntimeError(
+                f"Walked both Opinion and Advice roots but extracted 0 "
+                f"rulings ({self._refusal_summary()}). Year folders were "
+                f"listed, so the break is in the document ids or "
+                f"GetTextHtmlForPage — not an empty corpus."
+            )
 
     # --------------------------------------------------------------- test
     def test_api(self) -> bool:
@@ -386,16 +441,15 @@ class PAEthicsOpinionsScraper(BaseScraper):
     # ------------------------------------------------------------- fetch
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield RAW records (framework normalizes via normalize())."""
-        if not self._ensure_session():
-            return
+        self._require_session()
         yield from self._iter_raw(sample=False)
 
     def fetch_sample(self) -> Generator[dict, None, None]:
-        if not self._ensure_session():
-            return
+        self._require_session()
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        since = as_date_str(since)  # update() passes a datetime; #1512
         for raw in self.fetch_all():
             date = raw.get("date")
             if not since or (date and date >= since):

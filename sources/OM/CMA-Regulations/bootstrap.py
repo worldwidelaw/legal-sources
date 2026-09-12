@@ -48,7 +48,7 @@ from typing import Generator, Optional
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 
 try:
@@ -241,6 +241,8 @@ class FSAScraper(BaseScraper):
     def fetch_updates(self, since: Optional[str] = None) -> Generator[dict, None, None]:
         # The encyclopedia carries a small, slowly-changing corpus; re-crawl in
         # IssueDate-descending order and stop once we pass `since`.
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         for row in self._list_all():
             issue = (row.get("IssueDate") or "")[:10]
             if since and issue and issue < since[:10]:
@@ -291,4 +293,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

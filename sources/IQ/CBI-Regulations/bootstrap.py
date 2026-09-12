@@ -18,7 +18,6 @@ Usage:
   python bootstrap.py test-api            # Quick connectivity test
 """
 
-import io
 import re
 import sys
 import json
@@ -33,8 +32,9 @@ from bs4 import BeautifulSoup
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
     level=logging.INFO,
@@ -85,10 +85,21 @@ class CBIRegulationsScraper(BaseScraper):
 
     # ── PDF text extraction ───────────────────────────────────────────
 
-    def _extract_pdf_text(self, pdf_url: str) -> Optional[str]:
-        """Download a PDF and extract text with pdfplumber."""
+    def _extract_pdf_text(self, pdf_url: str, source_id: str) -> Optional[str]:
+        """Download a PDF and extract text through the shared helper.
+
+        This used to call pdfplumber directly, which emits the glyphs in the
+        order the content stream lists them. For the Arabic circulars that is
+        VISUAL order, so every word landed character-reversed in Neon and no
+        Arabic keyword could ever match it (issue #1560). Going through
+        common.pdf_extract picks up the geometry-based RTL reorder and the
+        presentation-form normalization instead.
+
+        force=True because the rows this is meant to replace are exactly the
+        ones already in Neon with (reversed) text — without it the helper skips
+        them and the refresh emits nothing.
+        """
         try:
-            import pdfplumber
             resp = self.http.get(pdf_url, timeout=120)
             if resp.status_code != 200:
                 logger.warning("PDF download failed (%d): %s", resp.status_code, pdf_url)
@@ -96,24 +107,17 @@ class CBIRegulationsScraper(BaseScraper):
             if not resp.content[:5] == b"%PDF-":
                 logger.warning("Not a PDF: %s", pdf_url)
                 return None
-            with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-                pages = []
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        pages.append(page_text)
-                    # Release per-page layout + cached textmap to cap peak RSS
-                    # on large PDFs (prevents OOM exit 137 on the fleet).
-                    page.flush_cache()
-                    try:
-                        page.get_textmap.cache_clear()
-                    except AttributeError:
-                        pass
-                text = "\n\n".join(pages)
-                if len(text.strip()) > MIN_TEXT_LENGTH:
-                    return text.strip()
+            text = extract_pdf_markdown(
+                source=SOURCE_ID,
+                source_id=source_id,
+                pdf_bytes=resp.content,
+                table="doctrine",
+                force=True,
+            )
+            if text and len(text.strip()) > MIN_TEXT_LENGTH:
+                return text.strip()
         except Exception as e:
-            logger.warning("pdfplumber failed for %s: %s", pdf_url, e)
+            logger.warning("PDF extraction failed for %s: %s", pdf_url, e)
         return None
 
     # ── Listing page parsing ──────────────────────────────────────────
@@ -220,7 +224,7 @@ class CBIRegulationsScraper(BaseScraper):
         text = None
         pdf_url = None
         for url in pdfs:
-            text = self._extract_pdf_text(url)
+            text = self._extract_pdf_text(url, f"circular-{nid}")
             if text:
                 pdf_url = url
                 break
@@ -286,7 +290,7 @@ class CBIRegulationsScraper(BaseScraper):
                     url = f"{BASE_URL}{url}" if url.startswith("/") else f"{BASE_URL}/{url}"
 
                 clean_label = label.strip() if label.strip() else Path(clean_url).stem
-                text = self._extract_pdf_text(url)
+                text = self._extract_pdf_text(url, f"guideline-{Path(clean_url).stem}")
                 if not text:
                     logger.warning("No text for guideline: %s", clean_label[:60])
                     continue
@@ -316,6 +320,9 @@ class CBIRegulationsScraper(BaseScraper):
         yield from self._iter_guidelines()
 
     def fetch_updates(self, since: Optional[str] = None) -> Generator[dict, None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for record in self._iter_circulars(max_pages=3):
             if since and record.get("date") and record["date"] < since:
                 continue
@@ -354,28 +361,50 @@ def main():
             logger.info("Detail: %d PDFs found", len(set(pdfs)))
         return
 
-    sample_dir = Path(__file__).parent / "sample"
+    source_dir = Path(__file__).parent
+    sample_dir = source_dir / "sample"
     sample_dir.mkdir(exist_ok=True)
 
     if args.command == "bootstrap":
-        limit = 15 if args.sample else None
         count = 0
-        for record in scraper.fetch_all():
-            count += 1
-            if args.sample or count <= 15:
-                out_path = sample_dir / f"{count:04d}.json"
-                with open(out_path, "w", encoding="utf-8") as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-            logger.info(
-                "[%d] %s — %d chars",
-                count,
-                record["title"][:60],
-                len(record.get("text", "")),
-            )
-            if limit and count >= limit:
-                break
 
-        logger.info("Done: %d records fetched", count)
+        if args.sample:
+            for record in scraper.fetch_all():
+                count += 1
+                with open(sample_dir / f"{count:04d}.json", "w", encoding="utf-8") as f:
+                    json.dump(record, f, ensure_ascii=False, indent=2)
+                logger.info(
+                    "[%d] %s — %d chars",
+                    count,
+                    record["title"][:60],
+                    len(record.get("text", "")),
+                )
+                if count >= 15:
+                    break
+            logger.info("Done: %d sample records saved to %s", count, sample_dir)
+            return
+
+        # A full run streams to data/records.jsonl, which is what the pipeline
+        # ingests. It used to write only the first 15 records as individual
+        # sample/ files and persist nothing else, so a fleet run left
+        # records.jsonl absent and only the bundled samples were ever ingested
+        # (issue #798 class).
+        data_dir = source_dir / "data"
+        data_dir.mkdir(exist_ok=True)
+        records_file = data_dir / "records.jsonl"
+
+        with open(records_file, "w", encoding="utf-8") as f:
+            for record in scraper.fetch_all():
+                count += 1
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                logger.info(
+                    "[%d] %s — %d chars",
+                    count,
+                    record["title"][:60],
+                    len(record.get("text", "")),
+                )
+
+        logger.info("Done: %d records written to %s", count, records_file)
 
     elif args.command == "update":
         count = 0
@@ -386,4 +415,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

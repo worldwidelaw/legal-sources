@@ -1,0 +1,167 @@
+# ===================================================================
+# GE/CommonCourts-Decisions -- Georgia, Common Courts Unified Decisions
+#                              Database (ecd.court.ge)
+# ===================================================================
+# Full text of decisions of the common courts of Georgia — first-instance
+# city and district courts, the courts of appeal and the cassation
+# instance — across criminal, civil and administrative case categories.
+# Each decision adjudicates a specific case = case_law.
+#
+# ACCESS: undocumented JSON API, no auth, no captcha, no WAF.
+#   POST /Decision/DecisionDocuments      -> paged metadata + Total
+#   POST /Decision/DecisionDocumentText   -> data.RawData = full text
+# Both are form-encoded and require X-Requested-With: XMLHttpRequest.
+#
+# Take caps at 50 and Skip caps at ~10,000 (higher -> HTTP 500), so the
+# corpus is partitioned by InstanceId x CaseCategoryId x decision-date
+# window, with windows recursively bisected until each fits under the
+# skip ceiling. Contrary to the original research note, DecisionDateTo IS
+# honoured (verified live 2026-08-02), which is what makes clean date
+# windowing possible.
+#
+# Distinct from GE/SupremeCourt-Decisions (supremecourt.ge — different
+# host and corpus).
+# ===================================================================
+
+source:
+  id: "GE/CommonCourts-Decisions"
+  country: "GE"
+  name: "Georgia — Common Courts Unified Decisions Database (ecd.court.ge)"
+  url: "https://ecd.court.ge/"
+  description: |
+    Decisions of the common courts of Georgia published in the unified
+    electronic decisions database (ecd.court.ge): first-instance city and
+    district courts (პირველი ინსტანცია), courts of appeal (სააპელაციო)
+    and the cassation instance (საკასაციო), in criminal (სისხლის
+    სამართლის), civil (სამოქალაქო) and administrative (ადმინისტრაციული)
+    matters. Full text comes from the DecisionDocumentText endpoint; the
+    court, instance, case number, case category, decision type, barcode
+    and decision date come from the listing item. Party names are
+    pseudonymised by the publisher.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 4
+  max_workers: 4
+
+api:
+  type: "rest_json"
+  base_url: "https://ecd.court.ge"
+  endpoints:
+    list: "POST /Decision/DecisionDocuments (Skip, Take<=50, InstanceId, CaseCategoryId, DecisionDateFrom, DecisionDateTo)"
+    text: "POST /Decision/DecisionDocumentText (InstanceId, DecisionDocumentId)"
+    pdf: "POST /Decision/DecisionDocumentPdf (InstanceId, DecisionDocumentId)"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 21
+  key_fields:
+    - name: "title"
+      description: "Decision type, case number and court, e.g. 'განაჩენი — 330100119003015732 (თბილისის საქალაქო სასამართლო)'"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the decision (Georgian), from DecisionDocumentText.RawData"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601), parsed from the /Date(ms)/ DecisionDate field"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "case_number"
+      description: "Court case number (CaseNo), e.g. '330100119003015732'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "decision_document_id"
+      description: "Database identifier of the decision document; combined with instance_id it addresses the full-text endpoint"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "court"
+      description: "Issuing court (Georgian name), e.g. 'თბილისის საქალაქო სასამართლო'"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "court_code"
+      description: "Numeric court code, e.g. '033'"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "instance"
+      description: "Judicial instance — პირველი ინსტანცია (first), სააპელაციო (appeal), საკასაციო (cassation)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "case_category"
+      description: "Case category — სისხლის სამართლის (criminal), სამოქალაქო (civil), ადმინისტრაციული (administrative)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "document_type"
+      description: "Type of decision document, e.g. განაჩენი (verdict), გადაწყვეტილება (judgment), განჩინება (ruling)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "barcode"
+      description: "Publisher barcode identifying the physical decision document"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "url"
+      description: "Portal URL of the decision"
+      type: "string"
+      role: "metadata"
+      required: true
+
+license:
+  name: "Open government data — decisions of the common courts of Georgia"
+  url: "https://ecd.court.ge/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: |
+    Decisions of the common courts of Georgia are official state acts
+    published for public access under the Georgian judicial-transparency
+    rules; the database imposes no registration and no terms restricting
+    reuse. Party names are pseudonymised upstream by the publisher.
+
+notes: |
+  - The listing endpoint's Take caps at 50 and Skip caps at ~10,000
+    (higher values return HTTP 500), so fetch_all() partitions the corpus
+    into InstanceId x CaseCategoryId x decision-date windows and
+    recursively bisects any window whose Total exceeds the safe skip
+    ceiling (9,500). Every window is therefore fully reachable.
+  - Contrary to the original research note, DecisionDateTo IS honoured.
+    Verified live 2026-08-02 for InstanceId=1 / CaseCategoryId=1:
+    unbounded 10,375 vs To=01.01.2019 -> 4,759, From=01.01.2019 &
+    To=01.01.2020 -> 4,796, From=01.01.2020 -> 821 (total 10,376, one
+    record double-counted on the shared boundary). Boundary duplicates
+    are de-duplicated on _id.
+  - Instance totals: first instance 30,638 + appeal 11,892 + cassation
+    1,959 = 44,489. Category totals within first instance: criminal
+    10,375 + civil 11,980 + administrative 8,283 = 30,638, confirming the
+    category space is exactly {1, 2, 3}.
+  - Completed (instance, category, window) units and the in-progress skip
+    offset are persisted to data/checkpoint.json, so a relaunched fleet
+    slot resumes at the first unfinished unit with no wasted requests.
+  - If the unfiltered listing returns no results the run raises instead
+    of reporting an empty corpus, so a future block fails loud.
+  - Text arrives as plain text in most cases; clean_text() still strips
+    tags and decodes entities for the records that carry markup.

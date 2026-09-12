@@ -42,7 +42,7 @@ from bs4 import BeautifulSoup
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
@@ -249,6 +249,9 @@ class NominetDRSScraper(BaseScraper):
         logger.info(f"Completed: {count} decisions fetched")
 
     def fetch_updates(self, since: str = None) -> Generator[Dict[str, Any], None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         count = 0
         # Decisions are listed most-recent-first; stop once we pass `since`.
         for row in self._iter_rows(max_pages=20):

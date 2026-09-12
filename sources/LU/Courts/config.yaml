@@ -7,19 +7,34 @@ data_types:
 - case_law
 id: LU/Courts
 license: Open Government License
+license_block:
+  attribution_required: true
+  commercial_use: true
+  name: "Open Data (data.public.lu)"
+  no_derivatives: false
+  notes: "Judicial decisions published as open data by the Administration judiciaire
+    on data.public.lu; administrative decisions published by the juridictions
+    administratives on ja.public.lu."
+  share_alike: false
+  url: "https://data.public.lu/fr/organizations/administration-judiciaire/"
 name: Luxembourg Courts Decisions (justice.public.lu)
-notes: 'All Luxembourg court decisions from justice.public.lu. ~46,435 judicial court decisions (anon.public.lu PDFs) and ~31,779 administrative court decisions (ja.public.lu PDFs). Full text extracted
-  from PDFs using pdfplumber.
+notes: 'All Luxembourg court decisions. justice.public.lu put every /fr/jurisprudence/*
+  listing page behind a FriendlyCaptcha V2 challenge (2026), so both halves are read
+  from un-gated publisher paths: judicial decisions from the data.public.lu
+  "Administration judiciaire" bulk datasets (95 datasets, ~1,500 yearly ZIPs, ~4.6 GB),
+  administrative decisions from a direct ja.public.lu role-number sweep
+  (~12,000-55,000, ~50% dense; "C" suffix = Cour administrative appeal).
+  Cour de Cassation is excluded - already covered by LU/SupremeCourt.
 
   '
 priority: 2
 schema:
   fields:
-  - description: Unique identifier based on PDF filename or case number
+  - description: Unique identifier (LU-JUD-{case ref} or LU-ADM-{role number})
     name: _id
   - description: Court name and chamber
     name: court
-  - description: Case registry number
+  - description: Case registry number / role number
     name: case_number
   - description: European Case Law Identifier (admin courts)
     name: ecli
@@ -29,7 +44,7 @@ schema:
     name: title
   - description: Full text of the decision
     name: text
-  - description: URL to original PDF
+  - description: URL to the ZIP archive or PDF the decision came from
     name: url
   - description: judicial or administrative
     name: court_type
@@ -37,6 +52,8 @@ schema:
     name: chamber
   - description: Type of case (Administratif, Fiscal, Civil, Penal, etc.)
     name: content_type
+  - description: data.public.lu dataset slug (judicial records only)
+    name: dataset
   key_fields:
   - name: case_number
     required: false
@@ -45,11 +62,14 @@ schema:
     required: false
     type: string
 source:
+  admin_bucket_size: 5000
+  admin_max_role: 60000
   admin_pdf_host: https://ja.public.lu
-  admin_url: https://justice.public.lu/fr/jurisprudence/juridictions-administratives.html
-  judicial_pdf_host: https://anon.public.lu
-  judicial_url: https://justice.public.lu/fr/jurisprudence/juridictions-judiciaires.html
-  page_size: 20
-  type: html_scrape_with_pdf
+  judicial_api_base: https://data.public.lu/api/1
+  judicial_exclude_slugs:
+  - cour-de-cassation-1
+  judicial_org_id: 656ed2c324e7ba9489a8025f
+  type: bulk_zip_and_pdf_sweep
+source_id: LU/Courts
 update_frequency: weekly
 url: https://justice.public.lu

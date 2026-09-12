@@ -1,0 +1,66 @@
+source:
+  id: "EU/OJC-Acts"
+  name: "EU — Official Journal C-series Acts"
+  country: "EU"
+  language: "en"
+
+  # Full text is retrieved from the EU Publications Office (CELLAR / EUR-Lex),
+  # where the acts of the institutions published in the Official Journal
+  # **C series** ("Information and Notices") are stored with a CELEX number in
+  # sector 3, document class "Y" — 3{YYYY}Y{NNNN}. This is a large, heterogeneous
+  # corpus of authoritative non-binding acts and official texts: Council
+  # resolutions and conclusions (the dominant category), Commission communications
+  # and notices published in the C series (state-aid, air-service PSO, anti-dumping,
+  # interpretative communications), European Court of Auditors special reports,
+  # interinstitutional agreements and codes of conduct, agreements between the ECB
+  # and national central banks, ECB/ESRB guidelines and warnings, and the rules of
+  # procedure of Union bodies.
+  # A distinct, additive corpus to EU/EUR-Lex, which enumerates sector 3 by the
+  # binding resource-types only (REG / DIR / DEC and their implementing/delegated
+  # variants) and never pulls C-series "Y" acts. The small ESRB subset (~5%)
+  # partially overlaps EU/ESRB, which keys on its own portal IDs, so the loader
+  # keeps both.
+  # Enumeration is via the public CELLAR SPARQL endpoint (the sector-3 Y corpus is
+  # ~2,088 rows, under the ~10K OFFSET ceiling, so a single paged sweep suffices).
+  # Full text via CELLAR content negotiation: xHTML for modern acts, OJ HTML via
+  # the language-suffixed CELEX (.ENG) for older ones, born-digital PDF (PyMuPDF)
+  # for the remainder — all of which bypass the eur-lex.europa.eu AWS-WAF that
+  # 202-challenges datacenter IPs, so it is fleet-safe. Same recipe as
+  # EU/CommissionOpinions and EU/Recommendations.
+  endpoints:
+    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
+    cellar_celex: "http://publications.europa.eu/resource/celex/{celex}"
+
+  data_types:
+    - doctrine
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1
+
+  schema:
+    key_fields:
+      _id:
+        type: string
+        required: true
+      title:
+        type: string
+        required: true
+      text:
+        type: string
+        required: true
+      date:
+        type: date
+        required: false
+
+fetch:
+  sample_count: 15
+
+license:
+  name: "EU institutional reuse (Decision 2011/833/EU)"
+  url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "EU institutional acts published in the Official Journal C series by the Publications Office are reusable, including for commercial purposes, under the Commission's reuse policy (Decision 2011/833/EU). Attribution to the source is requested."

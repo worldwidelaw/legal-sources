@@ -1,12 +1,13 @@
 # ===================================================================
 # AU/ACCC -- Australian Competition and Consumer Commission
 # ===================================================================
-# ACCC public register entries (authorisations, undertakings,
-# infringement notices, merger reviews, notifications) and media
-# releases covering competition/consumer enforcement actions.
+# ACCC public register entries (authorisations, undertakings, merger
+# reviews, notifications, class exemptions), media releases, speeches,
+# publications and guidance pages covering competition/consumer
+# enforcement and regulation.
 #
-# Primary: Drupal JSON:API at accc.gov.au/jsonapi (public registers)
-# Secondary: HTML scraping of media releases at accc.gov.au/news-centre
+# Single source: Drupal JSON:API at accc.gov.au/jsonapi, keyset-paginated
+# on drupal_internal__nid with sparse fieldsets (see notes below).
 # ===================================================================
 
 source:
@@ -15,10 +16,11 @@ source:
   name: "Australian Competition and Consumer Commission (ACCC)"
   url: "https://www.accc.gov.au/"
   description: |
-    ACCC public register entries and enforcement media releases.
-    Covers authorisations, undertakings, infringement notices,
-    informal merger reviews, and notifications via Drupal JSON:API.
-    Media releases via HTML scraping. Full text inline.
+    ACCC public register entries, enforcement media releases, speeches,
+    publications and guidance. Covers authorisations, notifications,
+    undertakings, informal merger reviews, merger authorisations, class
+    exemptions and other public registers, all via the site's Drupal
+    JSON:API. Full text is inline in the body/summary fields.
 
 data_types:
   - doctrine
@@ -33,14 +35,35 @@ rate_limit:
 api:
   type: "drupal_jsonapi"
   base_url: "https://www.accc.gov.au/jsonapi"
+  pagination: "keyset"          # page[offset]/page[limit] are rejected (HTTP 400)
+  keyset_field: "drupal_internal__nid"
+  page_size: 50                 # server-enforced
   node_types:
     - "acccgov_authorisation"
     - "acccgov_notification"
     - "acccgov_undertaking"
-    - "acccgov_infringement_notice"
     - "acccgov_informal_merger_review"
-  body_field: "field_accc_body"
-  media_releases_url: "https://www.accc.gov.au/news-centre"
+    - "acccgov_merger_authorisation"
+    - "acccgov_class_exemption"
+    - "acccgov_other_public_register"
+    - "acccgov_foi_disclosure"
+    - "accc_news"
+    - "acccgov_speech"
+    - "accc_publication"
+    - "accc_serial_publication"
+    - "accc_document"
+    - "accc_page"
+    - "acccgov_update"
+    - "acccgov_project"
+    - "acccgov_project_section"
+    - "acccgov_project_stage"
+  body_fields:
+    - "field_accc_body"
+    - "field_acccgov_body"
+    - "body"
+    - "field_acccgov_summary"
+    - "field_accc_summary"
+    - "field_acccgov_speech_summary"
 
 data_model:
   type: "doctrine"
@@ -84,8 +107,22 @@ schema:
       required: true
 
 notes: |
-  - Public register entries via Drupal JSON:API (50 per type, pagination broken)
-  - Media releases via HTML scraping with full inline text
-  - JSON:API pagination fails after first page (400 errors)
-  - Node types accc_news/accc_page/accc_publication return 500 errors
-  - Site runs Drupal 10
+  - Site runs Drupal 10; everything comes from /jsonapi, no HTML scraping.
+  - `page[offset]` / `page[limit]` are rejected site-wide with HTTP 400
+    ("Input value \"page\" contains a non-scalar value"), which is why the
+    earlier version stopped at 50 nodes per type. Pagination is done with a
+    keyset walk instead: sort=drupal_internal__nid plus a
+    filter[...][operator]=> condition on the last seen nid.
+  - Requesting the full attribute set makes accc_news / accc_page /
+    accc_publication / acccgov_undertaking and others return HTTP 503 from
+    the render pipeline. A sparse fieldset (`fields[node--TYPE]=...`) avoids
+    it. Drupal silently ignores field names a type does not have, so one
+    union field list is sent for every type.
+  - The news-centre HTML listing no longer emits /media-release/ links
+    (client-rendered), so media releases are read from node--accc_news.
+  - Types with no body text at all (acccgov_acquisition,
+    acccgov_acquisition_waiver, acccgov_public_register_document,
+    acccgov_project_document, acccgov_infringement_notice) are register
+    index rows whose substance is in attached PDFs; they are not crawled.
+  - data/checkpoint.json records the last nid per type so an interrupted
+    fleet run resumes rather than re-appending the first N records.

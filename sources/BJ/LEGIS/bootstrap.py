@@ -153,13 +153,21 @@ class BJLEGISScraper(BaseScraper):
         return items
 
     def _extract_text_from_pdf(self, uuid: str) -> Optional[str]:
-        """Extract text from PDF using centralized extractor."""
+        """Download the law's PDF by its uuid and extract text."""
+        resp = self._get_with_retry(f"{BASE_URL}/{uuid}/open", timeout=90)
+        if not resp:
+            return None
+        if resp.content[:4] != b"%PDF":
+            logger.debug(f"Not a PDF for {uuid}")
+            return None
+
         return extract_pdf_markdown(
             source="BJ/LEGIS",
-            source_id="",
-            pdf_url=uuid,
+            source_id=uuid,
+            pdf_bytes=resp.content,
             table="legislation",
-        ) or ""
+            force=True,
+        )
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all laws with extractable full text."""
@@ -309,6 +317,11 @@ class BJLEGISScraper(BaseScraper):
 # -- CLI entry point ---------------------------------------------------------
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     scraper = BJLEGISScraper()
 
     if len(sys.argv) < 2:

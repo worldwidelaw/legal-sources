@@ -2,12 +2,13 @@ source:
   id: "ID/BI"
   country: "ID"
   name: "Bank Indonesia Regulations"
-  url: "https://jdih.bi.go.id/Web/DaftarPeraturan"
+  url: "https://www.bi.go.id/id/publikasi/peraturan"
   description: |
-    Peraturan Bank Indonesia (PBI) and Peraturan Anggota Dewan Gubernur (PADG)
-    from JDIH Bank Indonesia (Legal Documentation and Information Network).
-    Covers monetary policy, banking regulation, payment systems, and financial
-    market regulation. Language: Indonesian (Bahasa Indonesia). Coverage: 1999 to present.
+    Peraturan Bank Indonesia (PBI), Peraturan Anggota Dewan Gubernur (PADG) and
+    Surat Edaran (SE) from the official Bank Indonesia "Peraturan" publication
+    section. Covers monetary policy, macroprudential policy, banking regulation,
+    payment systems and rupiah currency management.
+    Language: Indonesian (Bahasa Indonesia). Coverage: 2006 to present.
 
 data_types:
   - doctrine
@@ -16,66 +17,78 @@ auth:
   type: "none"
 
 rate_limit:
-  requests_per_second: 0.5
-  burst: 1
-  notes: "2s delay between requests."
+  requests_per_second: 0.7
+  burst: 2
+  max_workers: 4
+  notes: "1.5s delay between listing postbacks; PDF downloads run concurrently."
 
 api:
-  type: "rest_json"
-  base_url: "https://jdih.bi.go.id"
+  type: "html_scrape"
+  base_url: "https://www.bi.go.id"
   notes: |
-    JDIH BI provides a REST API:
-    - Listing: /Web/DaftarPeraturan (HTML with all regulation IDs)
-    - Detail: /api/WebJDIH/GetDataWebPeraturan?PeraturanID={id}
-    - PDF: /api/WebJDIH/DownloadFilePeraturan/{id}
+    ASP.NET WebForms listing (SharePoint webpart) — no public API.
+    - Listing: /id/publikasi/peraturan/default.aspx
+      Filter to one calendar year via TextBoxDateStart/TextBoxDateEnd (DD/MM/YYYY)
+      + ButtonFilter, then walk DataPagerPeraturan's "Next" image button. Each
+      postback needs the page's own __VIEWSTATE, so hidden fields are re-read per page.
+    - Detail: /id/publikasi/peraturan/Pages/{slug}.aspx
+    - PDF: linked from the detail page under /id/publikasi/peraturan/Documents/.
+      FAQ_/Ringkasan_ attachments are companions and are excluded.
+    The former JDIH host (jdih.bi.go.id) is unusable: its F5/BIG-IP WAF answers every
+    request from a non-Indonesian address with HTTP 200 and a rejection interstitial
+    (issue #1470), which parsed as an empty corpus rather than an error.
 
 data_model:
   type: "doctrine"
   source_nature: "gazette"
-  primary_key: "regulation_id"
+  primary_key: "_id"
   update_strategy: "upsert"
   dedup_key:
     - "_id"
 
 schema:
-  total_fields: 18
+  total_fields: 16
   key_fields:
     - name: "_id"
-      description: "Unique identifier (ID-BI-{regulation_id})"
+      description: "Unique identifier (ID-BI-{slug}, e.g. ID-BI-PADG_212026)"
       type: "string"
       role: "primary_key"
       required: true
     - name: "title"
-      description: "Regulation number and title"
+      description: "Full regulation title as published in the listing"
       type: "string"
       role: "content"
       required: true
     - name: "text"
-      description: "Full text of the regulation extracted from PDF"
+      description: "Full text of the regulation extracted from its PDF"
       type: "string"
       role: "content"
       required: true
     - name: "date"
-      description: "Publication/enactment date (ISO 8601)"
+      description: "Publication date (ISO 8601)"
       type: "date"
       role: "temporal_key"
       required: false
     - name: "regulation_type"
-      description: "Type abbreviation: PBI, PADG, SE, etc."
+      description: "Type abbreviation: PBI, PADG or SE"
       type: "string"
       role: "content"
       required: true
   secondary_fields:
     - name: "url"
-      description: "URL to the JDIH regulation detail page"
+      description: "URL to the bi.go.id regulation detail page"
+    - name: "pdf_url"
+      description: "URL of the regulation PDF the text was extracted from"
     - name: "regulation_number"
-      description: "Official regulation number"
-    - name: "status"
-      description: "Regulation status (Berlaku/Tidak Berlaku)"
-    - name: "subject"
-      description: "Subject area"
-    - name: "taxonomy"
-      description: "JDIH taxonomy classification"
+      description: "Official regulation number parsed from the title"
+    - name: "regulation_type_desc"
+      description: "Full Indonesian name of the regulation type"
+    - name: "sector"
+      description: "BI policy sector (Moneter, Makroprudensial, Perbankan, ...)"
+    - name: "year"
+      description: "Calendar year the regulation was listed under"
+    - name: "issuer"
+      description: "Always 'Bank Indonesia'"
     - name: "language"
       description: "Document language (always 'id' for Indonesian)"
 
@@ -86,10 +99,11 @@ license:
   attribution_required: false
   share_alike: false
   no_derivatives: false
-  notes: "Indonesian government regulations are public domain under Indonesian copyright law."
+  notes: "Indonesian government regulations are public domain under UU Hak Cipta No. 28/2014, Article 43."
 
 notes: |
-  - Bank Indonesia regulations include PBI (primary regulations) and PADG (implementation rules)
-  - Full text extracted from PDFs using pdfminer via JDIH BI REST API
-  - ~1000+ regulations from JDIH Bank Indonesia
-  - Uses subprocess curl due to TLS/LibreSSL incompatibility with Python 3.9
+  - PBI are primary regulations, PADG implementation rules, SE circular letters
+  - Full text extracted from born-digital PDFs via common.pdf_extract
+  - ~65 regulations/year over 2006-present (~1,300 documents)
+  - Discovery fails loud: a WAF interstitial, a layout change or a zero-row result
+    raises instead of reporting a successful empty crawl

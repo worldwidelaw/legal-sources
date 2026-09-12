@@ -240,10 +240,22 @@ class EAEULegalPortalScraper(BaseScraper):
 
     def _download_and_extract_text(self, file_links: List[str]) -> Tuple[str, str]:
         """Download files and extract text. Returns (text, source_file_type).
-        Prefers DOCX over ZIP (containing DOCX) over PDF."""
+
+        Preference: DOCX > ZIP (containing DOCX) > PDF > HTML > RTF.
+
+        HTML and RTF sit at the end on purpose. Roughly 14% of the corpus --
+        the CU/CES-era documents from 2010-2013 -- was published only as a
+        SharePoint "save as HTML" export plus legacy binary .doc annexes, with
+        no DOCX or PDF at all, so those documents used to fall through this
+        chain and yield empty text (#1420). Keeping HTML *below* PDF means
+        documents that already extract cleanly keep producing byte-identical
+        text, so re-ingesting cannot rewrite rows that were already correct.
+        """
         docx_links = [f for f in file_links if f.lower().endswith('.docx')]
         zip_links = [f for f in file_links if f.lower().endswith('.zip')]
         pdf_links = [f for f in file_links if f.lower().endswith('.pdf')]
+        html_links = [f for f in file_links if f.lower().endswith(('.html', '.htm'))]
+        rtf_links = [f for f in file_links if f.lower().endswith('.rtf')]
 
         # Try DOCX first
         for link in docx_links:
@@ -268,7 +280,104 @@ class EAEULegalPortalScraper(BaseScraper):
             if text and len(text.strip()) > 50:
                 return text.strip(), "pdf"
 
+        # Try HTML. The portal names the operative act "<stem>_doc.html" and its
+        # annexes "<stem>_att.html"; the annexes carry the substantive schedules
+        # and tables, so append them to the act rather than picking just one.
+        if html_links:
+            ordered = (
+                [l for l in html_links if "_doc." in l.lower()]
+                + [l for l in html_links if "_doc." not in l.lower()]
+            )
+            parts = []
+            for link in ordered:
+                part = self._extract_text_from_html(BASE_URL + link)
+                if part and len(part.strip()) > 50:
+                    parts.append(part.strip())
+            if parts:
+                return "\n\n".join(parts), "html"
+
+        # Try RTF (rare, but stdlib-only so it costs nothing to support)
+        for link in rtf_links:
+            text = self._extract_text_from_rtf(BASE_URL + link)
+            if text and len(text.strip()) > 50:
+                return text.strip(), "rtf"
+
         return "", ""
+
+    def _extract_text_from_html(self, url: str) -> str:
+        """Download and extract text from an HTML document export.
+
+        These are Microsoft Word "save as HTML" files served by SharePoint. The
+        <head> carries a long docProps/<xml> metadata preamble (GUIDs, LCIDs,
+        content-type ids, timestamps) that is not part of the document, so the
+        body is sliced out before stripping tags -- otherwise that preamble ends
+        up prepended to every record's text.
+        """
+        try:
+            resp = self._request(url, timeout=120)
+            if resp is None:
+                return ""
+            raw = resp.content
+
+            # The HTTP layer reports no charset, so requests defaults to
+            # ISO-8859-1 and mojibakes the Cyrillic. Trust the document's own
+            # meta charset, then chardet's guess, then UTF-8.
+            enc = None
+            meta = re.search(rb'charset=["\']?([\w-]+)', raw[:4096], re.I)
+            if meta:
+                try:
+                    enc = meta.group(1).decode("ascii").lower()
+                    "".encode(enc)  # validate the codec name is real
+                except (UnicodeDecodeError, LookupError):
+                    enc = None
+            enc = enc or resp.apparent_encoding or "utf-8"
+            text = raw.decode(enc, errors="replace")
+
+            body_start = text.lower().find("<body")
+            if body_start != -1:
+                text = text[body_start:]
+
+            return self._html_to_text(text)
+        except Exception as e:
+            logger.warning(f"HTML extraction error for {url}: {e}")
+            return ""
+
+    def _extract_text_from_rtf(self, url: str) -> str:
+        """Download and extract text from an RTF file (stdlib only)."""
+        try:
+            resp = self._request(url, timeout=120)
+            if resp is None:
+                return ""
+            rtf = resp.content.decode("cp1251", errors="replace")
+            # Decode \'xx hex escapes, drop control words and grouping braces.
+            rtf = re.sub(r"\\'([0-9a-fA-F]{2})",
+                         lambda m: bytes([int(m.group(1), 16)]).decode("cp1251", "replace"), rtf)
+            rtf = re.sub(r'(?s)\{\\\*.*?\}', ' ', rtf)
+            rtf = re.sub(r'\\par[d]?\b', '\n', rtf)
+            rtf = re.sub(r'\\[a-zA-Z]+-?\d*\s?', ' ', rtf)
+            rtf = rtf.replace('{', ' ').replace('}', ' ')
+            rtf = re.sub(r'[ \t\xa0]+', ' ', rtf)
+            return re.sub(r'\n\s*\n+', '\n\n', rtf).strip()
+        except Exception as e:
+            logger.warning(f"RTF extraction error for {url}: {e}")
+            return ""
+
+    @staticmethod
+    def _html_to_text(markup: str) -> str:
+        """Strip an HTML fragment down to readable text, preserving line breaks."""
+        markup = re.sub(r'(?is)<(script|style)[^>]*>.*?</\1>', ' ', markup)
+        markup = re.sub(r'(?is)<!--.*?-->', ' ', markup)
+        markup = re.sub(r'(?i)<br\s*/?>', '\n', markup)
+        markup = re.sub(r'(?i)</(p|div|tr|li|h[1-6]|td|th)>', '\n', markup)
+        markup = re.sub(r'<[^>]+>', ' ', markup)
+        markup = html_lib.unescape(markup)
+        markup = markup.replace('\xa0', ' ').replace('​', '')
+        # Word's export is CRLF-delimited and also wraps mid-paragraph, so
+        # normalise line endings before collapsing runs of blank lines.
+        markup = markup.replace('\r\n', '\n').replace('\r', '\n')
+        markup = re.sub(r'[ \t]+', ' ', markup)
+        markup = re.sub(r' *\n *', '\n', markup)
+        return re.sub(r'\n{3,}', '\n\n', markup).strip()
 
     def _extract_text_from_docx(self, url: str) -> str:
         """Download and extract text from a DOCX file."""
@@ -537,9 +646,15 @@ class EAEULegalPortalScraper(BaseScraper):
                     return any(f.endswith('.docx') or f.endswith('.zip') for f in d.get('file_links', []))
                 doc_infos_sorted = sorted(doc_infos, key=has_docx, reverse=True)
 
+                # Cap per category so the sample spans all eight rather than
+                # filling up from the first two. The legacy CU/CES categories
+                # are the HTML-only ones (#1420), so without this the samples
+                # never exercise the HTML extraction path at all.
                 tried = 0
+                taken = 0
+                per_category = max(2, target // len(CATEGORIES) + 1)
                 for doc_info in doc_infos_sorted:
-                    if count >= target or tried >= 6:
+                    if count >= target or tried >= 8 or taken >= per_category:
                         break
                     tried += 1
                     record = self._process_document(doc_info, cat_name)
@@ -555,26 +670,45 @@ class EAEULegalPortalScraper(BaseScraper):
                     with open(sample_dir / fname, "w", encoding="utf-8") as f:
                         json.dump(normalized, f, ensure_ascii=False, indent=2)
                     count += 1
+                    taken += 1
                     logger.info(
                         f"[{count}/{target}] {normalized['_id']}: "
                         f"{normalized['title'][:60]}... "
-                        f"(text: {len(normalized.get('text', ''))} chars)"
+                        f"(text: {len(normalized.get('text', ''))} chars, "
+                        f"via {record.get('text_source') or '?'})"
                     )
         else:
-            for record in self.fetch_all():
-                if count >= target:
-                    break
-                normalized = self.normalize(record)
-                if not normalized.get("text"):
-                    no_text += 1
-                fname = f"{normalized['_id']}.json"
-                with open(data_dir / fname, "w", encoding="utf-8") as f:
-                    json.dump(normalized, f, ensure_ascii=False, indent=2)
-                count += 1
-                if count % 50 == 0:
-                    logger.info(f"Progress: {count} documents saved ({no_text} without text)")
+            # Stream to data/records.jsonl. This used to write one JSON file per
+            # document into data/, which left the ingest side globbing ~10,000
+            # files and holding them all at once (the OOM half of #1420).
+            records_path = data_dir / "records.jsonl"
+            no_text_path = data_dir / "no_text_docs.txt"
+            with open(records_path, "w", encoding="utf-8") as out, \
+                 open(no_text_path, "w", encoding="utf-8") as miss:
+                for record in self.fetch_all():
+                    if count >= target:
+                        break
+                    normalized = self.normalize(record)
+                    if not normalized.get("text"):
+                        no_text += 1
+                        # Record which documents yielded nothing so an
+                        # extraction regression can be reproduced without
+                        # re-crawling the whole corpus.
+                        miss.write(f"{normalized['_id']}\t{normalized.get('url','')}\n")
+                        miss.flush()
+                    out.write(json.dumps(normalized, ensure_ascii=False) + "\n")
+                    out.flush()
+                    count += 1
+                    if count % 50 == 0:
+                        logger.info(f"Progress: {count} documents saved ({no_text} without text)")
+            logger.info(f"Wrote {count} records to {records_path}")
 
         logger.info(f"Bootstrap complete: {count} documents, {no_text} without text, {errors} errors")
+        if not sample and count and no_text / count > 0.05:
+            logger.warning(
+                f"{no_text}/{count} ({100 * no_text / count:.1f}%) documents produced no text -- "
+                f"see {data_dir / 'no_text_docs.txt'}"
+            )
         return count
 
     def run_test(self):
@@ -611,7 +745,7 @@ if __name__ == "__main__":
     scraper = EAEULegalPortalScraper()
 
     if len(sys.argv) < 2:
-        print("Usage: python bootstrap.py [bootstrap|test] [--sample]")
+        print("Usage: python bootstrap.py [bootstrap|bootstrap-fast|test] [--sample|--full]")
         sys.exit(1)
 
     command = sys.argv[1]
@@ -620,7 +754,9 @@ if __name__ == "__main__":
     if command == "test":
         success = scraper.run_test()
         sys.exit(0 if success else 1)
-    elif command == "bootstrap":
+    # The fleet wrapper invokes `bootstrap-fast`; without this alias argparse
+    # rejected it and the wrapper fell back to re-ingesting sample/.
+    elif command in ("bootstrap", "bootstrap-fast"):
         count = scraper.run_bootstrap(sample=sample)
         sys.exit(0 if count > 0 else 1)
     else:

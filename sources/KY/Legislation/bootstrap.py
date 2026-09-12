@@ -2,32 +2,39 @@
 """
 KY/Legislation -- Cayman Islands Legislation (legislation.gov.ky)
 
-Fetches consolidated laws from the official Cayman Islands legislation portal.
-The site stores PDFs in a browsable directory structure under
-/cms/images/LEGISLATION/PRINCIPAL/{year}/{id}/ with multiple revision files.
+Fetches consolidated Acts, subordinate legislation and amending instruments from
+the official Cayman Islands legislation portal.
 
-Strategy:
-  1. Crawl /cms/images/LEGISLATION/PRINCIPAL/ for year directories
-  2. For each year, list legislation item directories
-  3. For each item, find the latest revision PDF (prefer "Revision" over "Act")
-  4. Download PDF and extract full text via pdfplumber/pypdf
+The portal's Apache directory listings under /cms/images/LEGISLATION/ used to be
+browsable; they now return an empty index, so enumeration goes through the CMS
+index pages instead:
+
+  * /cms/legislation/current/by-title.html  -- POSTed once per letter A-Z
+    (``submit4`` is the alphabet filter). Each row carries the current version
+    PDF plus a "legislation history" modal listing every earlier revision.
+  * /cms/legislation/repealed.html
+  * /cms/legislation/revoked-secondary-legislation.html
+  * /cms/legislation/not-in-force-menu.html
+
+Every distinct PDF found on those pages is one document. The ``_g.pdf`` twins
+are the gazette-typeset reprint of the same text and are skipped as duplicates.
 
 Usage:
   python bootstrap.py bootstrap          # Full initial pull
   python bootstrap.py bootstrap --sample # Fetch 15 sample records
+  python bootstrap.py bootstrap-fast     # Alias for the full pull (fleet runner)
   python bootstrap.py update             # Re-fetch all
   python bootstrap.py test               # Quick connectivity test
 """
 
 import sys
-import json
+import html as html_mod
 import logging
 import re
-import time
+import urllib.parse
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Generator, Optional, Dict, Any, List
-from html.parser import HTMLParser
+from typing import Generator, Optional, Dict, Any, List, Tuple
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -43,83 +50,144 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.KY.Legislation")
 
 BASE_URL = "https://legislation.gov.ky"
-PRINCIPAL_DIR = "/cms/images/LEGISLATION/PRINCIPAL/"
-SUBORDINATE_DIR = "/cms/images/LEGISLATION/SUBORDINATE/"
+BY_TITLE_PATH = "/cms/legislation/current/by-title.html"
+STATIC_INDEX_PATHS = [
+    "/cms/legislation/repealed.html",
+    "/cms/legislation/revoked-secondary-legislation.html",
+    "/cms/legislation/not-in-force-menu.html",
+]
+ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+PDF_HREF_RE = re.compile(r'href="(/cms/images/LEGISLATION/[^"]+\.pdf)"')
+MODAL_RE = re.compile(r'<div class="modal fade"(.*?)(?=<div class="modal fade"|\Z)', re.S)
+MODAL_TITLE_RE = re.compile(r'id="myModalLabel">\s*(.*?)\s*</h5>', re.S)
+NPWRAP_RE = re.compile(r'class="npWrap" href="([^"]+)"[^>]*>(.*?)</a>', re.S)
+TAG_RE = re.compile(r"<[^>]+>")
+
+# /cms/images/LEGISLATION/PRINCIPAL/1966/1966-0005/1966-0005_1997 Revision.pdf
+PDF_PATH_RE = re.compile(
+    r"^/cms/images/LEGISLATION/(?P<category>[A-Z]+)/(?P<year_dir>[^/]+)/"
+    r"(?P<item>[^/]+)/(?P<filename>.+)\.pdf$"
+)
+
+CATEGORY_TYPES = {
+    "PRINCIPAL": "principal",
+    "SUBORDINATE": "subordinate",
+    "AMENDING": "amending",
+}
 
 
-class _LinkParser(HTMLParser):
-    """Extract href links from directory listing HTML."""
-
-    def __init__(self):
-        super().__init__()
-        self.links: List[str] = []
-
-    def handle_starttag(self, tag, attrs):
-        if tag == "a":
-            for name, value in attrs:
-                if name == "href" and value:
-                    self.links.append(value)
+def _clean_text(fragment: str) -> str:
+    """Strip tags/entities from an HTML fragment and normalise whitespace."""
+    text = html_mod.unescape(TAG_RE.sub("", fragment))
+    text = re.sub(r"\s+", " ", text.replace("\xa0", " ")).strip()
+    # Amendment rows prefix the heading with "amended by...".
+    return re.sub(r"^amended by\.*\s*", "", text, flags=re.IGNORECASE).strip()
 
 
-def _parse_directory_links(html: str) -> List[str]:
-    """Parse directory listing HTML and return href links."""
-    parser = _LinkParser()
-    parser.feed(html)
-    return parser.links
+def _is_duplicate_variant(pdf_path: str) -> bool:
+    """The `_g.pdf` files are the gazette reprint of the same consolidated text."""
+    return pdf_path.lower().endswith("_g.pdf")
 
 
-def _extract_year_dirs(links: List[str]) -> List[str]:
-    """Filter links to year directories (4-digit years)."""
-    year_dirs = []
-    for link in links:
-        clean = link.strip("/").split("/")[-1]
-        if re.match(r"^\d{4}$", clean):
-            year_dirs.append(clean)
-    return sorted(year_dirs)
+def _parse_index_page(html: str) -> Dict[str, str]:
+    """Map every PDF path on an index page to the best available title."""
+    found: Dict[str, str] = {}
+
+    # History modals hold every revision of an item under one heading.
+    for match in MODAL_RE.finditer(html):
+        block = match.group(1)
+        title_match = MODAL_TITLE_RE.search(block)
+        title = _clean_text(title_match.group(1)) if title_match else ""
+        for pdf_path in PDF_HREF_RE.findall(block):
+            if _is_duplicate_variant(pdf_path):
+                continue
+            if title and not found.get(pdf_path):
+                found[pdf_path] = title
+            else:
+                found.setdefault(pdf_path, title)
+
+    # The row anchors carry the in-force version and its display title.
+    for pdf_path, label in NPWRAP_RE.findall(html):
+        if not pdf_path.startswith("/cms/images/LEGISLATION/"):
+            continue
+        if _is_duplicate_variant(pdf_path):
+            continue
+        title = _clean_text(label)
+        # Trim the trailing "[2024 Revision]" version marker from the anchor.
+        title = re.sub(r"\s*\[[^\]]*\]\s*$", "", title).strip()
+        if title:
+            found[pdf_path] = title
+        else:
+            found.setdefault(pdf_path, "")
+
+    # Anything linked outside a modal or row anchor (e.g. plain listing pages).
+    for pdf_path in PDF_HREF_RE.findall(html):
+        if not _is_duplicate_variant(pdf_path):
+            found.setdefault(pdf_path, "")
+
+    return found
 
 
-def _extract_item_dirs(links: List[str]) -> List[str]:
-    """Filter links to legislation item directories (e.g., 2020-0001)."""
-    items = []
-    for link in links:
-        clean = link.strip("/").split("/")[-1]
-        if re.match(r"^\d{4}-\w+$", clean):
-            items.append(clean)
-    return items
-
-
-def _pick_best_pdf(links: List[str], item_id: str) -> Optional[str]:
-    """Pick the best PDF from a list: prefer latest Revision, then Act."""
-    pdfs = [l for l in links if l.lower().endswith(".pdf")]
-    if not pdfs:
+def _split_pdf_path(pdf_path: str) -> Optional[Tuple[str, str, str]]:
+    """Return (category, item_id, version_label) for a legislation PDF path."""
+    match = PDF_PATH_RE.match(pdf_path)
+    if not match:
         return None
+    category = match.group("category")
+    item = urllib.parse.unquote(match.group("item")).strip()
+    filename = urllib.parse.unquote(match.group("filename")).strip()
+    version = filename
+    if version.startswith(item):
+        version = version[len(item):].lstrip("_- ").strip()
+    return category, item, version
 
-    # Prefer "Revision" PDFs (consolidated text)
-    revision_pdfs = [p for p in pdfs if "revision" in p.lower()]
-    if revision_pdfs:
-        # Pick the latest revision by year in filename
-        def extract_rev_year(name):
-            m = re.search(r"(\d{4})\s*Revision", name, re.IGNORECASE)
-            return int(m.group(1)) if m else 0
-        revision_pdfs.sort(key=extract_rev_year, reverse=True)
-        return revision_pdfs[0]
 
-    # Fall back to "Act" PDFs
-    act_pdfs = [p for p in pdfs if "act" in p.lower()]
-    if act_pdfs:
-        return act_pdfs[0]
+def _version_year(version_label: str, item_id: str) -> Optional[str]:
+    """Best-effort year for a version: revision year, act year, then item year."""
+    for pattern in (r"(\d{4})\s*Revision", r"\bof\s+(\d{4})\b", r"\b(19|20)\d{2}\b"):
+        match = re.search(pattern, version_label, re.IGNORECASE)
+        if match:
+            candidate = match.group(0)
+            year = re.search(r"(19|20)\d{2}", candidate)
+            if year:
+                return year.group(0)
+    match = re.match(r"^(\d{4})", item_id)
+    return match.group(1) if match else None
 
-    # Last resort: any PDF
-    return pdfs[0]
+
+def _crawl_order(pdf_paths) -> List[str]:
+    """Newest revision of every item first, principal Acts ahead of the rest.
+
+    An item like the Companies Act carries ~20 revisions; walking them in path
+    order would spend the whole run inside one Act. Sweeping one version per
+    item at a time keeps a truncated run broad instead of deep.
+    """
+    category_rank = {"PRINCIPAL": 0, "SUBORDINATE": 1, "AMENDING": 2}
+    by_item: Dict[Tuple[int, str], List[Tuple[str, str]]] = {}
+    for path in pdf_paths:
+        parts = _split_pdf_path(path)
+        if not parts:
+            by_item.setdefault((3, path), []).append(("", path))
+            continue
+        category, item_id, version = parts
+        key = (category_rank.get(category, 3), f"{category}/{item_id}")
+        by_item.setdefault(key, []).append((_version_year(version, item_id) or "", path))
+
+    ordered: List[Tuple[int, int, str]] = []
+    for key in sorted(by_item):
+        # Newest version first within each item.
+        versions = sorted(by_item[key], key=lambda v: (v[0], v[1]), reverse=True)
+        for depth, (_, path) in enumerate(versions):
+            ordered.append((key[0], depth, path))
+    return [path for _, _, path in sorted(ordered)]
 
 
 def _title_from_pdf_text(text: str) -> str:
-    """Extract title from the first lines of extracted PDF text."""
+    """Extract a title from the first lines of extracted PDF text."""
     lines = [l.strip() for l in text.split("\n") if l.strip()]
-    # Often the title is in the first few lines, sometimes after a header
     title_lines = []
     for line in lines[:10]:
-        # Skip common headers
         if re.match(r"^(Cayman Islands|CAYMAN ISLANDS|Page \d|Supplement)", line, re.IGNORECASE):
             continue
         if re.match(r"^\d{4}\s+Revision$", line, re.IGNORECASE):
@@ -127,7 +195,6 @@ def _title_from_pdf_text(text: str) -> str:
         if re.match(r"^(Published by|Printed and|Under the authority)", line, re.IGNORECASE):
             continue
         title_lines.append(line)
-        # Stop after 2 meaningful lines
         if len(title_lines) >= 2:
             break
     return " ".join(title_lines) if title_lines else "Untitled"
@@ -148,154 +215,144 @@ class CaymanLegislationScraper(BaseScraper):
             timeout=120,
         )
 
-    def _fetch_directory(self, path: str) -> List[str]:
-        """Fetch a directory listing and return links."""
-        try:
-            self.rate_limiter.wait()
-            resp = self.client.get(path)
-            resp.raise_for_status()
-            return _parse_directory_links(resp.text)
-        except Exception as e:
-            logger.warning(f"Failed to fetch directory {path}: {e}")
-            return []
+    # ── discovery ────────────────────────────────────────────────────
+
+    def _fetch_letter_page(self, letter: str) -> str:
+        """POST the alphabet filter on the current-legislation index."""
+        point_in_time = datetime.now(timezone.utc).strftime("%Y-%m-%d 00:00:00")
+        self.rate_limiter.wait()
+        resp = self.client.post(
+            BY_TITLE_PATH,
+            data={"submit4": letter, "pointintime_post": point_in_time},
+        )
+        resp.raise_for_status()
+        return resp.text
+
+    def _fetch_static_page(self, path: str) -> str:
+        self.rate_limiter.wait()
+        resp = self.client.get(path)
+        resp.raise_for_status()
+        return resp.text
+
+    def discover(self) -> Dict[str, str]:
+        """Return {pdf_path: title} for every legislation PDF on the portal."""
+        found: Dict[str, str] = {}
+
+        for letter in ALPHABET:
+            try:
+                page = self._fetch_letter_page(letter)
+            except Exception as exc:
+                logger.warning(f"Letter {letter}: index fetch failed: {exc}")
+                continue
+            page_hits = _parse_index_page(page)
+            for pdf_path, title in page_hits.items():
+                if title or pdf_path not in found:
+                    found[pdf_path] = title or found.get(pdf_path, "")
+            logger.info(f"Letter {letter}: {len(page_hits)} PDFs ({len(found)} total)")
+
+        for path in STATIC_INDEX_PATHS:
+            try:
+                page = self._fetch_static_page(path)
+            except Exception as exc:
+                logger.warning(f"{path}: fetch failed: {exc}")
+                continue
+            page_hits = _parse_index_page(page)
+            for pdf_path, title in page_hits.items():
+                if title or pdf_path not in found:
+                    found[pdf_path] = title or found.get(pdf_path, "")
+            logger.info(f"{path}: {len(page_hits)} PDFs ({len(found)} total)")
+
+        if not found:
+            raise RuntimeError(
+                "legislation.gov.ky enumeration produced 0 PDFs — the CMS index "
+                "pages returned nothing usable (layout change or IP block)"
+            )
+        return found
+
+    # ── fetching ─────────────────────────────────────────────────────
 
     def _download_pdf(self, pdf_path: str) -> Optional[bytes]:
         """Download a PDF file and return bytes."""
+        quoted = urllib.parse.quote(pdf_path, safe="/")
         try:
             self.rate_limiter.wait()
-            resp = self.client.get(pdf_path)
+            resp = self.client.get(quoted)
             resp.raise_for_status()
             if resp.content and resp.content[:5] == b"%PDF-":
                 return resp.content
             logger.warning(f"Not a valid PDF: {pdf_path}")
             return None
-        except Exception as e:
-            logger.warning(f"Failed to download PDF {pdf_path}: {e}")
+        except Exception as exc:
+            logger.warning(f"Failed to download PDF {pdf_path}: {exc}")
             return None
-
-    def _crawl_items(self, base_dir: str, leg_type: str) -> Generator[Dict[str, Any], None, None]:
-        """Crawl a legislation directory (PRINCIPAL or SUBORDINATE) and yield items."""
-        logger.info(f"Crawling {leg_type} legislation: {base_dir}")
-
-        # Get year directories
-        year_links = self._fetch_directory(base_dir)
-        years = _extract_year_dirs(year_links)
-        logger.info(f"Found {len(years)} year directories for {leg_type}")
-
-        for year in years:
-            year_path = f"{base_dir}{year}/"
-            item_links = self._fetch_directory(year_path)
-            items = _extract_item_dirs(item_links)
-
-            if not items:
-                continue
-
-            logger.info(f"Year {year}: {len(items)} items")
-
-            for item_id in items:
-                item_path = f"{year_path}{item_id}/"
-                file_links = self._fetch_directory(item_path)
-
-                pdf_file = _pick_best_pdf(file_links, item_id)
-                if not pdf_file:
-                    logger.warning(f"No PDF found for {item_id}")
-                    continue
-
-                # Build full PDF path
-                # Links may be relative or absolute
-                if pdf_file.startswith("/"):
-                    pdf_path = pdf_file
-                elif pdf_file.startswith("http"):
-                    pdf_path = pdf_file.replace(BASE_URL, "")
-                else:
-                    pdf_path = f"{item_path}{pdf_file}"
-
-                pdf_url = f"{BASE_URL}{pdf_path}"
-
-                yield {
-                    "legislation_id": item_id,
-                    "year": year,
-                    "type": leg_type,
-                    "pdf_filename": pdf_file,
-                    "pdf_path": pdf_path,
-                    "pdf_url": pdf_url,
-                }
 
     def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
         now = datetime.now(timezone.utc).isoformat()
-        leg_id = raw.get("legislation_id", "")
-        leg_type = raw.get("type", "principal")
-        title = raw.get("title", "")
-        if not title:
-            title = _title_from_pdf_text(raw.get("text", ""))
+        title = raw.get("title") or _title_from_pdf_text(raw.get("text", ""))
+        version = raw.get("version", "")
+        if version and version.lower() not in title.lower():
+            title = f"{title} [{version}]"
 
         return {
-            "_id": f"KY/Legislation/{leg_id}",
+            "_id": raw["_id"],
             "_source": "KY/Legislation",
             "_type": "legislation",
             "_fetched_at": now,
             "title": title,
             "text": raw.get("text", ""),
-            "date": raw.get("year", ""),
+            "date": raw.get("date"),
             "url": raw.get("pdf_url", ""),
-            "legislation_id": leg_id,
-            "legislation_type": leg_type,
+            "legislation_id": raw.get("legislation_id", ""),
+            "legislation_type": raw.get("legislation_type", ""),
+            "version": version,
             "pdf_filename": raw.get("pdf_filename", ""),
         }
 
     def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
+        catalogue = self.discover()
+        logger.info(f"Discovered {len(catalogue)} legislation PDFs")
+
         count = 0
         errors = 0
+        for pdf_path in _crawl_order(catalogue):
+            parts = _split_pdf_path(pdf_path)
+            if not parts:
+                logger.warning(f"Unrecognised PDF path: {pdf_path}")
+                errors += 1
+                continue
+            category, item_id, version = parts
 
-        # Process principal acts
-        for item in self._crawl_items(PRINCIPAL_DIR, "principal"):
-            pdf_bytes = self._download_pdf(item["pdf_path"])
+            pdf_bytes = self._download_pdf(pdf_path)
             if not pdf_bytes:
                 errors += 1
                 continue
 
             text = extract_pdf_markdown(
                 source="KY/Legislation",
-                source_id=item["legislation_id"],
+                source_id=item_id,
                 pdf_bytes=pdf_bytes,
                 table="legislation",
             ) or ""
 
-            if not text or len(text.strip()) < 50:
-                logger.warning(f"Insufficient text for {item['legislation_id']}: {len(text)} chars")
+            if len(text.strip()) < 50:
+                logger.warning(f"Insufficient text for {pdf_path}: {len(text)} chars")
                 errors += 1
                 continue
 
-            item["text"] = text
-            item["title"] = _title_from_pdf_text(text)
-            yield item
-            count += 1
+            year = _version_year(version, item_id)
+            slug = re.sub(r"[^A-Za-z0-9]+", "-", version).strip("-") or "current"
 
-            if count % 50 == 0:
-                logger.info(f"Progress: {count} records, {errors} errors")
-
-        # Process subordinate legislation
-        for item in self._crawl_items(SUBORDINATE_DIR, "subordinate"):
-            pdf_bytes = self._download_pdf(item["pdf_path"])
-            if not pdf_bytes:
-                errors += 1
-                continue
-
-            text = extract_pdf_markdown(
-                source="KY/Legislation",
-                source_id=item["legislation_id"],
-                pdf_bytes=pdf_bytes,
-                table="legislation",
-            ) or ""
-
-            if not text or len(text.strip()) < 50:
-                logger.warning(f"Insufficient text for {item['legislation_id']}: {len(text)} chars")
-                errors += 1
-                continue
-
-            item["text"] = text
-            item["title"] = _title_from_pdf_text(text)
-            yield item
+            yield {
+                "_id": f"KY/Legislation/{category}/{item_id}/{slug}",
+                "legislation_id": item_id,
+                "legislation_type": CATEGORY_TYPES.get(category, category.lower()),
+                "version": version,
+                "title": catalogue.get(pdf_path, ""),
+                "text": text,
+                "date": f"{year}-01-01" if year else None,
+                "pdf_filename": pdf_path.rsplit("/", 1)[-1],
+                "pdf_url": BASE_URL + urllib.parse.quote(pdf_path, safe="/"),
+            }
             count += 1
 
             if count % 50 == 0:
@@ -313,55 +370,38 @@ if __name__ == "__main__":
     scraper = CaymanLegislationScraper()
 
     if len(sys.argv) < 2:
-        print("Usage: python bootstrap.py [bootstrap|update|test] [--sample]")
+        print("Usage: python bootstrap.py [bootstrap|bootstrap-fast|update|test] [--sample]")
         sys.exit(1)
 
     command = sys.argv[1]
     sample_mode = "--sample" in sys.argv
 
     if command == "test":
-        logger.info("Testing directory listing...")
-        links = scraper._fetch_directory(PRINCIPAL_DIR)
-        years = _extract_year_dirs(links)
-        if not years:
-            logger.error("FAILED — no year directories found")
+        logger.info("Testing alphabet-filtered index...")
+        page = scraper._fetch_letter_page("A")
+        hits = _parse_index_page(page)
+        if not hits:
+            logger.error("FAILED — letter A returned no PDFs")
             sys.exit(1)
-        logger.info(f"OK — {len(years)} year directories found")
+        logger.info(f"OK — {len(hits)} PDFs for letter A")
 
-        # Test one item
-        year = years[-1]  # Most recent year
-        item_links = scraper._fetch_directory(f"{PRINCIPAL_DIR}{year}/")
-        items = _extract_item_dirs(item_links)
-        if not items:
-            logger.error(f"FAILED — no items in year {year}")
-            sys.exit(1)
-        logger.info(f"OK — {len(items)} items in {year}")
-
-        # Test PDF download
-        item_id = items[0]
-        file_links = scraper._fetch_directory(f"{PRINCIPAL_DIR}{year}/{item_id}/")
-        pdf_file = _pick_best_pdf(file_links, item_id)
-        if not pdf_file:
-            logger.error(f"FAILED — no PDF in {item_id}")
-            sys.exit(1)
-
-        pdf_path = f"{PRINCIPAL_DIR}{year}/{item_id}/{pdf_file}"
+        pdf_path, title = sorted(hits.items())[0]
         pdf_bytes = scraper._download_pdf(pdf_path)
-        if pdf_bytes:
-            text = extract_pdf_markdown(
-                source="KY/Legislation",
-                source_id=item_id,
-                pdf_bytes=pdf_bytes,
-                table="legislation",
-            ) or ""
-            logger.info(f"OK — PDF extracted, {len(text)} chars from {pdf_file}")
-        else:
-            logger.error("FAILED — PDF download failed")
+        if not pdf_bytes:
+            logger.error(f"FAILED — could not download {pdf_path}")
             sys.exit(1)
+        parts = _split_pdf_path(pdf_path)
+        text = extract_pdf_markdown(
+            source="KY/Legislation",
+            source_id=parts[1] if parts else "test",
+            pdf_bytes=pdf_bytes,
+            table="legislation",
+        ) or ""
+        logger.info(f"OK — {len(text)} chars from {title or pdf_path}")
 
     elif command == "bootstrap":
         scraper.bootstrap(sample_mode=sample_mode, sample_size=15)
-    elif command == "update":
+    elif command in ("bootstrap-fast", "update"):
         scraper.bootstrap(sample_mode=False)
     else:
         print(f"Unknown command: {command}")

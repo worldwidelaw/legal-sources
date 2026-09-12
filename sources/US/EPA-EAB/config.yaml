@@ -1,0 +1,107 @@
+# ═══════════════════════════════════════════════════════════════════
+# Legal Data Hunter — Source Configuration
+# US/EPA-EAB — U.S. EPA Environmental Appeals Board Decisions & Orders
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "US/EPA-EAB"
+  country: "US"
+  name: "US EPA Environmental Appeals Board — Decisions & Orders"
+  url: "https://www.epa.gov/environmental-appeals-board"
+  description: |
+    Final agency adjudicative decisions and orders of the U.S. EPA
+    Environmental Appeals Board (EAB), the appellate tribunal within the
+    Environmental Protection Agency. The EAB decides administrative appeals of
+    permit decisions (PSD/Title V under the CAA, NPDES under the CWA, RCRA,
+    UIC, ocean-dumping) and of civil administrative penalty / compliance
+    orders under CAA, CWA, RCRA, SDWA, FIFRA, TSCA, EPCRA, etc. English.
+    Born-digital order PDFs served from the Board's public Lotus Domino docket.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "xml_dump"        # Domino ?ReadViewEntries structured XML + $File PDFs
+  base_url: "https://yosemite.epa.gov/oa/EAB_Web_Docket.nsf"
+  # Enumeration views (ReadViewEntries): Closed+Dockets,
+  # Unpublished~Final~Orders, Significant Interlocutory Decisions,
+  # EAB Decisions Reviewed by the Federal Courts.
+  # Documents opened via /0/{UNID}?OpenDocument; order PDFs at .../$File/*.pdf
+
+data_model:
+  type: "case_law"
+  source_nature: "bulk_archive"
+  primary_key: "_id"
+  update_strategy: "append_only"
+  versioning: "none"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 14
+  key_fields:
+    - name: "_id"
+      description: "US/EPA-EAB/{Domino UNID}"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Case caption, e.g. 'In re {party} ({appeal})'"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Board's decision/order (from born-digital PDF)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Decision date (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "appeal_number"
+      description: "EAB appeal number, e.g. 'CAA 26-05C', 'NPDES 25-01'"
+      type: "string"
+      role: "reference"
+      required: false
+  secondary_fields:
+    - name: "docket_number"
+      description: "Docket number where present on the document page"
+    - name: "statute"
+      description: "Program / statute code (CAA, NPDES, RCRA, UIC, FIFRA, TSCA...)"
+    - name: "court"
+      description: "Always 'U.S. EPA Environmental Appeals Board'"
+    - name: "file_date"
+      description: "Filing date of the underlying document, when available"
+    - name: "url"
+      description: "OpenDocument URL of the Domino record"
+  probably_ignorable:
+    - name: "slug"
+      description: "Filesystem-safe identifier"
+
+license:
+  id: "pd-us"
+  name: "Public domain — 17 U.S.C. § 105"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "U.S. federal government work; not subject to copyright."
+
+notes: |
+  Access via the EAB public Lotus Domino docket
+  (yosemite.epa.gov/oa/EAB_Web_Docket.nsf). Views enumerated as XML via
+  ?ReadViewEntries; each document opened via /0/{UNID}?OpenDocument. Closed
+  docket pages carry an "Index of Filings" whose order/decision filings hold
+  the born-digital PDF; final-order views attach the PDF directly. Text via
+  PyMuPDF (fitz) with common.pdf_extract fallback — no OCR needed. English.

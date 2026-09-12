@@ -24,6 +24,7 @@ import sys
 import io
 import json
 import logging
+import os
 import re
 import time
 from pathlib import Path
@@ -47,8 +48,23 @@ except ImportError:
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+# Almost every PDF here is a scan of a printed act, so OCR is the normal path
+# rather than a rare fallback. The shared 50-page cap and 600s budget are tuned
+# for short court PDFs and would truncate the Criminal Offences Bill (142 pages)
+# at a third of its text. pdf_extract reads these into module constants at
+# import time, and `common/__init__` imports it, so this has to run before ANY
+# `common.*` import — set after one, it silently has no effect.
+os.environ.setdefault("PDF_OCR_MAX_PAGES", "400")
+os.environ.setdefault("PDF_OCR_TIMEOUT", "3600")
+# These are scans of printed acts whose arrangement-of-sections sets the section
+# numbers in a narrow left column beside the headings. tesseract's default page
+# analysis reads that as two independent blocks and emits a run of bare numbers
+# followed by a run of bare headings — the "fragmented arrangement-of-sections"
+# of issue #1414. psm 4 treats the page as one column and keeps each number with
+# its heading; on single-column body pages it is byte-identical to the default.
+os.environ.setdefault("PDF_OCR_PSM", "4")
 
+from common.base_scraper import BaseScraper
 from common.pdf_extract import extract_pdf_markdown
 
 
@@ -96,8 +112,6 @@ LEGISLATION_PDFS = [
      "title": "Criminal Code Act No. 25 of 1933", "date": "1933"},
     {"slug": "criminal-procedure-code-1933", "pdf": "/s/Criminal-Procedure-Code-Act-No-26-of-1933.pdf",
      "title": "Criminal Procedure Code Act No. 26 of 1933", "date": "1933"},
-    {"slug": "criminal-code-ordinance-1934", "pdf": "/s/1934_An-Ordinance-to-Establish-a-Code-of-Criminal-Law-An-Ordinance-to-Make-Provision-for-the-Procedu.pdf",
-     "title": "Criminal Law Ordinance 1934", "date": "1934"},
     {"slug": "criminal-offences-bill-2020", "pdf": "/s/Criminal-Offences-Bill_2020.pdf",
      "title": "Criminal Offences Bill 2020", "date": "2020"},
     # Electoral laws
@@ -128,6 +142,30 @@ LEGISLATION_PDFS = [
      "title": "Persons with Disabilities Bill 2020", "date": "2020"},
 ]
 
+# Volumes that bind more than one instrument into a single PDF. Stored whole,
+# they read as one act whose section numbering restarts partway through — the
+# "duplicate section numbers" of issue #1414 are section 1 of the Criminal Code
+# and section 1 of the Criminal Procedure Code sitting in the same record, not
+# an upstream numbering defect. Each part becomes its own document, cut at the
+# first page carrying that part's opening title.
+COMPILED_PDFS = [
+    {
+        "pdf": "/s/1934_An-Ordinance-to-Establish-a-Code-of-Criminal-Law-An-Ordinance-to-Make-Provision-for-the-Procedu.pdf",
+        "parts": [
+            {"slug": "criminal-code-ordinance-1934",
+             "title": "Criminal Code Ordinance (Act No. 25 of 1933)",
+             "date": "1933-12-16"},
+            {"slug": "criminal-procedure-code-ordinance-1934",
+             "title": "Criminal Procedure Code Ordinance (Act No. 26 of 1933)",
+             "date": "1933-12-16",
+             # Anchored to a line of its own: the phrase also appears mid-page
+             # in the Criminal Code's cross-references, which would cut the
+             # volume 75 pages early.
+             "starts_at": r"^\s*THE\s+CRIMINAL\s+PROCEDURE\s+CODE\W*$"},
+        ],
+    },
+]
+
 # Gambia Law Reports (bulk PDFs with compiled case law)
 LAW_REPORT_PDFS = [
     {"slug": "gambia-law-reports-1960-1993", "pdf": "/s/The-Gambia-Law-Reports-1960-1993.pdf",
@@ -139,6 +177,84 @@ LAW_REPORT_PDFS = [
     {"slug": "gambia-law-reports-2002-2008-vol2", "pdf": "/s/The-Gambia-Law-Reports-2002-2008-Volume-2.pdf",
      "title": "The Gambia Law Reports 2002-2008 Volume 2", "date": "2008"},
 ]
+
+
+# Minimum extracted length for a document to be worth emitting. Below this the
+# PDF is a scan whose text layer is nothing but the site's watermark, and the
+# record would carry a stamp instead of a law (issue #1414).
+MIN_DOC_CHARS = 500
+
+# Per-page stamps Law Hub Gambia burns into every PDF it republishes, plus the
+# LLMC scanning-programme preamble on the digitised colonial volumes. Left in,
+# they repeat once per page and swamp short documents.
+WATERMARK_LINE_RE = re.compile(
+    r"""^(?:
+          Law\s*Hub\s*Gambia\s*Digital
+        | This\s+(?:document|copy)\s+is\s+courtesy\s+of\s+Law\s*hub\s+Gambia
+        | Document\s+Sourced\s+from\s+www\.lawhubgambia\.com
+        | \(?www\.lawhubgambia\.com\)?
+        | LAW\s+HUB\s*»?
+        | GAMBIA
+      )\s*$""",
+    re.I | re.X,
+)
+
+# On the image-only scans the stamp reaches us through OCR, which reads the page
+# number, the rule beneath the stamp and the bleed-through from the facing page
+# as characters on the stamp's own line: "Law Hub Gambia Digital : 7 Oo —",
+# "SS Law Hub Gambia Digital", "Law Hub Gambia Digital 111". The anchored
+# pattern above never matches those, so the stamp survived once per page in the
+# OCR-ed acts. Drop any line carrying the stamp whose remainder is not words.
+WATERMARK_STAMP_RE = re.compile(r"Law\s*Hub\s*Gambia\s*Digital", re.I)
+# Longest real word that may legitimately share the line before we keep it. The
+# noise runs observed are all 1-3 letters ("ss", "ian", "Ao", "Oo").
+_STAMP_NOISE_MAX_LETTERS = 3
+
+
+def _is_watermark_stamp_line(line: str) -> bool:
+    """True if `line` is the site's per-page stamp plus OCR noise, nothing more."""
+    if not WATERMARK_STAMP_RE.search(line):
+        return False
+    remainder = WATERMARK_STAMP_RE.sub("", line)
+    return len(re.findall(r"[A-Za-z]", remainder)) <= _STAMP_NOISE_MAX_LETTERS
+
+
+LLMC_PREAMBLE_RE = re.compile(
+    r"This copy of a rare volume.*?(?:LLMC|Law Library Microform Consortium)[^\n]*\n"
+    # The scanning credit continues onto the holding library's own line, e.g.
+    # "is made available courtesy of the / Los Angeles County Law Library".
+    r"(?:[ \t]*is made available courtesy of[^\n]*\n[^\n]*\n)?",
+    re.I | re.S,
+)
+
+# opendataloader emits Markdown: image placeholders for image-only regions and
+# ATX headings for anything it reads as a heading. Both leak into the stored
+# text as `####` noise around the arrangement-of-sections (issue #1414).
+MD_IMAGE_RE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
+MD_HEADING_RE = re.compile(r"^\s{0,3}#{1,6}\s*", re.M)
+
+
+def clean_extracted_text(text: str) -> str:
+    """Strip site watermarks and Markdown artifacts from extracted PDF text."""
+    if not text:
+        return ""
+
+    text = LLMC_PREAMBLE_RE.sub("", text)
+    text = MD_IMAGE_RE.sub("", text)
+    text = MD_HEADING_RE.sub("", text)
+
+    lines = [ln.rstrip() for ln in text.splitlines()]
+    kept = [
+        ln
+        for ln in lines
+        if not WATERMARK_LINE_RE.match(ln.strip())
+        and not _is_watermark_stamp_line(ln)
+    ]
+
+    out = "\n".join(kept)
+    out = re.sub(r"[ \t]+\n", "\n", out)
+    out = re.sub(r"\n{3,}", "\n\n", out)
+    return out.strip()
 
 
 def clean_html_text(html_content: str) -> str:
@@ -262,14 +378,102 @@ class GMLawHubGambiaScraper(BaseScraper):
                     time.sleep(3 * (attempt + 1))
         return None
 
-    def _extract_pdf_text(self, pdf_url: str) -> Optional[str]:
-        """Extract text from PDF using centralized extractor."""
-        return extract_pdf_markdown(
+    def _extract_pdf_text(self, pdf_url: str) -> str:
+        """Extract text from PDF using the centralized extractor, de-watermarked.
+
+        Most of this site's PDFs are scans stamped with a per-page watermark, so
+        the raw extraction is either real prose plus a stamp on every page or —
+        for the image-only scans — nothing but the stamp. Cleaning happens here
+        so the length guards downstream measure document text, not stamps.
+        """
+        raw = extract_pdf_markdown(
             source="GM/LawHubGambia",
             source_id="",
             pdf_url=pdf_url,
             table="case_law",
+            # The rows already in Neon hold the watermark-only text this fix
+            # replaces, so the idempotent skip would preserve the defect.
+            force=True,
         ) or ""
+        return clean_extracted_text(raw)
+
+    def _split_compiled_pdf(self, pdf_bytes: bytes, parts: List[dict]) -> List[tuple]:
+        """Cut a multi-instrument volume into one PDF per instrument.
+
+        Returns (part, bytes) pairs. Part boundaries are located on the text
+        layer, which these colonial volumes all carry; a part whose opening
+        title is never found is dropped rather than silently folded into its
+        predecessor, so a layout change surfaces as a missing document instead
+        of a re-merged one.
+        """
+        import fitz  # PyMuPDF — already a dependency of the PDF extractor
+
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        try:
+            starts = [0]
+            for part in parts[1:]:
+                pattern = re.compile(part["starts_at"], re.I | re.M)
+                page = next(
+                    (i for i in range(starts[-1] + 1, doc.page_count)
+                     if pattern.search(doc[i].get_text())),
+                    None,
+                )
+                if page is None:
+                    logger.warning(
+                        f"Part {part['slug']} not found in volume — skipping it "
+                        f"rather than merging it into {parts[len(starts)-1]['slug']}"
+                    )
+                    return []
+                starts.append(page)
+
+            out = []
+            for i, (part, first) in enumerate(zip(parts, starts)):
+                last = starts[i + 1] - 1 if i + 1 < len(starts) else doc.page_count - 1
+                piece = fitz.open()
+                piece.insert_pdf(doc, from_page=first, to_page=last)
+                out.append((part, piece.tobytes()))
+                piece.close()
+                logger.info(
+                    f"Volume part {part['slug']}: pages {first + 1}-{last + 1}"
+                )
+            return out
+        finally:
+            doc.close()
+
+    def _compiled_documents(self) -> Generator[dict, None, None]:
+        """Yield each instrument bound into a multi-act volume as its own doc."""
+        for volume in COMPILED_PDFS:
+            pdf_url = f"{BASE_URL}{volume['pdf']}"
+            logger.info(f"Fetching compiled volume: {volume['pdf']}")
+            resp = self._get_with_retry(pdf_url)
+            if not resp:
+                logger.warning(f"Failed to fetch volume {pdf_url}")
+                continue
+
+            for part, part_bytes in self._split_compiled_pdf(resp.content, volume["parts"]):
+                raw = extract_pdf_markdown(
+                    source="GM/LawHubGambia",
+                    source_id="",
+                    pdf_bytes=part_bytes,
+                    table="legislation",
+                    force=True,
+                ) or ""
+                text = clean_extracted_text(raw)
+                if len(text) < MIN_DOC_CHARS:
+                    logger.warning(
+                        f"Skipping {part['slug']}: only {len(text)} chars after "
+                        f"de-watermarking"
+                    )
+                    continue
+                yield {
+                    "slug": part["slug"],
+                    "title": part["title"],
+                    "text": text,
+                    "date": part.get("date"),
+                    "url": pdf_url,
+                    "doc_type": "legislation",
+                }
+            time.sleep(2)
 
     def _discover_pdfs_from_index(self, slug: str) -> List[dict]:
         """Discover PDF links from a legislation index page."""
@@ -296,6 +500,36 @@ class GMLawHubGambiaScraper(BaseScraper):
                     "title": title,
                 })
         return pdfs
+
+    def _legislation_documents(self) -> List[dict]:
+        """Curated legislation PDFs plus any others the index pages link.
+
+        The curated list carries hand-checked titles and dates, so it wins on
+        conflict; discovery only adds documents nobody has catalogued yet.
+        """
+        docs = list(LEGISLATION_PDFS)
+        # Compiled volumes are handled separately, one record per instrument;
+        # discovery must not re-add them whole.
+        known = {d["pdf"] for d in docs} | {v["pdf"] for v in COMPILED_PDFS}
+        known_slugs = {d["slug"] for d in docs} | {
+            p["slug"] for v in COMPILED_PDFS for p in v["parts"]
+        }
+
+        for slug in LEGISLATION_INDEX_PAGES:
+            for found in self._discover_pdfs_from_index(slug):
+                if found["pdf"] in known or found["slug"] in known_slugs:
+                    continue
+                known.add(found["pdf"])
+                known_slugs.add(found["slug"])
+                found.setdefault("date", None)
+                docs.append(found)
+            time.sleep(2)
+
+        logger.info(
+            f"Legislation catalog: {len(LEGISLATION_PDFS)} curated + "
+            f"{len(docs) - len(LEGISLATION_PDFS)} discovered from index pages"
+        )
+        return docs
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all documents from Law Hub Gambia."""
@@ -347,13 +581,17 @@ class GMLawHubGambiaScraper(BaseScraper):
             }
             time.sleep(2)
 
-        # 3. Legislation PDFs
-        for leg in LEGISLATION_PDFS:
+        # 3. Legislation PDFs — the curated list plus whatever the index pages
+        #    link that the list does not already name.
+        for leg in self._legislation_documents():
             pdf_url = f"{BASE_URL}{leg['pdf']}"
             logger.info(f"Fetching legislation PDF: {leg['slug']}")
             text = self._extract_pdf_text(pdf_url)
-            if not text:
-                logger.warning(f"No text extracted from {leg['pdf']}")
+            if len(text) < MIN_DOC_CHARS:
+                logger.warning(
+                    f"Skipping {leg['slug']}: only {len(text)} chars after "
+                    f"de-watermarking — image-only scan that OCR could not read"
+                )
                 continue
 
             yield {
@@ -366,13 +604,19 @@ class GMLawHubGambiaScraper(BaseScraper):
             }
             time.sleep(2)
 
-        # 4. Gambia Law Reports (bulk PDFs — case law compilations)
+        # 4. Multi-instrument volumes, split into one document per instrument.
+        yield from self._compiled_documents()
+
+        # 5. Gambia Law Reports (bulk PDFs — case law compilations)
         for report in LAW_REPORT_PDFS:
             pdf_url = f"{BASE_URL}{report['pdf']}"
             logger.info(f"Fetching law report PDF: {report['slug']}")
             text = self._extract_pdf_text(pdf_url)
-            if not text:
-                logger.warning(f"No text extracted from {report['pdf']}")
+            if len(text) < MIN_DOC_CHARS:
+                logger.warning(
+                    f"Skipping {report['slug']}: only {len(text)} chars after "
+                    f"de-watermarking — image-only scan that OCR could not read"
+                )
                 continue
 
             yield {
@@ -455,13 +699,19 @@ def main():
     scraper = GMLawHubGambiaScraper()
 
     if len(sys.argv) < 2:
-        print("Usage: python bootstrap.py [bootstrap|bootstrap --sample|test-api]")
+        print("Usage: python bootstrap.py [bootstrap|bootstrap --sample|bootstrap-fast|test-api]")
         sys.exit(1)
 
     command = sys.argv[1]
 
     if command == "test-api":
         scraper.test_api()
+    elif command == "bootstrap-fast":
+        # The fleet wrapper invokes this name; without it the wrapper falls back
+        # to re-ingesting sample/ and the corpus never advances (#902, #843).
+        stats = scraper.bootstrap_fast()
+        print(f"\nbootstrap_fast complete: {stats['records_fetched']} fetched, "
+              f"{stats.get('records_new', 0)} new, {stats['errors']} errors")
     elif command == "bootstrap":
         sample_mode = "--sample" in sys.argv
         stats = scraper.bootstrap(sample_mode=sample_mode, sample_size=15)

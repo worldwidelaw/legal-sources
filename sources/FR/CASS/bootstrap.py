@@ -747,6 +747,17 @@ def main():
     bootstrap_parser.add_argument("--count", type=int, default=15, help="Number of samples")
     bootstrap_parser.add_argument("--no-checkpoint", action="store_true", help="Disable checkpoint (start fresh)")
 
+    # The fleet wrapper invokes `bootstrap-fast`. Without this alias argparse
+    # rejected it outright, so the wrapper fell back to re-ingesting sample/ and
+    # the corpus never picked up the weekly DILA incrementals -- see issue #1363.
+    fast_parser = subparsers.add_parser(
+        "bootstrap-fast", help="Alias the fleet calls; always runs the full fetch"
+    )
+    fast_parser.add_argument("--sample", action="store_true", help=argparse.SUPPRESS)
+    fast_parser.add_argument("--full", action="store_true", help=argparse.SUPPRESS)
+    fast_parser.add_argument("--count", type=int, default=15, help=argparse.SUPPRESS)
+    fast_parser.add_argument("--no-checkpoint", action="store_true", help="Disable checkpoint (start fresh)")
+
     # Updates command
     updates_parser = subparsers.add_parser("updates", help="Fetch updates")
     updates_parser.add_argument("--since", required=True, help="Date to fetch from (YYYY-MM-DD)")
@@ -773,7 +784,14 @@ def main():
 
     session = get_session()
 
-    if args.command == "bootstrap":
+    if args.command in ("bootstrap", "bootstrap-fast"):
+        # `bootstrap-fast` always means the full corpus. A bare `bootstrap` used
+        # to exit 1 with "No action specified", which read to the fleet wrapper
+        # as a failed run; default it to the full fetch instead.
+        if args.command == "bootstrap-fast" or not (args.sample or args.full):
+            args.sample = False
+            args.full = True
+
         if args.sample:
             print(f"Fetching {args.count} sample case law records...")
             records = fetch_sample(session, args.count)

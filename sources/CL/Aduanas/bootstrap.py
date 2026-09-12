@@ -38,7 +38,7 @@ from html import unescape
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
@@ -544,6 +544,7 @@ class AduanasScraper(BaseScraper):
 
     def fetch_updates(self, since: Optional[str] = None) -> Generator[Dict[str, Any], None, None]:
         """Fetch recent oficios circulares (current year)."""
+        since = as_date_str(since)  # update() passes a datetime; #1512
         current_year = datetime.now().year
         for year in (current_year, current_year - 1):
             if year not in OFICIOS_YEARS:

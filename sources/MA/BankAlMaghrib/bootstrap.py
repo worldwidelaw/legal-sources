@@ -45,6 +45,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
 from common.http_client import HttpClient
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
     level=logging.INFO,
@@ -128,43 +129,32 @@ def _best_title(link_text: str, pdf_url: str) -> str:
     return filename if len(filename) > 5 else link_text or "Untitled"
 
 
-def _extract_text_from_pdf(pdf_bytes: bytes) -> Optional[str]:
-    """Extract text from PDF bytes using pdfplumber, fallback to PyPDF2."""
-    try:
-        import pdfplumber
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            pages = []
-            for page in pdf.pages:
-                text = page.extract_text()
-                if text:
-                    pages.append(text)
-                try:
-                    page.flush_cache(); page.get_textmap.cache_clear()
-                except Exception:
-                    pass
-            if pages:
-                return "\n\n".join(pages)
-    except Exception as e:
-        logger.debug(f"pdfplumber failed: {e}")
+def _extract_text_from_pdf(pdf_bytes: bytes, doc_id: str) -> Optional[str]:
+    """Extract text from PDF bytes via the shared helper.
 
-    try:
-        import PyPDF2
-        reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-        pages = []
-        for page in reader.pages:
-            text = page.extract_text()
-            if text:
-                pages.append(text)
-            try:
-                page.flush_cache(); page.get_textmap.cache_clear()
-            except Exception:
-                pass
-        if pages:
-            return "\n\n".join(pages)
-    except Exception as e:
-        logger.debug(f"PyPDF2 failed: {e}")
+    This used to call pdfplumber with a PyPDF2 fallback. Both emit glyphs in the
+    order the content stream lists them, which for the Arabic circulars here is
+    *visual* order, so those lines were stored character-reversed — ``قانون`` as
+    ``نوناق`` (issue #1560). Keyword search then matches nothing, and silently:
+    the semantic half of a hybrid index still returns something, so the source
+    looks healthy while ranking against gibberish.
 
-    return None
+    ``common.pdf_extract`` routes RTL-heavy output back through
+    ``common.arabic_pdf``, which orders glyph clusters by x-geometry rather than
+    trusting the emitted sequence. Bank Al-Maghrib publishes mostly in French;
+    those documents are not RTL, so the repair leaves them untouched.
+    """
+    try:
+        return extract_pdf_markdown(
+            SOURCE_ID,
+            doc_id,
+            pdf_bytes=pdf_bytes,
+            table="legislation",
+            force=True,
+        )
+    except Exception as e:
+        logger.debug(f"PDF extraction failed: {e}")
+        return None
 
 
 def _parse_date(title: str, pdf_url: str = "") -> Optional[str]:
@@ -306,14 +296,14 @@ class BankAlMaghribScraper(BaseScraper):
                     logger.warning(f"PDF too small ({len(pdf_bytes)} bytes)")
                     continue
 
-                text = _extract_text_from_pdf(pdf_bytes)
+                doc_id = _make_id(entry["pdf_url"])
+                text = _extract_text_from_pdf(pdf_bytes, doc_id)
                 if not text or len(text.strip()) < 100:
                     skipped_scan += 1
                     logger.info(f"  Skipped (scanned/no text): {entry['title'][:50]}")
                     continue
 
                 text = text.strip()
-                doc_id = _make_id(entry["pdf_url"])
                 date = _parse_date(entry["title"], entry["pdf_url"])
 
                 title_lower = entry["title"].lower()
@@ -393,4 +383,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

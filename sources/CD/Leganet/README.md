@@ -1,6 +1,6 @@
 # CD/Leganet — DRC (Congo) Legislation Portal
 
-**Source:** [https://www.leganet.cd/](https://www.leganet.cd/)
+**Source:** [https://www.leganet.be/](https://www.leganet.be/) (formerly www.leganet.cd)
 **Data types:** legislation
 
 ## License

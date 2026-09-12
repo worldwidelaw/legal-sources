@@ -1,7 +1,13 @@
 api:
-  base_url: http://ldf.fi/lawsampo/sparql
+  base_url: https://www.finlex.fi/fi/oikeuskaytanto/korkein-hallinto-oikeus
+  fallback_type: sparql
+  fallback_url: http://ldf.fi/lawsampo/sparql
+  notes: >-
+    Finlex is the live lane and covers every year. LawSampo is a frozen snapshot
+    (MAX dateIssued 2021-08-04) kept only for pre-2021 full text; both lanes key
+    on ECLI so the overlap dedupes.
   rate_limit: 2
-  type: sparql
+  type: html
 schema:
   key_fields:
   - name: ecli
@@ -13,6 +19,18 @@ schema:
   - name: date
     required: false
     type: date
+  - name: diary_number
+    required: false
+    type: string
+  - name: archival_record
+    required: false
+    type: string
+  - name: collection
+    required: false
+    type: string
+  - name: keywords
+    required: false
+    type: array
   required_fields:
   - _id
   - _source

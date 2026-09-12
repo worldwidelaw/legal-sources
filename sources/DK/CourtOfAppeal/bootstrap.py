@@ -35,12 +35,20 @@ from xml.etree import ElementTree
 
 import requests
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from common.http_client import request_with_deadline  # noqa: E402
+
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Constants
 API_BASE = "https://domsdatabasen.dk/webapi/api"
+# Socket timeout is per read, so a trickling response can hold one call open
+# indefinitely — the crawl then sits silent for ~101 minutes with the process
+# alive (issue #1287). Abandon any single call that outlives this.
+REQUEST_TIMEOUT = 120
+WALL_TIMEOUT = 300
 RSS_FEEDS_URL = f"{API_BASE}/rssfeeds"
 
 
@@ -59,7 +67,10 @@ class DomsdatabasenFetcher:
         for attempt in range(retries + 1):
             try:
                 headers = {'Accept': accept}
-                response = self.session.get(url, headers=headers, timeout=120)
+                response = request_with_deadline(
+                    self.session, "GET", url, WALL_TIMEOUT,
+                    headers=headers, timeout=REQUEST_TIMEOUT,
+                )
                 response.raise_for_status()
                 return response
             except requests.RequestException as e:
@@ -178,11 +189,11 @@ class DomsdatabasenFetcher:
             data = None
             for attempt in range(max_retries):
                 try:
-                    response = self.session.post(
-                        f"{API_BASE}/Case/advanced",
+                    response = request_with_deadline(
+                        self.session, "POST", f"{API_BASE}/Case/advanced", WALL_TIMEOUT,
                         json=payload,
                         headers={'Accept': 'application/json', 'Content-Type': 'application/json'},
-                        timeout=120
+                        timeout=REQUEST_TIMEOUT,
                     )
                     response.raise_for_status()
                     data = response.json()
@@ -504,4 +515,9 @@ def main():
 
 
 if __name__ == '__main__':
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

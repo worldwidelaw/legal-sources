@@ -14,7 +14,15 @@ UK professional-regulator tribunals already covered (UK/HCPTS health & care
 professions, UK/GMC doctors, UK/SDT solicitors, UK/BTAS barristers).
 
 Access & structure (all public, no auth):
-  - Each concluded hearing has a server-rendered detail page at
+  - The "Hearing decisions" listing at
+    /concerns/hearings-and-decisions/hearings-decisions/ is a server-rendered
+    search over every published hearing. It accepts a date range
+    (From/ToDate{Day,Month,Year}) plus &page=N (10 rows/page) and reports
+    "Showing A - B of N results", so the whole corpus can be walked year by year.
+    Each row links the hearing's detail page. This is the authoritative
+    enumeration: hearing ids are a sparse integer sequence running from ~730
+    (2020) to ~5700 (2026), so a bounded integer scan cannot reach the older end.
+  - Each hearing has a server-rendered detail page at
     /umbraco/surface/hearingdetails/details/{id}  (integer hearing id). The page
     carries the registrant's name + registration number, the outcome, notes and
     (for upcoming hearings) the full allegations, plus a "Hearing details" block
@@ -23,20 +31,23 @@ Access & structure (all public, no auth):
     "Outcome documents" -- born-digital PDFs served from
     /umbraco/surface/hearingdetails/download?docid={docid}&hearingid={id} . Final
     hearings run ~10-30 pages / 20k-40k chars of reasoned decision. No OCR needed.
+    Interim-order hearings publish only an on-page outcome + note and carry no
+    determination PDF; they are skipped (no full text).
   - Old decisions are removed from the site under SWE's publication policy, so the
-    live corpus is a rolling window of recently-published hearings; hearing ids are
-    a sparse integer sequence. Removed / never-published ids render a fixed
+    listing is a rolling window. Removed / never-published ids render a fixed
     "Page Not Found" page and are skipped.
 
 Strategy:
-  - Enumerate hearing ids over a sliding integer window (from MIN_ID upward, the
-    ceiling auto-extends until a long run of consecutive misses past the last valid
-    id). Skip "Page Not Found" pages.
-  - For each valid page, parse the metadata + on-page sections, then download and
-    text-extract every linked Outcome-document PDF (PyMuPDF, born-digital).
+  - Enumerate hearing ids from the listing, one calendar year at a time from
+    FIRST_YEAR to the current year, paging until the reported result total is
+    exhausted. A bounded integer scan around the live id floor is kept only as a
+    fallback for when the listing itself returns nothing.
+  - For each id, fetch the detail page, parse the metadata + on-page sections,
+    then download and text-extract every linked Outcome-document PDF (PyMuPDF,
+    born-digital).
   - Keep a record only when at least one Outcome-document PDF yields real text
-    (i.e. a concluded hearing with a published determination); upcoming hearings
-    with only a charge sheet and no determination are skipped.
+    (i.e. a concluded hearing with a published determination); upcoming and
+    interim hearings with no determination are skipped.
 
 Usage:
   python bootstrap.py bootstrap          # Full pull
@@ -71,16 +82,22 @@ logger = logging.getLogger("legal-data-hunter.UK.SocialWorkEngland")
 
 BASE_URL = "https://www.socialworkengland.org.uk"
 DETAIL = "/umbraco/surface/hearingdetails/details/{id}"
+LISTING = "/concerns/hearings-and-decisions/hearings-decisions/"
 NOT_FOUND = "Page Not Found"
 
-# Enumeration window. Old hearings are removed under the publication policy, so the
-# live floor rises over time; MIN_ID sits below the current floor (~5000 as of
-# 2026-07). Before the first valid hearing is found we scan up to
-# MIN_ID + INITIAL_SPAN (so a risen floor on a later run can't trip the ceiling
-# before any real hearing is reached); after that the ceiling auto-extends past the
-# last valid id (see _iterate).
-MIN_ID = 5000
-INITIAL_SPAN = 3000     # how far above MIN_ID to search before the first valid id
+# Listing enumeration. SWE became operational in December 2019; the listing's
+# oldest published hearings are 2020. Rows are paginated 10 at a time and the page
+# reports the result total, so each year is walked to exhaustion. Requesting a page
+# past the last one returns HTTP 500, hence the total-derived page ceiling.
+FIRST_YEAR = 2019
+PAGE_SIZE = 10
+MAX_PAGES_PER_YEAR = 400   # safety stop (4,000 hearings in one year)
+
+# Fallback integer scan, used only if the listing yields no ids at all. Ids are a
+# sparse sequence; the ceiling auto-extends past the last id that produced a
+# determination (see _scan_ids).
+MIN_ID = 700
+INITIAL_SPAN = 5500     # how far above MIN_ID to search before the first valid id
 MAX_CONSEC_MISS = 400   # stop after this many consecutive misses past last valid id
 HARD_CEILING = 40000    # absolute safety stop
 
@@ -99,6 +116,8 @@ MONTHS = {
     "december": 12,
 }
 DATE_RE = re.compile(r"\b(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})\b")
+HEARING_ID_RE = re.compile(r"hearingdetails/details/(\d+)")
+TOTAL_RE = re.compile(r"Showing\s+\d+\s*-\s*\d+\s+of\s+(\d+)\s+results", re.I)
 
 
 def _strip(fragment: str) -> str:
@@ -175,6 +194,7 @@ class SocialWorkEnglandScraper(BaseScraper):
 
     def __init__(self):
         super().__init__(Path(__file__).parent)
+        self._last_build_ok = False
         self.client = HttpClient(
             base_url=BASE_URL,
             headers={
@@ -260,9 +280,67 @@ class SocialWorkEnglandScraper(BaseScraper):
             "text": text,
         }
 
-    # -- core ------------------------------------------------------------
-    def _iterate(self) -> Generator[Dict[str, Any], None, None]:
-        """Walk hearing ids from MIN_ID upward, yielding raw determinations.
+    # -- enumeration -----------------------------------------------------
+    def _listing_page(self, year: int, page: int) -> Optional[str]:
+        url = (f"{BASE_URL}{LISTING}?FromDateDay=1&FromDateMonth=1"
+               f"&FromDateYear={year}&ToDateDay=31&ToDateMonth=12"
+               f"&ToDateYear={year}&page={page}")
+        return self._get_html(url)
+
+    def _year_ids(self, year: int) -> List[int]:
+        """Hearing ids listed for one calendar year, in listing order."""
+        first = self._listing_page(year, 1)
+        if not first:
+            return []
+        ids: List[int] = []
+        seen = set()
+
+        def absorb(page_html: str) -> int:
+            added = 0
+            for x in HEARING_ID_RE.findall(page_html):
+                hid = int(x)
+                if hid not in seen:
+                    seen.add(hid)
+                    ids.append(hid)
+                    added += 1
+            return added
+
+        absorb(first)
+        m = TOTAL_RE.search(_strip(first))
+        total = int(m.group(1)) if m else len(ids)
+        pages = min((total + PAGE_SIZE - 1) // PAGE_SIZE, MAX_PAGES_PER_YEAR)
+        for page in range(2, pages + 1):
+            # a page past the last one answers HTTP 500 -> _get_html returns None
+            html_page = self._listing_page(year, page)
+            if not html_page:
+                logger.debug(f"{year}: listing page {page} unavailable — stopping")
+                break
+            if absorb(html_page) == 0:
+                break
+        logger.info(f"{year}: {len(ids)} hearings listed (reported {total})")
+        return ids
+
+    def _list_ids(self) -> List[int]:
+        """Every published hearing id, oldest year first."""
+        last_year = datetime.now(timezone.utc).year
+        ids: List[int] = []
+        seen = set()
+        for year in range(FIRST_YEAR, last_year + 1):
+            for hid in self._year_ids(year):
+                if hid not in seen:
+                    seen.add(hid)
+                    ids.append(hid)
+        if not ids:
+            logger.warning(
+                "SocialWorkEngland listing returned no hearing ids — falling "
+                "back to the integer id scan")
+            return []
+        logger.info(f"SocialWorkEngland: {len(ids)} hearings listed "
+                    f"({FIRST_YEAR}-{last_year})")
+        return ids
+
+    def _scan_ids(self) -> Generator[int, None, None]:
+        """Fallback: walk hearing ids from MIN_ID upward.
 
         The ceiling auto-extends: we keep scanning while within MAX_CONSEC_MISS
         ids of the last hearing that produced a determination. MIN_ID is used as
@@ -274,14 +352,24 @@ class SocialWorkEnglandScraper(BaseScraper):
         while hid <= HARD_CEILING:
             if last_valid is None:
                 if hid - MIN_ID > INITIAL_SPAN:
-                    break  # never found a single valid hearing
+                    return  # never found a single valid hearing
             elif hid - last_valid > MAX_CONSEC_MISS:
-                break
-            raw = self._build_raw(hid)
-            if raw is not None:
+                return
+            yield hid
+            if self._last_build_ok:
                 last_valid = hid
-                yield raw
             hid += 1
+
+    # -- core ------------------------------------------------------------
+    def _iterate(self) -> Generator[Dict[str, Any], None, None]:
+        """Yield a raw determination for every published hearing that has one."""
+        listed = self._list_ids()
+        ids: Any = listed or self._scan_ids()
+        for hid in ids:
+            raw = self._build_raw(hid)
+            self._last_build_ok = raw is not None
+            if raw is not None:
+                yield raw
 
     def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
         produced = 0
@@ -336,20 +424,19 @@ class SocialWorkEnglandScraper(BaseScraper):
     # -- diagnostics -----------------------------------------------------
     def test_connection(self):
         print("Testing Social Work England hearing enumeration...")
+        year = datetime.now(timezone.utc).year
+        ids = self._year_ids(year) or self._year_ids(year - 1)
+        print(f"  Listing returned {len(ids)} hearing ids")
         got = 0
-        hid = MIN_ID
-        misses = 0
-        while hid <= HARD_CEILING and got < 3 and misses < 600:
+        for hid in ids:
             raw = self._build_raw(hid)
             if raw:
                 got += 1
-                misses = 0
                 print(f"  [{raw['id']}] {raw.get('name')} "
                       f"[{raw.get('hearing_type')}] {raw.get('date')}: "
                       f"{len(raw['text'])} chars - OK")
-            else:
-                misses += 1
-            hid += 1
+            if got >= 3:
+                break
         if got == 0:
             print("  No determinations found — check site reachability.")
 

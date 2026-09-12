@@ -185,10 +185,22 @@ class QLDApiClient:
 
     def _login(self) -> None:
         if not self.username or not self.password:
+            missing = " and ".join(
+                n for n, v in ((ENV_USERNAME, self.username),
+                               (ENV_PASSWORD, self.password)) if not v
+            )
             raise MissingCredentials(
-                f"Set {ENV_USERNAME} and {ENV_PASSWORD} to authenticate to the "
-                "Queensland Legislation API. Register at "
-                "https://api.legislation.qld.gov.au/api/signup"
+                f"{missing} not set — cannot authenticate to the Queensland "
+                f"Legislation API, so this run would yield 0 of the ~18,769 "
+                f"in-force consolidated acts and subordinate legislation. "
+                f"An account is ALREADY PROVISIONED: the credentials live in "
+                f"Infisical at prod:/source-credentials as {ENV_USERNAME} / "
+                f"{ENV_PASSWORD} and were verified against "
+                f"POST /v1/auth/token. A fleet worker that hits this has not "
+                f"had them injected (see the base64 credential argument to "
+                f"vps-bootstrap.sh) — this is a provisioning gap, not a dead "
+                f"source or a scraper bug. New accounts register at "
+                f"https://api.legislation.qld.gov.au/api/signup"
             )
         try:
             _, _, raw = self._request(

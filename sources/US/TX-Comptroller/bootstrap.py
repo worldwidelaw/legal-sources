@@ -33,7 +33,7 @@ from html import unescape
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 
 logging.basicConfig(
@@ -155,7 +155,16 @@ class TXComptrollerScraper(BaseScraper):
             return None
 
     def normalize(self, doc: dict) -> dict:
-        """Normalize a STAR document into standard schema."""
+        """Normalize a STAR document into standard schema.
+
+        Idempotent: fetch_all()/fetch_updates() here yield ALREADY-normalized
+        records (they call normalize internally), but BaseScraper.bootstrap()
+        re-runs normalize() on every yielded item. A normalized record has
+        `text` and no `contents`, so a second pass would read contents="" and
+        wipe the body (#1561: 27,321/27,321 empty text). Pass those through.
+        """
+        if "contents" not in doc and doc.get("text"):
+            return doc
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         acc_no = doc.get("acc_no", "")
         contents = doc.get("contents", "")
@@ -234,6 +243,8 @@ class TXComptrollerScraper(BaseScraper):
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
         """Fetch documents from a given date to present."""
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         total = 0
         try:
             since_dt = datetime.strptime(since, "%Y-%m-%d")
@@ -359,4 +370,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

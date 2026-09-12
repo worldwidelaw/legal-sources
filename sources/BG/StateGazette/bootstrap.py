@@ -26,7 +26,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 
 logging.basicConfig(
@@ -34,6 +34,25 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger("BG/StateGazette")
+
+# Earliest known document ID (2005).
+FIRST_ID = 1000
+
+# Durable resume point, committed to git so a fresh VPS clone starts where the
+# previous fleet worker stopped instead of re-crawling from FIRST_ID (issue #1433).
+# Deliberately NOT named "*checkpoint*.json" — .gitignore excludes those.
+RESUME_POINT_FILE = Path(__file__).parent / "resume_point.json"
+
+# Per-run progress, under data/ (gitignored). Survives restarts on the same box.
+RUNTIME_PROGRESS_FILE = Path(__file__).parent / "data" / "fetch_all_progress.json"
+
+# Legacy plain-integer checkpoint kept for backwards compatibility.
+LEGACY_CHECKPOINT_FILE = Path(__file__).parent / ".checkpoint_fetch_all"
+
+# Write progress at least this often (in scanned IDs), so long runs of missing
+# IDs still advance the resume point — doc-count-only checkpointing stalled
+# across the large gaps in the ID space.
+PROGRESS_EVERY_IDS = 250
 
 
 class BulgarianStateGazetteScraper(BaseScraper):
@@ -58,37 +77,176 @@ class BulgarianStateGazetteScraper(BaseScraper):
         # Disable SSL verification for this site due to certificate issues
         self.client.session.verify = False
 
-    def fetch_all(self) -> Generator[dict, None, None]:
+        # Set by --restart; BaseScraper calls fetch_all() with no arguments.
+        self._restart = False
+
+    # ── Resume state ──────────────────────────────────────────────
+
+    @staticmethod
+    def _read_resume_id(path: Path) -> int:
+        """Return the last completed idMat recorded in a JSON state file, or 0."""
+        if not path.exists():
+            return 0
+        try:
+            state = json.loads(path.read_text())
+            return int(state.get("last_id", 0))
+        except Exception as e:
+            logger.warning(f"Ignoring unreadable resume state {path.name}: {e}")
+            return 0
+
+    def _resume_from(self) -> int:
+        """
+        Decide the first idMat to scan.
+
+        Takes the furthest of the committed resume point, this box's runtime
+        progress and the legacy plain-integer checkpoint, so a fresh clone still
+        skips everything a previous fleet worker already ingested.
+        """
+        candidates = {
+            "resume_point.json": self._read_resume_id(RESUME_POINT_FILE),
+            "data/fetch_all_progress.json": self._read_resume_id(RUNTIME_PROGRESS_FILE),
+        }
+        if LEGACY_CHECKPOINT_FILE.exists():
+            try:
+                candidates[".checkpoint_fetch_all"] = int(
+                    LEGACY_CHECKPOINT_FILE.read_text().strip()
+                )
+            except Exception:
+                pass
+
+        origin, last_id = max(candidates.items(), key=lambda kv: kv[1])
+        if last_id <= FIRST_ID:
+            logger.info(f"No usable resume point — starting from idMat={FIRST_ID}")
+            return FIRST_ID
+
+        logger.info(f"Resuming from {origin}: last completed idMat={last_id}")
+        return last_id + 1
+
+    def _save_progress(
+        self, last_id: int, docs_found: int, scanned_to: int, complete: bool = False
+    ) -> None:
+        """
+        Persist the crawl position so the next run resumes here.
+
+        `last_id` is the highest idMat that actually yielded a document, not the
+        highest scanned: the tail past the last document is where newly published
+        materials land, so it must be re-scanned next run. Recording the scanned
+        ceiling instead would push the frontier up by the ceiling margin on every
+        run and silently skip everything published into that window.
+        """
+        RUNTIME_PROGRESS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        RUNTIME_PROGRESS_FILE.write_text(
+            json.dumps(
+                {
+                    "source_id": "BG/StateGazette",
+                    "last_id": last_id,
+                    "scanned_to": scanned_to,
+                    "docs_found": docs_found,
+                    "complete": complete,
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                },
+                indent=2,
+            )
+        )
+        # Keep the legacy file in step for any tooling still reading it.
+        LEGACY_CHECKPOINT_FILE.write_text(str(last_id))
+
+    # Scan this far past the newest published idMat, to cover materials issued
+    # while a long run is still in flight.
+    CEILING_MARGIN = 2000
+
+    # Used only if the RSS ceiling lookup fails; above the live max as of 2026-08.
+    FALLBACK_MAX_ID = 250000
+
+    def _discover_max_id(self, floor_id: int) -> int:
+        """
+        Return the idMat to scan up to, derived from the gazette's own index.
+
+        The ceiling used to be hardcoded (250000), which wasted a long tail of
+        requests and would silently truncate the corpus once the gazette passed
+        it. Probing the ID space directly does not work either: only about a
+        third of IDs are live, in clusters separated by dead runs of 10-40 (and
+        wider bands around e.g. 231300-231500), so any single-point stride probe
+        reports a false end. Instead read the newest issue from the official RSS
+        feed and take the highest idMat it links to.
+        """
+        newest = self._newest_published_id()
+        if newest is None:
+            max_id = max(self.FALLBACK_MAX_ID, floor_id + self.CEILING_MARGIN)
+            logger.warning(
+                f"Could not read the newest idMat from RSS — falling back to idMat={max_id}"
+            )
+            return max_id
+
+        max_id = max(newest, floor_id) + self.CEILING_MARGIN
+        logger.info(f"Newest published idMat = {newest}; scanning to {max_id}")
+        return max_id
+
+    def _newest_published_id(self):
+        """
+        Highest idMat linked from the most recent issue in the official RSS feed.
+
+        RSS items link to issues (`materiali.faces?idObj=...`), not to materials,
+        so this is a two-hop lookup: newest idObj, then that issue's contents.
+        """
+        try:
+            self.rate_limiter.wait()
+            rss = self.client.get("/rss_newspaper.jsp")
+            issue_ids = [int(m) for m in re.findall(r"idObj=(\d+)", rss.text)]
+            if not issue_ids:
+                logger.warning("RSS feed listed no issues")
+                return None
+
+            self.rate_limiter.wait()
+            issue = self.client.get(f"/materiali.faces?idObj={max(issue_ids)}")
+            mat_ids = [int(m) for m in re.findall(r"idMat=(\d+)", issue.text)]
+            if not mat_ids:
+                logger.warning(f"Issue idObj={max(issue_ids)} listed no materials")
+                return None
+
+            return max(mat_ids)
+        except Exception as e:
+            logger.warning(f"Failed to read newest idMat from RSS: {e}")
+            return None
+
+    def fetch_all(self, restart: bool = False) -> Generator[dict, None, None]:
         """
         Yield all documents by iterating through document IDs (idMat).
 
-        The Bulgarian State Gazette uses sequential document IDs starting
-        from ~1000 (2005) to ~241500+ (current). We iterate through these
-        IDs to fetch all documents systematically.
+        The Bulgarian State Gazette uses sequential document IDs from ~1000
+        (2005) to ~245000+ (current). The ID space has large gaps, so a run of
+        misses is not the end of the corpus — only `max_consecutive_failures`
+        in a row past the discovered ceiling stops the scan.
 
-        NOTE: Document IDs have gaps (some ranges are empty). We use a high
-        threshold for consecutive failures (500) to handle these gaps.
+        The crawl is resumable: the last scanned ID is persisted continuously and
+        `resume_point.json` is committed to git, so a fleet worker that hits the
+        100h wall can be relaunched and pick up where it left off (issue #1433).
         """
-        # Load checkpoint if exists
-        checkpoint_file = Path(__file__).parent / ".checkpoint_fetch_all"
-        start_id = 1000  # Earliest known document ID (2005)
+        restart = restart or self._restart
+        start_id = FIRST_ID if restart else self._resume_from()
+        if restart:
+            logger.info("--restart requested: ignoring saved resume state")
 
-        if checkpoint_file.exists():
-            try:
-                start_id = int(checkpoint_file.read_text().strip())
-                logger.info(f"Resuming from checkpoint: idMat={start_id}")
-            except:
-                pass
-
-        # Get the latest document ID (approximate current max)
-        # Current ID is ~241538 as of Feb 2026
-        end_id = 250000  # Safety margin for future documents
+        end_id = self._discover_max_id(max(start_id, FIRST_ID))
+        if start_id > end_id:
+            logger.info(
+                f"Resume point idMat={start_id - 1} is at the live ceiling — nothing to fetch"
+            )
+            self._save_progress(start_id - 1, 0, start_id - 1, complete=True)
+            return
 
         logger.info(f"Fetching documents from idMat={start_id} to {end_id}")
 
         consecutive_failures = 0
-        max_consecutive_failures = 500  # Higher threshold due to ID gaps
+        # Safety net only — `end_id` is the real terminator now. Kept well above
+        # the widest measured internal gap (~400 IDs) so a dead run mid-corpus
+        # cannot cut the crawl short the way a 500 threshold nearly would.
+        max_consecutive_failures = 2500
         docs_found = 0
+        last_saved_id = start_id
+        doc_id = start_id
+        # Highest idMat that yielded a document; the resume point.
+        last_found_id = start_id - 1
 
         for doc_id in range(start_id, end_id + 1):
             try:
@@ -97,11 +255,7 @@ class BulgarianStateGazetteScraper(BaseScraper):
                     consecutive_failures = 0
                     docs_found += 1
                     yield doc_data
-
-                    # Save checkpoint every 100 documents
-                    if docs_found % 100 == 0:
-                        checkpoint_file.write_text(str(doc_id))
-                        logger.info(f"Checkpoint saved: idMat={doc_id}, total docs={docs_found}")
+                    last_found_id = doc_id
                 else:
                     consecutive_failures += 1
                     # Log every 100 consecutive failures for debugging
@@ -112,16 +266,29 @@ class BulgarianStateGazetteScraper(BaseScraper):
                 logger.warning(f"Error fetching idMat={doc_id}: {e}")
                 consecutive_failures += 1
 
+            # Checkpoint on scanned IDs, not on documents found: the gaps in the
+            # ID space are long enough that doc-count checkpointing left the
+            # resume point thousands of IDs behind the real position.
+            if doc_id - last_saved_id >= PROGRESS_EVERY_IDS:
+                self._save_progress(last_found_id, docs_found, doc_id)
+                last_saved_id = doc_id
+                logger.info(
+                    f"Progress saved: resume at idMat={last_found_id + 1} "
+                    f"(scanned to {doc_id}), docs this run={docs_found}"
+                )
+
             # Stop if too many consecutive failures (we've likely reached the end)
             if consecutive_failures >= max_consecutive_failures:
                 logger.info(f"Stopping after {max_consecutive_failures} consecutive failures at idMat={doc_id}")
                 break
 
-        logger.info(f"fetch_all complete: {docs_found} documents found")
-
-        # Remove checkpoint file when complete
-        if checkpoint_file.exists():
-            checkpoint_file.unlink()
+        complete = doc_id >= end_id or consecutive_failures >= max_consecutive_failures
+        self._save_progress(last_found_id, docs_found, doc_id, complete=complete)
+        logger.info(
+            f"fetch_all finished at idMat={doc_id}: {docs_found} documents found, "
+            f"last document at idMat={last_found_id} "
+            f"({'reached the ceiling' if complete else 'interrupted — rerun to resume'})"
+        )
 
     def _fetch_document_by_id(self, doc_id: int):
         """
@@ -237,6 +404,8 @@ class BulgarianStateGazetteScraper(BaseScraper):
         For updates, we start from a recent document ID and work backwards
         until we find documents older than 'since'.
         """
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         logger.info(f"Fetching updates since {since}")
 
         # Start from a high ID (current max) and work backwards
@@ -350,7 +519,10 @@ def main():
     scraper = BulgarianStateGazetteScraper()
 
     if len(sys.argv) < 2:
-        print("Usage: python bootstrap.py [bootstrap|update] [--sample] [--sample-size N]")
+        print(
+            "Usage: python bootstrap.py [bootstrap|bootstrap-fast|update] "
+            "[--sample] [--sample-size N] [--full] [--restart]"
+        )
         sys.exit(1)
 
     command = sys.argv[1]
@@ -359,6 +531,15 @@ def main():
     if "--sample-size" in sys.argv:
         idx = sys.argv.index("--sample-size")
         sample_size = int(sys.argv[idx + 1])
+
+    # --restart discards the saved resume point and re-crawls from idMat=1000.
+    scraper._restart = "--restart" in sys.argv
+
+    # The fleet wrapper invokes `bootstrap-fast`; without the alias argparse-style
+    # dispatch fell through and the pipeline re-ingested sample/ instead.
+    if command == "bootstrap-fast":
+        command = "bootstrap"
+        sample_mode = sample_mode and "--full" not in sys.argv
 
     if command == "bootstrap":
         if sample_mode:

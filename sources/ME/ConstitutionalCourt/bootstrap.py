@@ -3,25 +3,44 @@
 Montenegro Constitutional Court (Ustavni sud Crne Gore) - Case Law Scraper
 
 Fetches Constitutional Court decisions from the official database at ustavnisud.me.
-Uses the DataTables server-side API (upit.php) for paginated access.
 
-API Details:
-- Endpoint: http://www.ustavnisud.me/ustavnisud/upit.php
-- Method: POST
-- Response: JSON with DataTables format
-- Full text: Available in sadrzaj_fajlova field
-- Records: ~18,000+ decisions from 1964 onwards
+Access path
+-----------
+1. ``upit.php`` — DataTables server-side JSON API. Provides the decision INDEX
+   (case number, date, document type, challenged act, keywords, articles).
+2. ``obrada_fajlovi.php?iddok=<id>`` — per-decision attachment endpoint. Returns
+   the download link(s) for the actual decision document (.docx / .doc / .pdf).
+   THIS is where the real full text lives.
+
+Why we do not use ``sadrzaj_fajlova`` for the text (issue #1254)
+---------------------------------------------------------------
+``upit.php`` exposes a ``sadrzaj_fajlova`` column that looks like full text but is
+the publisher's *search index* copy: every diacritic, every punctuation mark and
+every newline has been deleted server-side. Verified by querying the API's own
+``sadrzaj`` search filter — ``sadrzaj=Draskovic`` with diacritics ("Drašković")
+returns 0 hits while the stripped form "Drakovi" returns 1042, i.e. the stripping
+is in the publisher's database column, not in our transport. It is therefore NOT
+recoverable from that field, and case numbers embedded in it are corrupted
+("U-I br. 116/26" -> "UI br 11626").
+
+This scraper reads the attached decision documents instead, which carry correct
+UTF-8 Montenegrin text with punctuation and line breaks intact. Records with no
+attachment are SKIPPED rather than emitted with the corrupted index text.
 """
 
 import argparse
+import html
+import io
 import json
 import os
+import re
+import struct
 import sys
 import time
-import re
+import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterator, Optional, Dict, Any
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 import requests
 import yaml
@@ -29,14 +48,46 @@ import yaml
 
 BASE_URL = "http://www.ustavnisud.me/ustavnisud"
 LIST_ENDPOINT = f"{BASE_URL}/upit.php"
-PAGE_SIZE = 100
-RATE_LIMIT_DELAY = 1.5
+FILES_ENDPOINT = f"{BASE_URL}/obrada_fajlovi.php"
+ARCHIVE_PAGE = f"{BASE_URL}/arhiva.php"
 
+PAGE_SIZE = 100
+RATE_LIMIT_DELAY = 1.0
+MAX_FILE_BYTES = 60_000_000
+
+USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+)
+
+# mod_security on ustavnisud.me answers 406 Not Acceptable unless the request
+# looks like the site's own jQuery XHR (Accept + X-Requested-With + Referer).
 HEADERS = {
-    "Content-Type": "application/x-www-form-urlencoded",
-    "Referer": f"{BASE_URL}/arhiva.php",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    "User-Agent": USER_AGENT,
+    "Referer": ARCHIVE_PAGE,
+    "Accept": "application/json, text/javascript, */*; q=0.01",
+    "Accept-Language": "en-US,en;q=0.9",
+    "X-Requested-With": "XMLHttpRequest",
+    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
 }
+
+# The column order upit.php expects; positions are fixed server-side.
+COLUMNS = [
+    "iddok",
+    "datum",
+    "djelovodni_broj",
+    "vrsta_dokumenta",
+    "komitent",
+    "kljucne_rijeci_tagovi",
+    "clan_ustava_cg_atr19",
+    "clan_konvencije_atr20",
+    "sadrzaj_fajlova",
+    "osporeni_akt",
+    "datum_sjednice",
+]
+
+CHECKPOINT_PATH = Path(__file__).parent / "data" / "checkpoint.json"
+RECORDS_PATH = Path(__file__).parent / "data" / "records.jsonl"
 
 
 def load_config() -> dict:
@@ -46,106 +97,341 @@ def load_config() -> dict:
         return yaml.safe_load(f)
 
 
-def clean_text(text: str) -> str:
-    """Clean text content, removing HTML tags and normalizing whitespace."""
+# ---------------------------------------------------------------------------
+# document text extraction
+# ---------------------------------------------------------------------------
+
+def _tidy(text: str) -> str:
+    """Normalise whitespace WITHOUT touching diacritics or punctuation.
+
+    Deliberately conservative: collapses runs of spaces/tabs and blank lines but
+    preserves every non-ASCII character, every punctuation mark and the line
+    structure. See issue #1254 for what happens when this is over-aggressive.
+    """
     if not text:
         return ""
-    # Remove HTML tags
-    text = re.sub(r'<[^>]+>', ' ', text)
-    # Decode HTML entities
-    text = text.replace('&nbsp;', ' ')
-    text = text.replace('&amp;', '&')
-    text = text.replace('&lt;', '<')
-    text = text.replace('&gt;', '>')
-    text = text.replace('&quot;', '"')
-    # Normalize whitespace
-    text = re.sub(r'\s+', ' ', text)
+    text = text.replace("\r\n", "\n").replace("\r", "\n").replace("\x0b", "\n")
+    text = text.replace("\x07", " ").replace("\x00", "")
+    # non-breaking / exotic spaces -> plain space
+    text = re.sub(r"[   \t]+", " ", text)
+    text = re.sub(r"[ ]{2,}", " ", text)
+    text = re.sub(r"[ ]*\n[ ]*", "\n", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
+
+def extract_docx(data: bytes) -> str:
+    """Extract text from an OOXML .docx using only the stdlib."""
+    with zipfile.ZipFile(io.BytesIO(data)) as zf:
+        names = [n for n in ("word/document.xml",) if n in zf.namelist()]
+        if not names:
+            return ""
+        xml = zf.read("word/document.xml").decode("utf-8", errors="replace")
+    xml = re.sub(r"<w:tab\b[^>]*/>", "\t", xml)
+    xml = re.sub(r"<w:br\b[^>]*/>", "\n", xml)
+    xml = re.sub(r"</w:p\s*>", "\n", xml)
+    xml = re.sub(r"</w:tr\s*>", "\n", xml)
+    xml = re.sub(r"<[^>]+>", "", xml)
+    return _tidy(html.unescape(xml))
+
+
+def extract_legacy_doc(data: bytes) -> str:
+    """Extract text from a legacy binary Word (.doc, OLE) file.
+
+    Walks the FIB -> Clx -> piece table so that both compressed (cp1250) and
+    UTF-16 pieces decode correctly; that is what preserves the Montenegrin
+    diacritics (č ć ž š đ) a naive byte scrape would mangle.
+    """
+    import olefile  # noqa: PLC0415 - optional dependency, only needed for .doc
+
+    with olefile.OleFileIO(io.BytesIO(data)) as ole:
+        if not ole.exists("WordDocument"):
+            return ""
+        wd = ole.openstream("WordDocument").read()
+        flags = struct.unpack_from("<H", wd, 0x000A)[0]
+        table_name = "1Table" if (flags >> 9) & 1 else "0Table"
+        if not ole.exists(table_name):
+            table_name = "0Table" if table_name == "1Table" else "1Table"
+        if not ole.exists(table_name):
+            return ""
+        table = ole.openstream(table_name).read()
+
+    fc_clx, lcb_clx = struct.unpack_from("<II", wd, 0x01A2)
+    clx = table[fc_clx:fc_clx + lcb_clx]
+
+    pcdt = None
+    i = 0
+    while i < len(clx):
+        kind = clx[i]
+        if kind == 1:  # Prc — formatting run, skip
+            cb = struct.unpack_from("<H", clx, i + 1)[0]
+            i += 3 + cb
+        elif kind == 2:  # Pcdt — the piece table we want
+            lcb = struct.unpack_from("<I", clx, i + 1)[0]
+            pcdt = clx[i + 5:i + 5 + lcb]
+            break
+        else:
+            break
+    if not pcdt or len(pcdt) < 16:
+        return ""
+
+    n_pieces = (len(pcdt) - 4) // 12
+    cps = list(struct.unpack_from("<%dI" % (n_pieces + 1), pcdt, 0))
+    parts: List[str] = []
+    pcd_base = 4 * (n_pieces + 1)
+    for k in range(n_pieces):
+        fc = struct.unpack_from("<I", pcdt, pcd_base + k * 8 + 2)[0]
+        n_chars = cps[k + 1] - cps[k]
+        if n_chars <= 0:
+            continue
+        if fc & 0x40000000:  # 8-bit compressed piece
+            start = (fc & ~0x40000000) // 2
+            parts.append(wd[start:start + n_chars].decode("cp1250", errors="replace"))
+        else:
+            parts.append(wd[fc:fc + n_chars * 2].decode("utf-16-le", errors="replace"))
+    return _tidy("".join(parts))
+
+
+def extract_pdf(data: bytes) -> str:
+    """Extract text from a PDF, trying the fastest available library first."""
+    try:
+        import fitz  # PyMuPDF
+
+        with fitz.open(stream=data, filetype="pdf") as doc:
+            out = [page.get_text("text") for page in doc]
+        text = _tidy("\n".join(out))
+        if len(text) > 50:
+            return text
+    except Exception:
+        pass
+
+    try:
+        import pdfplumber
+
+        chunks = []
+        with pdfplumber.open(io.BytesIO(data)) as pdf:
+            for page in pdf.pages:
+                chunks.append(page.extract_text() or "")
+                # Release per-page layout caches; a few hundred-page decision
+                # otherwise peaks at multiple GB (see OOM note in INBOX).
+                try:
+                    page.flush_cache()
+                    page.get_textmap.cache_clear()
+                except Exception:
+                    pass
+        text = _tidy("\n".join(chunks))
+        if len(text) > 50:
+            return text
+    except Exception:
+        pass
+
+    try:
+        from pypdf import PdfReader
+
+        reader = PdfReader(io.BytesIO(data))
+        return _tidy("\n".join((p.extract_text() or "") for p in reader.pages))
+    except Exception:
+        return ""
+
+
+def extract_any(data: bytes, filename: str) -> str:
+    """Dispatch on magic bytes first, filename extension second."""
+    if not data:
+        return ""
+    if data[:4] == b"PK\x03\x04":
+        return extract_docx(data)
+    if data[:8] == b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1":
+        return extract_legacy_doc(data)
+    if data[:5] == b"%PDF-":
+        return extract_pdf(data)
+    if data[:5] == b"{\\rtf":
+        try:
+            from striprtf.striprtf import rtf_to_text
+
+            return _tidy(rtf_to_text(data.decode("cp1250", errors="replace")))
+        except Exception:
+            return ""
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if ext in ("html", "htm"):
+        return _tidy(html.unescape(re.sub(r"<[^>]+>", " ", data.decode("utf-8", "replace"))))
+    if ext == "txt":
+        return _tidy(data.decode("utf-8", "replace"))
+    return ""
+
+
+# ---------------------------------------------------------------------------
+# HTTP
+# ---------------------------------------------------------------------------
+
+def make_session() -> requests.Session:
+    session = requests.Session()
+    session.headers.update(HEADERS)
+    # Prime cookies / satisfy the Referer check.
+    try:
+        session.get(ARCHIVE_PAGE, timeout=60)
+    except requests.RequestException:
+        pass
+    return session
+
+
+def _post(session: requests.Session, url: str, data: dict, attempts: int = 5) -> requests.Response:
+    delay = 2.0
+    last: Optional[Exception] = None
+    for attempt in range(attempts):
+        try:
+            resp = session.post(url, data=data, timeout=90)
+            if resp.status_code in (429, 500, 502, 503, 504):
+                raise requests.HTTPError(f"HTTP {resp.status_code} from {url}")
+            resp.raise_for_status()
+            return resp
+        except requests.RequestException as exc:
+            last = exc
+            if attempt == attempts - 1:
+                break
+            time.sleep(min(delay, 60))
+            delay *= 2
+    raise RuntimeError(f"{url} unreachable after {attempts} attempts: {last}")
+
+
+def fetch_page(
+    start: int = 0,
+    length: int = PAGE_SIZE,
+    session: Optional[requests.Session] = None,
+    direction: str = "asc",
+) -> dict:
+    """Fetch a page of the decision index.
+
+    Ordered ASCENDING by date by default so newly published decisions append at
+    the tail; that keeps offset-based checkpoints valid across restarts.
+    """
+    if session is None:
+        session = make_session()
+
+    data: Dict[str, Any] = {
+        "start": start,
+        "length": length,
+        "draw": 1,
+        "order[0][column]": "1",  # datum
+        "order[0][dir]": direction,
+    }
+    for i, col in enumerate(COLUMNS):
+        data[f"columns[{i}][data]"] = col
+
+    resp = _post(session, LIST_ENDPOINT, data)
+    try:
+        return resp.json()
+    except ValueError as exc:
+        raise RuntimeError(
+            f"upit.php returned non-JSON (HTTP {resp.status_code}); first bytes: "
+            f"{resp.content[:120]!r} — likely a mod_security block from this vantage"
+        ) from exc
+
+
+def fetch_attachments(iddok: str, session: requests.Session) -> List[Dict[str, str]]:
+    """Return the attachment descriptors for one decision."""
+    resp = _post(session, FILES_ENDPOINT, {"iddok": iddok})
+    try:
+        payload = resp.json()
+    except ValueError:
+        return []
+
+    out: List[Dict[str, str]] = []
+    for entry in payload.get("linkovi") or []:
+        match = re.search(r"href='([^']+)'", entry.get("link", ""))
+        if not match:
+            continue
+        rel = html.unescape(match.group(1)).lstrip(".").lstrip("/")
+        out.append({
+            "url": f"{BASE_URL}/{rel}",
+            "name": entry.get("naziv_fajla") or rel.rsplit("/", 1)[-1],
+            "label": entry.get("korisnicki_naziv") or "",
+            "type": entry.get("tip") or "",
+            "date": entry.get("datum") or "",
+        })
+    return out
+
+
+def fetch_document_text(
+    iddok: str, session: requests.Session
+) -> Tuple[str, List[Dict[str, str]]]:
+    """Download every attachment for a decision and return its combined text."""
+    attachments = fetch_attachments(iddok, session)
+    if not attachments:
+        return "", []
+
+    pieces: List[str] = []
+    used: List[Dict[str, str]] = []
+    for att in attachments:
+        try:
+            resp = session.get(att["url"], timeout=180, stream=True)
+            resp.raise_for_status()
+            data = resp.raw.read(MAX_FILE_BYTES + 1, decode_content=True)
+        except requests.RequestException as exc:
+            print(f"  ! download failed {att['url']}: {exc}", file=sys.stderr)
+            continue
+        if len(data) > MAX_FILE_BYTES:
+            print(f"  ! oversized attachment skipped {att['url']}", file=sys.stderr)
+            continue
+
+        text = extract_any(data, att["name"])
+        if not text:
+            continue
+        label = att["label"] or att["type"]
+        pieces.append(f"[{label}]\n{text}" if label and len(attachments) > 1 else text)
+        used.append(att)
+
+    return "\n\n".join(pieces).strip(), used
+
+
+# ---------------------------------------------------------------------------
+# normalisation
+# ---------------------------------------------------------------------------
 
 def normalize_date(date_str: str) -> Optional[str]:
     """Normalize date to ISO 8601 format."""
     if not date_str:
         return None
-
-    # Handle various date formats
-    for fmt in ["%Y-%m-%d", "%Y.%m.%d", "%d.%m.%Y", "%Y-%m-%d %H:%M:%S"]:
+    date_str = date_str.strip()
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%Y.%m.%d", "%d.%m.%Y", "%d.%m.%Y."):
         try:
-            dt = datetime.strptime(date_str.strip(), fmt)
-            return dt.strftime("%Y-%m-%d")
+            dt = datetime.strptime(date_str, fmt)
         except ValueError:
             continue
+        if dt.year < 1900:
+            return None
+        return dt.strftime("%Y-%m-%d")
     return None
 
 
 def extract_case_number(djel_broj: str) -> Dict[str, Any]:
     """Extract structured case number components."""
-    result = {"raw": djel_broj}
-
+    result: Dict[str, Any] = {"raw": djel_broj}
     if not djel_broj:
         return result
 
-    # Pattern: U-III br.383/25 or U-I br. 7/17
-    match = re.match(r'(U-[IVX]+)\s*br\.?\s*(\d+)/(\d+)', djel_broj)
+    # e.g. "U-III br.383/25", "U-I br. 7/17", "Už-III br. 563/14"
+    match = re.match(r"(U[žz]?-[IVX]+)\s*br\.?\s*(\d+)\s*/\s*(\d+)", djel_broj)
     if match:
         result["type"] = match.group(1)
         result["number"] = int(match.group(2))
         year = int(match.group(3))
-        # Convert 2-digit year to 4-digit
-        if year < 50:
-            result["year"] = 2000 + year
-        else:
-            result["year"] = 1900 + year
-
+        result["year"] = 2000 + year if year < 50 else 1900 + year
     return result
 
 
-def normalize(raw: dict) -> dict:
-    """Transform raw API data into normalized schema."""
-    # Get the full text
-    full_text = raw.get("sadrzaj_fajlova", "") or raw.get("8", "")
-    full_text = clean_text(full_text)
+def normalize(raw: dict, text: str = "", attachments: Optional[List[dict]] = None) -> dict:
+    """Transform a raw index row plus its extracted document text into the schema."""
+    attachments = attachments or []
 
-    # Get case number
-    case_number = raw.get("djelovodni_broj", "") or raw.get("3", "")
+    iddok = str(raw.get("iddok") or raw.get("0") or "").strip()
+    case_number = (raw.get("djelovodni_broj") or raw.get("3") or "").strip()
+    doc_type = (raw.get("vrsta_dokumenta") or raw.get("4") or "").strip()
     case_info = extract_case_number(case_number)
 
-    # Get date
-    date_str = raw.get("datum", "") or raw.get("2", "")
-    decision_date = normalize_date(date_str)
+    decision_date = normalize_date(raw.get("datum") or raw.get("2") or "")
+    session_date = normalize_date(raw.get("datum_sjednice") or raw.get("10") or "")
 
-    session_date_str = raw.get("datum_sjednice", "") or raw.get("10", "")
-    session_date = normalize_date(session_date_str)
-
-    # Get document ID
-    iddok = raw.get("iddok", "") or raw.get("0", "")
-
-    # Get document type
-    doc_type = raw.get("vrsta_dokumenta", "") or raw.get("4", "")
-
-    # Get challenged act
-    challenged_act = raw.get("osporeni_akt", "") or raw.get("9", "")
-    challenged_act = clean_text(challenged_act)
-
-    # Get keywords
-    keywords = raw.get("kljucne_rijeci_tagovi", "") or raw.get("5", "")
-
-    # Get constitutional articles
-    const_articles = raw.get("clan_ustava_cg_atr19", "") or raw.get("6", "")
-
-    # Get convention articles (ECHR)
-    conv_articles = raw.get("clan_konvencije_atr20", "") or raw.get("7", "")
-
-    # Get applicant info
-    applicant = raw.get("komitent", "") or raw.get("1", "")
-
-    # Build title from case number and type
-    title = case_number
-    if doc_type:
-        title = f"{case_number} - {doc_type}"
-
-    # Build URL
-    url = f"{BASE_URL}/arhiva.php"  # Archive search page
+    title = f"{case_number} - {doc_type}" if doc_type else case_number
 
     return {
         "_id": f"ME/ConstitutionalCourt/{iddok}",
@@ -153,209 +439,252 @@ def normalize(raw: dict) -> dict:
         "_type": "case_law",
         "_fetched_at": datetime.now(timezone.utc).isoformat(),
         "title": title,
-        "text": full_text,
+        # Real document text: UTF-8, punctuation and line breaks intact.
+        "text": text,
         "date": decision_date or session_date,
-        "url": url,
+        # Per-decision endpoint (accepts GET) that resolves to the current
+        # download link for this decision's document(s). The site exposes no
+        # other per-document permalink — arhiva.php ignores query parameters.
+        "url": f"{FILES_ENDPOINT}?iddok={iddok}",
         "case_number": case_number,
         "case_type": case_info.get("type"),
         "case_year": case_info.get("year"),
         "document_type": doc_type,
         "session_date": session_date,
-        "challenged_act": challenged_act,
-        "keywords": keywords,
-        "constitutional_articles": const_articles,
-        "convention_articles": conv_articles,
-        "applicant": applicant,
+        "challenged_act": (raw.get("osporeni_akt") or raw.get("9") or "").strip(),
+        "keywords": (raw.get("kljucne_rijeci_tagovi") or raw.get("5") or "").strip(),
+        "constitutional_articles": (raw.get("clan_ustava_cg_atr19") or raw.get("6") or "").strip(),
+        "convention_articles": (raw.get("clan_konvencije_atr20") or raw.get("7") or "").strip(),
+        "applicant": (raw.get("komitent") or raw.get("1") or "").strip(),
         "internal_id": iddok,
         "language": "sr",
+        "document_title": (attachments[0]["label"] if attachments else "") or None,
+        "document_files": [
+            {"name": a["name"], "type": a["type"], "url": a["url"]} for a in attachments
+        ],
     }
 
 
-def fetch_page(start: int = 0, length: int = PAGE_SIZE, session: requests.Session = None) -> dict:
-    """Fetch a page of decisions from the API."""
-    if session is None:
-        session = requests.Session()
+# ---------------------------------------------------------------------------
+# checkpointing
+# ---------------------------------------------------------------------------
 
-    # DataTables server-side request format
-    data = {
-        "start": start,
-        "length": length,
-        "draw": 1,
-        "order[0][column]": "1",  # Order by date
-        "order[0][dir]": "desc",  # Most recent first
-        "columns[0][data]": "iddok",
-        "columns[1][data]": "datum",
-        "columns[2][data]": "djelovodni_broj",
-        "columns[3][data]": "vrsta_dokumenta",
-        "columns[4][data]": "komitent",
-        "columns[5][data]": "kljucne_rijeci_tagovi",
-        "columns[6][data]": "clan_ustava_cg_atr19",
-        "columns[7][data]": "clan_konvencije_atr20",
-        "columns[8][data]": "sadrzaj_fajlova",
-        "columns[9][data]": "osporeni_akt",
-        "columns[10][data]": "datum_sjednice",
-    }
-
-    resp = session.post(LIST_ENDPOINT, data=data, headers=HEADERS, timeout=60)
-    resp.raise_for_status()
-
-    return resp.json()
+def _load_checkpoint() -> dict:
+    if CHECKPOINT_PATH.exists():
+        try:
+            with open(CHECKPOINT_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (ValueError, OSError):
+            pass
+    return {"offset": 0, "emitted": 0, "skipped": 0}
 
 
-def fetch_all(sample: bool = False) -> Iterator[dict]:
-    """Fetch all decisions from the database."""
-    session = requests.Session()
+def _save_checkpoint(state: dict) -> None:
+    CHECKPOINT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp = CHECKPOINT_PATH.with_suffix(".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(state, f)
+    tmp.replace(CHECKPOINT_PATH)
 
-    # First request to get total count
-    result = fetch_page(start=0, length=1, session=session)
-    total = result.get("recordsTotal", 0)
-    print(f"Total records in database: {total}", file=sys.stderr)
 
+# ---------------------------------------------------------------------------
+# crawl
+# ---------------------------------------------------------------------------
+
+def fetch_all(sample: bool = False, resume: bool = True) -> Iterator[dict]:
+    """Yield decisions with real full text, skipping those with no document."""
+    session = make_session()
+
+    probe = fetch_page(start=0, length=1, session=session)
+    total = int(probe.get("recordsFiltered") or probe.get("recordsTotal") or 0)
+    print(f"Index reports {total} decisions", file=sys.stderr)
+    if total == 0:
+        raise RuntimeError("upit.php reported 0 decisions — refusing to report success")
+
+    sample_target = 15
     if sample:
-        # For sample, fetch first 15 records
-        limit = 15
-        print(f"Sample mode: fetching {limit} records", file=sys.stderr)
+        state = {"offset": 0, "emitted": 0, "skipped": 0}
+        # Newest-first for samples so the committed fixtures stay current.
+        direction = "desc"
     else:
-        limit = total
+        state = _load_checkpoint() if resume else {"offset": 0, "emitted": 0, "skipped": 0}
+        direction = "asc"
+        if state["offset"]:
+            print(f"Resuming from offset {state['offset']}", file=sys.stderr)
 
-    fetched = 0
-    while fetched < limit:
-        batch_size = min(PAGE_SIZE, limit - fetched)
-        print(f"Fetching records {fetched+1} to {fetched+batch_size}...", file=sys.stderr)
+    offset = int(state["offset"])
+    emitted = int(state["emitted"])
+    skipped = int(state["skipped"])
 
-        result = fetch_page(start=fetched, length=batch_size, session=session)
-        records = result.get("data", [])
-
-        if not records:
+    while offset < total:
+        page = fetch_page(start=offset, length=PAGE_SIZE, session=session, direction=direction)
+        rows = page.get("data") or []
+        if not rows:
             break
+        print(
+            f"Index rows {offset + 1}-{offset + len(rows)} of {total} "
+            f"(emitted {emitted}, no-document {skipped})",
+            file=sys.stderr,
+        )
 
-        for raw in records:
-            yield normalize(raw)
-
-        fetched += len(records)
-
-        if fetched < limit:
+        for row in rows:
+            iddok = str(row.get("iddok") or row.get("0") or "").strip()
+            if not iddok:
+                continue
+            text, attachments = fetch_document_text(iddok, session)
+            if len(text) < 200:
+                # No attachment (or unreadable one). We deliberately do NOT fall
+                # back to sadrzaj_fajlova: see issue #1254.
+                skipped += 1
+            else:
+                yield normalize(row, text, attachments)
+                emitted += 1
+                if sample and emitted >= sample_target:
+                    print(
+                        f"Sample complete: {emitted} decisions "
+                        f"({skipped} skipped, no readable document)",
+                        file=sys.stderr,
+                    )
+                    return
             time.sleep(RATE_LIMIT_DELAY)
 
-    print(f"Fetched {fetched} records", file=sys.stderr)
+        offset += len(rows)
+        if not sample:
+            _save_checkpoint({"offset": offset, "emitted": emitted, "skipped": skipped})
+
+    print(
+        f"Done: {emitted} decisions with full text, {skipped} skipped (no readable document)",
+        file=sys.stderr,
+    )
 
 
 def fetch_updates(since: str) -> Iterator[dict]:
-    """Fetch decisions modified since a given date."""
-    # Parse the since date
-    since_date = datetime.fromisoformat(since.replace("Z", "+00:00"))
-    since_str = since_date.strftime("%Y-%m-%d")
-
+    """Fetch decisions dated on or after ``since``."""
+    since_str = datetime.fromisoformat(since.replace("Z", "+00:00")).strftime("%Y-%m-%d")
     print(f"Fetching updates since {since_str}...", file=sys.stderr)
 
-    session = requests.Session()
-
-    # Fetch in date order (most recent first), stop when we hit older records
-    fetched = 0
-    start = 0
+    session = make_session()
+    offset = 0
+    emitted = 0
 
     while True:
-        result = fetch_page(start=start, length=PAGE_SIZE, session=session)
-        records = result.get("data", [])
-
-        if not records:
+        page = fetch_page(start=offset, length=PAGE_SIZE, session=session, direction="desc")
+        rows = page.get("data") or []
+        if not rows:
             break
 
-        found_older = False
-        for raw in records:
-            date_str = raw.get("datum", "") or raw.get("2", "")
-            record_date = normalize_date(date_str)
-
+        for row in rows:
+            record_date = normalize_date(row.get("datum") or row.get("2") or "")
             if record_date and record_date < since_str:
-                found_older = True
-                break
+                print(f"Fetched {emitted} updated decisions", file=sys.stderr)
+                return
+            iddok = str(row.get("iddok") or row.get("0") or "").strip()
+            text, attachments = fetch_document_text(iddok, session)
+            if len(text) >= 200:
+                yield normalize(row, text, attachments)
+                emitted += 1
+            time.sleep(RATE_LIMIT_DELAY)
 
-            yield normalize(raw)
-            fetched += 1
+        offset += len(rows)
 
-        if found_older:
-            break
-
-        start += len(records)
-        time.sleep(RATE_LIMIT_DELAY)
-
-    print(f"Fetched {fetched} updated records", file=sys.stderr)
+    print(f"Fetched {emitted} updated decisions", file=sys.stderr)
 
 
-def save_samples(records: list, output_dir: Path):
-    """Save sample records to JSON files."""
+def save_samples(records: list, output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
-
     for i, record in enumerate(records):
-        filename = f"sample_{i+1:03d}.json"
-        filepath = output_dir / filename
-
+        filepath = output_dir / f"sample_{i + 1:03d}.json"
         with open(filepath, "w", encoding="utf-8") as f:
             json.dump(record, f, ensure_ascii=False, indent=2)
-
         print(f"Saved {filepath}", file=sys.stderr)
 
 
-def main():
+def run_full() -> int:
+    """Stream the whole corpus to data/records.jsonl (what the fleet ingests)."""
+    RECORDS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    written = 0
+    with open(RECORDS_PATH, "a", encoding="utf-8") as out:
+        for record in fetch_all(sample=False):
+            out.write(json.dumps(record, ensure_ascii=False) + "\n")
+            written += 1
+            if written % 100 == 0:
+                out.flush()
+    print(f"Wrote {written} records to {RECORDS_PATH}", file=sys.stderr)
+    return written
+
+
+def run_test() -> int:
+    """Connectivity + extraction smoke test."""
+    session = make_session()
+    page = fetch_page(start=0, length=5, session=session, direction="desc")
+    total = page.get("recordsFiltered") or page.get("recordsTotal")
+    print(f"upit.php OK — {total} decisions indexed")
+    for row in page.get("data") or []:
+        iddok = str(row.get("iddok"))
+        text, atts = fetch_document_text(iddok, session)
+        kinds = ", ".join(a["name"].rsplit(".", 1)[-1] for a in atts) or "none"
+        has_dia = bool(re.search(r"[čćžšđČĆŽŠĐ]", text))
+        print(
+            f"  {iddok} {row.get('datum')} {row.get('djelovodni_broj')}: "
+            f"files={kinds} chars={len(text)} diacritics={has_dia}"
+        )
+    return 0
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Montenegro Constitutional Court case law scraper"
     )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    # Bootstrap command
-    bootstrap_parser = subparsers.add_parser(
-        "bootstrap", help="Run initial data collection"
-    )
-    bootstrap_parser.add_argument(
-        "--sample", action="store_true",
-        help="Only fetch a small sample for testing"
-    )
-    bootstrap_parser.add_argument(
-        "--output", type=str, default="sample",
-        help="Output directory for sample files"
-    )
+    for name in ("bootstrap", "bootstrap-fast"):
+        sub = subparsers.add_parser(name, help="Run data collection")
+        sub.add_argument("--sample", action="store_true", help="Fetch a small sample only")
+        sub.add_argument("--full", action="store_true", help="Fetch the whole corpus")
+        sub.add_argument("--output", type=str, default="sample", help="Sample output dir")
+        sub.add_argument(
+            "--no-resume", action="store_true", help="Ignore the saved checkpoint"
+        )
 
-    # Updates command
-    updates_parser = subparsers.add_parser(
-        "updates", help="Fetch records since a given date"
-    )
-    updates_parser.add_argument(
-        "--since", type=str, required=True,
-        help="ISO date to fetch updates from (e.g., 2024-01-01)"
-    )
-    updates_parser.add_argument("--full", action="store_true", help="Fetch all records")
+    updates_parser = subparsers.add_parser("updates", help="Fetch recent decisions")
+    updates_parser.add_argument("--since", type=str, required=True, help="ISO date")
+
+    subparsers.add_parser("test", help="Connectivity and extraction smoke test")
 
     args = parser.parse_args()
 
-    if args.command == "bootstrap":
-        records = list(fetch_all(sample=args.sample))
-
+    if args.command in ("bootstrap", "bootstrap-fast"):
         if args.sample:
-            output_dir = Path(__file__).parent / args.output
-            save_samples(records, output_dir)
+            records = list(fetch_all(sample=True))
+            save_samples(records, Path(__file__).parent / args.output)
 
-            # Print validation summary
             print("\n=== Validation Summary ===", file=sys.stderr)
+            lengths = [len(r.get("text", "")) for r in records]
+            with_text = sum(1 for n in lengths if n > 200)
+            with_dia = sum(1 for r in records if re.search(r"[čćžšđČĆŽŠĐ]", r["text"]))
+            with_punct = sum(1 for r in records if re.search(r"[.,;:()]", r["text"]))
+            with_nl = sum(1 for r in records if "\n" in r["text"])
             print(f"Records fetched: {len(records)}", file=sys.stderr)
-
-            text_lengths = [len(r.get("text", "")) for r in records]
-            with_text = sum(1 for t in text_lengths if t > 100)
-            avg_len = sum(text_lengths) / len(text_lengths) if text_lengths else 0
-
-            print(f"Records with substantial text: {with_text}/{len(records)}", file=sys.stderr)
-            print(f"Average text length: {avg_len:.0f} characters", file=sys.stderr)
-
-            if text_lengths:
-                print(f"Min text length: {min(text_lengths)}", file=sys.stderr)
-                print(f"Max text length: {max(text_lengths)}", file=sys.stderr)
+            print(f"With substantial text: {with_text}/{len(records)}", file=sys.stderr)
+            print(f"With diacritics: {with_dia}/{len(records)}", file=sys.stderr)
+            print(f"With punctuation: {with_punct}/{len(records)}", file=sys.stderr)
+            print(f"With newlines: {with_nl}/{len(records)}", file=sys.stderr)
+            print(f"Distinct urls: {len({r['url'] for r in records})}", file=sys.stderr)
+            if lengths:
+                print(
+                    f"Text chars min/avg/max: {min(lengths)}/"
+                    f"{sum(lengths) // len(lengths)}/{max(lengths)}",
+                    file=sys.stderr,
+                )
         else:
-            # Output records as JSON lines for pipeline
-            for record in records:
-                print(json.dumps(record, ensure_ascii=False))
+            run_full()
 
     elif args.command == "updates":
         for record in fetch_updates(args.since):
             print(json.dumps(record, ensure_ascii=False))
+
+    elif args.command == "test":
+        sys.exit(run_test())
 
     else:
         parser.print_help()

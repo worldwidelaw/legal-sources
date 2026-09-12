@@ -56,16 +56,22 @@ HEADERS = {
 BATCH_SIZE = 100
 
 
+RETRYABLE_STATUS = (429, 500, 502, 503, 504)
+
+
 def _request_with_retry(url, params=None, retries=6, backoff=5):
     # datasets-server.huggingface.co throttles /rows with HTTP 429 (and 503
     # while a dataset is being (re)built). The previous version only retried
     # ConnectionError/Timeout, so a single mid-run 429 raised HTTPError and
     # silently truncated fetch_all at ~3,400/22,552 rows (#974; same class as
-    # the #890 CN/CAIL2018 fix). Back off on 429/503 too, honoring Retry-After.
+    # the #890 CN/CAIL2018 fix). Back off on the whole transient set instead,
+    # honoring Retry-After: 500/502/504 are the same gateway-side failure mode
+    # as the 503 already handled here, and leaving them fatal is exactly what
+    # killed the sibling CN/HuggingFace-CAIL2018 crawl on this endpoint (#1453).
     for attempt in range(retries):
         try:
             resp = requests.get(url, params=params, headers=HEADERS, timeout=30)
-            if resp.status_code in (429, 503):
+            if resp.status_code in RETRYABLE_STATUS:
                 raise requests.exceptions.HTTPError(
                     f"{resp.status_code} throttle", response=resp)
             resp.raise_for_status()
@@ -74,8 +80,8 @@ def _request_with_retry(url, params=None, retries=6, backoff=5):
                 requests.exceptions.Timeout,
                 requests.exceptions.HTTPError) as e:
             status = getattr(getattr(e, "response", None), "status_code", None)
-            # Don't retry genuine client errors other than 429.
-            if status is not None and status not in (429, 503):
+            # Don't retry genuine client errors (4xx other than 429).
+            if status is not None and status not in RETRYABLE_STATUS:
                 raise
             if attempt < retries - 1:
                 retry_after = None
@@ -294,4 +300,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

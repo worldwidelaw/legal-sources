@@ -11,17 +11,19 @@ import re
 import sys
 import json
 import html
+import time
 import base64
+import random
 import logging
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date, timedelta
 from typing import Generator, Optional
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 
 logging.basicConfig(
@@ -50,6 +52,25 @@ class TurkishCourtOfCassationScraper(BaseScraper):
     SEARCH_ENDPOINT = "/emsal-karar/searchDocuments"
     DOCUMENT_ENDPOINT = "/emsal-karar/getDocumentContent"
 
+    # The API rejects an empty/"*" phrase ("Sadece harf ve rakam içeren
+    # aramalar yapılabilir"), so the corpus can only be enumerated through a
+    # search term. These two are near-universal: probed against single-day
+    # windows they report the same total as "karar"/"madde"/"ile"/"olarak"
+    # and their union adds no documents, i.e. one of them matches every
+    # decision in the window. Both are probed per window and the larger
+    # total wins; if they disagree the window is crawled under both and
+    # de-duplicated, so a future indexing change degrades coverage
+    # gracefully instead of silently truncating.
+    PROBE_PHRASES = ["dava", "karar"]
+
+    PAGE_SIZE = 100          # verified: the API honours 100 (the old code assumed 10)
+    MIN_YEAR = 1940          # year probes make empty years cost 1 request each
+    MAX_DIRTY_PAGES = 200    # bounded sweep for out-of-range decision dates
+
+    # Transient statuses worth retrying. 429 is the real failure mode here and
+    # is returned as a plain-text body, not JSON.
+    RETRY_STATUSES = {429, 500, 502, 503, 504}
+
     # Chamber mappings for filtering
     CIVIL_CHAMBERS = [f"{i}. Hukuk Dairesi" for i in range(1, 24)]  # 1-23. Hukuk Dairesi
     CRIMINAL_CHAMBERS = [f"{i}. Ceza Dairesi" for i in range(1, 24)]  # 1-23. Ceza Dairesi
@@ -76,147 +97,270 @@ class TurkishCourtOfCassationScraper(BaseScraper):
             },
         )
 
+    # ── Checkpointing ─────────────────────────────────────────────
+
+    @property
+    def _checkpoint_path(self) -> Path:
+        return Path(self.source_dir) / "data" / "crawl_checkpoint.json"
+
+    def _load_checkpoint(self) -> dict:
+        try:
+            with open(self._checkpoint_path, encoding="utf-8") as fh:
+                ck = json.load(fh)
+            ck.setdefault("done_days", [])
+            ck.setdefault("empty_years", [])
+            ck.setdefault("empty_months", [])
+            ck["done_days"] = set(ck["done_days"])
+            ck["empty_years"] = set(ck["empty_years"])
+            ck["empty_months"] = set(ck["empty_months"])
+            logger.info(
+                f"Resuming from checkpoint: {len(ck['done_days'])} days already crawled, "
+                f"{len(ck['empty_years'])} empty years, {len(ck['empty_months'])} empty months"
+            )
+            return ck
+        except FileNotFoundError:
+            return {"done_days": set(), "empty_years": set(), "empty_months": set()}
+        except Exception as e:
+            logger.warning(f"Unreadable checkpoint ({e}); starting fresh")
+            return {"done_days": set(), "empty_years": set(), "empty_months": set()}
+
+    def _save_checkpoint(self, ck: dict):
+        path = self._checkpoint_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".json.tmp")
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(
+                {
+                    "done_days": sorted(ck["done_days"]),
+                    "empty_years": sorted(ck["empty_years"]),
+                    "empty_months": sorted(ck["empty_months"]),
+                    "dirty_swept": bool(ck.get("dirty_swept")),
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                },
+                fh,
+            )
+        tmp.replace(path)
+
+    # ── Crawl ─────────────────────────────────────────────────────
+
     def fetch_all(self) -> Generator[dict, None, None]:
         """
-        Yield all Yargıtay decisions from the Bedesten API.
+        Yield every Yargıtay decision the Bedesten API exposes.
 
-        Uses paginated search with common legal terms to retrieve decisions.
-        The API has ~6 million decisions total.
+        The API has no wildcard and no bulk endpoint, so the corpus is
+        enumerated by walking decision-date windows newest-first and
+        paginating each day to exhaustion. Year and month totals are probed
+        first so empty stretches cost one request instead of 365.
+
+        Only search metadata is yielded here; the per-document full-text
+        download happens in normalize(), which bootstrap_fast runs on worker
+        threads, so the expensive half of the crawl is parallelised.
+
+        Completed days are checkpointed to data/crawl_checkpoint.json, so a
+        re-launched run skips them with no network calls and advances
+        monotonically through the ~10M-decision backlog across fleet slots.
         """
-        logger.info("Fetching Yargıtay decisions from Bedesten API...")
+        ck = self._load_checkpoint()
+        today = date.today()
 
-        # Use common legal terms to get broad coverage
-        # Each term will fetch sorted by decision date (newest first)
-        search_terms = ["dava", "hukuk", "ceza", "karar", "mahkeme", "borç", "tazminat", "iş", "sözleşme"]
-        seen_ids = set()
+        # Decisions carrying out-of-range dates (the API holds records stamped
+        # e.g. 6006-09-20) can never appear in a sane date window, so sweep
+        # them separately before the main walk.
+        yield from self._sweep_dirty_dates(ck)
 
-        for term in search_terms:
-            logger.info(f"Searching for decisions with term: {term}")
-            for decision in self._fetch_decisions_by_term(term, max_pages=50):
-                doc_id = decision.get("documentId")
-                if doc_id and doc_id not in seen_ids:
-                    seen_ids.add(doc_id)
-                    yield decision
+        days_done = 0
+        for year in range(today.year, self.MIN_YEAR - 1, -1):
+            if str(year) in ck["empty_years"]:
+                continue
+            if not self._window_total(f"{year}-01-01", f"{year}-12-31"):
+                logger.info(f"Year {year}: no decisions, skipping")
+                ck["empty_years"].add(str(year))
+                self._save_checkpoint(ck)
+                continue
 
-    def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
+            for month in range(12, 0, -1):
+                if year == today.year and month > today.month:
+                    continue
+                mkey = f"{year}-{month:02d}"
+                if mkey in ck["empty_months"]:
+                    continue
+                last = self._last_day_of_month(year, month)
+                phrases = self._phrases_for_window(f"{mkey}-01", f"{mkey}-{last:02d}", mkey)
+                if not phrases:
+                    ck["empty_months"].add(mkey)
+                    self._save_checkpoint(ck)
+                    continue
+
+                for dom in range(last, 0, -1):
+                    dkey = f"{mkey}-{dom:02d}"
+                    if dkey in ck["done_days"]:
+                        continue
+                    if date(year, month, dom) > today:
+                        continue
+
+                    yield from self._crawl_day(dkey, phrases)
+
+                    ck["done_days"].add(dkey)
+                    days_done += 1
+                    if days_done % 10 == 0:
+                        self._save_checkpoint(ck)
+
+                self._save_checkpoint(ck)
+
+        self._save_checkpoint(ck)
+        logger.info(f"Full crawl finished: {len(ck['done_days'])} day-windows crawled")
+
+    def fetch_updates(self, since) -> Generator[dict, None, None]:
         """
-        Yield decisions published since the given datetime.
+        Yield decisions whose decision date falls on or after `since`.
+
+        `since` may be a datetime, date or string — the fleet passes a
+        datetime, so it is normalised rather than assumed.
         """
-        logger.info(f"Fetching updates since {since.isoformat()}")
+        start = as_date_str(since)
+        logger.info(f"Fetching updates since {start}")
 
-        # Search with date range
-        start_date = since.strftime("%Y-%m-%d")
-        end_date = datetime.now().strftime("%Y-%m-%d")
+        start_d = datetime.strptime(start, "%Y-%m-%d").date()
+        today = date.today()
 
-        yield from self._fetch_decisions_by_date_range(start_date, end_date)
+        day = today
+        while day >= start_d:
+            yield from self._crawl_day(day.isoformat())
+            day -= timedelta(days=1)
 
-    def _fetch_decisions_by_year(
-        self, year: int, max_pages: int = 100
-    ) -> Generator[dict, None, None]:
-        """Fetch decisions for a specific year."""
-        start_date = f"{year}-01-01"
-        end_date = f"{year}-12-31"
+    def _phrases_for_window(self, start: str, end: str, label: str) -> list:
+        """
+        Decide which phrases are needed to cover a window, and confirm it holds.
 
-        yield from self._fetch_decisions_by_date_range(start_date, end_date, max_pages)
+        The probe phrases are compared once per month rather than per day: the
+        API throttles aggressively, so a redundant request per day costs far
+        more than the check is worth. If the totals agree, one phrase covers
+        the window and the days below it are crawled under that phrase alone.
+        If they disagree, neither term is universal here and the days are
+        crawled under both and de-duplicated.
 
-    def _fetch_decisions_by_date_range(
-        self, start_date: str, end_date: str, max_pages: int = 100
-    ) -> Generator[dict, None, None]:
-        """Fetch decisions within a date range with pagination."""
-        # Note: The Bedesten API doesn't support "*" wildcard with date filters
-        # Use common legal terms to get broad coverage
-        search_terms = ["dava", "hukuk", "ceza", "karar", "mahkeme"]
+        Returns [] when the window holds no decisions at all.
+        """
+        totals = {p: self._window_total(start, end, p) or 0 for p in self.PROBE_PHRASES}
+        best = max(totals, key=lambda p: totals[p])
+        if not totals[best]:
+            return []
+        if len(set(totals.values())) > 1:
+            logger.warning(
+                f"{label}: probe phrases disagree {totals} — crawling union"
+            )
+            return sorted(totals, key=lambda p: totals[p], reverse=True)
+        return [best]
 
-        for term in search_terms:
-            yield from self._fetch_decisions_by_term(term, max_pages=max_pages // len(search_terms))
+    def _crawl_day(self, day: str, phrases: list = None) -> Generator[dict, None, None]:
+        """
+        Paginate one decision-date window to exhaustion.
 
-    def _fetch_decisions_by_term(
-        self, search_term: str, max_pages: int = 20
-    ) -> Generator[dict, None, None]:
-        """Fetch decisions matching a search term with pagination."""
-        page = 1
-        page_size = 10  # API limit
-        total_fetched = 0
-        seen_ids = set()
+        Page 1 carries both the window total and the first batch of results,
+        so an empty day costs a single request and no separate count probe.
+        """
+        phrases = phrases or [self.PROBE_PHRASES[0]]
+        seen = set()
+        reported = 0
 
-        while page <= max_pages:
-            try:
-                self.rate_limiter.wait()
-
-                payload = {
-                    "data": {
-                        "pageSize": page_size,
-                        "pageNumber": page,
-                        "itemTypeList": ["YARGITAYKARARI"],
-                        "phrase": search_term,
-                        "sortFields": ["KARAR_TARIHI"],
-                        "sortDirection": "desc",
-                    },
-                    "applicationName": "UyapMevzuat",
-                    "paging": True,
-                }
-
-                resp = self.client.post(self.SEARCH_ENDPOINT, json_data=payload)
-                data = resp.json()
-
-                if not data.get("data") or not data["data"].get("emsalKararList"):
-                    break
-
-                decisions = data["data"]["emsalKararList"]
-                total = data["data"].get("total", 0)
-
+        for phrase in phrases:
+            page = 1
+            collected = 0
+            expected = None
+            while True:
+                total, decisions = self._search_page(phrase, day, page)
+                if expected is None:
+                    expected = total or 0
+                    reported = max(reported, expected)
+                    if not expected:
+                        break
                 if not decisions:
                     break
+                for decision in decisions:
+                    doc_id = decision.get("documentId")
+                    if not doc_id or doc_id in seen:
+                        continue
+                    seen.add(doc_id)
+                    yield decision
+                collected += len(decisions)
+                if len(decisions) < self.PAGE_SIZE or collected >= expected:
+                    break
+                page += 1
+                if page > (expected // self.PAGE_SIZE) + 5:
+                    break
 
-                logger.info(
-                    f"Term '{search_term}' page {page}: {len(decisions)} decisions (total available: {total})"
+            if expected and collected < expected:
+                # Surface under-collection instead of silently truncating.
+                logger.warning(
+                    f"{day} phrase '{phrase}': collected {collected} of {expected} reported"
+                )
+                self.record_coverage_gap(
+                    day, "incomplete_pagination", collected=collected, expected=expected
                 )
 
-                for decision in decisions:
-                    # Skip duplicates
-                    doc_id = decision.get("documentId")
-                    if doc_id in seen_ids:
-                        continue
-                    seen_ids.add(doc_id)
+        if seen:
+            logger.info(f"{day}: {len(seen)} decisions (reported {reported})")
 
-                    if doc_id:
-                        full_doc = self._fetch_document_content(doc_id)
-                        if full_doc:
-                            decision["full_text"] = full_doc
-                            yield decision
-                            total_fetched += 1
-                        else:
-                            logger.warning(f"Could not fetch content for {doc_id}")
+    def _sweep_dirty_dates(self, ck: dict) -> Generator[dict, None, None]:
+        """
+        Collect decisions stamped with dates outside any window we walk.
 
-                page += 1
-
-            except Exception as e:
-                logger.error(f"Error fetching page {page} for term '{search_term}': {e}")
+        Sorted descending with no date filter, corrupt future dates sort
+        first; stop as soon as the results reach the present.
+        """
+        if ck.get("dirty_swept"):
+            return
+        logger.info("Sweeping decisions with out-of-range decision dates...")
+        cutoff = date.today().year
+        count = 0
+        for page in range(1, self.MAX_DIRTY_PAGES + 1):
+            _, decisions = self._search_page(self.PROBE_PHRASES[0], None, page)
+            if not decisions:
                 break
+            reached_present = False
+            for decision in decisions:
+                parsed = self._parse_decision_date(decision.get("kararTarihi", ""))
+                year = int(parsed[:4]) if parsed else None
+                if year and year <= cutoff:
+                    reached_present = True
+                    continue
+                count += 1
+                yield decision
+            if reached_present:
+                break
+        logger.info(f"Out-of-range date sweep: {count} decisions")
+        ck["dirty_swept"] = True
+        self._save_checkpoint(ck)
 
-    def _search_decisions(
-        self,
-        phrase: str = "*",
-        page: int = 1,
-        page_size: int = 10,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-        chamber: Optional[str] = None,
+    @staticmethod
+    def _last_day_of_month(year: int, month: int) -> int:
+        if month == 12:
+            return 31
+        return (date(year, month + 1, 1) - timedelta(days=1)).day
+
+    def _window_total(self, start: str, end: str, phrase: str = None) -> int:
+        """Report how many decisions a date window holds (1 request)."""
+        payload = self._search_payload(phrase or self.PROBE_PHRASES[0], start, end, page=1, page_size=1)
+        data = self._api_post(self.SEARCH_ENDPOINT, payload).get("data") or {}
+        return data.get("total") or 0
+
+    def _search_page(self, phrase: str, day: Optional[str], page: int) -> tuple:
+        """
+        Return (total, decisions) for one page of a day window (or unfiltered).
+
+        The total rides along with every page, which is what lets an empty day
+        cost one request instead of a probe plus a fetch.
+        """
+        payload = self._search_payload(phrase, day, day, page=page, page_size=self.PAGE_SIZE)
+        data = self._api_post(self.SEARCH_ENDPOINT, payload).get("data") or {}
+        return data.get("total") or 0, data.get("emsalKararList") or []
+
+    def _search_payload(
+        self, phrase: str, start: Optional[str], end: Optional[str], page: int, page_size: int
     ) -> dict:
-        """
-        Search for decisions using the Bedesten API.
-
-        Args:
-            phrase: Search query (supports AND/OR/NOT, "exact phrase", +required, -exclude)
-            page: Page number (1-indexed)
-            page_size: Results per page (max 10)
-            start_date: Start date filter (ISO 8601)
-            end_date: End date filter (ISO 8601)
-            chamber: Chamber filter (birimAdi)
-        """
         payload = {
             "data": {
-                "pageSize": min(page_size, 10),
+                "pageSize": page_size,
                 "pageNumber": page,
                 "itemTypeList": ["YARGITAYKARARI"],
                 "phrase": phrase,
@@ -226,17 +370,67 @@ class TurkishCourtOfCassationScraper(BaseScraper):
             "applicationName": "UyapMevzuat",
             "paging": True,
         }
+        if start:
+            payload["data"]["kararTarihiStart"] = f"{start}T00:00:00.000Z"
+        if end:
+            payload["data"]["kararTarihiEnd"] = f"{end}T23:59:59.999Z"
+        return payload
 
-        if start_date:
-            payload["data"]["kararTarihiStart"] = start_date
-        if end_date:
-            payload["data"]["kararTarihiEnd"] = end_date
-        if chamber and chamber != "ALL":
-            payload["data"]["birimAdi"] = chamber
+    def _api_post(self, endpoint: str, payload: dict, attempts: int = 6) -> dict:
+        """
+        POST to the Bedesten API, backing off on throttling.
 
-        self.rate_limiter.wait()
-        resp = self.client.post(self.SEARCH_ENDPOINT, json_data=payload)
-        return resp.json()
+        The API answers a throttled request with HTTP 429 and a plain-text
+        "Too Many Requests" body, which json() cannot parse. The previous
+        implementation caught that as a generic exception and broke out of
+        pagination, silently truncating the corpus — so retries are honoured
+        here and exhaustion raises rather than returning empty.
+        """
+        last_error = None
+        for attempt in range(attempts):
+            try:
+                self.rate_limiter.wait()
+                resp = self.client.post(endpoint, json_data=payload)
+
+                if resp.status_code in self.RETRY_STATUSES:
+                    delay = self._retry_delay(resp, attempt)
+                    logger.warning(
+                        f"HTTP {resp.status_code} from Bedesten; retrying in {delay:.1f}s "
+                        f"(attempt {attempt + 1}/{attempts})"
+                    )
+                    if resp.status_code == 429:
+                        self.rate_limiter.record_429(delay)
+                    time.sleep(delay)
+                    last_error = f"HTTP {resp.status_code}"
+                    continue
+
+                resp.raise_for_status()
+                parsed = resp.json()
+                self.rate_limiter.record_success()
+                return parsed
+
+            except Exception as e:
+                last_error = e
+                delay = min(120, (2 ** attempt) * 2) + random.uniform(0, 1)
+                logger.warning(
+                    f"Bedesten request failed ({e}); retrying in {delay:.1f}s "
+                    f"(attempt {attempt + 1}/{attempts})"
+                )
+                time.sleep(delay)
+
+        raise RuntimeError(
+            f"Bedesten API unreachable after {attempts} attempts: {last_error}"
+        )
+
+    @staticmethod
+    def _retry_delay(resp, attempt: int) -> float:
+        retry_after = resp.headers.get("Retry-After")
+        if retry_after:
+            try:
+                return min(120.0, float(retry_after))
+            except ValueError:
+                pass
+        return min(120.0, (2 ** attempt) * 2) + random.uniform(0, 1)
 
     def _fetch_document_content(self, document_id: str) -> Optional[str]:
         """
@@ -244,15 +438,12 @@ class TurkishCourtOfCassationScraper(BaseScraper):
         Returns cleaned text extracted from the HTML content.
         """
         try:
-            self.rate_limiter.wait()
-
             payload = {
                 "data": {"documentId": document_id},
                 "applicationName": "UyapMevzuat",
             }
 
-            resp = self.client.post(self.DOCUMENT_ENDPOINT, json_data=payload)
-            data = resp.json()
+            data = self._api_post(self.DOCUMENT_ENDPOINT, payload)
 
             if not data.get("data") or not data["data"].get("content"):
                 return None
@@ -309,6 +500,11 @@ class TurkishCourtOfCassationScraper(BaseScraper):
         Parse decision date from API format.
         API returns ISO format like "2026-01-21T21:00:00.000+00:00"
         Returns date in YYYY-MM-DD format.
+
+        The API stores decision dates as the Turkish local midnight expressed
+        in UTC, i.e. 21:00Z (UTC+3) or 22:00Z for pre-2016 decisions under
+        UTC+2. Reading the UTC date directly therefore reports every decision
+        one day early, so shift into Turkish time before taking the date.
         """
         if not date_str:
             return None
@@ -317,7 +513,7 @@ class TurkishCourtOfCassationScraper(BaseScraper):
             # Parse ISO format
             if "T" in date_str:
                 dt = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
-                return dt.strftime("%Y-%m-%d")
+                return (dt + timedelta(hours=3)).strftime("%Y-%m-%d")
 
             # Try other formats
             for fmt in ["%Y-%m-%d", "%d.%m.%Y", "%d/%m/%Y"]:
@@ -362,10 +558,22 @@ class TurkishCourtOfCassationScraper(BaseScraper):
         Transform a raw API document into the standard schema.
 
         CRITICAL: Includes FULL TEXT from HTML documents.
+
+        fetch_all() yields search metadata only and the full text is
+        downloaded here, because bootstrap_fast runs normalize() on worker
+        threads — so the one-request-per-document half of the crawl runs
+        concurrently instead of serialising behind pagination.
         """
         doc_id = raw.get("documentId", "")
-        full_text = raw.get("full_text", "")
         chamber_name = raw.get("birimAdi", "")
+
+        full_text = raw.get("full_text") or ""
+        if not full_text and doc_id:
+            full_text = self._fetch_document_content(doc_id) or ""
+        if not full_text:
+            # No body, no record — a metadata-only row is worthless downstream.
+            logger.warning(f"No full text for {doc_id}; skipping")
+            return None
 
         # Parse dates
         decision_date = self._parse_decision_date(raw.get("kararTarihi", ""))
@@ -465,4 +673,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

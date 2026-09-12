@@ -43,17 +43,46 @@ Each opinion contains:
 
 ## Full Text
 
-The full text is composed of:
-1. **Question (ΕΡΩΤΗΜΑ)**: The legal question from the `title` field
-2. **Answer (ΑΠΑΝΤΗΣΗ)**: The legal conclusion from the `summary` field
+Each opinion carries a `ΛΗΨΗ ΑΡΧΕΙΟΥ` link to the signed PDF, served from the
+Liferay portlet's resource phase (`p_p_lifecycle=2`) keyed on `consultId`.
+Opinions from roughly **2021 onwards are born-digital** and extract to
+20,000-75,000 characters of real opinion text — that is what lands in `text`.
 
-PDF documents are also available for download but the HTML metadata provides
-the essential content.
+Earlier PDFs are **scanned images** (`DCTDecode` bitmaps, 0 characters without
+OCR), so they are not downloaded at all. For those years `text` falls back to
+the listing content, which is still substantive:
+
+1. **ΕΡΩΤΗΜΑ** — the legal question put to NSK (`title`)
+2. **ΑΠΑΝΤΗΣΗ** — the reasoned conclusion (`summary` / Περίληψη)
+3. **ΔΙΑΤΑΞΕΙΣ** — the provisions construed
+
+The cutoff year is `PDF_TEXT_FROM_YEAR`, overridable with the
+`NSK_PDF_FROM_YEAR` environment variable if OCR becomes available.
+
+A handful of PDFs embed a non-standard Greek font cmap and extract as
+transliterated mojibake (`ΓΗΜΟΚΡΑΣΙΑ` for `ΔΗΜΟΚΡΑΤΙΑ`). Those fail a Greek
+sanity check and fall back to the listing text rather than storing garbage.
+
+## Enumeration and the 500-result cap
+
+There is no API. The search portlet is a form POST whose **result listing
+already carries every field** (number, year, question, Περίληψη, Διατάξεις,
+Λήμματα, president, rapporteur, status), so no detail-page round trip is needed.
+
+The server truncates every query at the first 500 hits
+(`ΕΜΦΑΝΙΖΟΝΤΑΙ ΤΑ ΠΡΩΤΑ 500 ΑΠΟΤΕΛΕΣΜΑΤΑ`). Most years before ~2010 exceed
+that — 1990 alone runs to opinion no. 400+ while the listing stops at no. 191.
+Filtering by ΚΑΤΑΣΤΑΣΗ does not help (legacy years are all one status), so a
+capped year is re-walked one `ΑΡΙΘΜΟΣ ΓΝΩΜΟΔΟΤΗΣΗΣ` at a time from the last
+fully-listed number until 40 consecutive numbers come back empty.
+
+Completed years are checkpointed to `data/nsk_checkpoint.json`, so a killed or
+re-launched run resumes without re-crawling.
 
 ## Usage
 
 ```bash
-# Test connectivity
+# Test connectivity (also reports the 500-cap behaviour)
 python bootstrap.py test
 
 # Fetch sample records
@@ -61,6 +90,9 @@ python bootstrap.py bootstrap --sample
 
 # Full bootstrap (all opinions from 1951)
 python bootstrap.py bootstrap
+
+# Same, concurrent normalize — the fleet entry point
+python bootstrap.py bootstrap-fast
 
 # Update (fetch recent opinions)
 python bootstrap.py update

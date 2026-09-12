@@ -48,8 +48,9 @@ from urllib.parse import urljoin, unquote, quote
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
     level=logging.INFO,
@@ -136,43 +137,27 @@ def _title_from_url(url: str) -> str:
     return filename if len(filename) > 5 else "Untitled"
 
 
-def _extract_text_from_pdf(pdf_bytes: bytes) -> Optional[str]:
-    """Extract text from PDF bytes using pdfplumber, fallback to PyPDF2."""
-    try:
-        import pdfplumber
-        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-            pages = []
-            for page in pdf.pages:
-                text = page.extract_text()
-                if text:
-                    pages.append(text)
-                try:
-                    page.flush_cache(); page.get_textmap.cache_clear()
-                except Exception:
-                    pass
-            if pages:
-                return "\n\n".join(pages)
-    except Exception as e:
-        logger.debug(f"pdfplumber failed: {e}")
+def _extract_text_from_pdf(pdf_bytes: bytes, source_id: str) -> Optional[str]:
+    """Extract text from PDF bytes via the shared helper.
 
+    Calling pdfplumber/PyPDF2 directly emitted glyphs in the PDF's own content
+    stream order, which for the Arabic half of this corpus is *visual* order —
+    every line came out character-reversed and unsearchable (issue #1560).
+    `extract_pdf_markdown` re-orders RTL clusters by x-geometry, so the fix is
+    simply to stop extracting here. `force=True` because the rows being
+    replaced are the reversed ones already in Neon, which it otherwise skips.
+    """
     try:
-        import PyPDF2
-        reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-        pages = []
-        for page in reader.pages:
-            text = page.extract_text()
-            if text:
-                pages.append(text)
-            try:
-                page.flush_cache(); page.get_textmap.cache_clear()
-            except Exception:
-                pass
-        if pages:
-            return "\n\n".join(pages)
+        return extract_pdf_markdown(
+            source=SOURCE_ID,
+            source_id=source_id,
+            pdf_bytes=pdf_bytes,
+            table="doctrine",
+            force=True,
+        )
     except Exception as e:
-        logger.debug(f"PyPDF2 failed: {e}")
-
-    return None
+        logger.debug(f"PDF extraction failed: {e}")
+        return None
 
 
 def _parse_date(title: str) -> Optional[str]:
@@ -299,7 +284,7 @@ class AMMCScraper(BaseScraper):
                     logger.warning(f"PDF too small ({len(pdf_bytes)} bytes)")
                     continue
 
-                text = _extract_text_from_pdf(pdf_bytes)
+                text = _extract_text_from_pdf(pdf_bytes, _make_id(entry["pdf_url"]))
                 if not text or len(text.strip()) < 100:
                     skipped_scan += 1
                     logger.info(f"  Skipped (scanned/no text): {entry['title'][:50]}")
@@ -328,6 +313,8 @@ class AMMCScraper(BaseScraper):
         )
 
     def fetch_updates(self, since: str) -> Generator[Dict[str, Any], None, None]:
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         logger.info(f"Incremental update since {since} — re-running full fetch")
         yield from self.fetch_all(sample=False)
 
@@ -359,6 +346,11 @@ class AMMCScraper(BaseScraper):
 
 # ── CLI entry point ──────────────────────────────────────────────
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     scraper = AMMCScraper()
     args = sys.argv[1:]
     cmd = args[0] if args else "test"
@@ -370,15 +362,30 @@ if __name__ == "__main__":
 
     elif cmd == "bootstrap":
         sample = "--sample" in args
-        out_dir = Path(__file__).resolve().parent / "sample"
-        out_dir.mkdir(exist_ok=True)
+        here = Path(__file__).resolve().parent
         count = 0
-        for doc in scraper.fetch_all(sample=sample):
-            count += 1
-            fname = out_dir / f"{doc['_id']}.json"
-            with open(fname, "w", encoding="utf-8") as f:
-                json.dump(doc, f, ensure_ascii=False, indent=2)
-        print(f"Saved {count} records to {out_dir}")
+        if sample:
+            out_dir = here / "sample"
+            out_dir.mkdir(exist_ok=True)
+            for doc in scraper.fetch_all(sample=True):
+                count += 1
+                with open(out_dir / f"{doc['_id']}.json", "w", encoding="utf-8") as f:
+                    json.dump(doc, f, ensure_ascii=False, indent=2)
+            print(f"Saved {count} records to {out_dir}")
+        else:
+            # A full run must stream to data/records.jsonl — that is what the
+            # pipeline ingests. Writing the corpus into sample/ instead left the
+            # fleet with nothing to read and it fell back to the 15 bundled
+            # samples (issue #798 class).
+            data_dir = here / "data"
+            data_dir.mkdir(exist_ok=True)
+            out_path = data_dir / "records.jsonl"
+            with open(out_path, "w", encoding="utf-8") as f:
+                for doc in scraper.fetch_all(sample=False):
+                    count += 1
+                    f.write(json.dumps(doc, ensure_ascii=False) + "\n")
+                    f.flush()
+            print(f"Wrote {count} records to {out_path}")
 
     elif cmd == "update":
         since = args[1] if len(args) > 1 else "2024-01-01"

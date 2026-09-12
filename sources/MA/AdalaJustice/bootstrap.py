@@ -35,6 +35,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.pdf_extract import extract_pdf_markdown
+from common.arabic_pdf import extract_arabic_pdf_text, looks_arabic
 
 SOURCE_ID = "MA/AdalaJustice"
 SCRIPT_DIR = Path(__file__).parent
@@ -52,7 +53,20 @@ SESSION.headers.update({
 
 
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
-    """Extract text from PDF using centralized extractor."""
+    """
+    Extract text from a PDF, in logical order for Arabic.
+
+    Adala's corpus is almost entirely Arabic, and the generic extractor emits
+    the text layer in *visual* order — every line came out character-reversed
+    (issue #1415), so no article marker or search term could match it. Route
+    Arabic PDFs through the bidi-aware extractor and keep the generic one for
+    the French minority and for anything with no usable text layer (scans still
+    need its OCR path).
+    """
+    text = extract_arabic_pdf_text(pdf_bytes)
+    if text and looks_arabic(text):
+        return text
+
     return extract_pdf_markdown(
         source="MA/AdalaJustice",
         source_id="",
@@ -152,9 +166,14 @@ def iter_laws(limit: int = 0):
     page = 0
     count = 0
     total = None
+    seen_paths = set()
 
     while True:
-        url = f"{SEARCH_URL}?term=&page={page}"
+        # Paging is driven by `skip`, which the API reads as a 1-based page
+        # number (skip=1 -> currentPage 0). The obvious `page` parameter is
+        # accepted and silently ignored — every request came back as page 0,
+        # which capped the whole 7,945-document corpus at its first 10.
+        url = f"{SEARCH_URL}?term=&skip={page + 1}"
         try:
             resp = SESSION.get(url, timeout=30)
             resp.raise_for_status()
@@ -175,7 +194,18 @@ def iter_laws(limit: int = 0):
         if not results:
             break
 
+        # Fail loud rather than quietly re-walking page 0 forever if the API
+        # ever stops honouring `skip` again.
+        if meta.get("currentPage") not in (None, page):
+            raise RuntimeError(
+                f"Adala paging collapsed: asked for page {page}, "
+                f"got currentPage={meta.get('currentPage')}"
+            )
+
         for item in results:
+            if item.get("path") in seen_paths:
+                continue
+            seen_paths.add(item.get("path"))
             record = normalize(item)
             file_path = record.pop("file_path", "")
 
@@ -206,7 +236,7 @@ def test_connectivity():
     """Test connectivity to the Adala API."""
     print("Testing Adala Justice API connectivity...")
 
-    resp = SESSION.get(f"{SEARCH_URL}?term=&page=0", timeout=30)
+    resp = SESSION.get(f"{SEARCH_URL}?term=&skip=1", timeout=30)
     data = resp.json()
     meta = data.get("meta", {})
     total = meta.get("totalItems", 0)
@@ -243,21 +273,39 @@ def bootstrap(sample: bool = False):
     limit = 15 if sample else 0
     all_records = []
     saved = 0
+    text_count = 0
 
-    for record in iter_laws(limit=limit):
-        out_path = SAMPLE_DIR / f"record_{saved:04d}.json"
-        with open(out_path, "w", encoding="utf-8") as f:
-            json.dump(record, f, ensure_ascii=False, indent=2)
-        all_records.append(record)
-        saved += 1
+    # A full run streams to data/records.jsonl — that is the file the pipeline
+    # ingests. Writing only to sample/ is what makes a full crawl land as
+    # "sample-only" downstream.
+    records_path = DATA_DIR / "records.jsonl"
+    jsonl = None if sample else open(records_path, "w", encoding="utf-8")
+
+    try:
+        for record in iter_laws(limit=limit):
+            if jsonl is not None:
+                jsonl.write(json.dumps(record, ensure_ascii=False) + "\n")
+            if sample or saved < 15:
+                out_path = SAMPLE_DIR / f"record_{saved:04d}.json"
+                with open(out_path, "w", encoding="utf-8") as f:
+                    json.dump(record, f, ensure_ascii=False, indent=2)
+                all_records.append(record)
+            saved += 1
+            if record.get("text") and len(record["text"]) > 100:
+                text_count += 1
+    finally:
+        if jsonl is not None:
+            jsonl.close()
 
     all_path = SAMPLE_DIR / "all_samples.json"
     with open(all_path, "w", encoding="utf-8") as f:
         json.dump(all_records, f, ensure_ascii=False, indent=2)
 
-    print(f"\nBootstrap complete: {saved} records saved to {SAMPLE_DIR}")
+    if jsonl is not None:
+        print(f"\nBootstrap complete: {saved} records written to {records_path}")
+    else:
+        print(f"\nBootstrap complete: {saved} records saved to {SAMPLE_DIR}")
 
-    text_count = sum(1 for r in all_records if r.get("text") and len(r["text"]) > 100)
     print(f"  Records with substantial text: {text_count}/{saved}")
 
     if saved > 0 and text_count < saved * 0.5:
@@ -266,14 +314,17 @@ def bootstrap(sample: bool = False):
 
 def main():
     parser = argparse.ArgumentParser(description="MA/AdalaJustice Morocco Legal Data Fetcher")
-    parser.add_argument("command", choices=["bootstrap", "test"], help="Command to run")
+    # bootstrap-fast is what the fleet wrapper invokes; without it argparse
+    # exits 2 and the wrapper falls back to re-ingesting sample/.
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "test"],
+                        help="Command to run")
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
     parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     if args.command == "test":
         test_connectivity()
-    elif args.command == "bootstrap":
+    else:
         bootstrap(sample=args.sample)
 
 

@@ -2,22 +2,26 @@
 """
 LV/ConstitutionalCourt -- Latvian Constitutional Court (Satversmes tiesa) Fetcher
 
-Fetches Constitutional Court decisions from the official website via WordPress sitemap.
+Fetches Constitutional Court collegium decisions from the official website.
 
 Strategy:
-  - Parse WordPress sitemap for decision URLs
-  - Extract full text from HTML decision pages
+  - Walk the Drupal listing pager for decision node URLs
+  - Follow each node's attached PDF and extract its full text
   - Normalize into standard schema
 
 Endpoints:
-  - Sitemap: https://www.satv.tiesa.gov.lv/wp-sitemap-posts-decision-1.xml
-  - Decision pages: https://www.satv.tiesa.gov.lv/decisions/{slug}/
+  - Listing: https://www.satversmestiesa.lv/lv/lemumi-par-atteiksanos-ierosinat-lietu?page=N
+  - Decision nodes: https://www.satversmestiesa.lv/lv/kolegijas-{slug}
+  - Decision PDF:   https://www.satversmestiesa.lv/lv/media/{id}/download?attachment
 
 Data:
-  - Constitutional Court procedural decisions (collegium decisions)
-  - Full text in Latvian (HTML extracted)
-  - Decisions on admissibility, procedural matters, and constitutional review
-  - ~800+ decisions from 2015 to present
+  - Collegium decisions refusing to initiate a case (lemumi par atteiksanos)
+  - Full text in Latvian, extracted from the attached PDF
+  - ~880 decisions from 2003 to present
+
+Note: the court migrated off WordPress (www.satv.tiesa.gov.lv/decisions/{slug}/,
+wp-sitemap-posts-decision-1.xml) to Drupal in 2026; the old host 301s and every
+wp-sitemap path 404s, which silently zeroed this scraper (issue #1221).
 
 Usage:
   python bootstrap.py bootstrap          # Full initial pull
@@ -53,9 +57,25 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.LV.constitutionalcourt")
 
 # Base URLs
-BASE_URL = "https://www.satv.tiesa.gov.lv"
-SITEMAP_URL = f"{BASE_URL}/wp-sitemap-posts-decision-1.xml"
-DECISION_URL_PREFIX = f"{BASE_URL}/decisions/"
+#
+# The court migrated from the old WordPress site (www.satv.tiesa.gov.lv,
+# /decisions/{slug}/ + wp-sitemap) to a Drupal site in 2026 (issue #1221).
+# The old host now 301s to satversmestiesa.lv and every wp-sitemap path 404s,
+# so discovery runs off the Drupal listing view instead.
+BASE_URL = "https://www.satversmestiesa.lv"
+LISTING_PATH = "/lv/lemumi-par-atteiksanos-ierosinat-lietu"
+DECISION_URL_PREFIX = f"{BASE_URL}/lv/"
+
+# Listing view is a 20-per-page Drupal pager (?page=0..N).
+DECISION_LINK_RE = re.compile(r'href="(/lv/[a-z0-9\-]*lemums[a-z0-9\-]*)"', re.I)
+# The decision body is a PDF attached to the node.
+MEDIA_HREF_RE = re.compile(r'href="(/lv/media/\d+/download[^"]*)"', re.I)
+TITLE_RE = re.compile(r"<title>\s*(.*?)\s*</title>", re.S | re.I)
+PUBLISHED_RE = re.compile(r"Public[eē]ts:\s*(\d{2})\.(\d{2})\.(\d{4})")
+
+# Stop after this many consecutive empty listing pages.
+MAX_EMPTY_PAGES = 2
+MAX_LISTING_PAGES = 200
 
 # Headers for requests
 HEADERS = {
@@ -63,6 +83,20 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.5,lv;q=0.3",
 }
+
+
+def _extract_pdf_text(pdf_bytes: bytes) -> str:
+    """Extract decision text from PDF bytes via the shared extractor chain."""
+    try:
+        from common.pdf_extract import _extract as _shared_extract
+        text = _shared_extract(pdf_bytes) or ""
+    except Exception as e:
+        logger.warning(f"PDF extraction failed: {e}")
+        return ""
+    # Collapse the runaway blank lines the PDF layout leaves behind.
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    text = re.sub(r"[ \t]+", " ", text)
+    return "\n".join(line.strip() for line in text.split("\n")).strip()
 
 
 class ConstitutionalCourtScraper(BaseScraper):
@@ -84,42 +118,53 @@ class ConstitutionalCourtScraper(BaseScraper):
 
     def _fetch_sitemap(self) -> List[Dict]:
         """
-        Fetch and parse the WordPress sitemap for decision URLs.
+        Walk the Drupal listing pager and collect every decision URL.
 
-        Returns list of dicts with url and lastmod.
+        The listing at /lv/lemumi-par-atteiksanos-ierosinat-lietu is a
+        20-per-page view covering collegium refusal decisions back to 2003.
+        Returns list of dicts with url and lastmod (lastmod is unavailable on
+        the listing, so it stays None and fetch_updates falls back to the
+        decision's own publication date).
         """
-        try:
-            self.rate_limiter.wait()
-            resp = self.session.get(SITEMAP_URL, timeout=30)
-            resp.raise_for_status()
+        urls: List[Dict] = []
+        seen = set()
+        empty_streak = 0
 
-            # Parse XML sitemap (strip leading whitespace that can cause XML errors)
-            content = resp.content.strip()
-            root = ET.fromstring(content)
+        for page in range(MAX_LISTING_PAGES):
+            listing_url = f"{BASE_URL}{LISTING_PATH}?page={page}"
+            try:
+                self.rate_limiter.wait()
+                resp = self.session.get(listing_url, timeout=30)
+                resp.raise_for_status()
+            except Exception as e:
+                logger.error(f"Failed to fetch listing page {page}: {e}")
+                break
 
-            # Handle namespace
-            ns = {'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
+            found = [m.group(1) for m in DECISION_LINK_RE.finditer(resp.text)]
+            new = 0
+            for path in found:
+                url = BASE_URL + path
+                if url not in seen:
+                    seen.add(url)
+                    urls.append({'url': url, 'lastmod': None})
+                    new += 1
 
-            urls = []
-            for url_elem in root.findall('.//sm:url', ns):
-                loc = url_elem.find('sm:loc', ns)
-                lastmod = url_elem.find('sm:lastmod', ns)
+            if new == 0:
+                empty_streak += 1
+                if empty_streak >= MAX_EMPTY_PAGES:
+                    break
+            else:
+                empty_streak = 0
+                logger.info(f"Listing page {page}: +{new} decisions (total {len(urls)})")
 
-                if loc is not None and loc.text:
-                    url_data = {
-                        'url': loc.text.strip(),
-                        'lastmod': lastmod.text.strip() if lastmod is not None and lastmod.text else None
-                    }
-                    # Only include decision URLs
-                    if '/decisions/' in url_data['url']:
-                        urls.append(url_data)
+        if not urls:
+            raise RuntimeError(
+                f"LV/ConstitutionalCourt listing {BASE_URL}{LISTING_PATH} returned "
+                "0 decision links — site blocked or layout changed"
+            )
 
-            logger.info(f"Found {len(urls)} decision URLs in sitemap")
-            return urls
-
-        except Exception as e:
-            logger.error(f"Failed to fetch sitemap: {e}")
-            return []
+        logger.info(f"Found {len(urls)} decision URLs in listing")
+        return urls
 
     def _extract_slug(self, url: str) -> str:
         """Extract the slug/ID from a decision URL."""
@@ -168,81 +213,89 @@ class ConstitutionalCourtScraper(BaseScraper):
 
     def _parse_petition_number(self, slug: str) -> Optional[str]:
         """
-        Extract petition number from slug.
+        Extract the first petition number from a slug.
 
         Examples:
         - pieteikums-nr-18-2026 -> 18/2026
-        - pieteikums-nr-223-2020 -> 223/2020
+        - pieteikums-nr-822026  -> 82/2026
         """
-        # Pattern: pieteikums-nr-NUMBER-YEAR or pieteikums-nr-NUMBER/YEAR
-        pattern = r'pieteikums-nr-(\d+)-(\d{4})'
-        match = re.search(pattern, slug)
+        numbers = self._parse_petition_numbers(slug)
+        return numbers[0] if numbers else None
 
-        if match:
-            number = match.group(1)
-            year = match.group(2)
-            return f"{number}/{year}"
+    def _parse_petition_numbers(self, slug: str) -> List[str]:
+        """
+        Extract every petition number carried by a slug.
 
-        return None
+        A single decision can dispose of several petitions, in which case the
+        slug repeats the "nr-" segment:
+            ...lemums-pieteikums-nr-492025-nr-532025 -> ["49/2025", "53/2025"]
+
+        The number/year pair runs together on Drupal slugs (822026 = 82/2026)
+        but is dash-separated on older ones (18-2026). The stem is also misspelt
+        upstream ("pietiekums", "pietikums") and sometimes loses the dash before
+        "nr", so match it loosely.
+        """
+        anchor = re.search(r'piet\w*ums', slug)
+        if not anchor:
+            return []
+
+        return [
+            f"{m.group(1)}/{m.group(2)}"
+            for m in re.finditer(r'(?:nr-?)?(\d+)-?(\d{4})', slug[anchor.end():])
+        ]
 
     def _fetch_decision_page(self, url: str) -> Optional[Dict]:
         """
-        Fetch a decision page and extract content.
+        Fetch a decision node and extract its full text.
 
-        Returns dict with title, text, and metadata.
+        On the Drupal site the node itself carries only title + publication
+        date; the decision body lives in an attached PDF exposed as
+        /lv/media/{id}/download?attachment. Text comes from that PDF via the
+        shared extractor (pdfplumber/pypdf/OCR chain).
         """
         try:
             self.rate_limiter.wait()
             resp = self.session.get(url, timeout=30)
             resp.raise_for_status()
+            page = resp.text
 
-            soup = BeautifulSoup(resp.text, 'html.parser')
-
-            # Extract title from <title> tag
-            title_tag = soup.find('title')
+            tm = TITLE_RE.search(page)
             title = ""
-            if title_tag:
-                title = title_tag.get_text()
-                # Clean up: remove site name suffix
-                title = re.sub(r'\s*[»|–|-]\s*Latvijas Republikas Satversmes.*$', '', title).strip()
-                title = html.unescape(title)
+            if tm:
+                title = html.unescape(re.sub(r'<[^>]+>', '', tm.group(1)))
+                # Drop the trailing " | Latvijas Republikas Satversmes tiesa".
+                title = re.split(r'\s*[|»–]\s*Latvijas Republikas Satversmes', title)[0].strip()
 
-            # Extract full text from <p> tags in main content
-            # The decision text is in paragraph tags
-            paragraphs = soup.find_all('p')
-            text_parts = []
+            pm = MEDIA_HREF_RE.search(page)
+            if not pm:
+                logger.warning(f"No attached PDF on decision page {url}")
+                return None
+            pdf_url = BASE_URL + html.unescape(pm.group(1))
 
-            for p in paragraphs:
-                text = p.get_text(strip=True)
-                # Filter out navigation/UI text
-                if text and len(text) > 20:
-                    # Skip common UI patterns
-                    if any(skip in text.lower() for skip in [
-                        'sīkdatnes', 'cookie', 'tīmekļa', 'analītisk',
-                        'facebook', 'twitter', 'linkedin', 'draugiem'
-                    ]):
-                        continue
-                    text_parts.append(text)
+            self.rate_limiter.wait()
+            pdf_resp = self.session.get(pdf_url, timeout=60)
+            pdf_resp.raise_for_status()
+            if not pdf_resp.content[:5].startswith(b"%PDF"):
+                logger.warning(f"Attachment is not a PDF: {pdf_url}")
+                return None
 
-            full_text = '\n\n'.join(text_parts)
+            full_text = _extract_pdf_text(pdf_resp.content)
+            if not full_text:
+                logger.warning(f"No text extracted from {pdf_url} (scanned?)")
+                return None
 
-            # Extract metadata keywords/tags
-            keywords = []
-            keyword_section = soup.find(string=re.compile('Atslēgvārdi:'))
-            if keyword_section:
-                parent = keyword_section.parent
-                if parent:
-                    kw_text = parent.get_text()
-                    kw_match = re.search(r'Atslēgvārdi:\s*(.+?)(?:\.|$)', kw_text, re.DOTALL)
-                    if kw_match:
-                        kw_str = kw_match.group(1)
-                        keywords = [k.strip() for k in kw_str.split(',') if k.strip()]
+            # Publication date shown on the node ("Publicēts: DD.MM.YYYY").
+            published = None
+            pubm = PUBLISHED_RE.search(page)
+            if pubm:
+                published = f"{pubm.group(3)}-{pubm.group(2)}-{pubm.group(1)}"
 
             return {
                 'url': url,
                 'title': title,
                 'full_text': full_text,
-                'keywords': keywords,
+                'pdf_url': pdf_url,
+                'published': published,
             }
 
         except requests.exceptions.RequestException as e:
@@ -287,28 +340,43 @@ class ConstitutionalCourtScraper(BaseScraper):
 
     def fetch_updates(self, since: datetime) -> Generator[Dict, None, None]:
         """
-        Yield decisions modified since the given date.
+        Yield decisions published on/after the given date.
 
-        Uses lastmod from sitemap to filter.
+        The Drupal listing carries no lastmod, but it is ordered newest-first,
+        so walk it and stop once the decisions predate `since`. Dates come from
+        the slug (or the node's "Publicēts:" line), which means the filter runs
+        after the node fetch; the early stop keeps that bounded.
         """
-        sitemap_entries = self._fetch_sitemap()
-        if not sitemap_entries:
+        entries = self._fetch_sitemap()
+        if not entries:
             return
 
-        since_str = since.isoformat()
-        logger.info(f"Fetching updates since {since_str}")
+        since_date = since.strftime("%Y-%m-%d")
+        logger.info(f"Fetching updates since {since_date}")
 
-        for entry in sitemap_entries:
+        stale_streak = 0
+        for entry in entries:
             url = entry['url']
-            lastmod = entry.get('lastmod')
+            slug = self._extract_slug(url)
 
-            # Filter by lastmod
-            if lastmod:
-                if lastmod >= since_str:
-                    result = self._fetch_decision_page(url)
-                    if result and result.get('full_text'):
-                        result['lastmod'] = lastmod
-                        yield result
+            # Cheap pre-filter: most slugs carry the decision date.
+            slug_date = self._parse_date_from_slug(slug)
+            if slug_date and slug_date < since_date:
+                stale_streak += 1
+                # Listing is newest-first; a solid run of old items means done.
+                if stale_streak >= 40:
+                    logger.info("Reached decisions older than `since` — stopping")
+                    return
+                continue
+
+            stale_streak = 0
+            result = self._fetch_decision_page(url)
+            if not result or not result.get('full_text'):
+                continue
+            effective = slug_date or result.get('published')
+            if effective and effective < since_date:
+                continue
+            yield result
 
     def normalize(self, raw: Dict) -> Dict:
         """
@@ -321,14 +389,23 @@ class ConstitutionalCourtScraper(BaseScraper):
         title = raw.get('title', '')
         full_text = raw.get('full_text', '')
 
-        # Extract date from slug
-        date = self._parse_date_from_slug(slug)
+        # Extract date from slug, falling back to the node's publication date
+        date = self._parse_date_from_slug(slug) or raw.get('published')
 
-        # Extract petition number
-        petition_number = self._parse_petition_number(slug)
+        # Extract petition number(s) — one decision can dispose of several.
+        petition_numbers = self._parse_petition_numbers(slug)
+        petition_number = petition_numbers[0] if petition_numbers else None
 
-        # Create unique ID
-        doc_id = slug if slug else url.split('/')[-2]
+        # Prefer a date + petition ID: it survives site migrations, whereas the
+        # URL slug changed wholesale in the 2026 WordPress -> Drupal move. The
+        # date qualifier matters — petition 187/2017 was disposed of twice, in
+        # 2017 and again in 2019, so the number alone is not unique.
+        if petition_number and date:
+            doc_id = f"{date}-pieteikums-{petition_number.replace('/', '-')}"
+        elif petition_number:
+            doc_id = "pieteikums-" + petition_number.replace('/', '-')
+        else:
+            doc_id = slug if slug else url.rstrip('/').split('/')[-1]
 
         # Determine decision type from title or text
         decision_type = "Lēmums"  # Default: Decision
@@ -352,10 +429,12 @@ class ConstitutionalCourtScraper(BaseScraper):
             "url": url,
             # Additional metadata
             "petition_number": petition_number or "",
+            "petition_numbers": petition_numbers,
             "decision_type": decision_type,
             "court": "Satversmes tiesa",
-            "keywords": raw.get('keywords', []),
-            "lastmod": raw.get('lastmod', ''),
+            "lastmod": raw.get('lastmod') or raw.get('published') or '',
+            "slug": slug,
+            "pdf_url": raw.get('pdf_url', ''),
             "language": "lv",
         }
 
@@ -461,4 +540,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

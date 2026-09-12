@@ -1,0 +1,80 @@
+source:
+  id: US/OR-WCB
+  name: Oregon Workers' Compensation Board — Board Orders
+  country: US
+  url: https://www.oregon.gov/wcb/board-orders/Pages/index.aspx
+  auth: none
+  data_types:
+  - case_law
+  description: >
+    Orders of the Oregon Workers' Compensation Board (ORS chapter 656), which
+    reviews Administrative Law Judge orders in Oregon workers' compensation
+    claims: Orders on Review, Orders on Reconsideration and Remand, Own Motion
+    orders, Claim Disposition Agreement orders, Third Party Distribution orders
+    miscellaneous orders, and Crime Victim and OSHA contested-case orders.
+    ~29,000 orders from 1996 to the present, published in the Van Natta reporter
+    and served as born-digital PDFs (legacy years as HTML) under
+    /wcb/Orders/{year}/{type}/{month}/{case}. The site exposes no directory
+    listing and the SharePoint SOAP endpoint answers anonymous callers 401 NTLM,
+    but the REST endpoint on the same list --
+    /wcb/_api/web/lists/getbytitle('Orders')/items -- is anonymous-readable and
+    is the authoritative index (FileRef plus claimant, case number, issue date,
+    order type and Van Natta citation). Crawled in WCBYear partitions with a
+    completed-year checkpoint.
+license:
+  name: Public domain — 17 U.S.C. § 105
+  url: https://www.law.cornell.edu/uscode/text/17/105
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    US state government edict; orders of a state adjudicative body are not
+    subject to copyright.
+fetch:
+  rate_limit_delay: 1
+  sample_size: 15
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string
+  - name: docket_number
+    required: false
+    type: string
+  - name: parties
+    required: false
+    type: string
+  - name: order_type
+    required: false
+    type: string
+  - name: citation
+    required: false
+    type: string
+  - name: year
+    required: false
+    type: integer
+  - name: source_format
+    required: false
+    type: string

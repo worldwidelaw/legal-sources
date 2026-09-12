@@ -30,7 +30,7 @@ auth:
   type: "none"
 
 rate_limit:
-  requests_per_second: 1    # Conservative - API docs recommend off-peak access
+  requests_per_second: 2    # Bulk pass is ~130K downloads; 1 r/s cannot finish in the 100h fleet cap
   burst: 3
 
 api:

@@ -33,7 +33,7 @@ from typing import Generator, Optional, Dict, Any, List
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 
 logging.basicConfig(
@@ -45,12 +45,44 @@ logger = logging.getLogger("legal-data-hunter.MX.scjn-api")
 BASE_URL = "https://bj.scjn.gob.mx"
 API_BASE = "/api/v1/bj"
 
-# Indices to harvest (public, with full text available)
+# Indices to harvest (public, with full text available).
+#
+# `date_field` is the field the index sorts newest-first on, and is what the
+# incremental refresh walks. It differs per index and is NOT interchangeable:
+# `tesis` carries no resolution date at all, only the weekly-gazette publication
+# stamp, while the other two carry `fechaResolucion` in two different formats
+# (`sentencias_pub` DD/MM/YYYY, `ejecutorias` ISO-8601).
 INDICES = [
-    {"name": "sentencias_pub", "id_field": "idEngrose", "label": "Sentencias"},
-    {"name": "tesis", "id_field": "registroDigital", "label": "Tesis"},
-    {"name": "ejecutorias", "id_field": "registroDigital", "label": "Ejecutorias"},
+    {"name": "sentencias_pub", "id_field": "idEngrose", "label": "Sentencias",
+     "date_field": "fechaResolucion"},
+    {"name": "tesis", "id_field": "registroDigital", "label": "Tesis",
+     "date_field": "fechaPublicacionSemanario"},
+    {"name": "ejecutorias", "id_field": "registroDigital", "label": "Ejecutorias",
+     "date_field": "fechaResolucion"},
 ]
+
+# Date fields seen across the three indices, most specific first. `tesis` has
+# none of the "fecha*" names the other indices use — omitting
+# `fechaPublicacionSemanario` left every tesis record with a null date, and left
+# any date-cutoff refresh with nothing to compare against.
+DATE_FIELDS = [
+    "fechaPublicacion",
+    "fechaResolucion",
+    "fechaPublicacionSemanario",
+    "fecha",
+    "fechaSentencia",
+]
+
+# The API's "no date" sentinel, returned as a real-looking timestamp. Treated as
+# a null date rather than year 1, which would otherwise sort ahead of everything
+# and read as "older than any cutoff".
+NULL_DATE_PREFIX = "01/01/0001"
+
+# How many consecutive listing entries older than the cutoff to tolerate before
+# concluding the newest-first walk has passed the boundary. Sorting is by date
+# only, so same-day ties can interleave; a whole page of margin is cheap
+# (listing pages cost one request, document details cost one each).
+STALE_RUN_LIMIT = 100
 
 # For sample mode, fetch from each index
 SAMPLE_PER_INDEX = 4
@@ -75,8 +107,57 @@ class SCJNScraper(BaseScraper):
             timeout=60,
         )
 
-    def _search(self, index: str, page: int = 1, size: int = 50, q: str = "*") -> Optional[Dict]:
-        """Search an index with pagination."""
+        # Checkpoint: last fully-processed page per index. A full corpus pull
+        # (~440K docs, one detail fetch each) exceeds the 100h fleet wall clock
+        # (issue #1099 exit 124), so we persist progress and skip completed
+        # pages with no network calls on restart, letting reruns advance
+        # monotonically to completion.
+        self._checkpoint_path = self.source_dir / "data" / "scjn_checkpoint.json"
+        self._done_pages: Dict[str, int] = self._load_checkpoint()
+
+    def _load_checkpoint(self) -> Dict[str, int]:
+        """Load the highest fully-processed page number per index."""
+        try:
+            with open(self._checkpoint_path) as f:
+                data = json.load(f)
+            pages = {k: int(v) for k, v in data.get("done_pages", {}).items()}
+            if pages:
+                logger.info(f"Resuming from checkpoint: {pages}")
+            return pages
+        except (FileNotFoundError, json.JSONDecodeError, OSError, ValueError):
+            return {}
+
+    def _save_checkpoint(self) -> None:
+        """Persist the highest fully-processed page number per index."""
+        try:
+            self._checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(self._checkpoint_path, "w") as f:
+                json.dump({"done_pages": self._done_pages}, f)
+        except OSError as e:
+            logger.warning(f"Could not write checkpoint: {e}")
+
+    def _sort_field(self, index: str) -> str:
+        """The index's unique id field, used as a deterministic sort key."""
+        for info in INDICES:
+            if info["name"] == index:
+                return info["id_field"]
+        return ""
+
+    def _search(self, index: str, page: int = 1, size: int = 50, q: str = "*",
+                sort_field: Optional[str] = None,
+                sort_direction: str = "asc") -> Optional[Dict]:
+        """Search an index with pagination.
+
+        Sorts ascending by the index's unique id field so pagination is a
+        deterministic total order. Without an explicit sort the API falls back
+        to relevance/internal order, which is unstable across the multi-day,
+        multi-run crawl (the live index gains documents) → the same records
+        reappear on different pages while others are never seen, which is the
+        root of the #1099 under-write (337,636 fetched, 349 unique).
+
+        `sort_field`/`sort_direction` override that for the incremental refresh,
+        which walks the index's date field newest-first instead.
+        """
         self.rate_limiter.wait()
         try:
             body = {
@@ -86,8 +167,8 @@ class SCJNScraper(BaseScraper):
                 "size": size,
                 "filtros": {},
                 "semantica": 0,
-                "sortField": "",
-                "sortDireccion": "",
+                "sortField": sort_field or self._sort_field(index),
+                "sortDireccion": sort_direction,
             }
             resp = self.client.post(
                 f"{API_BASE}/busqueda",
@@ -185,26 +266,66 @@ class SCJNScraper(BaseScraper):
             )
         return "Unknown"
 
-    def _extract_date(self, result: Dict) -> Optional[str]:
-        """Extract and format date from search result."""
-        for field in ["fechaPublicacion", "fechaResolucion", "fecha", "fechaSentencia"]:
-            val = result.get(field)
-            if val:
-                # Try common formats
-                for fmt in ["%Y-%m-%dT%H:%M:%S", "%Y-%m-%d", "%d/%m/%Y"]:
-                    try:
-                        dt = datetime.strptime(val[:19], fmt)
-                        return dt.strftime("%Y-%m-%d")
-                    except (ValueError, TypeError):
-                        continue
-                # Try epoch ms
-                if isinstance(val, (int, float)):
-                    try:
-                        dt = datetime.fromtimestamp(val / 1000, tz=timezone.utc)
-                        return dt.strftime("%Y-%m-%d")
-                    except (ValueError, OSError):
-                        pass
+    def _parse_date(self, val: Any) -> Optional[str]:
+        """Normalise one raw date value to YYYY-MM-DD, or None."""
+        if not val:
+            return None
+        if isinstance(val, str) and val.startswith(NULL_DATE_PREFIX):
+            return None
+        if isinstance(val, str):
+            for fmt in ["%Y-%m-%dT%H:%M:%S", "%Y-%m-%d",
+                        "%d/%m/%Y %H:%M:%S", "%d/%m/%Y"]:
+                try:
+                    return datetime.strptime(val[:19], fmt).strftime("%Y-%m-%d")
+                except ValueError:
+                    continue
+            return None
+        # Epoch milliseconds
+        if isinstance(val, (int, float)):
+            try:
+                return datetime.fromtimestamp(val / 1000, tz=timezone.utc).strftime("%Y-%m-%d")
+            except (ValueError, OSError, OverflowError):
+                return None
         return None
+
+    def _extract_date(self, result: Dict) -> Optional[str]:
+        """Extract and format date from a search result."""
+        for field in DATE_FIELDS:
+            parsed = self._parse_date(result.get(field))
+            if parsed:
+                return parsed
+        return None
+
+    def _build_record(self, index: str, id_field: str, result: Dict) -> Optional[dict]:
+        """Fetch a listing entry's detail and build the raw record, or None.
+
+        Shared by `fetch_all` and `fetch_updates` so the two paths can never
+        drift into emitting differently-shaped records.
+        """
+        doc_id = str(result.get(id_field, ""))
+        if not doc_id:
+            return None
+
+        doc = self._fetch_document(index, doc_id)
+        if not doc:
+            return None
+
+        full_text = self._extract_text(index, doc)
+        if not full_text or len(full_text) < 50:
+            return None
+
+        return {
+            "index": index,
+            "doc_id": doc_id,
+            "title": self._extract_title(index, result, doc),
+            "full_text": full_text,
+            "date": self._extract_date(result),
+            "result_meta": result,
+            "doc_meta": {k: v for k, v in doc.items()
+                         if k not in ("preambulo", "resultando", "considerando",
+                                      "resuelve", "firman", "puntosResolutivos",
+                                      "texto")},
+        }
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all documents from all indices."""
@@ -223,10 +344,20 @@ class SCJNScraper(BaseScraper):
             total_pages = first_page.get("totalPaginas", 0)
             logger.info(f"Index {index} ({label}): {total} documents, {total_pages} pages")
 
+            resume_from = self._done_pages.get(index, 0)
+            if resume_from:
+                logger.info(f"Index {index}: skipping pages 1-{resume_from} (checkpoint)")
+
             page = 1
             fetched = 0
 
             while page <= total_pages:
+                # Skip pages already fully processed in a previous run — no
+                # network calls, so restarts advance monotonically.
+                if page <= resume_from:
+                    page += 1
+                    continue
+
                 if page == 1:
                     results = first_page.get("resultados", [])
                 else:
@@ -240,99 +371,112 @@ class SCJNScraper(BaseScraper):
                     break
 
                 for result in results:
-                    doc_id = str(result.get(id_field, ""))
-                    if not doc_id:
+                    record = self._build_record(index, id_field, result)
+                    if record is None:
                         continue
 
-                    doc = self._fetch_document(index, doc_id)
-                    if not doc:
-                        continue
-
-                    full_text = self._extract_text(index, doc)
-                    if not full_text or len(full_text) < 50:
-                        continue
-
-                    title = self._extract_title(index, result, doc)
-                    date_str = self._extract_date(result)
-
-                    yield {
-                        "index": index,
-                        "doc_id": doc_id,
-                        "title": title,
-                        "full_text": full_text,
-                        "date": date_str,
-                        "result_meta": result,
-                        "doc_meta": {k: v for k, v in doc.items()
-                                     if k not in ("preambulo", "resultando", "considerando",
-                                                   "resuelve", "firman", "puntosResolutivos",
-                                                   "texto")},
-                    }
+                    yield record
 
                     fetched += 1
                     if fetched % 100 == 0:
                         logger.info(f"Index {index}: fetched {fetched}/{total}")
 
+                # Page fully processed — record it and flush every 25 pages to
+                # bound disk writes while keeping restart granularity tight.
+                self._done_pages[index] = page
+                if page % 25 == 0:
+                    self._save_checkpoint()
+
                 page += 1
 
+            self._done_pages[index] = max(self._done_pages.get(index, 0), total_pages)
+            self._save_checkpoint()
             logger.info(f"Index {index}: completed {fetched} documents")
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
-        """Fetch recent documents by filtering on year."""
-        current_year = datetime.now().year
+        """Yield only documents dated on or after `since`.
+
+        Each index is walked newest-first on its own date field and stopped once
+        the listing has run past the cutoff, so a refresh costs a handful of
+        listing pages instead of the whole corpus.
+
+        This replaces a year-filter walk that never looked at `since` (#1502).
+        Two things were wrong with it beyond ignoring the cutoff:
+
+        * `filtros: {"anio": [...]}` is only honoured by `sentencias_pub`. On
+          `tesis` and `ejecutorias` it matches nothing, so 334K of the 440K
+          documents were silently excluded from every refresh.
+        * it fetched the full detail of every document in a two-year window
+          before it could tell whether any of them were new — one request per
+          document, for documents already in the index.
+
+        The cutoff is read off the *listing* entry, so a document older than
+        `since` costs nothing but its share of a listing page.
+        """
+        cutoff = as_date_str(since)
+        if not cutoff:
+            logger.warning("No usable `since` cutoff — falling back to fetch_all")
+            yield from self.fetch_all()
+            return
+
+        logger.info(f"Incremental refresh: documents dated >= {cutoff}")
+
         for idx_info in INDICES:
             index = idx_info["name"]
             id_field = idx_info["id_field"]
+            date_field = idx_info["date_field"]
 
-            for year in [current_year, current_year - 1]:
-                page = 1
-                while True:
-                    body = {
-                        "q": "*",
-                        "indice": index,
-                        "page": page,
-                        "size": 50,
-                        "filtros": {"anio": [str(year)]},
-                        "semantica": 0,
-                        "sortField": "",
-                        "sortDireccion": "",
-                    }
-                    self.rate_limiter.wait()
-                    try:
-                        resp = self.client.post(f"{API_BASE}/busqueda", json_data=body)
-                        if resp.status_code != 200:
-                            break
-                        data = resp.json()
-                        results = data.get("resultados", [])
-                        if not results:
-                            break
-                    except Exception:
-                        break
+            page = 1
+            emitted = 0
+            scanned = 0
+            stale_run = 0
+            total_pages = None
 
-                    for result in results:
-                        doc_id = str(result.get(id_field, ""))
-                        if not doc_id:
-                            continue
-                        doc = self._fetch_document(index, doc_id)
-                        if not doc:
-                            continue
-                        full_text = self._extract_text(index, doc)
-                        if not full_text or len(full_text) < 50:
-                            continue
-                        title = self._extract_title(index, result, doc)
-                        date_str = self._extract_date(result)
-                        yield {
-                            "index": index,
-                            "doc_id": doc_id,
-                            "title": title,
-                            "full_text": full_text,
-                            "date": date_str,
-                            "result_meta": result,
-                            "doc_meta": {},
-                        }
+            while total_pages is None or page <= total_pages:
+                data = self._search(index, page=page, size=50,
+                                    sort_field=date_field, sort_direction="desc")
+                if not data:
+                    logger.warning(f"Index {index}: search failed at page {page}, stopping")
+                    break
 
-                    if page >= data.get("totalPaginas", 0):
-                        break
-                    page += 1
+                if total_pages is None:
+                    total_pages = data.get("totalPaginas", 0)
+
+                results = data.get("resultados", [])
+                if not results:
+                    break
+
+                for result in results:
+                    scanned += 1
+                    doc_date = self._parse_date(result.get(date_field))
+
+                    # A missing date can't be compared. Treat it as possibly-new
+                    # rather than a boundary marker: skipping it would drop the
+                    # document, and counting it as stale would end the walk on
+                    # one unstamped entry.
+                    if doc_date is not None and doc_date < cutoff:
+                        stale_run += 1
+                        continue
+
+                    stale_run = 0
+                    record = self._build_record(index, id_field, result)
+                    if record is not None:
+                        emitted += 1
+                        yield record
+
+                if stale_run >= STALE_RUN_LIMIT:
+                    logger.info(
+                        f"Index {index}: {stale_run} consecutive documents older "
+                        f"than {cutoff} — reached the cutoff boundary"
+                    )
+                    break
+
+                page += 1
+
+            logger.info(
+                f"Index {index}: {emitted} document(s) at or after {cutoff} "
+                f"from {scanned} listing entries scanned"
+            )
 
     def normalize(self, raw: dict) -> dict:
         """Transform raw data into standard schema."""
@@ -426,4 +570,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

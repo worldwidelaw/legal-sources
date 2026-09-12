@@ -2,8 +2,18 @@ auth: none
 country: GU
 data_types:
 - case_law
+license:
+  attribution_required: false
+  commercial_use: true
+  name: US Public Domain
+  no_derivatives: false
+  notes: Judicial opinions of a U.S. territory; edicts of government, not copyrightable.
+  share_alike: false
+  url: https://www.law.cornell.edu/uscode/text/17/105
 name: Supreme Court of Guam Opinions
-notes: 'Supreme Court of Guam published opinions from 1990-present via PDF download. Year-filtered via POST form. ~18 opinions/year average.
+notes: 'Supreme Court of Guam published opinions, 1996-present (~795). Current year
+  from the Drupal opinions page; 2025 and prior from the /legacydata archive year
+  endpoint. Full text from born-digital PDFs via pdfplumber.
 
   '
 schedule: monthly
@@ -13,13 +23,16 @@ schema:
     required: true
     type: string
   - name: citation
-    required: false
+    required: true
     type: string
-  - name: case_name
+  - name: docket
     required: false
     type: string
   - name: year
     required: false
+    type: integer
+  - name: court
+    required: false
     type: string
 source_id: GU/SupremeCourt
-url: https://guamcourts.gov/Supreme-Court-Opinions/Supreme-Court-Opinions.asp
+url: https://guamcourts.gov/courts-council/supreme-court/opinions

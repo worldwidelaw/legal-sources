@@ -38,7 +38,7 @@ api:
   pagination: "none"
 
 schema:
-  total_fields: 10
+  total_fields: 11
   key_fields:
     - name: "_id"
       description: "Unique ID from document category and number"
@@ -75,6 +75,13 @@ schema:
       type: "string"
       role: "identifier"
       required: false
+    - name: "language"
+      description: |
+        ar or en, read off the extracted text rather than the filename — CMA
+        names a decision's Arabic and English PDFs identically bar a suffix.
+      type: "string"
+      role: "classifier"
+      required: true
 
 license:
   name: "Lebanese Government Publication"

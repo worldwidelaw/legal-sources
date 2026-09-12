@@ -1,0 +1,126 @@
+# ===================================================================
+# US/AR-PSC -- Arkansas Public Service Commission Orders
+# ===================================================================
+# Full text of Orders issued by the Arkansas Public Service Commission
+# (APSC) adjudicating utility dockets — electric, natural gas,
+# water/sewer, telecommunications rate cases, certificates of public
+# convenience and necessity (CCN), fuel/purchased-gas adjustment riders,
+# formula-rate reviews, tariff filings and rulemaking. Each Commission
+# (or ALJ) Order is an administrative adjudication / edict of a specific
+# docket = case_law. Public domain (US state government edict). Published
+# openly as born-digital PDFs via the APSC Online Services eFiling system
+# (apps.apsc.arkansas.gov/olsv2). No authentication.
+# ===================================================================
+
+source:
+  id: "US/AR-PSC"
+  country: "US"
+  name: "Arkansas Public Service Commission — Orders"
+  url: "https://apps.apsc.arkansas.gov/olsv2/docket_search.asp"
+  description: |
+    Orders issued by the Arkansas Public Service Commission (APSC)
+    resolving utility dockets — electric, natural gas, water/sewer and
+    telecommunications rate cases, certificates of public convenience and
+    necessity (CCN), fuel and purchased-gas adjustment riders,
+    formula-rate reviews, tariff filings and rulemaking. Each Order is an
+    administrative adjudication of a specific docket (case_law). Full text
+    is extracted from the born-digital order PDFs served by the APSC
+    Online Services (OLS v2) eFiling system.
+
+data_types:
+  - case_law
+
+jurisdictions:
+  - code: US-AR
+    scope: full
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 5
+
+api:
+  type: "html_scraping"
+  base_url: "https://apps.apsc.arkansas.gov/olsv2"
+  endpoints:
+    docket_search: "/docket_search.asp"
+    docket_results: "/docket_search_results.asp?casenumber={docket}"
+    document: "/Docket_Search_Documents.asp?Docket={docket}&DocNumVal={n}"
+    pdf: "/viewdoc/pdfview.asp?document={file}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 12
+  key_fields:
+    - name: "docket_number"
+      description: "APSC docket number, format YY-NNN-X (e.g. 22-064-U, 07-016-U)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "doc_number"
+      description: "Sequential document (filing) number within the docket (DocNumVal)"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "order_number"
+      description: "Order number within the docket, e.g. '13' (from 'ORDER NO. 13')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "authority"
+      description: "Issuing authority parsed from the row, e.g. 'COMMISSION' or the ALJ surname"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Docket number plus order number / issuing authority"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Order, extracted from the born-digital PDF part(s)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order file/issued date (ISO 8601), from the filing log or the PDF body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Arkansas)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Arkansas Public Service Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - Enumeration uses the APSC Online Services (OLS v2) docket search at
+    apps.apsc.arkansas.gov/olsv2. Dockets are addressed YY-NNN-X. The
+    docket_search.asp CaseNumber <select> seeds several hundred
+    recently-active dockets; fetch_all() also sweeps the YY-NNN-X id space
+    per year/suffix with gap tolerance (a non-existent docket returns a
+    short empty shell page with no DocNumVal links).
+  - For each docket, docket_search_results.asp?casenumber={docket} returns
+    the full filing log; Commission/ALJ Orders are the rows whose
+    description begins "N. ORDER NO. M (COMMISSION)" (or an ALJ name).
+  - Docket_Search_Documents.asp?Docket={docket}&DocNumVal={n} lists the PDF
+    part(s) as viewdoc/pdfview.asp?document={file}.pdf; normalize()
+    downloads each part (raw application/pdf) and extracts full text via
+    fitz/PyMuPDF (Tesseract OCR fallback for scanned orders), concatenating
+    multi-part orders.
+  - The legacy apscservices.info eFiling host now 302-redirects to this
+    OLS v2 system.
+  - Public domain Arkansas government data.

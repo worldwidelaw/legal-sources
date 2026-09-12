@@ -7,7 +7,13 @@ schema:
   - name: _id
     required: true
     type: string
+  - name: order_id
+    required: true
+    type: string
   - name: case_no
+    required: false
+    type: string
+  - name: case_number
     required: false
     type: string
   - name: petitioner

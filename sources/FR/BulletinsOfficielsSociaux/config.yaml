@@ -74,8 +74,11 @@ license:
   notes: "French public-sector official texts published by the ministères sociaux; covered by the Licence Ouverte / Etalab open licence (commercial use permitted, attribution required)."
 
 notes: |
-  - Sitemap lists ~730 node paths; ~620 are real documents (carry field_institutional)
+  - Sitemap lists 874 node paths; 872 are real documents (carry field_institutional).
+    Verified 2026-09-09; the node-id sweep fallback (/node/{nid}?_format=json) finds the same 872
   - Utility/section pages (accessibilité, cookies, BO landing) lack field_institutional and are skipped
+  - Fetch failures raise NodeFetchError and abort the crawl above a 50% failure rate;
+    #1599 was a silent `return None` per failed fetch, so a 60/874 run still exited 0
   - normalize() fetches <url>?_format=json and reads full text from field_body_text
   - doc_type taxonomy slug maps to legislation (arrêté/décret/décision/...) or doctrine (circulaire/instruction/note/...)
   - Date from field_additional_date (signature), falling back to field_publication_date / created

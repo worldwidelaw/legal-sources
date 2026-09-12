@@ -17,10 +17,8 @@ resolutions, consolidated texts.
 import html as html_mod
 import json
 import logging
-import os
 import re
 import sys
-import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -38,15 +36,58 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) LegalD
 try:
     import urllib.request
     import urllib.parse
+    import urllib.error
+    import ssl
 except ImportError:
     pass
+
+# Hosts (e.g. the chinhphu CDN g7.cdnchinhphu.vn) that serve an incomplete
+# certificate chain — the server omits its intermediate CA, so clients whose
+# trust store lacks a cached copy of that intermediate (typically the fleet
+# Linux VPS) get SSL: CERTIFICATE_VERIFY_FAILED even though the leaf is valid.
+# Python's ssl does not do AIA chasing to recover the missing intermediate,
+# so for these government-CDN hosts only we fall back to an unverified context
+# on a verification failure. See issue #1236.
+_INCOMPLETE_CHAIN_HOSTS = ("cdnchinhphu.vn",)
+
+
+def _build_ssl_context() -> "Optional[ssl.SSLContext]":
+    """Verifying context, preferring the certifi CA bundle when available."""
+    try:
+        import certifi
+        return ssl.create_default_context(cafile=certifi.where())
+    except Exception:
+        try:
+            return ssl.create_default_context()
+        except Exception:
+            return None
+
+
+def _host_allows_unverified(url: str) -> bool:
+    host = urllib.parse.urlsplit(url).hostname or ""
+    return any(host == h or host.endswith("." + h) for h in _INCOMPLETE_CHAIN_HOSTS)
+
+
+def _urlopen(url: str, timeout: int):
+    """urlopen with a certifi context, falling back to an unverified context
+    for known incomplete-chain CDN hosts on a certificate-verification error."""
+    req = urllib.request.Request(url, headers=HEADERS)
+    ctx = _build_ssl_context()
+    try:
+        return urllib.request.urlopen(req, timeout=timeout, context=ctx)
+    except urllib.error.URLError as e:
+        is_cert_err = isinstance(getattr(e, "reason", None), ssl.SSLError) or isinstance(e, ssl.SSLError)
+        if is_cert_err and _host_allows_unverified(url):
+            logger.warning(f"TLS verify failed for {url[:80]} — retrying unverified (incomplete-chain CDN host)")
+            unverified = ssl._create_unverified_context()
+            return urllib.request.urlopen(req, timeout=timeout, context=unverified)
+        raise
 
 
 def http_get(url: str, timeout: int = 30) -> Optional[str]:
     """Fetch a URL and return decoded text, or None on failure."""
-    req = urllib.request.Request(url, headers=HEADERS)
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with _urlopen(url, timeout) as resp:
             return resp.read().decode("utf-8", errors="replace")
     except Exception as e:
         logger.warning(f"HTTP GET failed for {url[:120]}: {e}")
@@ -55,9 +96,8 @@ def http_get(url: str, timeout: int = 30) -> Optional[str]:
 
 def http_download(url: str, timeout: int = 60) -> Optional[bytes]:
     """Download binary content from a URL."""
-    req = urllib.request.Request(url, headers=HEADERS)
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with _urlopen(url, timeout) as resp:
             return resp.read()
     except Exception as e:
         logger.warning(f"Download failed for {url[:120]}: {e}")
@@ -287,7 +327,12 @@ class CongBaoFetcher:
             "page_url": url,
         }
 
-    def fetch_full_text(self, docx_url: Optional[str], pdf_url: Optional[str]) -> Optional[str]:
+    def fetch_full_text(
+        self,
+        docx_url: Optional[str],
+        pdf_url: Optional[str],
+        source_id: str = "",
+    ) -> Optional[str]:
         """Download and extract full text from DOCX (preferred) or PDF."""
         if docx_url:
             content = http_download(docx_url, timeout=60)
@@ -302,14 +347,21 @@ class CongBaoFetcher:
             if content:
                 try:
                     from common.pdf_extract import extract_pdf_markdown
-                    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
-                        f.write(content)
-                        tmp_path = f.name
-                    try:
-                        text = extract_pdf_markdown(tmp_path)
-                        return text.strip() if text and len(text) > 50 else None
-                    finally:
-                        os.unlink(tmp_path)
+                    # extract_pdf_markdown takes (source, source_id) and bytes or a
+                    # URL — never a filesystem path. Pass the bytes we already
+                    # downloaded through http_download() so the incomplete-chain
+                    # fallback for g7.cdnchinhphu.vn applies (issue #1535).
+                    # force=True because the corpus landed metadata-only: the
+                    # skip-if-already-in-Neon guard would otherwise be a no-op
+                    # today but suppress re-extraction once rows carry text.
+                    text = extract_pdf_markdown(
+                        "VN/CongBao",
+                        source_id,
+                        pdf_bytes=content,
+                        table="legislation",
+                        force=True,
+                    )
+                    return text.strip() if text and len(text) > 50 else None
                 except Exception as e:
                     logger.warning(f"PDF extraction failed: {e}")
 
@@ -333,7 +385,10 @@ class CongBaoFetcher:
         time.sleep(self.delay)
 
         # Download full text
-        text = self.fetch_full_text(page_data["docx_url"], page_data["pdf_url"])
+        record_id = f"VN-CongBao-{doc_id}"
+        text = self.fetch_full_text(
+            page_data["docx_url"], page_data["pdf_url"], record_id
+        )
         if not text:
             logger.warning(f"No full text for doc_id={doc_id}: {title[:60]}")
             return None
@@ -342,7 +397,7 @@ class CongBaoFetcher:
         doc_type = classify_doc_type(title, slug)
 
         return {
-            "_id": f"VN-CongBao-{doc_id}",
+            "_id": record_id,
             "_source": "VN/CongBao",
             "_type": "legislation",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
@@ -467,6 +522,11 @@ def bootstrap_sample(sample_dir: Path, count: int = 15):
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     source_dir = Path(__file__).parent
     sample_dir = source_dir / "sample"
 

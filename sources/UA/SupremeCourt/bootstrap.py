@@ -12,7 +12,8 @@ Strategy:
 
 Data Source:
   - Base: https://data.gov.ua/dataset/16ab7f06-7414-405f-8354-0a492475272d (2026)
-  - RTF: http://od.reyestr.court.gov.ua/files/XX/<hash>.rtf
+  - RTF: https://od.reyestr.court.gov.ua/files/XX/<hash>.rtf
+    (the CSV publishes these over http; the host 301s every one to https)
 
 Court Codes (Cassation Instance):
   - 5001: Вищий господарський суд України (High Commercial Court)
@@ -28,7 +29,9 @@ Court Codes (Cassation Instance):
 
 Rate Limits:
   - 2 requests/second conservative, no documented limits
-  - Concurrent RTF downloads: 3 workers
+  - Concurrent RTF downloads: 3 workers, paced under a shared lock
+  - RTF fetches retry 429/5xx and connection errors with exponential backoff,
+    and every failure slows all workers down (see #1508)
 
 Usage:
   python bootstrap.py bootstrap           # Full initial pull (current year)
@@ -52,6 +55,8 @@ from typing import Any, Dict, Generator, List, Optional
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
+import threading
+
 import requests
 from striprtf.striprtf import rtf_to_text
 
@@ -65,7 +70,18 @@ logger = logging.getLogger("legal-data-hunter.UA.SupremeCourt")
 
 # API configuration
 DATA_GOV_BASE = "https://data.gov.ua"
-RTF_BASE = "http://od.reyestr.court.gov.ua"
+RTF_BASE = "https://od.reyestr.court.gov.ua"
+
+# The CSV publishes doc_url over http, and the host 301s every one of them to
+# https. Rewriting the scheme up front halves the request count against a host
+# that is already throttling us (#1508).
+RTF_HTTP_PREFIX = "http://od.reyestr.court.gov.ua"
+
+# Transient failures worth retrying. A 404 is a genuine absence (the register
+# does withhold some documents) and is not retried.
+RTF_RETRY_STATUS = {429, 500, 502, 503, 504}
+RTF_RETRY_ATTEMPTS = 4
+RTF_MAX_DELAY = 8.0
 
 # Current year dataset (2026)
 DATASET_2026_ZIP = (
@@ -141,15 +157,46 @@ class SupremeCourtScraper(BaseScraper):
         self._courts_cache: Dict[str, str] = {}
         self._categories_cache: Dict[str, str] = {}
 
+        # RTF pacing, shared across the normalize() thread pool.
+        self._rate_lock = threading.Lock()
+        self._rtf_delay = 0.0
+        self._rtf_ok = 0
+
     def _rate_limit(self, delay: float = 0.5):
-        """Enforce rate limiting with configurable delay."""
-        current_time = time.time()
-        elapsed = current_time - self.last_request_time
+        """
+        Enforce rate limiting with configurable delay.
 
-        if elapsed < delay:
-            time.sleep(delay - elapsed)
+        Held under a lock because BaseScraper runs normalize() — and therefore
+        the RTF download inside it — on a thread pool. Without the lock the
+        three workers each read a stale last_request_time and fire together,
+        which is a burst the register answers with resets, not the 2 req/s the
+        delay is meant to express.
+        """
+        with self._rate_lock:
+            delay = max(delay, self._rtf_delay)
+            elapsed = time.time() - self.last_request_time
+            if elapsed < delay:
+                time.sleep(delay - elapsed)
+            self.last_request_time = time.time()
 
-        self.last_request_time = time.time()
+    def _throttle_back(self):
+        """Slow every worker down after the host pushes back."""
+        with self._rate_lock:
+            if self._rtf_delay < RTF_MAX_DELAY:
+                self._rtf_delay = min(self._rtf_delay * 2 or 0.5, RTF_MAX_DELAY)
+                logger.warning(
+                    f"Backing off — RTF request delay now {self._rtf_delay:.1f}s"
+                )
+
+    def _relax(self):
+        """Ease back up after a run of clean responses."""
+        with self._rate_lock:
+            self._rtf_ok += 1
+            if self._rtf_ok >= 100 and self._rtf_delay > 0:
+                self._rtf_ok = 0
+                self._rtf_delay = max(self._rtf_delay / 2, 0)
+                if self._rtf_delay < 0.1:
+                    self._rtf_delay = 0.0
 
     def _download_zip(self, url: str) -> Optional[bytes]:
         """Download ZIP archive from data.gov.ua."""
@@ -201,28 +248,59 @@ class SupremeCourtScraper(BaseScraper):
         if not url:
             return ""
 
-        try:
-            self._rate_limit(0.5)
-            resp = self.session.get(url, timeout=60)
+        if url.startswith(RTF_HTTP_PREFIX):
+            url = RTF_BASE + url[len(RTF_HTTP_PREFIX):]
 
-            if resp.status_code == 404:
+        backoff = 2.0
+        for attempt in range(RTF_RETRY_ATTEMPTS):
+            try:
+                self._rate_limit(0.5)
+                resp = self.session.get(url, timeout=60)
+
+                if resp.status_code == 404:
+                    return ""
+
+                if resp.status_code in RTF_RETRY_STATUS:
+                    raise requests.exceptions.HTTPError(
+                        f"{resp.status_code} from RTF host", response=resp
+                    )
+
+                resp.raise_for_status()
+
+                # RTF files are typically CP1251 encoded
+                try:
+                    content = resp.content.decode("cp1251")
+                except UnicodeDecodeError:
+                    content = resp.content.decode("utf-8", errors="ignore")
+
+                self._relax()
+                # Extract text from RTF
+                text = rtf_to_text(content)
+                return text.strip()
+
+            except (
+                requests.exceptions.HTTPError,
+                requests.exceptions.ConnectionError,
+                requests.exceptions.Timeout,
+                requests.exceptions.ChunkedEncodingError,
+            ) as e:
+                # A single attempt with no retry turns every reset or throttle
+                # into permanent data loss: two thirds of a fleet run came back
+                # textless this way (#1508).
+                self._throttle_back()
+                if attempt == RTF_RETRY_ATTEMPTS - 1:
+                    logger.warning(
+                        f"Failed to fetch RTF from {url} after "
+                        f"{RTF_RETRY_ATTEMPTS} attempts: {e}"
+                    )
+                    return ""
+                time.sleep(min(backoff, RTF_MAX_DELAY * 4))
+                backoff *= 2
+            except Exception as e:
+                logger.warning(f"Failed to parse RTF from {url}: {e}")
                 return ""
 
-            resp.raise_for_status()
-
-            # RTF files are typically CP1251 encoded
-            try:
-                content = resp.content.decode("cp1251")
-            except UnicodeDecodeError:
-                content = resp.content.decode("utf-8", errors="ignore")
-
-            # Extract text from RTF
-            text = rtf_to_text(content)
-            return text.strip()
-
-        except Exception as e:
-            logger.warning(f"Failed to fetch RTF from {url}: {e}")
-            return ""
+        return ""
 
     def _parse_date(self, date_str: str) -> str:
         """
@@ -393,7 +471,11 @@ class SupremeCourtScraper(BaseScraper):
         full_text = self._fetch_rtf_text(doc_url)
 
         if not full_text:
-            logger.warning(f"No full text for doc_id={doc_id}")
+            # Drop the record rather than emit a metadata-only one. Ingest
+            # rejects textless records anyway, and emitting them makes a
+            # throttled run look like a successful one (#1508).
+            logger.warning(f"No full text for doc_id={doc_id}, skipping")
+            return None
 
         # Build title from available data
         title_parts = []
@@ -562,4 +644,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

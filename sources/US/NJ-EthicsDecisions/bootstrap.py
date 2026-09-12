@@ -41,6 +41,7 @@ Usage:
 
 from __future__ import annotations
 
+import os
 import sys
 import json
 import logging
@@ -56,7 +57,7 @@ from requests.utils import requote_uri
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.pdf_extract import _extract as _pdf_extract_bytes
 
 logging.basicConfig(
@@ -66,6 +67,15 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.US.NJ-EthicsDecisions")
 
 DATASET_URL = "https://data.nj.gov/resource/54br-q95u.json"
+
+# Socrata throttles anonymous callers against a shared per-IP pool, which is
+# exactly what a datacenter fleet slot lands in (GH-1264). A free app token
+# moves the caller into its own bucket; set SOCRATA_APP_TOKEN to use one.
+SOCRATA_APP_TOKEN = (
+    os.environ.get("NJ_SOCRATA_APP_TOKEN")
+    or os.environ.get("SOCRATA_APP_TOKEN")
+    or ""
+)
 
 UA = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -113,23 +123,65 @@ class NJEthicsDecisionsScraper(BaseScraper):
         self.delay = 1.0
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": UA})
+        if SOCRATA_APP_TOKEN:
+            self.session.headers["X-App-Token"] = SOCRATA_APP_TOKEN
+            logger.info("Using Socrata app token from environment")
 
     # ---------------------------------------------------------------- http
-    def _get(self, url: str):
-        for attempt in range(3):
+    def _get(self, url: str, retries: int = 5):
+        """GET with backoff on transport errors *and* on throttle/5xx statuses.
+
+        Socrata answers an over-quota anonymous caller with 429 (and sometimes
+        403); the previous version only retried on exceptions, so a throttled
+        fleet run gave up on the first response and reported the generic
+        "Could not fetch Socrata dataset" (GH-1264).
+        """
+        last = None
+        for attempt in range(retries):
             time.sleep(self.delay)
             try:
-                return self.session.get(url, timeout=60, allow_redirects=True)
+                resp = self.session.get(url, timeout=60, allow_redirects=True)
             except Exception as e:
                 logger.warning(f"GET failed for {url} (attempt {attempt + 1}): {e}")
-                time.sleep(2 ** attempt)
-        return None
+                time.sleep(min(2 ** attempt, 30))
+                continue
+
+            if resp.status_code in (403, 429, 500, 502, 503, 504):
+                last = resp
+                wait = min(2 ** attempt, 60)
+                logger.warning(
+                    f"HTTP {resp.status_code} from {url} (attempt {attempt + 1}/{retries}), "
+                    f"retrying in {wait}s"
+                )
+                time.sleep(wait)
+                continue
+
+            return resp
+        return last
 
     # ---------------------------------------------------------- discovery
     def _collect_index(self) -> list[dict]:
-        r = self._get(f"{DATASET_URL}?$limit=1000")
-        if r is None or r.status_code != 200:
-            logger.error("Could not fetch Socrata dataset")
+        url = f"{DATASET_URL}?$limit=1000"
+        r = self._get(url)
+        if r is None:
+            logger.error(
+                f"Could not fetch Socrata dataset {url} — all retries failed at the "
+                f"transport layer (DNS/TLS/connect). This is usually a network-vantage "
+                f"block on data.nj.gov, not a dataset change."
+            )
+            return []
+        if r.status_code != 200:
+            body = (r.text or "")[:300].replace("\n", " ")
+            logger.error(
+                f"Could not fetch Socrata dataset {url} — HTTP {r.status_code}. "
+                f"Body: {body}"
+            )
+            if r.status_code in (403, 429):
+                logger.error(
+                    "Socrata is throttling this IP. Set SOCRATA_APP_TOKEN (free, "
+                    "https://data.nj.gov/profile/edit/developer_settings) or re-run "
+                    "from a different vantage."
+                )
             return []
         try:
             data = r.json()
@@ -266,6 +318,7 @@ class NJEthicsDecisionsScraper(BaseScraper):
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        since = as_date_str(since)  # update() passes a datetime; #1512
         for raw in self.fetch_all():
             date = raw.get("date")
             if not since or (date and date >= since):

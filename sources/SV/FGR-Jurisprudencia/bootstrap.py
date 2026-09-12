@@ -12,9 +12,9 @@ Strategy:
   - Deduplicate by WordPress post ID
 
 Usage:
-  python bootstrap.py bootstrap          # Full initial pull
-  python bootstrap.py bootstrap --sample # Fetch 15 sample records
-  python bootstrap.py bootstrap-fast     # Alias for bootstrap
+  python bootstrap.py bootstrap          # Full initial pull -> data/records.jsonl
+  python bootstrap.py bootstrap --sample # Fetch 15 sample records -> sample/
+  python bootstrap.py bootstrap-fast     # Alias for the full bootstrap (fleet entry point)
   python bootstrap.py test               # Quick connectivity test
 """
 
@@ -292,22 +292,47 @@ def main():
         test()
         return
 
-    sample_dir = Path(__file__).parent / "sample"
-    sample_dir.mkdir(exist_ok=True)
-
-    is_sample = args.sample or args.command == "bootstrap-fast"
+    # bootstrap-fast is the fleet's entry point and must run the FULL crawl;
+    # only --sample writes the 15-record sample/ set.
+    is_sample = args.sample
     count = 0
-    for record in fetch_all(sample=is_sample):
-        count += 1
-        fname = f"{record['_id']}.json"
-        with open(sample_dir / fname, "w", encoding="utf-8") as f:
-            json.dump(record, f, ensure_ascii=False, indent=2)
-        logger.info(
-            f"[{count}] Saved {fname} — {record['title'][:60]} "
-            f"({len(record.get('text', ''))} chars)"
-        )
 
-    logger.info(f"Done. {count} records saved to {sample_dir}")
+    if is_sample:
+        sample_dir = Path(__file__).parent / "sample"
+        sample_dir.mkdir(exist_ok=True)
+        for record in fetch_all(sample=True):
+            count += 1
+            with open(sample_dir / f"{record['_id']}.json", "w", encoding="utf-8") as f:
+                json.dump(record, f, ensure_ascii=False, indent=2)
+            logger.info(
+                f"[{count}] Saved {record['_id']}.json — {record['title'][:60]} "
+                f"({len(record.get('text', ''))} chars)"
+            )
+        logger.info(f"Done. {count} sample records saved to {sample_dir}")
+        return
+
+    # Full crawl: stream to data/records.jsonl so the pipeline can ingest it.
+    data_dir = Path(__file__).parent / "data"
+    data_dir.mkdir(exist_ok=True)
+    out_path = data_dir / "records.jsonl"
+    with open(out_path, "w", encoding="utf-8") as out:
+        for record in fetch_all(sample=False):
+            count += 1
+            out.write(json.dumps(record, ensure_ascii=False) + "\n")
+            out.flush()
+            logger.info(
+                f"[{count}] {record['title'][:60]} "
+                f"({len(record.get('text', ''))} chars)"
+            )
+
+    if count == 0:
+        logger.error(
+            "No records written — the FGR AJAX endpoint returned nothing or "
+            "refused this vantage. Refusing to report an empty crawl as success."
+        )
+        sys.exit(1)
+
+    logger.info(f"Done. {count} records written to {out_path}")
 
 
 if __name__ == "__main__":

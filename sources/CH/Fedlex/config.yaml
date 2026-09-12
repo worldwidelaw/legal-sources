@@ -11,6 +11,12 @@ license:
   url: https://www.admin.ch/gov/en/start/terms-and-conditions.html
 notes: 'Swiss Federal Legislation via Fedlex SPARQL endpoint.
 
+  Classified Compilation (SR/RS) is emitted one record per ARTICLE so that
+
+  citations such as "OR Art. 814" / "ZGB Art. 14" resolve to one document
+
+  (issue #1615); Federal Gazette acts are emitted whole.
+
   Uses JOLux ontology (FRBR-based) with ELI URIs.
 
   Available formats: HTML, XML, PDF, DOCX.
@@ -27,16 +33,37 @@ rate_limit:
   requests_per_second: 2
 schema:
   key_fields:
+  - name: sr_number
+    required: false
+    type: string
+  - name: abbreviation
+    required: false
+    type: string
+  - name: article
+    required: false
+    type: string
+  - name: act_title
+    required: false
+    type: string
+  - name: corpus
+    required: false
+    type: string
   - name: eli_uri
     required: false
     type: string
   - name: title
     required: true
     type: string
-  - name: date_document
+  - name: date
+    required: false
+    type: string
+  - name: consolidation_date
     required: false
     type: string
   - name: language
+    required: false
+    type: string
+  - name: url
     required: false
     type: string
   - name: file_url

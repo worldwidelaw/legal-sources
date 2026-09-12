@@ -32,7 +32,7 @@ from typing import Generator, Optional
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 from common.pdf_extract import extract_pdf_markdown
 
@@ -201,6 +201,8 @@ class ASBCAScraper(BaseScraper):
         logger.info(f"Total decisions fetched: {total}")
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         total = 0
         cursor = None
         while True:

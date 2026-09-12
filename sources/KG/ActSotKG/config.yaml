@@ -1,0 +1,157 @@
+# ===================================================================
+# KG/ActSotKG -- Kyrgyz Republic Judicial Acts Portal (act.sot.kg)
+# ===================================================================
+# Full text of judicial acts (ТОКТОМ / ЧЕЧИМ / АНЫКТАМА / Обвинительный
+# ...) issued by the courts of the Kyrgyz Republic — district, city and
+# oblast courts, military courts and the Supreme Court — published under
+# the Kyrgyz judicial-transparency mandate on the State Judicial Acts
+# Portal. Each act adjudicates a specific case = case_law.
+#
+# ACCESS: act.sot.kg is a plain server-rendered site with no auth and no
+# JS requirement. The act search listing exposes ~37,815 pages × 10 rows
+# (~378,000 acts, id space 70..414,841); each row carries the act id and
+# its case number, category, act type, judge, court and dates. The act
+# body is a born-digital PDF at /act/download/{id}.pdf.
+#
+# The successor portal portal.sot.kg (registered separately as
+# KG/CourtActs) is a JS SPA and only carries recent acts; act.sot.kg
+# remains fully served and is the historical corpus.
+# ===================================================================
+
+source:
+  id: "KG/ActSotKG"
+  country: "KG"
+  name: "Kyrgyz Republic — Judicial Acts Portal (act.sot.kg)"
+  url: "https://act.sot.kg/"
+  description: |
+    Judicial acts of the courts of the Kyrgyz Republic published on the
+    State Judicial Acts Portal act.sot.kg — resolutions (ТОКТОМ),
+    decisions (ЧЕЧИМ), rulings (АНЫКТАМА), sentences and other acts of
+    district, city, oblast, military and supreme courts in criminal,
+    civil, administrative and economic matters. Full text is extracted
+    from the born-digital act PDFs the portal publishes at
+    /act/download/{id}.pdf; case number, category, act type, judge,
+    court and dates come from the search listing row.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "html_scraping"
+  base_url: "https://act.sot.kg"
+  endpoints:
+    listing: "/kg/search?caseno=&judge=all&side1=&side2=&from=&to=&actType=all&submit-act=%D0%90%D0%BA%D1%82%D1%8B&caseType=all&page={page}&sort=act.created&direction=asc"
+    document: "/act/download/{act_id}.pdf"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 17
+  key_fields:
+    - name: "title"
+      description: "Case number plus the act's published name and issuing court, e.g. 'ПН-127/24И7 — Обвинительный (Ысык-Көл облусунун Тюп райондук соту)'"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the judicial act, extracted from the born-digital PDF at /act/download/{act_id}.pdf"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the act was adopted (act approval date from the listing), ISO 8601"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "act_id"
+      description: "Portal act identifier; the document is served at /act/download/{act_id}.pdf"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "act_name"
+      description: "The act's published name (Актынын аталышы) — either an act type ('Обвинительный') or a caption describing what the act decides"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "case_number"
+      description: "Court case number the act was issued in, e.g. 'ПН-127/24И7'"
+      type: "string"
+      role: "reference"
+      required: false
+    - name: "case_url"
+      description: "Portal URL of the case file the act belongs to (/kg/delo/{id})"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "category"
+      description: "Subject-matter category of the case as classified by the portal"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "court"
+      description: "Issuing court (Kyrgyz name), e.g. 'Ысык-Көл облусунун Тюп райондук соту'"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "judge"
+      description: "Presiding judge"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "published_date"
+      description: "Date the act was published on the portal (ISO 8601)"
+      type: "date"
+      role: "metadata"
+      required: false
+    - name: "url"
+      description: "Direct URL of the act PDF"
+      type: "string"
+      role: "metadata"
+      required: true
+
+license:
+  name: "Open government data — Kyrgyz Republic judicial acts"
+  url: "https://act.sot.kg/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: |
+    Judicial acts of the Kyrgyz Republic are official state documents
+    published for public access under the judicial-transparency mandate
+    (Law on the Supreme Court and local courts / access to information
+    on the activity of courts). Court acts are official edicts and carry
+    no copyright; the portal imposes no terms restricting reuse. Party
+    names are already anonymised to initials by the publisher.
+
+notes: |
+  - fetch_all() walks the act search listing sorted ASCENDING on
+    act.created, so newly published acts append at the tail and page N
+    keeps returning the same acts across restarts. Completed pages are
+    persisted to data/checkpoint.json; a relaunched run resumes at the
+    first unfinished page with no network calls for the pages already
+    done (the loader dedups on _id).
+  - The listing page size is fixed at 10 rows; limit/perPage are ignored.
+    Duplicate act ids do appear across adjacent pages when the ordering
+    ties on act.created, so ids are de-duplicated in-run as well.
+  - normalize() extracts text with pdfplumber FIRST on purpose: PyMuPDF
+    renders the Kyrgyz-specific letters ө and ү as detached glyphs on
+    their own lines for these PDFs, which corrupts the text. fitz is only
+    a fallback when pdfplumber returns nothing.
+  - The acts are born-digital (0 of 8 probed were scans), so no OCR path
+    is needed; acts yielding under 200 characters are dropped.
+  - If page 1 of the listing is unreachable the run raises instead of
+    reporting an empty corpus, so a future IP/geo block fails loud.

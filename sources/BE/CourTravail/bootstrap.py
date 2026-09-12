@@ -43,10 +43,13 @@ import json
 import logging
 import re
 import html
+import threading
+import time
 import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
-from typing import Generator, Optional, Dict, Any, List
+from typing import Callable, Generator, Optional, Dict, Any, List
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -61,8 +64,24 @@ logging.basicConfig(
 )
 logger = logging.getLogger("legal-data-hunter.BE.CourTravail")
 
-# Checkpoint file for resuming across sessions
-CHECKPOINT_FILE = Path(__file__).parent / "checkpoint.json"
+# Checkpoint file for resuming across sessions.
+# Lives under data/ like the other long-crawl sources; the legacy path next to
+# bootstrap.py is still read once so an in-flight run is not thrown away.
+CHECKPOINT_FILE = Path(__file__).parent / "data" / "checkpoint.json"
+LEGACY_CHECKPOINT_FILE = Path(__file__).parent / "checkpoint.json"
+
+# Each daily sitemap holds exactly one decision for the whole of Belgium, so
+# discovery costs one request per Belgian decision (~366K). The host answers in
+# ~0.1s, so the crawl is bound by our own pacing, not by juportal -- fetch the
+# XML concurrently and keep the serial rate limiter for the content pages.
+SITEMAP_WORKERS = 4
+# Aggregate ceiling across all workers. Unthrottled the pool reaches ~165 req/s,
+# which is far more than a government site should be asked to absorb; 20/s still
+# walks the whole ~366K-sitemap corpus in ~5h instead of never finishing.
+SITEMAP_RATE_PER_SEC = 20.0
+# Days per checkpointed batch. Small enough that a kill loses little work,
+# large enough that the pool stays saturated.
+DAY_BATCH_SIZE = 20
 
 # Base URLs
 SITEMAP_BASE = "https://juportal.just.fgov.be/JUPORTAsitemap"
@@ -112,6 +131,10 @@ class CourTravailScraper(BaseScraper):
         # Flag to control checkpoint usage
         self._use_checkpoint = True
 
+        # Shared throttle for the concurrent sitemap fetches
+        self._sitemap_lock = threading.Lock()
+        self._sitemap_next_at = 0.0
+
         self.client = HttpClient(
             base_url=CONTENT_BASE,
             headers={
@@ -128,6 +151,16 @@ class CourTravailScraper(BaseScraper):
             },
             timeout=60,
         )
+
+    def _sitemap_throttle(self):
+        """Hold the pool's combined sitemap traffic to SITEMAP_RATE_PER_SEC."""
+        interval = 1.0 / SITEMAP_RATE_PER_SEC
+        with self._sitemap_lock:
+            now = time.monotonic()
+            wait = self._sitemap_next_at - now
+            self._sitemap_next_at = max(now, self._sitemap_next_at) + interval
+        if wait > 0:
+            time.sleep(wait)
 
     def _is_labour_court(self, ecli: str) -> bool:
         """Check if ECLI belongs to a labour court."""
@@ -172,8 +205,8 @@ class CourTravailScraper(BaseScraper):
         Parse a sitemap index XML to get individual sitemap URLs.
         """
         try:
-            self.rate_limiter.wait()
-            resp = self.client.session.get(url, timeout=60)
+            self._sitemap_throttle()
+            resp = self.sitemap_client.session.get(url, timeout=60)
             resp.raise_for_status()
 
             root = ET.fromstring(resp.content)
@@ -194,8 +227,8 @@ class CourTravailScraper(BaseScraper):
         Returns list of metadata dicts for labour court decisions.
         """
         try:
-            self.rate_limiter.wait()
-            resp = self.client.session.get(url, timeout=60)
+            self._sitemap_throttle()
+            resp = self.sitemap_client.session.get(url, timeout=60)
             resp.raise_for_status()
 
             root = ET.fromstring(resp.content)
@@ -391,10 +424,27 @@ class CourTravailScraper(BaseScraper):
         clean_text = re.sub(r'\s*\n\s*', '\n', clean_text)
         return clean_text
 
-    def _discover_eclis(self, max_sitemaps: int = None) -> Generator[Dict[str, Any], None, None]:
+    def _discover_eclis(
+        self,
+        max_sitemaps: int = None,
+        done_days: Optional[set] = None,
+        on_days_done: Optional[Callable[[List[str]], None]] = None,
+    ) -> Generator[Dict[str, Any], None, None]:
         """
         Discover ECLIs from sitemaps.
         Yields metadata dicts for Labour Court decisions.
+
+        robots.txt lists ~14,650 daily sitemap indexes, and every sub-sitemap
+        under them holds exactly one decision for the whole of Belgium -- so a
+        full walk is one request per Belgian decision. Days already covered by a
+        previous run are skipped without a single request; the rest are fetched
+        through a small thread pool.
+
+        Args:
+            max_sitemaps: stop after this many sub-sitemaps (used by updates).
+            done_days: daily index URLs a previous run already finished.
+            on_days_done: called with each batch of day URLs once all of the
+                batch's entries have been yielded, so the caller can checkpoint.
         """
         sitemap_index_urls = self._get_sitemap_urls_from_robots()
 
@@ -402,56 +452,81 @@ class CourTravailScraper(BaseScraper):
             logger.error("No sitemap URLs found in robots.txt")
             return
 
-        logger.info(f"Found {len(sitemap_index_urls)} sitemap index URLs")
+        done_days = done_days or set()
+        pending = [u for u in sitemap_index_urls if u not in done_days]
+        skipped = len(sitemap_index_urls) - len(pending)
+        logger.info(
+            f"Found {len(sitemap_index_urls)} sitemap index URLs "
+            f"({skipped} already done, {len(pending)} to walk)"
+        )
 
         sitemap_count = 0
         labour_court_count = 0
 
-        for index_url in sitemap_index_urls:
-            if max_sitemaps and sitemap_count >= max_sitemaps:
-                break
-
-            logger.info(f"Processing sitemap index: {index_url}")
-            sitemap_urls = self._parse_sitemap_index(index_url)
-
-            for sitemap_url in sitemap_urls:
+        with ThreadPoolExecutor(max_workers=SITEMAP_WORKERS) as pool:
+            for start in range(0, len(pending), DAY_BATCH_SIZE):
                 if max_sitemaps and sitemap_count >= max_sitemaps:
                     break
 
-                entries = self._parse_sitemap(sitemap_url)
-                sitemap_count += 1
+                batch = pending[start:start + DAY_BATCH_SIZE]
 
-                # Filter for labour court entries
-                for entry in entries:
-                    labour_court_count += 1
-                    yield entry
+                # One request per day to list that day's decisions...
+                sitemap_urls = []
+                for urls in pool.map(self._parse_sitemap_index, batch):
+                    sitemap_urls.extend(urls)
 
-                if entries:
-                    logger.info(f"Found {len(entries)} labour court entries in sitemap")
+                if max_sitemaps:
+                    room = max_sitemaps - sitemap_count
+                    sitemap_urls = sitemap_urls[:room]
+
+                # ...then one request per decision, all courts, filtered to CT/TT.
+                for entries in pool.map(self._parse_sitemap, sitemap_urls):
+                    sitemap_count += 1
+                    for entry in entries:
+                        labour_court_count += 1
+                        yield entry
+
+                logger.info(
+                    f"Days {start + len(batch)}/{len(pending)}: "
+                    f"{sitemap_count} sitemaps read, "
+                    f"{labour_court_count} labour court entries"
+                )
+
+                if on_days_done and not max_sitemaps:
+                    on_days_done(batch)
 
         logger.info(f"Total: {labour_court_count} labour court entries from {sitemap_count} sitemaps")
 
     def _load_checkpoint(self) -> dict:
         """Load checkpoint from file if it exists."""
-        if CHECKPOINT_FILE.exists():
-            try:
-                with open(CHECKPOINT_FILE, "r") as f:
-                    return json.load(f)
-            except json.JSONDecodeError:
-                logger.warning("Invalid checkpoint file, starting fresh")
-        return {"fetched_eclis": [], "phase": "discovery", "sitemap_index": 0}
+        for path in (CHECKPOINT_FILE, LEGACY_CHECKPOINT_FILE):
+            if path.exists():
+                try:
+                    with open(path, "r") as f:
+                        checkpoint = json.load(f)
+                    checkpoint.setdefault("fetched_eclis", [])
+                    checkpoint.setdefault("done_days", [])
+                    return checkpoint
+                except json.JSONDecodeError:
+                    logger.warning(f"Invalid checkpoint file {path}, starting fresh")
+        return {"fetched_eclis": [], "done_days": []}
 
     def _save_checkpoint(self, checkpoint: dict):
         """Save checkpoint to file."""
+        CHECKPOINT_FILE.parent.mkdir(parents=True, exist_ok=True)
         with open(CHECKPOINT_FILE, "w") as f:
             json.dump(checkpoint, f, indent=2)
-        logger.debug(f"Checkpoint saved: {len(checkpoint.get('fetched_eclis', []))} ECLIs processed")
+        logger.debug(
+            f"Checkpoint saved: {len(checkpoint.get('done_days', []))} days, "
+            f"{len(checkpoint.get('fetched_eclis', []))} ECLIs processed"
+        )
 
     def _clear_checkpoint(self):
         """Clear checkpoint file."""
-        if CHECKPOINT_FILE.exists():
-            CHECKPOINT_FILE.unlink()
-            logger.info("Checkpoint cleared")
+        for path in (CHECKPOINT_FILE, LEGACY_CHECKPOINT_FILE):
+            if path.exists():
+                path.unlink()
+                logger.info(f"Checkpoint cleared: {path}")
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """
@@ -465,16 +540,34 @@ class CourTravailScraper(BaseScraper):
         if use_checkpoint:
             checkpoint = self._load_checkpoint()
             fetched_eclis = set(checkpoint.get("fetched_eclis", []))
-            if fetched_eclis:
-                logger.info(f"Resuming from checkpoint: {len(fetched_eclis)} ECLIs already fetched")
+            done_days = set(checkpoint.get("done_days", []))
+            if fetched_eclis or done_days:
+                logger.info(
+                    f"Resuming from checkpoint: {len(done_days)} days walked, "
+                    f"{len(fetched_eclis)} ECLIs already fetched"
+                )
         else:
-            checkpoint = {"fetched_eclis": [], "phase": "discovery", "sitemap_index": 0}
             fetched_eclis = set()
+            done_days = set()
 
         seen_eclis = set(fetched_eclis)
         fetched_count = len(fetched_eclis)
 
-        for meta in self._discover_eclis():
+        def persist():
+            self._save_checkpoint({
+                "fetched_eclis": list(fetched_eclis)[-50000:],
+                "done_days": sorted(done_days),
+                "total_fetched": fetched_count,
+                "last_update": datetime.now(timezone.utc).isoformat(),
+            })
+
+        def record_days(days: List[str]):
+            """Mark a batch of daily indexes as fully consumed."""
+            done_days.update(days)
+            if use_checkpoint:
+                persist()
+
+        for meta in self._discover_eclis(done_days=done_days, on_days_done=record_days):
             ecli = meta.get('ecli')
             if not ecli or ecli in seen_eclis:
                 continue
@@ -495,13 +588,7 @@ class CourTravailScraper(BaseScraper):
 
             # Save checkpoint periodically
             if use_checkpoint and fetched_count % 100 == 0:
-                recent_eclis = list(fetched_eclis)[-50000:]
-                checkpoint = {
-                    "fetched_eclis": recent_eclis,
-                    "total_fetched": fetched_count,
-                    "last_update": datetime.now(timezone.utc).isoformat(),
-                }
-                self._save_checkpoint(checkpoint)
+                persist()
                 logger.info(f"Checkpoint saved: {fetched_count} ECLIs processed")
 
             yield meta
@@ -770,6 +857,7 @@ def main():
     if command == "status":
         checkpoint = scraper._load_checkpoint()
         print("Checkpoint status:")
+        print(f"  Days walked: {len(checkpoint.get('done_days', []))}")
         print(f"  Total fetched ECLIs: {len(checkpoint.get('fetched_eclis', []))}")
         print(f"  Total count: {checkpoint.get('total_fetched', 'N/A')}")
         print(f"  Last update: {checkpoint.get('last_update', 'N/A')}")
@@ -799,6 +887,12 @@ def main():
                 f"{stats['records_updated']} updated, "
                 f"{stats['records_skipped']} skipped"
             )
+        print(json.dumps(stats, indent=2))
+
+    elif command == "bootstrap-fast":
+        # Streams the full corpus to data/records.jsonl for the pipeline runner.
+        scraper._use_checkpoint = not no_checkpoint
+        stats = scraper.bootstrap_fast()
         print(json.dumps(stats, indent=2))
 
     elif command == "update":

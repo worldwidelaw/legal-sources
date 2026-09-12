@@ -1,0 +1,93 @@
+rate_limit:
+  burst: 2
+  requests_per_second: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _fetched_at
+    required: false
+    type: string
+  - name: case_reference
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string
+  - name: practitioner
+    required: false
+    type: string
+  - name: profession
+    required: false
+    type: string
+  - name: scope_of_practice
+    required: false
+    type: string
+  - name: charge_characteristics
+    required: false
+    type: string
+  - name: pdf_url
+    required: false
+    type: string
+  - name: language
+    required: false
+    type: string
+source:
+  auth: none
+  country: NZ
+  data_types:
+  - case_law
+  description: >
+    Decisions of the New Zealand Health Practitioners Disciplinary Tribunal on
+    disciplinary charges laid against health practitioners under Part 4 of the
+    Health Practitioners Competence Assurance Act 2003, from the Tribunal's
+    establishment in 2004 to the present (~1,500 decisions across 20+ regulated
+    professions). Full text comes from the born-digital decision PDFs published
+    under /portals/0/; penalty and appeal decisions on the same file are
+    concatenated into one record.
+  id: NZ/HPDT
+  language: en
+  license:
+    name: "Crown copyright — New Zealand Health Practitioners Disciplinary Tribunal"
+    url: "https://www.hpdt.org.nz/Terms"
+    commercial_use: false
+    attribution_required: true
+    share_alike: false
+    no_derivatives: false
+    notes: >
+      hpdt.org.nz carries a bare "(c) Copyright, New Zealand Health
+      Practitioners Disciplinary Tribunal" notice and a stock DNN terms-of-use
+      template ("All rights reserved"); it publishes no re-use licence, so the
+      NZGOAL Creative Commons default cannot be assumed. Flagged
+      non-commercial pending written confirmation from the Tribunal.
+      robots.txt is the stock DNN file: its "User-agent: *" group disallows
+      "/Portals/", and only the Googlebot group adds the lowercase "/portals/"
+      that the site's own JavaScript links decision PDFs under. Robots paths
+      are case-sensitive, so the PDFs are not disallowed for us as written,
+      but the intent of that line is arguable — see README. Decisions carry
+      statutory name-suppression orders; the published PDFs are already
+      redacted by the Tribunal.
+  name: NZ Health Practitioners Disciplinary Tribunal - Decisions
+  url: https://www.hpdt.org.nz/Search-Decisions

@@ -15,52 +15,35 @@ dating back to 1950.
 
 ## Strategy
 
-1. Lists pre-extracted full-text shards from `derived/landlit-v2/texts/*.jsonl.gz`.
-2. Streams and gunzips each JSONL shard, yielding one full-text judgment per line.
-3. Joins each text record to `metadata/json/year=YYYY/court=X_Y/bench=ZZZ/*.json` for title, court, CNR, date, and PDF URL metadata.
-4. Derives `cnr_number` and ISO `date` from the judgment filename to avoid validator drops when HTML metadata is sparse.
-5. Uses PDF extraction only when explicitly launched with `--include-pdf-fallback`, after the text layer has been exhausted for the selected shard.
+1. Requires one exact `(year, court, bench)` shard per job.
+2. Streams the shard's raw PDF tar parts under fixed memory caps.
+3. Joins each PDF to the matching bundled JSON metadata.
+4. Writes to hidden staging, then atomically publishes `data/` only after exact inventory and every judgment pass; failures retry from zero in a new job directory.
 
 ## S3 Structure
 
 ```text
-derived/landlit-v2/texts/data__tar__year=YYYY__court=X_Y__bench=ZZZ__data.tar.jsonl.gz
-metadata/json/year=YYYY/court=X_Y/bench=ZZZ/CNRXXX_N_YYYY-MM-DD.json
-data/pdf/year=YYYY/court=X_Y/bench=ZZZ/CNRXXX_N_YYYY-MM-DD.pdf  # fallback only
+data/tar/year=YYYY/court=X_Y/bench=ZZZ/data.index.json
+data/tar/year=YYYY/court=X_Y/bench=ZZZ/data.tar
+metadata/tar/year=YYYY/court=X_Y/bench=ZZZ/metadata.index.json
+metadata/tar/year=YYYY/court=X_Y/bench=ZZZ/metadata.tar.gz
 ```
 
 ## Usage
 
 ```bash
 python bootstrap.py test
-python bootstrap.py bootstrap --sample --sample-size 15
-python bootstrap.py bootstrap --year-range 2023 --court 36_29
-python bootstrap.py bootstrap --year-range 2020-2023 --court 36_29
-python bootstrap.py bootstrap --year-range 2023 --court 36_29 --include-pdf-fallback
-python bootstrap.py coverage --year-range 2023 --court 36_29
-python bootstrap.py coverage --year-range 2023 --court 36_29 --count-text-records
+python bootstrap.py bootstrap --sample --sample-size 15 --output-dir /tmp/highcourtaws-sample
+python bootstrap.py bootstrap --year-range 2024 --court 11_24 --bench sikkimhc_pg \
+  --workers 4 --output-dir /srv/highcourtaws/jobs/2024-11_24-sikkimhc_pg
 ```
 
-## Sharded launch pattern
-
-Fan out workers by `(year, court)` because both the derived text layer and metadata tree are partitioned on those dimensions:
-
-```bash
-for year in 2020 2021 2022 2023 2024; do
-  for court in 36_29 1_1 2_2; do
-    python sources/IN/HighCourtAWS/bootstrap.py bootstrap \
-      --year-range "$year" \
-      --court "$court"
-  done
-done
-```
-
-Use `--include-pdf-fallback` only on shards where the `coverage` command reports metadata bench shards missing from `derived/landlit-v2/texts/`. The hot path does not download PDFs.
+Each worker must use a new or empty non-symlink output directory and one scraper instance per attempt. Preserve failed-job evidence and rerun the same queue item from zero in a fresh isolated directory.
 
 ## Notes
 
 - S3 bucket is in ap-south-1 (Mumbai); connections may be slow from other regions.
-- The full dataset is ~1.11 TB in PDFs, so the text layer is required for practical full-corpus ingest.
+- The full dataset is ~1.11 TB in PDFs; workers stream archive members without retaining tar files.
 - The scraper yields raw dicts from `fetch_all()` and lets `BaseScraper` call `normalize()`.
 - Deduplication remains keyed on `cnr_number`.
 

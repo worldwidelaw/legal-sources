@@ -19,10 +19,12 @@ import re
 import subprocess
 import sys
 import tempfile
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Iterator, Optional
+from typing import Dict, Any, Iterator, List, Optional, Tuple
 
 import fitz  # PyMuPDF
 
@@ -30,7 +32,7 @@ import fitz  # PyMuPDF
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.pdf_extract import extract_pdf_markdown
+from common.pdf_extract import extract_pdf_markdown, preload_existing_ids
 
 
 # Setup logging
@@ -43,16 +45,60 @@ SEARCH_URL = f"{API_BASE}/PublicMaterial"
 DOWNLOAD_URL = f"{API_BASE}/PublicMaterialDownload"
 
 
+class _RateLimiter:
+    """Spaces request starts by at least ``min_interval`` across threads.
+
+    Replaces the old per-document ``sleep`` so politeness is a global
+    requests-per-second ceiling rather than a serial cost paid by the one
+    thread doing the work.
+    """
+
+    def __init__(self, min_interval: float):
+        self._min_interval = min_interval
+        self._lock = threading.Lock()
+        self._next_start = 0.0
+
+    def wait(self) -> None:
+        with self._lock:
+            start = max(time.monotonic(), self._next_start)
+            self._next_start = start + self._min_interval
+        delay = start - time.monotonic()
+        if delay > 0:
+            time.sleep(delay)
+
+
 class LatvianCourtsFetcher:
     """Fetcher for Latvian court decisions from elieta.lv"""
 
-    def __init__(self, slow_mode: bool = False):
+    # Issue #1483: the serial path did ~1 doc per 3s (1.5s curl + 1.5s
+    # sleep), so a ~390K-decision corpus needed ~325h — more than three
+    # 100h fleet slots.  PDF download runs in a `curl` subprocess and
+    # PyMuPDF releases the GIL while parsing, so a thread pool actually
+    # overlaps both halves.  Politeness is preserved by _RateLimiter: at
+    # most 1/DOC_MIN_INTERVAL requests start per second no matter how many
+    # workers are running.
+    DEFAULT_WORKERS = 8
+    SLOW_WORKERS = 3
+    DOC_MIN_INTERVAL = 0.25  # ≈4 req/s → full corpus in ~27h
+    SLOW_DOC_MIN_INTERVAL = 1.0
+
+    def __init__(self, slow_mode: bool = False, workers: Optional[int] = None,
+                 force: bool = False):
         self.slow_mode = slow_mode
-        self.doc_delay = 3.0 if slow_mode else 1.5
+        self.force = force
+        self._skipped = 0
+        self._skip_lock = threading.Lock()
         self.page_delay = 5.0 if slow_mode else 2.0
+        self.workers = max(1, workers or (self.SLOW_WORKERS if slow_mode else self.DEFAULT_WORKERS))
+        self.doc_delay = self.SLOW_DOC_MIN_INTERVAL if slow_mode else self.DOC_MIN_INTERVAL
+        self._limiter = _RateLimiter(self.doc_delay)
 
         if slow_mode:
             logger.info("Running in SLOW MODE")
+        logger.info(
+            f"Fetch concurrency: {self.workers} workers, "
+            f"max {1 / self.doc_delay:.1f} PDF req/s"
+        )
 
     def _curl_post(self, url: str, body: dict, max_attempts: int = 3) -> Optional[dict]:
         """POST JSON via curl"""
@@ -89,6 +135,7 @@ class LatvianCourtsFetcher:
         url = f"{DOWNLOAD_URL}/{file_id}"
         for attempt in range(3):
             try:
+                self._limiter.wait()
                 result = subprocess.run(
                     ['curl', '-s', '--max-time', '60', '-o', '-', url],
                     capture_output=True, timeout=70
@@ -110,13 +157,26 @@ class LatvianCourtsFetcher:
                     return None
         return None
 
-    def _extract_text_from_pdf(self, pdf_bytes: bytes) -> str:
-        """Extract text from PDF using centralized extractor."""
+    @staticmethod
+    def _doc_id(item: Dict[str, Any]) -> str:
+        """The document's stable id — must match what normalize() emits as _id."""
+        return str(item.get('ecliCode') or item.get('id') or '')
+
+    def _extract_text_from_pdf(self, pdf_bytes: bytes, source_id: str = "") -> str:
+        """Extract text from PDF using centralized extractor.
+
+        ``source_id`` must be the same string ``normalize()`` emits as
+        ``_id``: the extractor uses it to skip documents already in Neon
+        (issue #1480).  Passing "" disabled that guard, so every refresh
+        re-extracted all ~390K PDFs — the other half of the #1483 runtime
+        problem.
+        """
         return extract_pdf_markdown(
             source="LV/AllCourts",
-            source_id="",
+            source_id=source_id,
             pdf_bytes=pdf_bytes,
             table="case_law",
+            force=self.force,
         ) or ""
 
     def _search_decisions(self, page: int = 1, limit: int = 50,
@@ -147,70 +207,202 @@ class LatvianCourtsFetcher:
         except (ValueError, OSError):
             return None
 
-    def fetch_all(self, limit: int = None) -> Iterator[Dict[str, Any]]:
-        """Fetch all Latvian court decisions with full text"""
-        page = 1
+    # ------------------------------------------------------------------
+    # Checkpoint / resume (Issue #1217)
+    #
+    # The corpus is ~390K decisions and each PDF download+extract takes
+    # ~1.5s, so a single full run cannot finish inside one 100h fleet
+    # slot.  Without a checkpoint every relaunch re-walked the newest
+    # registrationDate-desc pages from the top and re-appended the same
+    # first records (112,518 "fetched" / 24 unique written).  The fix
+    # partitions the corpus by registration year-month (the API's
+    # registrationDateYearMonth filter) and records which months are
+    # fully done plus the in-progress page, so a relaunch skips completed
+    # months (no network calls) and resumes the current month at the
+    # right page — successive slots advance monotonically to completion.
+    # Kept next to the module so it survives the fleet's temp CWD.
+    # ------------------------------------------------------------------
+    CHECKPOINT_PATH = Path(__file__).parent / "lv_allcourts_checkpoint.json"
+
+    FIRST_YEAR = 2007  # elieta.lv publishes anonymized decisions since 2007
+
+    def _load_checkpoint(self) -> dict:
+        try:
+            with open(self.CHECKPOINT_PATH, encoding="utf-8") as f:
+                data = json.load(f)
+            return {
+                "completed_months": set(data.get("completed_months", [])),
+                "current_month": data.get("current_month"),
+                "current_page": data.get("current_page", 1),
+            }
+        except (FileNotFoundError, json.JSONDecodeError, ValueError):
+            return {"completed_months": set(), "current_month": None, "current_page": 1}
+
+    def _save_checkpoint(self, completed: set, current_month, current_page: int) -> None:
+        tmp = self.CHECKPOINT_PATH.with_suffix(".json.tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(
+                {
+                    "completed_months": sorted(completed),
+                    "current_month": current_month,
+                    "current_page": current_page,
+                },
+                f,
+            )
+        tmp.replace(self.CHECKPOINT_PATH)
+
+    def _iter_months(self):
+        """Yield 'MM.YYYY' partitions newest-first back to FIRST_YEAR."""
+        now = datetime.now()
+        y, m = now.year, now.month
+        while (y, m) >= (self.FIRST_YEAR, 1):
+            yield f"{m:02d}.{y}"
+            m -= 1
+            if m == 0:
+                m = 12
+                y -= 1
+
+    def _already_stored(self, doc_id: str) -> bool:
+        """True if Neon already holds this decision's text.
+
+        extract_pdf_markdown runs the same check, but only *after* the PDF
+        has been downloaded — and on this source the download is the
+        expensive half.  Checking first means a refresh costs one search
+        request per page instead of one PDF fetch per already-known
+        decision.  preload_existing_ids caches in-process and returns an
+        empty set when Neon is unreachable, so this degrades to "extract
+        everything", never to "skip everything".
+        """
+        if not doc_id or self.force:
+            return False
+        return doc_id in preload_existing_ids("LV/AllCourts", "case_law")
+
+    def _download_and_extract(self, item: Dict[str, Any]) -> Optional[str]:
+        doc_id = self._doc_id(item)
+        if self._already_stored(doc_id):
+            with self._skip_lock:
+                self._skipped += 1
+            return None
+        files = item.get('materialFiles', [])
+        if not files:
+            logger.warning(f"No files for {item.get('caseNumber', '?')}")
+            return None
+        file_id = files[0].get('id')
+        if not file_id:
+            return None
+        pdf_bytes = self._download_pdf(file_id)
+        if not pdf_bytes:
+            logger.warning(f"Failed to download PDF for {item.get('caseNumber', '?')}")
+            return None
+        text = self._extract_text_from_pdf(pdf_bytes, source_id=self._doc_id(item))
+        if not text or len(text) <= 100:
+            logger.warning(f"Text too short for {item.get('caseNumber', '?')}")
+            return None
+        return text
+
+    def _download_page(self, items: List[Dict[str, Any]],
+                       executor: ThreadPoolExecutor) -> Iterator[Dict[str, Any]]:
+        """Download+extract a page's documents concurrently.
+
+        Yields the items that produced usable text, in the page's original
+        order, so the caller's ``limit`` and checkpoint semantics are the
+        same as they were on the serial path.
+        """
+        if not items:
+            return
+        for item, text in zip(items, executor.map(self._download_and_extract_safe, items)):
+            if text:
+                item['_full_text'] = text
+                yield item
+
+    def _download_and_extract_safe(self, item: Dict[str, Any]) -> Optional[str]:
+        """Worker wrapper: one bad document must not kill the whole page."""
+        try:
+            return self._download_and_extract(item)
+        except Exception as e:  # noqa: BLE001 - per-document isolation
+            logger.warning(f"Extract failed for {item.get('caseNumber', '?')}: {e}")
+            return None
+
+    def fetch_all(self, limit: int = None, use_checkpoint: bool = True) -> Iterator[Dict[str, Any]]:
+        """Fetch all Latvian court decisions with full text.
+
+        Resume-safe: partitions by registration year-month and persists a
+        checkpoint (completed months + in-progress page) so fleet
+        relaunches skip finished months instead of re-walking from the top.
+        Sample runs pass ``use_checkpoint=False`` so they don't move the
+        fleet's resume pointer.
+        """
+        def _save(cm, cp):
+            if use_checkpoint:
+                self._save_checkpoint(completed, cm, cp)
+
+        ckpt = self._load_checkpoint() if use_checkpoint else {
+            "completed_months": set(), "current_month": None, "current_page": 1}
+        completed = ckpt["completed_months"]
+        if completed:
+            logger.info(
+                f"Resuming: {len(completed)} month(s) already complete, "
+                f"in-progress month={ckpt['current_month']} page={ckpt['current_page']}"
+            )
+
         count = 0
-        total = None
-        consecutive_failures = 0
-
-        while True:
-            logger.info(f"Fetching search page {page}...")
-            data = self._search_decisions(page=page)
-
-            if not data:
-                consecutive_failures += 1
-                if consecutive_failures >= 5:
-                    logger.error("Too many consecutive search failures, stopping")
-                    break
-                time.sleep(10)
-                continue
-
-            consecutive_failures = 0
-
-            if total is None:
-                total = data.get('totalResults', 0)
-                total_pages = data.get('totalPages', 0)
-                logger.info(f"Total decisions: {total}, pages: {total_pages}")
-
-            items = data.get('items', [])
-            if not items:
-                logger.info("No more items")
-                break
-
-            for item in items:
-                files = item.get('materialFiles', [])
-                if not files:
-                    logger.warning(f"No files for {item.get('caseNumber', '?')}")
+        with ThreadPoolExecutor(max_workers=self.workers) as executor:
+            for month in self._iter_months():
+                if month in completed:
                     continue
 
-                file_id = files[0].get('id')
-                if not file_id:
-                    continue
+                start_page = ckpt["current_page"] if month == ckpt["current_month"] else 1
+                page = start_page
+                consecutive_failures = 0
+                total_pages = None
 
-                logger.info(f"[{count+1}] Downloading {item.get('ecliCode', item.get('caseNumber', '?'))}...")
-                pdf_bytes = self._download_pdf(file_id)
+                logger.info(f"Fetching month {month} (from page {page})...")
+                while True:
+                    data = self._search_decisions(page=page, year_month=month)
 
-                if pdf_bytes:
-                    text = self._extract_text_from_pdf(pdf_bytes)
-                    if text and len(text) > 100:
-                        item['_full_text'] = text
+                    if not data:
+                        consecutive_failures += 1
+                        if consecutive_failures >= 5:
+                            logger.error(
+                                f"Too many consecutive search failures for {month} "
+                                f"page {page}; leaving month in-progress and stopping"
+                            )
+                            _save(month, page)
+                            return
+                        time.sleep(10)
+                        continue
+                    consecutive_failures = 0
+
+                    if total_pages is None:
+                        total_pages = data.get('totalPages', 0)
+
+                    items = data.get('items', [])
+                    if not items:
+                        break
+
+                    for item in self._download_page(items, executor):
                         yield item
                         count += 1
-
                         if limit and count >= limit:
+                            _save(month, page)
                             return
-                    else:
-                        logger.warning(f"Text too short for {item.get('caseNumber', '?')}")
-                else:
-                    logger.warning(f"Failed to download PDF for {item.get('caseNumber', '?')}")
 
-                time.sleep(self.doc_delay)
+                    # Page fully processed — persist resume point.
+                    page += 1
+                    _save(month, page)
 
-            page += 1
-            time.sleep(self.page_delay)
+                    if total_pages and page > total_pages:
+                        break
+                    time.sleep(self.page_delay)
 
-        logger.info(f"Fetched {count} decisions total")
+                # Month finished — mark complete and clear the in-progress pointer.
+                completed.add(month)
+                _save(None, 1)
+
+        logger.info(
+            f"Fetched {count} decisions total "
+            f"({self._skipped} skipped — already in Neon, no PDF fetched)"
+        )
 
     def fetch_updates(self, since: datetime) -> Iterator[Dict[str, Any]]:
         """Fetch decisions registered since a given date"""
@@ -229,39 +421,25 @@ class LatvianCourtsFetcher:
         page = 1
         count = 0
 
-        while True:
-            data = self._search_decisions(page=page, year_month=year_month_filter)
-            if not data:
-                break
+        with ThreadPoolExecutor(max_workers=self.workers) as executor:
+            while True:
+                data = self._search_decisions(page=page, year_month=year_month_filter)
+                if not data:
+                    break
 
-            items = data.get('items', [])
-            if not items:
-                break
+                items = data.get('items', [])
+                if not items:
+                    break
 
-            for item in items:
-                files = item.get('materialFiles', [])
-                if not files:
-                    continue
+                for item in self._download_page(items, executor):
+                    yield item
+                    count += 1
 
-                file_id = files[0].get('id')
-                if not file_id:
-                    continue
-
-                pdf_bytes = self._download_pdf(file_id)
-                if pdf_bytes:
-                    text = self._extract_text_from_pdf(pdf_bytes)
-                    if text and len(text) > 100:
-                        item['_full_text'] = text
-                        yield item
-                        count += 1
-
-                time.sleep(self.doc_delay)
-
-            total_pages = data.get('totalPages', 0)
-            if page >= total_pages:
-                break
-            page += 1
-            time.sleep(self.page_delay)
+                total_pages = data.get('totalPages', 0)
+                if page >= total_pages:
+                    break
+                page += 1
+                time.sleep(self.page_delay)
 
         logger.info(f"Fetched {count} updated decisions")
 
@@ -269,7 +447,7 @@ class LatvianCourtsFetcher:
         """Normalize a decision to the standard schema"""
         ecli = raw_item.get('ecliCode', '')
         case_number = raw_item.get('caseNumber', '')
-        doc_id = ecli or raw_item.get('id', '')
+        doc_id = self._doc_id(raw_item)
 
         # Institution
         institution = raw_item.get('institution', {})
@@ -320,52 +498,67 @@ class LatvianCourtsFetcher:
 
 
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] == 'bootstrap':
-        is_fast = '--fast' in sys.argv
+    cmd = sys.argv[1] if len(sys.argv) > 1 else ''
+    # The fleet invokes `bootstrap-fast`; treat it as a full streaming run.
+    if cmd in ('bootstrap', 'bootstrap-fast'):
+        is_sample = '--sample' in sys.argv
+        is_fast = '--fast' in sys.argv or cmd == 'bootstrap-fast'
         slow_mode = not is_fast and ('--slow' in sys.argv or os.environ.get('VPS_MODE') == '1')
-        fetcher = LatvianCourtsFetcher(slow_mode=slow_mode)
+        workers = None
+        if '--workers' in sys.argv:
+            idx = sys.argv.index('--workers')
+            if idx + 1 < len(sys.argv):
+                workers = int(sys.argv[idx + 1])
+        # Sample runs must always produce fresh files, so they bypass the
+        # skip-if-already-in-Neon guard (which would otherwise yield nothing
+        # on a machine that has Neon credentials and a populated corpus).
+        force = is_sample or '--force' in sys.argv
+        fetcher = LatvianCourtsFetcher(slow_mode=slow_mode, workers=workers, force=force)
 
-        sample_dir = Path(__file__).parent / 'sample'
-        sample_dir.mkdir(exist_ok=True)
+        if is_sample:
+            # Write a small validation sample set to sample/.
+            sample_dir = Path(__file__).parent / 'sample'
+            sample_dir.mkdir(exist_ok=True)
+            logger.info("Starting sample bootstrap...")
 
-        logger.info("Starting bootstrap...")
+            sample_count = 0
+            target_count = 15
 
-        sample_count = 0
-        target_count = 15 if '--sample' in sys.argv else 100
+            for raw_item in fetcher.fetch_all(limit=target_count + 10, use_checkpoint=False):
+                if sample_count >= target_count:
+                    break
+                normalized = fetcher.normalize(raw_item)
+                text_len = len(normalized.get('text', ''))
+                if text_len < 100:
+                    continue
+                doc_id = str(normalized['_id']).replace('/', '_').replace(':', '-')
+                filepath = sample_dir / f"{doc_id}.json"
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    json.dump(normalized, f, indent=2, ensure_ascii=False)
+                logger.info(f"Saved [{sample_count+1}/{target_count}]: {normalized.get('ecli', '')} ({text_len} chars)")
+                sample_count += 1
 
-        for raw_item in fetcher.fetch_all(limit=target_count + 10):
-            if sample_count >= target_count:
-                break
-
-            normalized = fetcher.normalize(raw_item)
-            text_len = len(normalized.get('text', ''))
-
-            if text_len < 100:
-                continue
-
-            doc_id = str(normalized['_id']).replace('/', '_').replace(':', '-')
-            filename = f"{doc_id}.json"
-            filepath = sample_dir / filename
-
-            with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(normalized, f, indent=2, ensure_ascii=False)
-
-            logger.info(f"Saved [{sample_count+1}/{target_count}]: {normalized.get('ecli', '')} ({text_len} chars)")
-            sample_count += 1
-
-        logger.info(f"Bootstrap complete. Saved {sample_count} documents to {sample_dir}")
-
-        files = list(sample_dir.glob('*.json'))
-        total_chars = 0
-        for f in files:
-            with open(f, 'r', encoding='utf-8') as fp:
-                data = json.load(fp)
-                total_chars += len(data.get('text', ''))
-
-        print(f"\n=== SUMMARY ===")
-        print(f"Sample files: {len(files)}")
-        print(f"Total text chars: {total_chars:,}")
-        print(f"Average chars/doc: {total_chars // max(len(files), 1):,}")
+            files = list(sample_dir.glob('*.json'))
+            total_chars = sum(len(json.load(open(f, encoding='utf-8')).get('text', '')) for f in files)
+            print("\n=== SUMMARY ===")
+            print(f"Sample files: {len(files)}")
+            print(f"Total text chars: {total_chars:,}")
+            print(f"Average chars/doc: {total_chars // max(len(files), 1):,}")
+        else:
+            # Full corpus: stream normalized JSON lines to stdout so the fleet
+            # captures the whole corpus to data/records.jsonl.  fetch_all is
+            # checkpointed, so a relaunch resumes instead of re-walking.
+            logger.info("Starting full bootstrap (streaming to stdout)...")
+            count = 0
+            for raw_item in fetcher.fetch_all():
+                normalized = fetcher.normalize(raw_item)
+                if len(normalized.get('text', '')) < 100:
+                    continue
+                print(json.dumps(normalized, ensure_ascii=False), flush=True)
+                count += 1
+                if count % 100 == 0:
+                    logger.info(f"Streamed {count} records")
+            logger.info(f"Bootstrap complete: {count} records streamed")
 
     elif len(sys.argv) > 1 and sys.argv[1] == 'updates':
         since_str = None

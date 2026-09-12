@@ -5,25 +5,31 @@ PR/LexJuris -- Puerto Rico Laws & Jurisprudence
 Fetches Puerto Rico legislation with full text from lexjuris.com.
 
 Strategy:
-  - Iterate year menus (1997-2026): lexlex/Leyes{YEAR}/lexl{YEAR}Menu.htm
-  - Parse each menu for individual law links: lexl{YEAR}{NUM}.htm
-  - Fetch each law page, extract text from WordSection1 div
-  - No robots.txt restrictions; 2-second crawl delay for politeness
+  - Discover the per-year law menus from the master index (lexleyes.htm).
+    The path scheme changed several times (ley1997/lex1997menu.htm,
+    Leyes2001/lex2001menu.htm, Leyes2024/lexl2024Menu.htm ...), so the
+    menus are read off the index rather than templated.
+  - Parse each menu for individual law links: lex[l]{YY|YYYY}{NNN}.htm
+  - Fetch each law page and extract every Word "Section" div
+    (pre-2022 pages use Section1/Section2, 2022+ use WordSection1).
+  - Decode per-page: pages before ~2022 are windows-1252, later ones UTF-8.
+  - No robots.txt restrictions; 2-second crawl delay for politeness.
 
 Usage:
   python bootstrap.py bootstrap          # Fetch all legislation
   python bootstrap.py bootstrap --sample # Fetch 15 sample records
+  python bootstrap.py bootstrap-fast     # Same as bootstrap (VPS runner alias)
   python bootstrap.py test               # Quick connectivity test
 """
 
 import sys
-import json
 import logging
 import re
 import time
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Generator, Optional, Dict, Any, List
+from typing import Generator, Optional, Dict, Any, List, Tuple
+from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
@@ -40,22 +46,62 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.PR.LexJuris")
 
 BASE_URL = "https://www.lexjuris.com/lexlex"
-YEARS = list(range(2024, 1996, -1))  # Most recent first
+INDEX_URL = "https://www.lexjuris.com/lexleyes.htm"
+FIRST_YEAR = 1997
+
+REPLACEMENT_CHAR = "�"
+
+# Word export wrappers holding the document body. Pre-2022 pages emit
+# Section1/Section2/..., 2022+ pages emit WordSection1.
+SECTION_CLASS_RE = re.compile(r"^(Word)?Section\d+$")
+
+# Markers that begin the LexJuris site chrome appended after the law text.
+FOOTER_MARKERS = (
+    "Notas Importantes",
+    "ADVERTENCIA",
+    "Presione Aquí para regresar",
+    "Presione Aqui para regresar",
+    "LexJuris de Puerto Rico siempre",
+    "-------------------",
+)
 
 # Spanish months for date parsing
 SPANISH_MONTHS = {
     "enero": 1, "febrero": 2, "marzo": 3, "abril": 4,
     "mayo": 5, "junio": 6, "julio": 7, "agosto": 8,
-    "septiembre": 9, "octubre": 10, "noviembre": 11, "diciembre": 12,
+    "septiembre": 9, "setiembre": 9, "octubre": 10,
+    "noviembre": 11, "diciembre": 12,
 }
+
+
+def decode_html(raw: bytes) -> str:
+    """
+    Decode a LexJuris page.
+
+    Pages published before ~2022 are windows-1252 (and declare it in a meta
+    tag); 2022+ pages are UTF-8 and declare nothing. Forcing UTF-8 on the
+    older bytes replaced every accented character with U+FFFD (issue #1410),
+    which is lossy and unrecoverable after the fact.
+
+    UTF-8 is tried strictly first: cp1252 text with accents is almost never
+    valid UTF-8, so a clean strict decode is reliable evidence of UTF-8.
+    """
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        pass
+    # cp1252 leaves a few byte values undefined; latin-1 is the safety net.
+    try:
+        return raw.decode("cp1252")
+    except UnicodeDecodeError:
+        return raw.decode("latin-1")
 
 
 class LexJurisScraper(BaseScraper):
     """Scraper for PR/LexJuris -- Puerto Rico legislation."""
 
-    def __init__(self):
-        source_dir = Path(__file__).parent
-        super().__init__(source_dir)
+    def __init__(self, source_dir: Optional[str] = None):
+        super().__init__(source_dir or str(Path(__file__).parent))
         self.session = requests.Session()
         self.session.headers.update({
             "User-Agent": "Legal-Data-Hunter/1.0 (https://github.com/worldwidelaw/legal-sources)",
@@ -63,8 +109,8 @@ class LexJurisScraper(BaseScraper):
             "Accept-Language": "es-PR,es;q=0.9,en;q=0.5",
         })
 
-    def _request(self, url: str, timeout: int = 60) -> Optional[requests.Response]:
-        """HTTP GET with 2-second delay and retry."""
+    def _request(self, url: str, timeout: int = 60) -> Optional[str]:
+        """HTTP GET with 2-second delay and retry. Returns decoded HTML."""
         for attempt in range(3):
             try:
                 time.sleep(2)
@@ -76,123 +122,145 @@ class LexJurisScraper(BaseScraper):
                 if resp.status_code == 404:
                     return None
                 resp.raise_for_status()
-                resp.encoding = "utf-8"
-                return resp
+                return decode_html(resp.content)
             except requests.exceptions.RequestException as e:
                 logger.warning(f"Attempt {attempt+1} failed for {url}: {e}")
                 if attempt < 2:
                     time.sleep(10)
         return None
 
-    def _parse_menu_page(self, html: str, year: int) -> List[Dict[str, str]]:
+    def _discover_year_menus(self) -> List[Tuple[int, str]]:
+        """
+        Read the master index for per-year law menus.
+
+        Returns [(year, menu_url), ...] newest first. Falls back to the modern
+        URL template if the index is unreachable.
+        """
+        html = self._request(INDEX_URL)
+        menus: Dict[int, str] = {}
+
+        if html:
+            soup = BeautifulSoup(html, "html.parser")
+            for link in soup.find_all("a", href=True):
+                href = link["href"]
+                # Menu filenames: lex1997menu.htm / lex2001menu.htm / lexl2024Menu.htm
+                m = re.search(r"lexl?(\d{4})menu\.html?$", href, re.IGNORECASE)
+                if not m:
+                    continue
+                year = int(m.group(1))
+                if FIRST_YEAR <= year <= datetime.now().year + 1:
+                    menus.setdefault(year, urljoin(INDEX_URL, href))
+        else:
+            logger.warning("Index page unreachable, falling back to URL template")
+
+        # Belt and braces: the index sometimes lags a newly opened year.
+        for year in range(FIRST_YEAR, datetime.now().year + 2):
+            menus.setdefault(year, f"{BASE_URL}/Leyes{year}/lexl{year}Menu.htm")
+
+        return sorted(menus.items(), reverse=True)
+
+    def _parse_menu_page(self, html: str, year: int, menu_url: str) -> List[Dict[str, Any]]:
         """Parse a year menu page for individual law links."""
         soup = BeautifulSoup(html, "html.parser")
         documents = []
         seen = set()
 
-        pattern = re.compile(rf"lexl{year}\d{{3}}\.htm", re.IGNORECASE)
-        links = soup.find_all("a", href=pattern)
+        # lex97001.htm (1997-1999), lex2000001.htm, lexl2024001.htm
+        pattern = re.compile(
+            rf"lexl?(?:{year}|{year % 100:02d})(\d{{3}})\.html?$", re.IGNORECASE
+        )
 
-        for link in links:
-            href = link.get("href", "")
-            # Normalize the href
-            match = pattern.search(href)
+        for link in soup.find_all("a", href=True):
+            href = link["href"]
+            filename = href.split("/")[-1].split("?")[0]
+            match = pattern.match(filename)
             if not match:
                 continue
 
-            filename = match.group(0)
-            if filename.lower() in seen:
+            key = filename.lower()
+            if key in seen:
                 continue
-            seen.add(filename.lower())
-
-            # Extract law number from filename
-            num_match = re.search(r"lexl\d{4}(\d{3})\.htm", filename, re.IGNORECASE)
-            if not num_match:
-                continue
-
-            law_num = int(num_match.group(1))
-            full_url = f"{BASE_URL}/Leyes{year}/{filename}"
-            title = link.get_text(strip=True)
+            seen.add(key)
 
             documents.append({
-                "url": full_url,
+                "url": urljoin(menu_url, href),
                 "filename": filename,
-                "law_number": law_num,
+                "law_number": int(match.group(1)),
                 "year": year,
-                "title_from_menu": title,
+                "title_from_menu": link.get_text(strip=True),
             })
 
-        # Sort by law number
         documents.sort(key=lambda d: d["law_number"])
         return documents
 
-    def _extract_full_text(self, html: str) -> Dict[str, str]:
+    @staticmethod
+    def _strip_footer(text: str) -> str:
+        """
+        Drop the LexJuris site chrome ("Notas Importantes", "ADVERTENCIA",
+        navigation bar, copyright) appended after the law text.
+
+        Only markers in the back of the document count, so an "ADVERTENCIA"
+        heading inside a law body cannot truncate it.
+        """
+        floor = max(200, int(len(text) * 0.25))
+        cuts = [
+            idx for idx in (text.find(marker, floor) for marker in FOOTER_MARKERS)
+            if idx != -1
+        ]
+        return text[:min(cuts)].rstrip() if cuts else text
+
+    def _extract_full_text(self, html: str, law_year: Optional[int] = None) -> Dict[str, str]:
         """Extract full text and metadata from a law page."""
         soup = BeautifulSoup(html, "html.parser")
         result = {"text": "", "date": "", "title": ""}
 
-        # Title from <title> tag
         title_tag = soup.find("title")
         if title_tag:
-            result["title"] = title_tag.get_text(strip=True)
+            result["title"] = re.sub(r"\s+", " ", title_tag.get_text(strip=True))
 
-        # Full text from WordSection1 div
-        ws = soup.find(class_="WordSection1")
-        if ws:
-            text = ws.get_text(separator="\n", strip=True)
+        # Concatenate every Word section. Multi-section pages split the
+        # preamble (ends at DECRÉTASE) from the articles, so taking only the
+        # first one truncated the body (issue #1410).
+        sections = soup.find_all(class_=SECTION_CLASS_RE)
+        if sections:
+            text = "\n".join(s.get_text(separator="\n", strip=True) for s in sections)
         else:
-            # Fallback: try #content div
-            content = soup.select_one("#content")
-            if content:
-                text = content.get_text(separator="\n", strip=True)
-            else:
-                text = ""
+            container = soup.select_one("#content") or soup.find("body")
+            text = container.get_text(separator="\n", strip=True) if container else ""
 
-        # Strip LexJuris copyright footer
-        footer_idx = text.find("LexJuris de Puerto Rico")
-        if footer_idx > 0:
-            # Find the start of the footer paragraph
-            prev_newline = text.rfind("\n", 0, footer_idx)
-            if prev_newline > 0:
-                # Look further back for the "Presione Aqui" line
-                check_text = text[max(0, footer_idx - 500):footer_idx]
-                prensa_idx = check_text.find("Presione Aqui")
-                if prensa_idx >= 0:
-                    text = text[:max(0, footer_idx - 500) + prensa_idx].rstrip()
-                else:
-                    text = text[:prev_newline].rstrip()
+        text = self._strip_footer(text)
 
-        # Clean up whitespace
+        # Clean up whitespace (Word exports are littered with hard CRs)
+        text = text.replace("\r\n", "\n").replace("\r", " ").replace("\xa0", " ")
         text = re.sub(r"\n{3,}", "\n\n", text)
         text = re.sub(r" {2,}", " ", text)
         result["text"] = text.strip()
 
-        # Extract date using Spanish date patterns
-        # Pattern: "de DD de MONTH de YYYY"
-        date_match = re.search(
-            r"de\s+(\d{1,2})\s+de\s+(\w+)\s+de\s+(20\d{2}|19\d{2})",
-            result["text"]
-        )
-        if date_match:
-            day = int(date_match.group(1))
-            month_name = date_match.group(2).lower()
-            year = int(date_match.group(3))
-            month = SPANISH_MONTHS.get(month_name)
-            if month:
-                try:
-                    result["date"] = f"{year:04d}-{month:02d}-{day:02d}"
-                except (ValueError, TypeError):
-                    pass
+        # Extract the approval date: "de DD de MONTH de YYYY". Law bodies cite
+        # the laws they amend, so only a date in the law's own year is trusted
+        # — the first match on the page is often an amended law's date.
+        for match in re.finditer(
+            r"\bde\s+(\d{1,2})\s+de\s+([A-Za-zÁÉÍÓÚáéíóú]+)\s+de\s+(19\d{2}|20\d{2})",
+            result["text"],
+            re.IGNORECASE,
+        ):
+            day, year = int(match.group(1)), int(match.group(3))
+            month = SPANISH_MONTHS.get(match.group(2).lower())
+            if not month or not 1 <= day <= 31:
+                continue
+            if law_year is not None and year != law_year:
+                continue
+            result["date"] = f"{year:04d}-{month:02d}-{day:02d}"
+            break
 
         return result
 
     def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
         year = raw.get("year", 0)
         law_num = raw.get("law_number", 0)
-        doc_id = f"PR-Ley-{year}-{law_num:03d}"
 
         return {
-            "_id": doc_id,
+            "_id": f"PR-Ley-{year}-{law_num:03d}",
             "_source": "PR/LexJuris",
             "_type": "legislation",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
@@ -203,109 +271,101 @@ class LexJurisScraper(BaseScraper):
             "url": raw.get("url", ""),
         }
 
-    def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
-        """Fetch all legislation from year menus."""
-        count = 0
-
-        for year in YEARS:
-            menu_url = f"{BASE_URL}/Leyes{year}/lexl{year}Menu.htm"
-            resp = self._request(menu_url)
-            if resp is None:
-                logger.info(f"No menu page for {year}, skipping")
-                continue
-
-            docs = self._parse_menu_page(resp.text, year)
-            if not docs:
-                logger.info(f"No laws found for {year}")
-                continue
-
-            logger.info(f"Year {year}: {len(docs)} laws found")
-
-            for doc in docs:
-                doc_resp = self._request(doc["url"])
-                if doc_resp is None:
-                    logger.warning(f"Failed to fetch: Ley {doc['law_number']} de {year}")
-                    continue
-
-                extracted = self._extract_full_text(doc_resp.text)
-                if not extracted["text"] or len(extracted["text"]) < 200:
-                    logger.warning(
-                        f"Insufficient text for Ley {doc['law_number']} de {year}: "
-                        f"{len(extracted['text'])} chars"
-                    )
-                    continue
-
-                raw = {
-                    "year": year,
-                    "law_number": doc["law_number"],
-                    "title": extracted["title"] or doc.get("title_from_menu", ""),
-                    "text": extracted["text"],
-                    "date": extracted["date"],
-                    "url": doc["url"],
-                }
-                count += 1
-                yield raw
-
-        logger.info(f"Completed: {count} laws fetched")
-
-    def fetch_updates(self, since: str = None) -> Generator[Dict[str, Any], None, None]:
-        """Fetch recent legislation (current year only)."""
-        current_year = datetime.now().year
-        menu_url = f"{BASE_URL}/Leyes{current_year}/lexl{current_year}Menu.htm"
-        resp = self._request(menu_url)
-        if resp is None:
-            logger.info(f"No menu page for {current_year}")
+    def _fetch_year(self, year: int, menu_url: str) -> Generator[Dict[str, Any], None, None]:
+        """Yield every law of one year."""
+        html = self._request(menu_url)
+        if html is None:
+            logger.info(f"No menu page for {year}, skipping")
             return
 
-        docs = self._parse_menu_page(resp.text, current_year)
-        count = 0
+        docs = self._parse_menu_page(html, year, menu_url)
+        if not docs:
+            logger.info(f"No laws found for {year}")
+            return
+
+        logger.info(f"Year {year}: {len(docs)} laws found")
+
         for doc in docs:
-            doc_resp = self._request(doc["url"])
-            if doc_resp is None:
+            doc_html = self._request(doc["url"])
+            if doc_html is None:
+                logger.warning(f"Failed to fetch: Ley {doc['law_number']} de {year}")
                 continue
 
-            extracted = self._extract_full_text(doc_resp.text)
-            if not extracted["text"] or len(extracted["text"]) < 200:
+            extracted = self._extract_full_text(doc_html, law_year=year)
+            if len(extracted["text"]) < 200:
+                logger.warning(
+                    f"Insufficient text for Ley {doc['law_number']} de {year}: "
+                    f"{len(extracted['text'])} chars"
+                )
                 continue
+            if REPLACEMENT_CHAR in extracted["text"]:
+                logger.warning(
+                    f"Replacement chars in Ley {doc['law_number']} de {year} "
+                    "- charset detection failed"
+                )
 
-            raw = {
-                "year": current_year,
+            yield {
+                "year": year,
                 "law_number": doc["law_number"],
                 "title": extracted["title"] or doc.get("title_from_menu", ""),
                 "text": extracted["text"],
                 "date": extracted["date"],
                 "url": doc["url"],
             }
+
+    def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
+        """Fetch all legislation from every year menu, newest first."""
+        count = 0
+        for year, menu_url in self._discover_year_menus():
+            for raw in self._fetch_year(year, menu_url):
+                count += 1
+                yield raw
+        logger.info(f"Completed: {count} laws fetched")
+
+    def fetch_updates(self, since: str = None) -> Generator[Dict[str, Any], None, None]:
+        """Fetch recent legislation (current year only)."""
+        year = datetime.now().year
+        menus = dict(self._discover_year_menus())
+        menu_url = menus.get(year, f"{BASE_URL}/Leyes{year}/lexl{year}Menu.htm")
+        count = 0
+        for raw in self._fetch_year(year, menu_url):
             count += 1
             yield raw
-
-        logger.info(f"Updates: {count} laws fetched for {current_year}")
+        logger.info(f"Updates: {count} laws fetched for {year}")
 
     def test(self) -> bool:
-        """Quick connectivity test."""
-        menu_url = f"{BASE_URL}/Leyes2024/lexl2024Menu.htm"
-        resp = self._request(menu_url)
-        if resp is None:
-            logger.error("Cannot reach LexJuris menu page")
-            return False
+        """Quick connectivity test across both page generations."""
+        menus = dict(self._discover_year_menus())
+        logger.info(f"Discovered {len(menus)} year menus ({min(menus)}-{max(menus)})")
 
-        docs = self._parse_menu_page(resp.text, 2024)
-        if not docs:
-            logger.error("No laws found on 2024 menu page")
-            return False
+        # 2013 is windows-1252 + multi-section; the current year is UTF-8.
+        for year in (2013, datetime.now().year):
+            menu_url = menus.get(year)
+            html = self._request(menu_url) if menu_url else None
+            if not html:
+                logger.error(f"Cannot reach LexJuris menu for {year}")
+                return False
 
-        logger.info(f"Menu OK: {len(docs)} laws for 2024")
+            docs = self._parse_menu_page(html, year, menu_url)
+            if not docs:
+                logger.error(f"No laws found on {year} menu page")
+                return False
 
-        # Test fetching one law
-        doc_resp = self._request(docs[0]["url"])
-        if doc_resp:
-            extracted = self._extract_full_text(doc_resp.text)
+            doc_html = self._request(docs[0]["url"])
+            if not doc_html:
+                logger.error(f"Cannot fetch first law of {year}")
+                return False
+
+            extracted = self._extract_full_text(doc_html, law_year=year)
             logger.info(
-                f"Doc OK: Ley {docs[0]['law_number']} ({len(extracted['text'])} chars)"
+                f"{year} OK: {len(docs)} laws | Ley {docs[0]['law_number']} "
+                f"{len(extracted['text'])} chars | mojibake="
+                f"{extracted['text'].count(REPLACEMENT_CHAR)}"
             )
-            return True
+            if len(extracted["text"]) < 200 or REPLACEMENT_CHAR in extracted["text"]:
+                return False
 
-        return False
+        return True
 
 
 def main():
@@ -314,59 +374,21 @@ def main():
     parser = argparse.ArgumentParser(description="PR/LexJuris data fetcher")
     parser.add_argument(
         "command",
-        choices=["bootstrap", "update", "test"],
+        choices=["bootstrap", "bootstrap-fast", "update", "test"],
         help="Command to run",
     )
-    parser.add_argument(
-        "--sample",
-        action="store_true",
-        help="Only fetch a small sample (for validation)",
-    )
+    parser.add_argument("--sample", action="store_true", help="Fetch sample only")
     parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
     scraper = LexJurisScraper()
 
     if args.command == "test":
-        success = scraper.test()
-        sys.exit(0 if success else 1)
-
-    elif args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-
-        max_records = 15 if args.sample else None
-        count = 0
-
-        for raw in scraper.fetch_all():
-            record = scraper.normalize(raw)
-            out_path = sample_dir / f"record_{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-
-            text_len = len(record.get("text", ""))
-            logger.info(
-                f"[{count + 1}] {record.get('title', '?')[:80]} "
-                f"({text_len:,} chars)"
-            )
-
-            count += 1
-            if max_records and count >= max_records:
-                break
-
-        logger.info(f"Bootstrap complete: {count} records saved to {sample_dir}")
-
+        sys.exit(0 if scraper.test() else 1)
+    elif args.command in ("bootstrap", "bootstrap-fast"):
+        scraper.bootstrap(sample_mode=args.sample, sample_size=15)
     elif args.command == "update":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-        count = 0
-        for raw in scraper.fetch_updates():
-            record = scraper.normalize(raw)
-            out_path = sample_dir / f"update_{count:04d}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-        logger.info(f"Update complete: {count} records")
+        scraper.update()
 
 
 if __name__ == "__main__":

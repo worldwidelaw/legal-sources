@@ -83,12 +83,24 @@ class ColombiaSUINScraper(BaseScraper):
             )
             resp.raise_for_status()
             root = ET.fromstring(resp.content)
-            ns = {"sm": "https://www.sitemaps.org/schemas/sitemap/0.9"}
-            urls = []
-            for url_el in root.findall(".//sm:url/sm:loc", ns):
-                if url_el.text:
-                    urls.append(url_el.text.strip())
+            # Matched on the local tag name rather than a declared namespace:
+            # the sitemap is served under `http://www.sitemaps.org/...` while
+            # this parser used to demand the `https://` form, so every <loc>
+            # missed and the crawl reported "No URLs from sitemap" against a
+            # perfectly healthy 1 MB sitemap (issue #1313). Any future xmlns
+            # change is now inert instead of silently emptying the corpus.
+            urls = [
+                element.text.strip()
+                for element in root.iter()
+                if element.tag.rsplit("}", 1)[-1] == "loc" and element.text
+            ]
             logger.info(f"Sitemap {sitemap_url}: {len(urls)} URLs")
+            if not urls:
+                logger.error(
+                    f"Sitemap {sitemap_url} parsed but held no <loc> elements "
+                    f"(HTTP {resp.status_code}, {len(resp.content)} bytes, "
+                    f"root <{root.tag}>)"
+                )
             return urls
         except Exception as e:
             logger.error(f"Failed to fetch sitemap {sitemap_url}: {e}")
@@ -284,7 +296,7 @@ def main():
     parser = argparse.ArgumentParser(description="CO/SUINJuriscol data fetcher")
     parser.add_argument(
         "command",
-        choices=["bootstrap", "update", "test"],
+        choices=["bootstrap", "bootstrap-fast", "update", "test"],
         help="Command to run",
     )
     parser.add_argument(
@@ -301,8 +313,13 @@ def main():
         success = scraper.test()
         sys.exit(0 if success else 1)
 
-    elif args.command in ("bootstrap", "update"):
-        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
+    elif args.command in ("bootstrap", "bootstrap-fast", "update"):
+        # `bootstrap-fast` is what the fleet wrapper invokes; without it the
+        # wrapper falls through to re-ingesting the committed samples.
+        if args.command == "bootstrap-fast" and not args.sample:
+            stats = scraper.bootstrap_fast()
+        else:
+            stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
         fetched = stats.get("records_fetched", 0) or stats.get("sample_records_saved", 0)
         logger.info(f"Bootstrap complete: {fetched} records — {stats}")
         if fetched == 0:

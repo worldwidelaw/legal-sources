@@ -34,6 +34,33 @@ No JavaScript, no CAPTCHA, no auth.
 > **Note:** `curl` hits an HTTP/2 quirk on `www.tn.gov` (returns HTTP 000);
 > python-`requests` / the project `HttpClient` fetch the same URLs fine.
 
+## Vantage fallback (issue #1234)
+
+`www.tn.gov` TLS-resets or read-times-out connections from every **non-US
+vantage** tested — both the Hetzner fleet IPs and the build machine get
+`ECONNRESET` on the handshake — so a live-only run off a US residential IP
+yields nothing (and, before this fallback, spent ~22h looping on retries).
+
+Every fetch is therefore **live-first with an Internet Archive fallback**:
+
+```
+https://web.archive.org/web/3000id_/{url}
+```
+
+(`3000` = latest capture, `id_` = raw bytes, no IA banner injection.) The
+archived tax-type pages list **595 unique ruling anchors** — the same corpus
+the live pages list — and **589 of those PDFs have a capture**.
+
+After three consecutive live failures with no live success the scraper
+latches into archive-only mode (~90s) and stops paying the origin's timeout
+on every remaining URL. From a US/residential vantage the live path answers
+first and the archive is never touched.
+
+> **Gotcha:** many ruling PDFs are stored as Wayback *revisit* records, which
+> CDX reports with `statuscode` `-`, not `200`. Filtering CDX on
+> `statuscode:200` undercounts coverage by half (301 URLs vs 656) even though
+> the archive replays those captures fine.
+
 ## Usage
 
 ```bash

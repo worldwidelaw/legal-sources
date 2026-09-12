@@ -1,12 +1,15 @@
 data:
   coverage:
-    notes: Decisions from 2008-March 2025 in archive, newer in rattspraxis.etjanst.domstol.se
+    notes: Domstolsverket open-data API (rattspraxis.etjanst.domstol.se), ~1,300 HFD
+      publications. Full text comes from the HTML 'innehall' field, falling back to
+      the PDF attachment and then the summary.
     start_year: 2008
   endpoints:
-    decisions: https://www.domstol.se/hogsta-forvaltningsdomstolen/avgoranden2/{year}/{id}/
-    pdfs: https://www.domstol.se/globalassets/filer/domstol/hogstaforvaltningsdomstolen/{year}/domar-och-beslut/{case}.pdf
-    rss_feed: https://www.domstol.se/feed/1092/?searchPageId=1092&scope=decision
-  format: pdf
+    attachment: https://rattspraxis.etjanst.domstol.se/api/v1/bilagor/{fillagringId}
+    openapi: https://rattspraxis.etjanst.domstol.se/openapi/puh-openapi.yaml
+    publications: https://rattspraxis.etjanst.domstol.se/api/v1/publiceringar?domstolkod=HFD
+    web: https://rattspraxis.etjanst.domstol.se/sok/?id={id}
+  format: json
 fetcher:
   batch_size: 20
   rate_limit: 2
@@ -23,12 +26,19 @@ schema:
     required: false
     type: date
   metadata_fields:
-  - decision_type
-  - legal_areas
+  - document_type
+  - publication_type
+  - publication_type_label
+  - is_precedent
+  - keywords
+  - legal_provisions
+  - sfs_numbers
   - summary
   - court
   - court_code
-  - pdf_url
+  - case_numbers
+  - text_source
+  - pdf_filename
   required_fields:
   - text
   - title

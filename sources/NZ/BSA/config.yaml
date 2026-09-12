@@ -1,0 +1,92 @@
+rate_limit:
+  burst: 2
+  requests_per_second: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _fetched_at
+    required: false
+    type: string
+  - name: decision_number
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string
+  - name: members
+    required: false
+    type: string
+  - name: complainant
+    required: false
+    type: string
+  - name: broadcaster
+    required: false
+    type: string
+  - name: programme
+    required: false
+    type: string
+  - name: channel
+    required: false
+    type: string
+  - name: standards
+    required: false
+    type: string
+  - name: standards_breached
+    required: false
+    type: string
+  - name: pdf_url
+    required: false
+    type: string
+  - name: language
+    required: false
+    type: string
+source:
+  auth: none
+  country: NZ
+  data_types:
+  - case_law
+  description: >
+    Broadcasting Standards Authority (Te Mana Whanonga Kaipaho) decisions on
+    complaints about New Zealand television and radio broadcasts, 1990 to
+    present (~4,530 decisions). The Authority is an independent Crown entity
+    that determines complaints under the Broadcasting Act 1989. Decisions from
+    roughly 1994 onward carry full text in-page; the earliest decisions are
+    published only as born-digital PDFs and are extracted from those.
+  id: NZ/BSA
+  language: en
+  license:
+    name: "CC BY 4.0 (NZGOAL, New Zealand Government Open Access and Licensing framework)"
+    url: "https://creativecommons.org/licenses/by/4.0/"
+    commercial_use: true
+    attribution_required: true
+    share_alike: false
+    no_derivatives: false
+    notes: >
+      The BSA is a New Zealand Crown entity. NZGOAL directs State Services
+      agencies to release copyright works for re-use under Creative Commons
+      attribution licences by default; the site publishes no narrower notice.
+  name: NZ Broadcasting Standards Authority - Decisions
+  url: https://www.bsa.govt.nz/decisions/

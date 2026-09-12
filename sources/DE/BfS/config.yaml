@@ -1,0 +1,28 @@
+source_id: DE/BfS
+name: Federal Office for Radiation Protection (BfS) — DORIS repository
+country: DE
+url: https://www.bfs.de/
+data_types:
+  - doctrine
+auth: none
+schedule: weekly
+schema:
+  key_fields:
+    - series
+    - publisher
+    - date
+    - language
+license:
+  name: "CC BY-NC-SA 3.0 DE (adapted by BfS)"
+  url: "https://doris.bfs.de/jspui/impressum/lizenz.html"
+  commercial_use: false
+  attribution_required: true
+  share_alike: true
+  no_derivatives: false
+  notes: >-
+    DORIS states that every resource is copyright-protected and served under a
+    BfS-adapted Creative Commons licence based on CC BY-NC-SA 3.0 DE
+    (https://creativecommons.org/licenses/by-nc-sa/3.0/de/legalcode). Clause 4.c
+    limits the grant to uses not directed at commercial advantage or monetary
+    compensation, and BfS expressly reserves remuneration rights for any
+    commercial use. Commercial redistribution requires separate permission.

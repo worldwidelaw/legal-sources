@@ -139,19 +139,31 @@ class NTSTaxLaw(BaseScraper):
             "actionId": action_id,
             "paramData": json.dumps(param_data, ensure_ascii=False),
         })
-        for attempt in range(6):
+        # taxlaw.nts.go.kr throttles heavily under sustained load (issue #1151:
+        # ~66% of document fetches failed and throughput stalled). A throttled
+        # request surfaces as a non-200 status OR a 200 whose JSON status is not
+        # "SUCCESS" — both were previously treated as a permanent failure and
+        # dropped after a single try. Treat them as transient and back off
+        # (exponential, capped) before giving up so the corpus isn't silently
+        # truncated.
+        max_attempts = 6
+        for attempt in range(max_attempts):
             try:
                 resp = self.session.post(API_URL, data=body, timeout=30)
                 time.sleep(DELAY)
                 if resp.status_code != 200:
-                    return None
+                    raise requests.exceptions.HTTPError(f"HTTP {resp.status_code}")
                 result = resp.json()
                 if result.get("status") != "SUCCESS":
-                    return None
+                    raise ValueError(f"API status={result.get('status')!r}")
                 return result.get("data", {}).get(action_id, {})
-            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-                wait = 2 * (attempt + 1)
-                logger.warning("Attempt %d failed for %s: %s. Retrying in %ds...", attempt + 1, action_id, e, wait)
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout,
+                    requests.exceptions.HTTPError, ValueError) as e:
+                if attempt == max_attempts - 1:
+                    break
+                wait = min(60, 2 * (attempt + 1))
+                logger.warning("Attempt %d/%d failed for %s: %s. Retrying in %ds...",
+                               attempt + 1, max_attempts, action_id, e, wait)
                 time.sleep(wait)
             except Exception as e:
                 logger.warning("Request failed for %s: %s", action_id, e)
@@ -404,7 +416,7 @@ def main():
     warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
     parser = argparse.ArgumentParser(description="KR/NTS-TaxLaw bootstrap")
-    parser.add_argument("command", choices=["bootstrap", "update", "test"])
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "update", "test"])
     parser.add_argument("--sample", action="store_true", help="Fetch only 10-15 sample records")
     parser.add_argument("--since", type=str, help="Date for incremental update (YYYY-MM-DD)")
     parser.add_argument("--full", action="store_true", help="Fetch all records")
@@ -416,24 +428,39 @@ def main():
         success = scraper.test()
         sys.exit(0 if success else 1)
 
-    if args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
+    if args.command in ("bootstrap", "bootstrap-fast"):
+        # Sample mode → individual JSON files under sample/ (used by validation).
+        # Full mode → stream each record to data/records.jsonl AS IT IS FETCHED,
+        # which is what the ingest pipeline consumes. Streaming incrementally
+        # (flushed after every record) means a mid-run teardown keeps every
+        # document fetched so far instead of losing the whole in-memory corpus
+        # (issue #1151). `bootstrap-fast` is the command the fleet invokes.
+        if args.sample:
+            sample_dir = Path(__file__).parent / "sample"
+            sample_dir.mkdir(exist_ok=True)
+            count = 0
+            for record in scraper.fetch_all(sample=True):
+                safe_name = re.sub(r'[^\w\-.]', '_', str(record['_id']))
+                out_file = sample_dir / f"{safe_name}.json"
+                out_file.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
+                count += 1
+                logger.info("  [%d] %s | %s | text=%d chars",
+                            count, record["date"], record["title"][:60], len(record.get("text", "")))
+            logger.info("Bootstrap complete: %d records saved to sample/", count)
+            sys.exit(0 if count >= 10 else 1)
 
+        data_dir = Path(__file__).parent / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)
         count = 0
-        for record in scraper.fetch_all(sample=args.sample):
-            safe_name = re.sub(r'[^\w\-.]', '_', str(record['_id']))
-            out_file = sample_dir / f"{safe_name}.json"
-            out_file.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
-            count += 1
-            text_len = len(record.get("text", ""))
-            logger.info(
-                "  [%d] %s | %s | text=%d chars",
-                count, record["date"], record["title"][:60], text_len
-            )
-
-        logger.info("Bootstrap complete: %d records saved to sample/", count)
-        sys.exit(0 if count >= 10 else 1)
+        with open(data_dir / "records.jsonl", "w", encoding="utf-8") as jsonl_file:
+            for record in scraper.fetch_all(sample=False):
+                jsonl_file.write(json.dumps(record, ensure_ascii=False) + "\n")
+                jsonl_file.flush()
+                count += 1
+                if count % 50 == 0:
+                    logger.info("  streamed %d records to data/records.jsonl", count)
+        logger.info("Bootstrap complete: %d records streamed to data/records.jsonl", count)
+        sys.exit(0 if count > 0 else 1)
 
     if args.command == "update":
         since = args.since or "2026-01-01"

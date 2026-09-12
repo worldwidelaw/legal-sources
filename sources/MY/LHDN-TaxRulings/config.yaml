@@ -1,20 +1,98 @@
+# ===================================================================
+# MY/LHDN-TaxRulings -- Malaysia LHDN Public Rulings and Tax Guidelines
+# ===================================================================
+# Lembaga Hasil Dalam Negeri Malaysia (Inland Revenue Board of Malaysia)
+# publishes its tax law material under /en/perundangan/: public rulings,
+# guidelines, practice notes, frameworks, withholding-tax material,
+# budget commentary, dialogue minutes, the tax Acts, and tax case reports.
+#
+# Discovery: one listing page per section under /en/perundangan/{slug}/;
+#            each is a single page of accordion tables of PDF links.
+#            The older /en/legislation/{english-slug}/ paths now 404.
+# Full text: PDF download, extracted via common.pdf_extract
+# ===================================================================
+
 name: "Malaysia LHDN Public Rulings and Tax Guidelines"
 source_id: "MY/LHDN-TaxRulings"
 country: MY
-url: "https://www.hasil.gov.my/en/legislation/"
+url: "https://www.hasil.gov.my/en/perundangan/"
+
 data_types:
   - doctrine
+  - case_law
+  - legislation
+
 auth:
   type: none
+
 rate_limit:
   requests_per_second: 1
   burst: 3
+
+api:
+  type: "html_index"
+  base_url: "https://www.hasil.gov.my"
+  section_paths:
+    public_ruling: "/en/perundangan/ketetapan-umum/"
+    guideline: "/en/perundangan/garis-panduan/"
+    practice_note: "/en/perundangan/nota-amalan/"
+    framework: "/en/perundangan/rangka-kerja/"
+    withholding_tax: "/en/perundangan/cukai-pegangan/"
+    budget: "/en/perundangan/bajet/"
+    dialogue_minutes: "/en/perundangan/minit-dialog-isu-isu-operasi-dan-teknikal/"
+    act: "/en/perundangan/akta/"
+    tax_case: "/en/perundangan/kes-cukai/"
+
+data_model:
+  type: "doctrine"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
 schema:
+  total_fields: 8
   key_fields:
-    - _id
-    - title
-    - date
-    - url
-    - text
-    - category
-    - ref_number
+    - name: "_id"
+      description: "MY/LHDN-TaxRulings/{md5 of PDF URL}"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title as listed by LHDN"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date issued (ISO 8601); null where the listing has no date column"
+      type: "string"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "URL of the source PDF"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "category"
+      description: "LHDN section (Public Ruling, Guideline, Tax Case, Act, ...)"
+      type: "string"
+      role: "category"
+      required: true
+    - name: "ref_number"
+      description: "Reference number where the listing table provides one"
+      type: "string"
+      role: "reference"
+      required: false
+
+notes: |
+  - ~1,068 PDFs across nine sections. The Tax Case section (~358 Special
+    Commissioners / court reports) is emitted as _type case_law and the Acts
+    section as _type legislation; everything else is doctrine.
+  - Budget and dialogue-minute listings carry no date column, so `date` is null
+    for those records.
+  - PDF downloads need browser headers; LHDN 500s on a bare request.

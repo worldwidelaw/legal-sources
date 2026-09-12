@@ -1,31 +1,32 @@
 # ===================================================================
-# US/CA-TaxAppeals -- California Office of Tax Appeals (Precedential Opinions)
+# US/CA-TaxAppeals -- California Office of Tax Appeals (Opinions)
 # ===================================================================
-# Full text of California's precedential tax-appeal opinions published by
-# the Office of Tax Appeals (OTA) at ota.ca.gov/opinions/. The corpus is
-# dominated by the legacy State Board of Equalization (SBE) precedential
-# opinions (binding precedent before the OTA) plus OTA precedential
-# opinions. Each resolves a tax controversy between a taxpayer and the
-# Franchise Tax Board / CDTFA, so the corpus is case_law. Served as
-# born-digital text-layer PDFs listed on one server-rendered TablePress
-# page (~4,000 opinion PDFs). No JS, no CAPTCHA, no auth.
-# Public domain US state government works.
+# Full text of California's tax-appeal opinions published by the Office of
+# Tax Appeals (OTA). Two eras: the legacy State Board of Equalization (SBE)
+# precedential opinions 1930-2015 (binding precedent before the OTA), listed
+# on the /opinions/ TablePress page; and OTA's own opinions 2018-present,
+# listed on separate per-year pages linked from that index. Each resolves a
+# tax controversy between a taxpayer and the Franchise Tax Board / CDTFA, so
+# the corpus is case_law. All born-digital text-layer PDFs (~8,200 total).
+# No JS, no CAPTCHA, no auth. Public domain US state government works.
 # ===================================================================
 
 source:
   id: "US/CA-TaxAppeals"
   country: "US"
-  name: "California Office of Tax Appeals — Precedential Opinions"
+  name: "California Office of Tax Appeals — Opinions"
   url: "https://ota.ca.gov/opinions/"
   description: |
-    Precedential tax-appeal opinions of the California Office of Tax
-    Appeals (OTA) and its predecessor, the State Board of Equalization
-    (SBE), which adjudicate disputes between taxpayers and the Franchise
-    Tax Board / California Department of Tax and Fee Administration.
-    Published openly at ota.ca.gov/opinions/ as text-layer PDFs listed on
-    a single server-rendered TablePress page — every opinion row and its
-    wp-content/uploads PDF link is present in the HTML (the DataTables
-    widget only paginates client-side). No JavaScript, no CAPTCHA, no
+    Tax-appeal opinions of the California Office of Tax Appeals (OTA)
+    and its predecessor, the State Board of Equalization (SBE), which
+    adjudicate disputes between taxpayers and the Franchise Tax Board /
+    California Department of Tax and Fee Administration. Published openly
+    as text-layer PDFs under ota.ca.gov/wp-content/uploads/. The legacy
+    SBE archive (1930-2015) sits on the /opinions/ TablePress page; OTA's
+    own opinions (2018-present, precedential and non-precedential) sit on
+    per-year pages linked from it, e.g.
+    /2026-franchise-income-tax-opinions/ and
+    /2026-business-tax-opinions/. No JavaScript, no CAPTCHA, no
     authentication.
 
 data_types:
@@ -43,6 +44,9 @@ api:
   base_url: "https://ota.ca.gov"
   endpoints:
     index: "/opinions/"
+    # OTA year listings are discovered from the index rather than hard-coded,
+    # so a new year appears without a code change.
+    year_pages: "/{YYYY}-{programme}-opinions/"
 
 data_model:
   type: "case_law"
@@ -52,7 +56,7 @@ data_model:
     - "slug"
 
 schema:
-  total_fields: 11
+  total_fields: 13
   key_fields:
     - name: "slug"
       description: "Stable document slug derived from the PDF filename"
@@ -60,9 +64,19 @@ schema:
       role: "primary_key"
       required: true
     - name: "opinion_number"
-      description: "Opinion number ({YY}-SBE-{NNN} / {YY}-OTA-{NNN})"
+      description: "Opinion number: {YY}-SBE-{NNN} for the legacy archive, {YYYY}-OTA-{NNN}[P|SCP] for OTA opinions"
       type: "string"
       role: "identifier"
+      required: false
+    - name: "case_number"
+      description: "OTA docket number, e.g. 22039832 (OTA era only)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "precedential"
+      description: "True if the OTA opinion is designated precedential; null for the legacy SBE archive, which is precedential by definition"
+      type: "boolean"
+      role: "metadata"
       required: false
     - name: "title"
       description: "Case caption (Appeal of <appellant>)"
@@ -90,14 +104,27 @@ license:
   notes: "California Office of Tax Appeals / State Board of Equalization precedential opinions are official state government works in the public domain."
 
 notes: |
-  - Precedential opinions at ota.ca.gov/opinions/, served as text-layer
-    PDFs under /wp-content/uploads/. One GET of the TablePress page
-    enumerates every opinion PDF (~4,000 links); the scraper dedups by
-    URL, skips admin docs (org charts, errata notices, agendas), parses
-    the opinion number + year from the filename, and orders newest first.
+  - Two listings feed the crawl. One GET of /opinions/ enumerates the
+    legacy SBE archive (~4,087 PDFs, 1930-2015) AND the links to OTA's
+    per-year pages; each of those (~35) is then fetched for its own PDFs
+    (~4,156, 2018-present). Crawling only /opinions/ is what froze this
+    source at 2015 (issue #1504). The scraper dedups by URL, skips admin
+    docs (org charts, errata notices, agendas), and orders newest first.
+  - `_id` keys on the PDF filename for the legacy archive (its opinion
+    numbers are unique) but on `{YYYY}-{MM}-{filename}` from the upload
+    path for the OTA era, where 17 filenames repeat across folders and
+    would otherwise collapse distinct opinions onto one key.
+  - fetch_updates(since) skips year pages older than `since`, so an
+    incremental refresh reads ~10 pages instead of re-crawling all 8,200
+    PDFs only to discard them at the date filter.
   - The appellant name and decision date are parsed from the document
-    text (newer opinions interleave pleading line-numbers, which are
-    stripped). Date prefers the 'this Nth day of Month, YYYY' clause.
+    text (opinions interleave pleading line-numbers and a docket column,
+    both stripped). Date prefers OTA's 'Date Issued:' stamp, tolerating
+    the stray spaces its flattened form field leaves behind ('6 /4/2026',
+    '8/1/202 5') and the spelled-out 2018-2019 variant, then the SBE-era
+    'this Nth day of Month, YYYY' clause. OTA opinions never fall back to
+    a date scraped from the body -- they cite many dates in their facts,
+    so the upload month is used instead.
   - Each PDF is extracted via common.pdf_extract. Pages/PDFs are fetched
     via curl with a browser UA and passed to the extractor as bytes.
     Paces at ~1 req/s.

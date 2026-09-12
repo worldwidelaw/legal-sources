@@ -59,7 +59,7 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.pdf_extract import extract_pdf_markdown, preload_existing_ids
 
 logging.basicConfig(
@@ -104,31 +104,53 @@ class NJPERCScraper(BaseScraper):
         self._session = requests.Session()
         self._session.headers.update({"User-Agent": UA})
         self._existing: set[str] = set()
+        # Refusal bookkeeping, so a blocked vantage is reported rather than
+        # silently degraded into "discovered 0" (issue #1399).
+        self._refusals: dict[int, int] = {}
+        self._transport_errors = 0
 
     # ---------------------------------------------------------------- http
-    def _get_text(self, url: str) -> str | None:
-        for attempt in range(5):
+    def _note_refusal(self, status: int) -> None:
+        self._refusals[status] = self._refusals.get(status, 0) + 1
+
+    def _refusal_summary(self) -> str:
+        parts = [f"HTTP {s}×{n}" for s, n in sorted(self._refusals.items())]
+        if self._transport_errors:
+            parts.append(f"transport errors×{self._transport_errors}")
+        return ", ".join(parts) if parts else "no HTTP errors seen"
+
+    def _get(self, url: str, attempts: int, stream: bool = False):
+        """GET with status-aware retries. Returns the response or None."""
+        for attempt in range(attempts):
             time.sleep(self.delay)
             try:
-                resp = self._session.get(url, timeout=(15, 90))
-                resp.raise_for_status()
-                return resp.text
+                resp = self._session.get(
+                    url, timeout=(15, 120 if stream else 90), stream=stream
+                )
             except Exception as e:
+                self._transport_errors += 1
                 logger.warning(f"GET failed ({url[:80]}) attempt {attempt+1}: {e}")
                 time.sleep(2 ** attempt)
+                continue
+            if resp.status_code == 200:
+                return resp
+            self._note_refusal(resp.status_code)
+            if resp.status_code == 404:
+                logger.warning(f"GET {url[:80]}: HTTP 404 — not retrying")
+                return None
+            logger.warning(
+                f"GET {url[:80]}: HTTP {resp.status_code} attempt {attempt+1}"
+            )
+            time.sleep(2 ** attempt)
         return None
 
+    def _get_text(self, url: str) -> str | None:
+        resp = self._get(url, attempts=5)
+        return resp.text if resp is not None else None
+
     def _get_bytes(self, url: str) -> bytes | None:
-        for attempt in range(4):
-            time.sleep(self.delay)
-            try:
-                resp = self._session.get(url, timeout=(15, 120), stream=True)
-                resp.raise_for_status()
-                return resp.content
-            except Exception as e:
-                logger.warning(f"PDF GET failed ({url[:80]}) attempt {attempt+1}: {e}")
-                time.sleep(2 ** attempt)
-        return None
+        resp = self._get(url, attempts=4, stream=True)
+        return resp.content if resp is not None else None
 
     # ------------------------------------------------------------- helpers
     @staticmethod
@@ -178,10 +200,24 @@ class NJPERCScraper(BaseScraper):
         this_year = datetime.now(timezone.utc).year
         seen: set[str] = set()
         found = 0
+        years_tried = 0
+        years_unreachable = 0
         for year in range(this_year, FIRST_YEAR - 1, -1):
             url = f"{HOST}{VIEW}?OpenView&RestrictToCategory={year}&Count=2000"
+            years_tried += 1
             page = self._get_text(url)
             if not page:
+                years_unreachable += 1
+                # A handful of empty years is normal; every year unreachable is
+                # a blocked vantage, not a corpus that vanished.
+                if years_unreachable >= 5 and not seen:
+                    raise RuntimeError(
+                        f"NJ PERC view unreachable for the first {years_unreachable} "
+                        f"years tried and 0 decisions discovered so far "
+                        f"({self._refusal_summary()}). www.perc.state.nj.us is "
+                        f"refusing this vantage — needs a US residential/proxied "
+                        f"slot; not a parse break."
+                    )
                 continue
             rows = PDF_HREF_RE.findall(page)
             if not rows:
@@ -206,6 +242,15 @@ class NJPERCScraper(BaseScraper):
                     logger.info(f"Sample: stopped after {found} pointers")
                     return
             logger.info(f"Year {year}: {n_year} decision PDFs")
+        if not seen:
+            raise RuntimeError(
+                f"NJ PERC discovery found 0 decision PDFs across all "
+                f"{years_tried} category years {FIRST_YEAR}-{this_year} "
+                f"({years_unreachable} unreachable; {self._refusal_summary()}). "
+                f"The IssuedDecisions view has decisions for every year, so an "
+                f"empty union means the host refused this vantage or the view "
+                f"moved — failing loud rather than reporting an empty corpus."
+            )
         logger.info(f"Discovered {len(seen)} PERC decision pointers")
 
     # ------------------------------------------------------- build record
@@ -287,13 +332,22 @@ class NJPERCScraper(BaseScraper):
                 logger.warning(f"preload_existing_ids failed: {e}")
                 self._existing = set()
         emitted = 0
+        attempted = 0
         for entry in self.discover(sample=sample):
+            attempted += 1
             raw = self._build_raw(entry)
             if raw:
                 yield raw
                 emitted += 1
                 if sample and emitted >= 12:
                     return
+        if attempted and not emitted and not self._existing:
+            raise RuntimeError(
+                f"0 of {attempted} discovered NJ PERC decision PDFs yielded text "
+                f"({self._refusal_summary()}). The $File attachments are "
+                f"browser-UA-gated; an all-empty fetch means the host refused "
+                f"this vantage, not that the decisions are text-free."
+            )
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield RAW records (framework normalizes via normalize())."""
@@ -303,6 +357,9 @@ class NJPERCScraper(BaseScraper):
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self.fetch_all():
             if not since or (raw.get("date") and raw["date"] >= since):
                 yield raw

@@ -9,8 +9,13 @@ courts, and the Supreme Court across all 85+ Russian federal subjects.
 Strategy:
   - Bootstrap: Reads sitemap XML index to enumerate decision URLs, then
     fetches individual decision pages and extracts full text from HTML.
-  - Update: Uses the AJAX search API to find decisions by date range.
+  - Update: Diffs the sitemap against a checkpoint of already-fetched doc ids
+    and only fetches the newcomers, newest first.
   - Sample: Fetches 15 records from the sitemap for validation.
+
+The sitemap is a rolling window of the ~97K most recently published decisions,
+not the whole corpus, so a doc that scrolls out of it can never be re-offered.
+That is what makes the checkpoint cheap to bound (see `_save_seen`).
 
 Data source: https://sudact.ru/
 Sitemap: https://sudact.ru/sitemap.xml
@@ -18,7 +23,7 @@ Sitemap: https://sudact.ru/sitemap.xml
 Usage:
   python bootstrap.py bootstrap            # Full fetch (100K+ records)
   python bootstrap.py bootstrap --sample   # Fetch sample records for validation
-  python bootstrap.py update               # Fetch recent decisions
+  python bootstrap.py update               # Incremental refresh
 """
 
 import json
@@ -38,7 +43,7 @@ from bs4 import BeautifulSoup
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 logging.basicConfig(
     level=logging.INFO,
@@ -52,6 +57,14 @@ SITEMAP_PART_URLS = [
     "https://sudact.ru/sitemap_part_1.xml.gz",
 ]
 SITEMAP_NS = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+
+# Decision URLs end in /doc/{id}/ -- the id is both the record key and the
+# checkpoint key, so it is derived in exactly one place.
+DOC_ID_RE = re.compile(r"/doc/([A-Za-z0-9]+)/?$")
+
+# Flush the checkpoint this often so a run killed at the fleet's 100h cap
+# resumes where it stopped instead of re-fetching from the top.
+CHECKPOINT_EVERY = 500
 
 # Court type mapping from URL path
 COURT_TYPE_MAP = {
@@ -68,6 +81,12 @@ RUSSIAN_MONTHS = {
     "июля": "07", "августа": "08", "сентября": "09",
     "октября": "10", "ноября": "11", "декабря": "12",
 }
+
+
+def doc_id_from_url(url: str) -> str:
+    """The /doc/{id}/ segment, or the URL itself if it does not match."""
+    m = DOC_ID_RE.search(url)
+    return m.group(1) if m else url
 
 
 def parse_russian_date(text: str) -> Optional[str]:
@@ -103,6 +122,16 @@ class SudactScraper(BaseScraper):
 
     def _fetch_sitemap_urls(self, limit: int = 0) -> list:
         """Fetch decision URLs from sitemap XML files."""
+        return [e["url"] for e in self._fetch_sitemap_entries(limit)]
+
+    def _fetch_sitemap_entries(self, limit: int = 0) -> list:
+        """Fetch decision entries -- {url, doc_id, lastmod} -- from the sitemaps.
+
+        `lastmod` is kept rather than discarded because it is the only signal
+        available when there is no checkpoint yet (fresh VPS clone: `data/` is
+        gitignored). It is a real discriminator, not a site-template constant --
+        verified live at 11 distinct days spread evenly over the window.
+        """
         all_urls = []
         for sitemap_url in SITEMAP_PART_URLS:
             logger.info(f"Fetching sitemap: {sitemap_url}")
@@ -126,11 +155,19 @@ class SudactScraper(BaseScraper):
                     logger.warning(f"Cannot parse sitemap {sitemap_url}")
                     continue
 
-            urls = [loc.text for loc in root.findall(".//s:url/s:loc", SITEMAP_NS)]
-            # Filter to doc pages only
-            urls = [u for u in urls if "/doc/" in u]
-            all_urls.extend(urls)
-            logger.info(f"  Found {len(urls)} decision URLs in {sitemap_url}")
+            entries = []
+            for el in root.findall(".//s:url", SITEMAP_NS):
+                loc = el.findtext("s:loc", namespaces=SITEMAP_NS) or ""
+                # Filter to doc pages only
+                if "/doc/" not in loc:
+                    continue
+                entries.append({
+                    "url": loc,
+                    "doc_id": doc_id_from_url(loc),
+                    "lastmod": (el.findtext("s:lastmod", namespaces=SITEMAP_NS) or "")[:10],
+                })
+            all_urls.extend(entries)
+            logger.info(f"  Found {len(entries)} decision URLs in {sitemap_url}")
 
             if limit and len(all_urls) >= limit:
                 all_urls = all_urls[:limit]
@@ -220,9 +257,7 @@ class SudactScraper(BaseScraper):
                 court_type = ct
                 break
 
-        # Extract doc ID from URL
-        doc_id_match = re.search(r"/doc/([A-Za-z0-9]+)/?$", url)
-        doc_id = doc_id_match.group(1) if doc_id_match else url
+        doc_id = doc_id_from_url(url)
 
         return {
             "doc_id": doc_id,
@@ -306,26 +341,127 @@ class SudactScraper(BaseScraper):
 
         return text.strip()
 
+    # ── Checkpoint (#1502) ────────────────────────────────────────────
+
+    def _checkpoint_path(self) -> Path:
+        return self.source_dir / "data" / "sitemap_checkpoint.json"
+
+    def _load_seen(self) -> set:
+        """Doc ids already fetched, as of the last run."""
+        try:
+            with open(self._checkpoint_path(), encoding="utf-8") as f:
+                return set(json.load(f).get("doc_ids") or [])
+        except (OSError, ValueError, AttributeError):
+            return set()
+
+    def _save_seen(self, seen: set, in_sitemap: set) -> None:
+        """Persist the seen set, pruned to ids still in the sitemap.
+
+        The sitemap is a rolling window, so an id that has scrolled out of it
+        can never be offered again and remembering it is dead weight. Pruning
+        bounds the checkpoint at the window size (~97K ids) instead of letting
+        it grow without limit as the window rolls forward.
+        """
+        keep = sorted(seen & in_sitemap) if in_sitemap else sorted(seen)
+        path = self._checkpoint_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".json.tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump({"doc_ids": keep,
+                       "updated_at": datetime.now(timezone.utc).isoformat()}, f)
+        tmp.replace(path)  # atomic: a half-written checkpoint would skip real docs
+
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all decisions from the sitemap."""
-        urls = self._fetch_sitemap_urls()
-        logger.info(f"Starting bootstrap: {len(urls)} decisions to fetch")
+        entries = self._fetch_sitemap_entries()
+        logger.info(f"Starting bootstrap: {len(entries)} decisions to fetch")
 
-        for i, url in enumerate(urls):
+        in_sitemap = {e["doc_id"] for e in entries}
+        seen = set()
+        for i, entry in enumerate(entries):
             if i > 0 and i % 100 == 0:
-                logger.info(f"Progress: {i}/{len(urls)} decisions fetched")
+                logger.info(f"Progress: {i}/{len(entries)} decisions fetched")
 
-            decision = self._extract_decision(url)
+            decision = self._extract_decision(entry["url"])
             if decision:
+                # Recorded on success only -- a failed fetch must stay eligible
+                # for the next run rather than being checkpointed away.
+                seen.add(entry["doc_id"])
                 yield decision
+
+            if len(seen) and len(seen) % CHECKPOINT_EVERY == 0:
+                self._save_seen(seen, in_sitemap)
 
             # Rate limit
             time.sleep(1.0)
 
+        self._save_seen(seen, in_sitemap)
+
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
-        """Fetch recent decisions using the sitemap (no incremental API)."""
-        # Re-fetch sitemap and yield all (dedup handles filtering)
-        yield from self.fetch_all()
+        """Yield only decisions this source has not already fetched.
+
+        The previous implementation was `yield from self.fetch_all()`, which
+        re-fetched all ~97K sitemap URLs at 1s each -- a ~27h refresh that
+        dedups almost entirely away, and reads from the fleet's side as a slow
+        host rather than as this scraper (#1502).
+
+        Two filters, in order of precision:
+
+        * the checkpoint of already-fetched doc ids -- exact, and the only one
+          that survives the sitemap being re-stamped wholesale
+        * the sitemap's own `lastmod` against the cutoff -- used *only* when
+          there is no checkpoint, since `data/` is gitignored and a fresh VPS
+          clone would otherwise re-fetch the entire window
+
+        With a checkpoint, `lastmod` is deliberately ignored: an unseen doc is
+        worth fetching whatever its stamp says, which also closes the gap left
+        by a previous run that was truncated at the fleet's time cap.
+        """
+        entries = self._fetch_sitemap_entries()
+        in_sitemap = {e["doc_id"] for e in entries}
+        seen = self._load_seen()
+
+        if seen:
+            fresh = [e for e in entries if e["doc_id"] not in seen]
+            logger.info(
+                f"Checkpoint holds {len(seen)} fetched doc(s); "
+                f"{len(fresh)} of {len(entries)} sitemap URLs are new"
+            )
+        else:
+            cutoff = as_date_str(since)
+            fresh = [e for e in entries
+                     if not cutoff or not e["lastmod"] or e["lastmod"] >= cutoff]
+            logger.info(
+                f"No checkpoint yet; falling back to sitemap lastmod >= {cutoff}: "
+                f"{len(fresh)} of {len(entries)} URLs"
+            )
+
+        if not fresh:
+            logger.info("Nothing new in the sitemap since the last run.")
+            return
+
+        # Newest first, so a run cut short at the time cap has still collected
+        # the most recent decisions rather than an arbitrary slice.
+        fresh.sort(key=lambda e: e["lastmod"], reverse=True)
+
+        fetched = 0
+        for i, entry in enumerate(fresh):
+            if i > 0 and i % 100 == 0:
+                logger.info(f"Progress: {i}/{len(fresh)} new decisions fetched")
+
+            decision = self._extract_decision(entry["url"])
+            if decision:
+                seen.add(entry["doc_id"])
+                fetched += 1
+                yield decision
+
+            if fetched and fetched % CHECKPOINT_EVERY == 0:
+                self._save_seen(seen, in_sitemap)
+
+            time.sleep(1.0)
+
+        self._save_seen(seen, in_sitemap)
+        logger.info(f"Incremental refresh: {fetched} new decision(s) of {len(fresh)} candidates")
 
     def normalize(self, raw: dict) -> dict:
         """Transform raw decision data into standard schema."""
@@ -376,11 +512,17 @@ def main():
         logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2)}")
 
     elif args.command == "update":
-        last_run = scraper.status.get("last_run")
-        since = datetime.fromisoformat(last_run) if last_run else datetime(2020, 1, 1, tzinfo=timezone.utc)
-        stats = scraper.bootstrap(sample_mode=False)
+        # Was: computed `since`, then threw it away and called bootstrap(),
+        # so the incremental path was unreachable from the CLI. update()
+        # reads last_run itself and falls back to bootstrap if never run.
+        stats = scraper.update()
         logger.info(f"Update complete: {json.dumps(stats, indent=2)}")
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

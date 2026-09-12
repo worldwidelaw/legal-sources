@@ -89,7 +89,13 @@ class SAOSScraper(BaseScraper):
                 "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
                 "Accept": "application/json",
             },
-            timeout=60,
+            # Dump-page latency grows with page depth -- measured 4.2s at page
+            # 0, 7.5s at 500, 18.2s at 2000, 32.6s at 4000 -- so a 60s ceiling
+            # is only ~2x headroom at the tail of a 500K-judgment corpus, which
+            # is precisely where a crawl has the most to lose. _dump_page
+            # raises rather than truncating (#936), so the symptom would be an
+            # aborted deep crawl rather than a silent short one (cf. #1547).
+            timeout=180,
         )
 
     # -- Checkpoint helpers -------------------------------------------------
@@ -438,4 +444,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

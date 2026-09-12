@@ -1,0 +1,68 @@
+source:
+  id: "EU/ECSC-Decisions"
+  name: "EU — ECSC General Decisions"
+  country: "EU"
+  language: "en"
+
+  # Full text is retrieved from the EU Publications Office (CELLAR / EUR-Lex),
+  # where the general (normative) decisions adopted under the European Coal and
+  # Steel Community Treaty (Treaty of Paris, 1952-2002) carry a CELEX number in
+  # sector 3, document class "S" — 3{YYYY}S{NNNN}. The "S" descriptor gathers the
+  # ECSC "general decisions" — first by the ECSC High Authority, then (after the
+  # 1967 Merger Treaty) by the Commission acting as ECSC-Treaty law-maker. Unlike
+  # ordinary EEC/EC decisions (descriptor "D", addressed to specific parties),
+  # these are the ECSC equivalent of regulations: normative acts of general
+  # application (numbered "No NNNN/YY/ECSC") governing the common market in coal
+  # and steel — levies on production, State-aid rules for the coal/steel
+  # industries, production quotas and price rules, external-trade / anti-dumping
+  # measures on steel imports, and their amendments/extensions. The corpus runs
+  # from the 1950s until the ECSC Treaty expired on 23 July 2002.
+  # A distinct, additive corpus to EU/EUR-Lex, which enumerates sector 3 by the
+  # ordinary binding resource-types only (REG / DIR / DEC and their
+  # implementing/delegated variants) and never pulls the "S" ECSC decisions (they
+  # carry the dedicated ECSC-decision resource type, not DEC). "S" is a different
+  # CELEX letter from every other descriptor, so no _id collision.
+  # Enumeration is via the public CELLAR SPARQL endpoint (the sector-3 S corpus is
+  # ~590 rows, far under the OFFSET ceiling, so a single paged sweep suffices).
+  # Full text via CELLAR content negotiation: xHTML for modern acts, OJ HTML via
+  # the language-suffixed CELEX (.ENG) for older ones, born-digital PDF (PyMuPDF)
+  # for the remainder — all of which bypass the eur-lex.europa.eu AWS-WAF that
+  # 202-challenges datacenter IPs, so it is fleet-safe. Same recipe as
+  # EU/CFSP-Acts, EU/FrameworkDecisions and EU/RulesOfProcedure.
+  endpoints:
+    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
+    cellar_celex: "http://publications.europa.eu/resource/celex/{celex}"
+
+  data_types:
+    - legislation
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1
+
+  schema:
+    key_fields:
+      _id:
+        type: string
+        required: true
+      title:
+        type: string
+        required: true
+      text:
+        type: string
+        required: true
+      date:
+        type: date
+        required: false
+
+fetch:
+  sample_count: 15
+
+license:
+  name: "EU institutional reuse (Decision 2011/833/EU)"
+  url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "ECSC general decisions published in the Official Journal by the Publications Office are reusable, including for commercial purposes, under the Commission's reuse policy (Decision 2011/833/EU). Attribution to the source is requested."

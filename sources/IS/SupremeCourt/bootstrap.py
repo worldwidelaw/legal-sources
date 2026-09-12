@@ -1,460 +1,358 @@
 #!/usr/bin/env python3
 """
-IS/SupremeCourt - Icelandic Supreme Court (Hæstiréttur) Case Law Fetcher
+IS/SupremeCourt -- Icelandic Supreme Court (Hæstiréttur) case law
 
-Fetches court decisions from the Icelandic Supreme Court website.
+Fetches the full-text judgments of the Supreme Court of Iceland (Hæstiréttur
+Íslands).
 
-Data source: https://www.haestirettur.is/domar/
-License: Public Domain (official court decisions)
+Strategy (2026-07 rewrite — the court site migrated to island.is):
+
+  - www.haestirettur.is now 302-redirects to the national portal
+    https://island.is/domar (a Next.js app), so the legacy .aspx pager 404s
+    past offset 100 (issue #1213). The portal is backed by a public GraphQL
+    API at https://island.is/api/graphql:
+
+        webVerdicts(input: {court:["Hæstiréttur"], page:N,
+                            dateFrom, dateTo})   -> list (id, caseNumber,
+                                                    verdictDate, keywords,
+                                                    presentings), 10 per page
+        webVerdictById(input: {id})             -> item.richText (Contentful
+                                                    JSON AST = FULL judgment)
+
+  - ~12,220 Hæstiréttur judgments, 1999-present. The full judgment text lives
+    in ``richText`` (a rich-text document AST) which is flattened to plain text.
+    ``presentings`` is the case summary/headnote.
+
+  - Crawled year-by-year (dateFrom/dateTo) newest-first, with a completed-year
+    checkpoint so fleet reruns resume safely and newly published judgments only
+    ever affect the current year's partition.
+
+Usage:
+  python bootstrap.py bootstrap            # Full initial pull (streams to data/records.jsonl)
+  python bootstrap.py bootstrap-fast       # Alias for full bootstrap (fleet runner)
+  python bootstrap.py bootstrap --sample   # Fetch sample records for validation
+  python bootstrap.py update               # Incremental update (recent judgments)
+  python bootstrap.py test-api             # Quick connectivity test
 """
 
-import argparse
-import json
-import os
-import re
 import sys
-import time
-from datetime import datetime
+import json
+import logging
+import re
 from pathlib import Path
-from typing import Generator, Optional
+from datetime import datetime, timezone
+from typing import Generator, Optional, Dict, Any, List
+
+# Add project root to path
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
 
 import requests
-from bs4 import BeautifulSoup
+from common.base_scraper import BaseScraper
 
-BASE_URL = "https://www.haestirettur.is"
-DOMAR_URL = f"{BASE_URL}/domar/"
-DOMUR_URL = f"{BASE_URL}/domar/_domur/"
-PAGINATION_URL = f"{BASE_URL}/default.aspx"
-SAMPLE_DIR = Path(__file__).parent / "sample"
-SOURCE_ID = "IS/SupremeCourt"
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("legal-data-hunter.IS.SupremeCourt")
 
-# Pagination settings - discovered from site JavaScript
-# The moreVer button uses pageitemid parameter for AJAX loading
-PAGEITEM_ID = "4468cca6-a82f-11e5-9402-005056bc2afe"
-PAGE_SIZE = 50  # Items per request
+GQL_URL = "https://island.is/api/graphql"
+COURT = "Hæstiréttur"
+DOC_URL = "https://island.is/domar/{id}"
+FIRST_YEAR = 1999
+PAGE_SIZE = 10  # island.is fixes the verdict page size at 10
+USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+)
 
-# Request settings
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) LegalDataHunter/1.0"
-}
-REQUEST_DELAY = 1.5  # Seconds between requests
-
-
-def extract_case_ids_from_listing(html: str) -> list[str]:
-    """Extract case UUID IDs from the domar listing page."""
-    # Pattern: /domar/_domur/?id=UUID
-    pattern = r'id=([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})'
-    return list(set(re.findall(pattern, html)))
-
-
-def parse_date(date_str: str) -> Optional[str]:
-    """Parse Icelandic date string to ISO format."""
-    # Example: "Fimmtudaginn 5. febrúar 2026"
-    month_map = {
-        'janúar': '01', 'febrúar': '02', 'mars': '03', 'apríl': '04',
-        'maí': '05', 'júní': '06', 'júlí': '07', 'ágúst': '08',
-        'september': '09', 'október': '10', 'nóvember': '11', 'desember': '12'
-    }
-
-    try:
-        # Try to extract date components
-        match = re.search(r'(\d{1,2})\.\s*(\w+)\s*(\d{4})', date_str)
-        if match:
-            day = match.group(1).zfill(2)
-            month_name = match.group(2).lower()
-            year = match.group(3)
-            month = month_map.get(month_name)
-            if month:
-                return f"{year}-{month}-{day}"
-    except Exception:
-        pass
-
-    return None
+_LIST_QUERY = (
+    "query V($input: WebVerdictsInput!){ webVerdicts(input: $input){ total "
+    "items{ id title court caseNumber verdictDate keywords presentings } } }"
+)
+_DETAIL_QUERY = (
+    "query D($input: WebVerdictByIdInput!){ webVerdictById(input: $input){ "
+    "item{ title court caseNumber verdictDate keywords presentings richText } } }"
+)
 
 
-def extract_text_from_html(soup: BeautifulSoup) -> str:
-    """Extract clean text from the decision body."""
-    # Find the verdict body
-    body = soup.find('div', class_='verdict__body')
-    if not body:
-        body = soup.find('div', class_='verdict')
+class ISSupremeCourtScraper(BaseScraper):
+    """
+    Scraper for IS/SupremeCourt -- Icelandic Supreme Court judgments.
+    Country: IS
+    URL: https://island.is/domar
+    Data types: case_law
+    Auth: none (public court judgments)
+    """
 
-    if not body:
-        return ""
+    def __init__(self):
+        source_dir = Path(__file__).parent
+        super().__init__(source_dir)
+        self.checkpoint_file = source_dir / "checkpoint.json"
+        self.session = requests.Session()
+        self.session.headers.update({
+            "User-Agent": USER_AGENT,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        })
 
-    # Remove script and style elements
-    for element in body(['script', 'style']):
-        element.decompose()
+    # ── GraphQL ──────────────────────────────────────────────────────
+    def _gql(self, query: str, variables: dict, timeout: int = 60) -> dict:
+        self.rate_limiter.wait()
+        resp = self.session.post(
+            GQL_URL, json={"query": query, "variables": variables}, timeout=timeout
+        )
+        resp.raise_for_status()
+        payload = resp.json()
+        if payload.get("errors"):
+            raise RuntimeError(f"GraphQL error: {payload['errors'][:1]}")
+        return payload["data"]
 
-    # Get text, preserving structure
-    text = body.get_text(separator='\n', strip=True)
+    def _list_page(self, page: int, year: Optional[int] = None) -> Dict[str, Any]:
+        inp: Dict[str, Any] = {"court": [COURT], "page": page}
+        if year is not None:
+            inp["dateFrom"] = f"{year}-01-01"
+            inp["dateTo"] = f"{year}-12-31"
+        return self._gql(_LIST_QUERY, {"input": inp})["webVerdicts"]
 
-    # Clean up excessive whitespace
-    text = re.sub(r'\n{3,}', '\n\n', text)
-    text = re.sub(r' {2,}', ' ', text)
+    def _detail(self, verdict_id: str) -> Optional[Dict[str, Any]]:
+        data = self._gql(_DETAIL_QUERY, {"input": {"id": verdict_id}})
+        return (data.get("webVerdictById") or {}).get("item")
 
-    return text.strip()
+    # ── rich-text flattening ─────────────────────────────────────────
+    @staticmethod
+    def _flatten_richtext(rich: Any) -> str:
+        """Flatten a Contentful rich-text document AST into plain text."""
+        if not rich:
+            return ""
+        doc = rich.get("document") if isinstance(rich, dict) else None
+        if doc is None:
+            doc = rich
+        out: List[str] = []
 
+        def walk(node):
+            if isinstance(node, dict):
+                nt = node.get("nodeType", "")
+                if nt == "text":
+                    out.append(node.get("value", ""))
+                for child in node.get("content", []) or []:
+                    walk(child)
+                if nt.startswith(("heading", "paragraph", "list-item", "blockquote", "hr")):
+                    out.append("\n")
+            elif isinstance(node, list):
+                for child in node:
+                    walk(child)
 
-def parse_decision(html: str, case_id: str) -> Optional[dict]:
-    """Parse a court decision HTML page and extract metadata and text."""
-    try:
-        soup = BeautifulSoup(html, 'html.parser')
+        walk(doc)
+        text = "".join(out)
+        text = re.sub(r"[ \t]+", " ", text)
+        text = re.sub(r"\n[ \t]+", "\n", text)
+        text = re.sub(r"\n{3,}", "\n\n", text)
+        return text.strip()
 
-        # Extract case number from h2 subtitle
-        case_number = None
-        subtitle = soup.find('h2', class_='verdict-head__subtitle')
-        if subtitle:
-            case_text = subtitle.get_text(strip=True)
-            match = re.search(r'(\d+/\d{4})', case_text)
-            if match:
-                case_number = match.group(1)
+    # ── checkpoint (completed years) ─────────────────────────────────
+    def _load_done_years(self) -> set:
+        if self.checkpoint_file.exists():
+            try:
+                with open(self.checkpoint_file) as f:
+                    return set(json.load(f).get("done_years", []))
+            except Exception:
+                pass
+        return set()
 
-        # Extract date
-        date = None
-        time_elem = soup.find('time', class_='verdict-head__time')
-        if time_elem:
-            date_str = time_elem.get_text(strip=True)
-            date = parse_date(date_str)
-            if not date and time_elem.get('datetime'):
-                # Try datetime attribute format "5.2.2026 00:00:00"
-                dt_str = time_elem.get('datetime')
-                match = re.search(r'(\d{1,2})\.(\d{1,2})\.(\d{4})', dt_str)
-                if match:
-                    day = match.group(1).zfill(2)
-                    month = match.group(2).zfill(2)
-                    year = match.group(3)
-                    date = f"{year}-{month}-{day}"
+    def _save_done_years(self, done: set):
+        try:
+            with open(self.checkpoint_file, "w") as f:
+                json.dump({"done_years": sorted(done),
+                           "timestamp": datetime.now(timezone.utc).isoformat()}, f)
+        except Exception as e:
+            logger.warning(f"Could not write checkpoint: {e}")
 
-        # Extract parties
-        appellants = []
-        plaintiffs = []
+    def _clear_checkpoint(self):
+        if self.checkpoint_file.exists():
+            try:
+                self.checkpoint_file.unlink()
+            except Exception:
+                pass
 
-        appellant_div = soup.find('div', class_='appelants')
-        if appellant_div:
-            appellants = [s.get_text(strip=True) for s in appellant_div.find_all('strong')]
+    # ── framework hooks ──────────────────────────────────────────────
+    def fetch_all(self) -> Generator[dict, None, None]:
+        current_year = datetime.now(timezone.utc).year
+        done_years = self._load_done_years()
+        total_all = self._list_page(1).get("total", 0)
+        logger.info(f"Total Hæstiréttur judgments: {total_all:,}")
 
-        plaintiff_div = soup.find('div', class_='plaintiffs')
-        if plaintiff_div:
-            plaintiffs = [s.get_text(strip=True) for s in plaintiff_div.find_all('strong')]
+        for year in range(current_year, FIRST_YEAR - 1, -1):
+            if year in done_years:
+                continue
+            page = 1
+            year_count = 0
+            while True:
+                data = self._list_page(page, year=year)
+                items = data.get("items", []) or []
+                if not items:
+                    break
+                total = data.get("total", 0)
+                for item in items:
+                    raw = self._enrich(item)
+                    if raw:
+                        year_count += 1
+                        yield raw
+                if page * PAGE_SIZE >= total:
+                    break
+                page += 1
+            logger.info(f"Year {year}: {year_count} judgments")
+            done_years.add(year)
+            self._save_done_years(done_years)
 
-        # Extract keywords
-        keywords = []
-        keyword_section = soup.find('div', class_='verdict__keywords')
-        if keyword_section:
-            keywords = [li.get_text(strip=True) for li in keyword_section.find_all('li')]
+        self._clear_checkpoint()
 
-        # Extract summary (reifun)
-        summary = None
-        reifun_section = soup.find('div', class_='verdict__reifun')
-        if reifun_section:
-            summary_div = reifun_section.find('div', class_='text-justify')
-            if summary_div:
-                summary = summary_div.get_text(strip=True)
+    def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
+        if since.tzinfo is None:
+            since = since.replace(tzinfo=timezone.utc)
+        page = 1
+        while True:
+            data = self._list_page(page)  # newest-first across all years
+            items = data.get("items", []) or []
+            if not items:
+                break
+            total = data.get("total", 0)
+            crossed = False
+            for item in items:
+                iso = self._iso_date(item.get("verdictDate"))
+                if iso:
+                    try:
+                        d = datetime.strptime(iso, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                        if d < since:
+                            crossed = True
+                            break
+                    except ValueError:
+                        pass
+                raw = self._enrich(item)
+                if raw:
+                    yield raw
+            if crossed or page * PAGE_SIZE >= total:
+                break
+            page += 1
 
-        # Extract full text
-        text = extract_text_from_html(soup)
+    def _enrich(self, list_item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Fetch the detail record and merge its full-text richText."""
+        vid = list_item.get("id")
+        if not vid:
+            return None
+        try:
+            item = self._detail(vid)
+        except Exception as e:
+            logger.warning(f"Detail fetch failed for {vid}: {e}")
+            return None
+        if not item:
+            return None
+        item["id"] = vid
+        return item
 
-        # Combine summary and body text
-        full_text = ""
-        if summary:
-            full_text = f"REIFUN (Summary):\n{summary}\n\n"
-        if text:
-            full_text += f"DÓMUR (Judgment):\n{text}"
+    # ── helpers ──────────────────────────────────────────────────────
+    @staticmethod
+    def _iso_date(raw: Optional[str]) -> str:
+        if not raw or not isinstance(raw, str):
+            return ""
+        return raw[:10] if len(raw) >= 10 and raw[4] == "-" else ""
 
-        if not full_text or len(full_text) < 100:
+    def normalize(self, raw: dict) -> Optional[dict]:
+        vid = raw.get("id")
+        if not vid:
             return None
 
-        # Build title
-        title_parts = []
-        if case_number:
-            title_parts.append(f"Mál nr. {case_number}")
-        if appellants and plaintiffs:
-            title_parts.append(f"{appellants[0]} gegn {plaintiffs[0]}")
-        elif appellants:
-            title_parts.append(appellants[0])
+        text = self._flatten_richtext(raw.get("richText"))
+        presentings = (raw.get("presentings") or "").strip()
+        if not text and presentings:
+            text = presentings
+        if not text or len(text) < 40:
+            return None  # PDF-only / empty stub
 
-        title = " - ".join(title_parts) if title_parts else f"Hæstiréttur {case_id[:8]}"
-
-        # Build document ID
-        doc_id = case_number if case_number else case_id
-
-        url = f"{DOMUR_URL}?id={case_id}"
+        case_number = (raw.get("caseNumber") or "").strip()
+        title = (raw.get("title") or "").strip() or (
+            f"Hæstiréttur {case_number}" if case_number else f"Hæstiréttur {vid}")
+        keywords = raw.get("keywords") or []
 
         return {
-            '_id': doc_id,
-            '_source': SOURCE_ID,
-            '_type': 'case_law',
-            '_fetched_at': datetime.utcnow().isoformat() + 'Z',
-            'title': title,
-            'text': full_text,
-            'date': date,
-            'url': url,
-            'language': 'isl',
-            'court': 'Hæstiréttur Íslands',
-            'case_number': case_number,
-            'uuid': case_id,
-            'keywords': keywords,
-            'appellants': appellants,
-            'plaintiffs': plaintiffs,
-            'summary': summary,
+            "_id": f"IS/SupremeCourt/{vid}",
+            "_source": "IS/SupremeCourt",
+            "_type": "case_law",
+            "_fetched_at": datetime.now(timezone.utc).isoformat(),
+            "title": title,
+            "text": text,
+            "date": self._iso_date(raw.get("verdictDate")) or None,
+            "url": DOC_URL.format(id=vid),
+            "case_number": case_number,
+            "court": raw.get("court", COURT),
+            "keywords": ", ".join(k for k in keywords if isinstance(k, str)),
+            "summary": presentings,
+            "language": "is",
         }
-    except Exception as e:
-        print(f"  Error parsing decision {case_id}: {e}")
-        return None
 
-
-def fetch_decision(case_id: str) -> Optional[dict]:
-    """Fetch and parse a single court decision."""
-    url = f"{DOMUR_URL}?id={case_id}"
-
-    try:
-        resp = requests.get(url, headers=HEADERS, timeout=30)
-        resp.raise_for_status()
-        return parse_decision(resp.text, case_id)
-    except requests.RequestException as e:
-        print(f"  Error fetching {case_id}: {e}")
-        return None
-
-
-def get_all_case_ids(max_ids: int = None) -> list[str]:
-    """
-    Get all available case IDs using AJAX pagination.
-
-    The Icelandic Supreme Court website uses AJAX pagination via
-    /default.aspx?pageitemid=<id>&offset=<offset>&count=<count>
-
-    Args:
-        max_ids: Maximum number of IDs to return (for sampling/testing)
-
-    Returns:
-        List of unique case UUIDs
-    """
-    all_ids = set()
-    offset = 0
-    consecutive_empty = 0
-
-    print(f"Fetching case listings from {DOMAR_URL}...")
-
-    # First, get IDs from the main page (first 10 decisions shown by default)
-    try:
-        resp = requests.get(DOMAR_URL, headers=HEADERS, timeout=30)
-        resp.raise_for_status()
-        ids = extract_case_ids_from_listing(resp.text)
-        all_ids.update(ids)
-        print(f"  Found {len(ids)} cases on main listing")
-    except requests.RequestException as e:
-        print(f"  Error fetching main listing: {e}")
-
-    # Now paginate through all decisions using AJAX endpoint
-    print(f"  Paginating through archive (batch size: {PAGE_SIZE})...")
-
-    while True:
-        if max_ids and len(all_ids) >= max_ids:
-            print(f"  Reached max_ids limit ({max_ids})")
-            break
-
-        try:
-            params = {
-                'pageitemid': PAGEITEM_ID,
-                'offset': offset,
-                'count': PAGE_SIZE
-            }
-            resp = requests.get(PAGINATION_URL, params=params, headers=HEADERS, timeout=30)
-            resp.raise_for_status()
-
-            ids = extract_case_ids_from_listing(resp.text)
-            new_ids = [id for id in ids if id not in all_ids]
-
-            if not new_ids:
-                consecutive_empty += 1
-                if consecutive_empty >= 3:
-                    print(f"  No new IDs found for 3 consecutive pages, stopping at offset {offset}")
-                    break
+    # ── connectivity test ────────────────────────────────────────────
+    def test_api(self):
+        print("Testing IS/SupremeCourt (island.is GraphQL)...")
+        data = self._list_page(1)
+        print(f"\n1. webVerdicts total: {data.get('total'):,}")
+        items = data.get("items", [])
+        print(f"   Items on page 1: {len(items)}")
+        if items:
+            raw = self._enrich(items[0])
+            rec = self.normalize(raw) if raw else None
+            if rec:
+                print("\n2. Newest judgment (normalized):")
+                print(f"   Title:   {rec['title'][:70]}")
+                print(f"   Case:    {rec['case_number']}")
+                print(f"   Date:    {rec['date']}")
+                print(f"   URL:     {rec['url']}")
+                print(f"   Text:    {len(rec['text']):,} chars")
+                print(f"   Preview: {rec['text'][:180]}...")
             else:
-                consecutive_empty = 0
-                all_ids.update(new_ids)
-
-            if offset % 500 == 0:
-                print(f"    Offset {offset}: {len(all_ids)} unique IDs collected")
-
-            offset += PAGE_SIZE
-            time.sleep(0.5)  # Brief delay between pagination requests
-
-            # Safety limit - should be ~12K decisions
-            if offset > 15000:
-                print(f"  Safety limit reached at offset {offset}")
-                break
-
-        except requests.RequestException as e:
-            print(f"  Error at offset {offset}: {e}")
-            consecutive_empty += 1
-            if consecutive_empty >= 3:
-                break
-            offset += PAGE_SIZE
-            time.sleep(1)
-
-    result = list(all_ids)
-    print(f"  Total unique case IDs discovered: {len(result)}")
-    return result
-
-
-def fetch_all(max_records: int = None) -> Generator[dict, None, None]:
-    """
-    Fetch all court decisions with checkpoint/resume support.
-
-    Args:
-        max_records: Maximum number of records to yield (for sampling)
-
-    Yields:
-        Normalized document records
-    """
-    checkpoint_file = Path(__file__).parent / ".checkpoint"
-    completed_ids = set()
-
-    # Load checkpoint if exists
-    if checkpoint_file.exists():
-        try:
-            with open(checkpoint_file, 'r') as f:
-                completed_ids = set(line.strip() for line in f if line.strip())
-            print(f"Loaded checkpoint: {len(completed_ids)} already processed")
-        except Exception as e:
-            print(f"Warning: Could not load checkpoint: {e}")
-
-    # Get all case IDs (for sample mode, limit discovery)
-    if max_records:
-        case_ids = get_all_case_ids(max_ids=max_records + 20)
-    else:
-        case_ids = get_all_case_ids()
-
-    # Filter out already completed
-    pending_ids = [id for id in case_ids if id not in completed_ids]
-    if max_records:
-        pending_ids = pending_ids[:max_records + 5]
-
-    print(f"Processing {len(pending_ids)} pending cases (of {len(case_ids)} total)...")
-
-    count = 0
-    for i, case_id in enumerate(pending_ids):
-        if max_records and count >= max_records:
-            break
-
-        print(f"  [{i+1}/{len(pending_ids)}] Fetching {case_id}...")
-
-        record = fetch_decision(case_id)
-
-        if record and len(record.get('text', '')) >= 100:
-            yield record
-            count += 1
-
-            # Update checkpoint for full fetches
-            if not max_records:
-                try:
-                    with open(checkpoint_file, 'a') as f:
-                        f.write(f"{case_id}\n")
-                except Exception:
-                    pass
-
-        time.sleep(REQUEST_DELAY)
-
-    print(f"Total records yielded: {count}")
-
-
-def fetch_updates(since: datetime) -> Generator[dict, None, None]:
-    """Fetch documents updated since a given date."""
-    for record in fetch_all():
-        if record.get('date'):
-            try:
-                doc_date = datetime.fromisoformat(record['date'])
-                if doc_date >= since:
-                    yield record
-            except (ValueError, TypeError):
-                yield record
-
-
-def normalize(raw: dict) -> dict:
-    """Validate and normalize the record."""
-    required = ['_id', '_source', '_type', '_fetched_at', 'title', 'text', 'date', 'url']
-    for field in required:
-        if field not in raw:
-            raise ValueError(f"Missing required field: {field}")
-
-    if not raw.get('text') or len(raw['text']) < 50:
-        raise ValueError("Document has insufficient text content")
-
-    return raw
-
-
-def bootstrap_sample(sample_count: int = 12):
-    """Fetch sample records and save to sample directory."""
-    SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
-
-    print(f"Fetching {sample_count} sample records from IS/SupremeCourt...")
-    print("=" * 60)
-
-    records = []
-    for i, record in enumerate(fetch_all(max_records=sample_count)):
-        try:
-            normalized = normalize(record)
-            records.append(normalized)
-
-            # Save individual record
-            filename = SAMPLE_DIR / f"record_{i+1:03d}.json"
-            with open(filename, 'w', encoding='utf-8') as f:
-                json.dump(normalized, f, ensure_ascii=False, indent=2)
-
-            text_len = len(normalized.get('text', ''))
-            print(f"  [{i+1:02d}] {normalized['_id']}: {normalized['title'][:50]} ({text_len:,} chars)")
-
-        except ValueError as e:
-            print(f"  Skipping record: {e}")
-
-    print("=" * 60)
-    print(f"Saved {len(records)} sample records to {SAMPLE_DIR}")
-
-    if records:
-        avg_text_len = sum(len(r.get('text', '')) for r in records) / len(records)
-        print(f"Average text length: {avg_text_len:,.0f} chars/doc")
-
-    # Validate
-    if len(records) < 10:
-        print("WARNING: Fewer than 10 records fetched!")
-        return False
-
-    empty_text = sum(1 for r in records if not r.get('text'))
-    if empty_text > 0:
-        print(f"WARNING: {empty_text} records have empty text!")
-        return False
-
-    print("VALIDATION PASSED: All records have full text content.")
-    return True
+                print("   ERROR: newest judgment normalized to None")
+        print("\nAPI test complete!")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="IS/SupremeCourt case law fetcher")
-    parser.add_argument('command', choices=['bootstrap', 'fetch', 'info'],
-                       help="Command to run")
-    parser.add_argument('--sample', action='store_true',
-                       help="Fetch sample records only")
-    parser.add_argument('--count', type=int, default=12,
-                       help="Number of sample records to fetch")
-    parser.add_argument("--full", action="store_true", help="Fetch all records")
+    scraper = ISSupremeCourtScraper()
 
-    args = parser.parse_args()
+    if len(sys.argv) < 2:
+        print("Usage: python bootstrap.py [bootstrap|bootstrap-fast|update|test-api] "
+              "[--sample] [--sample-size N]")
+        sys.exit(1)
 
-    if args.command == 'info':
-        print(f"IS/SupremeCourt - Icelandic Supreme Court Case Law")
-        print(f"Source URL: {BASE_URL}")
-        print(f"Decisions URL: {DOMAR_URL}")
+    command = sys.argv[1]
+    sample_mode = "--sample" in sys.argv
+    sample_size = 12
+    if "--sample-size" in sys.argv:
+        idx = sys.argv.index("--sample-size")
+        sample_size = int(sys.argv[idx + 1])
 
-    elif args.command == 'bootstrap':
-        success = bootstrap_sample(args.count)
-        sys.exit(0 if success else 1)
+    if command == "test-api":
+        scraper.test_api()
 
-    elif args.command == 'fetch':
-        for record in fetch_all():
-            print(json.dumps(record, ensure_ascii=False))
+    elif command in ("bootstrap", "bootstrap-fast"):
+        if sample_mode:
+            stats = scraper.bootstrap(sample_mode=True, sample_size=sample_size)
+            print(f"\nSample complete: "
+                  f"{stats.get('sample_records_saved', 0)} records saved to sample/")
+        else:
+            stats = scraper.bootstrap()
+            print(f"\nBootstrap complete: {stats['records_new']} new, "
+                  f"{stats['records_updated']} updated, "
+                  f"{stats['records_skipped']} skipped")
+        print(json.dumps(stats, indent=2))
+
+    elif command == "update":
+        stats = scraper.update()
+        print(f"\nUpdate complete: {stats['records_new']} new, "
+              f"{stats['records_updated']} updated")
+        print(json.dumps(stats, indent=2))
+
+    else:
+        print(f"Unknown command: {command}")
+        sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

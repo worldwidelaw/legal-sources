@@ -1,0 +1,203 @@
+# ===================================================================
+# KR/NSSC -- Nuclear Safety and Security Commission (원자력안전위원회)
+# ===================================================================
+# Korea's independent nuclear regulator. Two boards on www.nssc.go.kr carry
+# primary regulatory material and both are collected in full text:
+#
+#   * 최근개정법령 (BOARD_SEQ 39) — the promulgation PDF of every amendment
+#     to the nuclear-safety stack: 원자력안전법, its Enforcement Decree and
+#     Rules, and the 원자력안전위원회고시 that state the binding technical
+#     requirements. Typed legislation.
+#   * 일정/회의결과/회의록 (BOARD_SEQ 14) — the agenda and disposition of
+#     every commission sitting plus the 의사록 (record of decisions) and
+#     회의록 (verbatim transcript) PDFs, where licence grants, licence
+#     amendments and administrative sanctions are argued and decided.
+#     Typed doctrine.
+#
+# ACCESS: the rendered board page is an empty shell. Rows come from
+# POST /ajaxf/FR_BBS_SVC/BBSViewList.do as JSON and already include the full
+# board body in CONTENTS; attachments from POST /ajaxf/FR_BBS_SVC/BBSViewAttachList.do
+# and GET /ajaxfile/FR_SVC/FileDown.do. pagePerCnt is ignored (always 15 rows),
+# so paging walks pageNo against totalRecordCount.
+# ===================================================================
+
+source:
+  id: "KR/NSSC"
+  country: "KR"
+  name: "Nuclear Safety and Security Commission"
+  url: "https://www.nssc.go.kr/"
+  description: |
+    Primary regulatory output of Korea's Nuclear Safety and Security
+    Commission (원자력안전위원회), the standing independent commission that
+    licenses nuclear reactors and radiation facilities, sets the binding
+    safety standards under the Nuclear Safety Act, and imposes
+    administrative sanctions on licensees. Covers the promulgated text of
+    every amendment to the nuclear-safety legislative stack — the Nuclear
+    Safety Act, its Enforcement Decree and Enforcement Rules, the
+    Presidential and Prime Minister's Ordinances, and above all the NSSC
+    notices (원자력안전위원회고시) that carry the operative technical
+    requirements for radiation protection, reactor design and operation,
+    transport and packaging, and radioactive-waste management — each with
+    its supplementary provisions and statement of reasons. Covers in
+    parallel the proceedings of the commission itself: the agenda and
+    disposition of each sitting, the formal record of decisions (의사록)
+    and the verbatim transcript (회의록), which together are the only
+    public record of the commission's reasoning on licensing decisions and
+    enforcement action. Full text is extracted from the Korean PDFs the
+    commission publishes.
+
+data_types:
+  - legislation
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1.2
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_scraping"
+  base_url: "https://www.nssc.go.kr"
+  endpoints:
+    board_list: "/ajaxf/FR_BBS_SVC/BBSViewList.do"
+    board_attachments: "/ajaxf/FR_BBS_SVC/BBSViewAttachList.do"
+    file_download: "/ajaxfile/FR_SVC/FileDown.do"
+    board_view: "/ko/cms/FR_BBS_CON/BoardView.do"
+
+data_model:
+  type: "legislation"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 20
+  key_fields:
+    - name: "title"
+      description: "Board subject line — the instrument amended (e.g. '방사선방호 등에 관한 기준') or the sitting (e.g. '제226회(2025-21, 11.26) 원자력안전위원회')"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text — the board body followed by the extracted text of every PDF attached to the posting (promulgated amendment, 의사록, 회의록)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Posting date in ISO 8601 — publication of the promulgated amendment, or release of the sitting's record"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Permalink to the board posting on www.nssc.go.kr"
+      type: "string"
+      role: "identifier"
+      required: true
+    - name: "document_type"
+      description: "legislation (최근개정법령) or doctrine (commission proceedings)"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "series"
+      description: "Board the document came from — 최근개정법령 or 일정/회의결과/회의록"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "instrument_type"
+      description: "Kind of instrument promulgated — 원자력안전위원회고시, 총리령, 대통령령, 법률, 훈령 … — read off the promulgation PDF's filename"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "instrument_number"
+      description: "Promulgation number, e.g. '제2026-12호' for NSSC notices, '제2132호' for a Prime Minister's Ordinance"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "sitting"
+      description: "Sitting number of the commission meeting, e.g. '제226회' or '제2026-11회' (proceedings only)"
+      type: "string"
+      role: "identifier"
+      required: false
+    - name: "has_transcript"
+      description: "True when the posting ships the verbatim 회의록 transcript (proceedings only)"
+      type: "boolean"
+      role: "metadata"
+      required: false
+    - name: "has_minutes"
+      description: "True when the posting ships the formal 의사록 record of decisions (proceedings only)"
+      type: "boolean"
+      role: "metadata"
+      required: false
+    - name: "attachments"
+      description: "Original filenames of the PDFs whose text was extracted into the record"
+      type: "array"
+      role: "metadata"
+      required: false
+    - name: "department"
+      description: "NSSC division that published the posting (담당부서)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "authority"
+      description: "Issuing authority — always 'Nuclear Safety and Security Commission (원자력안전위원회)'"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "language"
+      description: "Document language — always 'ko'"
+      type: "string"
+      role: "metadata"
+      required: false
+
+license:
+  name: "KOGL Type 1 (공공누리 제1유형)"
+  url: "https://www.kogl.or.kr/info/license.do"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: |
+    The NSSC copyright policy (MENU_ID=2580) states that works whose
+    economic rights it holds in full are freely usable without separate
+    permission under article 24-2 of the Korean Copyright Act (free use of
+    public works), and are released under KOGL Type 1 (공공누리 제1유형):
+    commercial and non-commercial use and derivative works are permitted,
+    attribution to 원자력안전위원회 and the site URL is required. The
+    promulgated statutory texts collected here are in any case outside
+    copyright under article 7 of the Copyright Act, which excludes 법령
+    and official notices from protection.
+
+notes: |
+  - The board pages render empty; every row is delivered by
+    POST /ajaxf/FR_BBS_SVC/BBSViewList.do. That response already carries the
+    full board body in CONTENTS, so listing and detail are a single request
+    and no BoardView.do fetch is needed.
+  - pagePerCnt is accepted but IGNORED — the server always returns 15 rows
+    per page. Paging therefore walks pageNo until totalRecordCount postings
+    have been seen, with a page guard so a server-side change cannot loop.
+  - Board 39 (최근개정법령, ~330 postings) attaches one PDF per posting: the
+    promulgated amendment. Born-digital, extracts cleanly.
+  - Board 14 (일정/회의결과/회의록, ~470 postings) posts the agenda inline as
+    an HTML table and attaches 의사록 / 회의록 PDFs once the commission has
+    cleared them for release — typically a few months after the sitting, so
+    the most recent postings are agenda-only. Transcripts run to 100+ pages
+    and 80k+ characters.
+  - The 회의록 transcripts are exported from HWP and carry no intra-sentence
+    spaces (the PDF does not encode them). That is how the commission
+    publishes them; the text is stored as issued rather than re-segmented.
+  - Attachments arrive as HWP+PDF pairs of the same document. Only the PDF
+    is fetched; the HWP is a duplicate and needs a converter the fleet image
+    does not carry.
+  - Postings whose body is a one-line covering note and whose attachments
+    yield no text are dropped (MIN_TEXT = 200 chars) rather than emitted as
+    metadata-only records.
+  - Press releases (BOARD_SEQ 5), the general 자료실 (12) and 공지사항 (4) are
+    deliberately not collected: they are announcements and monitoring
+    bulletins, not regulatory instruments or decisions.
+  - The consolidated (as-amended) text of 원자력안전법 and the NSSC notices
+    lives in KR/LawGoKr; this source carries the promulgated amendment texts
+    and the commission's own proceedings, which law.go.kr does not hold.

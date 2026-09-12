@@ -29,7 +29,7 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 logging.basicConfig(
     level=logging.INFO,
@@ -44,6 +44,16 @@ CHECKPOINT_FILE = Path(__file__).parent / "checkpoint.json"
 SOURCE_ID = "OM/QanoonLegislation"
 
 PER_PAGE = 100
+
+# qanoon.om sits behind Cloudflare, which answers with 52x when its handshake
+# to the WordPress origin fails. These are transient — the same page succeeds
+# seconds later — so they must be retried rather than skipped, and a page that
+# still fails after the retries must abort the run instead of quietly leaving a
+# 100-document hole in the corpus (issue #1418).
+RETRYABLE_STATUS = {408, 425, 429, 500, 502, 503, 504,
+                    520, 521, 522, 523, 524, 525, 526, 527}
+MAX_ATTEMPTS = 6
+BACKOFF_CAP = 120
 
 # Main legislation categories on qanoon.om
 CATEGORIES = {
@@ -75,30 +85,79 @@ class QanoonLegislationScraper(BaseScraper):
             "Accept": "application/json,text/html,*/*;q=0.8",
             "Accept-Language": "ar,en-US;q=0.7,en;q=0.3",
         })
+        # Sample runs must start at the top of the corpus, not resume a crawl.
+        self.use_checkpoint = True
 
     def _load_checkpoint(self) -> dict:
-        if CHECKPOINT_FILE.exists():
+        if self.use_checkpoint and CHECKPOINT_FILE.exists():
             with open(CHECKPOINT_FILE, 'r') as f:
                 return json.load(f)
         return {'current_category': None, 'last_page': 0, 'fetched_ids': []}
 
     def _save_checkpoint(self, checkpoint: dict):
+        if not self.use_checkpoint:
+            return
         with open(CHECKPOINT_FILE, 'w') as f:
             json.dump(checkpoint, f, indent=2)
 
     def _fetch_api_page(self, category_id: int, page: int) -> tuple:
-        """Fetch a page of posts from a category."""
+        """Fetch one page of posts, retrying transient Cloudflare/WP failures.
+
+        Returns ``(posts, total, total_pages)``. Raises ``RuntimeError`` if the
+        page is still unreachable after ``MAX_ATTEMPTS`` — the caller must not
+        treat that as the end of the category.
+        """
         url = (
             f"{API_URL}?per_page={PER_PAGE}&page={page}"
             f"&categories={category_id}&orderby=date&order=asc"
         )
         logger.info(f"Fetching cat={category_id} page {page}")
-        time.sleep(1)
-        resp = self.session.get(url, timeout=30)
-        resp.raise_for_status()
-        total = int(resp.headers.get("X-WP-Total", 0))
-        total_pages = int(resp.headers.get("X-WP-TotalPages", 0))
-        return resp.json(), total, total_pages
+
+        last_error = None
+        for attempt in range(1, MAX_ATTEMPTS + 1):
+            retry_after = None
+            time.sleep(1)
+            try:
+                resp = self.session.get(url, timeout=(15, 45))
+            except requests.RequestException as e:
+                last_error = f"{type(e).__name__}: {e}"
+            else:
+                if resp.status_code == 200:
+                    return (
+                        resp.json(),
+                        int(resp.headers.get("X-WP-Total", 0)),
+                        int(resp.headers.get("X-WP-TotalPages", 0)),
+                    )
+                if resp.status_code == 400 and "rest_post_invalid_page_number" in resp.text:
+                    # WP's way of saying "past the last page" — a normal stop.
+                    return [], 0, page - 1
+                if resp.status_code not in RETRYABLE_STATUS:
+                    raise RuntimeError(
+                        f"cat={category_id} page={page} returned "
+                        f"HTTP {resp.status_code} (not retryable)"
+                    )
+                last_error = f"HTTP {resp.status_code}"
+                retry_after = resp.headers.get("Retry-After")
+
+            if attempt == MAX_ATTEMPTS:
+                break
+
+            delay = min(2 ** attempt, BACKOFF_CAP)
+            try:
+                delay = max(delay, min(int(retry_after), BACKOFF_CAP))
+            except (TypeError, ValueError):
+                pass
+            logger.warning(
+                f"cat={category_id} page={page} attempt {attempt}/{MAX_ATTEMPTS} "
+                f"failed ({last_error}) — retrying in {delay}s"
+            )
+            time.sleep(delay)
+
+        raise RuntimeError(
+            f"cat={category_id} page={page} unreachable after {MAX_ATTEMPTS} "
+            f"attempts (last: {last_error}). Aborting so a partial fetch is not "
+            f"reported as success."
+        )
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield all legislation documents with full text."""
@@ -117,21 +176,28 @@ class QanoonLegislationScraper(BaseScraper):
 
             page = start_page if cat_id == start_cat else 1
             total_pages = None
+            cat_posts = 0
 
             while True:
-                try:
-                    posts, total, tp = self._fetch_api_page(cat_id, page)
-                except requests.RequestException as e:
-                    logger.error(f"API request failed cat={cat_id} page={page}: {e}")
-                    break
+                # A failed page now raises out of fetch_all: an unreachable page
+                # is not the end of the category, and pretending otherwise is
+                # what silently truncated the corpus to 1,285 of ~10,100.
+                posts, total, tp = self._fetch_api_page(cat_id, page)
 
                 if total_pages is None:
                     total_pages = tp
                     logger.info(f"Category {doc_type} (ID {cat_id}): {total} posts, {total_pages} pages")
 
                 if not posts:
+                    if page <= (total_pages or 0):
+                        raise RuntimeError(
+                            f"cat={cat_id} page={page} of {total_pages} returned an "
+                            f"empty list — the API is dropping pages, refusing to "
+                            f"report a truncated category as complete"
+                        )
                     break
 
+                cat_posts += len(posts)
                 for post in posts:
                     wp_id = post.get('id')
                     if wp_id in fetched_ids:
@@ -172,11 +238,26 @@ class QanoonLegislationScraper(BaseScraper):
                     break
                 page += 1
 
+            logger.info(
+                f"Category {doc_type} (ID {cat_id}) done: {cat_posts} posts seen "
+                f"across pages {start_page if cat_id == start_cat else 1}-{page}"
+            )
+
             # Reset page counter for next category
             start_page = 1
 
+        # Every category walked to its last page. Clear the checkpoint so the
+        # next refresh re-scans from the top and picks up new legislation —
+        # otherwise a completed run leaves the cursor parked past the end and
+        # every subsequent run is a no-op. Ingest dedups on _id.
+        if self.use_checkpoint and CHECKPOINT_FILE.exists():
+            CHECKPOINT_FILE.unlink()
+            logger.info("Corpus walk complete — checkpoint cleared for next refresh")
+
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
         """Yield posts modified since a date."""
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         for cat_id, doc_type in CATEGORIES.items():
             page = 1
             while True:
@@ -237,42 +318,56 @@ class QanoonLegislationScraper(BaseScraper):
         }
 
 
-def bootstrap(sample: bool = False):
+def bootstrap(sample: bool = False, fast: bool = False):
     """Bootstrap the OM/QanoonLegislation data source."""
     scraper = QanoonLegislationScraper()
-    SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
 
+    if not sample:
+        # BaseScraper streams normalized records to data/records.jsonl and
+        # surfaces a failed page as a non-zero exit.
+        stats = scraper.bootstrap_fast() if fast else scraper.bootstrap()
+        logger.info(
+            f"Done. {stats.get('records_fetched', 0)} fetched, "
+            f"{stats.get('records_new', 0)} new, {stats.get('errors', 0)} errors."
+        )
+        if stats.get("error_message"):
+            logger.error(f"Bootstrap failed: {stats['error_message']}")
+            sys.exit(1)
+        return stats.get("records_fetched", 0)
+
+    scraper.use_checkpoint = False
+    SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
     count = 0
-    max_records = 15 if sample else float('inf')
 
     for record in scraper.fetch_all():
         normalized = scraper.normalize(record)
 
-        if sample:
-            safe_id = re.sub(r'[/\\:]', '_', normalized['_id'])
-            out_file = SAMPLE_DIR / f"{safe_id}.json"
-            with open(out_file, 'w', encoding='utf-8') as f:
-                json.dump(normalized, f, ensure_ascii=False, indent=2)
-            text_len = len(normalized.get('text', '') or '')
-            logger.info(
-                f"[{count + 1}] {normalized['_id']} — "
-                f"{text_len} chars text, type={normalized.get('doc_type')}, date={normalized.get('date')}"
-            )
+        safe_id = re.sub(r'[/\\:]', '_', normalized['_id'])
+        out_file = SAMPLE_DIR / f"{safe_id}.json"
+        with open(out_file, 'w', encoding='utf-8') as f:
+            json.dump(normalized, f, ensure_ascii=False, indent=2)
+        text_len = len(normalized.get('text', '') or '')
+        logger.info(
+            f"[{count + 1}] {normalized['_id']} — "
+            f"{text_len} chars text, type={normalized.get('doc_type')}, date={normalized.get('date')}"
+        )
 
         count += 1
-        if count >= max_records:
+        if count >= 15:
             break
 
-    logger.info(f"Done. {count} records {'sampled' if sample else 'fetched'}.")
+    logger.info(f"Done. {count} records sampled.")
     return count
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="OM/QanoonLegislation bootstrap")
-    parser.add_argument("action", choices=["bootstrap"], help="Action to perform")
+    # The fleet wrapper invokes `bootstrap-fast`; without it argparse exits 2
+    # and the wrapper falls back to re-ingesting sample/.
+    parser.add_argument("action", choices=["bootstrap", "bootstrap-fast"],
+                        help="Action to perform")
     parser.add_argument("--sample", action="store_true", help="Fetch sample only (15 records)")
     parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
 
-    if args.action == "bootstrap":
-        bootstrap(sample=args.sample or not args.full)
+    bootstrap(sample=args.sample, fast=args.action == "bootstrap-fast")

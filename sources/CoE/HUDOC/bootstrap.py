@@ -101,7 +101,7 @@ def search_cases(
 
     params = {
         "query": query,
-        "select": "itemid,docname,doctype,conclusion,kpdate,languageisocode,application,ecli,importance,respondent,representedby,separateopinion",
+        "select": "itemid,docname,doctype,conclusion,kpdate,languageisocode,appno,ecli,importance,respondent,representedby,separateopinion",
         "sort": sort,
         "start": start,
         "length": length,
@@ -125,6 +125,32 @@ def fetch_full_text(item_id: str) -> Optional[str]:
         return None
 
 
+# The ECLI tail for ECtHR decisions encodes the application number:
+#   ECLI:CE:ECHR:2010:0722JUD005483708 -> 005483708 -> 54837/08
+ECLI_APPNO_RE = re.compile(r"(?:JUD|DEC|REP)(\d{7})(\d{2})$")
+
+
+def parse_appnos(appno_field: str, ecli: str = "") -> list:
+    """Return the application numbers for a HUDOC row.
+
+    HUDOC returns joined cases as a ';'-separated list in `appno`. Rows without
+    the field (Commission reports, some translations) still carry the number
+    inside the ECLI, so fall back to decoding the ECLI tail.
+    """
+    numbers = []
+    for part in re.split(r"[;,]", appno_field or ""):
+        part = part.strip()
+        if part and part.upper() != "NULL":
+            numbers.append(part)
+
+    if not numbers and ecli:
+        match = ECLI_APPNO_RE.search(ecli.strip())
+        if match:
+            numbers.append(f"{int(match.group(1))}/{match.group(2)}")
+
+    return numbers
+
+
 def normalize(raw: Dict[str, Any], full_text: Optional[str] = None) -> Dict[str, Any]:
     """Normalize a HUDOC record to standard schema."""
     columns = raw.get("columns", raw)
@@ -136,7 +162,7 @@ def normalize(raw: Dict[str, Any], full_text: Optional[str] = None) -> Dict[str,
     lang = columns.get("languageisocode", "ENG")
     conclusion = columns.get("conclusion", "")
     ecli = columns.get("ecli", "")
-    application = columns.get("application", "")
+    appnos = parse_appnos(columns.get("appno", ""), ecli)
     respondent = columns.get("respondent", "")
     importance = columns.get("importance", "")
 
@@ -170,7 +196,8 @@ def normalize(raw: Dict[str, Any], full_text: Optional[str] = None) -> Dict[str,
         "date": date_iso,
         "url": f"https://hudoc.echr.coe.int/eng?i={item_id}",
         "ecli": ecli,
-        "application_number": application,
+        "application_number": appnos[0] if appnos else None,
+        "application_numbers": appnos,
         "respondent_state": respondent,
         "conclusion": conclusion,
         "language": lang.lower() if lang else "eng",
@@ -204,7 +231,7 @@ def fetch_year_range(
     while True:
         params = {
             "query": query,
-            "select": "itemid,docname,doctype,conclusion,kpdate,languageisocode,application,ecli,importance,respondent,representedby,separateopinion",
+            "select": "itemid,docname,doctype,conclusion,kpdate,languageisocode,appno,ecli,importance,respondent,representedby,separateopinion",
             "sort": "kpdate Descending",
             "start": start,
             "length": batch_size,
@@ -492,4 +519,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

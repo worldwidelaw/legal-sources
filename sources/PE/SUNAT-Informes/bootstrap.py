@@ -36,7 +36,7 @@ from urllib.parse import urljoin
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 from common.pdf_extract import extract_pdf_markdown
 
@@ -306,6 +306,8 @@ class SUNATInformesScraper(BaseScraper):
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
         """Fetch documents from recent years."""
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         try:
             since_year = int(since[:4])
         except (ValueError, IndexError):

@@ -1,0 +1,92 @@
+source:
+  id: "OM/SJC-CaseLaw"
+  country: "OM"
+  name: "Oman Supreme Judiciary Council — Supreme Court Legal Principles"
+  url: "https://www.sjc.gov.om/InnerPage.aspx?ID=2095bd1d-1eca-4996-90e0-76652101f3c3"
+  description: |
+    Official compilations of legal principles (المبادئ القانونية) endorsed by the
+    Supreme Court of Oman, published by the Technical Bureau of the Supreme Judiciary
+    Council. Each volume gathers the ratio decidendi / legal principles extracted from
+    Supreme Court judgments, organised by year and by division (criminal / الجزائية,
+    civil & personal status / الشرعية والمدنية, labour-commercial-rental / العمالية
+    والتجارية والإيجارات, blood-money & compensation / الديات والأروش), 2011–2025,
+    plus a bilingual Arabic/English translated-principles volume. Full text extracted
+    from born-digital PDFs. Arabic (one volume Arabic+English).
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.sjc.gov.om"
+
+data_model:
+  type: "case_law"
+  source_nature: "bulk_archive"
+  primary_key: "id"
+  update_strategy: "upsert"
+  versioning: "none"
+  dedup_key:
+    - "id"
+
+schema:
+  total_fields: 16
+  key_fields:
+    - name: "id"
+      description: "Unique identifier (OM-SJC-<hash>)"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Title of the legal-principles compilation volume"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full extracted text of the compilation volume"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Start of the judicial period covered (YYYY-01-01), null if unknown"
+      type: "date"
+      role: "temporal_key"
+      required: false
+  secondary_fields:
+    - name: "division"
+      description: "Supreme Court division (criminal / civil / labour-commercial / etc.)"
+    - name: "period"
+      description: "Raw period/year range parsed from the title"
+    - name: "language"
+      description: "Document language (ar / ar-en)"
+    - name: "url"
+      description: "Direct URL to the source PDF"
+  probably_ignorable: []
+
+license:
+  id: "pd-gov"
+  name: "Public Domain (Government)"
+  url: "https://www.sjc.gov.om/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Official Supreme Court judicial principles published by the Omani Supreme Judiciary Council. Official legal texts / judgments are not subject to copyright."
+
+notes: |
+  Language: Arabic (Arabic presentation-forms normalised to standard Arabic via NFKC),
+  one bilingual Arabic/English volume. Coverage: 2011–2025 Supreme Court legal principles
+  by division. Access: static born-digital PDFs under
+  /userupload/ Legal principles/ linked from the Technical Bureau "Legal Principles" page.
+  No API, no browser required. One record per published volume (~19 volumes).
+  GOTCHA: Arabic PDF filenames on the server use a specific Unicode normalisation —
+  always fetch the exact href bytes parsed from the page HTML (do not retype), and
+  URL-encode with urllib.parse.quote. Intermittent 404s on the host → retry with backoff.

@@ -508,9 +508,14 @@ def save_checkpoint(checkpoint_file: Path, offset: int, completed_celex: set, to
         json.dump(data, f)
 
 
-def fetch_and_save_document(fetcher: 'CURIAFetcher', doc: Dict[str, Any],
-                            sample_dir: Path, completed_celex: set) -> Optional[int]:
-    """Fetch and save a single document. Returns text length or None if failed."""
+def fetch_document_record(fetcher: 'CURIAFetcher', doc: Dict[str, Any],
+                          completed_celex: set) -> Optional[Dict[str, Any]]:
+    """Fetch full text for one document and return the normalized record.
+
+    Returns the normalized dict on success, or None when the document is a
+    duplicate, has no HTML, or has insufficient text. Marks the CELEX as
+    completed in all cases so callers never re-attempt it.
+    """
     celex = doc['celex']
 
     # Skip already completed documents
@@ -541,6 +546,7 @@ def fetch_and_save_document(fetcher: 'CURIAFetcher', doc: Dict[str, Any],
         doc['title'] = html_metadata['title']
 
     normalized = fetcher.normalize(doc)
+    normalized.pop('html', None)  # never persist the raw HTML blob
 
     # Validate: must have substantial text
     text_len = len(normalized.get('text', ''))
@@ -549,18 +555,81 @@ def fetch_and_save_document(fetcher: 'CURIAFetcher', doc: Dict[str, Any],
         completed_celex.add(celex)
         return None
 
-    # Save to sample directory
+    completed_celex.add(celex)
+    time.sleep(1.5)  # rate limiting
+    return normalized
+
+
+def fetch_and_save_document(fetcher: 'CURIAFetcher', doc: Dict[str, Any],
+                            sample_dir: Path, completed_celex: set) -> Optional[int]:
+    """Fetch and save a single document to the sample dir. Returns text length."""
+    normalized = fetch_document_record(fetcher, doc, completed_celex)
+    if not normalized:
+        return None
+
     filename = f"{normalized['_id'].replace(':', '_').replace('/', '_')}.json"
     filepath = sample_dir / filename
-
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(normalized, f, indent=2, ensure_ascii=False)
 
+    text_len = len(normalized.get('text', ''))
     logger.info(f"Saved: {normalized['_id']} - {normalized['title'][:60]}... ({text_len} chars)")
-    completed_celex.add(celex)
+    return text_len
 
-    # Rate limiting
-    time.sleep(1.5)
+
+def run_bootstrap_fast(fetcher: 'CURIAFetcher') -> None:
+    """Full streaming bootstrap for the fleet runner.
+
+    Iterates year-by-year from 1954 to the current year (partitioning by
+    judgment date via SPARQL, which avoids the OFFSET ~10K ceiling that
+    previously truncated coverage to only the most recent judgments and left
+    pre-2015 case law unindexed -- see issue #1195) and appends each normalized
+    full-text record to ``data/records.jsonl``. Resumable via a checkpoint that
+    records the next year to process and the CELEX numbers already written.
+    """
+    source_dir = Path(__file__).parent
+    data_dir = source_dir / 'data'
+    data_dir.mkdir(exist_ok=True)
+    records_file = data_dir / 'records.jsonl'
+    checkpoint_file = source_dir / '.checkpoint_fast.json'
+
+    checkpoint = load_checkpoint(checkpoint_file)
+    completed_celex = set(checkpoint.get('completed_celex', []))
+    total_saved = checkpoint.get('total_saved', 0)
+    start_year = checkpoint.get('current_year') or 1954
+    end_year = datetime.now().year
+
+    logger.info(f"bootstrap-fast: streaming to {records_file} "
+                f"(years {start_year}-{end_year}, resuming at {total_saved} written)")
+
+    with open(records_file, 'a', encoding='utf-8') as out:
+        for year in range(start_year, end_year + 1):
+            logger.info(f"{'='*60}\nProcessing year {year}...")
+            documents = fetcher._query_sparql_by_year(year)
+            if not documents:
+                logger.info(f"Year {year}: no documents found")
+                save_checkpoint(checkpoint_file, 0, completed_celex, total_saved,
+                                current_year=year + 1)
+                continue
+
+            logger.info(f"Year {year}: found {len(documents)} documents")
+            for doc in documents:
+                record = fetch_document_record(fetcher, doc, completed_celex)
+                if record:
+                    out.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    out.flush()
+                    total_saved += 1
+                    if total_saved % 25 == 0:
+                        save_checkpoint(checkpoint_file, 0, completed_celex,
+                                        total_saved, current_year=year)
+                        logger.info(f"Checkpoint: {total_saved} records written (year {year})")
+
+            # Advance the resume point past this completed year.
+            save_checkpoint(checkpoint_file, 0, completed_celex, total_saved,
+                            current_year=year + 1)
+            logger.info(f"Year {year} complete: {total_saved} total records written")
+
+    logger.info(f"bootstrap-fast complete: {total_saved} records in {records_file}")
 
     return text_len
 
@@ -568,6 +637,12 @@ def fetch_and_save_document(fetcher: 'CURIAFetcher', doc: Dict[str, Any],
 def main():
     """Main entry point for testing."""
     import sys
+
+    # Fleet runner invokes 'bootstrap-fast': stream the full corpus (all years,
+    # 1954-present) to data/records.jsonl. Handled before the sample path.
+    if len(sys.argv) > 1 and sys.argv[1] == 'bootstrap-fast':
+        run_bootstrap_fast(CURIAFetcher())
+        return
 
     if len(sys.argv) > 1 and sys.argv[1] == 'bootstrap':
         # Bootstrap mode - fetch sample data
@@ -577,7 +652,10 @@ def main():
         checkpoint_file = Path(__file__).parent / '.checkpoint.json'
 
         is_sample = '--sample' in sys.argv
-        use_year_mode = '--by-year' in sys.argv  # NEW: Year-based pagination mode
+        # Year-based pagination is the default for a full (non-sample) bootstrap:
+        # offset mode is capped at ~10K by the SPARQL endpoint and silently drops
+        # older case law (issue #1195). --by-year is kept for explicit callers.
+        use_year_mode = '--by-year' in sys.argv
         target_count = 12 if is_sample else None  # No limit for full bootstrap
 
         # Parse date range arguments (--start-date=YYYY-MM-DD --end-date=YYYY-MM-DD)
@@ -601,6 +679,11 @@ def main():
                 # Convenience flag for pre-2018 data
                 end_date = '2018-01-01'
                 order_asc = True
+
+        # Default a full (non-sample) bootstrap to year mode unless the caller
+        # pinned an explicit date range — offset mode truncates older case law.
+        if not is_sample and not (start_date or end_date):
+            use_year_mode = True
 
         # Load checkpoint for full bootstrap
         if not is_sample:

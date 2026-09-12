@@ -5,20 +5,29 @@ AU/TAS-Legislation -- Tasmania Legislation Fetcher
 Fetches Tasmanian Acts and Statutory Rules from legislation.tas.gov.au.
 
 Strategy:
-  - Index documents via JSON projectdata API (year-by-year enumeration)
+  - Index documents via the JSON projectdata API (the same EnAct-BrowseDataSource
+    the site's own /browse pages call), paginated with start/count
   - Fetch full text HTML from /view/whole/html/inforce/current/{id}
-  - Extract text from HTML content div
+  - Extract text from the page's content div
   - No auth required; CC BY 4.0 license
 
+Notes:
+  The index API rejects `sortField=sort.title` ("E3701-AS: The sort operation
+  failed / Cannot find a sort index"), so no sort is requested — paging is done
+  purely with start/count, which the datasource returns in a stable order.
+  Full text is downloaded inside normalize() so bootstrap_fast() can overlap
+  downloads across worker threads.
+
 Data:
-  - Tasmanian Acts (from 1839) and Statutory Rules
+  - In-force Tasmanian Acts (from 1839) and Statutory Rules
   - Full text in HTML
   - Language: English
 
 Usage:
   python bootstrap.py bootstrap          # Full initial pull
   python bootstrap.py bootstrap --sample # Fetch 15 sample records
-  python bootstrap.py update             # Check Atom feed for updates
+  python bootstrap.py bootstrap-fast     # Concurrent full pull -> data/records.jsonl
+  python bootstrap.py update             # Recently published documents
   python bootstrap.py test               # Quick connectivity test
 """
 
@@ -51,35 +60,44 @@ BASE_URL = "https://www.legislation.tas.gov.au"
 PROJECTDATA_URL = f"{BASE_URL}/projectdata"
 HTML_URL_PATTERN = f"{BASE_URL}/view/whole/html/inforce/current/{{doc_id}}"
 
-# Document types to fetch
+# (PrintType value in the datasource, human label)
 DOC_TYPES = [
-    ("act.reprint", "act"),      # Acts
-    ("reprint", "sr"),           # Statutory Rules
+    ("act.reprint", "act"),      # Acts (consolidated reprints)
+    ("reprint", "sr"),           # Statutory Rules (consolidated reprints)
 ]
+
+# The datasource truncates large JSON responses (urllib raises IncompleteRead
+# at ~65 KB), so keep pages small enough to always come back whole.
+PAGE_SIZE = 50
 
 HEADERS = {
     "User-Agent": "LegalDataHunter/1.0 (legal research; open data)",
     "Accept": "text/html, application/json",
 }
 
-# Year range for enumeration
-START_YEAR = 1839
-CURRENT_YEAR = datetime.now().year
 
-
-def _fetch_url(url: str, timeout: int = 60) -> Optional[bytes]:
-    """Fetch a URL with error handling."""
-    req = Request(url, headers=HEADERS)
-    try:
-        with urlopen(req, timeout=timeout) as resp:
-            return resp.read()
-    except (URLError, HTTPError) as e:
-        logger.debug(f"Failed to fetch {url}: {e}")
-        return None
+def _fetch_url(url: str, timeout: int = 60, attempts: int = 3) -> Optional[bytes]:
+    """Fetch a URL with retries."""
+    for attempt in range(attempts):
+        req = Request(url, headers=HEADERS)
+        try:
+            with urlopen(req, timeout=timeout) as resp:
+                return resp.read()
+        except HTTPError as e:
+            if e.code in (404, 410):
+                return None
+            logger.debug(f"HTTP {e.code} for {url} (attempt {attempt + 1})")
+        except URLError as e:
+            logger.debug(f"Failed to fetch {url}: {e} (attempt {attempt + 1})")
+        except Exception as e:  # socket timeouts, incomplete reads
+            logger.debug(f"Error fetching {url}: {e} (attempt {attempt + 1})")
+        if attempt < attempts - 1:
+            time.sleep(2 * (attempt + 1))
+    return None
 
 
 def _extract_text_from_html(html_bytes: bytes) -> str:
-    """Extract legislation text from Tasmania HTML page."""
+    """Extract legislation text from a Tasmania HTML page."""
     try:
         html_str = html_bytes.decode("utf-8", errors="replace")
     except Exception:
@@ -127,10 +145,15 @@ def _extract_text_from_html(html_bytes: bytes) -> str:
 def _get_val(obj: Any) -> str:
     """Extract value from Tasmania's JSON format (handles UniString wrapper)."""
     if isinstance(obj, dict) and "__value__" in obj:
-        return obj["__value__"]
+        return obj["__value__"] or ""
     if isinstance(obj, str):
         return obj
     return str(obj) if obj else ""
+
+
+def _point_in_time() -> str:
+    """Server-time style 14-digit stamp used by the PitValid predicate."""
+    return datetime.now().strftime("%Y%m%d%H%M%S")
 
 
 class TasmaniaLegislationScraper(BaseScraper):
@@ -147,37 +170,106 @@ class TasmaniaLegislationScraper(BaseScraper):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
 
-    def _fetch_index(self, print_type: str, year: int) -> List[Dict[str, Any]]:
-        """Fetch the index for a given type and year."""
-        pit = datetime.now().strftime("%Y%m%d%H%M%S")
+    # ── Index ─────────────────────────────────────────────────────────
+
+    def _index_url(self, print_type: str, start: int, count: int) -> str:
         expression = (
-            f"PrintType={print_type}+AND+Year={year}?+"
-            f"AND+PitValid=@pointInTime({pit})"
+            f"PrintType={print_type} AND Repealed<>Y "
+            f"AND PitValid=@pointInTime({_point_in_time()})"
         )
-        url = (
+        return (
             f"{PROJECTDATA_URL}?ds=EnAct-BrowseDataSource"
-            f"&start=1&count=5000"
-            f"&sortField=sort.title&sortDirection=asc"
-            f"&expression={quote(expression, safe='+@()=?')}"
+            f"&start={start}&count={count}"
+            f"&expression={quote(expression, safe='@()=<>')}"
             f"&collection="
         )
 
-        data = _fetch_url(url)
+    def _fetch_index_page(
+        self, print_type: str, start: int, count: int = PAGE_SIZE
+    ) -> tuple:
+        """Fetch one index page. Returns (entries, total_count)."""
+        data = _fetch_url(self._index_url(print_type, start, count))
         if not data:
-            return []
+            return [], 0
 
+        body = data.decode("utf-8", errors="replace")
         try:
-            result = json.loads(data)
-            entries = result.get("data", [])
-            # API returns a single dict when only 1 result, list when multiple
-            if isinstance(entries, dict):
-                entries = [entries]
-            return entries if isinstance(entries, list) else []
+            result = json.loads(body)
         except json.JSONDecodeError:
-            return []
+            logger.warning(
+                f"Index for {print_type} start={start} was not JSON: {body[:200]!r}"
+            )
+            return [], 0
 
-    def _fetch_document(self, doc_id: str, metadata: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Fetch a single document by ID and return raw data."""
+        total = result.get("totalCount")
+        if isinstance(total, dict):
+            total = total.get("__value__", 0)
+        try:
+            total = int(total or 0)
+        except (TypeError, ValueError):
+            total = 0
+
+        entries = result.get("data", [])
+        # API returns a single dict when only 1 result, list when multiple
+        if isinstance(entries, dict):
+            entries = [entries]
+        if not isinstance(entries, list):
+            entries = []
+        return entries, total
+
+    def _iter_index(self, print_type: str) -> Generator[Dict[str, Any], None, None]:
+        """Page through the whole index for a PrintType."""
+        start = 1
+        total = None
+        while True:
+            entries, page_total = self._fetch_index_page(print_type, start)
+            if total is None:
+                total = page_total
+                logger.info(f"{print_type}: {total} documents in index")
+            if not entries:
+                break
+            for entry in entries:
+                yield entry
+            start += len(entries)
+            if total and start > total:
+                break
+            time.sleep(0.5)
+
+    # ── Fetch ─────────────────────────────────────────────────────────
+
+    def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
+        """Yield index metadata for all in-force Tasmanian legislation."""
+        seen = set()
+        for print_type, label in DOC_TYPES:
+            logger.info(f"Indexing {print_type} ({label}) documents...")
+            for entry in self._iter_index(print_type):
+                doc_id = _get_val(entry.get("id", ""))
+                if not doc_id or doc_id in seen:
+                    continue
+                if _get_val(entry.get("repealed", "N")) == "Y":
+                    continue
+                seen.add(doc_id)
+                entry["_doc_id"] = doc_id
+                entry["_label"] = label
+                yield entry
+        logger.info(f"Total unique documents indexed: {len(seen)}")
+
+    def fetch_updates(self, since: datetime) -> Generator[Dict[str, Any], None, None]:
+        """Yield documents published/reprinted on or after `since`."""
+        cutoff = since.date().isoformat()
+        for entry in self.fetch_all():
+            pub = entry.get("publication.date") or entry.get("first.valid.date") or ""
+            if isinstance(pub, str) and pub[:10] >= cutoff:
+                yield entry
+
+    # ── Normalize (downloads full text) ───────────────────────────────
+
+    def normalize(self, raw: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Fetch the full text for an indexed document and normalize it."""
+        doc_id = raw.get("_doc_id") or _get_val(raw.get("id", ""))
+        if not doc_id:
+            return None
+
         url = HTML_URL_PATTERN.format(doc_id=doc_id)
         html_data = _fetch_url(url, timeout=90)
         if not html_data:
@@ -185,105 +277,32 @@ class TasmaniaLegislationScraper(BaseScraper):
 
         text = _extract_text_from_html(html_data)
         if not text or len(text) < 100:
+            logger.debug(f"No usable text for {doc_id} ({len(text)} chars)")
             return None
 
-        title = _get_val(metadata.get("title", ""))
         date = None
-        assent = metadata.get("assent.date")
-        if assent and isinstance(assent, str):
-            date = assent[:10]  # Extract YYYY-MM-DD from ISO datetime
-        if not date:
-            pub = metadata.get("publication.date")
-            if pub and isinstance(pub, str):
-                date = pub[:10]
+        for key in ("assent.date", "publication.date", "first.valid.date"):
+            val = raw.get(key)
+            if isinstance(val, str) and len(val) >= 10:
+                date = val[:10]
+                break
+
+        title = _get_val(raw.get("title", "")) or doc_id
 
         return {
-            "doc_id": doc_id,
-            "title": title or doc_id,
-            "text": text,
-            "date": date,
-            "year": _get_val(metadata.get("year", "")),
-            "number": _get_val(metadata.get("no", "")),
-            "doc_type": _get_val(metadata.get("type", "")),
-            "repealed": _get_val(metadata.get("repealed", "N")),
-            "url": url,
-        }
-
-    def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
-        """Normalize a raw record to standard schema."""
-        return {
-            "_id": raw["doc_id"],
+            "_id": doc_id,
             "_source": "AU/TAS-Legislation",
             "_type": "legislation",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
-            "title": raw.get("title", raw["doc_id"]),
-            "text": raw.get("text", ""),
-            "date": raw.get("date"),
-            "url": raw.get("url", ""),
-            "doc_id": raw["doc_id"],
-            "doc_type": raw.get("doc_type", ""),
-            "year": raw.get("year"),
-            "number": raw.get("number"),
+            "title": title,
+            "text": text,
+            "date": date,
+            "url": url,
+            "doc_id": doc_id,
+            "doc_type": _get_val(raw.get("type", "")) or raw.get("_label", ""),
+            "year": _get_val(raw.get("year", "")),
+            "number": _get_val(raw.get("no", "")),
         }
-
-    def fetch_all(self) -> Generator[Dict[str, Any], None, None]:
-        """Yield all Tasmanian legislation documents."""
-        seen = set()
-
-        for print_type, id_prefix in DOC_TYPES:
-            logger.info(f"Indexing {print_type} documents...")
-
-            for year in range(CURRENT_YEAR, START_YEAR - 1, -1):
-                entries = self._fetch_index(print_type, year)
-                if not entries:
-                    continue
-
-                logger.info(f"  {year}: {len(entries)} {print_type} entries")
-
-                for entry in entries:
-                    doc_id = _get_val(entry.get("id", ""))
-                    if not doc_id or doc_id in seen:
-                        continue
-
-                    # Skip repealed legislation
-                    if _get_val(entry.get("repealed", "N")) == "Y":
-                        continue
-
-                    seen.add(doc_id)
-
-                    doc = self._fetch_document(doc_id, entry)
-                    if doc:
-                        yield doc
-
-                    time.sleep(1)
-
-                time.sleep(0.5)
-
-        logger.info(f"Total unique documents: {len(seen)}")
-
-    def fetch_updates(self, since: datetime) -> Generator[Dict[str, Any], None, None]:
-        """Fetch recently updated documents from Atom feed."""
-        feed_url = f"{BASE_URL}/feed?id=crawler"
-        data = _fetch_url(feed_url)
-        if not data:
-            return
-
-        text = data.decode("utf-8", errors="replace")
-        # Extract document IDs from feed links
-        id_matches = re.findall(
-            r'/(?:view|browse)/[^"]*?/((?:act|sr)-\d{4}-\d{3,4})', text
-        )
-
-        seen = set()
-        for doc_id in id_matches:
-            if doc_id in seen:
-                continue
-            seen.add(doc_id)
-
-            doc = self._fetch_document(doc_id, {"title": "", "id": doc_id})
-            if doc:
-                yield doc
-            time.sleep(1)
 
 
 # ── CLI ──────────────────────────────────────────────────────────────
@@ -292,7 +311,9 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="AU/TAS-Legislation data fetcher")
-    parser.add_argument("command", choices=["bootstrap", "update", "test"])
+    parser.add_argument(
+        "command", choices=["bootstrap", "bootstrap-fast", "update", "test"]
+    )
     parser.add_argument("--sample", action="store_true", help="Sample mode (15 records)")
     parser.add_argument("--full", action="store_true", help="Fetch all records")
     args = parser.parse_args()
@@ -301,15 +322,14 @@ def main():
 
     if args.command == "test":
         logger.info("Testing JSON index API...")
-        entries = scraper._fetch_index("act.reprint", 2020)
+        entries, total = scraper._fetch_index_page("act.reprint", 1, 5)
         if entries:
-            logger.info(f"OK — {len(entries)} acts found for 2020")
-            doc_id = _get_val(entries[0].get("id", ""))
-            title = _get_val(entries[0].get("title", ""))
-            logger.info(f"First: {doc_id} — {title}")
+            logger.info(f"OK — {total} in-force acts indexed")
+            entries[0]["_doc_id"] = _get_val(entries[0].get("id", ""))
+            logger.info(f"First: {entries[0]['_doc_id']} — {_get_val(entries[0].get('title'))}")
 
             logger.info("Testing HTML full text...")
-            doc = scraper._fetch_document(doc_id, entries[0])
+            doc = scraper.normalize(entries[0])
             if doc:
                 logger.info(f"OK — '{doc['title']}' ({len(doc['text'])} chars)")
             else:
@@ -322,6 +342,10 @@ def main():
     elif args.command == "bootstrap":
         stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
         logger.info(f"Bootstrap complete: {json.dumps(stats, indent=2)}")
+
+    elif args.command == "bootstrap-fast":
+        stats = scraper.bootstrap_fast()
+        logger.info(f"Bootstrap-fast complete: {json.dumps(stats, indent=2)}")
 
     elif args.command == "update":
         stats = scraper.update()

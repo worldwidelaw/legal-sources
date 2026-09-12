@@ -1,0 +1,78 @@
+rate_limit:
+  burst: 2
+  requests_per_second: 1
+schema:
+  key_fields:
+  - name: _id
+    required: true
+    type: string
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
+    type: string
+  - name: date
+    required: false
+    type: date
+  - name: url
+    required: true
+    type: string
+  - name: _type
+    required: false
+    type: string
+  - name: _source
+    required: false
+    type: string
+  - name: _fetched_at
+    required: false
+    type: string
+  - name: case_reference
+    required: false
+    type: string
+  - name: court
+    required: false
+    type: string
+  - name: jurisdiction
+    required: false
+    type: string
+  - name: pdf_url
+    required: false
+    type: string
+  - name: language
+    required: false
+    type: string
+source:
+  auth: none
+  country: NZ
+  data_types:
+  - case_law
+  description: >
+    Health and Disability Commissioner (Te Toihau Hauora, Hauatanga) formal
+    opinions on complaints about New Zealand health and disability services,
+    published since 1996. The Commissioner is an independent Crown entity
+    determining complaints under the Health and Disability Commissioner Act
+    1994 against the Code of Health and Disability Services Consumers' Rights.
+    Decisions are published as HTML pages; a small number carry the full
+    opinion only as a born-digital PDF, which is extracted.
+  id: NZ/HDC
+  language: en
+  license:
+    name: "HDC website copyright terms — personal, educational or research use only"
+    url: "https://www.hdc.org.nz/copyright/"
+    commercial_use: false
+    attribution_required: true
+    share_alike: false
+    no_derivatives: false
+    notes: >
+      HDC is a New Zealand Crown entity, but it does NOT apply the NZGOAL
+      Creative Commons default. Its copyright page states material "may be
+      reproduced for personal, educational or research purposes without formal
+      permission or charge" and "must not be used for any other purpose without
+      the prior written permission of the Health and Disability Commissioner"
+      — commercial re-use therefore requires written permission. Attribution
+      must name the HDC website and the date of publication, in written form
+      (not the HDC logo). Decisions are anonymised by the Commissioner before
+      publication.
+  name: NZ Health and Disability Commissioner - Decisions
+  url: https://www.hdc.org.nz/decisions/search-decisions/

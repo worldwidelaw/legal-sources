@@ -1,6 +1,6 @@
-last_bootstrap: null
+last_bootstrap: '2026-08-16T18:05:43.526309+00:00'
 last_error: '''str'' object has no attribute ''get'''
-last_run: '2026-05-05T19:53:25.925678+00:00'
+last_run: '2026-08-16T18:05:43.526309+00:00'
 run_history:
 - error_message: '''str'' object has no attribute ''get'''
   errors: 0
@@ -23,4 +23,117 @@ run_history:
   skip_exception: 0
   skip_normalize_none: 0
   started_at: '2026-05-05T19:53:04.893580+00:00'
-total_records: 0
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-15T16:17:11.842268+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-15T16:16:50.245263+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-16T17:56:19.432196+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-16T17:55:57.974404+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-16T18:04:23.707668+00:00'
+  records_fetched: 15
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 15
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-16T18:04:03.424179+00:00'
+- batch_size: 5
+  coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-16T18:05:07.912037+00:00'
+  max_workers: 5
+  mode: fast
+  rate_limiter:
+    current_rate: 1
+    rate_changes: 0
+    start_rate: 1
+    total_429s: 0
+    total_wait_time_seconds: 0.0
+    total_waits: 0
+  records_fetched: 12
+  records_new: 12
+  records_skipped: 0
+  records_updated: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-16T18:04:52.417529+00:00'
+- batch_size: 5
+  coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-16T18:05:07.930178+00:00'
+  max_workers: 5
+  mode: fast
+  rate_limiter:
+    current_rate: 1
+    rate_changes: 0
+    start_rate: 1
+    total_429s: 0
+    total_wait_time_seconds: 0.0
+    total_waits: 0
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-16T18:05:07.930047+00:00'
+- batch_size: 5
+  coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-16T18:05:42.252092+00:00'
+  max_workers: 5
+  mode: fast
+  rate_limiter:
+    current_rate: 1
+    rate_changes: 0
+    start_rate: 1
+    total_429s: 0
+    total_wait_time_seconds: 0.0
+    total_waits: 0
+  records_fetched: 2
+  records_new: 2
+  records_skipped: 0
+  records_updated: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-16T18:05:38.566285+00:00'
+- batch_size: 5
+  coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-16T18:05:43.526309+00:00'
+  max_workers: 5
+  mode: fast
+  rate_limiter:
+    current_rate: 1
+    rate_changes: 0
+    start_rate: 1
+    total_429s: 0
+    total_wait_time_seconds: 0.0
+    total_waits: 0
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-16T18:05:42.276020+00:00'
+total_records: 14

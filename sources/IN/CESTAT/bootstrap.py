@@ -184,6 +184,7 @@ class CESTATScraper(BaseScraper):
 
             entries.append({
                 "case_no": case_no,
+                "order_id": self._order_id(pdf_url),
                 "petitioner": petitioner,
                 "respondent": respondent,
                 "decision_date": decision_date,
@@ -194,6 +195,25 @@ class CESTATScraper(BaseScraper):
 
         logger.info("Bench %d (%s - %s): %d entries", bench_code, from_date, to_date, len(entries))
         return entries
+
+    @staticmethod
+    def _order_id(pdf_url: Optional[str]) -> str:
+        """Pull the stable order identifier out of a weborders PDF link.
+
+        Links look like ``/weborders/file/chandigarh/328752``. That trailing
+        number is CESTAT's own per-order identifier: unique per document and
+        stable across crawls, unlike the case number (which is blank on some
+        listings and shared by every order issued in the same appeal — one
+        number was seen on 45 separate orders, see #1437).
+        """
+        if not pdf_url:
+            return ""
+        match = re.search(r'/weborders/file/([^/]+)/(\d+)', pdf_url)
+        if match:
+            return f"{match.group(1)}-{match.group(2)}"
+        # Unknown link shape — fall back to the last non-empty path segment.
+        tail = [seg for seg in pdf_url.split("?")[0].split("/") if seg]
+        return tail[-1] if tail else ""
 
     def _parse_date(self, date_str: str) -> Optional[str]:
         """Parse dd/mm/yyyy date to ISO 8601."""
@@ -265,16 +285,53 @@ class CESTATScraper(BaseScraper):
                 to_date = f"{last_day:02d}-{month:02d}-{year}"
                 yield from_date, to_date
 
+    def _checkpoint_path(self) -> Path:
+        return Path(__file__).parent / "data" / "cestat_checkpoint.json"
+
+    def _load_checkpoint(self) -> set:
+        """Return the set of (bench, month) windows already crawled."""
+        path = self._checkpoint_path()
+        if not path.exists():
+            return set()
+        try:
+            done = json.loads(path.read_text())
+            logger.info("Checkpoint: %d bench-months already crawled", len(done))
+            return set(done)
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning("Could not read checkpoint (%s) — starting fresh", e)
+            return set()
+
+    def _save_checkpoint(self, done: set) -> None:
+        path = self._checkpoint_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            path.write_text(json.dumps(sorted(done)))
+        except OSError as e:
+            logger.warning("Could not write checkpoint: %s", e)
+
     def fetch_all(self) -> Generator:
-        """Yield all final order records across all benches and years."""
+        """Yield all final order records across all benches and years.
+
+        The full crawl is ~9 benches × ~11 years of months and runs past the
+        fleet's 100-hour cap (#1437), so completed bench-months are recorded in
+        data/cestat_checkpoint.json and skipped with no network call on a
+        restart. Successive slots then advance monotonically instead of
+        re-walking 2015 every time; the loader dedups on _id.
+        """
         end_year = datetime.now().year
+        done = self._load_checkpoint()
         for bench_code, bench_name in BENCHES:
             logger.info("Processing bench: %s (code %d)", bench_name, bench_code)
             for from_date, to_date in self._month_ranges(START_YEAR, end_year):
+                window = f"{bench_code}:{from_date}"
+                if window in done:
+                    continue
                 entries = self._search_orders(bench_code, from_date, to_date)
                 for entry in entries:
                     entry["bench_name"] = bench_name
                     yield entry
+                done.add(window)
+                self._save_checkpoint(done)
                 time.sleep(1.5)
 
     def fetch_updates(self, since: datetime) -> Generator:
@@ -314,9 +371,19 @@ class CESTATScraper(BaseScraper):
         bench_code = raw.get("bench_code", 0)
         decision_date = raw.get("decision_date", "")
 
-        # Build unique ID from bench + case number
-        safe_case = re.sub(r'[^a-zA-Z0-9]', '-', case_no).strip('-')
-        doc_id = f"CESTAT-{bench_code}-{safe_case}"
+        # Identify the document by CESTAT's own order id, not the case number.
+        # A case number is blank on some listings and is shared by every order
+        # issued in the same appeal, so bench+case collapsed 219,500 records
+        # onto 58,744 ids and made re-runs insert duplicates instead of
+        # colliding (#1437). The weborders link is unique per order.
+        order_id = raw.get("order_id") or self._order_id(raw.get("pdf_url"))
+        if order_id:
+            doc_id = f"CESTAT-{re.sub(r'[^a-zA-Z0-9]', '-', order_id).strip('-')}"
+        else:
+            # No usable link — fall back to bench+case+date, which is at least
+            # deterministic across crawls even if it is not always unique.
+            safe_case = re.sub(r'[^a-zA-Z0-9]', '-', case_no).strip('-')
+            doc_id = f"CESTAT-{bench_code}-{safe_case}-{decision_date or 'nodate'}"
 
         # Download and extract PDF text
         pdf_url = raw.get("pdf_url")
@@ -350,6 +417,8 @@ class CESTATScraper(BaseScraper):
             "date": decision_date,
             "url": source_url,
             "case_no": case_no,
+            "case_number": case_no or None,
+            "order_id": order_id or None,
             "petitioner": petitioner,
             "respondent": respondent,
             "bench": bench_name,
@@ -379,8 +448,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="IN/CESTAT bootstrap")
     sub = parser.add_subparsers(dest="command")
 
-    boot = sub.add_parser("bootstrap", help="Full initial pull")
-    boot.add_argument("--sample", action="store_true", help="Fetch only 15 sample records")
+    for name in ("bootstrap", "bootstrap-fast"):
+        boot = sub.add_parser(name, help="Full initial pull")
+        boot.add_argument("--sample", action="store_true", help="Fetch only 15 sample records")
+        boot.add_argument("--full", action="store_true", help="Full corpus (the default)")
 
     upd = sub.add_parser("update", help="Fetch recent orders")
     upd.add_argument("--days", type=int, default=90, help="Look back N days (default 90)")
@@ -402,25 +473,30 @@ if __name__ == "__main__":
                         (sample.get("pdf_url") or "")[:100])
         logger.info("Test PASSED")
 
-    elif args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
-        count = 0
-        limit = 15 if args.sample else 999999
+    elif args.command in ("bootstrap", "bootstrap-fast"):
+        if args.sample:
+            sample_dir = Path(__file__).parent / "sample"
+            sample_dir.mkdir(exist_ok=True)
+            count = 0
 
-        for raw in scraper.fetch_all():
-            rec = scraper.normalize(raw)
-            if rec:
-                count += 1
-                out_path = sample_dir / f"{rec['_id']}.json"
-                with open(out_path, "w", encoding="utf-8") as f:
-                    json.dump(rec, f, ensure_ascii=False, indent=2)
-                logger.info("[%d] Saved %s (%d chars text)", count, rec["_id"],
-                            len(rec.get("text", "")))
-                if count >= limit:
-                    break
+            for raw in scraper.fetch_all():
+                rec = scraper.normalize(raw)
+                if rec:
+                    count += 1
+                    out_path = sample_dir / f"{rec['_id']}.json"
+                    with open(out_path, "w", encoding="utf-8") as f:
+                        json.dump(rec, f, ensure_ascii=False, indent=2)
+                    logger.info("[%d] Saved %s (%d chars text)", count, rec["_id"],
+                                len(rec.get("text", "")))
+                    if count >= 15:
+                        break
 
-        logger.info("Bootstrap complete: %d records saved to %s", count, sample_dir)
+            logger.info("Sample complete: %d records saved to %s", count, sample_dir)
+        else:
+            # Route the full corpus through BaseScraper so it streams to
+            # data/records.jsonl instead of writing 200k+ files into sample/.
+            stats = scraper.bootstrap_fast()
+            logger.info("Bootstrap complete: %s", stats)
 
     elif args.command == "update":
         since = datetime.now(timezone.utc) - timedelta(days=args.days)

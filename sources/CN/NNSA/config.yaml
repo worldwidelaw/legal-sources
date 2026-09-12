@@ -1,0 +1,101 @@
+# ═══════════════════════════════════════════════════════════════════
+# CN/NNSA — National Nuclear Safety Administration of China (国家核安全局)
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "CN/NNSA"
+  country: "CN"
+  name: "National Nuclear Safety Administration of China (国家核安全局)"
+  url: "https://nnsa.mee.gov.cn/"
+  description: |
+    Full-text nuclear-safety legal corpus of the National Nuclear Safety
+    Administration (NNSA), the nuclear regulator operating inside China's
+    Ministry of Ecology and Environment.
+
+    Covers the NNSA 法规标准文件库 (document library): national laws
+    (核安全法, 放射性污染防治法 …), State Council administrative
+    regulations, NNSA departmental rules (部令), normative documents,
+    the eight series of nuclear-safety guides (核安全导则), the seven
+    series of national nuclear/radiation standards, and the international
+    nuclear conventions China is party to.
+
+    Also covers NNSA decisions (核安全局文件 / 文件 and 函): licence
+    grants, renewals, variations and revocations for nuclear installations
+    and civil nuclear-safety equipment designers, manufacturers and
+    installers; operator-qualification decisions; approval of refuelling
+    programmes; and rectification orders addressed to a named licensee —
+    each an administrative adjudication of a specific case. Plus MEE
+    ministerial nuclear/radiation documents and official interpretations.
+
+    Chinese. Instruments are frequently promulgated as a short notice with
+    the instrument itself in an attached PDF/DOCX; attachments are
+    downloaded and appended to the notice text.
+
+data_types:
+  - legislation
+  - case_law
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 4
+  max_workers: 4
+
+api:
+  type: "html_scrape"   # static listing HTML + CMS detail pages + attachments
+  base_url: "https://nnsa.mee.gov.cn"
+
+endpoints:
+  document_library: "https://nnsa.mee.gov.cn/govsearch/haqj.jsp?Stype=2&type=1"
+  nnsa_documents: "https://nnsa.mee.gov.cn/zcwj/haqjwj/wj/"
+  nnsa_letters: "https://nnsa.mee.gov.cn/zcwj/haqjwj/han/"
+  ministry_documents: "https://nnsa.mee.gov.cn/zcwj/bwj/"
+
+# ── Output Schema ─────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+    - name: "category"
+      type: "string"
+      required: false
+    - name: "document_number"
+      type: "string"
+      required: false
+    - name: "issuing_body"
+      type: "string"
+      required: false
+    - name: "language"
+      type: "string"
+      required: false
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Government open access — PRC official legal documents"
+  url: "https://www.mee.gov.cn/bzsm/"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Laws, regulations, rules and other official documents of PRC state
+    organs, and their official translations, are excluded from copyright
+    protection by Article 5 of the PRC Copyright Law. The NNSA/MEE site
+    statement permits reuse of published content with attribution to the
+    issuing authority. No explicit open-data licence is published.

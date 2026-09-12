@@ -1,6 +1,6 @@
-last_bootstrap: null
+last_bootstrap: '2026-08-26T06:12:54.510021+00:00'
 last_error: null
-last_run: '2026-06-23T03:45:06.749917+00:00'
+last_run: '2026-08-26T06:17:29.105407+00:00'
 run_history:
 - errors: 0
   finished_at: '2026-06-23T03:39:37.587398+00:00'
@@ -22,4 +22,35 @@ run_history:
   skip_exception: 0
   skip_normalize_none: 1
   started_at: '2026-06-23T03:41:32.563121+00:00'
-total_records: 0
+- batch_size: 100
+  coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-26T06:12:54.510021+00:00'
+  max_workers: 2
+  mode: fast
+  rate_limiter:
+    current_rate: 1
+    rate_changes: 0
+    start_rate: 1
+    total_429s: 0
+    total_wait_time_seconds: 3.48
+    total_waits: 5
+  records_fetched: 20
+  records_new: 20
+  records_skipped: 0
+  records_updated: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-26T06:10:50.900670+00:00'
+- coverage_gaps: 0
+  errors: 0
+  finished_at: '2026-08-26T06:17:29.105407+00:00'
+  records_fetched: 20
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 20
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-26T06:15:03.943408+00:00'
+total_records: 20

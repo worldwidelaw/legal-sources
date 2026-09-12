@@ -4,25 +4,33 @@ EE/RiigiTeatajaLoomal -- Estonian Riigi Teataja (State Gazette) Fetcher
 
 Fetches Estonian legislation from Riigi Teataja with full text content.
 
-Strategy:
-  - Bootstrap: Iterate through chronology pages to discover document IDs,
-    then fetch XML for each document to get full text.
-  - Update: Use chronology for recent dates since specified date.
-  - Sample: Fetch recent documents for validation.
+Data access method: official JSON API (the one the riigiteataja.ee Angular
+front-end itself calls) + per-act XML blob download for full text.
 
-Data access method: HTML scraping for discovery + XML download for full text.
-  - Chronology: /kronoloogia_tulemus.html?rtOsaId=&kpv=DD.MM.YYYY
-  - Document XML: /akt/{id}.xml
+  - Chronology index: POST /api/v1/akt/kronoloogia
+        body {"searchAfter": <offset>, "publicationDateStart": "YYYY-MM-DD",
+              "publicationDateEnd": "YYYY-MM-DD"}
+        -> {"kokku": <total>, "tulemused": [{id, title, publicationNotice,
+                                             issuer, avaldamiseKp, ...}, ...]}
+        Server page size is fixed at 10; `searchAfter` is a plain offset.
+  - Full text:        GET  /api/v1/akt/{id}/blob-xml   (application/xml)
 
 The XML format contains structured legislation with:
   - <metaandmed>: Metadata (issuer, dates, type)
   - <aktinimi>: Document title
   - <sisu>: Full content with paragraphs and sections
 
+NOTE (2026-08-19, issue #1451): riigiteataja.ee was rebuilt as an Angular SPA.
+The old server-rendered ``/kronoloogia_tulemus.html`` chronology and the
+``/akt/{id}.xml`` document URL now both return the SPA HTML shell with HTTP 200,
+so the previous scraper silently discovered 0 documents and wrote 0 records.
+Discovery and full-text download now go through the JSON API above.
+
 Usage:
   python bootstrap.py bootstrap           # Full historical pull
+  python bootstrap.py bootstrap-fast      # Full pull, concurrent XML downloads
   python bootstrap.py bootstrap --sample  # Fetch 10+ sample records
-  python bootstrap.py update              # Incremental update (last week)
+  python bootstrap.py update              # Incremental update
   python bootstrap.py test-api            # Quick connectivity test
 """
 
@@ -33,7 +41,7 @@ import re
 import html
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
-from typing import Generator, Optional, Set
+from typing import Generator, Optional
 from xml.etree import ElementTree as ET
 
 # Add project root to path
@@ -50,14 +58,13 @@ logging.basicConfig(
 logger = logging.getLogger("legal-data-hunter.EE.RiigiTeatajaLoomal")
 
 BASE_URL = "https://www.riigiteataja.ee"
+API_PREFIX = "/api/v1"
 
-# RT parts to scrape
-RT_PARTS = {
-    "2": "RT I",   # Laws and national regulations
-    "3": "RT II",  # International agreements
-    "4": "RT III", # Administrative acts
-    "": "All",     # All parts
-}
+# Riigi Teataja digital chronology starts in 1990.
+START_YEAR = 1990
+
+# Server-side page size of POST /api/v1/akt/kronoloogia (not configurable).
+PAGE_SIZE = 10
 
 
 class RiigiTeatajaScraper(BaseScraper):
@@ -78,54 +85,113 @@ class RiigiTeatajaScraper(BaseScraper):
             base_url=BASE_URL,
             headers={
                 "User-Agent": "LegalDataHunter/1.0 (Open Data Research)",
-                "Accept": "text/html,application/xml,application/xhtml+xml",
+                "Accept": "application/json, application/xml",
                 "Accept-Language": "et,en;q=0.9",
             },
             timeout=60,
         )
 
-    # -- Document discovery via chronology pages ------------------------------
+        self._checkpoint_path = self.source_dir / "data" / "chronology_checkpoint.json"
+        self._done_months = self._load_checkpoint()
 
-    def _get_documents_for_date(self, date: datetime, rt_part: str = "") -> Set[str]:
-        """
-        Fetch document IDs published on a specific date.
+    # -- Checkpoint / resume ---------------------------------------------------
 
-        Args:
-            date: The date to fetch documents for
-            rt_part: RT part filter ("2"=RT I, "3"=RT II, "4"=RT III, ""=all)
-
-        Returns:
-            Set of document IDs (e.g., "406022026048")
-        """
-        date_str = date.strftime("%d.%m.%Y")
-        url = f"/kronoloogia_tulemus.html?rtOsaId={rt_part}&kpv={date_str}"
-
-        self.rate_limiter.wait()
-
+    def _load_checkpoint(self) -> set:
+        """Months (``YYYY-MM``) already fully enumerated by a previous run."""
         try:
-            resp = self.client.get(url)
-            resp.raise_for_status()
-        except Exception as e:
-            logger.error(f"Failed to fetch chronology for {date_str}: {e}")
+            with open(self._checkpoint_path, "r", encoding="utf-8") as f:
+                return set(json.load(f).get("completed_months", []))
+        except (FileNotFoundError, ValueError, OSError):
             return set()
 
-        # Extract document IDs from links like /akt/406022026048
-        doc_ids = set()
-        for match in re.finditer(r'href="[^"]*?/akt/(\d+)"', resp.text):
-            doc_ids.add(match.group(1))
+    def _save_checkpoint(self):
+        self._checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = self._checkpoint_path.with_suffix(".tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump({"completed_months": sorted(self._done_months)}, f)
+        tmp.replace(self._checkpoint_path)
 
-        logger.debug(f"Found {len(doc_ids)} documents for {date_str}")
-        return doc_ids
+    # -- Document discovery via the chronology API -----------------------------
 
-    # -- XML Document fetching ------------------------------------------------
+    @staticmethod
+    def _month_bounds(year: int, month: int) -> tuple:
+        start = datetime(year, month, 1)
+        end = datetime(year + (month // 12), (month % 12) + 1, 1) - timedelta(days=1)
+        return start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
 
-    def _fetch_document_xml(self, doc_id: str) -> Optional[dict]:
+    def _chronology_page(self, start: str, end: str, offset: int) -> dict:
+        """One page of the chronology API. Raises on transport/HTTP error."""
+        self.rate_limiter.wait()
+        resp = self.client.post(
+            f"{API_PREFIX}/akt/kronoloogia",
+            json_data={
+                "searchAfter": offset,
+                "publicationDateStart": start,
+                "publicationDateEnd": end,
+            },
+            headers={"Content-Type": "application/json"},
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    def _iter_month(self, year: int, month: int) -> Generator[dict, None, None]:
         """
-        Fetch and parse the XML for a single document.
+        Yield every chronology entry published in the given month.
 
-        Returns raw parsed data or None if fetch fails.
+        Entries are the raw API rows; the full text is downloaded later in
+        normalize() so that bootstrap-fast can overlap the XML downloads.
         """
-        url = f"/akt/{doc_id}.xml"
+        start, end = self._month_bounds(year, month)
+        offset = 0
+        total = None
+        seen = set()
+
+        while True:
+            try:
+                payload = self._chronology_page(start, end, offset)
+            except Exception as e:
+                logger.error(f"Chronology {start}..{end} offset {offset} failed: {e}")
+                self.record_coverage_gap(
+                    f"{year}-{month:02d}", "chronology_page_failed", offset=offset
+                )
+                return
+
+            if total is None:
+                total = payload.get("kokku") or 0
+                if total:
+                    logger.info(f"{year}-{month:02d}: {total} acts")
+
+            rows = payload.get("tulemused") or []
+            if not rows:
+                break
+
+            for row in rows:
+                doc_id = row.get("id")
+                if doc_id is None or doc_id in seen:
+                    continue
+                seen.add(doc_id)
+                yield {"_doc_id": str(doc_id), "_index": row}
+
+            offset += PAGE_SIZE
+            if offset >= total:
+                break
+
+        if total and len(seen) < total:
+            logger.warning(
+                f"{year}-{month:02d}: enumerated {len(seen)} of {total} acts"
+            )
+            self.record_coverage_gap(
+                f"{year}-{month:02d}", "incomplete_enumeration",
+                enumerated=len(seen), expected=total,
+            )
+        else:
+            self.clear_coverage_gap(f"{year}-{month:02d}")
+
+    # -- XML Document fetching -------------------------------------------------
+
+    def _fetch_document_xml(self, doc_id: str) -> Optional[ET.Element]:
+        """Download and parse the act XML. Returns None if unavailable."""
+        url = f"{API_PREFIX}/akt/{doc_id}/blob-xml"
 
         self.rate_limiter.wait()
 
@@ -137,13 +203,7 @@ class RiigiTeatajaScraper(BaseScraper):
             return None
 
         try:
-            # Parse XML
-            root = ET.fromstring(resp.content)
-            return {
-                "_doc_id": doc_id,
-                "_xml_root": root,
-                "_raw_xml": resp.content.decode("utf-8", errors="replace"),
-            }
+            return ET.fromstring(resp.content)
         except ET.ParseError as e:
             logger.warning(f"Failed to parse XML for document {doc_id}: {e}")
             return None
@@ -161,13 +221,6 @@ class RiigiTeatajaScraper(BaseScraper):
         """
         text_parts = []
 
-        # Define the namespace if present (Riigi Teataja uses a default namespace)
-        # We'll try without namespace first, then with common patterns
-        ns = {}
-        if root.tag.startswith("{"):
-            ns_uri = root.tag.split("}")[0][1:]
-            ns = {"rt": ns_uri}
-
         def get_all_text(elem):
             """Recursively get all text content from an element."""
             text = ""
@@ -180,7 +233,9 @@ class RiigiTeatajaScraper(BaseScraper):
             return text
 
         # Try to find sisu (content) element
-        sisu = root.find(".//sisu") or root.find(".//{*}sisu")
+        sisu = root.find(".//sisu")
+        if sisu is None:
+            sisu = root.find(".//{*}sisu")
         if sisu is not None:
             # Extract from paragraphs
             for para in sisu.iter():
@@ -284,71 +339,76 @@ class RiigiTeatajaScraper(BaseScraper):
 
     # -- Abstract method implementations --------------------------------------
 
+    def _iter_range(self, first: tuple, last: tuple, use_checkpoint: bool):
+        """Yield chronology entries month by month from `first` to `last`."""
+        year, month = first
+        end_year, end_month = last
+
+        while (year, month) <= (end_year, end_month):
+            key = f"{year}-{month:02d}"
+            if use_checkpoint and key in self._done_months:
+                logger.debug(f"Skipping {key} (checkpointed)")
+            else:
+                logger.info(f"Fetching chronology for {key}")
+                yield from self._iter_month(year, month)
+                if use_checkpoint:
+                    self._done_months.add(key)
+                    self._save_checkpoint()
+
+            month += 1
+            if month > 12:
+                month, year = 1, year + 1
+
     def fetch_all(self) -> Generator[dict, None, None]:
         """
-        Yield all legislation documents from Riigi Teataja.
+        Yield every act in the Riigi Teataja chronology, oldest month first.
 
-        Iterates through the chronology from 1990 to present, fetching
-        document IDs and then downloading XML for each.
+        Completed months are checkpointed to data/chronology_checkpoint.json so
+        a re-launched run resumes without re-walking the whole archive.
         """
-        # Start from 1990 (when RT digital records begin)
-        start_year = 1990
-        end_date = datetime.now(timezone.utc)
-
-        current = datetime(start_year, 1, 1, tzinfo=timezone.utc)
-
-        while current <= end_date:
-            logger.info(f"Fetching documents for {current.strftime('%Y-%m-%d')}")
-
-            # Get document IDs for this date (RT I only for legislation)
-            doc_ids = self._get_documents_for_date(current, rt_part="2")
-
-            for doc_id in doc_ids:
-                raw = self._fetch_document_xml(doc_id)
-                if raw:
-                    yield raw
-
-            current += timedelta(days=1)
+        now = datetime.now(timezone.utc)
+        yield from self._iter_range(
+            (START_YEAR, 1), (now.year, now.month), use_checkpoint=True
+        )
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
+        """Yield acts published since the given date (month granularity)."""
+        now = datetime.now(timezone.utc)
+        yield from self._iter_range(
+            (since.year, since.month), (now.year, now.month), use_checkpoint=False
+        )
+
+    def normalize(self, raw: dict) -> Optional[dict]:
         """
-        Yield documents published since the given date.
-        """
-        current = since
-        end_date = datetime.now(timezone.utc)
-
-        while current <= end_date:
-            logger.info(f"Fetching updates for {current.strftime('%Y-%m-%d')}")
-
-            doc_ids = self._get_documents_for_date(current, rt_part="")
-
-            for doc_id in doc_ids:
-                raw = self._fetch_document_xml(doc_id)
-                if raw:
-                    yield raw
-
-            current += timedelta(days=1)
-
-    def normalize(self, raw: dict) -> dict:
-        """
-        Transform raw XML data into standard schema.
+        Transform a chronology entry into the standard schema, downloading the
+        act XML for the full text.
 
         CRITICAL: Extracts and includes FULL TEXT from the XML content.
         """
         doc_id = raw["_doc_id"]
-        root = raw["_xml_root"]
+        index = raw.get("_index") or {}
+
+        root = raw.get("_xml_root")
+        if root is None:
+            root = self._fetch_document_xml(doc_id)
+        if root is None:
+            return None
 
         # Extract metadata
         metadata = self._extract_metadata(root)
 
         # Extract full text content
         full_text = self._extract_text_from_xml(root)
+        if not full_text:
+            logger.warning(f"Document {doc_id} has no extractable text")
+            return None
 
         # Determine the best date to use
         date = (
-            metadata.get("enacted_date") or
-            metadata.get("effective_date") or
-            ""
+            metadata.get("enacted_date")
+            or metadata.get("effective_date")
+            or (index.get("avaldamiseKp") or "")[:10]
+            or ""
         )
 
         # Clean date format if needed (should already be ISO 8601)
@@ -369,14 +429,14 @@ class RiigiTeatajaScraper(BaseScraper):
             "_type": "legislation",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             # Standard fields
-            "title": metadata.get("title", ""),
+            "title": metadata.get("title") or index.get("title") or "",
             "text": full_text,  # MANDATORY FULL TEXT
             "date": date,
             "url": f"{BASE_URL}/akt/{doc_id}",
             # Additional metadata
-            "issuer": metadata.get("issuer", ""),
-            "document_type": metadata.get("document_type", ""),
-            "text_type": metadata.get("text_type", ""),
+            "issuer": metadata.get("issuer") or index.get("issuer") or "",
+            "document_type": metadata.get("document_type") or index.get("reportType") or "",
+            "text_type": metadata.get("text_type") or index.get("tekstiliik") or "",
             "abbreviation": metadata.get("abbreviation", ""),
             "enacted_date": metadata.get("enacted_date", ""),
             "effective_date": metadata.get("effective_date", ""),
@@ -384,43 +444,45 @@ class RiigiTeatajaScraper(BaseScraper):
             "rt_part": metadata.get("rt_part", ""),
             "rt_article": metadata.get("rt_article", ""),
             "global_id": metadata.get("global_id", ""),
+            "publication_notice": index.get("publicationNotice", ""),
         }
 
     # -- Custom commands ------------------------------------------------------
 
     def test_api(self):
         """Quick connectivity test."""
-        print("Testing Riigi Teataja connectivity...")
+        print("Testing Riigi Teataja API connectivity...")
 
-        # Test homepage
+        # Test a static reference endpoint
         try:
-            resp = self.client.get("/")
+            resp = self.client.get(f"{API_PREFIX}/avalik/rtOsad")
             resp.raise_for_status()
-            print(f"  Homepage: OK ({resp.status_code})")
+            parts = resp.json()
+            print(f"  RT parts endpoint: OK ({len(parts)} parts)")
         except Exception as e:
-            print(f"  Homepage: FAILED ({e})")
+            print(f"  RT parts endpoint: FAILED ({e})")
             return
 
-        # Test chronology page
+        # Test chronology
         try:
-            today = datetime.now().strftime("%d.%m.%Y")
-            resp = self.client.get(f"/kronoloogia_tulemus.html?rtOsaId=&kpv={today}")
-            resp.raise_for_status()
-            doc_count = len(re.findall(r'href="[^"]*?/akt/(\d+)"', resp.text))
-            print(f"  Chronology ({today}): {doc_count} documents")
+            entries = list(self._iter_month(2024, 12))
+            print(f"  Chronology 2024-12: {len(entries)} acts")
+            if not entries:
+                print("  Chronology returned nothing — API contract may have changed")
+                return
         except Exception as e:
             print(f"  Chronology: FAILED ({e})")
             return
 
-        # Test XML download
+        # Test XML download + extraction
         try:
-            # Try a well-known document (Riigi Teataja Act)
-            resp = self.client.get("/akt/103032017023.xml")
-            resp.raise_for_status()
-            root = ET.fromstring(resp.content)
-            title_elem = root.find(".//{*}pealkiri") or root.find(".//pealkiri")
-            title = title_elem.text if title_elem is not None else "Unknown"
-            print(f"  XML download: OK (Sample: {title[:50]}...)")
+            root = self._fetch_document_xml(entries[0]["_doc_id"])
+            if root is None:
+                print("  XML download: FAILED (no XML returned)")
+                return
+            text = self._extract_text_from_xml(root)
+            title = self._extract_metadata(root).get("title", "")
+            print(f"  XML download: OK ({len(text)} chars) — {title[:60]}...")
         except Exception as e:
             print(f"  XML download: FAILED ({e})")
             return
@@ -428,11 +490,7 @@ class RiigiTeatajaScraper(BaseScraper):
         print("\nConnectivity test passed!")
 
     def run_sample(self, n: int = 10) -> dict:
-        """
-        Fetch a sample of recent documents with full text.
-
-        Overrides base class to ensure we get documents with actual content.
-        """
+        """Fetch a sample of recent acts with full text."""
         sample_dir = self.source_dir / "sample"
         sample_dir.mkdir(exist_ok=True)
 
@@ -440,91 +498,76 @@ class RiigiTeatajaScraper(BaseScraper):
         checked = 0
         errors = []
 
-        # Get documents from recent dates
-        current = datetime.now(timezone.utc)
-        dates_checked = 0
+        now = datetime.now(timezone.utc)
+        year, month = now.year, now.month
+        months_checked = 0
 
-        while saved < n and dates_checked < 30:
-            logger.info(f"Checking {current.strftime('%Y-%m-%d')} for documents...")
-
-            doc_ids = self._get_documents_for_date(current, rt_part="2")  # RT I (laws)
-            logger.info(f"  Found {len(doc_ids)} documents")
-
-            for doc_id in list(doc_ids)[:min(5, n - saved)]:
+        while saved < n and months_checked < 12:
+            for raw in self._iter_month(year, month):
                 checked += 1
-                raw = self._fetch_document_xml(doc_id)
-
-                if not raw:
-                    errors.append(f"Failed to fetch {doc_id}")
-                    continue
-
                 try:
                     normalized = self.normalize(raw)
-
-                    # Validate the record
-                    if not normalized.get("text"):
-                        errors.append(f"{doc_id}: No text content")
-                        logger.warning(f"Document {doc_id} has no text content")
-                        continue
-
-                    if len(normalized.get("text", "")) < 100:
-                        errors.append(f"{doc_id}: Text too short ({len(normalized.get('text', ''))} chars)")
-                        logger.warning(f"Document {doc_id} has very short text")
-                        continue
-
-                    # Save to sample directory
-                    sample_path = sample_dir / f"{doc_id}.json"
-                    with open(sample_path, "w", encoding="utf-8") as f:
-                        json.dump(normalized, f, ensure_ascii=False, indent=2)
-
-                    saved += 1
-                    logger.info(
-                        f"  Saved {doc_id}: {normalized.get('title', '')[:50]}... "
-                        f"({len(normalized.get('text', ''))} chars)"
-                    )
-
                 except Exception as e:
-                    errors.append(f"{doc_id}: {str(e)}")
-                    logger.error(f"Error processing {doc_id}: {e}")
+                    errors.append(f"{raw['_doc_id']}: {e}")
+                    logger.error(f"Error processing {raw['_doc_id']}: {e}")
+                    continue
 
+                if not normalized:
+                    errors.append(f"{raw['_doc_id']}: No text content")
+                    continue
+
+                if len(normalized["text"]) < 100:
+                    errors.append(
+                        f"{raw['_doc_id']}: Text too short ({len(normalized['text'])} chars)"
+                    )
+                    continue
+
+                sample_path = sample_dir / f"{normalized['_id']}.json"
+                with open(sample_path, "w", encoding="utf-8") as f:
+                    json.dump(normalized, f, ensure_ascii=False, indent=2)
+
+                saved += 1
+                logger.info(
+                    f"  Saved {normalized['_id']}: {normalized['title'][:50]}... "
+                    f"({len(normalized['text'])} chars)"
+                )
                 if saved >= n:
                     break
 
-            current -= timedelta(days=1)
-            dates_checked += 1
+            month -= 1
+            if month < 1:
+                month, year = 12, year - 1
+            months_checked += 1
 
-        # Calculate statistics
         text_lengths = []
         for f in sample_dir.glob("*.json"):
             with open(f, "r", encoding="utf-8") as fp:
-                data = json.load(fp)
-                text_lengths.append(len(data.get("text", "")))
+                text_lengths.append(len(json.load(fp).get("text", "")))
 
-        stats = {
+        return {
             "sample_records_saved": saved,
             "documents_checked": checked,
-            "dates_checked": dates_checked,
+            "months_checked": months_checked,
             "errors": errors[:10],
             "avg_text_length": sum(text_lengths) / len(text_lengths) if text_lengths else 0,
             "min_text_length": min(text_lengths) if text_lengths else 0,
             "max_text_length": max(text_lengths) if text_lengths else 0,
         }
 
-        return stats
-
 
 # -- CLI Entry Point ----------------------------------------------------------
 
 
 def main():
-    scraper = RiigiTeatajaScraper()
-
     if len(sys.argv) < 2:
         print(
-            "Usage: python bootstrap.py [bootstrap|update|test-api] "
+            "Usage: python bootstrap.py "
+            "[bootstrap|bootstrap-fast|update|test-api] "
             "[--sample] [--sample-size N]"
         )
         sys.exit(1)
+
+    scraper = RiigiTeatajaScraper()
 
     command = sys.argv[1]
     sample_mode = "--sample" in sys.argv
@@ -536,12 +579,20 @@ def main():
     if command == "test-api":
         scraper.test_api()
 
-    elif command == "bootstrap":
+    elif command in ("bootstrap", "bootstrap-fast"):
         if sample_mode:
             stats = scraper.run_sample(n=sample_size)
             print(
                 f"\nSample complete: "
                 f"{stats.get('sample_records_saved', 0)} records saved to sample/"
+            )
+            print(json.dumps(stats, indent=2))
+        elif command == "bootstrap-fast":
+            stats = scraper.bootstrap_fast()
+            print(
+                f"\nBootstrap-fast complete: {stats['records_new']} new, "
+                f"{stats['records_updated']} updated, "
+                f"{stats['records_skipped']} skipped"
             )
             print(json.dumps(stats, indent=2))
         else:

@@ -48,6 +48,21 @@ logger = logging.getLogger("legal-data-hunter.CA.LegisQuebec")
 
 SITE_BASE = "https://www.legisquebec.gouv.qc.ca"
 
+# legisquebec.gouv.qc.ca sits behind CloudFront, whose WAF rejects non-browser
+# User-Agents with a bare HTTP 403 ("ERROR: The request could not be satisfied").
+# The default LegalDataHunter UA is refused from every vantage, residential
+# included, while a browser UA gets 200 on the same URL from the same IP -- the
+# block is on the User-Agent, not on the address. See issue #1378.
+BROWSER_UA = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+)
+
+
+class SourceBlockedError(RuntimeError):
+    """The site refused this client outright, so a 0-record run is a failure to
+    report rather than an empty corpus to accept silently."""
+
 
 class HTMLTextExtractor(HTMLParser):
     """Strip HTML tags and extract plain text, skipping hidden/history elements."""
@@ -115,9 +130,14 @@ class LegisQuebecScraper(BaseScraper):
 
         self.client = HttpClient(
             base_url=SITE_BASE,
-            headers={"User-Agent": "LegalDataHunter/1.0 (Open Data Research)"},
+            headers={
+                "User-Agent": BROWSER_UA,
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "en-CA,en;q=0.9,fr-CA;q=0.8",
+            },
             timeout=120,
         )
+        self._doc_403s = 0
 
     def _enumerate_index(self, corpus: str = "lois", doc_prefix: str = "lc") -> list:
         """Enumerate all documents from alphabetical index pages.
@@ -128,20 +148,50 @@ class LegisQuebecScraper(BaseScraper):
         """
         all_entries = []
         seen_codes = set()
+        blocked_letters = 0
 
         for letter in string.ascii_uppercase:
             self.rate_limiter.wait()
             try:
-                resp = self.client.get(
-                    f"/fr/chapitres",
-                    params={
-                        "corpus": corpus,
-                        "selection": letter,
-                        "langCont": "en",
-                    },
-                )
+                # CloudFront intermittently 502s. A dropped index letter silently
+                # costs the whole corpus ~200 documents, so retry beyond what the
+                # HttpClient's own 3 attempts cover before giving up on a letter.
+                resp = None
+                for attempt in range(3):
+                    try:
+                        resp = self.client.get(
+                            f"/fr/chapitres",
+                            params={
+                                "corpus": corpus,
+                                "selection": letter,
+                                "langCont": "en",
+                            },
+                        )
+                        break
+                    except Exception as e:
+                        if attempt == 2:
+                            raise
+                        wait = 10 * (attempt + 1)
+                        logger.warning(
+                            f"Index for letter {letter} failed ({e}); retrying in {wait}s"
+                        )
+                        time.sleep(wait)
+                if resp.status_code == 403:
+                    blocked_letters += 1
+                    logger.warning(
+                        f"Index for letter {letter}: HTTP 403 -- CloudFront refused this client"
+                    )
+                    if blocked_letters >= 3:
+                        raise SourceBlockedError(
+                            f"legisquebec.gouv.qc.ca returned HTTP 403 for {blocked_letters} "
+                            "consecutive index pages. The CloudFront WAF refuses non-browser "
+                            "User-Agents; check that BROWSER_UA is still accepted (issue #1378)."
+                        )
+                    continue
                 resp.raise_for_status()
                 page_html = resp.text
+            except SourceBlockedError:
+                raise
             except Exception as e:
                 logger.warning(f"Failed to fetch index for letter {letter}: {e}")
                 continue
@@ -184,8 +234,20 @@ class LegisQuebecScraper(BaseScraper):
         try:
             encoded_code = quote(code, safe="")
             resp = self.client.get(f"/en/document/{doc_type}/{encoded_code}")
+            if resp.status_code == 403:
+                self._doc_403s += 1
+                if self._doc_403s >= 10:
+                    raise SourceBlockedError(
+                        f"{self._doc_403s} document pages returned HTTP 403 -- CloudFront "
+                        "is refusing this client on the document endpoint even though the "
+                        "index was readable (issue #1378)."
+                    )
+                logger.warning(f"Failed to fetch {doc_type}/{code}: HTTP 403")
+                return None
             resp.raise_for_status()
             return resp.text
+        except SourceBlockedError:
+            raise
         except Exception as e:
             logger.warning(f"Failed to fetch {doc_type}/{code}: {e}")
             return None
@@ -277,6 +339,13 @@ class LegisQuebecScraper(BaseScraper):
         logger.info(f"Found {len(regulations)} regulations")
 
         all_docs = statutes + regulations
+        if not all_docs:
+            raise SourceBlockedError(
+                "Enumerated 0 documents from the alphabetical indexes, but the CQLR "
+                "holds well over a thousand in-force statutes and regulations. Either "
+                "legisquebec.gouv.qc.ca is refusing this client or the index markup "
+                "changed -- failing loudly instead of reporting an empty corpus."
+            )
 
         for i, doc in enumerate(all_docs):
             code = doc["code"]
@@ -341,16 +410,22 @@ if __name__ == "__main__":
     scraper = LegisQuebecScraper()
 
     if len(sys.argv) < 2:
-        print("Usage: python bootstrap.py [bootstrap|bootstrap --sample|test-api]")
+        print("Usage: python bootstrap.py [bootstrap|bootstrap-fast|bootstrap --sample|test-api]")
         sys.exit(1)
 
     command = sys.argv[1]
 
-    if command == "test-api":
-        scraper.test_api()
-    elif command == "bootstrap":
+    # `bootstrap-fast` is what the fleet wrapper invokes; without it argparse used
+    # to reject the run and the pipeline fell back to re-ingesting sample/.
+    if command in ("bootstrap", "bootstrap-fast"):
         sample_mode = "--sample" in sys.argv
-        scraper.bootstrap(sample_mode=sample_mode)
+        try:
+            scraper.bootstrap(sample_mode=sample_mode)
+        except SourceBlockedError as e:
+            logger.error(f"Source blocked: {e}")
+            sys.exit(1)
+    elif command == "test-api":
+        scraper.test_api()
     else:
         print(f"Unknown command: {command}")
         sys.exit(1)

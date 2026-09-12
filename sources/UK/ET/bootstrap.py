@@ -15,6 +15,7 @@ Usage:
 
 import sys
 import json
+import time
 import logging
 from pathlib import Path
 from datetime import datetime, timezone
@@ -60,6 +61,18 @@ class UKETScraper(BaseScraper):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
 
+        # Checkpoint/resume: the full crawl is ~132K decisions × 1 content
+        # fetch each ≈ 18h at 2 rps. A fleet slot that times out (exit-124)
+        # relaunches fetch_all from the top; without a checkpoint it re-crawls
+        # start=0 every restart and re-appends the same first N records to the
+        # JSONL, so the pipeline dedups a 132K JSONL down to a few thousand
+        # unique _ids (issue #1089). We persist the last completed search
+        # offset NEXT TO THE MODULE (survives the fleet's temp CWD) and resume
+        # from it. Combined with ascending public_timestamp order (new
+        # decisions append at the tail, past the checkpoint) the resume offset
+        # stays valid across corpus drift.
+        self._checkpoint_path = source_dir / "data" / "et_checkpoint.json"
+
         self.client = HttpClient(
             base_url=self.BASE_URL,
             headers={
@@ -69,25 +82,61 @@ class UKETScraper(BaseScraper):
             timeout=30,
         )
 
-    def _search_decisions(self, start: int = 0) -> dict:
-        """Search for ET decisions with pagination."""
+    def _load_checkpoint(self) -> int:
+        """Return the saved start offset to resume from (0 if none)."""
+        try:
+            with open(self._checkpoint_path) as f:
+                start = int(json.load(f).get("start", 0))
+            if start > 0:
+                logger.info(f"Resuming from checkpoint: start={start}")
+            return start
+        except Exception:
+            return 0
+
+    def _save_checkpoint(self, start: int) -> None:
+        """Atomically persist the last completed start offset."""
+        try:
+            self._checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = self._checkpoint_path.with_suffix(".json.tmp")
+            with open(tmp, "w") as f:
+                json.dump({"start": start}, f)
+            tmp.replace(self._checkpoint_path)
+        except Exception as e:
+            logger.warning(f"Could not write checkpoint: {e}")
+
+    def _search_decisions(self, start: int = 0,
+                          order: str = "public_timestamp") -> Optional[dict]:
+        """Search for ET decisions with pagination.
+
+        Returns the parsed response on success (possibly with an empty
+        ``results`` list = genuine end of listing), or None after exhausting
+        retries on a transient failure — so callers can distinguish a real
+        end-of-data from a transient outage and avoid stopping early
+        (under-write class of issue #1089 / cf. IE/WRC #1196).
+        """
         params = {
             "filter_format": "employment_tribunal_decision",
             "count": self.PAGE_SIZE,
             "start": start,
-            "order": "-public_timestamp",
+            "order": order,
             "fields": ",".join(self.SEARCH_FIELDS),
         }
-        self.rate_limiter.wait()
-        try:
-            resp = self.client.get(self.SEARCH_URL, params=params)
-            if resp.status_code == 200:
-                return resp.json()
-            logger.warning(f"Search API returned {resp.status_code} for start={start}")
-            return {}
-        except Exception as e:
-            logger.error(f"Search API failed: {e}")
-            return {}
+        for attempt in range(4):
+            self.rate_limiter.wait()
+            try:
+                resp = self.client.get(self.SEARCH_URL, params=params)
+                if resp.status_code == 200:
+                    return resp.json()
+                logger.warning(
+                    f"Search API returned {resp.status_code} for start={start} "
+                    f"(attempt {attempt + 1}/4)"
+                )
+            except Exception as e:
+                logger.warning(f"Search API failed for start={start}: {e} "
+                               f"(attempt {attempt + 1}/4)")
+            time.sleep(2 * (attempt + 1))
+        logger.error(f"Search API gave up for start={start} after 4 attempts")
+        return None
 
     def _fetch_content(self, path: str) -> Optional[dict]:
         """Fetch full decision content from Content Store API."""
@@ -135,13 +184,21 @@ class UKETScraper(BaseScraper):
         return ""
 
     def fetch_all(self) -> Generator[dict, None, None]:
-        """Yield all ET decisions with full text."""
-        start = 0
-        first_result = self._search_decisions(start)
-        total = first_result.get("total", 0)
-        logger.info(f"Total ET decisions: {total}")
+        """Yield all ET decisions with full text.
 
-        result = first_result
+        Paginates in ascending public_timestamp order (oldest first) so newly
+        published decisions append at the tail and the resume offset stays
+        valid across restarts. Resumes from the persisted checkpoint offset.
+        """
+        start = self._load_checkpoint()
+
+        result = self._search_decisions(start)
+        if result is None:
+            logger.error("Initial search failed after retries; aborting (checkpoint preserved)")
+            return
+        total = result.get("total", 0)
+        logger.info(f"Total ET decisions: {total} (starting at offset {start})")
+
         count = 0
         skipped = 0
 
@@ -183,9 +240,18 @@ class UKETScraper(BaseScraper):
                     logger.info(f"  {count} decisions fetched ({skipped} skipped)")
 
             start += len(results)
+            # Persist progress AFTER the page is fully yielded so a restart
+            # resumes at the next unprocessed page instead of re-crawling.
+            self._save_checkpoint(start)
             if start >= total:
                 break
             result = self._search_decisions(start)
+            if result is None:
+                # Transient outage after retries — stop cleanly; the checkpoint
+                # lets the next run resume from here rather than from the top.
+                logger.warning(f"Stopping at offset {start} after search failure; "
+                               f"checkpoint saved for resume")
+                break
 
         logger.info(f"Total: {count} decisions with text ({skipped} skipped)")
 
@@ -295,6 +361,11 @@ class UKETScraper(BaseScraper):
 
 # ── CLI entry point ───────────────────────────────────────────────
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     scraper = UKETScraper()
 
     if len(sys.argv) < 2:

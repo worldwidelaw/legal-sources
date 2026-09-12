@@ -114,13 +114,29 @@ class CSJNScraper(BaseScraper):
     # -- PDF text extraction -------------------------------------------------
 
     def _extract_text_from_pdf(self, id_documento: int) -> Optional[str]:
-        """Extract text from PDF using centralized extractor."""
+        """Download the decision PDF by its document ID and extract full text."""
+        try:
+            resp = self.client.get(
+                PDF_URL,
+                params={"idDocumento": id_documento},
+                timeout=60,
+            )
+            if resp is None or resp.status_code != 200:
+                return None
+            ct = resp.headers.get("Content-Type", "")
+            if "pdf" not in ct and len(resp.content) < 500:
+                return None
+        except Exception as e:
+            logger.debug(f"PDF download failed for doc {id_documento}: {e}")
+            return None
+
         return extract_pdf_markdown(
             source="AR/CSJNDatosAbiertos",
-            source_id="",
-            pdf_bytes=id_documento,
+            source_id=str(id_documento),
+            pdf_bytes=resp.content,
             table="case_law",
-        ) or ""
+            force=True,
+        )
 
     # -- Date parsing --------------------------------------------------------
 

@@ -45,7 +45,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
-from common.pdf_extract import extract_pdf_markdown
+from common.pdf_extract import extract_pdf_markdown, preload_existing_ids
 
 logging.basicConfig(
     level=logging.INFO,
@@ -254,10 +254,57 @@ class TabascoCourtScraper(BaseScraper):
 
     # ---- Fetch --------------------------------------------------------
 
+    def _download_pdf(self, pdf_url: str) -> Optional[bytes]:
+        """Download a decision PDF, guarding against the host's missing-file
+        fallback.
+
+        The TSJ Tabasco server answers HTTP 200 with its homepage
+        (Content-Type text/html, ~90 KB) for public-version PDFs that were
+        never uploaded — roughly a third of the listed rows (issue #1152).
+        Detect the non-PDF body via the %PDF- magic bytes and skip it cleanly,
+        rather than handing an HTML page to the PDF backends (which then emit a
+        noisy "invalid pdf header" failure for every missing file and burn CPU).
+        """
+        for attempt in range(2):
+            try:
+                time.sleep(1.0)
+                resp = self.session.get(
+                    pdf_url, timeout=(15, 90),
+                    headers={"Accept": "application/pdf,*/*"},
+                )
+                if resp.status_code == 429:
+                    logger.warning("Rate limited on PDF, waiting 30s")
+                    time.sleep(30)
+                    continue
+                resp.raise_for_status()
+                content = resp.content
+                if content[:5] != b"%PDF-":
+                    ctype = resp.headers.get("Content-Type", "")
+                    logger.info(
+                        "Missing public-version PDF (host returned %s, %d bytes): %s",
+                        ctype or "non-PDF", len(content), pdf_url,
+                    )
+                    return None
+                return content
+            except requests.exceptions.RequestException as e:
+                logger.warning(
+                    f"PDF download attempt {attempt + 1} failed for {pdf_url}: {e}"
+                )
+                if attempt < 1:
+                    time.sleep(5)
+        return None
+
     def _extract_text(self, pdf_url: str, doc_id: str) -> str:
+        # Skip docs already ingested in Neon before spending a download on them
+        # (extract_pdf_markdown also checks this, but only after downloading).
+        if f"MX-TAB-{doc_id}" in preload_existing_ids("MX/PoderJudicialTabasco"):
+            return ""
+        pdf_bytes = self._download_pdf(pdf_url)
+        if pdf_bytes is None:
+            return ""
         try:
             text = extract_pdf_markdown(
-                "MX/PoderJudicialTabasco", f"MX-TAB-{doc_id}", pdf_url=pdf_url,
+                "MX/PoderJudicialTabasco", f"MX-TAB-{doc_id}", pdf_bytes=pdf_bytes,
             )
             return text or ""
         except Exception as e:

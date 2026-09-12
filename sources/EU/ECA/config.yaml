@@ -1,0 +1,69 @@
+source:
+  id: "EU/ECA"
+  name: "European Court of Auditors — Reports, Opinions & Reviews"
+  country: "EU"
+  language: "en"
+
+  # The European Court of Auditors (ECA) is the EU's independent external
+  # auditor. This source captures the FULL TEXT of its published output —
+  # special reports (SR), annual reports and annual reports on EU agencies
+  # (AR/SAR/AGENCIES), Treaty opinions (OP), reviews / landscape reviews / rapid
+  # case reviews (RW/INSR/RCR) and related publications — all official EU
+  # doctrine.
+  #
+  # Additive to EU/OJC-Acts (CELLAR sector-3 "Y"), which only holds the short
+  # OJ C-series summaries of a few ECA special reports; here we store the full
+  # report bodies. _id is the ECA document code (e.g. SR-2026-14), so there is
+  # no CELEX collision.
+  #
+  # Enumeration is via the ECA site's public SharePoint Search REST endpoint
+  # (/_api/search/query), across the modern /ECAPublications/* library and the
+  # historical /Lists/ECADocuments/* archive. Each publication exists in ~24
+  # language variants; only the English manifestation (path suffix _EN.pdf) is
+  # kept. Full text is extracted from the born-digital PDFs with PyMuPDF; a
+  # minimum-length guard skips the rare pre-2000 scanned document.
+  #
+  # www.eca.europa.eu and its search API answer plain HTTPS (HTTP 200) — no WAF,
+  # no JS challenge, no auth — so the source is fleet-safe.
+  endpoints:
+    search_api: "https://www.eca.europa.eu/_api/search/query"
+    libraries:
+      - "https://www.eca.europa.eu/ECAPublications*"
+      - "https://www.eca.europa.eu/Lists/ECADocuments*"
+
+  data_types:
+    - doctrine
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1
+
+  schema:
+    key_fields:
+      _id:
+        type: string
+        required: true
+      title:
+        type: string
+        required: true
+      text:
+        type: string
+        required: true
+      date:
+        type: date
+        required: false
+      doc_code:
+        type: string
+        required: false
+
+fetch:
+  sample_count: 15
+
+license:
+  name: "EU institutional reuse (Decision 2011/833/EU)"
+  url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "ECA reports, opinions and reviews are documents of an EU institution, reusable — including for commercial purposes — under the Commission's reuse policy (Decision 2011/833/EU). Attribution to the source is requested."

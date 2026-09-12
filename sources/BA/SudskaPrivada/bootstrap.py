@@ -20,6 +20,7 @@ import io
 import re
 import sys
 import json
+import argparse
 import logging
 from pathlib import Path
 from datetime import datetime, timezone
@@ -41,6 +42,11 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger("BA/SudskaPrivada")
+
+# Decision PDFs are served straight off the attachment ID returned by the API.
+ATTACHMENT_URL = (
+    "https://sudskapraksa.pravosudje.ba/api/case-law-documents/attachments/{}/download"
+)
 
 # Organisation ID to court name mapping
 COURT_NAMES = {
@@ -236,16 +242,23 @@ class BiHSudskaPrivadaScraper(BaseScraper):
             "case_phase": court_case.get("casePhaseType", ""),
             "case_closing_way": court_case.get("caseClosingWay", ""),
             "attachment_id": attachment_id,
-            "url": f"https://sudskapraksa.pravosudje.ba/api/case-law-documents/attachments/{attachment_id}/download",
+            "url": ATTACHMENT_URL.format(attachment_id),
         }
 
     def _extract_pdf_text(self, attachment_id: int) -> str:
-        """Extract text from PDF using centralized extractor."""
+        """
+        Extract text from a decision's attached PDF.
+
+        `attachment_id` is the API's numeric attachment key, not PDF bytes — the
+        portal serves the file at /attachments/{id}/download, so pass that URL
+        and let the extractor do the download.
+        """
         return extract_pdf_markdown(
             source="BA/SudskaPrivada",
-            source_id="",
-            pdf_bytes=attachment_id,
+            source_id=str(attachment_id),
+            pdf_url=ATTACHMENT_URL.format(attachment_id),
             table="case_law",
+            force=True,
         ) or ""
 
     def normalize(self, raw: dict) -> dict:
@@ -294,22 +307,23 @@ class BiHSudskaPrivadaScraper(BaseScraper):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="BA/SudskaPrivada Data Fetcher")
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "update"])
+    parser.add_argument("--sample", action="store_true")
+    parser.add_argument("--sample-size", type=int, default=12)
+    # Accepted for VPS wrapper compatibility; the full corpus is the default path.
+    parser.add_argument("--full", action="store_true")
+    parser.add_argument("--workers", type=int, default=None)
+    parser.add_argument("--batch-size", type=int, default=100)
+
+    args = parser.parse_args()
     scraper = BiHSudskaPrivadaScraper()
 
-    if len(sys.argv) < 2:
-        print(
-            "Usage: python bootstrap.py [bootstrap|update] [--sample] [--sample-size N]"
-        )
-        sys.exit(1)
+    command = args.command
+    sample_mode = args.sample
+    sample_size = args.sample_size
 
-    command = sys.argv[1]
-    sample_mode = "--sample" in sys.argv
-    sample_size = 12
-    if "--sample-size" in sys.argv:
-        idx = sys.argv.index("--sample-size")
-        sample_size = int(sys.argv[idx + 1])
-
-    if command == "bootstrap":
+    if command in ("bootstrap", "bootstrap-fast"):
         if sample_mode:
             stats = scraper.run_sample(n=sample_size)
             print(
@@ -321,15 +335,12 @@ def main():
                 f"\nBootstrap complete: {stats['records_new']} new, "
                 f"{stats['records_updated']} updated, {stats['records_skipped']} skipped"
             )
-    elif command == "update":
+    else:
         stats = scraper.update()
         print(
             f"\nUpdate complete: {stats['records_new']} new, "
             f"{stats['records_updated']} updated"
         )
-    else:
-        print(f"Unknown command: {command}")
-        sys.exit(1)
 
     print(json.dumps(stats, indent=2))
 

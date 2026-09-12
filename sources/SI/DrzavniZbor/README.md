@@ -10,8 +10,8 @@ National Assembly (Državni zbor) from 1992 to present.
 
 ## Coverage
 
-- 9 parliamentary mandates (1992–present)
-- ~2,340 session transcripts
+- Parliamentary mandates 2–10 (1992–present)
+- 2,356 verbatim transcripts (one record per sitting day)
 - Both regular (redna) and extraordinary (izredna) sessions
 - Full verbatim text including speaker attributions
 
@@ -19,7 +19,7 @@ National Assembly (Državni zbor) from 1992 to present.
 
 ```bash
 python bootstrap.py bootstrap --sample   # 15 sample records
-python bootstrap.py bootstrap --full     # All records (~2,340)
+python bootstrap.py bootstrap --full     # All records (~2,356) -> data/records.jsonl
 ```
 
 ## License

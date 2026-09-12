@@ -1,0 +1,45 @@
+last_bootstrap: '2026-08-15T15:01:22.516026+00:00'
+last_error: '''str'' object has no attribute ''get'''
+last_run: '2026-08-15T15:01:22.516026+00:00'
+run_history:
+- error_message: '''str'' object has no attribute ''get'''
+  errors: 0
+  finished_at: '2026-08-15T14:59:32.625632+00:00'
+  records_fetched: 0
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-15T14:59:26.228371+00:00'
+- errors: 0
+  finished_at: '2026-08-15T15:00:49.971406+00:00'
+  records_fetched: 17
+  records_new: 0
+  records_skipped: 0
+  records_updated: 0
+  sample_records_saved: 17
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-15T15:00:18.328667+00:00'
+- batch_size: 100
+  errors: 0
+  finished_at: '2026-08-15T15:01:22.516026+00:00'
+  max_workers: 4
+  mode: fast
+  rate_limiter:
+    current_rate: 1
+    rate_changes: 0
+    start_rate: 1
+    total_429s: 0
+    total_wait_time_seconds: 13.94
+    total_waits: 14
+  records_fetched: 17
+  records_new: 17
+  records_skipped: 0
+  records_updated: 0
+  skip_exception: 0
+  skip_normalize_none: 0
+  started_at: '2026-08-15T15:01:03.782663+00:00'
+total_records: 17

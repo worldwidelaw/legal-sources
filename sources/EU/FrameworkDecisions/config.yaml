@@ -1,0 +1,63 @@
+source:
+  id: "EU/FrameworkDecisions"
+  name: "EU — Framework Decisions & Joint Actions"
+  country: "EU"
+  language: "en"
+
+  # Full text is retrieved from the EU Publications Office (CELLAR / EUR-Lex),
+  # where the EU's former third-pillar binding acts carry a CELEX number in
+  # sector 3, document class "F" — 3{YYYY}F{NNNN}. The "F" descriptor gathers the
+  # Justice-and-Home-Affairs framework decisions (Art. 34 TEU, binding on Member
+  # States as to the result — e.g. the European Arrest Warrant 2002/584/JHA, on
+  # combating terrorism 2002/475/JHA, on combating racism and xenophobia
+  # 2008/913/JHA) together with the joint actions and common positions adopted
+  # under Title VI TEU / early CFSP.
+  # A distinct, additive corpus to EU/EUR-Lex, which enumerates sector 3 by the
+  # ordinary binding resource-types only (REG / DIR / DEC and their
+  # implementing/delegated variants) and never pulls the "F" framework decisions
+  # and joint actions (they carry the dedicated FRAMEWORK_DEC / JOINT_ACT resource
+  # types). No _id collision with any other descriptor.
+  # Enumeration is via the public CELLAR SPARQL endpoint (the sector-3 F corpus is
+  # ~175 rows, far under the OFFSET ceiling, so a single paged sweep suffices).
+  # Full text via CELLAR content negotiation: xHTML for modern acts, OJ HTML via
+  # the language-suffixed CELEX (.ENG) for older ones, born-digital PDF (PyMuPDF)
+  # for the remainder — all of which bypass the eur-lex.europa.eu AWS-WAF that
+  # 202-challenges datacenter IPs, so it is fleet-safe. Same recipe as
+  # EU/OJC-Acts and EU/CouncilResolutions.
+  endpoints:
+    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
+    cellar_celex: "http://publications.europa.eu/resource/celex/{celex}"
+
+  data_types:
+    - legislation
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1
+
+  schema:
+    key_fields:
+      _id:
+        type: string
+        required: true
+      title:
+        type: string
+        required: true
+      text:
+        type: string
+        required: true
+      date:
+        type: date
+        required: false
+
+fetch:
+  sample_count: 15
+
+license:
+  name: "EU institutional reuse (Decision 2011/833/EU)"
+  url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Framework decisions, joint actions and common positions published in the Official Journal by the Publications Office are reusable, including for commercial purposes, under the Commission's reuse policy (Decision 2011/833/EU). Attribution to the source is requested."

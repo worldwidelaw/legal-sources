@@ -58,8 +58,34 @@ class SchemaValidator:
 
     def __init__(self, schema_config: dict):
         self.schema_config = schema_config
-        self.key_fields = schema_config.get("key_fields", [])
-        self.secondary_fields = schema_config.get("secondary_fields", [])
+        self.key_fields = self._coerce_specs(schema_config.get("key_fields", []))
+        self.secondary_fields = self._coerce_specs(
+            schema_config.get("secondary_fields", []), required=False
+        )
+
+    @staticmethod
+    def _coerce_specs(specs, required: bool = True) -> list:
+        """
+        Accept both spelled-out field specs and the bare-name shorthand.
+
+        ~100 configs write `key_fields: [_id, title, text]` rather than the
+        documented list of {name, type, required} mappings. Those entries used
+        to reach `field_spec.get(...)` as plain strings and raise
+        `'str' object has no attribute 'get'` — an AttributeError that escapes
+        validate() into BaseScraper.bootstrap()'s catch-all, aborting the run
+        with 0 records and an error message that names neither the field nor
+        the config (TZ/FCC-Decisions, issue #1438). A bare name means a
+        required string field, so read it that way instead of exploding.
+        """
+        coerced = []
+        for spec in specs or []:
+            if isinstance(spec, str):
+                coerced.append({"name": spec, "type": "string", "required": required})
+            elif isinstance(spec, dict):
+                coerced.append(spec)
+            else:
+                logger.warning(f"Ignoring unusable field spec: {spec!r}")
+        return coerced
 
     def validate(self, record: dict) -> Tuple[bool, list[str]]:
         """

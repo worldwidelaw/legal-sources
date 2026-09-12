@@ -1,0 +1,65 @@
+source:
+  id: "EU/CFSP-Acts"
+  name: "EU — CFSP Joint Actions & Common Positions"
+  country: "EU"
+  language: "en"
+
+  # Full text is retrieved from the EU Publications Office (CELLAR / EUR-Lex),
+  # where the EU's second-pillar Common Foreign and Security Policy (CFSP,
+  # Title V TEU) acts carry a CELEX number in sector 3, document class "E" —
+  # 3{YYYY}E{NNNN}. The "E" descriptor gathers the Council joint actions and
+  # common positions (and earlier CFSP decisions of that class) adopted from the
+  # mid-1990s until the Lisbon Treaty reorganised CFSP instruments: restrictive
+  # measures / sanctions against third countries and persons, the mandates of
+  # ESDP/CSDP crisis-management missions and EU Special Representatives,
+  # non-proliferation and arms-control actions, and their amendments/extensions.
+  # A distinct, additive corpus to EU/EUR-Lex, which enumerates sector 3 by the
+  # ordinary binding resource-types only (REG / DIR / DEC and their
+  # implementing/delegated variants) and never pulls the "E" CFSP acts (they carry
+  # the JOINT_ACTION / COMMON_POSITION resource types). Distinct too from
+  # EU/FrameworkDecisions (descriptor "F" = third-pillar JHA framework decisions).
+  # No _id collision with any other descriptor.
+  # Enumeration is via the public CELLAR SPARQL endpoint (the sector-3 E corpus is
+  # ~667 rows, far under the OFFSET ceiling, so a single paged sweep suffices).
+  # Full text via CELLAR content negotiation: xHTML for modern acts, OJ HTML via
+  # the language-suffixed CELEX (.ENG) for older ones, born-digital PDF (PyMuPDF)
+  # for the remainder — all of which bypass the eur-lex.europa.eu AWS-WAF that
+  # 202-challenges datacenter IPs, so it is fleet-safe. Same recipe as
+  # EU/FrameworkDecisions and EU/RulesOfProcedure.
+  endpoints:
+    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
+    cellar_celex: "http://publications.europa.eu/resource/celex/{celex}"
+
+  data_types:
+    - legislation
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1
+
+  schema:
+    key_fields:
+      _id:
+        type: string
+        required: true
+      title:
+        type: string
+        required: true
+      text:
+        type: string
+        required: true
+      date:
+        type: date
+        required: false
+
+fetch:
+  sample_count: 15
+
+license:
+  name: "EU institutional reuse (Decision 2011/833/EU)"
+  url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "CFSP joint actions and common positions published in the Official Journal by the Publications Office are reusable, including for commercial purposes, under the Commission's reuse policy (Decision 2011/833/EU). Attribution to the source is requested."

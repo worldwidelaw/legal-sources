@@ -123,13 +123,29 @@ class GreekProcurementScraper(BaseScraper):
         return None
 
     def _extract_pdf_text(self, ref_number: str) -> Optional[str]:
-        """Extract text from PDF using centralized extractor."""
+        """Download the procurement PDF attachment for a reference and extract text."""
+        try:
+            self.rate_limiter.wait()
+            resp = self.client.get(f"{ATTACHMENT_ENDPOINT}/{ref_number}")
+            resp.raise_for_status()
+            content_type = resp.headers.get("Content-Type", "")
+            if "pdf" not in content_type and len(resp.content) < 100:
+                logger.debug(f"No PDF for {ref_number}: {content_type}")
+                return None
+            if len(resp.content) > 50 * 1024 * 1024:  # Skip >50MB PDFs
+                logger.warning(f"PDF too large for {ref_number}: {len(resp.content)} bytes")
+                return None
+        except Exception as e:
+            logger.debug(f"PDF download failed for {ref_number}: {e}")
+            return None
+
         return extract_pdf_markdown(
             source="GR/KHMDHS",
-            source_id="",
-            pdf_bytes=ref_number,
+            source_id=ref_number,
+            pdf_bytes=resp.content,
             table="doctrine",
-        ) or ""
+            force=True,
+        )
 
     def _build_text_from_record(self, rec: Dict) -> str:
         """Build text content from record metadata as fallback."""
@@ -315,4 +331,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

@@ -29,7 +29,7 @@ data_model:
   update_strategy: "append_only"
   versioning: "none"
   dedup_key:
-    - "decision_id"
+    - "_id"
 
 schema:
   total_fields: null
@@ -70,6 +70,14 @@ notes: |
   - Decisions published as PDFs on ccr.ro
   - PDFs extracted via common/pdf_extract.extract_pdf_markdown
   - No public API, scraping HTML listing pages
+  - Listings paginate with `?_page=N` (Content Views plugin). A plain `?page=N`
+    is silently ignored and returns the same first slice forever (issue #1534).
+  - Listing hrefs end in `#new_tab`, so a `[href$='.pdf']` selector matches
+    almost nothing — match with `[href*='.pdf']` and strip the fragment.
+  - 1,286 documents across 4 sections (100/38/4/23 pages) as of 2026-09-01
+  - Decision date comes from the Romanian title; the upload path /YYYY/MM/ is
+    the CMS publication month and lags the decision
+  - ccr.ro serves a SHA1 proof-of-work WAF challenge on 503; solved in-process
   - Language: Romanian
   - Coverage: 1992-present
   - Community contribution by @nicoletaMC (PR #51)

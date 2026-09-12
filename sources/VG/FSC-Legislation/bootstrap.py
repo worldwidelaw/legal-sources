@@ -86,14 +86,39 @@ LEGISLATION = [
 ]
 
 
+class SourceBlockedError(RuntimeError):
+    """Raised when Cloudflare refuses the PDF path from this vantage."""
+
+
 class VGFSCLegislationScraper(BaseScraper):
     """Scraper for VG/FSC-Legislation -- BVI financial-services statutes."""
 
+    # The corpus is a fixed 18-item list, so a run that loses most of it is a
+    # blocked vantage, not a handful of dead slugs. Fail loud after this many
+    # consecutive fetch failures rather than writing a silent partial corpus
+    # (issue #1576: the fleet wrote 10 of 18 and the shortfall looked like
+    # ordinary per-document skips).
+    MAX_CONSECUTIVE_FAILURES = 3
+
     def __init__(self):
         super().__init__(Path(__file__).parent)
+        self._consecutive_failures = 0
 
     def _pdf_url(self, slug: str) -> str:
         return f"{PDF_DIR}/{slug}.pdf"
+
+    def _note_failure(self, slug: str, reason: str) -> None:
+        self._consecutive_failures += 1
+        logger.warning(f"  {reason} for {slug} "
+                       f"({self._consecutive_failures}/{self.MAX_CONSECUTIVE_FAILURES})")
+        if self._consecutive_failures >= self.MAX_CONSECUTIVE_FAILURES:
+            raise SourceBlockedError(
+                f"{self._consecutive_failures} consecutive failures fetching "
+                f"{PDF_DIR}/*.pdf (last: {slug} -- {reason}). bvifsc.vg is "
+                f"Cloudflare-fronted and 403s its HTML paths for every client; when "
+                f"the PDF path is refused too, the vantage is blocked. Refusing to "
+                f"write a partial corpus -- re-run from a residential/US vantage."
+            )
 
     def normalize(self, raw: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         slug = raw["slug"]
@@ -107,16 +132,19 @@ class VGFSCLegislationScraper(BaseScraper):
             resp.raise_for_status()
             pdf_bytes = resp.content
         except Exception as e:
-            logger.warning(f"  Fetch failed for {slug}: {e}")
+            self._note_failure(slug, f"Fetch failed ({e})")
             return None
 
         text = extract_pdf_markdown(
             SOURCE_ID, slug, pdf_bytes=pdf_bytes, table="legislation", force=True
         )
         if not text or len(text.strip()) < 500:
-            logger.warning(f"  Skipping {slug} -- insufficient text ({len(text or '')} chars)")
+            # A Cloudflare challenge body downloads as a 200 with an HTML payload,
+            # so an "insufficient text" run is the same signal as a refused fetch.
+            self._note_failure(slug, f"Insufficient text ({len(text or '')} chars)")
             return None
 
+        self._consecutive_failures = 0
         now = datetime.now(timezone.utc).isoformat()
         return {
             "_id": f"{SOURCE_ID}/{slug}",

@@ -59,7 +59,7 @@ from typing import Generator
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common import pdf_extract
 
 logging.basicConfig(
@@ -161,19 +161,44 @@ class NJOALScraper(BaseScraper):
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
         )
+        # Count refused/throttled responses so a blocked vantage fails loudly
+        # instead of reporting a calm "0 discovered" (#1392).
+        self.blocked_responses = 0
 
     # ---------------------------------------------------------------- http
     def _curl_bytes(self, url: str) -> bytes | None:
+        # Send a full browser header set and, crucially, read the real status
+        # code — the old version treated ANY body (including a block or error
+        # page) as success, which is how a refused vantage turned into a
+        # silent "search q=...: no response" and a 0-document run.
+        headers = [
+            "-H", "Accept: text/html,application/xhtml+xml,application/xml;"
+                  "q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "-H", "Accept-Language: en-US,en;q=0.9",
+            "-H", "Sec-Fetch-Dest: document",
+            "-H", "Sec-Fetch-Mode: navigate",
+            "-H", "Sec-Fetch-Site: none",
+            "-H", "Upgrade-Insecure-Requests: 1",
+        ]
         for attempt in range(4):
             time.sleep(self.delay)
             try:
                 out = subprocess.run(
                     ["curl", "-s", "-L", "--max-time", "90", "-A", self._ua,
-                     "-H", "Accept: */*", url],
+                     *headers, "-w", "%{http_code}", url],
                     capture_output=True, timeout=120,
                 )
-                if out.returncode == 0 and out.stdout:
-                    return out.stdout
+                if out.returncode == 0 and len(out.stdout) >= 3:
+                    body = out.stdout[:-3]
+                    code = out.stdout[-3:].decode("ascii", "replace")
+                    if code == "200" and body:
+                        return body
+                    if code in ("403", "429") or code.startswith("5"):
+                        self.blocked_responses += 1
+                    elif code == "404":
+                        return None  # genuinely absent, don't burn retries
+                    logger.warning(
+                        f"GET {url} -> HTTP {code} (attempt {attempt + 1})")
             except Exception as e:
                 logger.warning(f"curl failed for {url} (attempt {attempt + 1}): {e}")
             time.sleep(2 ** attempt)
@@ -218,14 +243,35 @@ class NJOALScraper(BaseScraper):
         return str(year)
 
     # --------------------------------------------------------- discovery
+    def _search(self, term: str) -> str | None:
+        """Run one search, retrying an empty-but-200 page as a throttle.
+
+        The Rutgers endpoint answers 200 with a results page carrying zero
+        hits once it has been queried too fast (documented in the build
+        recipe). Every agency code in SEARCH_TERMS does have decisions, so
+        an empty page for one of them means throttling, not "no results" —
+        back off and retry rather than silently dropping that agency.
+        """
+        for attempt in range(3):
+            html = self._curl_text(SEARCH_TEMPLATE.format(q=term))
+            if html and DOC_HREF_RE.search(html):
+                return html
+            self.blocked_responses += 1
+            wait = 15 * (attempt + 1)
+            logger.warning(
+                f"search q={term}: empty result page "
+                f"(attempt {attempt + 1}) — backing off {wait}s")
+            time.sleep(wait)
+        return None
+
     def discover_documents(self, sample: bool = False) -> list[dict]:
         terms = ["edu"] if sample else SEARCH_TERMS
         seen: set[tuple[str, str]] = set()
         out: list[dict] = []
         for term in terms:
-            html = self._curl_text(SEARCH_TEMPLATE.format(q=term))
+            html = self._search(term)
             if not html:
-                logger.warning(f"search q={term}: no response")
+                logger.warning(f"search q={term}: no usable response")
                 continue
             new_on_term = 0
             for sub, name in DOC_HREF_RE.findall(html):
@@ -253,6 +299,18 @@ class NJOALScraper(BaseScraper):
         # newest dockets first (year segment sorts reasonably by stem)
         out.sort(key=lambda r: r["stem"], reverse=True)
         logger.info(f"Discovered {len(out)} NJ OAL decision documents")
+        if not out:
+            # Every agency code in SEARCH_TERMS matches thousands of archived
+            # decisions, so a union of 0 across all of them is never a real
+            # result — the endpoint is refusing this vantage. Raise so the run
+            # fails loudly instead of exiting empty and letting the pipeline
+            # re-ingest the committed samples as a completion (#1392).
+            raise RuntimeError(
+                f"all {len(terms)} searches against {BASE_URL}/OAL/search.php "
+                f"returned 0 decision links ({self.blocked_responses} refused/"
+                f"empty responses) — the archive is not empty, so this vantage "
+                f"is being blocked or throttled."
+            )
         return out
 
     # ------------------------------------------------------- build record
@@ -345,7 +403,8 @@ class NJOALScraper(BaseScraper):
     def _iter_raw(self, sample: bool = False) -> Generator[dict, None, None]:
         emitted = 0
         seen_text: set[str] = set()
-        for doc in self.discover_documents(sample=sample):
+        docs = self.discover_documents(sample=sample)
+        for doc in docs:
             raw = self._build_raw(doc)
             if not raw:
                 continue
@@ -361,6 +420,14 @@ class NJOALScraper(BaseScraper):
             emitted += 1
             if sample and emitted >= 12:
                 return
+        if not emitted:
+            # Discovery worked but no PDF yielded text = the documents are
+            # being refused. Never a legitimate outcome for this archive.
+            raise RuntimeError(
+                f"0 of {len(docs)} discovered NJ OAL PDFs yielded text "
+                f"({self.blocked_responses} refused responses) — decision "
+                f"PDFs are unreachable from this vantage."
+            )
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """Yield RAW records (framework normalizes via normalize())."""
@@ -370,6 +437,9 @@ class NJOALScraper(BaseScraper):
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self.fetch_all():
             if not since or (raw.get("date") and raw["date"] >= since):
                 yield raw

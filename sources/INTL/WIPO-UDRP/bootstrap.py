@@ -22,6 +22,7 @@ import json
 import re
 import ssl
 import sys
+import threading
 import time
 from datetime import datetime, timezone
 from html import unescape
@@ -61,26 +62,56 @@ SAMPLE_CASES = [
 _ssl_ctx = ssl.create_default_context()
 
 
-def _fetch(url: str, timeout: int = 30, follow_redirects: bool = True) -> Optional[tuple]:
-    """Fetch a URL, return (final_url, content_type, body_bytes) or None on error."""
+def _fetch_worker(url: str, timeout: int, result_box: dict) -> None:
+    """Perform the blocking fetch; store outcome in result_box.
+
+    Runs inside a daemon thread so a trickling/keep-alive read that never
+    trips the socket timeout can be abandoned by the caller (see _fetch).
+    """
     req = Request(url)
     req.add_header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
     req.add_header("Accept-Language", "en-US,en;q=0.5")
     try:
         resp = urlopen(req, timeout=timeout, context=_ssl_ctx)
         body = resp.read()
-        final_url = resp.url
-        content_type = resp.headers.get("Content-Type", "")
-        return (final_url, content_type, body)
+        result_box["value"] = (resp.url, resp.headers.get("Content-Type", ""), body)
     except HTTPError as e:
         if e.code == 404:
-            return None
-        # For redirects to PDF, urllib follows them automatically
-        print(f"  HTTP {e.code} for {url}", file=sys.stderr)
-        return None
+            result_box["value"] = None
+        else:
+            # For redirects to PDF, urllib follows them automatically
+            print(f"  HTTP {e.code} for {url}", file=sys.stderr)
+            result_box["value"] = None
     except (URLError, OSError) as e:
         print(f"  Network error for {url}: {e}", file=sys.stderr)
+        result_box["value"] = None
+    except Exception as e:  # noqa: BLE001 -- never let the worker die silently
+        print(f"  Fetch error for {url}: {e}", file=sys.stderr)
+        result_box["value"] = None
+
+
+def _fetch(url: str, timeout: int = 30, follow_redirects: bool = True) -> Optional[tuple]:
+    """Fetch a URL, return (final_url, content_type, body_bytes) or None on error.
+
+    A wall-clock deadline guard runs the fetch in a daemon thread and abandons
+    it if it exceeds the deadline. The urllib socket ``timeout`` only fires when
+    a single recv() gets no bytes; a server that trickles a keep-alive body can
+    hang ``resp.read()`` forever without ever raising, which previously wedged
+    the multi-day crawl (issue #1197). The deadline gives ~2x headroom over the
+    socket timeout, then skips the URL rather than blocking.
+    """
+    result_box: dict = {}
+    worker = threading.Thread(
+        target=_fetch_worker, args=(url, timeout, result_box), daemon=True
+    )
+    deadline = timeout * 2 + 15  # headroom over the socket timeout, then bail
+    worker.start()
+    worker.join(deadline)
+    if worker.is_alive():
+        # Thread is wedged on a trickling read; abandon it (daemon → dies at exit)
+        print(f"  Deadline ({deadline}s) exceeded for {url}; skipping", file=sys.stderr)
         return None
+    return result_box.get("value")
 
 
 def _fetch_text(url: str, timeout: int = 30) -> Optional[str]:
@@ -418,6 +449,11 @@ def test_connectivity() -> bool:
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     if len(sys.argv) < 2:
         print("Usage: python bootstrap.py [bootstrap|update|test] [--sample]")
         sys.exit(1)

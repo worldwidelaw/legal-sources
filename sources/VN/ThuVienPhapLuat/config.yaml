@@ -28,6 +28,15 @@ schema:
   - name: issuing_authority
     required: false
     type: string
+  - name: legal_sectors
+    required: false
+    type: string
+  - name: signers
+    required: false
+    type: string
+  - name: effect_status
+    required: false
+    type: string
   - name: url
     required: true
     type: string
@@ -36,8 +45,10 @@ source:
   country: VN
   data_types:
   - legislation
-  description: '518,255 Vietnamese legal documents (1924-2026) from thuvienphapluat.vn. Accessed via HuggingFace dataset th1nhng0/vietnamese-legal-documents (CC-BY-4.0). Full text content in Vietnamese.
-    36 document types from 1,335 issuing authorities.
+  description: 'Vietnamese legal documents from thuvienphapluat.vn, accessed via the HuggingFace
+    dataset th1nhng0/vietnamese-legal-documents (CC-BY-4.0). The ''metadata'' config carries
+    171,556 records (Vietnamese column names, string ids) and the ''content'' config 170,824
+    full-text documents as HTML, joined on id. Full text in Vietnamese.
 
     '
   format: parquet

@@ -1,0 +1,110 @@
+# ===================================================================
+# GW/PGR -- Procuradoria-Geral da República da Guiné-Bissau
+# ===================================================================
+# Open WordPress REST media library at pgr.gw. Born-digital PDFs of
+# the codes, organic laws, the 2010 security-reform package, OHADA
+# uniform acts and CPLP judicial-cooperation conventions.
+# ===================================================================
+
+source:
+  id: "GW/PGR"
+  country: "GW"
+  name: "Guinea-Bissau — Procuradoria-Geral da República, Legislação"
+  url: "https://pgr.gw/"
+  description: |
+    The Attorney General's Office of Guinea-Bissau (Procuradoria-Geral da
+    República) publishes the country's statutory texts as PDFs in its
+    WordPress media library: the Civil Code, the Codes of Civil and of
+    Labour Procedure, the organic laws of the Public Prosecution Service
+    and of the courts, the 2010 security-sector reform package, the
+    anti-trafficking and terrorism-financing laws, OHADA uniform acts,
+    CPLP judicial-cooperation conventions, and one full Boletim Oficial
+    supplement. Language: Portuguese.
+
+    Additive to GW/AssembleiaNacional, which covers only the texts
+    published by parliament (Constitution, Estatuto dos Deputados, Lei da
+    Cidadania) — the codes and the Boletim Oficial supplement do not
+    overlap.
+
+data_types:
+  - legislation
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "rest"
+  base_url: "https://pgr.gw"
+  endpoints:
+    list: "/wp-json/wp/v2/media?per_page=100&mime_type=application/pdf"
+  notes: |
+    One page of results (X-WP-Total: 41). Each item carries `source_url`
+    pointing at the PDF, plus title, slug and upload date. The upload date
+    is NOT the date of the law — the enactment date is parsed from the
+    Portuguese date line in the head of the document, cross-checked
+    against the year encoded in the title.
+
+schema:
+  key_fields:
+    - name: "_id"
+      description: "gw-pgr-{WordPress media id}"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Document title as published in the media library"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text extracted from the born-digital PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Enactment date (ISO 8601); null when undeterminable"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "date_is_approximate"
+      description: "True when the date falls back to 1 January of the title year"
+      type: "boolean"
+      role: "metadata"
+      required: false
+    - name: "url"
+      description: "Direct URL to the PDF on pgr.gw"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "media_id"
+      description: "WordPress media library id"
+      type: "integer"
+      role: "reference"
+      required: true
+
+license:
+  name: "No terms-of-use page — site footer asserts \"Todos os Direitos Reservados\""
+  url: "https://pgr.gw/"
+  commercial_use: false
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: |
+    ⚠️ Commercial use flagged. pgr.gw publishes no terms-of-use page and its
+    footer reads "Copyrights © PGR Guiné-Bissau — Todos os Direitos
+    Reservados". The content is state statutory law (official texts, which
+    are not normally copyrightable), but the reserved-rights claim is
+    flagged per the err-on-the-side-of-flagging rule.
+
+notes: |
+  - Open WordPress REST, no auth, no captcha, no geo-block.
+  - ~38 legal PDFs after filtering site-test uploads ("teste", "PDF Scanner").
+  - Several texts were uploaded twice; records de-duplicate on a hash of the
+    extracted text.
+  - A minority of uploads are scans with no text layer; they are skipped and
+    logged rather than ingested as empty records (no OCR backend).

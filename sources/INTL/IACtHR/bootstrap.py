@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 
 from common.pdf_extract import extract_pdf_markdown
 
@@ -75,21 +75,35 @@ class IACtHRScraper(BaseScraper):
             "Referer": "https://corteidh.or.cr/casos_sentencias.cfm?lang=en",
         })
 
-    def _fetch_case_listing(self) -> str:
-        """Fetch full case listing from AJAX endpoint."""
+    def _fetch_case_listing(self, lang: str = "es") -> str:
+        """Fetch full case listing from AJAX endpoint.
+
+        NOTE: the ColdFusion endpoint returns a generic "An error occurred while
+        executing the application" page for lang=en (for every query, including a
+        single-page one), so the Spanish listing is the only working enumeration.
+        Spanish rows carry the same seriec_* document URLs.
+        """
         data = {
-            "lang": "en",
+            "lang": lang,
             "Texto_busqueda_TXT": "",
             "nId_estado_NUM": "T",
-            "sYear": "1987",
-            "sYear2": "2026",
             "page_rows": "3000",
             "nId_Tipo_Jurisprudencia": "CC",
             "startrow": "1",
             "search_param": "name",
         }
-        r = self.session.post(LISTING_URL, data=data, timeout=60)
+        r = self.session.post(
+            LISTING_URL,
+            data=data,
+            timeout=120,
+            headers={"Referer": f"{BASE_URL}/casos_sentencias.cfm?lang={lang}"},
+        )
         r.raise_for_status()
+        if "<title>Error</title>" in r.text:
+            raise RuntimeError(
+                f"corteidh.or.cr listing endpoint returned a ColdFusion error page "
+                f"for lang={lang} ({len(r.text)} bytes) -- endpoint changed or blocked"
+            )
         return r.text
 
     def _parse_case_listing(self, html: str) -> list:
@@ -112,15 +126,18 @@ class IACtHRScraper(BaseScraper):
 
             for a in li.find_all("a", href=True):
                 href = a["href"]
-                if "/seriec_" in href:
-                    m = re.search(r"seriec_(\d+)", href)
+                # Older rows spell the file "Seriec_95_esp.pdf" (capital S), so
+                # everything here has to be case-insensitive.
+                low = href.lower()
+                if "/seriec_" in low:
+                    m = re.search(r"seriec_(\d+)", low)
                     if m:
                         series_c = int(m.group(1))
-                    if href.endswith(".pdf") and "resumen" not in href and "voto" not in href and "vsc_" not in href:
+                    if "resumen" in low or "voto" in low or "vsc_" in low:
+                        continue
+                    if low.endswith(".pdf"):
                         pdf_urls.append(href)
-                    elif href.endswith(".docx") and "voto" not in href and "vsc_" not in href:
-                        docx_urls.append(href)
-                    elif href.endswith(".doc") and not href.endswith(".docx") and "voto" not in href and "vsc_" not in href:
+                    elif low.endswith((".doc", ".docx")):
                         docx_urls.append(href)
 
             if not series_c:
@@ -141,6 +158,16 @@ class IACtHRScraper(BaseScraper):
                 if m:
                     case_name = m.group(1).strip().rstrip(".")
 
+            # Spanish citation: "Corte IDH. Caso X Vs. Peru. Fondo... Sentencia de
+            # 3 de julio de 2026. Serie C No. 598."
+            if not case_name:
+                m = re.search(
+                    r"Caso (.+?)\.\s*(?:Excepci|Fondo|Reparaciones|Interpretaci|Supervisi|Competencia|Sentencia|Serie C)",
+                    raw_text,
+                )
+                if m:
+                    case_name = m.group(1).strip().rstrip(".")
+
             # Extract judgment type
             type_patterns = [
                 r"(Merits(?:,?\s*(?:Reparations|and\s+Reparations)(?:,?\s*(?:and\s+)?Costs)?)?)",
@@ -155,6 +182,14 @@ class IACtHRScraper(BaseScraper):
                     judgment_type = m.group(1).strip()
                     break
 
+            # Spanish: everything between the case name and ". Sentencia de"
+            if not judgment_type and case_name:
+                m = re.search(
+                    re.escape(case_name) + r"\.\s*(.+?)\.\s*Sentencia de ", raw_text
+                )
+                if m and len(m.group(1)) < 200:
+                    judgment_type = m.group(1).strip()
+
             # Extract date
             m = re.search(r"Judgment of (\w+ \d{1,2},?\s*\d{4})", raw_text)
             if m:
@@ -165,10 +200,10 @@ class IACtHRScraper(BaseScraper):
                     date_str = m.group(1)
 
             # Determine language preference: English PDF > English DOCX > Spanish PDF > Spanish DOCX
-            eng_pdfs = [u for u in pdf_urls if "_ing" in u or "_eng" in u]
-            esp_pdfs = [u for u in pdf_urls if "_esp" in u]
-            eng_docs = [u for u in docx_urls if "_ing" in u or "_eng" in u]
-            esp_docs = [u for u in docx_urls if "_esp" in u]
+            eng_pdfs = [u for u in pdf_urls if "_ing" in u.lower() or "_eng" in u.lower()]
+            esp_pdfs = [u for u in pdf_urls if "_esp" in u.lower()]
+            eng_docs = [u for u in docx_urls if "_ing" in u.lower() or "_eng" in u.lower()]
+            esp_docs = [u for u in docx_urls if "_esp" in u.lower()]
 
             # Pick best document URL
             doc_url = None
@@ -292,14 +327,22 @@ class IACtHRScraper(BaseScraper):
         case_name = raw.get("case_name", "")
         judgment_type = raw.get("judgment_type", "")
 
-        title = f"Case of {case_name}" if case_name else f"Series C No. {series_c}"
+        es = raw.get("doc_lang") != "en"
+        if case_name:
+            title = f"Caso {case_name}" if es else f"Case of {case_name}"
+        else:
+            title = f"Serie C No. {series_c}" if es else f"Series C No. {series_c}"
         if judgment_type:
             title += f". {judgment_type}"
-        title += f". Series C No. {series_c}"
+        title += f". Serie C No. {series_c}" if es else f". Series C No. {series_c}"
 
         date = self._parse_date_to_iso(raw.get("date_str", ""))
 
-        case_url = f"https://corteidh.or.cr/docs/casos/articulos/seriec_{series_c}_{'ing' if raw.get('doc_lang') == 'en' else 'esp'}.pdf"
+        # Use the URL actually downloaded (older rows use "Seriec_95_esp.pdf").
+        case_url = raw.get("doc_url") or (
+            f"https://corteidh.or.cr/docs/casos/articulos/"
+            f"seriec_{series_c}_{'ing' if raw.get('doc_lang') == 'en' else 'esp'}.pdf"
+        )
 
         return {
             "_id": f"IACtHR-C-{series_c}",
@@ -323,6 +366,12 @@ class IACtHRScraper(BaseScraper):
         html = self._fetch_case_listing()
         cases = self._parse_case_listing(html)
         logger.info(f"Found {len(cases)} cases in listing")
+        if not cases:
+            # Fail loud instead of silently writing 0 records (issue #1304).
+            raise RuntimeError(
+                f"No cases parsed from corteidh.or.cr listing ({len(html)} bytes) -- "
+                "listing markup changed or the request was blocked"
+            )
 
         for i, case in enumerate(cases):
             logger.info(f"[{i+1}/{len(cases)}] Downloading Series C No. {case['series_c']} from {case['doc_url']}")
@@ -360,6 +409,8 @@ class IACtHRScraper(BaseScraper):
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
         """Fetch cases updated since a date."""
+        # `update()` passes a datetime; this body treats `since` as a date string (#1512).
+        since = as_date_str(since)
         since_dt = datetime.fromisoformat(since)
         for record in self.fetch_all():
             if record.get("date"):
@@ -380,10 +431,11 @@ def main():
     parser = argparse.ArgumentParser(description="INTL/IACtHR data fetcher")
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 
-    bp = subparsers.add_parser("bootstrap", help="Full initial fetch")
-    bp.add_argument("--sample", action="store_true", help="Fetch sample records only")
-    bp.add_argument("--sample-size", type=int, default=15, help="Number of sample records")
-    bp.add_argument("--full", action="store_true", help="Fetch all records")
+    for cmd in ("bootstrap", "bootstrap-fast"):
+        bp = subparsers.add_parser(cmd, help="Full initial fetch")
+        bp.add_argument("--sample", action="store_true", help="Fetch sample records only")
+        bp.add_argument("--sample-size", type=int, default=15, help="Number of sample records")
+        bp.add_argument("--full", action="store_true", help="Fetch all records")
 
     subparsers.add_parser("update", help="Incremental update")
     subparsers.add_parser("test", help="Quick connectivity test")
@@ -410,7 +462,7 @@ def main():
             logger.error(f"Connectivity test failed: {e}")
             sys.exit(1)
 
-    elif args.command == "bootstrap":
+    elif args.command in ("bootstrap", "bootstrap-fast"):
         stats = scraper.bootstrap(
             sample_mode=args.sample,
             sample_size=args.sample_size,

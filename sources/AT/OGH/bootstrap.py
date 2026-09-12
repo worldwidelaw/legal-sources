@@ -58,15 +58,50 @@ class OGHScraper(BaseScraper):
     Auth: none (Open Government Data)
     """
 
+    # OGH digital coverage in RIS begins ~1930 (a handful earlier); crawl from
+    # 1900 to be safe — empty years cost one cheap request each.
+    FIRST_YEAR = 1900
+
     def __init__(self):
         source_dir = Path(__file__).parent
         super().__init__(source_dir)
+
+        # Checkpoint/resume — see AT/VwGH and issue #1088 (130,619 fetched /
+        # 26 written). The RIS OGD search has no cursor and its default order
+        # is unstable modification-date, so an unpartitioned crawl that
+        # restarts at page 1 every fleet relaunch re-appends the same early
+        # pages and the pipeline dedups the bloated JSONL down to ~the sample
+        # count. We crawl STABLE per-year partitions (EntscheidungsdatumVon/
+        # Bis) and persist completed years NEXT TO THE MODULE (survives the
+        # fleet temp CWD) so relaunches skip finished years.
+        self._checkpoint_path = source_dir / "data" / "ogh_checkpoint.json"
+        self._completed_years = self._load_checkpoint()
 
         self.client = HttpClient(
             base_url=API_BASE,
             headers={"User-Agent": "LegalDataHunter/1.0 (Open Data Research)"},
             timeout=60,
         )
+
+    def _load_checkpoint(self) -> set:
+        try:
+            with open(self._checkpoint_path) as f:
+                years = set(int(y) for y in json.load(f).get("completed_years", []))
+            if years:
+                logger.info(f"Resuming: {len(years)} years already complete")
+            return years
+        except Exception:
+            return set()
+
+    def _save_checkpoint(self) -> None:
+        try:
+            self._checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = self._checkpoint_path.with_suffix(".json.tmp")
+            with open(tmp, "w") as f:
+                json.dump({"completed_years": sorted(self._completed_years)}, f)
+            tmp.replace(self._checkpoint_path)
+        except Exception as e:
+            logger.warning(f"Could not write checkpoint: {e}")
 
     # -- API helpers --------------------------------------------------------
 
@@ -363,13 +398,25 @@ class OGHScraper(BaseScraper):
 
     def fetch_all(self) -> Generator[dict, None, None]:
         """
-        Yield all OGH decisions.
-
-        Full fetch is 131K+ records.
+        Yield all OGH decisions (~131K), crawled in stable per-year partitions
+        with checkpoint/resume (see __init__ for the rationale).
         """
-        logger.info("Fetching all OGH decisions")
-        for doc in self._paginate():
-            yield doc
+        current_year = datetime.now(timezone.utc).year
+        logger.info("Fetching all OGH decisions by year (resumable)")
+        for year in range(current_year, self.FIRST_YEAR - 1, -1):
+            if year in self._completed_years:
+                continue
+            date_filter = {
+                "EntscheidungsdatumVon": f"{year}-01-01",
+                "EntscheidungsdatumBis": f"{year}-12-31",
+            }
+            count = 0
+            for doc in self._paginate(extra_params=date_filter):
+                count += 1
+                yield doc
+            self._completed_years.add(year)
+            self._save_checkpoint()
+            logger.info(f"Year {year} complete ({count} records)")
 
     def fetch_updates(self, since: datetime) -> Generator[dict, None, None]:
         """
@@ -522,4 +569,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

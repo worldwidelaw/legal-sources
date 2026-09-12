@@ -52,7 +52,13 @@ logger = logging.getLogger("legal-data-hunter.GY.OfficialGazette")
 # The site was redesigned in 2026 into a Next.js "e-Gazette" app backed by a
 # clean JSON API. The old Joomla /index.php/publications HTML layout is gone
 # (it now 301-redirects to the SPA homepage). See GH issue #1129.
-BASE_URL = "https://egazette.officialgazette.gov.gy"
+#
+# The e-Gazette app then moved off the egazette.officialgazette.gov.gy subdomain onto
+# its own domain (note the spelling: "officialegazette", not "official-e-gazette").
+# The old host stopped resolving entirely, which surfaced as a silent 0-record run
+# rather than an HTTP error. officialgazette.gov.gy 301-redirects here, and the
+# /api/publications + /api/pdf/{id} contract is unchanged. See GH issue #1457.
+BASE_URL = "https://officialegazette.gov.gy"
 API_PATH = "/api/publications"          # ?page=N -> {"publications":[...], "totalItems":N}
 PDF_PATH = "/api/pdf/{id}"              # born-digital gazette PDF by document id
 ITEMS_PER_PAGE = 10                     # API returns 10 per page
@@ -236,11 +242,25 @@ class OfficialGazetteScraper(BaseScraper):
             try:
                 data = self._fetch_publications_page(page)
             except Exception as e:
+                # A failure on the very first page means the index is unreachable
+                # (dead host, block, API moved) — there is no corpus to salvage, so
+                # raise instead of returning an empty generator. Swallowing this is
+                # what made the #1457 domain move look like a clean 0-record run.
+                if page == 1:
+                    raise RuntimeError(
+                        f"Publications index unreachable at {BASE_URL}{API_PATH}: {e}"
+                    ) from e
                 logger.warning(f"Failed to fetch page {page}: {e}")
                 break
 
             entries = self._parse_publications(data)
             if not entries:
+                if page == 1:
+                    raise RuntimeError(
+                        f"Publications index at {BASE_URL}{API_PATH} returned no items "
+                        "on page 1 — the corpus is non-empty, so this is a parse or "
+                        "API-contract break, not an end-of-corpus signal."
+                    )
                 logger.info(f"No entries on page {page}, stopping (fetched {seen})")
                 break
 

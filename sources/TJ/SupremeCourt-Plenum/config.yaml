@@ -1,0 +1,116 @@
+# ===================================================================
+# TJ/SupremeCourt-Plenum -- Қарорҳои Пленуми Суди Олии Тоҷикистон
+# ===================================================================
+# Binding interpretive guidance issued by the Plenum of the Supreme
+# Court of Tajikistan to the lower courts. Static Bitrix HTML index in
+# three subject sections, born-digital Tajik Cyrillic PDFs.
+# ===================================================================
+
+source:
+  id: "TJ/SupremeCourt-Plenum"
+  country: "TJ"
+  name: "Tajikistan — Plenum Resolutions of the Supreme Court (Қарорҳои Пленуми Суди Олӣ)"
+  url: "https://sud.tj/sanadho/karorhoi-plenumi-sudi-oli/"
+  description: |
+    The Plenum of the Supreme Court of Tajikistan issues resolutions that
+    give binding interpretive guidance to the lower courts on how to apply
+    the law — the post-Soviet equivalent of a practice direction carrying
+    the force of settled doctrine.
+
+    Because individual Tajik judgments are not published, these resolutions
+    are the closest thing the jurisdiction has to a public body of
+    authoritative case law. 67 resolutions, 2002–present, in three subject
+    sections: criminal cases, civil and family cases, and questions of
+    judicial activity. Language: Tajik (Cyrillic).
+
+    Distinct from TJ/SupremeCourt, which scrapes only /nashriyai-sudi-oli/
+    (the Supreme Court bulletin) — different path, no overlap.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 4
+
+api:
+  type: "html_scrape"
+  base_url: "https://sud.tj"
+  endpoints:
+    list: "/sanadho/karorhoi-plenumi-sudi-oli/{pgo|pj|mfs}/"
+  notes: |
+    Three static section pages (pgo = civil and family, pj = criminal,
+    mfs = questions of judicial activity), each a flat list of links:
+
+      <a href="/upload/documents/plenum/{dir}/{file}.pdf">
+        Қарори Пленуми Суди Олӣ аз {DD.MM.YYYY} №{N} {subject}
+      </a>
+
+    Date, resolution number and subject all come off the link text; the
+    section <h1> gives the subject area. The PDF filenames are Tajik
+    Cyrillic with spaces, and the hrefs are already percent-encoded in the
+    HTML — they are used byte-for-byte rather than retyped, which would
+    risk an NFC/NFD mismatch and a 404.
+
+schema:
+  key_fields:
+    - name: "_id"
+      description: "tj-plenum-{YYYY-MM-DD}-{resolution number}"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Full Tajik title of the resolution, incl. date, number and subject"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the resolution, extracted from the PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Date the Plenum adopted the resolution (ISO 8601)"
+      type: "date"
+      role: "temporal_key"
+      required: true
+    - name: "resolution_number"
+      description: "Resolution number within the year (the № in the title)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "section"
+      description: "civil | criminal | judicial_practice"
+      type: "string"
+      role: "metadata"
+      required: true
+    - name: "url"
+      description: "Direct URL to the resolution PDF on sud.tj"
+      type: "string"
+      role: "reference"
+      required: true
+
+license:
+  name: "Public Domain (Government)"
+  url: "https://sud.tj/"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: |
+    Official acts of a state body of the Republic of Tajikistan, published
+    by the Supreme Court itself with no terms-of-use restriction. Treated
+    as public-domain government data.
+
+notes: |
+  - Static Bitrix HTML, no auth, no captcha, no geo-block from this vantage.
+  - 67 resolutions, 2002–2023 (criminal 39, civil 25, judicial activity 3).
+  - Full text 2.3K–63K chars, all born-digital — no scans in the current set.
+  - Every section page also links the Judicial Code of Conduct from its
+    sidebar; only hrefs under /plenum/ are collected.
+  - A resolution is amended by later Plenum resolutions rather than replaced,
+    so the published PDF is the consolidated text.

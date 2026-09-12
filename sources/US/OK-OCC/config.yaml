@@ -1,0 +1,71 @@
+# ═══════════════════════════════════════════════════════════════════
+# US/OK-OCC — Oklahoma Corporation Commission — Orders
+# ═══════════════════════════════════════════════════════════════════
+
+source:
+  id: "US/OK-OCC"
+  country: "US"
+  name: "Oklahoma Corporation Commission — Orders"
+  url: "https://public.occ.ok.gov/WebLink/Browse.aspx?dbid=0&repo=OCC"
+  description: |
+    Full-text Orders (Final / Interim / Emergency) issued by the Oklahoma
+    Corporation Commission adjudicating oil & gas conservation dockets
+    (pooling, spacing, unitization, increased density, location exceptions),
+    public-utility rate & certificate cases, and transportation matters.
+    Sourced from the OCC Court Clerk's Laserfiche WebLink 11 ECF repository.
+    Only born-digital (electronic) order PDFs carry an extractable text layer;
+    the large historical scanned-image order corpus has no OCR text and is not
+    captured. English. Coverage: the OCC e-filing era.
+
+data_types:
+  - case_law
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 2
+  burst: 4
+  max_workers: 4
+
+api:
+  type: "html_scrape"   # Laserfiche WebLink JSON (all-POST) + edoc PDF download
+  base_url: "https://public.occ.ok.gov/WebLink"
+
+# ── Output Schema ─────────────────────────────────────────────────
+schema:
+  key_fields:
+    - name: "_id"
+      type: "string"
+      required: true
+    - name: "text"
+      type: "string"
+      required: true
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "case_number"
+      type: "string"
+      required: false
+    - name: "document_type"
+      type: "string"
+      required: false
+    - name: "date"
+      type: "date"
+      required: false
+    - name: "url"
+      type: "string"
+      required: false
+
+# ── License ───────────────────────────────────────────────────────
+license:
+  name: "Public Domain (US state government edict)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Orders of the Oklahoma Corporation Commission are edicts of a US state
+    government body and are not subject to copyright (government edicts
+    doctrine). Freely reusable, including commercially.

@@ -17,21 +17,22 @@ Rate limit: 1 req / 2 sec.
 Usage:
   python bootstrap.py bootstrap            # Full pull (all decisions)
   python bootstrap.py bootstrap --sample   # Fetch ~15 sample decisions
+  python bootstrap.py bootstrap-fast       # Full pull, concurrent normalize
+  python bootstrap.py update               # Incremental pull
   python bootstrap.py test-api             # Connectivity test
 """
 
 import sys
-import json
 import logging
 import time
 from pathlib import Path
-from datetime import datetime, timezone
-from typing import Generator, Optional
+from datetime import datetime, date, timezone, timedelta
+from typing import Generator, Optional, Union
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.http_client import HttpClient
 from common.pdf_extract import extract_pdf_markdown
 
@@ -44,12 +45,21 @@ logger = logging.getLogger("legal-data-hunter.US.TTAB")
 SEARCH_URL = "https://www.courtlistener.com/api/rest/v4/search/"
 STORAGE_URL = "https://storage.courtlistener.com"
 
+# CourtListener held ~1,245 TTAB opinions as of 2026-08. An empty first page
+# means the search endpoint changed or is refusing us, not that the board
+# stopped issuing decisions — so it must fail loud rather than exit 0.
+KNOWN_CORPUS_FLOOR = 100
 
-def extract_pdf_text(pdf_bytes: bytes) -> str:
+
+class TTABUnavailable(RuntimeError):
+    """The CourtListener search endpoint did not return a usable result set."""
+
+
+def extract_pdf_text(pdf_bytes: bytes, source_id: str = "") -> str:
     """Extract text from PDF using centralized extractor."""
     return extract_pdf_markdown(
         source="US/TTAB",
-        source_id="",
+        source_id=source_id,
         pdf_bytes=pdf_bytes,
         table="case_law",
     ) or ""
@@ -74,6 +84,14 @@ class TTABScraper(BaseScraper):
     def _get_json(self, url: str) -> dict:
         time.sleep(self.delay)
         resp = self.http.get(url)
+        if resp.status_code != 200:
+            # HttpClient.get() does not raise_for_status, so an error body would
+            # otherwise be read as {"detail": ...} with no "results" key and be
+            # mistaken for "no more pages".
+            raise TTABUnavailable(
+                f"CourtListener returned HTTP {resp.status_code} for {url}: "
+                f"{resp.text[:300]}"
+            )
         return resp.json()
 
     def _get_bytes(self, url: str) -> bytes:
@@ -86,7 +104,7 @@ class TTABScraper(BaseScraper):
         logger.info("Testing CourtListener search API for TTAB...")
         try:
             data = self._get_json(
-                f"{SEARCH_URL}?type=o&court=ttab&order_by=dateFiled+desc&page_size=1"
+                f"{SEARCH_URL}?type=o&court=ttab&order_by=dateFiled+desc"
             )
             count = data.get("count", 0)
             results = data.get("results", [])
@@ -116,12 +134,13 @@ class TTABScraper(BaseScraper):
             logger.error(f"API test FAILED: {e}")
             return False
 
-    def search_decisions(self, page_size: int = 20, cursor: str = None,
+    def search_decisions(self, cursor: str = None,
                          filed_after: str = None) -> dict:
-        url = f"{SEARCH_URL}?type=o&court=ttab&order_by=dateFiled+desc&page_size={page_size}"
+        """One page of the TTAB opinion search. `cursor` is a full `next` URL."""
         if cursor:
-            url = cursor
-        if filed_after and not cursor:
+            return self._get_json(cursor)
+        url = f"{SEARCH_URL}?type=o&court=ttab&order_by=dateFiled+desc"
+        if filed_after:
             url += f"&filed_after={filed_after}"
         return self._get_json(url)
 
@@ -130,6 +149,7 @@ class TTABScraper(BaseScraper):
         if not opinions:
             return None
 
+        source_id = str(result.get("cluster_id", ""))
         for opinion in opinions:
             local_path = opinion.get("local_path")
             if not local_path:
@@ -139,7 +159,7 @@ class TTABScraper(BaseScraper):
                 pdf_bytes = self._get_bytes(pdf_url)
                 if len(pdf_bytes) < 500:
                     continue
-                text = extract_pdf_text(pdf_bytes)
+                text = extract_pdf_text(pdf_bytes, source_id)
                 if text and len(text) > 50:
                     return text
             except Exception as e:
@@ -154,87 +174,88 @@ class TTABScraper(BaseScraper):
 
         return None
 
-    def normalize(self, result: dict, text: str) -> dict:
+    def normalize(self, raw: dict) -> Optional[dict]:
+        """Turn one raw search hit into a record, downloading its opinion PDF.
+
+        Takes the raw hit only — the previous two-argument
+        `normalize(result, text)` did not match the BaseScraper contract, so
+        `bootstrap()`/`bootstrap_fast()` could not drive this scraper at all
+        and every run fell back to writing sample/ by hand.
+        """
+        text = self.fetch_opinion_text(raw)
+        if not text or len(text) <= 50:
+            logger.warning(f"Skipping {raw.get('caseName')}: no text")
+            return None
+
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-        cluster_id = result.get("cluster_id", 0)
+        cluster_id = raw.get("cluster_id", 0)
 
         return {
             "_id": f"ttab-{cluster_id}",
             "_source": "US/TTAB",
             "_type": "case_law",
             "_fetched_at": now,
-            "title": result.get("caseName", "Unknown"),
+            "title": raw.get("caseName", "Unknown"),
             "text": text,
-            "date": result.get("dateFiled", ""),
-            "url": f"https://www.courtlistener.com{result.get('absolute_url', '')}",
+            "date": raw.get("dateFiled", ""),
+            "url": f"https://www.courtlistener.com{raw.get('absolute_url', '')}",
             "cluster_id": cluster_id,
-            "docket_number": result.get("docketNumber", ""),
-            "court": result.get("court", ""),
-            "court_id": result.get("court_id", ""),
-            "status": result.get("status", ""),
-            "judge": result.get("judge", ""),
-            "syllabus": result.get("syllabus", ""),
-            "citation": result.get("court_citation_string", ""),
+            "docket_number": raw.get("docketNumber", ""),
+            "court": raw.get("court", ""),
+            "court_id": raw.get("court_id", ""),
+            "status": raw.get("status", ""),
+            "judge": raw.get("judge", ""),
+            "syllabus": raw.get("syllabus", ""),
+            "citation": raw.get("court_citation_string", ""),
         }
 
+    def _iter_search(self, filed_after: str = None) -> Generator[dict, None, None]:
+        """Walk every search page, yielding RAW hits for normalize()."""
+        total = 0
+        pages = 0
+        cursor = None
+        while True:
+            data = self.search_decisions(cursor=cursor, filed_after=filed_after)
+            results = data.get("results", [])
+            if pages == 0:
+                reported = data.get("count", 0)
+                logger.info(
+                    "TTAB search: %s decisions reported%s",
+                    reported,
+                    f" since {filed_after}" if filed_after else "",
+                )
+                if not filed_after and reported < KNOWN_CORPUS_FLOOR:
+                    raise TTABUnavailable(
+                        f"Full TTAB search reported only {reported} decisions "
+                        f"(expected >{KNOWN_CORPUS_FLOOR}) — the search endpoint "
+                        "or the ttab court id has changed."
+                    )
+            pages += 1
+            if not results:
+                break
+            for result in results:
+                yield result
+                total += 1
+                if total % 50 == 0:
+                    logger.info(f"  Progress: {total} hits enumerated")
+            cursor = data.get("next")
+            if not cursor:
+                break
+        logger.info(f"Enumerated {total} TTAB hits across {pages} page(s)")
+
     def fetch_all(self) -> Generator[dict, None, None]:
-        total = 0
-        cursor = None
-        while True:
-            data = self.search_decisions(cursor=cursor)
-            results = data.get("results", [])
-            if not results:
-                break
-            for result in results:
-                text = self.fetch_opinion_text(result)
-                if text and len(text) > 50:
-                    yield self.normalize(result, text)
-                    total += 1
-                    if total % 50 == 0:
-                        logger.info(f"  Progress: {total} decisions fetched")
-                else:
-                    logger.warning(f"Skipping {result.get('caseName')}: no text")
-            cursor = data.get("next")
-            if not cursor:
-                break
-        logger.info(f"Total decisions fetched: {total}")
+        yield from self._iter_search()
 
-    def fetch_updates(self, since: str) -> Generator[dict, None, None]:
-        total = 0
-        cursor = None
-        while True:
-            if cursor:
-                data = self.search_decisions(cursor=cursor)
-            else:
-                data = self.search_decisions(filed_after=since)
-            results = data.get("results", [])
-            if not results:
-                break
-            for result in results:
-                text = self.fetch_opinion_text(result)
-                if text and len(text) > 50:
-                    yield self.normalize(result, text)
-                    total += 1
-            cursor = data.get("next")
-            if not cursor:
-                break
-        logger.info(f"Updates fetched: {total} decisions since {since}")
-
-    def fetch_sample(self) -> Generator[dict, None, None]:
-        logger.info("Fetching sample TTAB decisions...")
-        data = self.search_decisions(page_size=20)
-        results = data.get("results", [])
-        count = 0
-        for result in results:
-            if count >= 15:
-                break
-            text = self.fetch_opinion_text(result)
-            if text and len(text) > 50:
-                yield self.normalize(result, text)
-                count += 1
-            else:
-                logger.warning(f"Skipping {result.get('caseName')}: no text")
-        logger.info(f"Sample complete: {count} decisions fetched")
+    def fetch_updates(self, since: Union[str, datetime, date]) -> Generator[dict, None, None]:
+        # CourtListener's `filed_after` only accepts YYYY-MM-DD; a bare
+        # datetime is rejected with HTTP 400 (#1441).
+        since_str = as_date_str(since)
+        if not since_str:
+            # No usable date — fall back to a recent window rather than
+            # silently sending `filed_after=` and re-walking the whole corpus.
+            since_str = (datetime.now(timezone.utc) - timedelta(days=90)).date().isoformat()
+            logger.warning("Unparseable `since` (%r) — defaulting to %s", since, since_str)
+        yield from self._iter_search(filed_after=since_str)
 
 
 def main():
@@ -243,7 +264,7 @@ def main():
     parser = argparse.ArgumentParser(description="US/TTAB bootstrap")
     parser.add_argument(
         "command",
-        choices=["bootstrap", "test-api"],
+        choices=["bootstrap", "bootstrap-fast", "update", "test-api"],
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample only")
@@ -253,28 +274,26 @@ def main():
     scraper = TTABScraper()
 
     if args.command == "test-api":
-        success = scraper.test_api()
-        sys.exit(0 if success else 1)
+        sys.exit(0 if scraper.test_api() else 1)
 
-    elif args.command == "bootstrap":
-        sample_dir = Path(__file__).parent / "sample"
-        sample_dir.mkdir(exist_ok=True)
+    if args.command == "update":
+        stats = scraper.update()
+    elif args.command == "bootstrap-fast" and not args.sample:
+        stats = scraper.bootstrap_fast()
+    else:
+        stats = scraper.bootstrap(sample_mode=args.sample, sample_size=15)
 
-        if args.sample:
-            gen = scraper.fetch_sample()
-        else:
-            gen = scraper.fetch_all()
-
-        count = 0
-        for record in gen:
-            safe_id = record["_id"].replace("/", "_")
-            out_path = sample_dir / f"{safe_id}.json"
-            with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(record, f, ensure_ascii=False, indent=2)
-            count += 1
-            logger.info(f"Saved: {record['_id']} - {record['title']} ({len(record['text'])} chars)")
-
-        logger.info(f"Bootstrap complete: {count} records saved to {sample_dir}")
+    fetched = stats.get("records_fetched", 0)
+    logger.info(
+        "%s complete: %s fetched, %s written, %s errors",
+        args.command, fetched,
+        stats.get("records_new", 0) + stats.get("records_updated", 0),
+        stats.get("errors", 0),
+    )
+    if args.command != "update" and fetched == 0:
+        logger.error("No records fetched — exiting non-zero so the run is not "
+                     "recorded as a success with only sample/ ingested.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

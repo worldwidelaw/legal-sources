@@ -59,7 +59,7 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.pdf_extract import extract_pdf_markdown, preload_existing_ids
 
 logging.basicConfig(
@@ -71,6 +71,14 @@ logger = logging.getLogger("legal-data-hunter.US.NY-WCB")
 HOST = "https://www.wcb.ny.gov"
 PANEL_INDEX = HOST + "/content/main/Decisions/board-panel-decisions.jsp"
 FULLBOARD_INDEX = HOST + "/content/main/Decisions/board-decisions.jsp"
+COVID_INDEX = HOST + "/content/main/Decisions/covid-19-decisions.jsp"
+APPELLATE_INDEX = HOST + "/content/main/Decisions/appellate-court-decisions.jsp"
+
+CDX_URL = ("https://web.archive.org/cdx/search/cdx"
+           "?url=wcb.ny.gov/content/main/Decisions*"
+           "&output=text&fl=original,timestamp,statuscode"
+           "&collapse=urlkey&limit=20000")
+WAYBACK_REPLAY = "https://web.archive.org/web/{ts}id_/{url}"
 
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/125.0 Safari/537.36")
@@ -84,9 +92,34 @@ MAINCONTENT_RE = re.compile(
 PANEL_LINK_RE = re.compile(
     r'href="(/content/main/Decisions/board-panel-decisions/[^"?]+\.jsp)"[^>]*>(.*?)</a>',
     re.I | re.S)
+COVID_LINK_RE = re.compile(
+    r'href="(/content/main/Decisions/covid-19-decisions/[^"?]+\.jsp)"[^>]*>(.*?)</a>',
+    re.I | re.S)
+APPELLATE_LINK_RE = re.compile(
+    r'href="(/content/main/Decisions/court-decisions/[^"?]+\.pdf)"[^>]*>(.*?)</a>',
+    re.I | re.S)
 FULLBOARD_PDF_RE = re.compile(
     r'href="(/content/main/Decisions/[^"?]+\.pdf)"[^>]*>(.*?)</a>',
     re.I | re.S)
+
+# Archived (delinked) decision documents live under a month directory,
+# e.g. /content/main/Decisions/2020Apr/SistersofCharity.jsp  (2020 series)
+#      /content/main/Decisions/2021May/MatterofNYCTA.pdf     (2021+ series)
+MONTH_DIR_RE = re.compile(
+    r"^/content/main/Decisions/(\d{4}(?:Jan|Feb|Mar|Apr|May|June|July|Aug|Sept|Oct|Nov|Dec))"
+    r"/([^/]+)\.(jsp|pdf)$", re.I)
+CURATED_DIR_RE = re.compile(
+    r"^/content/main/Decisions/(board-panel-decisions|covid-19-decisions|court-decisions)"
+    r"/([^/]+)\.(jsp|pdf)$", re.I)
+
+DECISION_TYPE_BY_DIR = {
+    "board-panel-decisions": "board_panel",
+    "covid-19-decisions": "board_panel_covid",
+    "court-decisions": "appellate_court",
+}
+DEAD_STATUS = {"301", "302", "400", "403", "404", "410", "429",
+               "500", "502", "503", "504"}
+GONE_STATUS = {404, 410}
 
 CASE_NO_RE = re.compile(r"Case\s*#\s*([A-Z]?\d[\w-]*)", re.I)
 CITATION_RE = re.compile(r"(\d{4})\s+NY\s+Wrk\s+Comp\s+([A-Z]?\d[\w]*)", re.I)
@@ -106,6 +139,7 @@ class NYWCBScraper(BaseScraper):
         self._session = requests.Session()
         self._session.headers.update({"User-Agent": UA})
         self._existing: set[str] = set()
+        self._sample_mode = False
 
     # ---------------------------------------------------------------- http
     def _get_text(self, url: str) -> str | None:
@@ -113,6 +147,10 @@ class NYWCBScraper(BaseScraper):
             time.sleep(self.delay)
             try:
                 resp = self._session.get(url, timeout=(15, 90))
+                if resp.status_code in GONE_STATUS:
+                    # A rotated-off decision: no point retrying, the caller
+                    # falls back to the Internet Archive.
+                    return None
                 resp.raise_for_status()
                 resp.encoding = resp.apparent_encoding or "utf-8"
                 return resp.text
@@ -126,6 +164,8 @@ class NYWCBScraper(BaseScraper):
             time.sleep(self.delay)
             try:
                 resp = self._session.get(url, timeout=(15, 120), stream=True)
+                if resp.status_code in GONE_STATUS:
+                    return None
                 resp.raise_for_status()
                 return resp.content
             except Exception as e:
@@ -157,12 +197,27 @@ class NYWCBScraper(BaseScraper):
             txt = txt[idx:].strip()
         return re.sub(r" *\n *", "\n", txt).strip()
 
+    @staticmethod
+    def _clean_pdf_text(text: str | None) -> str:
+        """Drop the (cid:N) runs that unmappable fonts leave behind.
+
+        A few of the Board's decisions are Westlaw reprints whose watermark
+        layer has no ToUnicode map; the extractor emits it as page-long
+        "(cid:9)(cid:9)..." noise interleaved with the real decision text.
+        """
+        if not text:
+            return ""
+        text = re.sub(r"(?:\(cid:\d+\)\s*)+", " ", text)
+        text = re.sub(r"[ \t]{2,}", " ", text)
+        return re.sub(r"\n{3,}", "\n\n", text).strip()
+
     @classmethod
     def _iso_from_body(cls, text: str) -> str | None:
         # Prefer an explicit "meeting on <date>" / "filed <date>" reference,
         # else the most recent long-form date in the body.
         candidates: list[str] = []
-        for label in (r"meeting on\s+", r"filed\s+", r"dated\s+"):
+        for label in (r"meeting on\s+", r"filed\s+", r"dated\s+",
+                      r"Decided and Entered:\s*"):
             for m in re.finditer(label + LONGDATE_RE.pattern, text, re.I):
                 candidates.append(cls._long_to_iso(m.group(1), m.group(2),
                                                     m.group(3)))
@@ -190,62 +245,161 @@ class NYWCBScraper(BaseScraper):
         return re.sub(r"[^A-Za-z0-9]+", "-", s).strip("-")[:80]
 
     # --------------------------------------------------------- discovery
+    @classmethod
+    def _record_id_for(cls, href: str) -> str | None:
+        """Stable record id from a decision path.
+
+        Curated-directory documents keep their bare filename slug (the ids the
+        source has always emitted); the delinked month-directory archive is
+        prefixed with its month so that a matter republished across months —
+        or published as both .jsp and .pdf — does not collide.
+        """
+        m = CURATED_DIR_RE.match(href)
+        if m:
+            folder, stem = m.group(1).lower(), m.group(2)
+            if folder == "board-panel-decisions":
+                return cls._slug(stem)
+            if folder == "covid-19-decisions":
+                return cls._slug("covid-" + stem)
+            return cls._slug("court-" + stem)
+        m = MONTH_DIR_RE.match(href)
+        if m:
+            return cls._slug(f"{m.group(1)}-{m.group(2)}")
+        return None
+
+    @staticmethod
+    def _decision_type_for(href: str) -> str:
+        m = CURATED_DIR_RE.match(href)
+        if m:
+            return DECISION_TYPE_BY_DIR[m.group(1).lower()]
+        # Month directories hold the Significant Full Board decision series.
+        return "full_board"
+
+    def _index_entries(self, index_url: str, link_re: re.Pattern,
+                       kind: str) -> Generator[dict, None, None]:
+        """Yield pointers from one live index page."""
+        html = self._get_text(index_url)
+        if not html:
+            logger.warning(f"Index unreachable: {index_url}")
+            return
+        body = MAINCONTENT_RE.search(html)
+        scope = body.group(1) if body else html
+        n = 0
+        for href, label in link_re.findall(scope):
+            if "governor.ny.gov" in href:
+                continue
+            rid = self._record_id_for(href)
+            if rid is None:
+                continue
+            title = re.sub(r"\s*PDF\s*$", "",
+                           self._clean_inline(label)).strip()
+            stem = re.sub(r"(?i)\.(jsp|pdf)$", "", href.rsplit("/", 1)[-1])
+            yield {
+                "kind": kind,
+                "href": href,
+                "url": HOST + href,
+                "title": title or ("Matter of " + stem),
+                "record_id": rid,
+                "decision_type": self._decision_type_for(href),
+                "source_page": index_url,
+            }
+            n += 1
+        logger.info(f"{index_url.rsplit('/', 1)[-1]}: {n} decisions")
+
+    def _archive_entries(self) -> Generator[dict, None, None]:
+        """Enumerate decisions the live indexes no longer link.
+
+        Each month the Board rotates its Significant Full Board decisions off
+        board-decisions.jsp and deletes the documents (they 404 live), so the
+        historical series is only reachable through the Internet Archive.
+        """
+        try:
+            resp = self._session.get(CDX_URL, timeout=(15, 120))
+            resp.raise_for_status()
+            rows = resp.text.strip().splitlines()
+        except Exception as e:
+            logger.warning(f"Wayback CDX enumeration failed: {e}")
+            return
+
+        n = 0
+        for row in rows:
+            parts = row.split()
+            if len(parts) < 2:
+                continue
+            original, ts = parts[0], parts[1]
+            status = parts[2] if len(parts) > 2 else "-"
+            if status in DEAD_STATUS:
+                continue
+            m = re.match(r"https?://(?:www\.)?wcb\.ny\.gov(/[^?]*)$", original,
+                         re.I)
+            if not m:
+                continue
+            href = m.group(1)
+            rid = self._record_id_for(href)
+            if rid is None:
+                continue
+            stem = re.sub(r"(?i)\.(jsp|pdf)$", "", href.rsplit("/", 1)[-1])
+            yield {
+                "kind": "pdf" if href.lower().endswith(".pdf") else "jsp",
+                "href": href,
+                "url": HOST + href,
+                "archive_url": WAYBACK_REPLAY.format(ts=ts, url=HOST + href),
+                "title": "Matter of " + re.sub(r"^Matterof", "", stem),
+                "record_id": rid,
+                "decision_type": self._decision_type_for(href),
+                "source_page": "https://web.archive.org/",
+            }
+            n += 1
+        logger.info(f"Wayback archive sweep: {n} historical decisions")
+
     def discover(self, sample: bool = False) -> Generator[dict, None, None]:
         seen: set[str] = set()
+        # A matter published in both .jsp and .pdf form shares one record id;
+        # keep whichever the sweep reaches first (CDX orders .jsp ahead of
+        # .pdf, so the server-rendered page wins and no PDF extraction runs).
+        seen_docs: dict[str, str] = {}
 
-        # 1) Select Board Panel Decisions (per-decision .jsp pages)
-        html = self._get_text(PANEL_INDEX)
-        if html:
-            body = MAINCONTENT_RE.search(html)
-            scope = body.group(1) if body else html
-            n = 0
-            for href, label in PANEL_LINK_RE.findall(scope):
-                title = self._clean_inline(label)
-                if not title:
-                    continue
-                key = href.lower()
-                if key in seen:
-                    continue
-                seen.add(key)
-                stem = href.rsplit("/", 1)[-1][:-4]  # drop .jsp
-                yield {
-                    "kind": "jsp",
-                    "url": HOST + href,
-                    "title": title,
-                    "record_id": self._slug(stem),
-                    "source_page": PANEL_INDEX,
-                }
-                n += 1
-                if sample and n >= 14:
-                    logger.info(f"Sample: stopped after {n} panel pointers")
-                    return
-            logger.info(f"Board Panel index: {n} decisions")
+        def _emit(entry: dict) -> bool:
+            key = entry["href"].lower()
+            if key in seen:
+                return False
+            seen.add(key)
+            rid = entry["record_id"]
+            if rid in seen_docs:
+                return False
+            seen_docs[rid] = key
+            return True
 
-        # 2) Significant Full Board Decisions (PDFs)
-        html = self._get_text(FULLBOARD_INDEX)
-        if html:
-            body = MAINCONTENT_RE.search(html)
-            scope = body.group(1) if body else html
-            n = 0
-            for href, label in FULLBOARD_PDF_RE.findall(scope):
-                if "governor.ny.gov" in href:
-                    continue
-                key = href.lower()
-                if key in seen:
-                    continue
-                seen.add(key)
-                stem = href.rsplit("/", 1)[-1]
-                stem = re.sub(r"(?i)\.pdf$", "", stem)
-                title = re.sub(r"\s*PDF\s*$", "", self._clean_inline(label)).strip()
-                yield {
-                    "kind": "pdf",
-                    "url": HOST + href,
-                    "title": title or ("Matter of " + stem),
-                    "record_id": self._slug(stem),
-                    "source_page": FULLBOARD_INDEX,
-                }
-                n += 1
-            logger.info(f"Full Board index: {n} decisions")
+        live_indexes = [
+            (PANEL_INDEX, PANEL_LINK_RE, "jsp"),
+            (FULLBOARD_INDEX, FULLBOARD_PDF_RE, "pdf"),
+            (COVID_INDEX, COVID_LINK_RE, "jsp"),
+            (APPELLATE_INDEX, APPELLATE_LINK_RE, "pdf"),
+        ]
+        if sample:
+            # Round-robin a handful from every set so the samples cover all
+            # five decision series (four live indexes + the archive sweep).
+            buckets: list[list[dict]] = []
+            for index_url, link_re, kind in live_indexes:
+                bucket = [e for e in self._index_entries(index_url, link_re, kind)
+                          if _emit(e)]
+                buckets.append(bucket[:4])
+            buckets.append([e for e in self._archive_entries()
+                            if _emit(e)][:4])
+            for i in range(max(len(b) for b in buckets)):
+                for bucket in buckets:
+                    if i < len(bucket):
+                        yield bucket[i]
+            return
+
+        for index_url, link_re, kind in live_indexes:
+            for entry in self._index_entries(index_url, link_re, kind):
+                if _emit(entry):
+                    yield entry
+
+        for entry in self._archive_entries():
+            if _emit(entry):
+                yield entry
 
     # ------------------------------------------------------- build record
     def _build_raw(self, entry: dict) -> dict | None:
@@ -253,17 +407,26 @@ class NYWCBScraper(BaseScraper):
         if rid in self._existing:
             return None
 
-        if entry["kind"] == "jsp":
-            html = self._get_text(entry["url"])
-            if not html:
-                return None
-            text = self._maincontent_text(html)
-        else:  # pdf
-            pdf_bytes = self._get_bytes(entry["url"])
-            if not pdf_bytes:
-                return None
-            text = extract_pdf_markdown(
-                "US/NY-WCB", rid, pdf_bytes=pdf_bytes, table="case_law")
+        # Live first; the delinked historical series only survives on the
+        # Internet Archive, and a live URL can also rot between sweeps.
+        urls = [entry["url"]]
+        if entry.get("archive_url"):
+            urls.append(entry["archive_url"])
+
+        text = ""
+        fetched_from = entry["url"]
+        for url in urls:
+            if entry["kind"] == "jsp":
+                html = self._get_text(url)
+                text = self._maincontent_text(html) if html else ""
+            else:  # pdf
+                pdf_bytes = self._get_bytes(url)
+                text = self._clean_pdf_text(extract_pdf_markdown(
+                    "US/NY-WCB", rid, pdf_bytes=pdf_bytes,
+                    table="case_law")) if pdf_bytes else ""
+            if text and len(text.strip()) >= 400:
+                fetched_from = url
+                break
 
         if not text or len(text.strip()) < 400:
             logger.warning(f"No usable text for {entry['url'][:80]} "
@@ -291,6 +454,8 @@ class NYWCBScraper(BaseScraper):
             "case_number": case_no,
             "citation": citation,
             "url": entry["url"],
+            "fetched_from": fetched_from,
+            "decision_type": entry.get("decision_type", "board_panel"),
             "source_page": entry.get("source_page"),
         }
 
@@ -329,7 +494,12 @@ class NYWCBScraper(BaseScraper):
             "_type": "case_law",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
             "record_id": raw["record_id"],
-            "issuer": "New York State Workers' Compensation Board",
+            "issuer": (
+                "New York State Supreme Court, Appellate Division, "
+                "Third Judicial Department"
+                if raw.get("decision_type") == "appellate_court"
+                else "New York State Workers' Compensation Board"),
+            "decision_type": raw.get("decision_type"),
             "title": raw["title"],
             "citation": raw.get("citation"),
             "case_number": raw.get("case_number"),
@@ -357,13 +527,21 @@ class NYWCBScraper(BaseScraper):
                     return
 
     def fetch_all(self) -> Generator[dict, None, None]:
-        """Yield RAW records (framework normalizes via normalize())."""
-        yield from self._iter_raw(sample=False)
+        """Yield RAW records (framework normalizes via normalize()).
+
+        BaseScraper.bootstrap() drives sample runs through fetch_all() too, so
+        honour the flag here — otherwise a sample is just the first 12 Board
+        Panel decisions instead of a spread across all five series.
+        """
+        yield from self._iter_raw(sample=self._sample_mode)
 
     def fetch_sample(self) -> Generator[dict, None, None]:
         yield from self._iter_raw(sample=True)
 
     def fetch_updates(self, since: str) -> Generator[dict, None, None]:
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         for raw in self.fetch_all():
             if not since or (raw.get("date") and raw["date"] >= since):
                 yield raw
@@ -388,6 +566,7 @@ def main():
         ok = scraper.test_api()
         sys.exit(0 if ok else 1)
 
+    scraper._sample_mode = args.sample
     stats = scraper.bootstrap(sample_mode=args.sample, sample_size=12)
     logger.info(f"Bootstrap complete: {json.dumps(stats, default=str)}")
 

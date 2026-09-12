@@ -3,10 +3,13 @@ name: Israeli Case Law Dataset (HuggingFace)
 country: IL
 url: https://huggingface.co/datasets/guychuk/case-law-israel
 description: |
-  10,558 Israeli court judgments from HuggingFace dataset guychuk/case-law-israel.
-  Full text in Hebrew via document_text field. Covers multiple court types
-  (family, magistrate, district, supreme, labor, military) and districts.
+  Israeli court judgments from HuggingFace dataset guychuk/case-law-israel.
+  Full text in Hebrew via document_text field. Covers the whole hierarchy —
+  Supreme, District, Magistrate, Family, Local Affairs, Traffic, Small Claims,
+  Juvenile and Labour courts plus parole boards — across six districts.
   Parquet streaming via HuggingFace datasets library.
+  10,558 rows, of which ~48% carry only PDF metadata with no retrievable text
+  and are skipped, so ~5,500 judgments are ingestible.
 
 data_types:
   - case_law
@@ -33,11 +36,36 @@ update_frequency: unknown
 
 schema:
   key_fields:
-    - name: judgment_id
+    - name: _id
       required: true
       type: string
     - name: title
       required: true
+      type: string
+    - name: text
+      required: true
+      type: string
+    - name: date
+      required: false
+      type: string
+    - name: court
+      required: false
+      type: string
+    - name: court_tier
+      required: false
+      type: integer
+    - name: court_id
+      required: false
+      type: string
+    - name: case_number
+      required: false
+      type: string
+    # url is an aggregator deep link, never a publisher link — see README.
+    - name: url_provenance
+      required: true
+      type: string
+    - name: publisher_url
+      required: false
       type: string
   date_field: date
   text_field: text

@@ -7,7 +7,8 @@ Fetches regulatory circulars from the Central Bank of Egypt.
 Strategy:
   - JSON API at /api/listing/circulars?pageNo=N (10 per page, ~388 total)
   - Each record has title, date, categories, and PDF URL
-  - Download PDFs and extract text via pdfplumber
+  - Download PDFs and extract text via common.pdf_extract, whose RTL repair
+    puts the Arabic body in logical rather than visual order (issue #1560)
   - Content is primarily Arabic; English titles from API
 
 Usage:
@@ -21,18 +22,17 @@ import json
 import sys
 import time
 import logging
-import tempfile
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Generator, Optional
 
 import requests
-import pdfplumber
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common.base_scraper import BaseScraper
+from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
     level=logging.INFO,
@@ -75,8 +75,19 @@ class CBEScraper(BaseScraper):
         r.raise_for_status()
         return r.json()
 
-    def _download_pdf_text(self, pdf_path: str) -> Optional[str]:
-        """Download a PDF and extract text via pdfplumber."""
+    def _download_pdf_text(self, pdf_path: str, doc_id: str) -> Optional[str]:
+        """Download a circular PDF and extract its text in logical order.
+
+        These circulars are Arabic, and every text-layer backend emits glyphs in
+        the order the content stream lists them — which for this publisher is
+        *visual* order, so each line came out character-reversed and the whole
+        corpus was unsearchable by keyword (issue #1560). The shared helper's
+        RTL repair reorders glyph clusters by geometry, so the extraction has to
+        go through it rather than calling pdfplumber directly.
+
+        force=True because the rows already in Neon are the reversed ones this
+        is meant to replace; without it the helper skips them as present.
+        """
         url = f"{BASE_URL}{pdf_path}"
         try:
             r = self.session.get(url, timeout=120, headers={
@@ -90,21 +101,13 @@ class CBEScraper(BaseScraper):
                 logger.warning(f"Not a PDF: {pdf_path[:80]}")
                 return None
 
-            with tempfile.NamedTemporaryFile(suffix=".pdf") as f:
-                f.write(r.content)
-                f.flush()
-                pdf = pdfplumber.open(f.name)
-                pages = []
-                for page in pdf.pages:
-                    text = page.extract_text() or ""
-                    if text.strip():
-                        pages.append(text)
-                    try:
-                        page.flush_cache(); page.get_textmap.cache_clear()
-                    except Exception:
-                        pass
-                pdf.close()
-                return "\n\n".join(pages) if pages else None
+            return extract_pdf_markdown(
+                source="EG/CBE",
+                source_id=doc_id,
+                pdf_bytes=r.content,
+                table="doctrine",
+                force=True,
+            )
 
         except requests.RequestException as e:
             logger.warning(f"Failed to download PDF {pdf_path[:60]}: {e}")
@@ -112,6 +115,11 @@ class CBEScraper(BaseScraper):
         except Exception as e:
             logger.warning(f"Failed to extract PDF text {pdf_path[:60]}: {e}")
             return None
+
+    @staticmethod
+    def _doc_id(item: dict) -> str:
+        """The stable per-circular id, matching what normalize() emits as _id."""
+        return item.get("itemId", "").strip("{}") or item.get("title", "").strip()[:80]
 
     def _parse_date(self, custom_date: str) -> Optional[str]:
         """Parse ISO date from customDate field."""
@@ -129,7 +137,6 @@ class CBEScraper(BaseScraper):
         if not text:
             return None
 
-        item_id = raw.get("itemId", "").strip("{}")
         title = raw.get("title", "").strip()
         date = self._parse_date(raw.get("customDate"))
         pdf_url = raw.get("url", "")
@@ -137,7 +144,7 @@ class CBEScraper(BaseScraper):
         category = categories[0]["value"] if categories else ""
 
         return {
-            "_id": item_id or title[:80],
+            "_id": self._doc_id(raw),
             "_source": "EG/CBE",
             "_type": "doctrine",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
@@ -171,7 +178,7 @@ class CBEScraper(BaseScraper):
                     logger.warning(f"No PDF URL for: {item.get('title', 'unknown')[:60]}")
                     continue
 
-                text = self._download_pdf_text(pdf_path)
+                text = self._download_pdf_text(pdf_path, self._doc_id(item))
                 if not text:
                     logger.warning(f"No text extracted: {item.get('title', 'unknown')[:60]}")
                     continue
@@ -195,7 +202,7 @@ class CBEScraper(BaseScraper):
             if date and date >= since_str:
                 pdf_path = item.get("url", "")
                 if pdf_path:
-                    text = self._download_pdf_text(pdf_path)
+                    text = self._download_pdf_text(pdf_path, self._doc_id(item))
                     if text:
                         item["text"] = text
                         yield item
@@ -254,4 +261,9 @@ def main():
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     main()

@@ -115,7 +115,11 @@ class RegulationsGovScraper:
                 resp = self.session.get(url, params=params, timeout=timeout)
                 if resp.status_code == 200:
                     return resp
-                if resp.status_code in (429, 503):
+                # 500/502/504 are the same transient gateway failure as the 503
+                # already handled here; letting them fall through to the
+                # `return None` below silently drops a whole page of documents
+                # on one blip (#1453 class).
+                if resp.status_code in (429, 500, 502, 503, 504):
                     wait = 10 * (attempt + 1)
                     logger.warning("HTTP %d, waiting %ds...", resp.status_code, wait)
                     time.sleep(wait)

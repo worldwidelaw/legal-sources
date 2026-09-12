@@ -17,7 +17,6 @@ License: Public domain (official government journal)
 
 import argparse
 import hashlib
-import io
 import json
 import logging
 import sys
@@ -41,6 +40,7 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://dziennikurzedowy.knf.gov.pl"
 SOURCE_ID = "PL/KNF"
 SAMPLE_DIR = Path(__file__).parent / "sample"
+DATA_DIR = Path(__file__).parent / "data"
 
 
 class KNFFetcher:
@@ -84,26 +84,20 @@ class KNFFetcher:
             logger.warning(f"Failed to download PDF year={year}, pos={position}: {e}")
             return None
 
-        if pdfplumber is None:
-            logger.error("pdfplumber not installed — cannot extract PDF text. Install: pip install pdfplumber")
-            return None
-
         try:
-            with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-                pages_text = []
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        pages_text.append(text)
-                    try:
-                        page.flush_cache(); page.get_textmap.cache_clear()
-                    except Exception:
-                        pass
-                full_text = "\n\n".join(pages_text)
-                return full_text if len(full_text) > 50 else None
+            full_text = extract_pdf_markdown(
+                source=SOURCE_ID,
+                source_id=f"{year}-{position}",
+                pdf_bytes=resp.content,
+                table="doctrine",
+                force=True,
+            )
         except Exception as e:
             logger.warning(f"PDF extraction failed for year={year}, pos={position}: {e}")
             return None
+        if not full_text or len(full_text) <= 50:
+            return None
+        return full_text
 
     def _parse_date(self, date_str: Optional[str]) -> Optional[str]:
         """Parse API date string to ISO 8601."""
@@ -281,23 +275,26 @@ def main():
             print(f"Total: {count} documents fetched")
 
     elif args.command == 'bootstrap-fast':
-        # Full fetch — same as bootstrap without --sample (no parallelism needed for 496 docs)
-        SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
+        # Full fetch — same as bootstrap without --sample (no parallelism needed
+        # for ~500 docs). Streams to data/records.jsonl, which is what the
+        # pipeline ingests; writing into sample/ made a full run look like a
+        # sample-only run.
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
         count = 0
         written = 0
         errors = 0
-        for doc in fetcher.fetch_all():
-            count += 1
-            try:
-                fname = f"{doc['_id']}.json"
-                with open(SAMPLE_DIR / fname, 'w', encoding='utf-8') as f:
-                    json.dump(doc, f, ensure_ascii=False, indent=2)
-                written += 1
-            except Exception as e:
-                logger.error(f"Write error for {doc.get('_id')}: {e}")
-                errors += 1
-            if count % 50 == 0:
-                logger.info(f"Progress: {count} fetched, {written} written")
+        with open(DATA_DIR / "records.jsonl", "w", encoding="utf-8") as out:
+            for doc in fetcher.fetch_all():
+                count += 1
+                try:
+                    out.write(json.dumps(doc, ensure_ascii=False) + "\n")
+                    out.flush()
+                    written += 1
+                except Exception as e:
+                    logger.error(f"Write error for {doc.get('_id')}: {e}")
+                    errors += 1
+                if count % 50 == 0:
+                    logger.info(f"Progress: {count} fetched, {written} written")
         print(json.dumps({"records": count, "written": written, "errors": errors}))
 
     elif args.command == 'updates':

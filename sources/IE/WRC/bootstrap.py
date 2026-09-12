@@ -156,11 +156,20 @@ def normalize(raw: Dict) -> Dict:
     }
 
 
-def _list_page(page: int) -> List[Dict]:
-    """Return the case-link dicts on one search-listing page."""
+def _list_page(page: int) -> Optional[List[Dict]]:
+    """Return the case-link dicts on one search-listing page.
+
+    Returns ``None`` when the page could NOT be fetched (transient network
+    failure — timeout, connection reset, HTTP/2 hiccup). Returns ``[]`` only
+    when the page was fetched successfully (HTTP 200 body received) but carries
+    no case links, i.e. we have genuinely walked past the end of the listing.
+    Distinguishing these is critical: the host intermittently times out on deep
+    pages, and treating those transient misses as "end of listing" truncates
+    the crawl (see issue #1196 — stopped at page 483 of ~5,000+).
+    """
     html_text = curl_get(SEARCH_URL.format(page=page))
     if not html_text:
-        return []
+        return None
     out, seen = [], set()
     for m in CASE_LINK_RE.finditer(html_text):
         path, year, slug = m.group(1), m.group(2), m.group(3)
@@ -190,19 +199,40 @@ def _fetch_decision(item: Dict) -> Optional[Dict]:
 def fetch_all(sample: bool = False) -> Iterator[Dict]:
     """Yield every WRC decision (newest first) with full text."""
     page = 1
-    empty_streak = 0
+    empty_streak = 0      # consecutive genuine HTTP-200 pages with no case links
+    fail_retries = 0      # retries spent on the *current* page after a fetch failure
+    skipped_after_fail = 0  # pages abandoned after exhausting per-page retries
     emitted = 0
     seen_ids = set()
     while True:
         items = _list_page(page)
+        if items is None:
+            # Transient fetch failure — retry the SAME page with backoff before
+            # ever concluding we've reached the end of the listing.
+            fail_retries += 1
+            if fail_retries <= 8:
+                time.sleep(min(5 * fail_retries, 30))
+                continue
+            # Give up on this one page but keep going — a single dead page must
+            # not truncate the ~5,000-page archive. Guard against a total outage.
+            skipped_after_fail += 1
+            print(f"Page {page} unreachable after {fail_retries} retries — skipping.", file=sys.stderr)
+            if skipped_after_fail >= 15:
+                print("Too many consecutive unreachable pages — aborting crawl.", file=sys.stderr)
+                break
+            fail_retries = 0
+            page += 1
+            continue
+        fail_retries = 0
         if not items:
             empty_streak += 1
-            if empty_streak >= 2:
-                print(f"No results on page {page} (x{empty_streak}) — stopping.", file=sys.stderr)
+            if empty_streak >= 3:
+                print(f"No results on page {page} (x{empty_streak}) — reached end of listing.", file=sys.stderr)
                 break
             page += 1
             continue
         empty_streak = 0
+        skipped_after_fail = 0
         print(f"Listing page {page}: {len(items)} decisions", file=sys.stderr)
         for item in items:
             rec = _fetch_decision(item)

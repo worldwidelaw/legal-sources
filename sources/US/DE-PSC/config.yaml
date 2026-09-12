@@ -1,0 +1,130 @@
+# ===================================================================
+# US/DE-PSC -- Delaware Public Service Commission Orders
+# ===================================================================
+# Full text of Orders issued by the Delaware Public Service Commission
+# (PSC) adjudicating utility dockets — electric, natural gas, water,
+# wastewater, cable and telecommunications rate cases, certificates of
+# public convenience and necessity, § 215 filings, renewable / community
+# energy applications, tariff filings and rulemaking. Each Commission
+# Order is an administrative adjudication / edict of a specific docket =
+# case_law. Public domain (US state government edict). Published openly as
+# PDFs via the DelaFile e-filing system (delafile.delaware.gov). No auth.
+# ===================================================================
+
+source:
+  id: "US/DE-PSC"
+  country: "US"
+  name: "Delaware Public Service Commission — Orders"
+  url: "https://delafile.delaware.gov/AdvancedSearch/AdvancedSearchDocket.aspx"
+  description: |
+    Orders issued by the Delaware Public Service Commission (PSC) resolving
+    utility dockets — electric, natural gas, water, wastewater, cable and
+    telecommunications rate cases, certificates of public convenience and
+    necessity, § 215 (change-of-control) filings, renewable / community
+    energy facility applications, tariff filings and rulemaking. Each Order
+    is an administrative adjudication of a specific docket (case_law). Full
+    text is extracted from the order PDFs served by the DelaFile e-filing
+    system (Tesseract OCR fallback for scanned substantive orders).
+
+data_types:
+  - case_law
+
+jurisdictions:
+  - code: US-DE
+    scope: full
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+  max_workers: 5
+
+api:
+  type: "html_scraping"
+  base_url: "https://delafile.delaware.gov"
+  endpoints:
+    resolve_docket: "/AdvancedSearch/AdvancedSearchDocket.aspx?CNo={base64_docket}"
+    docket_page: "/CaseManagement/DocketPage.aspx?from=docket&ViewDocketPage=ViewDocketPage&MatterNo={docket}&MatterId={guid}&Type=Docket"
+    document: "/CaseManagement/ViewFileNetDocument.aspx?Id={guid}"
+
+data_model:
+  type: "case_law"
+  primary_key: "_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "_id"
+
+schema:
+  total_fields: 15
+  key_fields:
+    - name: "docket_number"
+      description: "DE PSC docket number, format YY-NNNN (e.g. 21-0436, 24-0365)"
+      type: "string"
+      role: "reference"
+      required: true
+    - name: "order_number"
+      description: "Order number (e.g. '10123'), parsed from row description or PDF body"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "utility_type"
+      description: "Utility sector of the docket (Electric, Gas, Water, Wastewater, Cable, Telecom, Renewable, ...)"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "company"
+      description: "Regulated company / applicant name for the docket"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "caption"
+      description: "Docket caption ('IN THE MATTER OF ...')"
+      type: "string"
+      role: "metadata"
+      required: false
+    - name: "title"
+      description: "Docket number plus order number / description"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text of the Order, extracted from the born-digital or OCR'd PDF"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Order filing/issued date (ISO 8601), from the docket grid or PDF body"
+      type: "date"
+      role: "temporal_key"
+      required: false
+
+license:
+  name: "Public Domain (US Government Work — Delaware)"
+  url: "https://www.law.cornell.edu/uscode/text/17/105"
+  commercial_use: true
+  attribution_required: false
+  share_alike: false
+  no_derivatives: false
+  notes: "Delaware Public Service Commission Orders are official state government edicts in the public domain."
+
+notes: |
+  - The public WordPress site depsc.delaware.gov is behind a BIG-IP ASM WAF
+    that rejects programmatic requests ("The requested URL was rejected").
+    The official DelaFile e-filing system (delafile.delaware.gov) is not
+    firewalled and is used instead.
+  - Dockets are addressed YY-NNNN and exist from 2016 onward (the DelaFile
+    era). AdvancedSearch/AdvancedSearchDocket.aspx?CNo={base64(docket)}
+    resolves the internal MatterId GUID; a non-existent docket returns
+    "Sorry, no results were found" with no DocketPage link.
+  - CaseManagement/DocketPage.aspx?MatterNo={docket}&MatterId={guid} renders
+    the docket sheet; the grdDocumentDetails grid lists every filing. Rows
+    whose Document Type is "Order" are Commission Orders (case_law); each
+    embeds ViewFileNetDocument.aspx?Id={guid} which serves the raw PDF.
+  - fetch_all() yields a curated seed docket list first (fast --sample), then
+    sweeps the YY-NNNN id space per year with gap tolerance.
+  - Many procedural orders are born-digital and extract cleanly with fitz;
+    the larger substantive orders are scanned and require Tesseract OCR
+    (pytesseract + tesseract binary must be installed on the VPS).
+  - Public domain Delaware government data.

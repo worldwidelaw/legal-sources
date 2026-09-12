@@ -2,37 +2,46 @@
 """
 CADA (Commission d'accès aux documents administratifs) Data Fetcher
 
-Fetches administrative opinions on document access requests from the CADA
-open data portal at cada.data.gouv.fr.
+Fetches administrative opinions on document access requests published by the
+CADA as open data on data.gouv.fr.
 
 The CADA is an independent French administrative authority that issues opinions
 when citizens are denied access to administrative documents.
 
 Data source:
-- https://cada.data.gouv.fr/
-- JSON API at /api/search and /api/<id>/
-- 60,000+ opinions since 1984
+- Dataset: https://www.data.gouv.fr/datasets/avis-et-conseils-de-la-cada
+- Consolidated CSV export ("Ensemble consolidé des avis et conseils de la CADA"),
+  resolved at runtime through the data.gouv.fr catalog API so a re-publication
+  under a new dated URL is picked up automatically.
+- 60,000+ opinions since 1984; the `Avis` column carries the full opinion text.
 
-License: Open Licence Etalab
+The former standalone portal at cada.data.gouv.fr was retired: every path now
+301s to https://www.data.gouv.fr/explore/cada/... and the old /api/search
+endpoint 404s there, which is what made the full crawl exit 1 (issue #1396).
+
+License: Licence Ouverte / Open Licence (Etalab)
 """
 
 import argparse
+import csv
+import io
 import json
-import os
 import re
 import sys
-import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Generator, Optional
+from typing import Generator, Optional
 
 import requests
 
 # Constants
-API_BASE = "https://cada.data.gouv.fr"
-SEARCH_ENDPOINT = f"{API_BASE}/api/search"
-RATE_LIMIT_DELAY = 0.3  # seconds between API calls
-PAGE_SIZE = 100  # API supports up to 100
+DATASET_API = "https://www.data.gouv.fr/api/1/datasets/avis-et-conseils-de-la-cada/"
+EXPLORE_BASE = "https://www.data.gouv.fr/explore/cada"
+CONSOLIDATED_TITLE_HINT = "ensemble consolid"
+USER_AGENT = "LegalDataHunter/1.0 (Open Data Research)"
+
+# Opinion bodies routinely exceed the 128 KB csv default.
+csv.field_size_limit(64 * 1024 * 1024)
 
 
 def clean_text(text: str) -> str:
@@ -46,59 +55,70 @@ def clean_text(text: str) -> str:
 
 
 def parse_date(date_str: str) -> Optional[str]:
-    """Parse CADA date string to ISO format (YYYY-MM-DD)."""
+    """Parse a CADA session date to ISO format (YYYY-MM-DD)."""
     if not date_str:
         return None
 
-    # Handle RFC 2822 format: "Thu, 15 Dec 2016 00:00:00 GMT"
+    date_str = date_str.strip()
+
+    # Consolidated CSV format: "03/03/1984"
+    m = re.match(r'^(\d{2})/(\d{2})/(\d{4})$', date_str)
+    if m:
+        day, month, year = m.groups()
+        try:
+            datetime(int(year), int(month), int(day))
+        except ValueError:
+            return None
+        return f"{year}-{month}-{day}"
+
+    # RFC 2822 format, as served by the retired JSON API
     try:
         from email.utils import parsedate_to_datetime
-        dt = parsedate_to_datetime(date_str)
-        return dt.strftime('%Y-%m-%d')
+        return parsedate_to_datetime(date_str).strftime('%Y-%m-%d')
     except (ValueError, TypeError):
         pass
 
-    # Try ISO format
+    # ISO format
     if re.match(r'^\d{4}-\d{2}-\d{2}', date_str):
         return date_str[:10]
 
     return None
 
 
-def normalize(raw: dict) -> dict:
-    """Transform raw CADA opinion data into normalized schema."""
-    opinion_id = raw.get('id', '')
+def _split_multi(value: str) -> list[str]:
+    """Split a CSV column that packs several values behind '/' or ','."""
+    if not value:
+        return []
+    parts = re.split(r'\s*[/,]\s*', value.strip())
+    return [p for p in parts if p]
 
-    # Parse session date
-    session_date = parse_date(raw.get('session', ''))
 
-    # Get full text content
-    text = clean_text(raw.get('content', ''))
+def normalize(raw: dict) -> Optional[dict]:
+    """Transform a consolidated-CSV row into the normalized schema."""
+    opinion_id = (raw.get('Numéro de dossier') or '').strip()
+    if not opinion_id:
+        return None
 
-    # Get subject/request description
-    subject = raw.get('subject', '')
+    text = clean_text(raw.get('Avis') or '')
+    if not text:
+        return None
 
-    # Get administration name
-    administration = raw.get('administration', '')
+    session_date = parse_date(raw.get('Séance') or '')
+    if not session_date:
+        # Fall back to the year column so a malformed session date does not
+        # cost us the record (date is a required temporal key downstream).
+        year = (raw.get('Année') or '').strip()
+        if re.match(r'^\d{4}$', year):
+            session_date = f"{year}-01-01"
 
-    # Get meanings (favorable, defavorable, etc.)
-    meanings = raw.get('meanings', [])
+    subject = clean_text(raw.get('Objet') or '')
+    administration = (raw.get('Administration') or '').strip()
+    opinion_type = (raw.get('Type') or 'Avis').strip()
 
-    # Get topics/themes
-    topics = raw.get('topics', [])
-
-    # Get tags
-    tags = raw.get('tags', [])
-
-    # Build title from subject or administration
-    title = subject if subject else f"Avis {opinion_id} - {administration}"
+    title = subject if subject else f"{opinion_type} {opinion_id} - {administration}".strip(' -')
     if len(title) > 200:
         title = title[:197] + "..."
 
-    # Build URL
-    url = f"https://cada.data.gouv.fr/{opinion_id}/"
-
-    # Build normalized record
     return {
         '_id': f"FR/CADA/{opinion_id}",
         '_source': 'FR/CADA',
@@ -107,346 +127,260 @@ def normalize(raw: dict) -> dict:
         'opinion_id': opinion_id,
         'title': title,
         'date': session_date,
-        'url': url,
+        'url': f"{EXPLORE_BASE}/{opinion_id}",
         'text': text,
         'subject': subject,
         'administration': administration,
-        'meanings': meanings,
-        'topics': topics,
-        'tags': tags,
-        'part': raw.get('part'),  # Part of session (1-4)
-        'type': raw.get('type', 'Avis'),
+        'meanings': _split_multi(raw.get('Sens et motivation') or ''),
+        'topics': _split_multi(raw.get('Thème et sous thème') or ''),
+        'tags': _split_multi(raw.get('Mots clés') or ''),
+        'part': (raw.get('Partie') or '').strip() or None,
+        'type': opinion_type,
     }
 
 
-def fetch_page(page: int = 1, page_size: int = PAGE_SIZE, **filters) -> dict:
-    """Fetch a single page of results from the CADA API."""
-    params = {
-        'page': page,
-        'page_size': page_size,
-    }
-    params.update(filters)
+def get_session() -> requests.Session:
+    session = requests.Session()
+    session.headers.update({"User-Agent": USER_AGENT, "Accept": "*/*"})
+    return session
 
-    response = requests.get(SEARCH_ENDPOINT, params=params, timeout=30)
+
+def resolve_consolidated_csv(session: Optional[requests.Session] = None) -> dict:
+    """
+    Resolve the consolidated CSV resource through the data.gouv.fr catalog API.
+
+    The export is republished under a new dated URL every few months, so the URL
+    is never hardcoded. Raises loudly rather than returning an empty corpus, so a
+    catalog change fails the run instead of silently ingesting nothing.
+    """
+    session = session or get_session()
+    response = session.get(DATASET_API, timeout=60)
     response.raise_for_status()
-    return response.json()
+    resources = response.json().get('resources', [])
+
+    csv_resources = [r for r in resources if (r.get('format') or '').lower() == 'csv']
+    if not csv_resources:
+        raise RuntimeError(
+            f"No CSV resource on {DATASET_API} — the dataset layout changed"
+        )
+
+    consolidated = [
+        r for r in csv_resources
+        if CONSOLIDATED_TITLE_HINT in (r.get('title') or '').lower()
+    ]
+    # The consolidated export is by far the largest file; fall back to size if
+    # the publisher renames it.
+    chosen = max(
+        consolidated or csv_resources,
+        key=lambda r: r.get('filesize') or 0,
+    )
+
+    print(
+        f"Consolidated export: {chosen.get('title')} "
+        f"({(chosen.get('filesize') or 0) / (1024 ** 2):.1f} MB)",
+        file=sys.stderr,
+    )
+    return chosen
 
 
-def _get_session_dates() -> list[str]:
+def iter_csv_rows(url: str, session: Optional[requests.Session] = None) -> Generator[dict, None, None]:
     """
-    Discover all unique session dates by combining:
-    1. Session dates from first 10K records (sorted by session asc)
-    2. Session dates from last 10K records (sorted by session desc)
-    3. Enumeration of gap years where we don't have coverage
+    Stream the consolidated CSV row by row.
 
-    The API returns HTTP 500 beyond page 101, so we cannot paginate past 10K records.
-    But by sorting ascending/descending we can get dates from both ends, then
-    fill in the middle by querying individual dates.
+    The export is ~190 MB with opinion bodies inline, so it is decoded through a
+    TextIOWrapper over the raw socket instead of being buffered — memory stays
+    flat regardless of corpus size, and quoted fields keep their real newlines.
     """
-    from email.utils import parsedate_to_datetime
-    from datetime import timedelta
-
-    all_dates: set[str] = set()
-
-    # Step 1: Collect dates from first 10K (oldest records)
-    print("Collecting session dates from first 10K records (session asc)...", file=sys.stderr)
-    for page in range(1, 101):
-        try:
-            data = fetch_page(page=page, page_size=PAGE_SIZE, sort='session asc')
-        except requests.RequestException:
-            break
-        advices = data.get('advices', [])
-        if not advices:
-            break
-        for advice in advices:
-            session = advice.get('session')
-            if session:
-                try:
-                    dt = parsedate_to_datetime(session)
-                    all_dates.add(dt.strftime('%Y-%m-%d'))
-                except (ValueError, TypeError):
-                    pass
-        time.sleep(0.05)
-
-    asc_count = len(all_dates)
-    print(f"  Found {asc_count} unique dates from first 10K", file=sys.stderr)
-
-    # Step 2: Collect dates from last 10K (newest records)
-    print("Collecting session dates from last 10K records (session desc)...", file=sys.stderr)
-    for page in range(1, 101):
-        try:
-            data = fetch_page(page=page, page_size=PAGE_SIZE, sort='session desc')
-        except requests.RequestException:
-            break
-        advices = data.get('advices', [])
-        if not advices:
-            break
-        for advice in advices:
-            session = advice.get('session')
-            if session:
-                try:
-                    dt = parsedate_to_datetime(session)
-                    all_dates.add(dt.strftime('%Y-%m-%d'))
-                except (ValueError, TypeError):
-                    pass
-        time.sleep(0.05)
-
-    desc_count = len(all_dates) - asc_count
-    print(f"  Found {desc_count} new dates from last 10K", file=sys.stderr)
-
-    # Step 3: Find gaps in coverage and enumerate missing years
-    sorted_dates = sorted(all_dates)
-    if sorted_dates:
-        # Find years with no coverage
-        years_covered = {int(d[:4]) for d in sorted_dates}
-        min_year = min(years_covered)
-        max_year = max(years_covered)
-
-        gap_years = []
-        for year in range(min_year, max_year + 1):
-            if year not in years_covered:
-                gap_years.append(year)
-
-        if gap_years:
-            print(f"Filling in gap years: {gap_years}", file=sys.stderr)
-            for year in gap_years:
-                # Enumerate all days in the gap year and check which have data
-                start = datetime(year, 1, 1)
-                end = datetime(year, 12, 31)
-                current = start
-                year_found = 0
-                while current <= end:
-                    date_str = current.strftime('%Y-%m-%d')
-                    try:
-                        data = fetch_page(page=1, page_size=1, session=date_str)
-                        if data.get('total', 0) > 0:
-                            all_dates.add(date_str)
-                            year_found += 1
-                    except requests.RequestException:
-                        pass
-                    current += timedelta(days=1)
-                    time.sleep(0.02)  # Fast rate for discovery
-                print(f"  {year}: {year_found} sessions discovered", file=sys.stderr)
-
-    final_dates = sorted(all_dates)
-    print(f"Total: {len(final_dates)} unique session dates discovered", file=sys.stderr)
-    return final_dates
+    session = session or get_session()
+    with session.get(url, stream=True, timeout=600) as response:
+        response.raise_for_status()
+        response.raw.decode_content = True
+        stream = io.TextIOWrapper(
+            response.raw, encoding='utf-8', errors='replace', newline=''
+        )
+        for row in csv.DictReader(stream):
+            yield row
 
 
-def _fetch_session(session_date: str) -> Generator[dict, None, None]:
-    """Fetch all opinions for a single session date, paginating within it."""
-    page = 1
-    fetched = 0
+def fetch_all(session: Optional[requests.Session] = None) -> Generator[dict, None, None]:
+    """Yield every CADA opinion from the consolidated export."""
+    session = session or get_session()
+    resource = resolve_consolidated_csv(session)
 
-    while True:
-        try:
-            data = fetch_page(page=page, page_size=PAGE_SIZE, session=session_date)
-        except requests.RequestException as e:
-            print(f"  Error on session={session_date} page {page}: {e}", file=sys.stderr)
-            break
+    seen: set[str] = set()
+    rows = 0
+    yielded = 0
+    skipped = 0
 
-        advices = data.get('advices', [])
-        if not advices:
-            break
+    for row in iter_csv_rows(resource['url'], session):
+        rows += 1
+        doc = normalize(row)
+        if doc is None:
+            skipped += 1
+            continue
+        if doc['_id'] in seen:
+            continue
+        seen.add(doc['_id'])
+        yielded += 1
+        yield doc
 
-        for raw in advices:
-            yield normalize(raw)
-            fetched += 1
+        if yielded % 5000 == 0:
+            print(f"  {yielded:,} opinions...", file=sys.stderr)
 
-        total = data.get('total', 0)
-        if fetched >= total:
-            break
+    print(
+        f"\nTotal: {yielded:,} opinions from {rows:,} CSV rows "
+        f"({skipped:,} rows without an id or opinion text)",
+        file=sys.stderr,
+    )
 
-        page += 1
-        time.sleep(RATE_LIMIT_DELAY)
+    if yielded == 0:
+        raise RuntimeError(
+            f"Consolidated export {resource['url']} yielded 0 opinions — "
+            "column layout probably changed"
+        )
 
 
-def fetch_all() -> Generator[dict, None, None]:
-    """
-    Fetch all CADA opinions using session-date windowing.
-
-    The API returns HTTP 500 beyond page 101 (~10K records).  To work
-    around this, we iterate over every session date (via the facets
-    endpoint) and paginate within each session.  Each session typically
-    has only a few hundred opinions, so pagination never hits the cap.
-    """
-    session_dates = _get_session_dates()
-    if not session_dates:
-        print("No session dates found — falling back to simple pagination", file=sys.stderr)
-        # Fallback: simple pagination up to page 100
-        page = 1
-        while page <= 100:
-            try:
-                data = fetch_page(page=page, page_size=PAGE_SIZE)
-            except requests.RequestException:
-                break
-            advices = data.get('advices', [])
-            if not advices:
-                break
-            for raw in advices:
-                yield normalize(raw)
-            page += 1
-            time.sleep(RATE_LIMIT_DELAY)
-        return
-
-    total_fetched = 0
-    for i, session_date in enumerate(session_dates):
-        before = total_fetched
-        for doc in _fetch_session(session_date):
+def fetch_updates(since: datetime,
+                  session: Optional[requests.Session] = None) -> Generator[dict, None, None]:
+    """Yield opinions from sessions on or after `since`."""
+    since_date = since.date().isoformat()
+    for doc in fetch_all(session):
+        if doc.get('date') and doc['date'] >= since_date:
             yield doc
-            total_fetched += 1
-
-        session_count = total_fetched - before
-        if session_count > 0 and (i + 1) % 50 == 0:
-            print(
-                f"  Sessions processed: {i+1}/{len(session_dates)} — "
-                f"total opinions: {total_fetched:,}",
-                file=sys.stderr,
-            )
-        time.sleep(RATE_LIMIT_DELAY)
-
-    print(f"\nTotal fetched: {total_fetched:,} opinions across {len(session_dates)} sessions", file=sys.stderr)
-
-
-def fetch_updates(since: datetime) -> Generator[dict, None, None]:
-    """Fetch opinions from sessions after a given date."""
-    # CADA API supports session date filtering
-    # Sort by session descending to get most recent first
-    page = 1
-
-    while True:
-        print(f"Fetching updates page {page}...", file=sys.stderr)
-
-        try:
-            data = fetch_page(page=page, page_size=PAGE_SIZE, sort='session desc')
-        except requests.RequestException as e:
-            print(f"Error fetching page {page}: {e}", file=sys.stderr)
-            break
-
-        advices = data.get('advices', [])
-        if not advices:
-            break
-
-        found_old = False
-        for raw in advices:
-            doc = normalize(raw)
-            doc_date = doc.get('date')
-
-            if doc_date:
-                try:
-                    doc_dt = datetime.fromisoformat(doc_date)
-                    if doc_dt.replace(tzinfo=timezone.utc) < since.replace(tzinfo=timezone.utc):
-                        found_old = True
-                        continue
-                except ValueError:
-                    pass
-
-            yield doc
-
-        # If we found old records, we can stop
-        if found_old:
-            break
-
-        page += 1
-        time.sleep(RATE_LIMIT_DELAY)
 
 
 def bootstrap_sample(limit: int = 15) -> None:
-    """Fetch sample records for testing."""
+    """
+    Fetch sample records for testing.
+
+    The consolidated export is ordered oldest-first, so taking the first N
+    matches would sample only the terse mid-1980s opinions. Reservoir sampling
+    over the single stream gives a spread across all 40+ years for the same cost.
+    """
+    import random
+
     sample_dir = Path(__file__).parent / 'sample'
     sample_dir.mkdir(exist_ok=True)
 
-    # Clear existing samples
     for f in sample_dir.glob('*.json'):
         f.unlink()
 
     print("Fetching CADA sample data...", file=sys.stderr)
 
-    # Get diverse sample from recent sessions
-    # Sort by session descending to get recent opinions
-    samples = []
-    topic_counts = {}
+    rng = random.Random(42)  # deterministic samples across runs
+    samples: list[dict] = []
+    considered = 0
 
-    page = 1
-    while len(samples) < limit:
-        print(f"Fetching page {page}...", file=sys.stderr)
+    for doc in fetch_all():
+        if len(doc.get('text', '')) < 400:
+            continue
+        considered += 1
+        if len(samples) < limit:
+            samples.append(doc)
+        else:
+            j = rng.randrange(considered)
+            if j < limit:
+                samples[j] = doc
 
-        data = fetch_page(page=page, page_size=50, sort='session desc')
-        advices = data.get('advices', [])
+    samples.sort(key=lambda d: d.get('date') or '')
+    topic_counts: dict[str, int] = {}
+    for doc in samples:
+        topic = doc['topics'][0] if doc['topics'] else 'Other'
+        topic_counts[topic] = topic_counts.get(topic, 0) + 1
 
-        if not advices:
-            break
-
-        for raw in advices:
-            if len(samples) >= limit:
-                break
-
-            text = raw.get('content', '')
-
-            # Skip if no or very short text
-            if not text or len(text) < 200:
-                continue
-
-            # Get topic for diversity
-            topics = raw.get('topics', ['Other'])
-            topic = topics[0] if topics else 'Other'
-
-            # Limit per topic to ensure diversity
-            topic_counts[topic] = topic_counts.get(topic, 0) + 1
-            if topic_counts[topic] > (limit // 4 + 1):
-                continue
-
-            samples.append(raw)
-
-        page += 1
-        time.sleep(RATE_LIMIT_DELAY)
-
-        if page > 10:  # Safety limit
-            break
-
-    # Normalize and save
     count = 0
     total_chars = 0
 
-    for raw in samples:
-        doc = normalize(raw)
-
-        # Save to sample directory
+    for doc in samples:
         safe_id = doc['opinion_id'].replace('/', '-').replace('\\', '-')
-        filename = f"{safe_id}.json"
-        filepath = sample_dir / filename
+        filepath = sample_dir / f"{safe_id}.json"
 
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(doc, f, ensure_ascii=False, indent=2)
 
         text_len = len(doc.get('text', ''))
         total_chars += text_len
-        print(f"Saved {filename} ({text_len:,} chars)", file=sys.stderr)
+        print(f"Saved {filepath.name} ({text_len:,} chars)", file=sys.stderr)
         count += 1
 
     avg_chars = total_chars // count if count > 0 else 0
     print(f"\nSaved {count} sample records to {sample_dir}", file=sys.stderr)
     print(f"Average text length: {avg_chars:,} chars", file=sys.stderr)
 
-    # Print topic breakdown
     print("\nTopic breakdown:", file=sys.stderr)
     for topic, c in sorted(topic_counts.items(), key=lambda x: -x[1]):
-        if c > 0:
-            print(f"  - {topic}: {c}", file=sys.stderr)
+        print(f"  - {topic}: {c}", file=sys.stderr)
+
+
+def run_full() -> int:
+    """Stream the whole corpus to data/records.jsonl (what the pipeline ingests)."""
+    data_dir = Path(__file__).parent / 'data'
+    data_dir.mkdir(parents=True, exist_ok=True)
+    jsonl_path = data_dir / 'records.jsonl'
+
+    count = 0
+    with open(jsonl_path, 'w', encoding='utf-8') as out:
+        for doc in fetch_all():
+            out.write(json.dumps(doc, ensure_ascii=False) + '\n')
+            count += 1
+            if count % 5000 == 0:
+                out.flush()
+
+    print(f"\nBootstrap complete: {count} records written to {jsonl_path}", file=sys.stderr)
+    return count
+
+
+def show_stats() -> None:
+    """Summarize the corpus from the consolidated export."""
+    from collections import Counter
+
+    years: Counter = Counter()
+    administrations: Counter = Counter()
+    meanings: Counter = Counter()
+    total = 0
+
+    for doc in fetch_all():
+        total += 1
+        if doc.get('date'):
+            years[doc['date'][:4]] += 1
+        if doc.get('administration'):
+            administrations[doc['administration']] += 1
+        for meaning in doc.get('meanings', []):
+            meanings[meaning] += 1
+
+    print(f"Total opinions: {total:,}")
+    print(f"Years covered: {min(years)}-{max(years)}" if years else "No dates")
+
+    print("\nTop 10 administrations:")
+    for admin, count in administrations.most_common(10):
+        print(f"  {admin}: {count:,}")
+
+    print("\nBy meaning (outcome):")
+    for meaning, count in meanings.most_common(10):
+        print(f"  {meaning}: {count:,}")
 
 
 def main():
-    parser = argparse.ArgumentParser(description='CADA (Commission d\'accès aux documents administratifs) Data Fetcher')
+    parser = argparse.ArgumentParser(
+        description="CADA (Commission d'accès aux documents administratifs) Data Fetcher"
+    )
     subparsers = parser.add_subparsers(dest='command')
 
-    # Bootstrap command
-    bootstrap_parser = subparsers.add_parser('bootstrap', help='Fetch sample data')
+    bootstrap_parser = subparsers.add_parser('bootstrap', help='Fetch opinions')
     bootstrap_parser.add_argument('--sample', action='store_true', help='Fetch sample records')
-    bootstrap_parser.add_argument('--limit', type=int, default=15, help='Number of records to fetch')
-    bootstrap_parser.add_argument("--full", action="store_true", help="Fetch all records")
+    bootstrap_parser.add_argument('--limit', type=int, default=15, help='Number of sample records')
+    bootstrap_parser.add_argument('--full', action='store_true', help='Fetch all records')
 
-    # Stats command
-    stats_parser = subparsers.add_parser('stats', help='Show dataset statistics')
+    # The fleet wrapper invokes bootstrap-fast; without it argparse exits 2 and
+    # the pipeline falls back to re-ingesting sample/.
+    fast_parser = subparsers.add_parser('bootstrap-fast', help='Full pull (fleet entry point)')
+    fast_parser.add_argument('--workers', type=int, default=1, help='Unused, kept for compatibility')
+    fast_parser.add_argument('--batch', type=int, default=100, help='Unused, kept for compatibility')
+
+    updates_parser = subparsers.add_parser('updates', help='Fetch opinions since a date')
+    updates_parser.add_argument('--since', required=True, help='YYYY-MM-DD')
+
+    subparsers.add_parser('stats', help='Show dataset statistics')
 
     args = parser.parse_args()
 
@@ -454,44 +388,17 @@ def main():
         if args.sample:
             bootstrap_sample(args.limit)
         else:
-            # Full bootstrap — stream all opinions to stdout as JSONL
-            data_dir = Path(__file__).parent / 'data'
-            data_dir.mkdir(parents=True, exist_ok=True)
-            jsonl_path = data_dir / 'records.jsonl'
-
-            count = 0
-            with open(jsonl_path, 'w', encoding='utf-8') as out:
-                for doc in fetch_all():
-                    line = json.dumps(doc, ensure_ascii=False)
-                    out.write(line + '\n')
-                    print(line)
-                    count += 1
-
-            print(f"\nBootstrap complete: {count} records written to {jsonl_path}", file=sys.stderr)
+            run_full()
+    elif args.command == 'bootstrap-fast':
+        run_full()
+    elif args.command == 'updates':
+        since = datetime.strptime(args.since, '%Y-%m-%d').replace(tzinfo=timezone.utc)
+        count = 0
+        for _ in fetch_updates(since):
+            count += 1
+        print(f"{count} opinions since {args.since}", file=sys.stderr)
     elif args.command == 'stats':
-        data = fetch_page(page=1, page_size=1)
-        total = data.get('total', 0)
-        facets = data.get('facets', {})
-
-        print(f"Total opinions: {total:,}")
-
-        # Top administrations
-        if 'administration' in facets:
-            print("\nTop 10 administrations:")
-            for admin, count, _ in facets['administration'][:10]:
-                print(f"  {admin}: {count:,}")
-
-        # Meaning breakdown
-        if 'meaning' in facets:
-            print("\nBy meaning (outcome):")
-            for meaning, count, _ in facets['meaning'][:10]:
-                print(f"  {meaning}: {count:,}")
-
-        # Topic breakdown
-        if 'topic' in facets:
-            print("\nTop 10 topics:")
-            for topic, count, _ in facets['topic'][:10]:
-                print(f"  {topic}: {count:,}")
+        show_stats()
     else:
         parser.print_help()
 

@@ -73,8 +73,13 @@ def _get_with_deadline(session, url, timeout, deadline=HARD_REQUEST_DEADLINE, **
 
 # Configuration
 BASE_URL = "https://www.gesetze-bayern.de"
-RATE_LIMIT_DELAY = 2.0
+# The portal answers in ~0.15s; 0.5s is still under 2 req/s. The old 2.0s put
+# the ID-discovery sweep alone (2,573 pages) at ~86 min of silence before the
+# first record — which is what looked like a hang in issue #1372.
+RATE_LIMIT_DELAY = 0.5
 SAMPLE_DIR = Path(__file__).parent / "sample"
+DATA_DIR = Path(__file__).parent / "data"
+CHECKPOINT_PATH = DATA_DIR / "bayern_checkpoint.json"
 SOURCE_ID = "DE/BayernCaseLaw"
 RESULTS_PER_PAGE = 10  # gesetze-bayern.de returns 10 per page
 
@@ -353,74 +358,100 @@ def normalize(doc_id: str, doc_data: Dict) -> Dict:
     }
 
 
-def fetch_all(limit: int = None) -> Iterator[Dict]:
-    """Fetch all court decisions with full text."""
+def _load_checkpoint() -> int:
+    """Return the next search page to crawl (1 if there is no checkpoint)."""
+    if not CHECKPOINT_PATH.exists():
+        return 1
+    try:
+        with open(CHECKPOINT_PATH, "r", encoding="utf-8") as f:
+            return max(1, int(json.load(f).get("next_page", 1)))
+    except Exception as e:  # noqa: BLE001 — a corrupt checkpoint restarts the walk
+        print(f"Checkpoint unreadable ({e}), restarting from page 1")
+        return 1
+
+
+def _save_checkpoint(next_page: int) -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    tmp = CHECKPOINT_PATH.with_suffix(".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump({"next_page": next_page,
+                   "updated_at": datetime.now(timezone.utc).isoformat()}, f)
+    tmp.replace(CHECKPOINT_PATH)
+
+
+def fetch_all(limit: int = None, resume: bool = True) -> Iterator[Dict]:
+    """Yield all court decisions with full text, page by page.
+
+    Discovery and full-text fetching are interleaved deliberately: collecting
+    all ~25,700 IDs first meant ~2,573 result pages of pure paging before the
+    first record was emitted, so a fleet slot saw an idle process and an empty
+    records.jsonl for over an hour (#1372). Yielding each page's decisions
+    immediately means progress is visible — and checkpointable — from the start.
+    """
     session = BayernSession()
     if not session.init_session():
-        print("Session init failed")
-        return
+        raise RuntimeError(
+            "Session init failed — gesetze-bayern.de did not serve "
+            "/Search/Filter/DOKTYP/rspr (unreachable or IP-blocked)"
+        )
 
-    # Get first page to determine total
     first_page = session.get_search_page(1)
     if not first_page:
-        print("Failed to load first search page")
-        return
+        raise RuntimeError("Failed to load search page 1 — refusing to report an empty crawl")
 
     total = extract_total_results(first_page)
     if total == 0:
-        total = 24662  # fallback estimate
+        raise RuntimeError(
+            "Search page 1 carried no result count — the results layout changed "
+            "or an interstitial was served"
+        )
     total_pages = (total + RESULTS_PER_PAGE - 1) // RESULTS_PER_PAGE
     print(f"Total decisions: {total:,} ({total_pages:,} pages)")
 
-    # Collect all document IDs
-    all_doc_ids = extract_doc_ids_from_search(first_page)
-    print(f"  Page 1: {len(all_doc_ids)} doc IDs")
+    start_page = _load_checkpoint() if resume else 1
+    if start_page > 1:
+        print(f"Resuming at page {start_page}/{total_pages}")
 
-    for page in range(2, total_pages + 1):
-        html = session.get_search_page(page)
-        if not html:
-            continue
-        ids = extract_doc_ids_from_search(html)
-        if not ids:
-            print(f"  Page {page}: empty, stopping")
-            break
-        all_doc_ids.extend(ids)
-        if page % 100 == 0:
-            print(f"  Page {page}/{total_pages}: {len(all_doc_ids)} IDs so far")
-        if limit and len(all_doc_ids) >= limit:
-            all_doc_ids = all_doc_ids[:limit]
-            break
-
-    # Deduplicate while preserving order
     seen = set()
-    unique_ids = []
-    for did in all_doc_ids:
-        if did not in seen:
-            seen.add(did)
-            unique_ids.append(did)
-    all_doc_ids = unique_ids
-
-    print(f"Discovered {len(all_doc_ids)} unique decisions. Fetching full text...")
-
     count = 0
     errors = 0
-    for i, doc_id in enumerate(all_doc_ids):
-        if i % 50 == 0 and i > 0:
-            print(f"  Progress: {i}/{len(all_doc_ids)} fetched, {count} with text, {errors} errors")
 
-        html = session.get_document(doc_id)
+    for page in range(start_page, total_pages + 1):
+        html = first_page if page == 1 else session.get_search_page(page)
         if not html:
-            errors += 1
+            print(f"  Page {page}: unreachable, skipping")
+            _save_checkpoint(page + 1)
             continue
 
-        doc_data = extract_document_data(html, doc_id)
-        record = normalize(doc_id, doc_data)
+        doc_ids = [d for d in extract_doc_ids_from_search(html) if d not in seen]
+        if not doc_ids and not extract_doc_ids_from_search(html):
+            print(f"  Page {page}: empty, stopping")
+            break
 
-        if record.get("text") and len(record["text"]) >= 100:
-            yield record
-            count += 1
-        else:
-            errors += 1
+        for doc_id in doc_ids:
+            seen.add(doc_id)
+
+            doc_html = session.get_document(doc_id)
+            if not doc_html:
+                errors += 1
+                continue
+
+            record = normalize(doc_id, extract_document_data(doc_html, doc_id))
+            if record.get("text") and len(record["text"]) >= 100:
+                yield record
+                count += 1
+            else:
+                errors += 1
+
+            if limit and count >= limit:
+                print(f"Reached limit of {limit} records")
+                return
+
+        # Only advance past a page once every decision on it has been fetched.
+        _save_checkpoint(page + 1)
+
+        if page % 25 == 0:
+            print(f"  Page {page}/{total_pages}: {count} decisions with text, {errors} errors")
 
     print(f"Fetched {count} decisions with full text ({errors} errors)")
 
@@ -472,6 +503,41 @@ def fetch_sample(count: int = 15) -> List[Dict]:
                 print(f"  Skipped {doc_id}: text too short ({text_len} chars)")
 
     return samples
+
+
+def write_records(records: Iterator[Dict]) -> int:
+    """Stream records to data/records.jsonl, skipping IDs already written.
+
+    The full path used to just count what fetch_all yielded and throw it away,
+    which is why the fleet had to fall back to the generic persister (#1372).
+    """
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    records_file = DATA_DIR / "records.jsonl"
+
+    existing_ids = set()
+    if records_file.exists():
+        with open(records_file, "r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    rec_id = json.loads(line).get("_id")
+                except Exception:  # noqa: BLE001 — a torn last line is expected
+                    continue
+                if rec_id:
+                    existing_ids.add(rec_id)
+        print(f"records.jsonl already holds {len(existing_ids):,} records")
+
+    written = 0
+    with open(records_file, "a", encoding="utf-8") as f:
+        for record in records:
+            if record.get("_id") in existing_ids:
+                continue
+            existing_ids.add(record["_id"])
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+            f.flush()
+            written += 1
+            if written % 100 == 0:
+                print(f"Wrote {written} records...")
+    return written
 
 
 def save_samples(samples: List[Dict]) -> None:
@@ -542,16 +608,20 @@ def main():
     parser = argparse.ArgumentParser(description="DE/BayernCaseLaw data fetcher")
     parser.add_argument(
         "command",
-        choices=["bootstrap", "update", "status"],
+        # `bootstrap-fast` is what the fleet wrapper invokes; without it the
+        # run fell through to the generic persister (#1372).
+        choices=["bootstrap", "bootstrap-fast", "update", "status"],
         help="Command to run",
     )
     parser.add_argument("--sample", action="store_true", help="Fetch sample records only")
     parser.add_argument("--count", type=int, default=15, help="Number of sample records")
     parser.add_argument("--full", action="store_true", help="Fetch all records")
+    parser.add_argument("--no-checkpoint", action="store_true",
+                        help="Ignore the saved checkpoint and crawl from page 1")
 
     args = parser.parse_args()
 
-    if args.command == "bootstrap":
+    if args.command in ("bootstrap", "bootstrap-fast"):
         if args.sample:
             print("Fetching sample records...")
             samples = fetch_sample(args.count)
@@ -564,19 +634,14 @@ def main():
                 return 1
         else:
             print("Full bootstrap — fetching all decisions...")
-            count = 0
-            for record in fetch_all():
-                count += 1
-                if count % 100 == 0:
-                    print(f"Fetched {count} records...")
-            print(f"Total: {count} records")
+            written = write_records(fetch_all(resume=not args.no_checkpoint))
+            print(f"Total: {written} new records in {DATA_DIR / 'records.jsonl'}")
 
     elif args.command == "update":
         print("Fetching recent updates...")
-        count = 0
-        for record in fetch_all(limit=50):
-            count += 1
-        print(f"Fetched {count} updated decisions")
+        # Newest decisions sort first, so the head of the walk is the update.
+        written = write_records(fetch_all(limit=50, resume=False))
+        print(f"Fetched {written} updated decisions")
 
     elif args.command == "status":
         session = BayernSession()

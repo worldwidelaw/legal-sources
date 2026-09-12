@@ -1,0 +1,89 @@
+# ===================================================================
+# DE/LDI-NRW -- North Rhine-Westphalia Data Protection Authority
+# ===================================================================
+# Landesbeauftragte fuer Datenschutz und Informationsfreiheit NRW.
+# Supervisory authority for Germany's largest state (~18M people).
+# Publishes annual activity reports (Taetigkeitsberichte, each a
+# few hundred pages of anonymised enforcement casework) and topic
+# guidance on the GDPR and the NRW Freedom of Information Act.
+# ===================================================================
+
+source:
+  id: "DE/LDI-NRW"
+  country: "DE"
+  name: "LDI NRW - North Rhine-Westphalia Data Protection Authority"
+  url: "https://www.ldi.nrw.de/"
+  description: |
+    Regulator doctrine from the NRW Data Protection Authority: the
+    annual Taetigkeitsberichte / Datenschutzberichte (which narrate the
+    authority's enforcement decisions, complaints and fines) plus the
+    topic guidance pages interpreting the GDPR, the DSG NRW and the
+    IFG NRW. The authority does not publish individual Bescheide, so
+    the reports are the enforcement record.
+
+data_types:
+  - doctrine
+
+auth:
+  type: "none"
+
+rate_limit:
+  requests_per_second: 1
+  burst: 2
+
+api:
+  type: "html_scrape"
+  base_url: "https://www.ldi.nrw.de"
+  endpoints:
+    reports: "/berichte"
+  response_format: "html+pdf"
+
+data_model:
+  type: "doctrine"
+  primary_key: "document_id"
+  update_strategy: "upsert"
+  dedup_key:
+    - "document_id"
+
+schema:
+  total_fields: 7
+  key_fields:
+    - name: "_id"
+      description: "Unique identifier (DE-LDINRW-{slug})"
+      type: "string"
+      role: "primary_key"
+      required: true
+    - name: "title"
+      description: "Report or guidance page title"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "text"
+      description: "Full text (PDF extraction for reports, article body for pages)"
+      type: "string"
+      role: "content"
+      required: true
+    - name: "date"
+      description: "Publication year for reports (ISO 8601), null for undated guidance"
+      type: "date"
+      role: "temporal_key"
+      required: false
+    - name: "url"
+      description: "Canonical URL of the report PDF or guidance page"
+      type: "string"
+      role: "reference"
+      required: true
+  secondary_fields:
+    - name: "doc_kind"
+      description: "'report' (Taetigkeitsbericht PDF) or 'guidance' (HTML page)"
+    - name: "language"
+      description: "Always 'de'"
+
+license:
+  name: "Datenlizenz Deutschland - Namensnennung 2.0"
+  url: "https://www.govdata.de/dl-de/by-2-0"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "Public-sector body publication; attribution to LDI NRW required."

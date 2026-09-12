@@ -1,30 +1,95 @@
+# Configuration for KZ/Adilet — Kazakhstan Legal Information System "Әділет"
+source_id: KZ/Adilet
+
+source:
+  id: KZ/Adilet
+  name: Adilet Legal Information System (Kazakhstan)
+  country: KZ
+  url: https://adilet.zan.kz/
+  description: >
+    Consolidated Kazakh legislation published by the Institute of Legislation and
+    Legal Information of the Ministry of Justice: codes, constitutional laws, laws,
+    presidential decrees, government resolutions, ministerial orders, akimat
+    decisions and Constitutional Court normative rulings, with full consolidated
+    text in Russian.
+
 country: KZ
+name: Adilet Legal Information System (Kazakhstan)
+language: ru,kk
+
 data_types:
 - legislation
+
+data_model:
+  types:
+  - legislation
+  update_strategy: upsert
+  dedup_key:
+  - code
+
+auth:
+  type: none
+
 endpoints:
-  document: https://zan.gov.kz/api/documents/{id}/{lang}
   portal: https://adilet.zan.kz/
-  search: https://zan.gov.kz/api/documents/search
+  index: https://adilet.zan.kz/rus/index/docs/dt={year}-&rss=true&page={page}
+  document: https://adilet.zan.kz/rus/docs/{code}
+
+rate_limit:
+  requests_per_second: 4
+  min_rate: 0.5
+  max_rate: 8
+  burst: 8
+  max_workers: 8
+
 fetcher:
   max_retries: 3
   page_size: 10
-  rate_limit_ms: 1500
-  ssl_verify: false
-  timeout_s: 60
-  total_documents: 206641
-language: ru,kk
+  rate_limit_ms: 500
+  ssl_verify: true
+  timeout_s: 90
+  total_documents: 229267
+
 license:
   name: Open Data (Ministry of Justice of Kazakhstan)
-  url: https://zan.gov.kz/
-name: Adilet Legal Information System (Kazakhstan)
+  url: https://adilet.zan.kz/rus/help
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: >
+    Official legal acts of the Republic of Kazakhstan published by the state.
+    Under the Kazakh Copyright Law, official documents of a legislative,
+    administrative and judicial character are not objects of copyright.
+
 schema:
   date_format: ISO8601
-  key_fields:
-  - name: id
-    required: false
-    type: string
-  - name: code
-    required: false
-    type: string
   text_field: text
-source_id: KZ/Adilet
+  required_fields:
+  - _id
+  - _source
+  - _type
+  - _fetched_at
+  - title
+  - text
+  - date
+  - url
+  key_fields:
+  - name: code
+    type: string
+    required: true
+  - name: document_number
+    type: string
+    required: false
+  - name: act_type
+    type: string
+    required: false
+  - name: requisites
+    type: string
+    required: false
+  - name: language
+    type: string
+    required: false
+  - name: year
+    type: integer
+    required: false

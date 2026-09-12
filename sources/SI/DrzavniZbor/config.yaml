@@ -1,6 +1,6 @@
 api:
   metadata_base: https://fotogalerija.dz-rs.si/datoteke/opendata/
-  rate_limit: 2
+  rate_limit: 1
   transcript_base: https://www.dz-rs.si/wps/portal/Home/seje/evidenca
 schema:
   fields:
@@ -8,7 +8,7 @@ schema:
       description: Session date (ISO 8601)
       type: date
     mandate:
-      description: Parliamentary mandate number (1-9)
+      description: Parliamentary mandate number (2-10)
       type: integer
     session_number:
       description: Session number (e.g., "132")
@@ -23,15 +23,27 @@ schema:
       description: Session title
       type: string
   key_fields:
-  - name: session_number
-    required: false
+  - name: _id
+    required: true
     type: string
-  - name: mandate
-    required: false
+  - name: title
+    required: true
+    type: string
+  - name: text
+    required: true
     type: string
   - name: date
-    required: false
+    required: true
     type: date
+  - name: url
+    required: true
+    type: string
+  - name: mandate
+    required: true
+    type: integer
+  - name: session_number
+    required: true
+    type: string
 source:
   country: SI
   description: 'Verbatim transcripts of plenary sessions of the Slovenian National Assembly
@@ -43,7 +55,8 @@ source:
     Parliament website.
 
 
-    Covers all 9 parliamentary mandates with ~2,340 session transcripts.
+    Covers parliamentary mandates 2-10 with ~2,360 session transcripts (one
+    record per sitting day, keyed on the transcript UID).
 
     '
   id: SI/DrzavniZbor

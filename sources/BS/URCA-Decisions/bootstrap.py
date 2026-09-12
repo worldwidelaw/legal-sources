@@ -34,7 +34,7 @@ from urllib.error import HTTPError, URLError
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.base_scraper import BaseScraper
+from common.base_scraper import BaseScraper, as_date_str
 from common.pdf_extract import extract_pdf_markdown
 
 logging.basicConfig(
@@ -176,6 +176,9 @@ class BSURCAScraper(BaseScraper):
 
     def fetch_updates(self, since: str) -> Generator[Dict[str, Any], None, None]:
         """Fetch decisions published after a given date."""
+        # `update()` passes a datetime, but the comparison below is against a
+        # record's ISO date string, which raises TypeError (#1512).
+        since = as_date_str(since)
         decisions = self._list_decisions()
         for dec in decisions:
             if dec.get("date") and dec["date"] >= since:

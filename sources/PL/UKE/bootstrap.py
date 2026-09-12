@@ -109,21 +109,19 @@ class UKEFetcher:
             return None
 
         try:
-            with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-                pages_text = []
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        pages_text.append(text)
-                    try:
-                        page.flush_cache(); page.get_textmap.cache_clear()
-                    except Exception:
-                        pass
-                full_text = "\n\n".join(pages_text)
-                return full_text if len(full_text) > 50 else None
+            full_text = extract_pdf_markdown(
+                source=SOURCE_ID,
+                source_id=f"{year}-{position}",
+                pdf_bytes=resp.content,
+                table="doctrine",
+                force=True,
+            )
         except Exception as e:
             logger.warning(f"PDF extraction failed for year={year}, pos={position}: {e}")
             return None
+        if not full_text or len(full_text) <= 50:
+            return None
+        return full_text
 
     def _parse_date(self, date_str: Optional[str]) -> Optional[str]:
         """Parse API date string to ISO 8601."""
@@ -295,7 +293,7 @@ class UKEFetcher:
 
 def main():
     parser = argparse.ArgumentParser(description="PL/UKE fetcher")
-    parser.add_argument("command", choices=["bootstrap", "update", "test-api"])
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "update", "test-api"])
     parser.add_argument("--sample", action="store_true")
     parser.add_argument("--sample-size", type=int, default=15)
     parser.add_argument("--full", action="store_true", help="Fetch all records")
@@ -305,21 +303,22 @@ def main():
 
     if args.command == "test-api":
         fetcher.test_api()
-    elif args.command == "bootstrap":
+    elif args.command in ("bootstrap", "bootstrap-fast"):
         if args.sample:
             results = fetcher.bootstrap_sample(n=args.sample_size)
             print(f"\nSample complete: {len(results)} records saved to sample/")
         else:
+            # Stream to data/records.jsonl — that is what the pipeline ingests.
             data_dir = Path(__file__).parent / "data"
             data_dir.mkdir(exist_ok=True)
             count = 0
-            for record in fetcher.fetch_all():
-                fname = f"{record['_id']}.json"
-                with open(data_dir / fname, 'w', encoding='utf-8') as f:
-                    json.dump(record, f, ensure_ascii=False, indent=2)
-                count += 1
-                if count % 100 == 0:
-                    logger.info(f"Saved {count} documents")
+            with open(data_dir / "records.jsonl", 'w', encoding='utf-8') as f:
+                for record in fetcher.fetch_all():
+                    f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    f.flush()
+                    count += 1
+                    if count % 100 == 0:
+                        logger.info(f"Saved {count} documents")
             print(f"\nBootstrap complete: {count} documents saved")
     elif args.command == "update":
         since = (datetime.now() - __import__('datetime').timedelta(days=30)).isoformat()

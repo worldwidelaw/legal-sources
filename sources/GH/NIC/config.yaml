@@ -9,12 +9,14 @@ source:
   id: "GH/NIC"
   country: "GH"
   name: "Ghana National Insurance Commission — Directives"
-  url: "https://nicgh.org/"
+  url: "https://nic.gov.gh/"
   description: |
-    Regulatory directives, guidelines, and news from Ghana's National
-    Insurance Commission. Guideline/directive pages fetched via WordPress
-    REST API with full text extracted from linked PDFs (pdfplumber).
-    News posts fetched via WP REST API custom post type "news".
+    Regulatory directives, guidelines, market reports, public notices and
+    news from Ghana's National Insurance Commission. The Commission retired
+    nicgh.org (now 301s to nic.gov.gh) and rebuilt on a public Strapi v5 API;
+    directives and publications carry a PDF whose full text is extracted with
+    pdfplumber, while notices and news hold full text inline as rich-text
+    blocks.
 
 data_types:
   - doctrine
@@ -27,13 +29,14 @@ rate_limit:
   burst: 2
 
 api:
-  type: "wordpress_rest"
-  base_url: "https://nicgh.org/wp-json/wp/v2"
+  type: "strapi_rest"
+  base_url: "https://nicwebsitebackend-gcauhtdfeph8d9e4.westeurope-01.azurewebsites.net/api"
   endpoints:
-    - "/pages?parent=27&per_page=100"
-    - "/pages?parent=9&per_page=100"
-    - "/news?per_page=100"
-  notes: "22 guideline/directive pages (PDF text), 1 Insurance Act (PDF), 108 news posts (inline text)"
+    - "/regulatory-docs?populate=*"
+    - "/publications?populate=*"
+    - "/notices?populate=*"
+    - "/news-articles?populate=*"
+  notes: "33 directives/guidelines (PDF text), 22 reports & market research (PDF text), 5 public notices (inline), 8 news articles (inline). PDFs served from nicsws.blob.core.windows.net/strapi-uploads."
 
 data_model:
   type: "doctrine"
@@ -41,7 +44,7 @@ data_model:
   update_strategy: "upsert"
 
 schema:
-  total_fields: 12
+  total_fields: 15
   key_fields:
     - name: "text"
       description: "Full text from PDF extraction or WordPress content"
@@ -59,12 +62,12 @@ schema:
       role: "temporal_key"
       required: true
     - name: "document_type"
-      description: "Type: guideline or news"
+      description: "Type: directive, publication, notice or news"
       type: "string"
       role: "status"
       required: true
     - name: "pdf_url"
-      description: "URL to source PDF (guidelines only)"
+      description: "URL to source PDF (directives and publications only)"
       type: "string"
       role: "reference"
       required: false

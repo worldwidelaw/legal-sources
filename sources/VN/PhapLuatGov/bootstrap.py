@@ -1,17 +1,29 @@
 #!/usr/bin/env python3
 """
-Vietnam National Legal Document Database (VBPL) Data Fetcher
+Vietnam National Legal Document Database Fetcher
 
-Fetches ~46,273 central-level Vietnamese legal documents from vbpl.vn,
-the Ministry of Justice's official legal document database.
+Rebuilt for issue #1445. The Ministry of Justice portal this source originally
+read (vbpl.vn) now sits behind a site-wide JavaScript security challenge that
+returns HTTP 403 to every non-browser client, from datacenter *and* residential
+vantages alike, so the old pKetQuaTimKiem.aspx / vbpq-toanvan.aspx path is dead.
+
+The same corpus of central-level Vietnamese legal instruments is published by
+the Government Office's "Hệ thống văn bản" at vanban.chinhphu.vn, which serves
+plain server-rendered HTML and reports 47,710 documents under classid=1
+(văn bản quy phạm pháp luật). Full text is the official signed file attached to
+each record on datafiles.chinhphu.vn (PDF, and DOC/DOCX/RTF for older acts).
 
 Endpoints:
-  - Search/listing: pKetQuaTimKiem.aspx (paginated, 50 per page)
-  - Metadata: pLoadAjaxVN.aspx?ItemID=X (HTML table with properties)
-  - Full text: vbpq-toanvan.aspx?ItemID=X (server-rendered HTML with #toanvancontent)
+  - Listing: /he-thong-van-ban?classid=1&mode=1  (ASP.NET GridView, 50 rows,
+    paged by __doPostBack('...$grvDocument', 'Page$N') — `page=`/`maxresults=`
+    query params are accepted but silently ignored)
+  - Detail:  /?pageid=27160&docid={docid}&classid=1
+  - Files:   https://datafiles.chinhphu.vn/cpp/files/vbpq/...
 """
 
+import argparse
 import html as html_mod
+import io
 import json
 import logging
 import os
@@ -19,353 +31,573 @@ import re
 import sys
 import time
 import urllib.parse
-import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
 
+import requests
+
+# Roughly half of the attached files are image-only scans whose only text layer
+# is the digital-signature stamp, so they reach the OCR fallback in
+# common/pdf_extract. That fallback defaults to English; reading Vietnamese with
+# an English model returns diacritic-stripped nonsense that then fails the
+# is_vietnamese_text() gate below. Must be set before pdf_extract is imported.
+os.environ.setdefault("PDF_OCR_LANG", "vie")
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-BASE_URL = "https://vbpl.vn"
-SEARCH_URL = BASE_URL + "/VBQPPL_UserControls/Publishing/TimKiem/pKetQuaTimKiem.aspx"
-METADATA_URL = BASE_URL + "/VBQPPL_UserControls/Publishing_22/pLoadAjaxVN.aspx"
-FULLTEXT_URL = BASE_URL + "/TW/Pages/vbpq-toanvan.aspx"
-DVID = 13  # Central government
+SOURCE_ID = "VN/PhapLuatGov"
+BASE_URL = "https://vanban.chinhphu.vn"
+LIST_URL = BASE_URL + "/he-thong-van-ban?classid=1&mode=1"
+DETAIL_URL = BASE_URL + "/?pageid=27160&docid={docid}&classid=1"
 ROWS_PER_PAGE = 50
-DELAY = 1.5
-HEADERS = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) LegalDataHunter/1.0"}
+DELAY = 1.0
+TIMEOUT = 90
+MAX_FILE_BYTES = 60_000_000
+# How many documents may fail before a run with nothing to show for itself is
+# called a block rather than a run of bad attachments.
+BLOCK_PROBE_DOCS = 40
 
+USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+)
 
-def http_get(url: str, timeout: int = 30) -> Optional[str]:
-    """Fetch a URL and return decoded text, or None on failure."""
-    req = urllib.request.Request(url, headers=HEADERS)
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            return resp.read().decode("utf-8", errors="replace")
-    except Exception as e:
-        logger.warning(f"HTTP GET failed for {url[:120]}: {e}")
-        return None
+DATA_DIR = Path(__file__).parent / "data"
+INDEX_FILE = DATA_DIR / "index.json"
+RECORDS_FILE = DATA_DIR / "records.jsonl"
+
+# Vietnamese instrument abbreviations, read off the document number suffix
+# (e.g. "61/2026/TT-BXD" -> TT -> Thông tư).
+DOC_TYPE_BY_ABBREV = {
+    "QH": "Luật / Nghị quyết của Quốc hội",
+    "UBTVQH": "Pháp lệnh / Nghị quyết của Ủy ban Thường vụ Quốc hội",
+    "PL": "Pháp lệnh",
+    "L": "Luật",
+    "LCT": "Luật (lệnh công bố)",
+    "CTN": "Lệnh của Chủ tịch nước",
+    "NĐ": "Nghị định",
+    "ND": "Nghị định",
+    "NQ": "Nghị quyết",
+    "QĐ": "Quyết định",
+    "QD": "Quyết định",
+    "TT": "Thông tư",
+    "TTLT": "Thông tư liên tịch",
+    "CT": "Chỉ thị",
+    "HP": "Hiến pháp",
+}
 
 
 def strip_html(text: str) -> str:
-    """Remove HTML tags and clean up whitespace."""
-    text = re.sub(r"<style[^>]*>.*?</style>", "", text, flags=re.DOTALL)
-    text = re.sub(r"<script[^>]*>.*?</script>", "", text, flags=re.DOTALL)
-    text = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)
-    text = re.sub(r"</(?:p|div|tr|li|h[1-6])>", "\n", text, flags=re.IGNORECASE)
+    """Remove HTML tags and entities, collapse whitespace."""
+    text = re.sub(r"<(?:style|script)[^>]*>.*?</(?:style|script)>", "", text, flags=re.DOTALL | re.I)
+    text = re.sub(r"<br\s*/?>", "\n", text, flags=re.I)
+    text = re.sub(r"</(?:p|div|tr|li|h[1-6])>", "\n", text, flags=re.I)
     text = re.sub(r"<[^>]+>", " ", text)
     text = html_mod.unescape(text)
     text = re.sub(r"[ \t]+", " ", text)
-    text = re.sub(r"\n\s*\n", "\n\n", text)
+    text = re.sub(r"\n\s*\n+", "\n\n", text)
     return text.strip()
 
 
-def parse_vn_date(date_str: str) -> Optional[str]:
-    """Parse Vietnamese date format DD/MM/YYYY to ISO 8601."""
-    if not date_str:
+def parse_vn_date(value: str) -> Optional[str]:
+    """Parse a Vietnamese DD/MM/YYYY or DD-MM-YYYY date into ISO 8601."""
+    if not value:
         return None
-    date_str = date_str.strip()
-    for fmt in ("%d/%m/%Y", "%Y-%m-%d"):
+    value = value.strip()
+    for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d"):
         try:
-            return datetime.strptime(date_str, fmt).strftime("%Y-%m-%d")
+            return datetime.strptime(value, fmt).strftime("%Y-%m-%d")
         except ValueError:
             continue
     return None
 
 
-class VBPLFetcher:
-    """Fetcher for Vietnamese legislation from vbpl.vn."""
+def classify(document_number: str) -> Optional[str]:
+    """Map a document number such as '61/2026/TT-BXD' to an instrument type."""
+    if not document_number:
+        return None
+    tail = document_number.split("/")[-1]
+    abbrev = tail.split("-")[0].strip().upper()
+    for key, label in DOC_TYPE_BY_ABBREV.items():
+        if abbrev == key.upper():
+            return label
+    return None
 
-    def __init__(self):
-        self.delay = DELAY
 
-    def search_page(self, page: int = 1) -> List[Dict[str, str]]:
-        """Fetch one page of search results. Returns list of {item_id, title_hint}."""
-        params = {
-            "dvid": str(DVID),
-            "dvid_old": str(DVID),
-            "IsVietNamese": "True",
-            "Page": str(page),
-            "RowPerPage": str(ROWS_PER_PAGE),
-        }
-        url = SEARCH_URL + "?" + urllib.parse.urlencode(params)
-        data = http_get(url)
-        if not data:
-            return []
+def issuing_body_code(document_number: str) -> Optional[str]:
+    """The issuing-body suffix of a document number ('TT-BXD' -> 'BXD')."""
+    if not document_number or "-" not in document_number:
+        return None
+    return document_number.rsplit("-", 1)[-1].strip() or None
 
-        results = []
-        seen = set()
-        # Extract ItemIDs from full-text links
-        for m in re.finditer(
-            r'href="[^"]*vbpq-toanvan\.aspx\?ItemID=(\d+)[^"]*"[^>]*>\s*'
-            r'(.*?)</a>',
-            data,
-            re.DOTALL | re.IGNORECASE,
-        ):
-            item_id = m.group(1)
-            if item_id not in seen:
-                seen.add(item_id)
-                title_hint = strip_html(m.group(2)).strip()[:200]
-                results.append({"item_id": item_id, "title_hint": title_hint})
-        return results
 
-    def get_total_count(self) -> int:
-        """Get total document count from search results."""
-        params = {
-            "dvid": str(DVID),
-            "dvid_old": str(DVID),
-            "IsVietNamese": "True",
-            "Page": "1",
-            "RowPerPage": "1",
-        }
-        url = SEARCH_URL + "?" + urllib.parse.urlencode(params)
-        data = http_get(url)
-        if not data:
-            return 0
-        m = re.search(r"<b>(\d+)</b>", data)
+# Vietnamese-specific letters. A genuine Vietnamese text layer is ~20% of these;
+# a PDF that embeds a legacy TCVN3/VNI font with a private glyph mapping extracts
+# as Latin mojibake ("NGÂN HÀNG NHÀ NƯỚC" -> "xcAxuAIc NEA NTI6c") and scores 0.
+_VIET_CHARS = set(
+    "ăâđêôơư"
+    "àáảãạằắẳẵặầấẩẫậ"
+    "èéẻẽẹềếểễệ"
+    "ìíỉĩị"
+    "òóỏõọồốổỗộờớởỡợ"
+    "ùúủũụừứửữự"
+    "ỳýỷỹỵ"
+)
+MIN_VIET_DENSITY = 0.02
+
+
+def is_vietnamese_text(text: str) -> bool:
+    """
+    True if `text` reads as Vietnamese rather than legacy-font mojibake.
+
+    The two populations are far apart — real extractions land at 0.19-0.22
+    diacritic density, private-encoding ones at exactly 0.0 — so a single
+    threshold separates them without tuning.
+    """
+    if not text:
+        return False
+    lowered = text.lower()
+    hits = sum(1 for ch in lowered if ch in _VIET_CHARS)
+    return hits / len(lowered) >= MIN_VIET_DENSITY
+
+
+def extract_file_text(content: bytes, url: str, doc_id: str) -> Optional[str]:
+    """Extract plain text from an attached PDF / DOC / DOCX / RTF."""
+    ext = urllib.parse.urlparse(url).path.rsplit(".", 1)[-1].lower()
+
+    if ext == "pdf" or content[:5] == b"%PDF-":
+        from common.pdf_extract import extract_pdf_markdown
+
+        return extract_pdf_markdown(
+            SOURCE_ID, doc_id, pdf_bytes=content, table="legislation", force=True
+        )
+
+    if ext == "docx":
+        try:
+            import docx
+
+            document = docx.Document(io.BytesIO(content))
+            return "\n".join(p.text for p in document.paragraphs).strip() or None
+        except Exception as exc:
+            logger.warning("docx extraction failed for %s: %s", url, exc)
+            return None
+
+    if ext == "doc":
+        from common.doc_extract import extract_doc_text
+
+        # Vietnamese legacy Word files store 8-bit runs in the Windows-1258
+        # Vietnamese code page, not the cp1253 default.
+        return extract_doc_text(content, encoding="cp1258")
+
+    if ext == "rtf":
+        try:
+            from striprtf.striprtf import rtf_to_text
+
+            return rtf_to_text(content.decode("utf-8", "replace"), errors="ignore").strip() or None
+        except Exception as exc:
+            logger.warning("rtf extraction failed for %s: %s", url, exc)
+            return None
+
+    logger.warning("Unsupported attachment type %r for %s", ext, url)
+    return None
+
+
+class VanBanFetcher:
+    """Fetcher for Vietnamese legislation from vanban.chinhphu.vn."""
+
+    def __init__(self, delay: float = DELAY):
+        self.delay = delay
+        self.mojibake = 0  # documents dropped for an unreadable legacy-font text layer
+        self.session = requests.Session()
+        self.session.headers.update(
+            {
+                "User-Agent": USER_AGENT,
+                "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
+                "Accept-Language": "vi-VN,vi;q=0.9,en;q=0.8",
+            }
+        )
+
+    # ---------------------------------------------------------------- listing
+
+    def _request(self, method: str, url: str, attempts: int = 5, **kwargs) -> requests.Response:
+        """
+        One listing request, retried through transient failures.
+
+        The grid pages by sequential postback, so a single dropped request used
+        to abort the whole walk — and because the walk ran to completion before
+        any record was written, that cost the entire run (issue #1445).
+        """
+        delay = 5.0
+        last: Optional[Exception] = None
+        for attempt in range(1, attempts + 1):
+            try:
+                resp = self.session.request(method, url, timeout=TIMEOUT, **kwargs)
+                if resp.status_code in (429, 500, 502, 503, 504):
+                    raise requests.HTTPError(f"HTTP {resp.status_code} from {url}")
+                resp.raise_for_status()
+                return resp
+            except Exception as exc:
+                last = exc
+                if attempt == attempts:
+                    break
+                logger.warning("Listing request failed (%s/%s): %s", attempt, attempts, exc)
+                time.sleep(delay)
+                delay = min(delay * 2, 120.0)
+        raise RuntimeError(f"Listing unreachable after {attempts} attempts: {last}")
+
+    @staticmethod
+    def _hidden_fields(page_html: str) -> Dict[str, str]:
+        """Collect the ASP.NET hidden postback fields (__VIEWSTATE et al.)."""
+        fields = {}
+        for tag in re.findall(r'<input[^>]*type="hidden"[^>]*>', page_html, re.I):
+            name = re.search(r'name="([^"]*)"', tag)
+            if not name:
+                continue
+            value = re.search(r'value="([^"]*)"', tag)
+            fields[html_mod.unescape(name.group(1))] = (
+                html_mod.unescape(value.group(1)) if value else ""
+            )
+        return fields
+
+    @staticmethod
+    def total_count(page_html: str) -> int:
+        """Read the 'from - to | total' counter the grid prints below itself."""
+        m = re.search(r'document_page_info"?>\s*[\d\s\-]*\|\s*(\d+)', page_html)
         return int(m.group(1)) if m else 0
 
-    def fetch_metadata(self, item_id: str) -> Dict[str, Optional[str]]:
-        """Fetch structured metadata for a document."""
-        url = f"{METADATA_URL}?IsVietNamese=true&ItemID={item_id}"
-        data = http_get(url)
-        if not data:
-            return {}
+    @staticmethod
+    def parse_rows(page_html: str) -> List[Dict[str, Any]]:
+        """Parse one grid page into row dicts (docid, number, date, title, files)."""
+        start = page_html.find('class="table search-result"')
+        if start == -1:
+            return []
+        end = page_html.find("</table>", start)
+        grid = page_html[start : end if end != -1 else len(page_html)]
 
-        meta = {}
-        # Title
-        m = re.search(r'class="title"[^>]*>(.*?)</td>', data, re.DOTALL)
-        if m:
-            meta["title"] = strip_html(m.group(1)).strip()
+        rows = []
+        for cell in re.split(r"<tr[^>]*>", grid)[1:]:
+            docid = re.search(r"docid=(\d+)", cell)
+            if not docid:
+                continue
+            number = re.search(r'<span class="code">(.*?)</span>', cell, re.DOTALL)
+            title = re.search(r'<span class="substract">(.*?)</span>', cell, re.DOTALL)
+            date = re.search(r'<span class="issued-date">(.*?)</span>', cell, re.DOTALL)
+            files = re.findall(r'<div class="bl-doc-file"><a href="([^"]+)"', cell)
 
-        # Extract label-value pairs from the table
-        pairs = re.findall(
-            r'class="label"[^>]*>\s*(.*?)</td>\s*<td[^>]*>(.*?)</td>',
-            data,
-            re.DOTALL,
+            raw_number = strip_html(number.group(1)) if number else ""
+            rows.append(
+                {
+                    "docid": docid.group(1),
+                    "document_number": None if raw_number in ("", ".") else raw_number,
+                    "title": strip_html(title.group(1)) if title else "",
+                    "date": parse_vn_date(strip_html(date.group(1))) if date else None,
+                    "files": [html_mod.unescape(f) for f in files],
+                }
+            )
+        return rows
+
+    def iter_index(self, max_pages: Optional[int] = None) -> Iterator[Dict[str, Any]]:
+        """
+        Walk the whole listing, yielding one row dict per document.
+
+        The grid pages only via __doPostBack, so pages must be requested in
+        order — each response carries the __VIEWSTATE needed for the next.
+        """
+        page_html = self._request("GET", LIST_URL).text
+        total = self.total_count(page_html)
+        if not total:
+            # An empty counter means the grid did not render: a block page or a
+            # layout change, never a genuinely empty corpus (the portal reports
+            # ~47,700 documents). Fail loud rather than write zero records.
+            raise RuntimeError(
+                f"{LIST_URL} returned no result counter — the listing is blocked "
+                "or its markup changed; refusing to report an empty corpus"
+            )
+        total_pages = (total + ROWS_PER_PAGE - 1) // ROWS_PER_PAGE
+        if max_pages:
+            total_pages = min(total_pages, max_pages)
+        logger.info("Listing reports %d documents across %d pages", total, total_pages)
+
+        target = re.search(r"__doPostBack\(&#39;([^&]+?)&#39;,&#39;Page\$", page_html)
+        event_target = html_mod.unescape(target.group(1)) if target else None
+
+        seen = set()
+        for page in range(1, total_pages + 1):
+            if page > 1:
+                if not event_target:
+                    logger.warning("No grid postback target found; stopping at page 1")
+                    break
+                fields = self._hidden_fields(page_html)
+                fields["__EVENTTARGET"] = event_target
+                fields["__EVENTARGUMENT"] = f"Page${page}"
+                page_html = self._request(
+                    "POST", LIST_URL, data=fields, headers={"Referer": LIST_URL}
+                ).text
+                time.sleep(self.delay)
+
+            rows = self.parse_rows(page_html)
+            if not rows:
+                logger.warning("Page %d parsed 0 rows — stopping", page)
+                break
+            fresh = 0
+            for row in rows:
+                if row["docid"] in seen:
+                    continue
+                seen.add(row["docid"])
+                fresh += 1
+                yield row
+            logger.info("Page %d/%d: %d rows (%d new, %d total)", page, total_pages, len(rows), fresh, len(seen))
+            if fresh == 0:
+                # The grid stopped advancing — treat as end of corpus rather
+                # than spinning on a repeated page.
+                logger.warning("Page %d repeated the previous page — stopping", page)
+                break
+
+    def walk_index(self) -> Iterator[Dict[str, Any]]:
+        """
+        Yield every listing row, reusing a completed cached index if one exists.
+
+        Callers consume this lazily and fetch each document as it arrives, so a
+        run that dies at page 700 still leaves ~35,000 records on disk. The
+        cache is written page by page and only marked complete once the walk
+        reaches the end, so a partial file is never mistaken for the corpus.
+        """
+        cache = self._load_index_cache()
+        if cache is not None:
+            logger.info("Loaded cached index: %d documents", len(cache))
+            yield from cache
+            return
+
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        rows: List[Dict[str, Any]] = []
+        complete = False
+        try:
+            for row in self.iter_index():
+                rows.append(row)
+                if len(rows) % ROWS_PER_PAGE == 0:
+                    self._save_index_cache(rows, complete=False)
+                yield row
+            complete = True
+        finally:
+            self._save_index_cache(rows, complete=complete)
+
+    @staticmethod
+    def _load_index_cache() -> Optional[List[Dict[str, Any]]]:
+        if not INDEX_FILE.exists():
+            return None
+        try:
+            cached = json.loads(INDEX_FILE.read_text(encoding="utf-8"))
+        except Exception as exc:
+            logger.warning("Unreadable index cache, rebuilding: %s", exc)
+            return None
+        if isinstance(cached, dict):
+            return cached["rows"] if cached.get("complete") else None
+        # Pre-#1445 caches were a bare list with no completeness marker; they
+        # may be a truncated walk, so re-walk rather than trust them.
+        return None
+
+    @staticmethod
+    def _save_index_cache(rows: List[Dict[str, Any]], complete: bool) -> None:
+        INDEX_FILE.write_text(
+            json.dumps({"complete": complete, "rows": rows}, ensure_ascii=False),
+            encoding="utf-8",
         )
-        for label_raw, value_raw in pairs:
-            label = strip_html(label_raw).strip().lower()
-            value = strip_html(value_raw).strip()
-            if not value or value == "-":
+
+    # --------------------------------------------------------------- document
+
+    def fetch_text(self, row: Dict[str, Any]) -> Optional[str]:
+        """Download the first attachment that yields usable text."""
+        for url in row["files"]:
+            try:
+                resp = self.session.get(url, timeout=TIMEOUT, stream=True)
+                resp.raise_for_status()
+                content = resp.raw.read(MAX_FILE_BYTES + 1, decode_content=True)
+            except Exception as exc:
+                logger.warning("Download failed for %s: %s", url, exc)
+                continue
+            if len(content) > MAX_FILE_BYTES:
+                logger.warning("Attachment over %d bytes, skipping: %s", MAX_FILE_BYTES, url)
                 continue
 
-            if "ký hiệu" in label or "số" in label:
-                meta["document_number"] = value
-            elif "ngày ban hành" in label:
-                meta["issue_date"] = parse_vn_date(value)
-            elif "loại văn bản" in label:
-                meta["document_type"] = value
-            elif "phạm vi" in label:
-                meta["scope"] = value
-            elif "ngày đăng công báo" in label:
-                meta["gazette_date"] = parse_vn_date(value)
-            elif "ngành" in label:
-                meta["sector"] = value
-            elif "lĩnh vực" in label:
-                meta["field"] = value
-            elif "cơ quan ban hành" in label or "chức danh" in label:
-                meta["issuing_authority"] = value
+            text = extract_file_text(content, url, row["docid"])
+            if not text or len(text.strip()) <= 200:
+                continue
+            if not is_vietnamese_text(text):
+                # Legacy-font PDF: the text layer decodes to mojibake, which is
+                # worse than no record at all. Recovering it needs OCR with a
+                # Vietnamese language pack, which the fleet image lacks.
+                self.mojibake += 1
+                logger.warning("Legacy-font (unreadable) text layer, skipping: %s", url)
+                continue
+            return text.strip()
+        return None
 
-        # Effective date from fulltext page info div
-        eff_m = re.search(r"Ngày có hiệu lực.*?(\d{2}/\d{2}/\d{4})", data)
-        if eff_m:
-            meta["effective_date"] = parse_vn_date(eff_m.group(1))
-
-        # Status
-        status_m = re.search(r"Hiệu lực.*?</span>\s*(.*?)</", data, re.DOTALL)
-        if status_m:
-            meta["status"] = strip_html(status_m.group(1)).strip()
-
-        return meta
-
-    def fetch_fulltext(self, item_id: str) -> Optional[str]:
-        """Fetch the full text content of a document."""
-        url = f"{FULLTEXT_URL}?ItemID={item_id}"
-        data = http_get(url, timeout=60)
-        if not data:
-            return None
-
-        # Extract from toanvancontent div
-        idx = data.find('id="toanvancontent"')
-        if idx == -1:
-            # Fallback: look for the content div inside fulltext
-            idx = data.find('class="fulltext"')
-            if idx == -1:
-                logger.warning(f"No content div found for ItemID={item_id}")
-                return None
-
-        # Go back to find the opening div tag
-        start = data.rfind("<div", 0, idx)
-        if start == -1:
-            start = idx
-
-        # Extract a large chunk and strip HTML
-        # Find a reasonable end boundary - the footer area
-        end_markers = [
-            "File đính kèm:",
-            "CƠ SỞ DỮ LIỆU",
-            'class="footer"',
-            'id="footer"',
-            "Gửi phản hồi",
-        ]
-        end = len(data)
-        for marker in end_markers:
-            m_idx = data.find(marker, start)
-            if m_idx != -1 and m_idx < end:
-                end = m_idx
-
-        chunk = data[start:end]
-        text = strip_html(chunk)
-
-        # Remove the metadata header that sometimes appears at the top
-        text = re.sub(
-            r"^.*?(?:Hiệu lực:.*?(?:\d{2}/\d{2}/\d{4}))\s*",
-            "",
-            text,
-            count=1,
-            flags=re.DOTALL,
-        )
-
-        return text.strip() if len(text) > 50 else None
-
-    def fetch_document(self, item_id: str) -> Optional[Dict[str, Any]]:
-        """Fetch complete document: metadata + full text."""
-        meta = self.fetch_metadata(item_id)
-        time.sleep(self.delay)
-
-        text = self.fetch_fulltext(item_id)
-        time.sleep(self.delay)
-
+    def normalize(self, raw: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Turn an index row plus its attachment text into the standard schema."""
+        text = raw.get("text") or self.fetch_text(raw)
         if not text:
-            logger.warning(f"No full text for ItemID={item_id}")
             return None
 
-        title = meta.get("title", "")
-        issue_date = meta.get("issue_date")
-
+        number = raw.get("document_number")
         return {
-            "_id": f"VN-VBPL-{item_id}",
-            "_source": "VN/PhapLuatGov",
+            "_id": f"VN-VBCP-{raw['docid']}",
+            "_source": SOURCE_ID,
             "_type": "legislation",
             "_fetched_at": datetime.now(timezone.utc).isoformat(),
-            "title": title,
+            "title": raw.get("title") or number or f"Văn bản {raw['docid']}",
             "text": text,
-            "date": issue_date,
-            "url": f"{FULLTEXT_URL}?ItemID={item_id}",
-            "document_number": meta.get("document_number"),
-            "document_type": meta.get("document_type"),
-            "issuing_authority": meta.get("issuing_authority"),
-            "effective_date": meta.get("effective_date"),
-            "gazette_date": meta.get("gazette_date"),
-            "status": meta.get("status"),
-            "scope": meta.get("scope"),
-            "sector": meta.get("sector"),
-            "field": meta.get("field"),
-            "item_id": item_id,
+            "date": raw.get("date"),
+            "url": DETAIL_URL.format(docid=raw["docid"]),
+            "document_number": number,
+            "document_type": classify(number or ""),
+            "issuing_authority": issuing_body_code(number or ""),
+            "file_url": raw["files"][0] if raw.get("files") else None,
+            "language": "vi",
+            "country": "VN",
+            "docid": raw["docid"],
         }
 
-    def normalize(self, raw: Dict[str, Any]) -> Dict[str, Any]:
-        """Already normalized during fetch."""
-        return raw
-
-    def fetch_all(self) -> Iterator[Dict[str, Any]]:
-        """Yield all documents from vbpl.vn central database."""
-        total = self.get_total_count()
-        logger.info(f"Total documents: {total}")
-        total_pages = (total + ROWS_PER_PAGE - 1) // ROWS_PER_PAGE
-
-        for page in range(1, total_pages + 1):
-            logger.info(f"Fetching search page {page}/{total_pages}")
-            results = self.search_page(page)
-            if not results:
-                logger.warning(f"Empty page {page}, stopping")
-                break
-
-            for item in results:
-                doc = self.fetch_document(item["item_id"])
-                if doc:
-                    yield doc
-                time.sleep(self.delay)
+    def fetch_all(self, limit: Optional[int] = None, skip_ids: Optional[set] = None) -> Iterator[Dict[str, Any]]:
+        """Yield every document with full text, streaming as the listing is walked."""
+        skip_ids = skip_ids or set()
+        emitted = 0
+        attempted = 0
+        for row in self.walk_index():
+            if f"VN-VBCP-{row['docid']}" in skip_ids:
+                continue
+            if not row.get("files"):
+                continue
+            attempted += 1
+            try:
+                doc = self.normalize(row)
+            except Exception as exc:
+                # One unreadable attachment must not end the crawl.
+                logger.warning("docid=%s failed: %s", row["docid"], exc)
+                doc = None
+            time.sleep(self.delay)
+            if not doc:
+                logger.warning("No full text for docid=%s", row["docid"])
+                if attempted >= BLOCK_PROBE_DOCS and emitted == 0:
+                    raise RuntimeError(
+                        f"{attempted} documents attempted and none yielded text — "
+                        "datafiles.chinhphu.vn is refusing this vantage or the "
+                        "attachment scheme changed"
+                    )
+                continue
+            yield doc
+            emitted += 1
+            if limit and emitted >= limit:
+                return
 
     def fetch_updates(self, since: str) -> Iterator[Dict[str, Any]]:
-        """Fetch documents updated since a given date (ISO format)."""
-        # vbpl.vn doesn't have a direct date-filtered endpoint,
-        # so we paginate from page 1 (newest first) and stop when
-        # documents are older than 'since'.
-        since_dt = datetime.fromisoformat(since)
-        for page in range(1, 100):
-            results = self.search_page(page)
-            if not results:
-                break
-            all_old = True
-            for item in results:
-                doc = self.fetch_document(item["item_id"])
-                if doc and doc.get("date"):
-                    try:
-                        doc_dt = datetime.fromisoformat(doc["date"])
-                        if doc_dt >= since_dt:
-                            all_old = False
-                            yield doc
-                    except (ValueError, TypeError):
-                        yield doc
-                elif doc:
-                    yield doc
-                time.sleep(self.delay)
-            if all_old:
-                break
+        """Yield documents issued on or after `since` (the listing is newest-first)."""
+        since_date = since[:10]
+        for row in self.iter_index():
+            if row.get("date") and row["date"] < since_date:
+                return
+            if not row.get("files"):
+                continue
+            doc = self.normalize(row)
+            time.sleep(self.delay)
+            if doc:
+                yield doc
 
 
-def bootstrap_sample(sample_dir: Path, count: int = 15):
-    """Fetch sample documents and save to sample directory."""
+def _existing_ids() -> set:
+    """Ids already streamed to records.jsonl, so a re-launch resumes."""
+    if not RECORDS_FILE.exists():
+        return set()
+    ids = set()
+    with open(RECORDS_FILE, encoding="utf-8") as fh:
+        for line in fh:
+            try:
+                ids.add(json.loads(line)["_id"])
+            except Exception:
+                continue
+    logger.info("Resuming: %d records already written", len(ids))
+    return ids
+
+
+def bootstrap_sample(count: int = 15) -> int:
+    """Fetch a handful of documents into sample/ for validation."""
+    sample_dir = Path(__file__).parent / "sample"
     sample_dir.mkdir(parents=True, exist_ok=True)
-    fetcher = VBPLFetcher()
-
-    total = fetcher.get_total_count()
-    logger.info(f"vbpl.vn reports {total} central-level documents")
-
-    # Fetch first page of results
-    results = fetcher.search_page(1)
-    logger.info(f"Got {len(results)} results from page 1")
+    fetcher = VanBanFetcher()
 
     saved = 0
-    for item in results[:count]:
-        item_id = item["item_id"]
-        logger.info(f"Fetching document ItemID={item_id}")
-
-        doc = fetcher.fetch_document(item_id)
-        if not doc:
-            logger.warning(f"Skipping ItemID={item_id} (no content)")
+    for row in fetcher.iter_index(max_pages=2):
+        if saved >= count:
+            break
+        if not row.get("files"):
             continue
-
-        text_len = len(doc.get("text", ""))
-        logger.info(f"  Title: {doc.get('title', 'N/A')[:80]}")
-        logger.info(f"  Text: {text_len} chars")
-
-        out_file = sample_dir / f"{doc['_id']}.json"
-        with open(out_file, "w", encoding="utf-8") as f:
-            json.dump(doc, f, ensure_ascii=False, indent=2)
-
+        doc = fetcher.normalize(row)
+        time.sleep(fetcher.delay)
+        if not doc:
+            continue
+        (sample_dir / f"{doc['_id']}.json").write_text(
+            json.dumps(doc, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
         saved += 1
-        logger.info(f"  Saved ({saved}/{count})")
-
-    logger.info(f"Bootstrap complete: {saved} documents saved to {sample_dir}")
+        logger.info("[%d/%d] %s — %d chars", saved, count, doc["_id"], len(doc["text"]))
+    logger.info("Bootstrap complete: %d documents saved to %s", saved, sample_dir)
     return saved
 
 
-if __name__ == "__main__":
-    source_dir = Path(__file__).parent
-    sample_dir = source_dir / "sample"
+def bootstrap_full() -> int:
+    """Stream the whole corpus to data/records.jsonl, resuming if interrupted."""
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    fetcher = VanBanFetcher()
+    skip = _existing_ids()
+    written = len(skip)
 
-    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap":
-        sample_flag = "--sample" in sys.argv
-        count = 15 if sample_flag else 50
-        saved = bootstrap_sample(sample_dir, count)
-        if saved < 10:
-            logger.error(f"Only {saved} documents saved, expected at least 10")
-            sys.exit(1)
-    else:
-        print("Usage: python3 bootstrap.py bootstrap [--sample]")
-        print("  bootstrap --sample  Fetch 15 sample documents")
-        print("  bootstrap           Fetch 50 sample documents")
+    with open(RECORDS_FILE, "a", encoding="utf-8") as out:
+        for doc in fetcher.fetch_all(skip_ids=skip):
+            out.write(json.dumps(doc, ensure_ascii=False) + "\n")
+            out.flush()
+            written += 1
+            if written % 100 == 0:
+                logger.info("bootstrap_fast progress: %d written", written)
+    logger.info(
+        "bootstrap_fast complete: %d fetched (%d dropped — legacy-font text layer)",
+        written,
+        fetcher.mojibake,
+    )
+    return written
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Vietnam VBQPPL fetcher (vanban.chinhphu.vn)")
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "update"])
+    parser.add_argument("--sample", action="store_true", help="fetch a 15-record sample")
+    parser.add_argument("--full", action="store_true", help="stream the full corpus")
+    parser.add_argument("--since", help="ISO date for `update`")
+    args = parser.parse_args()
+
+    if args.command == "update":
+        fetcher = VanBanFetcher()
+        since = args.since or datetime.now(timezone.utc).strftime("%Y-01-01")
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        count = 0
+        with open(RECORDS_FILE, "a", encoding="utf-8") as out:
+            for doc in fetcher.fetch_updates(since):
+                out.write(json.dumps(doc, ensure_ascii=False) + "\n")
+                count += 1
+        logger.info("update complete: %d records since %s", count, since)
+        return 0
+
+    if args.command == "bootstrap-fast" or args.full:
+        return 0 if bootstrap_full() > 0 else 1
+
+    saved = bootstrap_sample()
+    if saved < 10:
+        logger.error("Only %d documents saved, expected at least 10", saved)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,30 @@
+{
+  "_id": "FR/CADA/20214779",
+  "_source": "FR/CADA",
+  "_type": "doctrine",
+  "_fetched_at": "2026-08-06T21:54:03.318450+00:00",
+  "opinion_id": "20214779",
+  "title": "Avis 20214779 - Ministère de la transition écologique et de la cohésion des territoires",
+  "date": "2021-09-23",
+  "url": "https://www.data.gouv.fr/explore/cada/20214779",
+  "text": "Monsieur X, pour le compte de la société anonyme X, a saisi la Commission d'accès aux documents administratifs, par courrier enregistré à son secrétariat le 13 juillet 2021, à la suite du refus opposé par la ministre de la transition écologique à sa demande de communication de l'intégralité du texte de la décision rendue par le ministère, contre la société X, le X, portant sanction dans le cadre du dispositif des certificats d'économies d'énergie.\n\nLa commission rappelle qu'aux termes de l'article L311-6 du code des relations entre le public et l'administration, ne sont communicables qu'aux personnes intéressées, les documents administratifs dont la communication ferait apparaître le comportement d'une personne, physique ou morale, dès lors que la divulgation de ce comportement pourrait lui porter préjudice. Elle estime qu’en application de cette disposition, le document sollicité, qui porte le détail d'une sanction administrative prononcée par le ministre chargé de l'énergie sur le fondement de l'article L222-2 du code de l'énergie, n'est pas communicables aux tiers. Elle émet donc un avis défavorable.",
+  "subject": "",
+  "administration": "Ministère de la transition écologique et de la cohésion des territoires",
+  "meanings": [
+    "Défavorable",
+    "Comportement"
+  ],
+  "topics": [
+    "Economie",
+    "Industrie",
+    "Agriculture",
+    "Régulation Économique"
+  ],
+  "tags": [
+    "Contrôle",
+    "Energies fossiles",
+    "Energies renouvelables"
+  ],
+  "part": "III",
+  "type": "Avis"
+}

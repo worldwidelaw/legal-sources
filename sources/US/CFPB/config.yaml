@@ -31,10 +31,13 @@ schema:
   - name: status
     required: false
     type: string
-  - name: action_type
+  - name: forum
     required: false
     type: string
   - name: products
+    required: false
+    type: string
+  - name: pdf_urls
     required: false
     type: string
 source_id: US/CFPB

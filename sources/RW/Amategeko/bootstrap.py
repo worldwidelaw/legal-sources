@@ -89,13 +89,38 @@ def get_file_info(document_id: int) -> Optional[dict]:
     return None
 
 
-def download_pdf(file_path: str) -> Optional[bytes]:
-    """Download a PDF file from the API."""
-    url = f"{API_BASE}/files/download"
+def get_file_url(file_id: int) -> Optional[str]:
+    """Resolve a file's presigned download URL via the per-file detail endpoint."""
+    resp = SESSION.get(f"{API_BASE}/documents-files/{file_id}", timeout=60)
+    resp.raise_for_status()
+    return (resp.json().get("data") or {}).get("file_url")
+
+
+def download_pdf(file_id: int, file_path: str = "") -> Optional[bytes]:
+    """Download a document PDF.
+
+    The ``files/download`` endpoint only serves files still sitting in the
+    upstream ``tmp/`` staging area, so it 404s for everything but the newest
+    uploads. The per-file detail endpoint returns a presigned
+    files.amategeko.gov.rw URL that works for the whole archive; the staging
+    endpoint is kept as a fallback.
+    """
     try:
-        resp = SESSION.post(url, data={"path": file_path}, timeout=120)
+        url = get_file_url(file_id)
+        if url:
+            resp = SESSION.get(url, timeout=180)
+            resp.raise_for_status()
+            if resp.content[:4] == b"%PDF":
+                return resp.content
+    except Exception as e:
+        logger.warning(f"Presigned download failed for file {file_id}: {e}")
+
+    if not file_path:
+        return None
+    try:
+        resp = SESSION.post(f"{API_BASE}/files/download", data={"path": file_path}, timeout=120)
         resp.raise_for_status()
-        if resp.headers.get("Content-Type", "").startswith("application/pdf") or len(resp.content) > 100:
+        if resp.content[:4] == b"%PDF":
             return resp.content
     except Exception as e:
         logger.warning(f"Failed to download PDF {file_path}: {e}")
@@ -129,12 +154,9 @@ def fetch_document(record: dict) -> Optional[dict]:
 
     file_obj = file_info.get("file", {})
     file_path = file_obj.get("path", "")
-    if not file_path:
-        logger.warning(f"No file path for document {doc_id}: {name}")
-        return None
 
     # Download PDF
-    pdf_bytes = download_pdf(file_path)
+    pdf_bytes = download_pdf(file_info.get("id", file_id), file_path)
     if not pdf_bytes:
         logger.warning(f"Failed to download PDF for document {doc_id}: {name}")
         return None
@@ -291,6 +313,11 @@ def bootstrap(sample: bool = False):
 
 
 if __name__ == "__main__":
+    # `bootstrap-fast` is the fleet runner's entry point; this CLI
+    # dispatches on the literal command name, so alias it onto the full
+    # bootstrap rather than exiting 1 (VPS CLI mismatch, issue #602).
+    if len(sys.argv) > 1 and sys.argv[1] == "bootstrap-fast":
+        sys.argv[1] = "bootstrap"
     parser = argparse.ArgumentParser(description="RW/Amategeko fetcher")
     sub = parser.add_subparsers(dest="command")
 

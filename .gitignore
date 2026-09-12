@@ -11,6 +11,10 @@
 secrets/
 *.key
 *.pem
+# Exception: the CA intermediates ssl_aia ships so a worker with no plain-HTTP
+# egress can still repair a misconfigured TLS chain (#1514). These are PUBLIC
+# CA certificates — never private keys, which stay covered by the rules above.
+!common/ca_intermediates/*.pem
 .auth-token
 .github-token
 .session.lock
@@ -58,3 +62,4 @@ logs/
 .checkpoint.json
 checkpoint.json
 sources/**/checkpoint.json
+sources/**/*checkpoint*.json

@@ -33,6 +33,7 @@ Usage:
 
 import sys
 import json
+import argparse
 import logging
 import re
 import io
@@ -200,12 +201,18 @@ class SanMarinoLegislationScraper(BaseScraper):
         return documents
 
     def _download_and_extract_pdf(self, doc_id: str) -> str:
-        """Extract text from PDF using centralized extractor."""
+        """
+        Extract text from a document's PDF.
+
+        `doc_id` is the bulletin's hash ID, not PDF bytes — getDocBU serves the
+        PDF directly, so pass its URL and let the extractor do the download.
+        """
         return extract_pdf_markdown(
             source="SM/Legisammarino",
-            source_id="",
-            pdf_bytes=doc_id,
+            source_id=doc_id,
+            pdf_url=f"{BASE_URL}/on-line/RicercaBU?operation=getDocBU&id={doc_id}",
             table="legislation",
+            force=True,
         ) or ""
 
     def _iterate_bulletins(self, sample_mode: bool = False, sample_size: int = 12) -> Generator[Dict[str, Any], None, None]:
@@ -439,31 +446,37 @@ class SanMarinoLegislationScraper(BaseScraper):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="SM/Legisammarino Data Fetcher")
+    parser.add_argument("command", choices=["bootstrap", "bootstrap-fast", "update", "test"])
+    parser.add_argument("--sample", action="store_true")
+    parser.add_argument("--sample-size", type=int, default=12)
+    parser.add_argument("--full", action="store_true",
+                        help="Fetch the full corpus (accepted for VPS wrapper compatibility)")
+    parser.add_argument("--workers", type=int, default=None)
+    parser.add_argument("--batch-size", type=int, default=100)
+
+    args = parser.parse_args()
     scraper = SanMarinoLegislationScraper()
 
-    if len(sys.argv) < 2:
-        print(
-            "Usage: python bootstrap.py [bootstrap|update|test] "
-            "[--sample] [--sample-size N]"
-        )
-        sys.exit(1)
-
-    command = sys.argv[1]
-    sample_mode = "--sample" in sys.argv
-    sample_size = 12  # Default to 12 for validation
-    if "--sample-size" in sys.argv:
-        idx = sys.argv.index("--sample-size")
-        sample_size = int(sys.argv[idx + 1])
-
-    if command == "test":
+    if args.command == "test":
         scraper.test_connection()
+        return
 
-    elif command == "bootstrap":
-        if sample_mode:
-            stats = scraper.run_sample(n=sample_size)
+    if args.command in ("bootstrap", "bootstrap-fast"):
+        if args.sample:
+            stats = scraper.run_sample(n=args.sample_size)
             print(
                 f"\nSample complete: "
                 f"{stats.get('sample_records_saved', 0)} records saved to sample/"
+            )
+        elif args.command == "bootstrap-fast":
+            stats = scraper.bootstrap_fast(
+                max_workers=args.workers, batch_size=args.batch_size
+            )
+            print(
+                f"\nBootstrap complete: {stats['records_new']} new, "
+                f"{stats['records_updated']} updated, "
+                f"{stats['records_skipped']} skipped"
             )
         else:
             stats = scraper.bootstrap()
@@ -472,19 +485,14 @@ def main():
                 f"{stats['records_updated']} updated, "
                 f"{stats['records_skipped']} skipped"
             )
-        print(json.dumps(stats, indent=2))
-
-    elif command == "update":
+    else:
         stats = scraper.update()
         print(
             f"\nUpdate complete: {stats['records_new']} new, "
             f"{stats['records_updated']} updated"
         )
-        print(json.dumps(stats, indent=2))
 
-    else:
-        print(f"Unknown command: {command}")
-        sys.exit(1)
+    print(json.dumps(stats, indent=2))
 
 
 if __name__ == "__main__":

@@ -29,17 +29,29 @@ rate_limit:
   burst: 1
 
 api:
-  type: "html_scraping"
-  base_url: "https://leginfo.legislature.ca.gov"
+  type: "bulk_download"
+  base_url: "https://downloads.leginfo.legislature.ca.gov"
   endpoints:
-    toc: "/faces/codedisplayexpand.xhtml?tocCode={code}"
-    section_list: "/faces/codes_displayText.xhtml?lawCode={code}&division={div}&title={title}&part={part}&chapter={ch}&article={art}"
-    section_text: "/faces/codes_displaySection.xhtml?lawCode={code}&sectionNum={num}"
+    listing: "/"
+    session_dump: "/pubinfo_{session_year}.zip"
+  bulk:
+    # LAW_SECTION_TBL.dat is tab-delimited with the body spilled into a
+    # LAW_SECTION_TBL_{n}.lob sibling; LAW_TOC_TBL.dat supplies the
+    # division/title/part/chapter headings. Schema: pubinfo_Readme.pdf.
+    tables: ["LAW_SECTION_TBL.dat", "LAW_TOC_TBL.dat"]
+    approx_size_gb: 1.2
+  fallback:
+    type: "html_scraping"
+    base_url: "https://leginfo.legislature.ca.gov"
+    endpoints:
+      toc: "/faces/codedisplayexpand.xhtml?tocCode={code}"
+      section_list: "/faces/codes_displayText.xhtml?lawCode={code}&division={div}&title={title}&part={part}&chapter={ch}&article={art}"
+      section_text: "/faces/codes_displaySection.xhtml?lawCode={code}&sectionNum={num}"
 
 data_model:
   type: "legislation"
   primary_key: "section_id"
-  update_strategy: "full_replace"
+  update_strategy: "incremental"
   dedup_key:
     - "section_id"
 
@@ -72,13 +84,26 @@ schema:
       role: "classification"
       required: true
     - name: "date"
-      description: "Date fetched (ISO 8601)"
+      description: "Operative date. From the dump's EFFECTIVE_DATE column; on the fallback walk, parsed from the section's closing provenance line. Never the crawl date."
       type: "date"
       role: "temporal_key"
       required: true
+    - name: "date_precision"
+      description: "'day' for a dated EFFECTIVE_DATE or explicit Effective date, 'year' when the fallback walk could derive only a chaptering year"
+      type: "string"
+      role: "temporal_key"
+      required: false
 
 notes: |
-  - 29 California Codes with tens of thousands of sections
-  - Full text scraped from official LegInfo website
+  - 30 code collections (29 statutory codes + the California Constitution),
+    162,429 operative sections in the 2025 session dump
+  - Primary path is the Legislature's PUBINFO bulk export, one ~1.2GB zip.
+    The per-section HTML walk it replaced cost ~70h per refresh against a
+    100h fleet cap and never reached the Constitution (#1506).
+  - `update` compares the zip's Last-Modified against data/dump_state.json;
+    unchanged means a one-HEAD-request no-op, changed means a re-read with a
+    per-section text-hash diff so only real amendments are emitted.
+  - The HTML walk survives behind `--walk` and as an automatic fallback if
+    downloads.leginfo stops serving the law tables. It still checkpoints to
+    data/checkpoint.json at TOC-leaf granularity.
   - Public domain (California government works)
-  - Rate-limited to respect the 10-second crawl delay in robots.txt

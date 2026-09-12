@@ -1,6 +1,13 @@
 fetch:
-  rate_limit_delay: 2
+  rate_limit_delay: 0
   sample_size: 15
+# Upstream pacing is enforced inside fetch_all by a bounded thread pool
+# (MAX_WORKERS in bootstrap.py), so the outer per-record limiter only needs to
+# stay out of the way — throttling it here would starve the writer.
+rate_limit:
+  requests_per_second: 25
+  burst: 25
+  max_workers: 8
 schema:
   key_fields:
   - name: _id

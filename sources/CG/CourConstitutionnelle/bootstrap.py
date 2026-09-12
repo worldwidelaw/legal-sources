@@ -9,7 +9,7 @@ Strategy:
   - JSON API at /api/documents?type=DECISION_COUR_CONSTITUTIONNELLE&page=N&limit=20
   - Also fetches AVIS (opinions) — same API, different type
   - Each document has a fileUrl pointing to a PDF
-  - Download PDF, extract text with PyPDF2
+  - Download PDF, extract text via common.pdf_extract (pdfplumber/pypdf/OCR chain)
   - ~54 documents total (41 decisions + 2 avis + others)
 
 Usage:
@@ -61,7 +61,19 @@ SESSION.headers.update({
 
 
 def _extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract text from PDF bytes using PyPDF2."""
+    """Extract text from PDF bytes via the shared multi-backend extractor.
+
+    Uses common.pdf_extract's chain (opendataloader → pdfplumber → pypdf →
+    OCR) so extraction does not depend on PyPDF2, which is absent from the
+    fleet VPS image (issue #1242). Falls back to PyPDF2 only if the shared
+    helper itself is unavailable.
+    """
+    try:
+        from common.pdf_extract import _extract as _shared_extract
+        return (_shared_extract(pdf_bytes) or "").strip()
+    except Exception as e:
+        logger.warning("shared PDF extraction failed: %s", e)
+
     try:
         import PyPDF2
         reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))

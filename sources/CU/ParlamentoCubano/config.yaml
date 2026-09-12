@@ -17,6 +17,7 @@ schema:
     - url
     - law_number
     - law_type
+    - gazette_code
 
 license:
   name: Open Government Data (Cuba)

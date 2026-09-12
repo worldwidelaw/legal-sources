@@ -1,0 +1,62 @@
+source:
+  id: "EU/Budgets"
+  name: "EU — Budgets, Amending Budgets & Statements of Revenue and Expenditure"
+  country: "EU"
+  language: "en"
+
+  # Full text is retrieved from the EU Publications Office (CELLAR / EUR-Lex),
+  # where the Union's budgetary acts are stored with a CELEX number in sector 3,
+  # document class "B" — 3{YYYY}B{NNNN}. The B descriptor covers the statements
+  # of revenue and expenditure of the EU institutions, agencies and joint
+  # undertakings (one per body per financial year), their amending budgets, and
+  # the definitive adoption of the general budget of the European Union.
+  # A distinct, additive corpus to EU/EUR-Lex, which enumerates sector 3 by the
+  # binding resource-types only (REG / DIR / DEC and their implementing/delegated
+  # variants) and never pulls budgetary acts. C-series acts under the "Y"
+  # descriptor (EU/OJC-Acts) and Council resolutions under "G"
+  # (EU/CouncilResolutions) are different sets of CELEX works — no _id collision
+  # — so "B" is not otherwise captured.
+  # Enumeration is via the public CELLAR SPARQL endpoint (the sector-3 B corpus is
+  # ~4,325 rows, under the OFFSET ceiling, so a single paged sweep suffices).
+  # Full text via CELLAR content negotiation: xHTML for modern acts, OJ HTML via
+  # the language-suffixed CELEX (.ENG) for older ones, born-digital PDF (PyMuPDF)
+  # for the remainder — all of which bypass the eur-lex.europa.eu AWS-WAF that
+  # 202-challenges datacenter IPs, so it is fleet-safe. Same recipe as
+  # EU/CouncilResolutions and EU/OJC-Acts.
+  endpoints:
+    sparql: "http://publications.europa.eu/webapi/rdf/sparql"
+    cellar_celex: "http://publications.europa.eu/resource/celex/{celex}"
+
+  data_types:
+    - doctrine
+
+  rate_limit:
+    requests_per_second: 1
+    delay_between_requests: 1
+
+  schema:
+    key_fields:
+      _id:
+        type: string
+        required: true
+      title:
+        type: string
+        required: true
+      text:
+        type: string
+        required: true
+      date:
+        type: date
+        required: false
+
+fetch:
+  sample_count: 15
+
+license:
+  name: "EU institutional reuse (Decision 2011/833/EU)"
+  url: "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833"
+  commercial_use: true
+  attribution_required: true
+  share_alike: false
+  no_derivatives: false
+  notes: "EU budgetary acts published in the Official Journal by the Publications Office are reusable, including for commercial purposes, under the Commission's reuse policy (Decision 2011/833/EU). Attribution to the source is requested."

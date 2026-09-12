@@ -4,7 +4,7 @@
 # Full text of NYCRR sections via Cornell LII.
 # 24 titles (1-23 plus Title 99 Executive Orders) covering all state
 # agency regulations.
-# No authentication required. Crawl-delay: 10s per robots.txt.
+# No authentication required. Self-paced at ~1 req/s; resumable via data/.
 # ===================================================================
 
 source:
@@ -24,8 +24,13 @@ auth:
   type: "none"
 
 rate_limit:
-  requests_per_second: 0.1
-  burst: 1
+  # bootstrap.py paces every request itself (NY_ADMINCODE_CRAWL_GAP, ~1 req/s
+  # shared across the section-fetch pool). This must not sit below that, or the
+  # adaptive limiter in bootstrap_fast becomes the real bottleneck: at the old
+  # 0.1/s the ~30K-section walk needed 83h and never finished (issue #1370).
+  requests_per_second: 1.0
+  burst: 4
+  max_workers: 4
 
 api:
   type: "html_scraping"
@@ -72,7 +77,12 @@ schema:
       required: true
 
 notes: |
-  - 24 active titles, thousands of sections
+  - 24 active titles, ~30K sections
   - HTML scraping from Cornell LII (law.cornell.edu)
-  - 10-second crawl delay per robots.txt
+  - Breadth-first hierarchy walk: a part page can list its own sections AND
+    link deeper named subdivisions that carry more (title-6/.../part-1 plus
+    .../part-1/bear), so sections are collected at every level
+  - Resumable: data/enumeration.json caches the per-title section list and
+    data/done_sections.txt the sections already written; a run bounded by
+    NY_ADMINCODE_MAX_RUNTIME picks up where the last one stopped
   - Official data sourced from NY DOS, updated quarterly
