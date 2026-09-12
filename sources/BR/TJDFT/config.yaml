@@ -1,37 +1,55 @@
-endpoints:
-  download: https://jurisdf.tjdft.jus.br/api/v1/pesquisa/download/{uuid}
-  search: https://jurisdf.tjdft.jus.br/api/v1/pesquisa
-rate_limit:
-  delay_seconds: 1.5
-  max_page_size: 40
+fetch:
+  base_url: https://jurisdf.tjdft.jus.br/api/v1/pesquisa
+  method: elasticsearch_post
+  page_size: 20
+  rate_limit_seconds: 0.3
+  headers:
+    User-Agent: legal-sources-bot/1.0 (research; github.com/worldwidelaw/legal-sources)
+    Accept: application/json
+    Content-Type: application/json
+    Origin: https://jurisdf.tjdft.jus.br
+    Referer: https://jurisdf.tjdft.jus.br/
+
 schema:
   key_fields:
-  - name: _id
-    required: true
-    type: string
-  - name: _source
-    required: false
-    type: string
-  - name: _type
-    required: false
-    type: string
-  - name: title
-    required: true
-    type: string
-  - name: text
-    required: true
-    type: string
-  - name: date
-    required: false
-    type: date
-  - name: url
-    required: true
-    type: string
+    - name: _id
+      required: true
+      type: string
+    - name: process_number
+      required: false
+      type: string
+    - name: orgao_julgador
+      required: false
+      type: string
+    - name: title
+      required: true
+      type: string
+    - name: text
+      required: true
+      type: string
+    - name: date
+      required: false
+      type: date
+    - name: judge_relator
+      required: false
+      type: string
+
 source:
+  auth: none
   country: BR
   data_types:
-  - case_law
+    - case_law
+  description: >
+    Tribunal de Justiça do Distrito Federal e dos Territórios (TJDFT) — Brazil's
+    capital district court. Uses a public Elasticsearch-backed REST API at
+    jurisdf.tjdft.jus.br with no authentication required. Supports full-text
+    keyword search with complete pagination (no result cap). Returns ementa
+    (headnote), decisao (decision text), relator, and orgão julgador. This is
+    the most open court portal among all 27 Brazilian state-level courts — the
+    Elasticsearch backend allows unrestricted bulk collection unlike the ESAJ
+    portal used by most other TJ courts (which caps at 250 results per query).
+    8,400+ decisions collected in water law domain alone (2016-2026).
   id: BR/TJDFT
   language: pt
-  name: TJDFT - Federal District Court Open Data API
+  name: TJDFT — Tribunal de Justiça do Distrito Federal e dos Territórios
   url: https://jurisdf.tjdft.jus.br/
