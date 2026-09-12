@@ -1,0 +1,37 @@
+{
+  "_id": "BR-DATAJUD-STJ_SUP_08284203720218120001",
+  "_source": "BR/DataJudCNJ",
+  "_type": "case_law",
+  "_fetched_at": "2026-07-28T23:16:37.551776+00:00",
+  "title": "Agravo em Recurso Especial - 0828420-37.2021.8.12.0001 - STJ",
+  "text": "Classe processual: Agravo em Recurso Especial\n\nAssuntos: Direito de Imagem\n\nOrgao julgador: PRESIDÊNCIA\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-06-06 Distribuição (tipo_de_distribuicao_redistribuicao: competência exclusiva)\n2023-06-06 Conclusão (tipo_de_conclusao: para decisão)\n2023-06-16 Não Conhecimento de recurso (tipo_de_peticao: Agravo em recurso especial)\n2023-08-01 Petição (tipo_de_peticao: Petição (outras))\n2023-08-10 Conclusão (tipo_de_conclusao: para decisão)\n2023-06-02 Recebimento\n2023-06-19 Publicação\n2023-10-18 Publicação\n2023-10-26 Trânsito em julgado\n2023-10-26 Baixa Definitiva\n2023-06-16 Ato ordinatório\n2023-06-16 Disponibilização no Diário da Justiça Eletrônico\n2023-08-01 Protocolo de Petição\n2023-10-16 Mero expediente\n2023-10-16 Ato ordinatório\n2023-10-17 Disponibilização no Diário da Justiça Eletrônico",
+  "date": "2023-06-05",
+  "date_last_update": "2024-07-24",
+  "case_number": "0828420-37.2021.8.12.0001",
+  "case_number_raw": "08284203720218120001",
+  "court": "STJ",
+  "court_tier": 1,
+  "chamber": "PRESIDÊNCIA",
+  "jurisdiction": "Brazil",
+  "language": "pt",
+  "country": "BR",
+  "decision_type": "Agravo em Recurso Especial",
+  "classe_codigo": 11881,
+  "assuntos": [
+    "Direito de Imagem"
+  ],
+  "grau": "SUP",
+  "movement_count": 16,
+  "url": "https://www.cnj.jus.br/sistemas/datajud/",
+  "_raw_fields": {
+    "sistema": {
+      "codigo": 8,
+      "nome": "Outros"
+    },
+    "formato": {
+      "codigo": 1,
+      "nome": "Eletrônico"
+    },
+    "@timestamp": "2025-02-06T11:19:21.417854786Z"
+  }
+}
