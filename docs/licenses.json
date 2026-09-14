@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-14T09:38:48.091695+00:00",
+  "generated_at": "2026-09-14T16:12:28.250441+00:00",
   "summary": {
-    "total_complete": 2187,
-    "commercial_ok": 1992,
+    "total_complete": 2192,
+    "commercial_ok": 1997,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 698
+      "count": 700
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,13 +26,13 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 371
+      "count": 372
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 182
+      "count": 183
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
@@ -44,7 +44,7 @@
       "display_name": "EUR-Lex reuse notice",
       "url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
       "commercial_use": true,
-      "count": 64
+      "count": 65
     },
     "ogl-3.0": {
       "display_name": "OGL v3.0",
@@ -2007,15 +2007,6 @@
       "name": "Belize Financial Services Commission — Laws & Amendments",
       "license_id": "ogd",
       "license_name": "Open Government Data",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "BZ/NationalAssembly",
-      "country": "BZ",
-      "name": "Belize National Assembly Acts",
-      "license_id": "pd-gov",
-      "license_name": "Public domain (government)",
       "license_url": null,
       "commercial_use": true
     },
@@ -5107,6 +5098,15 @@
       "commercial_use": true
     },
     {
+      "id": "EU/EPPO",
+      "country": "EU",
+      "name": "European Public Prosecutor's Office — Case Information",
+      "license_id": "eur-lex",
+      "license_name": "EUR-Lex legal notice",
+      "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true
+    },
+    {
       "id": "EU/ERA",
       "country": "EU",
       "name": "EU Agency for Railways (ERA)",
@@ -6220,6 +6220,15 @@
       "license_id": "ogd",
       "license_name": "Open Government Data (Parliament of Ghana)",
       "license_url": "https://repository.parliament.gh/",
+      "commercial_use": true
+    },
+    {
+      "id": "GH/ParliamentRepository",
+      "country": "GH",
+      "name": "Ghana Parliament Institutional Repository",
+      "license_id": "ogd",
+      "license_name": "Government of Ghana public information",
+      "license_url": null,
       "commercial_use": true
     },
     {
@@ -7807,6 +7816,15 @@
       "commercial_use": true
     },
     {
+      "id": "INTL/COMESA-Competition",
+      "country": "INTL",
+      "name": "COMESA Competition and Consumer Commission — Decided Cases",
+      "license_id": "custom-terms",
+      "license_name": "COMESA Terms",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "INTL/COMESA-Court",
       "country": "INTL",
       "name": "COMESA Court of Justice",
@@ -7832,6 +7850,15 @@
       "license_name": "CC BY-NC-SA (AfricanLII)",
       "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
       "commercial_use": false
+    },
+    {
+      "id": "INTL/CaribbeanCourt",
+      "country": "INTL",
+      "name": "Caribbean Court of Justice (CCJ) Judgments",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain - CCJ Court Records",
+      "license_url": "https://ccj.org/",
+      "commercial_use": true
     },
     {
       "id": "INTL/CodexAlimentarius",
@@ -8584,6 +8611,15 @@
       "id": "INTL/OHCHR-Jurisprudence",
       "country": "INTL",
       "name": "UN Treaty Body Jurisprudence (Individual Complaints — Views & Decisions)",
+      "license_id": "ogd",
+      "license_name": "United Nations Open Access",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "INTL/OHCHR-TBInternet",
+      "country": "INTL",
+      "name": "UN Treaty Body Documentation (TBInternet)",
       "license_id": "ogd",
       "license_name": "United Nations Open Access",
       "license_url": null,
@@ -12778,6 +12814,15 @@
       "id": "PL/Sejm",
       "country": "PL",
       "name": "Polish Sejm (Parliament)",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain",
+      "license_url": "https://dane.gov.pl",
+      "commercial_use": true
+    },
+    {
+      "id": "PL/SupremeCourt",
+      "country": "PL",
+      "name": "Polish Supreme Court (Sąd Najwyższy)",
       "license_id": "pd-gov",
       "license_name": "Public Domain",
       "license_url": "https://dane.gov.pl",
