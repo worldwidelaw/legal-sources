@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-14T03:45:18.182557+00:00",
+  "generated_at": "2026-09-14T09:38:48.091695+00:00",
   "summary": {
-    "total_complete": 2184,
-    "commercial_ok": 1989,
+    "total_complete": 2187,
+    "commercial_ok": 1992,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 697
+      "count": 698
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 369
+      "count": 371
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -1147,6 +1147,15 @@
       "commercial_use": true
     },
     {
+      "id": "BE/CASS",
+      "country": "BE",
+      "name": "Court of Cassation (Cour de Cassation)",
+      "license_id": "ogd",
+      "license_name": "Belgian Open Government Data",
+      "license_url": "https://data.gov.be/en/licence-conditions",
+      "commercial_use": true
+    },
+    {
       "id": "BE/CREG",
       "country": "BE",
       "name": "Belgian Energy Regulator (CREG)",
@@ -1324,6 +1333,15 @@
       "license_id": "ogd",
       "license_name": "https://nraapp02.nra.bg/cms5/apps/wqreg",
       "license_url": "https://nraapp02.nra.bg/cms5/apps/wqreg",
+      "commercial_use": true
+    },
+    {
+      "id": "BG/Parliament",
+      "country": "BG",
+      "name": "Bulgarian Parliament (Народно събрание)",
+      "license_id": "pd-gov",
+      "license_name": "Public domain",
+      "license_url": null,
       "commercial_use": true
     },
     {
@@ -1531,6 +1549,15 @@
       "license_id": "ogd",
       "license_name": "Brunei AGC Public Law Access",
       "license_url": "https://www.agc.gov.bn/",
+      "commercial_use": true
+    },
+    {
+      "id": "BN/BDCB-Regulations",
+      "country": "BN",
+      "name": "Brunei Darussalam Central Bank — Regulations & Guidelines",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government)",
+      "license_url": null,
       "commercial_use": true
     },
     {
