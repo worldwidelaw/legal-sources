@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-13T22:10:51.691408+00:00",
+  "generated_at": "2026-09-14T03:45:18.182557+00:00",
   "summary": {
-    "total_complete": 2182,
-    "commercial_ok": 1987,
+    "total_complete": 2184,
+    "commercial_ok": 1989,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 368
+      "count": 369
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -86,7 +86,7 @@
       "display_name": "CC0 1.0",
       "url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "commercial_use": true,
-      "count": 24
+      "count": 25
     },
     "ogl-canada": {
       "display_name": "Open Government Licence — Canada",
@@ -14503,6 +14503,15 @@
       "commercial_use": true
     },
     {
+      "id": "TR/Mevzuat",
+      "country": "TR",
+      "name": "Turkish Legislation (Mevzuat Bilgi Sistemi)",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "TR/MevzuatHF",
       "country": "TR",
       "name": "Turkish Legislation (Hugging Face Dataset)",
@@ -15608,6 +15617,15 @@
       "license_name": "Verify terms with source",
       "license_url": null,
       "commercial_use": false
+    },
+    {
+      "id": "UN/SCResolutions",
+      "country": "UN",
+      "name": "Corpus of UN Security Council Resolutions (Zenodo/Fobbe)",
+      "license_id": "cc0-1.0",
+      "license_name": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercial_use": true
     },
     {
       "id": "UN/TreatyBodyDB",
