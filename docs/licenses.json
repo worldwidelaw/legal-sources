@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-15T07:19:04.674270+00:00",
+  "generated_at": "2026-09-15T13:12:38.144961+00:00",
   "summary": {
-    "total_complete": 2189,
-    "commercial_ok": 1994,
+    "total_complete": 2191,
+    "commercial_ok": 1996,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 700
+      "count": 701
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 371
+      "count": 372
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -13000,6 +13000,15 @@
       "commercial_use": true
     },
     {
+      "id": "PT/DGSI",
+      "country": "PT",
+      "name": "Portuguese Courts of Appeal (DGSI - all sub-databases)",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": "https://dados.gov.pt",
+      "commercial_use": true
+    },
+    {
       "id": "PT/DiarioRepublica",
       "country": "PT",
       "name": "Diário da República - Portuguese Official Gazette",
@@ -13294,6 +13303,15 @@
       "license_id": "ogd",
       "license_name": "https://pravo.gov.ru/",
       "license_url": "https://pravo.gov.ru/",
+      "commercial_use": true
+    },
+    {
+      "id": "RU/RegionalLegislation",
+      "country": "RU",
+      "name": "Russian Federation Subjects — Regional Legislation (pravo.gov.ru)",
+      "license_id": "pd-gov",
+      "license_name": "Russian official document — public domain (Civil Code art. 1259(6))",
+      "license_url": "http://publication.pravo.gov.ru/",
       "commercial_use": true
     },
     {
