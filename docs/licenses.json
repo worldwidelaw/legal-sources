@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-15T13:12:38.144961+00:00",
+  "generated_at": "2026-09-15T21:10:29.595693+00:00",
   "summary": {
-    "total_complete": 2191,
-    "commercial_ok": 1996,
+    "total_complete": 2188,
+    "commercial_ok": 1993,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,19 +14,19 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 701
+      "count": 698
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
       "url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true,
-      "count": 378
+      "count": 379
     },
     "pd-gov": {
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 372
+      "count": 371
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -38,13 +38,13 @@
       "display_name": "CC BY 4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true,
-      "count": 107
+      "count": 106
     },
     "eur-lex": {
       "display_name": "EUR-Lex reuse notice",
       "url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
       "commercial_use": true,
-      "count": 64
+      "count": 65
     },
     "ogl-3.0": {
       "display_name": "OGL v3.0",
@@ -56,7 +56,7 @@
       "display_name": "Public domain — 5 UrhG",
       "url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true,
-      "count": 44
+      "count": 43
     },
     "custom-nc": {
       "display_name": "Custom non-commercial terms",
@@ -76,17 +76,17 @@
       "commercial_use": true,
       "count": 38
     },
+    "cc0-1.0": {
+      "display_name": "CC0 1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercial_use": true,
+      "count": 26
+    },
     "unverified": {
       "display_name": "Unverified — needs research",
       "url": null,
       "commercial_use": null,
       "count": 26
-    },
-    "cc0-1.0": {
-      "display_name": "CC0 1.0",
-      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "commercial_use": true,
-      "count": 25
     },
     "ogl-canada": {
       "display_name": "Open Government Licence — Canada",
@@ -1741,15 +1741,6 @@
       "commercial_use": true
     },
     {
-      "id": "BR/TJDFT",
-      "country": "BR",
-      "name": "TJDFT - Federal District Court Open Data API",
-      "license_id": "ogd",
-      "license_name": "Open government data",
-      "license_url": "https://dados.gov.br",
-      "commercial_use": true
-    },
-    {
       "id": "BR/TJPR",
       "country": "BR",
       "name": "TJPR - Parana State Court Jurisprudence",
@@ -1792,15 +1783,6 @@
       "license_id": "ogd",
       "license_name": "Open government data",
       "license_url": "https://dados.gov.br",
-      "commercial_use": true
-    },
-    {
-      "id": "BR/TRF6",
-      "country": "BR",
-      "name": "Brazil TRF-6 Federal Regional Court (6th Region — MG)",
-      "license_id": "pd-gov",
-      "license_name": "Brazilian Public Domain (Government Acts)",
-      "license_url": null,
       "commercial_use": true
     },
     {
@@ -3370,15 +3352,6 @@
       "commercial_use": false
     },
     {
-      "id": "CoE/CPTReports",
-      "country": "CoE",
-      "name": "CPT Visit Reports (Prevention of Torture)",
-      "license_id": "pd-gov",
-      "license_name": "Public domain",
-      "license_url": "https://www.echr.coe.int/",
-      "commercial_use": true
-    },
-    {
       "id": "CoE/HUDOC",
       "country": "CoE",
       "name": "HUDOC (European Court of Human Rights)",
@@ -3562,15 +3535,6 @@
       "id": "DE/BaFin",
       "country": "DE",
       "name": "German Financial Supervisory Authority (BaFin)",
-      "license_id": "pd-de",
-      "license_name": "§ 5 UrhG",
-      "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
-      "commercial_use": true
-    },
-    {
-      "id": "DE/BadenWürttemberg",
-      "country": "DE",
-      "name": "Baden-Württemberg Regional Legislation",
       "license_id": "pd-de",
       "license_name": "§ 5 UrhG",
       "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
@@ -4567,15 +4531,6 @@
       "commercial_use": true
     },
     {
-      "id": "ES/OARC-Euskadi",
-      "country": "ES",
-      "name": "Órgano Administrativo de Recursos Contractuales de Euskadi (OARC / KEAO)",
-      "license_id": "cc-by-4.0",
-      "license_name": "CC BY 4.0",
-      "license_url": "https://creativecommons.org/licenses/by/4.0/",
-      "commercial_use": true
-    },
-    {
       "id": "ES/REGCON",
       "country": "ES",
       "name": "Convenios colectivos sectoriales (REGCON / BOE)",
@@ -5074,6 +5029,15 @@
       "id": "EU/EP-Positions",
       "country": "EU",
       "name": "European Parliament — Positions / Legislative Resolutions",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/EP-Questions",
+      "country": "EU",
+      "name": "European Parliament — Parliamentary Questions (written questions & answers)",
       "license_id": "eur-lex",
       "license_name": "EU institutional reuse (Decision 2011/833/EU)",
       "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
@@ -7105,15 +7069,6 @@
       "commercial_use": true
     },
     {
-      "id": "IE/OCEI",
-      "country": "IE",
-      "name": "Commissioner for Environmental Information (Ireland) — Appeal Decisions",
-      "license_id": "ogd",
-      "license_name": "PSI Licence (Ireland)",
-      "license_url": "https://data.gov.ie/pages/opendatalicence",
-      "commercial_use": true
-    },
-    {
       "id": "IE/OIC",
       "country": "IE",
       "name": "Office of the Information Commissioner (Ireland) — Review Decisions",
@@ -8624,6 +8579,15 @@
       "license_name": "OPCW Terms of Use",
       "license_url": "https://www.opcw.org/legal",
       "commercial_use": false
+    },
+    {
+      "id": "INTL/OpenLegalData",
+      "country": "INTL",
+      "name": "Open Legal Data Platform (DE/EU Case Law)",
+      "license_id": "cc0-1.0",
+      "license_name": "CC0 / Public Domain",
+      "license_url": "https://github.com/openlegaldata/oldp",
+      "commercial_use": true
     },
     {
       "id": "INTL/PCA",
@@ -12061,15 +12025,6 @@
       "license_id": "cc0-1.0",
       "license_name": "CC0 1.0",
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "commercial_use": true
-    },
-    {
-      "id": "NL/AP",
-      "country": "NL",
-      "name": "Dutch Data Protection Authority (Autoriteit Persoonsgegevens)",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": "https://data.overheid.nl/licenties",
       "commercial_use": true
     },
     {
@@ -15871,6 +15826,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/AR-PSC",
+      "country": "US",
+      "name": "Arkansas Public Service Commission — Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — U.S. government edict (state regulatory orders)",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/AR-TaxDecisions",
       "country": "US",
       "name": "Arkansas DFA — Act 896 Administrative Decisions & Legal Opinions",
@@ -15955,6 +15919,15 @@
       "id": "US/CA-AdminCode",
       "country": "US",
       "name": "California Code of Regulations (CCR)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CA-CPUC",
+      "country": "US",
+      "name": "California Public Utilities Commission — Decisions & Resolutions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -16612,15 +16585,6 @@
       "id": "US/FERC",
       "country": "US",
       "name": "US Federal Energy Regulatory Commission Orders",
-      "license_id": "pd-us",
-      "license_name": "Public domain — 17 U.S.C. § 105",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
-      "commercial_use": true
-    },
-    {
-      "id": "US/FERC-eLibrary",
-      "country": "US",
-      "name": "US Federal Energy Regulatory Commission — eLibrary Orders & Issuances",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -19288,6 +19252,15 @@
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/eCFR",
+      "country": "US",
+      "name": "eCFR - Electronic Code of Federal Regulations",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (US government works).",
+      "license_url": null,
       "commercial_use": true
     },
     {
