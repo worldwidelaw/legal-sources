@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-15T00:22:29.222749+00:00",
+  "generated_at": "2026-09-15T07:19:04.674270+00:00",
   "summary": {
-    "total_complete": 2188,
-    "commercial_ok": 1993,
+    "total_complete": 2189,
+    "commercial_ok": 1994,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -38,7 +38,7 @@
       "display_name": "CC BY 4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true,
-      "count": 106
+      "count": 107
     },
     "eur-lex": {
       "display_name": "EUR-Lex reuse notice",
@@ -10564,6 +10564,15 @@
       "id": "LT/LITEKO",
       "country": "LT",
       "name": "Lithuania Court Information System (LITEKO) Public Decisions",
+      "license_id": "cc-by-4.0",
+      "license_name": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "LT/LegalBase",
+      "country": "LT",
+      "name": "Lithuanian Legal Database (TAR)",
       "license_id": "cc-by-4.0",
       "license_name": "CC BY 4.0",
       "license_url": "https://creativecommons.org/licenses/by/4.0/",
