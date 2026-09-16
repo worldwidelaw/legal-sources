@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-15T21:10:29.595693+00:00",
+  "generated_at": "2026-09-16T00:00:34.970440+00:00",
   "summary": {
-    "total_complete": 2188,
-    "commercial_ok": 1993,
+    "total_complete": 2189,
+    "commercial_ok": 1994,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 698
+      "count": 699
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -1735,6 +1735,15 @@
       "id": "BR/TJBA",
       "country": "BR",
       "name": "TJBA - Bahia State Court (GraphQL API)",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://dados.gov.br",
+      "commercial_use": true
+    },
+    {
+      "id": "BR/TJDFT",
+      "country": "BR",
+      "name": "TJDFT - Federal District Court Open Data API",
       "license_id": "ogd",
       "license_name": "Open government data",
       "license_url": "https://dados.gov.br",
