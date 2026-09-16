@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-16T16:18:00.708393+00:00",
+  "generated_at": "2026-09-16T20:58:25.857825+00:00",
   "summary": {
-    "total_complete": 2196,
-    "commercial_ok": 2001,
-    "non_commercial": 173,
+    "total_complete": 2189,
+    "commercial_ok": 1995,
+    "non_commercial": 172,
     "commercial_unknown": 22,
     "unverified": 26,
     "unique_license_ids": 30
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 701
+      "count": 696
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 373
+      "count": 372
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -110,7 +110,7 @@
       "display_name": "CC BY-NC-SA 4.0",
       "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
       "commercial_use": false,
-      "count": 11
+      "count": 10
     },
     "nlod-2.0": {
       "display_name": "NLOD 2.0",
@@ -1063,15 +1063,6 @@
       "license_id": "pd-gov",
       "license_name": "Public domain (national legislation)",
       "license_url": "https://www.wipo.int/wipolex/en/disclaimer",
-      "commercial_use": true
-    },
-    {
-      "id": "BD/BSEC",
-      "country": "BD",
-      "name": "Bangladesh Securities & Exchange Commission — Circulars & Regulations",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain (Government)",
-      "license_url": null,
       "commercial_use": true
     },
     {
@@ -6025,15 +6016,6 @@
       "commercial_use": true
     },
     {
-      "id": "GD/GovernmentPrinteryGazette",
-      "country": "GD",
-      "name": "Grenada Government Printery Gazette (gazettes.gov.gd)",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "GD/IRD-TaxGuidance",
       "country": "GD",
       "name": "Grenada Inland Revenue Division Tax Guidance",
@@ -7438,15 +7420,6 @@
       "commercial_use": true
     },
     {
-      "id": "IN/NCLT",
-      "country": "IN",
-      "name": "National Company Law Tribunal",
-      "license_id": "ogd",
-      "license_name": "Government Open Data License — India",
-      "license_url": "https://data.gov.in/government-open-data-license-india",
-      "commercial_use": true
-    },
-    {
       "id": "IN/PRSLegislative",
       "country": "IN",
       "name": "PRS Legislative Research — Bill Tracking",
@@ -7777,15 +7750,6 @@
       "license_id": "custom-terms",
       "license_name": "Custom terms (publicly published decisions)",
       "license_url": "https://ciidrc.org/domain-name-disputes/uniform-domain-name-dispute-resolution-policy/",
-      "commercial_use": true
-    },
-    {
-      "id": "INTL/CIS-IPA-ModelLaws",
-      "country": "INTL",
-      "name": "CIS Interparliamentary Assembly Model Laws",
-      "license_id": "ogd",
-      "license_name": "CIS open access",
-      "license_url": null,
       "commercial_use": true
     },
     {
@@ -8480,15 +8444,6 @@
       "license_name": "LCIA Terms of Use",
       "license_url": "https://www.lcia.org/",
       "commercial_use": true
-    },
-    {
-      "id": "INTL/LeXFiles",
-      "country": "INTL",
-      "name": "LeXFiles — 5.8M Legal Documents across 6 Jurisdictions (HuggingFace)",
-      "license_id": "cc-by-nc-sa",
-      "license_name": "CC BY-NC-SA 4.0",
-      "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
-      "commercial_use": false
     },
     {
       "id": "INTL/LegalToolsDB",
@@ -12079,15 +12034,6 @@
       "license_id": "cc0-1.0",
       "license_name": "CC0 1.0",
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "commercial_use": true
-    },
-    {
-      "id": "NL/AP",
-      "country": "NL",
-      "name": "Dutch Data Protection Authority (Autoriteit Persoonsgegevens)",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": "https://data.overheid.nl/licenties",
       "commercial_use": true
     },
     {
@@ -19683,15 +19629,6 @@
       "name": "Samoa Attorney General Consolidated Laws 2023",
       "license_id": "pd-gov",
       "license_name": "Government of Samoa — official consolidated legislation",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "WS/MfR-TaxGuidance",
-      "country": "WS",
-      "name": "Samoa Ministry for Revenue Tax Guidance",
-      "license_id": "ogd",
-      "license_name": "Government of Samoa, Ministry for Revenue. Tax legislation and guidance published for public access. No formal open licence specified.",
       "license_url": null,
       "commercial_use": true
     },
