@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-16T00:00:34.970440+00:00",
+  "generated_at": "2026-09-16T04:40:19.458281+00:00",
   "summary": {
-    "total_complete": 2189,
-    "commercial_ok": 1994,
+    "total_complete": 2191,
+    "commercial_ok": 1996,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 371
+      "count": 373
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -1795,6 +1795,15 @@
       "commercial_use": true
     },
     {
+      "id": "BR/TRF6",
+      "country": "BR",
+      "name": "Brazil TRF-6 Federal Regional Court (6th Region — MG)",
+      "license_id": "pd-gov",
+      "license_name": "Brazilian Public Domain (Government Acts)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "BR/TST",
       "country": "BR",
       "name": "TST - Tribunal Superior do Trabalho (Labor Supreme Court)",
@@ -3359,6 +3368,15 @@
       "license_name": "Council of Europe Terms of Use",
       "license_url": "https://www.coe.int/en/web/help-desk/legal-notice",
       "commercial_use": false
+    },
+    {
+      "id": "CoE/CPTReports",
+      "country": "CoE",
+      "name": "CPT Visit Reports (Prevention of Torture)",
+      "license_id": "pd-gov",
+      "license_name": "Public domain",
+      "license_url": "https://www.echr.coe.int/",
+      "commercial_use": true
     },
     {
       "id": "CoE/HUDOC",
