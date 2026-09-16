@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-16T04:40:19.458281+00:00",
+  "generated_at": "2026-09-16T10:58:56.961355+00:00",
   "summary": {
-    "total_complete": 2191,
-    "commercial_ok": 1996,
+    "total_complete": 2195,
+    "commercial_ok": 2000,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 699
+      "count": 701
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -38,7 +38,7 @@
       "display_name": "CC BY 4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true,
-      "count": 106
+      "count": 107
     },
     "eur-lex": {
       "display_name": "EUR-Lex reuse notice",
@@ -56,7 +56,7 @@
       "display_name": "Public domain — 5 UrhG",
       "url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true,
-      "count": 43
+      "count": 44
     },
     "custom-nc": {
       "display_name": "Custom non-commercial terms",
@@ -3568,6 +3568,15 @@
       "commercial_use": true
     },
     {
+      "id": "DE/BadenWürttemberg",
+      "country": "DE",
+      "name": "Baden-Württemberg Regional Legislation",
+      "license_id": "pd-de",
+      "license_name": "§ 5 UrhG",
+      "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
+      "commercial_use": true
+    },
+    {
       "id": "DE/Bayern",
       "country": "DE",
       "name": "Bavaria State Law (BAYERN.RECHT)",
@@ -4552,6 +4561,15 @@
       "id": "ES/Navarra",
       "country": "ES",
       "name": "Navarra Regional Legislation (BON)",
+      "license_id": "cc-by-4.0",
+      "license_name": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "ES/OARC-Euskadi",
+      "country": "ES",
+      "name": "Órgano Administrativo de Recursos Contractuales de Euskadi (OARC / KEAO)",
       "license_id": "cc-by-4.0",
       "license_name": "CC BY 4.0",
       "license_url": "https://creativecommons.org/licenses/by/4.0/",
@@ -7093,6 +7111,15 @@
       "license_id": "cc-by-4.0",
       "license_name": "PSI Licence / CC BY 4.0",
       "license_url": "https://www.gov.ie/en/help/re-use-of-public-sector-information/",
+      "commercial_use": true
+    },
+    {
+      "id": "IE/OCEI",
+      "country": "IE",
+      "name": "Commissioner for Environmental Information (Ireland) — Appeal Decisions",
+      "license_id": "ogd",
+      "license_name": "PSI Licence (Ireland)",
+      "license_url": "https://data.gov.ie/pages/opendatalicence",
       "commercial_use": true
     },
     {
@@ -12052,6 +12079,15 @@
       "license_id": "cc0-1.0",
       "license_name": "CC0 1.0",
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "NL/AP",
+      "country": "NL",
+      "name": "Dutch Data Protection Authority (Autoriteit Persoonsgegevens)",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": "https://data.overheid.nl/licenties",
       "commercial_use": true
     },
     {
