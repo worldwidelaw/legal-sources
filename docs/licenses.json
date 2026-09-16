@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-16T10:58:56.961355+00:00",
+  "generated_at": "2026-09-16T16:18:00.708393+00:00",
   "summary": {
-    "total_complete": 2195,
-    "commercial_ok": 2000,
+    "total_complete": 2196,
+    "commercial_ok": 2001,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -20,7 +20,7 @@
       "display_name": "Public domain — 17 U.S.C. 105",
       "url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true,
-      "count": 379
+      "count": 380
     },
     "pd-gov": {
       "display_name": "Public domain (government works)",
@@ -16648,6 +16648,15 @@
       "id": "US/FERC",
       "country": "US",
       "name": "US Federal Energy Regulatory Commission Orders",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/FERC-eLibrary",
+      "country": "US",
+      "name": "US Federal Energy Regulatory Commission — eLibrary Orders & Issuances",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
