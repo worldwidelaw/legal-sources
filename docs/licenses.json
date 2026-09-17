@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-16T20:58:25.857825+00:00",
+  "generated_at": "2026-09-17T00:11:02.871627+00:00",
   "summary": {
-    "total_complete": 2189,
-    "commercial_ok": 1995,
-    "non_commercial": 172,
+    "total_complete": 2192,
+    "commercial_ok": 1997,
+    "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
     "unique_license_ids": 30
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 696
+      "count": 698
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -110,7 +110,7 @@
       "display_name": "CC BY-NC-SA 4.0",
       "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
       "commercial_use": false,
-      "count": 10
+      "count": 11
     },
     "nlod-2.0": {
       "display_name": "NLOD 2.0",
@@ -7420,6 +7420,15 @@
       "commercial_use": true
     },
     {
+      "id": "IN/NCLT",
+      "country": "IN",
+      "name": "National Company Law Tribunal",
+      "license_id": "ogd",
+      "license_name": "Government Open Data License — India",
+      "license_url": "https://data.gov.in/government-open-data-license-india",
+      "commercial_use": true
+    },
+    {
       "id": "IN/PRSLegislative",
       "country": "IN",
       "name": "PRS Legislative Research — Bill Tracking",
@@ -8444,6 +8453,15 @@
       "license_name": "LCIA Terms of Use",
       "license_url": "https://www.lcia.org/",
       "commercial_use": true
+    },
+    {
+      "id": "INTL/LeXFiles",
+      "country": "INTL",
+      "name": "LeXFiles — 5.8M Legal Documents across 6 Jurisdictions (HuggingFace)",
+      "license_id": "cc-by-nc-sa",
+      "license_name": "CC BY-NC-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "commercial_use": false
     },
     {
       "id": "INTL/LegalToolsDB",
@@ -12034,6 +12052,15 @@
       "license_id": "cc0-1.0",
       "license_name": "CC0 1.0",
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "NL/AP",
+      "country": "NL",
+      "name": "Dutch Data Protection Authority (Autoriteit Persoonsgegevens)",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": "https://data.overheid.nl/licenties",
       "commercial_use": true
     },
     {
