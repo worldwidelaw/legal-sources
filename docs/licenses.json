@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-17T00:11:02.871627+00:00",
+  "generated_at": "2026-09-17T07:16:00.120054+00:00",
   "summary": {
-    "total_complete": 2192,
-    "commercial_ok": 1997,
+    "total_complete": 2196,
+    "commercial_ok": 2001,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 698
+      "count": 701
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 372
+      "count": 373
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -1063,6 +1063,15 @@
       "license_id": "pd-gov",
       "license_name": "Public domain (national legislation)",
       "license_url": "https://www.wipo.int/wipolex/en/disclaimer",
+      "commercial_use": true
+    },
+    {
+      "id": "BD/BSEC",
+      "country": "BD",
+      "name": "Bangladesh Securities & Exchange Commission — Circulars & Regulations",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government)",
+      "license_url": null,
       "commercial_use": true
     },
     {
@@ -6016,6 +6025,15 @@
       "commercial_use": true
     },
     {
+      "id": "GD/GovernmentPrinteryGazette",
+      "country": "GD",
+      "name": "Grenada Government Printery Gazette (gazettes.gov.gd)",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "GD/IRD-TaxGuidance",
       "country": "GD",
       "name": "Grenada Inland Revenue Division Tax Guidance",
@@ -7759,6 +7777,15 @@
       "license_id": "custom-terms",
       "license_name": "Custom terms (publicly published decisions)",
       "license_url": "https://ciidrc.org/domain-name-disputes/uniform-domain-name-dispute-resolution-policy/",
+      "commercial_use": true
+    },
+    {
+      "id": "INTL/CIS-IPA-ModelLaws",
+      "country": "INTL",
+      "name": "CIS Interparliamentary Assembly Model Laws",
+      "license_id": "ogd",
+      "license_name": "CIS open access",
+      "license_url": null,
       "commercial_use": true
     },
     {
@@ -19656,6 +19683,15 @@
       "name": "Samoa Attorney General Consolidated Laws 2023",
       "license_id": "pd-gov",
       "license_name": "Government of Samoa — official consolidated legislation",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "WS/MfR-TaxGuidance",
+      "country": "WS",
+      "name": "Samoa Ministry for Revenue Tax Guidance",
+      "license_id": "ogd",
+      "license_name": "Government of Samoa, Ministry for Revenue. Tax legislation and guidance published for public access. No formal open licence specified.",
       "license_url": null,
       "commercial_use": true
     },
