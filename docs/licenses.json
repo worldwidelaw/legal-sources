@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-17T13:13:31.965214+00:00",
+  "generated_at": "2026-09-17T17:58:21.529631+00:00",
   "summary": {
-    "total_complete": 2187,
-    "commercial_ok": 1992,
+    "total_complete": 2189,
+    "commercial_ok": 1994,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 697
+      "count": 698
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 372
+      "count": 373
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -1066,6 +1066,15 @@
       "commercial_use": true
     },
     {
+      "id": "BD/BSEC",
+      "country": "BD",
+      "name": "Bangladesh Securities & Exchange Commission — Circulars & Regulations",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "BD/BangladeshActs-HuggingFace",
       "country": "BD",
       "name": "Bangladesh Legal Acts Dataset",
@@ -1132,6 +1141,15 @@
       "id": "BE/BIPT",
       "country": "BE",
       "name": "Belgian Telecom Regulator (BIPT)",
+      "license_id": "ogd",
+      "license_name": "Belgian Open Government Data",
+      "license_url": "https://data.gov.be/en/licence-conditions",
+      "commercial_use": true
+    },
+    {
+      "id": "BE/CASS",
+      "country": "BE",
+      "name": "Court of Cassation (Cour de Cassation)",
       "license_id": "ogd",
       "license_name": "Belgian Open Government Data",
       "license_url": "https://data.gov.be/en/licence-conditions",
