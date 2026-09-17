@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-17T07:16:00.120054+00:00",
+  "generated_at": "2026-09-17T13:13:31.965214+00:00",
   "summary": {
-    "total_complete": 2196,
-    "commercial_ok": 2001,
+    "total_complete": 2187,
+    "commercial_ok": 1992,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,25 +14,25 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 701
+      "count": 697
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
       "url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true,
-      "count": 380
+      "count": 379
     },
     "pd-gov": {
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 373
+      "count": 372
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 183
+      "count": 182
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
@@ -44,7 +44,7 @@
       "display_name": "EUR-Lex reuse notice",
       "url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
       "commercial_use": true,
-      "count": 65
+      "count": 63
     },
     "ogl-3.0": {
       "display_name": "OGL v3.0",
@@ -1066,15 +1066,6 @@
       "commercial_use": true
     },
     {
-      "id": "BD/BSEC",
-      "country": "BD",
-      "name": "Bangladesh Securities & Exchange Commission — Circulars & Regulations",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain (Government)",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "BD/BangladeshActs-HuggingFace",
       "country": "BD",
       "name": "Bangladesh Legal Acts Dataset",
@@ -1141,15 +1132,6 @@
       "id": "BE/BIPT",
       "country": "BE",
       "name": "Belgian Telecom Regulator (BIPT)",
-      "license_id": "ogd",
-      "license_name": "Belgian Open Government Data",
-      "license_url": "https://data.gov.be/en/licence-conditions",
-      "commercial_use": true
-    },
-    {
-      "id": "BE/CASS",
-      "country": "BE",
-      "name": "Court of Cassation (Cour de Cassation)",
       "license_id": "ogd",
       "license_name": "Belgian Open Government Data",
       "license_url": "https://data.gov.be/en/licence-conditions",
@@ -1324,15 +1306,6 @@
       "license_id": "odbl-1.0",
       "license_name": "ODbL 1.0",
       "license_url": "https://opendatacommons.org/licenses/odbl/1-0/",
-      "commercial_use": true
-    },
-    {
-      "id": "BG/NAP-TaxDoctrine",
-      "country": "BG",
-      "name": "Bulgarian National Revenue Agency Tax Opinions (Становища на НАП)",
-      "license_id": "ogd",
-      "license_name": "https://nraapp02.nra.bg/cms5/apps/wqreg",
-      "license_url": "https://nraapp02.nra.bg/cms5/apps/wqreg",
       "commercial_use": true
     },
     {
@@ -1729,15 +1702,6 @@
       "license_id": "pd-gov",
       "license_name": "Brazilian Public Domain (Government Acts)",
       "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "BR/TJBA",
-      "country": "BR",
-      "name": "TJBA - Bahia State Court (GraphQL API)",
-      "license_id": "ogd",
-      "license_name": "Open government data",
-      "license_url": "https://dados.gov.br",
       "commercial_use": true
     },
     {
@@ -5080,30 +5044,12 @@
       "commercial_use": true
     },
     {
-      "id": "EU/EP-Questions",
-      "country": "EU",
-      "name": "European Parliament — Parliamentary Questions (written questions & answers)",
-      "license_id": "eur-lex",
-      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
-      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
-      "commercial_use": true
-    },
-    {
       "id": "EU/EP-Resolutions",
       "country": "EU",
       "name": "European Parliament — Non-Legislative Resolutions",
       "license_id": "eur-lex",
       "license_name": "EU institutional reuse (Decision 2011/833/EU)",
       "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
-      "commercial_use": true
-    },
-    {
-      "id": "EU/EPPO",
-      "country": "EU",
-      "name": "European Public Prosecutor's Office — Case Information",
-      "license_id": "eur-lex",
-      "license_name": "EUR-Lex legal notice",
-      "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
       "commercial_use": true
     },
     {
@@ -7780,15 +7726,6 @@
       "commercial_use": true
     },
     {
-      "id": "INTL/CIS-IPA-ModelLaws",
-      "country": "INTL",
-      "name": "CIS Interparliamentary Assembly Model Laws",
-      "license_id": "ogd",
-      "license_name": "CIS open access",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "INTL/CISGOnline",
       "country": "INTL",
       "name": "CISG-online (UN Sales Convention Case Law)",
@@ -7812,15 +7749,6 @@
       "name": "Venice Commission — CODICES Constitutional Case Law Database",
       "license_id": "ogd",
       "license_name": "Council of Europe Open Access",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "INTL/COMESA-Competition",
-      "country": "INTL",
-      "name": "COMESA Competition and Consumer Commission — Decided Cases",
-      "license_id": "custom-terms",
-      "license_name": "COMESA Terms",
       "license_url": null,
       "commercial_use": true
     },
@@ -17791,15 +17719,6 @@
       "id": "US/NC-EthicsOpinions",
       "country": "US",
       "name": "North Carolina Ethics Commission — Formal Advisory Opinions",
-      "license_id": "pd-us",
-      "license_name": "Public domain — 17 U.S.C. § 105",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
-      "commercial_use": true
-    },
-    {
-      "id": "US/NC-IC",
-      "country": "US",
-      "name": "North Carolina Industrial Commission — Decisions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
