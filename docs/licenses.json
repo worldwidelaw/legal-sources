@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-18T08:50:49.504710+00:00",
+  "generated_at": "2026-09-18T14:09:24.348890+00:00",
   "summary": {
-    "total_complete": 2190,
-    "commercial_ok": 1995,
+    "total_complete": 2189,
+    "commercial_ok": 1994,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -26,13 +26,13 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 373
+      "count": 372
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 182
+      "count": 183
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
@@ -44,7 +44,7 @@
       "display_name": "EUR-Lex reuse notice",
       "url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
       "commercial_use": true,
-      "count": 63
+      "count": 64
     },
     "ogl-3.0": {
       "display_name": "OGL v3.0",
@@ -74,19 +74,19 @@
       "display_name": "Licence Ouverte 2.0",
       "url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
       "commercial_use": true,
-      "count": 38
-    },
-    "cc0-1.0": {
-      "display_name": "CC0 1.0",
-      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "commercial_use": true,
-      "count": 26
+      "count": 37
     },
     "unverified": {
       "display_name": "Unverified — needs research",
       "url": null,
       "commercial_use": null,
       "count": 26
+    },
+    "cc0-1.0": {
+      "display_name": "CC0 1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercial_use": true,
+      "count": 25
     },
     "ogl-canada": {
       "display_name": "Open Government Licence — Canada",
@@ -5071,12 +5071,30 @@
       "commercial_use": true
     },
     {
+      "id": "EU/EP-Questions",
+      "country": "EU",
+      "name": "European Parliament — Parliamentary Questions (written questions & answers)",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
       "id": "EU/EP-Resolutions",
       "country": "EU",
       "name": "European Parliament — Non-Legislative Resolutions",
       "license_id": "eur-lex",
       "license_name": "EU institutional reuse (Decision 2011/833/EU)",
       "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
+      "id": "EU/EPPO",
+      "country": "EU",
+      "name": "European Public Prosecutor's Office — Case Information",
+      "license_id": "eur-lex",
+      "license_name": "EUR-Lex legal notice",
+      "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
       "commercial_use": true
     },
     {
@@ -5167,15 +5185,6 @@
       "license_id": "eur-lex",
       "license_name": "Commission Decision 2011/833/EU (Reuse Policy)",
       "license_url": "https://www.eurojust.europa.eu/disclaimer",
-      "commercial_use": true
-    },
-    {
-      "id": "EU/FRA-CaseLaw",
-      "country": "EU",
-      "name": "EU Fundamental Rights Agency — Case Law Database",
-      "license_id": "eur-lex",
-      "license_name": "EUR-Lex Reuse Policy",
-      "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
       "commercial_use": true
     },
     {
@@ -5697,15 +5706,6 @@
       "name": "Bofip (Bulletin Officiel des Finances Publiques)",
       "license_id": "licence-ouverte-2.0",
       "license_name": "Licence Ouverte 2.0 / Open Licence (Etalab)",
-      "license_url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
-      "commercial_use": true
-    },
-    {
-      "id": "FR/BulletinsOfficielsSociaux",
-      "country": "FR",
-      "name": "Bulletins officiels des ministères chargés des affaires sociales (Santé & Travail)",
-      "license_id": "licence-ouverte-2.0",
-      "license_name": "Licence Ouverte 2.0",
       "license_url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
       "commercial_use": true
     },
@@ -7753,6 +7753,15 @@
       "commercial_use": true
     },
     {
+      "id": "INTL/CIS-IPA-ModelLaws",
+      "country": "INTL",
+      "name": "CIS Interparliamentary Assembly Model Laws",
+      "license_id": "ogd",
+      "license_name": "CIS open access",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "INTL/CISGOnline",
       "country": "INTL",
       "name": "CISG-online (UN Sales Convention Case Law)",
@@ -7771,11 +7780,11 @@
       "commercial_use": true
     },
     {
-      "id": "INTL/CODICES",
+      "id": "INTL/COMESA-Competition",
       "country": "INTL",
-      "name": "Venice Commission — CODICES Constitutional Case Law Database",
-      "license_id": "ogd",
-      "license_name": "Council of Europe Open Access",
+      "name": "COMESA Competition and Consumer Commission — Decided Cases",
+      "license_id": "custom-terms",
+      "license_name": "COMESA Terms",
       "license_url": null,
       "commercial_use": true
     },
@@ -12100,15 +12109,6 @@
       "commercial_use": true
     },
     {
-      "id": "NL/Staatsblad",
-      "country": "NL",
-      "name": "Staatsblad der Nederlanden - Dutch Official Gazette",
-      "license_id": "cc0-1.0",
-      "license_name": "CC0 1.0 Universal",
-      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "commercial_use": true
-    },
-    {
       "id": "NL/SupremeCourt",
       "country": "NL",
       "name": "Dutch Supreme Court (Hoge Raad)",
@@ -12124,15 +12124,6 @@
       "license_id": "cc0-1.0",
       "license_name": "CC0 1.0",
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "commercial_use": true
-    },
-    {
-      "id": "NL/Tuchtrecht",
-      "country": "NL",
-      "name": "Dutch Professional Disciplinary Tribunals (tuchtrecht.overheid.nl)",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain (Dutch official documents)",
-      "license_url": "https://www.overheid.nl/help/algemeen/copyright",
       "commercial_use": true
     },
     {
@@ -17752,6 +17743,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/NC-IC",
+      "country": "US",
+      "name": "North Carolina Industrial Commission — Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/NC-LegalEthics",
       "country": "US",
       "name": "North Carolina State Bar — Legal (Attorney) Ethics Opinions",
@@ -18934,15 +18934,6 @@
       "id": "US/VA-JudicialEthics",
       "country": "US",
       "name": "Virginia Judicial Ethics Advisory Committee (JEAC) — Opinions",
-      "license_id": "pd-us",
-      "license_name": "Public domain — 17 U.S.C. § 105",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
-      "commercial_use": true
-    },
-    {
-      "id": "US/VA-Law",
-      "country": "US",
-      "name": "Virginia Law Portal (Code of Virginia + Admin Code) REST API",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
