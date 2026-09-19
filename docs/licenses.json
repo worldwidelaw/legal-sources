@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-19T17:02:25.554741+00:00",
+  "generated_at": "2026-09-19T20:11:01.777767+00:00",
   "summary": {
-    "total_complete": 2192,
-    "commercial_ok": 1997,
+    "total_complete": 2194,
+    "commercial_ok": 1999,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 698
+      "count": 700
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -1705,6 +1705,15 @@
       "commercial_use": true
     },
     {
+      "id": "BR/TCU",
+      "country": "BR",
+      "name": "Brazil Federal Audit Court (TCU) Decisions",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://dados.gov.br",
+      "commercial_use": true
+    },
+    {
       "id": "BR/TJAC",
       "country": "BR",
       "name": "TJAC — Acre State Court",
@@ -1753,6 +1762,15 @@
       "id": "BR/TRF2",
       "country": "BR",
       "name": "Brazil TRF-2 Federal Regional Court (2nd Region - RJ/ES)",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://dados.gov.br",
+      "commercial_use": true
+    },
+    {
+      "id": "BR/TRF4",
+      "country": "BR",
+      "name": "Brazil TRF-4 Federal Regional Court (4th Region - RS/PR/SC)",
       "license_id": "ogd",
       "license_name": "Open government data",
       "license_url": "https://dados.gov.br",
