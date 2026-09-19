@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-18T22:22:09.960526+00:00",
+  "generated_at": "2026-09-19T03:31:29.737968+00:00",
   "summary": {
-    "total_complete": 2193,
-    "commercial_ok": 1998,
+    "total_complete": 2194,
+    "commercial_ok": 1999,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 700
+      "count": 699
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 372
+      "count": 373
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -74,7 +74,7 @@
       "display_name": "Licence Ouverte 2.0",
       "url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
       "commercial_use": true,
-      "count": 37
+      "count": 38
     },
     "cc0-1.0": {
       "display_name": "CC0 1.0",
@@ -5715,6 +5715,15 @@
       "name": "Bofip (Bulletin Officiel des Finances Publiques)",
       "license_id": "licence-ouverte-2.0",
       "license_name": "Licence Ouverte 2.0 / Open Licence (Etalab)",
+      "license_url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
+      "commercial_use": true
+    },
+    {
+      "id": "FR/BulletinsOfficielsSociaux",
+      "country": "FR",
+      "name": "Bulletins officiels des ministères chargés des affaires sociales (Santé & Travail)",
+      "license_id": "licence-ouverte-2.0",
+      "license_name": "Licence Ouverte 2.0",
       "license_url": "https://www.etalab.gouv.fr/licence-ouverte-open-licence/",
       "commercial_use": true
     },
@@ -12151,6 +12160,15 @@
       "license_id": "cc0-1.0",
       "license_name": "CC0 1.0",
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "NL/Tuchtrecht",
+      "country": "NL",
+      "name": "Dutch Professional Disciplinary Tribunals (tuchtrecht.overheid.nl)",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Dutch official documents)",
+      "license_url": "https://www.overheid.nl/help/algemeen/copyright",
       "commercial_use": true
     },
     {
@@ -19558,15 +19576,6 @@
       "license_id": "odbl-1.0",
       "license_name": "ODbL 1.0 (Juricaf/AHJUCAF)",
       "license_url": "https://opendatacommons.org/licenses/odbl/1-0/",
-      "commercial_use": true
-    },
-    {
-      "id": "VN/PhapLuatGov",
-      "country": "VN",
-      "name": "Vietnam National Legal Document Database (Hệ thống văn bản)",
-      "license_id": "ogd",
-      "license_name": "Official Vietnamese legislation — public government data from the Ministry of Justice. Vietnamese legal documents are official state acts and not subject to copyright under Vietnamese Intellectual Property Law (Art. 15.1).",
-      "license_url": null,
       "commercial_use": true
     },
     {
