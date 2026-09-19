@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-19T03:31:29.737968+00:00",
+  "generated_at": "2026-09-19T08:37:17.970884+00:00",
   "summary": {
-    "total_complete": 2194,
-    "commercial_ok": 1999,
+    "total_complete": 2195,
+    "commercial_ok": 2000,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 699
+      "count": 700
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -19576,6 +19576,15 @@
       "license_id": "odbl-1.0",
       "license_name": "ODbL 1.0 (Juricaf/AHJUCAF)",
       "license_url": "https://opendatacommons.org/licenses/odbl/1-0/",
+      "commercial_use": true
+    },
+    {
+      "id": "VN/PhapLuatGov",
+      "country": "VN",
+      "name": "Vietnam National Legal Document Database (Hệ thống văn bản)",
+      "license_id": "ogd",
+      "license_name": "Official Vietnamese legislation — public government data from the Ministry of Justice. Vietnamese legal documents are official state acts and not subject to copyright under Vietnamese Intellectual Property Law (Art. 15.1).",
+      "license_url": null,
       "commercial_use": true
     },
     {
