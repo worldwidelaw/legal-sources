@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-20T17:25:05.154354+00:00",
+  "generated_at": "2026-09-20T20:26:48.908393+00:00",
   "summary": {
-    "total_complete": 2193,
-    "commercial_ok": 1998,
+    "total_complete": 2187,
+    "commercial_ok": 1992,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 699
+      "count": 698
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,31 +26,31 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 373
+      "count": 372
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 183
+      "count": 182
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true,
-      "count": 107
+      "count": 106
     },
     "eur-lex": {
       "display_name": "EUR-Lex reuse notice",
       "url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
       "commercial_use": true,
-      "count": 65
+      "count": 63
     },
     "ogl-3.0": {
       "display_name": "OGL v3.0",
       "url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
       "commercial_use": true,
-      "count": 63
+      "count": 62
     },
     "pd-de": {
       "display_name": "Public domain — 5 UrhG",
@@ -92,7 +92,7 @@
       "display_name": "Open Government Licence — Canada",
       "url": "https://open.canada.ca/en/open-government-licence-canada",
       "commercial_use": true,
-      "count": 22
+      "count": 23
     },
     "": {
       "display_name": "",
@@ -700,15 +700,6 @@
       "id": "AU/ACCC",
       "country": "AU",
       "name": "Australian Competition and Consumer Commission (ACCC)",
-      "license_id": "cc-by-4.0",
-      "license_name": "CC BY 4.0",
-      "license_url": "https://creativecommons.org/licenses/by/4.0/",
-      "commercial_use": true
-    },
-    {
-      "id": "AU/ACTLegislation",
-      "country": "AU",
-      "name": "ACT Legislation Register (legislation.act.gov.au)",
       "license_id": "cc-by-4.0",
       "license_name": "CC BY 4.0",
       "license_url": "https://creativecommons.org/licenses/by/4.0/",
@@ -2106,6 +2097,15 @@
       "name": "Federal Laws and Regulations (Justice Laws Website)",
       "license_id": "ogl-canada",
       "license_name": "Open Government Licence - Canada",
+      "license_url": "https://open.canada.ca/en/open-government-licence-canada",
+      "commercial_use": true
+    },
+    {
+      "id": "CA/HumanRightsTribunal",
+      "country": "CA",
+      "name": "Canadian Human Rights Tribunal — Decisions",
+      "license_id": "ogl-canada",
+      "license_name": "Open Government Licence — Canada",
       "license_url": "https://open.canada.ca/en/open-government-licence-canada",
       "commercial_use": true
     },
@@ -4990,15 +4990,6 @@
       "commercial_use": true
     },
     {
-      "id": "EU/EDPS",
-      "country": "EU",
-      "name": "European Data Protection Supervisor Opinions",
-      "license_id": "eur-lex",
-      "license_name": "EUR-Lex reuse notice",
-      "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
-      "commercial_use": true
-    },
-    {
       "id": "EU/EESC-InitiativeOpinions",
       "country": "EU",
       "name": "European Economic and Social Committee — Own-Initiative & Exploratory Opinions",
@@ -5056,15 +5047,6 @@
       "id": "EU/EP-Positions",
       "country": "EU",
       "name": "European Parliament — Positions / Legislative Resolutions",
-      "license_id": "eur-lex",
-      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
-      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
-      "commercial_use": true
-    },
-    {
-      "id": "EU/EP-Questions",
-      "country": "EU",
-      "name": "European Parliament — Parliamentary Questions (written questions & answers)",
       "license_id": "eur-lex",
       "license_name": "EU institutional reuse (Decision 2011/833/EU)",
       "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
@@ -8254,15 +8236,6 @@
       "license_id": "custom-terms",
       "license_name": "ICJ Terms",
       "license_url": "https://www.icj-cij.org/terms",
-      "commercial_use": true
-    },
-    {
-      "id": "INTL/ICRC-IHL",
-      "country": "INTL",
-      "name": "ICRC International Humanitarian Law Databases",
-      "license_id": "custom-terms",
-      "license_name": "ICRC Terms of Use",
-      "license_url": "https://www.icrc.org/en/terms-and-conditions",
       "commercial_use": true
     },
     {
@@ -12559,15 +12532,6 @@
       "commercial_use": true
     },
     {
-      "id": "PE/INDECOPI",
-      "country": "PE",
-      "name": "Peru INDECOPI - Competition & IP Tribunal Resolutions",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": "https://repositorio.indecopi.gob.pe/",
-      "commercial_use": true
-    },
-    {
       "id": "PE/JNE",
       "country": "PE",
       "name": "Peru Jurado Nacional de Elecciones — Resoluciones",
@@ -13213,15 +13177,6 @@
       "license_id": "pd-gov",
       "license_name": "Public Domain (Romanian Government)",
       "license_url": "https://www.scj.ro",
-      "commercial_use": true
-    },
-    {
-      "id": "RO/LegislationDatabase",
-      "country": "RO",
-      "name": "Portal Legislativ (Romanian Legislative Portal)",
-      "license_id": "pd-gov",
-      "license_name": "Law No. 8/1996 on Copyright and Neighbouring Rights",
-      "license_url": "https://legislatie.just.ro/Public/DetaliiDocument/7816",
       "commercial_use": true
     },
     {
@@ -15289,15 +15244,6 @@
       "id": "UK/JCPC-Crown",
       "country": "UK",
       "name": "Judicial Committee of the Privy Council (Crown Dependencies)",
-      "license_id": "ogl-3.0",
-      "license_name": "OGL v3.0",
-      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-      "commercial_use": true
-    },
-    {
-      "id": "UK/JudiciaryNI",
-      "country": "UK",
-      "name": "Judiciary of Northern Ireland — Judicial Decisions",
       "license_id": "ogl-3.0",
       "license_name": "OGL v3.0",
       "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
