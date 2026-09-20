@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-20T03:56:17.759642+00:00",
+  "generated_at": "2026-09-20T09:09:56.579140+00:00",
   "summary": {
-    "total_complete": 2192,
-    "commercial_ok": 1997,
+    "total_complete": 2194,
+    "commercial_ok": 1999,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 698
+      "count": 700
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -1702,6 +1702,15 @@
       "license_id": "pd-gov",
       "license_name": "Public Domain (Government Work)",
       "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "BR/TCU",
+      "country": "BR",
+      "name": "Brazil Federal Audit Court (TCU) Decisions",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://dados.gov.br",
       "commercial_use": true
     },
     {
@@ -8579,6 +8588,15 @@
       "license_name": "OHADA Copyright",
       "license_url": "https://www.ohada.org/en/uniform-acts/",
       "commercial_use": false
+    },
+    {
+      "id": "INTL/OHCHR-Jurisprudence",
+      "country": "INTL",
+      "name": "UN Treaty Body Jurisprudence (Individual Complaints — Views & Decisions)",
+      "license_id": "ogd",
+      "license_name": "United Nations Open Access",
+      "license_url": null,
+      "commercial_use": true
     },
     {
       "id": "INTL/OHCHR-TBInternet",
