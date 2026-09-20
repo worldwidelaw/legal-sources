@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-19T20:11:01.777767+00:00",
+  "generated_at": "2026-09-19T23:57:11.405273+00:00",
   "summary": {
-    "total_complete": 2194,
-    "commercial_ok": 1999,
+    "total_complete": 2190,
+    "commercial_ok": 1995,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,13 +14,13 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 700
+      "count": 698
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
       "url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true,
-      "count": 380
+      "count": 379
     },
     "pd-gov": {
       "display_name": "Public domain (government works)",
@@ -32,7 +32,7 @@
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 183
+      "count": 182
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
@@ -50,7 +50,7 @@
       "display_name": "OGL v3.0",
       "url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
       "commercial_use": true,
-      "count": 62
+      "count": 63
     },
     "pd-de": {
       "display_name": "Public domain — 5 UrhG",
@@ -92,7 +92,7 @@
       "display_name": "Open Government Licence — Canada",
       "url": "https://open.canada.ca/en/open-government-licence-canada",
       "commercial_use": true,
-      "count": 23
+      "count": 22
     },
     "": {
       "display_name": "",
@@ -1705,15 +1705,6 @@
       "commercial_use": true
     },
     {
-      "id": "BR/TCU",
-      "country": "BR",
-      "name": "Brazil Federal Audit Court (TCU) Decisions",
-      "license_id": "ogd",
-      "license_name": "Open government data",
-      "license_url": "https://dados.gov.br",
-      "commercial_use": true
-    },
-    {
       "id": "BR/TJAC",
       "country": "BR",
       "name": "TJAC — Acre State Court",
@@ -2106,15 +2097,6 @@
       "name": "Federal Laws and Regulations (Justice Laws Website)",
       "license_id": "ogl-canada",
       "license_name": "Open Government Licence - Canada",
-      "license_url": "https://open.canada.ca/en/open-government-licence-canada",
-      "commercial_use": true
-    },
-    {
-      "id": "CA/HumanRightsTribunal",
-      "country": "CA",
-      "name": "Canadian Human Rights Tribunal — Decisions",
-      "license_id": "ogl-canada",
-      "license_name": "Open Government Licence — Canada",
       "license_url": "https://open.canada.ca/en/open-government-licence-canada",
       "commercial_use": true
     },
@@ -8266,15 +8248,6 @@
       "commercial_use": true
     },
     {
-      "id": "INTL/ICRC-IHL",
-      "country": "INTL",
-      "name": "ICRC International Humanitarian Law Databases",
-      "license_id": "custom-terms",
-      "license_name": "ICRC Terms of Use",
-      "license_url": "https://www.icrc.org/en/terms-and-conditions",
-      "commercial_use": true
-    },
-    {
       "id": "INTL/ICTY",
       "country": "INTL",
       "name": "ICTY - International Criminal Tribunal for former Yugoslavia (Archives)",
@@ -8597,15 +8570,6 @@
       "license_name": "OHADA Copyright",
       "license_url": "https://www.ohada.org/en/uniform-acts/",
       "commercial_use": false
-    },
-    {
-      "id": "INTL/OHCHR-Jurisprudence",
-      "country": "INTL",
-      "name": "UN Treaty Body Jurisprudence (Individual Complaints — Views & Decisions)",
-      "license_id": "ogd",
-      "license_name": "United Nations Open Access",
-      "license_url": null,
-      "commercial_use": true
     },
     {
       "id": "INTL/OHCHR-TBInternet",
@@ -15313,6 +15277,15 @@
       "commercial_use": true
     },
     {
+      "id": "UK/JudiciaryNI",
+      "country": "UK",
+      "name": "Judiciary of Northern Ireland — Judicial Decisions",
+      "license_id": "ogl-3.0",
+      "license_name": "OGL v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
+    },
+    {
       "id": "UK/LGO",
       "country": "UK",
       "name": "Local Government & Social Care Ombudsman (LGSCO) — Decisions",
@@ -18594,15 +18567,6 @@
       "name": "PCAOB Enforcement Actions",
       "license_id": "pd-us",
       "license_name": "US Public Domain",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
-      "commercial_use": true
-    },
-    {
-      "id": "US/PresidentialDocuments",
-      "country": "US",
-      "name": "Presidential Documents (Executive Orders, Proclamations)",
-      "license_id": "pd-us",
-      "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
