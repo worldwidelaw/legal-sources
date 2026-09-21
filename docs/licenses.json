@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-20T20:26:48.908393+00:00",
+  "generated_at": "2026-09-21T03:44:03.832303+00:00",
   "summary": {
-    "total_complete": 2187,
-    "commercial_ok": 1992,
+    "total_complete": 2190,
+    "commercial_ok": 1995,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 698
+      "count": 699
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,13 +26,13 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 372
+      "count": 373
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 182
+      "count": 183
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
@@ -8239,6 +8239,15 @@
       "commercial_use": true
     },
     {
+      "id": "INTL/ICRC-IHL",
+      "country": "INTL",
+      "name": "ICRC International Humanitarian Law Databases",
+      "license_id": "custom-terms",
+      "license_name": "ICRC Terms of Use",
+      "license_url": "https://www.icrc.org/en/terms-and-conditions",
+      "commercial_use": true
+    },
+    {
       "id": "INTL/ICTY",
       "country": "INTL",
       "name": "ICTY - International Criminal Tribunal for former Yugoslavia (Archives)",
@@ -12532,6 +12541,15 @@
       "commercial_use": true
     },
     {
+      "id": "PE/INDECOPI",
+      "country": "PE",
+      "name": "Peru INDECOPI - Competition & IP Tribunal Resolutions",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": "https://repositorio.indecopi.gob.pe/",
+      "commercial_use": true
+    },
+    {
       "id": "PE/JNE",
       "country": "PE",
       "name": "Peru Jurado Nacional de Elecciones — Resoluciones",
@@ -13177,6 +13195,15 @@
       "license_id": "pd-gov",
       "license_name": "Public Domain (Romanian Government)",
       "license_url": "https://www.scj.ro",
+      "commercial_use": true
+    },
+    {
+      "id": "RO/LegislationDatabase",
+      "country": "RO",
+      "name": "Portal Legislativ (Romanian Legislative Portal)",
+      "license_id": "pd-gov",
+      "license_name": "Law No. 8/1996 on Copyright and Neighbouring Rights",
+      "license_url": "https://legislatie.just.ro/Public/DetaliiDocument/7816",
       "commercial_use": true
     },
     {
