@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-21T09:41:57.707972+00:00",
+  "generated_at": "2026-09-21T16:16:55.120048+00:00",
   "summary": {
-    "total_complete": 2191,
-    "commercial_ok": 1996,
-    "non_commercial": 173,
+    "total_complete": 2187,
+    "commercial_ok": 1993,
+    "non_commercial": 172,
     "commercial_unknown": 22,
     "unverified": 26,
     "unique_license_ids": 30
@@ -14,43 +14,43 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 699
+      "count": 698
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
       "url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true,
-      "count": 380
+      "count": 379
     },
     "pd-gov": {
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 373
+      "count": 372
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 183
+      "count": 181
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true,
-      "count": 106
+      "count": 107
     },
     "eur-lex": {
       "display_name": "EUR-Lex reuse notice",
       "url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
       "commercial_use": true,
-      "count": 63
+      "count": 64
     },
     "ogl-3.0": {
       "display_name": "OGL v3.0",
       "url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
       "commercial_use": true,
-      "count": 63
+      "count": 62
     },
     "pd-de": {
       "display_name": "Public domain — 5 UrhG",
@@ -700,6 +700,15 @@
       "id": "AU/ACCC",
       "country": "AU",
       "name": "Australian Competition and Consumer Commission (ACCC)",
+      "license_id": "cc-by-4.0",
+      "license_name": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "AU/ACTLegislation",
+      "country": "AU",
+      "name": "ACT Legislation Register (legislation.act.gov.au)",
       "license_id": "cc-by-4.0",
       "license_name": "CC BY 4.0",
       "license_url": "https://creativecommons.org/licenses/by/4.0/",
@@ -5053,6 +5062,15 @@
       "commercial_use": true
     },
     {
+      "id": "EU/EP-Questions",
+      "country": "EU",
+      "name": "European Parliament — Parliamentary Questions (written questions & answers)",
+      "license_id": "eur-lex",
+      "license_name": "EU institutional reuse (Decision 2011/833/EU)",
+      "license_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32011D0833",
+      "commercial_use": true
+    },
+    {
       "id": "EU/EP-Resolutions",
       "country": "EU",
       "name": "European Parliament — Non-Legislative Resolutions",
@@ -7888,15 +7906,6 @@
       "commercial_use": true
     },
     {
-      "id": "INTL/EAEULegalPortal",
-      "country": "INTL",
-      "name": "EAEU Legal Portal (Treaties and Legislation)",
-      "license_id": "pd-gov",
-      "license_name": "Public domain (government)",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "INTL/EBRD-Tribunal",
       "country": "INTL",
       "name": "EBRD Administrative Tribunal — Decisions",
@@ -8983,15 +8992,6 @@
       "license_id": "unverified",
       "license_name": "Verify terms with source",
       "license_url": null,
-      "commercial_use": false
-    },
-    {
-      "id": "INTL/WIPO-UDRP",
-      "country": "INTL",
-      "name": "WIPO Domain Name Dispute Decisions (UDRP)",
-      "license_id": "custom-terms",
-      "license_name": "WIPO Terms of Use",
-      "license_url": "https://www.wipo.int/about-wipo/en/policies/",
       "commercial_use": false
     },
     {
@@ -11590,15 +11590,6 @@
       "id": "MX/PoderJudicialHidalgo",
       "country": "MX",
       "name": "Poder Judicial del Estado de Hidalgo",
-      "license_id": "ogd",
-      "license_name": "Open government data",
-      "license_url": "https://datos.gob.mx",
-      "commercial_use": true
-    },
-    {
-      "id": "MX/PoderJudicialMorelos",
-      "country": "MX",
-      "name": "Poder Judicial del Estado de Morelos",
       "license_id": "ogd",
       "license_name": "Open government data",
       "license_url": "https://datos.gob.mx",
@@ -14800,15 +14791,6 @@
       "commercial_use": true
     },
     {
-      "id": "TZ/TCRA",
-      "country": "TZ",
-      "name": "Tanzania Communications Regulatory Authority — Regulations & Legislation",
-      "license_id": "custom-terms",
-      "license_name": "TCRA Terms",
-      "license_url": "https://www.tcra.go.tz",
-      "commercial_use": true
-    },
-    {
       "id": "TZ/TanzLII",
       "country": "TZ",
       "name": "Tanzania Legal Information Institute",
@@ -15502,15 +15484,6 @@
       "commercial_use": false
     },
     {
-      "id": "UK/SRA",
-      "country": "UK",
-      "name": "UK Solicitors Regulation Authority",
-      "license_id": "ogl-3.0",
-      "license_name": "OGL v3.0",
-      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-      "commercial_use": true
-    },
-    {
       "id": "UK/SchoolsAdjudicator",
       "country": "UK",
       "name": "Office of the Schools Adjudicator (OSA) — Determinations",
@@ -15982,15 +15955,6 @@
       "id": "US/CA-LegalEthics",
       "country": "US",
       "name": "State Bar of California (COPRAC) — Formal Ethics Opinions",
-      "license_id": "pd-us",
-      "license_name": "Public domain — 17 U.S.C. § 105",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
-      "commercial_use": true
-    },
-    {
-      "id": "US/CA-Legislation",
-      "country": "US",
-      "name": "California Legislative Information (LegInfo FTP/MySQL)",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
