@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-21T16:16:55.120048+00:00",
+  "generated_at": "2026-09-21T21:47:14.117442+00:00",
   "summary": {
-    "total_complete": 2187,
-    "commercial_ok": 1993,
-    "non_commercial": 172,
+    "total_complete": 2190,
+    "commercial_ok": 1995,
+    "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
     "unique_license_ids": 30
@@ -20,19 +20,19 @@
       "display_name": "Public domain — 17 U.S.C. 105",
       "url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true,
-      "count": 379
+      "count": 380
     },
     "pd-gov": {
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 372
+      "count": 373
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 181
+      "count": 182
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
@@ -7906,6 +7906,15 @@
       "commercial_use": true
     },
     {
+      "id": "INTL/EAEULegalPortal",
+      "country": "INTL",
+      "name": "EAEU Legal Portal (Treaties and Legislation)",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "INTL/EBRD-Tribunal",
       "country": "INTL",
       "name": "EBRD Administrative Tribunal — Decisions",
@@ -8992,6 +9001,15 @@
       "license_id": "unverified",
       "license_name": "Verify terms with source",
       "license_url": null,
+      "commercial_use": false
+    },
+    {
+      "id": "INTL/WIPO-UDRP",
+      "country": "INTL",
+      "name": "WIPO Domain Name Dispute Decisions (UDRP)",
+      "license_id": "custom-terms",
+      "license_name": "WIPO Terms of Use",
+      "license_url": "https://www.wipo.int/about-wipo/en/policies/",
       "commercial_use": false
     },
     {
@@ -15955,6 +15973,15 @@
       "id": "US/CA-LegalEthics",
       "country": "US",
       "name": "State Bar of California (COPRAC) — Formal Ethics Opinions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/CA-Legislation",
+      "country": "US",
+      "name": "California Legislative Information (LegInfo FTP/MySQL)",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
