@@ -1,12 +1,12 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-21T21:47:14.117442+00:00",
+  "generated_at": "2026-09-22T00:39:38.452960+00:00",
   "summary": {
-    "total_complete": 2190,
-    "commercial_ok": 1995,
-    "non_commercial": 173,
+    "total_complete": 2183,
+    "commercial_ok": 1989,
+    "non_commercial": 172,
     "commercial_unknown": 22,
-    "unverified": 26,
+    "unverified": 25,
     "unique_license_ids": 30
   },
   "by_license": {
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 698
+      "count": 691
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -32,13 +32,13 @@
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 182
+      "count": 183
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true,
-      "count": 107
+      "count": 106
     },
     "eur-lex": {
       "display_name": "EUR-Lex reuse notice",
@@ -50,7 +50,7 @@
       "display_name": "OGL v3.0",
       "url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
       "commercial_use": true,
-      "count": 62
+      "count": 63
     },
     "pd-de": {
       "display_name": "Public domain — 5 UrhG",
@@ -86,7 +86,7 @@
       "display_name": "Unverified — needs research",
       "url": null,
       "commercial_use": null,
-      "count": 26
+      "count": 25
     },
     "ogl-canada": {
       "display_name": "Open Government Licence — Canada",
@@ -1858,15 +1858,6 @@
       "commercial_use": true
     },
     {
-      "id": "BS/SupremeCourt",
-      "country": "BS",
-      "name": "Bahamas Supreme Court Judgments",
-      "license_id": "ogd",
-      "license_name": "https://courts.bs/judgments/",
-      "license_url": "https://courts.bs/judgments/",
-      "commercial_use": true
-    },
-    {
       "id": "BS/URCA-Decisions",
       "country": "BS",
       "name": "Bahamas Utilities Regulation & Competition Authority — Decisions",
@@ -2836,15 +2827,6 @@
       "license_id": "ogd",
       "license_name": "Regulations on Open Government Information",
       "license_url": "http://www.gov.cn/zhengce/content/2019-04/15/content_5382991.htm",
-      "commercial_use": true
-    },
-    {
-      "id": "CN/NNSA",
-      "country": "CN",
-      "name": "National Nuclear Safety Administration of China",
-      "license_id": "ogd",
-      "license_name": "Government open access — PRC official legal documents. Laws, regulations, rules and other official documents of PRC state organs, and their official translations, are excluded from copyright by Art. 5 PRC Copyright Law. Reuse permitted with attribution to the issuing authority.",
-      "license_url": "https://www.mee.gov.cn/bzsm/",
       "commercial_use": true
     },
     {
@@ -5530,15 +5512,6 @@
       "commercial_use": true
     },
     {
-      "id": "FJ/SupremeCourt",
-      "country": "FJ",
-      "name": "Fiji Courts Online Decisions (judiciary.gov.fj)",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": "https://judiciary.gov.fj",
-      "commercial_use": true
-    },
-    {
       "id": "FK/Courts",
       "country": "FK",
       "name": "Falkland Islands Court Decisions",
@@ -6400,15 +6373,6 @@
       "license_id": "pd-gov",
       "license_name": "Public domain — official regulatory decisions of the Hellenic Data Protection Authority.",
       "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "GR/Diavgeia",
-      "country": "GR",
-      "name": "Diavgeia - Greek Government Decisions",
-      "license_id": "cc-by-4.0",
-      "license_name": "CC BY 4.0",
-      "license_url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true
     },
     {
@@ -7486,15 +7450,6 @@
       "id": "IN/TDSAT",
       "country": "IN",
       "name": "Telecom Disputes Settlement and Appellate Tribunal",
-      "license_id": "ogd",
-      "license_name": "Government Open Data License — India",
-      "license_url": "https://data.gov.in/government-open-data-license-india",
-      "commercial_use": true
-    },
-    {
-      "id": "IN/TRAI",
-      "country": "IN",
-      "name": "India Telecom Regulatory Authority (TRAI) Orders",
       "license_id": "ogd",
       "license_name": "Government Open Data License — India",
       "license_url": "https://data.gov.in/government-open-data-license-india",
@@ -8995,15 +8950,6 @@
       "commercial_use": false
     },
     {
-      "id": "INTL/WIPO-LexDB",
-      "country": "INTL",
-      "name": "WIPO Lex Database (IP Laws Worldwide)",
-      "license_id": "unverified",
-      "license_name": "Verify terms with source",
-      "license_url": null,
-      "commercial_use": false
-    },
-    {
       "id": "INTL/WIPO-UDRP",
       "country": "INTL",
       "name": "WIPO Domain Name Dispute Decisions (UDRP)",
@@ -9973,15 +9919,6 @@
       "license_id": "ogd",
       "license_name": "Constitutional Council of Cambodia — published decisions",
       "license_url": "https://www.ccc.gov.kh/",
-      "commercial_use": true
-    },
-    {
-      "id": "KH/Courts",
-      "country": "KH",
-      "name": "Extraordinary Chambers in the Courts of Cambodia (ECCC)",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": "https://archive.eccc.gov.kh",
       "commercial_use": true
     },
     {
@@ -11578,15 +11515,6 @@
       "commercial_use": true
     },
     {
-      "id": "MX/OrdenJuridicoEstatal",
-      "country": "MX",
-      "name": "Mexico Orden Juridico Nacional - State Legislation",
-      "license_id": "ogd",
-      "license_name": "Open government data",
-      "license_url": "https://datos.gob.mx",
-      "commercial_use": true
-    },
-    {
       "id": "MX/PoderJudicialBajaCaliforniaSur",
       "country": "MX",
       "name": "Poder Judicial del Estado de Baja California Sur",
@@ -11608,6 +11536,15 @@
       "id": "MX/PoderJudicialHidalgo",
       "country": "MX",
       "name": "Poder Judicial del Estado de Hidalgo",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://datos.gob.mx",
+      "commercial_use": true
+    },
+    {
+      "id": "MX/PoderJudicialMorelos",
+      "country": "MX",
+      "name": "Poder Judicial del Estado de Morelos",
       "license_id": "ogd",
       "license_name": "Open government data",
       "license_url": "https://datos.gob.mx",
@@ -12730,15 +12667,6 @@
       "commercial_use": true
     },
     {
-      "id": "PL/DziennikUrzedowy",
-      "country": "PL",
-      "name": "Dziennik Ustaw - Polish Official Journal",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": "https://dane.gov.pl",
-      "commercial_use": true
-    },
-    {
       "id": "PL/KIO",
       "country": "PL",
       "name": "KIO Rulings (Krajowa Izba Odwoławcza)",
@@ -13041,15 +12969,6 @@
       "name": "Portuguese Supreme Court (Supremo Tribunal de Justiça)",
       "license_id": "ogd",
       "license_name": "Open Government Data",
-      "license_url": "https://dados.gov.pt",
-      "commercial_use": true
-    },
-    {
-      "id": "PT/TribunalContas",
-      "country": "PT",
-      "name": "Portuguese Court of Auditors (Tribunal de Contas)",
-      "license_id": "ogd",
-      "license_name": "Open government data",
       "license_url": "https://dados.gov.pt",
       "commercial_use": true
     },
@@ -14809,6 +14728,15 @@
       "commercial_use": true
     },
     {
+      "id": "TZ/TCRA",
+      "country": "TZ",
+      "name": "Tanzania Communications Regulatory Authority — Regulations & Legislation",
+      "license_id": "custom-terms",
+      "license_name": "TCRA Terms",
+      "license_url": "https://www.tcra.go.tz",
+      "commercial_use": true
+    },
+    {
       "id": "TZ/TanzLII",
       "country": "TZ",
       "name": "Tanzania Legal Information Institute",
@@ -15500,6 +15428,15 @@
       "license_name": "Custom terms (© Solicitors Disciplinary Tribunal)",
       "license_url": "https://solicitorstribunal.org.uk/terms/",
       "commercial_use": false
+    },
+    {
+      "id": "UK/SRA",
+      "country": "UK",
+      "name": "UK Solicitors Regulation Authority",
+      "license_id": "ogl-3.0",
+      "license_name": "OGL v3.0",
+      "license_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "commercial_use": true
     },
     {
       "id": "UK/SchoolsAdjudicator",
