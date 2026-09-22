@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-22T07:24:53.799953+00:00",
+  "generated_at": "2026-09-22T21:12:52.209965+00:00",
   "summary": {
-    "total_complete": 2187,
-    "commercial_ok": 1992,
+    "total_complete": 2191,
+    "commercial_ok": 1996,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 693
+      "count": 697
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -5530,6 +5530,15 @@
       "commercial_use": true
     },
     {
+      "id": "FJ/SupremeCourt",
+      "country": "FJ",
+      "name": "Fiji Courts Online Decisions (judiciary.gov.fj)",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": "https://judiciary.gov.fj",
+      "commercial_use": true
+    },
+    {
       "id": "FK/Courts",
       "country": "FK",
       "name": "Falkland Islands Court Decisions",
@@ -7477,6 +7486,15 @@
       "id": "IN/TDSAT",
       "country": "IN",
       "name": "Telecom Disputes Settlement and Appellate Tribunal",
+      "license_id": "ogd",
+      "license_name": "Government Open Data License — India",
+      "license_url": "https://data.gov.in/government-open-data-license-india",
+      "commercial_use": true
+    },
+    {
+      "id": "IN/TRAI",
+      "country": "IN",
+      "name": "India Telecom Regulatory Authority (TRAI) Orders",
       "license_id": "ogd",
       "license_name": "Government Open Data License — India",
       "license_url": "https://data.gov.in/government-open-data-license-india",
@@ -9955,6 +9973,15 @@
       "license_id": "ogd",
       "license_name": "Constitutional Council of Cambodia — published decisions",
       "license_url": "https://www.ccc.gov.kh/",
+      "commercial_use": true
+    },
+    {
+      "id": "KH/Courts",
+      "country": "KH",
+      "name": "Extraordinary Chambers in the Courts of Cambodia (ECCC)",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": "https://archive.eccc.gov.kh",
       "commercial_use": true
     },
     {
@@ -13005,6 +13032,15 @@
       "name": "Portuguese Supreme Court (Supremo Tribunal de Justiça)",
       "license_id": "ogd",
       "license_name": "Open Government Data",
+      "license_url": "https://dados.gov.pt",
+      "commercial_use": true
+    },
+    {
+      "id": "PT/TribunalContas",
+      "country": "PT",
+      "name": "Portuguese Court of Auditors (Tribunal de Contas)",
+      "license_id": "ogd",
+      "license_name": "Open government data",
       "license_url": "https://dados.gov.pt",
       "commercial_use": true
     },
