@@ -1,12 +1,12 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-22T00:39:38.452960+00:00",
+  "generated_at": "2026-09-22T07:24:53.799953+00:00",
   "summary": {
-    "total_complete": 2183,
-    "commercial_ok": 1989,
-    "non_commercial": 172,
+    "total_complete": 2187,
+    "commercial_ok": 1992,
+    "non_commercial": 173,
     "commercial_unknown": 22,
-    "unverified": 25,
+    "unverified": 26,
     "unique_license_ids": 30
   },
   "by_license": {
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 691
+      "count": 693
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -38,7 +38,7 @@
       "display_name": "CC BY 4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true,
-      "count": 106
+      "count": 107
     },
     "eur-lex": {
       "display_name": "EUR-Lex reuse notice",
@@ -86,7 +86,7 @@
       "display_name": "Unverified — needs research",
       "url": null,
       "commercial_use": null,
-      "count": 25
+      "count": 26
     },
     "ogl-canada": {
       "display_name": "Open Government Licence — Canada",
@@ -1858,6 +1858,15 @@
       "commercial_use": true
     },
     {
+      "id": "BS/SupremeCourt",
+      "country": "BS",
+      "name": "Bahamas Supreme Court Judgments",
+      "license_id": "ogd",
+      "license_name": "https://courts.bs/judgments/",
+      "license_url": "https://courts.bs/judgments/",
+      "commercial_use": true
+    },
+    {
       "id": "BS/URCA-Decisions",
       "country": "BS",
       "name": "Bahamas Utilities Regulation & Competition Authority — Decisions",
@@ -2827,6 +2836,15 @@
       "license_id": "ogd",
       "license_name": "Regulations on Open Government Information",
       "license_url": "http://www.gov.cn/zhengce/content/2019-04/15/content_5382991.htm",
+      "commercial_use": true
+    },
+    {
+      "id": "CN/NNSA",
+      "country": "CN",
+      "name": "National Nuclear Safety Administration of China",
+      "license_id": "ogd",
+      "license_name": "Government open access — PRC official legal documents. Laws, regulations, rules and other official documents of PRC state organs, and their official translations, are excluded from copyright by Art. 5 PRC Copyright Law. Reuse permitted with attribution to the issuing authority.",
+      "license_url": "https://www.mee.gov.cn/bzsm/",
       "commercial_use": true
     },
     {
@@ -6376,6 +6394,15 @@
       "commercial_use": true
     },
     {
+      "id": "GR/Diavgeia",
+      "country": "GR",
+      "name": "Diavgeia - Greek Government Decisions",
+      "license_id": "cc-by-4.0",
+      "license_name": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use": true
+    },
+    {
       "id": "GR/EETT",
       "country": "GR",
       "name": "Hellenic Telecommunications Commission (EETT)",
@@ -8947,6 +8974,15 @@
       "license_id": "cc-by-nc-sa",
       "license_name": "CC BY-NC-SA 3.0 IGO",
       "license_url": "https://creativecommons.org/licenses/by-nc-sa/3.0/igo/",
+      "commercial_use": false
+    },
+    {
+      "id": "INTL/WIPO-LexDB",
+      "country": "INTL",
+      "name": "WIPO Lex Database (IP Laws Worldwide)",
+      "license_id": "unverified",
+      "license_name": "Verify terms with source",
+      "license_url": null,
       "commercial_use": false
     },
     {
