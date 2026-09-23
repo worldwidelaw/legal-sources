@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-23T00:04:31.877142+00:00",
+  "generated_at": "2026-09-23T07:27:46.018486+00:00",
   "summary": {
-    "total_complete": 2191,
-    "commercial_ok": 1996,
+    "total_complete": 2193,
+    "commercial_ok": 1998,
     "non_commercial": 173,
     "commercial_unknown": 22,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 697
+      "count": 699
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -11578,6 +11578,15 @@
       "commercial_use": true
     },
     {
+      "id": "MX/OrdenJuridicoEstatal",
+      "country": "MX",
+      "name": "Mexico Orden Juridico Nacional - State Legislation",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://datos.gob.mx",
+      "commercial_use": true
+    },
+    {
       "id": "MX/PoderJudicialBajaCaliforniaSur",
       "country": "MX",
       "name": "Poder Judicial del Estado de Baja California Sur",
@@ -12727,6 +12736,15 @@
       "license_id": "cc-by-4.0",
       "license_name": "CC BY 4.0",
       "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "PL/DziennikUrzedowy",
+      "country": "PL",
+      "name": "Dziennik Ustaw - Polish Official Journal",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": "https://dane.gov.pl",
       "commercial_use": true
     },
     {
