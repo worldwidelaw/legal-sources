@@ -1,11 +1,11 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-23T07:27:46.018486+00:00",
+  "generated_at": "2026-09-23T13:25:17.714910+00:00",
   "summary": {
-    "total_complete": 2193,
+    "total_complete": 2194,
     "commercial_ok": 1998,
     "non_commercial": 173,
-    "commercial_unknown": 22,
+    "commercial_unknown": 23,
     "unverified": 26,
     "unique_license_ids": 30
   },
@@ -20,7 +20,7 @@
       "display_name": "Public domain — 17 U.S.C. 105",
       "url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true,
-      "count": 380
+      "count": 381
     },
     "pd-gov": {
       "display_name": "Public domain (government works)",
@@ -56,7 +56,7 @@
       "display_name": "Public domain — 5 UrhG",
       "url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true,
-      "count": 44
+      "count": 43
     },
     "custom-nc": {
       "display_name": "Custom non-commercial terms",
@@ -98,7 +98,7 @@
       "display_name": "",
       "url": null,
       "commercial_use": null,
-      "count": 18
+      "count": 19
     },
     "cc-by-nc": {
       "display_name": "CC BY-NC 4.0",
@@ -3691,15 +3691,6 @@
       "license_id": "dl-de-2.0",
       "license_name": "Data licence Germany – attribution – Version 2.0",
       "license_url": "https://www.govdata.de/dl-de/by-2-0",
-      "commercial_use": true
-    },
-    {
-      "id": "DE/HamburgCaseLaw",
-      "country": "DE",
-      "name": "Hamburg State Court Decisions (justiz.hamburg.de)",
-      "license_id": "pd-de",
-      "license_name": "Public domain — § 5 UrhG",
-      "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true
     },
     {
@@ -16879,6 +16870,15 @@
       "commercial_use": true
     },
     {
+      "id": "US/GovInfoUSCourts",
+      "country": "US",
+      "name": "GovInfo Federal Court Opinions (USCOURTS)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
       "id": "US/HI-AGOpinions",
       "country": "US",
       "name": "Hawaii Attorney General Opinions",
@@ -19523,6 +19523,15 @@
       "license_name": "Open Government Data",
       "license_url": "https://bviita.vg",
       "commercial_use": true
+    },
+    {
+      "id": "VI/Legislature",
+      "country": "VI",
+      "name": "USVI Legislature Acts & Code",
+      "license_id": "",
+      "license_name": "",
+      "license_url": null,
+      "commercial_use": null
     },
     {
       "id": "VI/SuperiorCourt",
