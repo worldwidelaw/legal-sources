@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-23T13:25:17.714910+00:00",
+  "generated_at": "2026-09-23T18:18:03.921644+00:00",
   "summary": {
-    "total_complete": 2194,
-    "commercial_ok": 1998,
+    "total_complete": 2196,
+    "commercial_ok": 2000,
     "non_commercial": 173,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -20,7 +20,7 @@
       "display_name": "Public domain — 17 U.S.C. 105",
       "url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true,
-      "count": 381
+      "count": 382
     },
     "pd-gov": {
       "display_name": "Public domain (government works)",
@@ -56,7 +56,7 @@
       "display_name": "Public domain — 5 UrhG",
       "url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true,
-      "count": 43
+      "count": 44
     },
     "custom-nc": {
       "display_name": "Custom non-commercial terms",
@@ -3691,6 +3691,15 @@
       "license_id": "dl-de-2.0",
       "license_name": "Data licence Germany – attribution – Version 2.0",
       "license_url": "https://www.govdata.de/dl-de/by-2-0",
+      "commercial_use": true
+    },
+    {
+      "id": "DE/HamburgCaseLaw",
+      "country": "DE",
+      "name": "Hamburg State Court Decisions (justiz.hamburg.de)",
+      "license_id": "pd-de",
+      "license_name": "Public domain — § 5 UrhG",
+      "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true
     },
     {
@@ -18594,6 +18603,15 @@
       "name": "Presidential Documents (Executive Orders, Proclamations)",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/RECAP",
+      "country": "US",
+      "name": "RECAP Archive - Federal Court Documents",
+      "license_id": "pd-us",
+      "license_name": "US Public Domain",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
