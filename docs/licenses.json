@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-24T09:04:00.466708+00:00",
+  "generated_at": "2026-09-24T19:50:48.265284+00:00",
   "summary": {
-    "total_complete": 2190,
-    "commercial_ok": 1996,
-    "non_commercial": 171,
+    "total_complete": 2193,
+    "commercial_ok": 1998,
+    "non_commercial": 172,
     "commercial_unknown": 23,
     "unverified": 26,
     "unique_license_ids": 30
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 698
+      "count": 699
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,13 +26,13 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 370
+      "count": 371
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 182
+      "count": 183
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
@@ -9103,6 +9103,15 @@
       "commercial_use": false
     },
     {
+      "id": "IQ/CBI-Regulations",
+      "country": "IQ",
+      "name": "Central Bank of Iraq — Regulations & Circulars",
+      "license_id": "ogd",
+      "license_name": "Open Government Data (Iraq)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "IQ/KRG-Legislation",
       "country": "IQ",
       "name": "Kurdistan Region Parliament Legislation",
@@ -9832,6 +9841,15 @@
       "commercial_use": true
     },
     {
+      "id": "KE/EnvironmentTribunal",
+      "country": "KE",
+      "name": "Kenya National Environment Tribunal Decisions",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (government)",
+      "license_url": "https://new.kenyalaw.org/about/",
+      "commercial_use": true
+    },
+    {
       "id": "KE/IRA",
       "country": "KE",
       "name": "Kenya Insurance Regulatory Authority — Guidelines & Decisions",
@@ -9911,6 +9929,15 @@
       "license_name": "Open Government Data",
       "license_url": "https://portal.sot.kg",
       "commercial_use": true
+    },
+    {
+      "id": "KH/ArbitrationCouncil",
+      "country": "KH",
+      "name": "Arbitration Council of Cambodia — Labor Decisions",
+      "license_id": "custom-terms",
+      "license_name": "Arbitration Council — All Rights Reserved (site terms)",
+      "license_url": "https://www.arbitrationcouncil.org/",
+      "commercial_use": false
     },
     {
       "id": "KH/CCF-Prakas",
