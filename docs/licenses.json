@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-23T22:45:38.275176+00:00",
+  "generated_at": "2026-09-24T03:31:23.718778+00:00",
   "summary": {
-    "total_complete": 2196,
-    "commercial_ok": 2000,
-    "non_commercial": 173,
+    "total_complete": 2188,
+    "commercial_ok": 1994,
+    "non_commercial": 171,
     "commercial_unknown": 23,
     "unverified": 26,
     "unique_license_ids": 30
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 699
+      "count": 696
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,13 +26,13 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 373
+      "count": 370
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 183
+      "count": 182
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
@@ -110,7 +110,7 @@
       "display_name": "CC BY-NC-SA 4.0",
       "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
       "commercial_use": false,
-      "count": 11
+      "count": 10
     },
     "nlod-2.0": {
       "display_name": "NLOD 2.0",
@@ -4171,15 +4171,6 @@
       "commercial_use": true
     },
     {
-      "id": "DZ/COSOB",
-      "country": "DZ",
-      "name": "Algeria COSOB Securities Market Regulations",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "DZ/CourSupreme",
       "country": "DZ",
       "name": "Algeria Supreme Court (Cour suprême) Decisions",
@@ -7843,15 +7834,6 @@
       "commercial_use": true
     },
     {
-      "id": "INTL/CodexAlimentarius",
-      "country": "INTL",
-      "name": "Codex Alimentarius — FAO/WHO International Food Standards",
-      "license_id": "cc-by-nc-sa",
-      "license_name": "CC BY-NC-SA 3.0 IGO",
-      "license_url": "https://creativecommons.org/licenses/by-nc-sa/3.0/igo/",
-      "commercial_use": false
-    },
-    {
       "id": "INTL/ColumbiaGFE",
       "country": "INTL",
       "name": "Columbia University Global Freedom of Expression Case Law Database",
@@ -8968,15 +8950,6 @@
       "commercial_use": true
     },
     {
-      "id": "INTL/WCO-Conventions",
-      "country": "INTL",
-      "name": "World Customs Organization Conventions & Legal Instruments",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "INTL/WENRA",
       "country": "INTL",
       "name": "Western European Nuclear Regulators Association",
@@ -9110,15 +9083,6 @@
       "license_name": "World Rugby Terms of Use (All Rights Reserved)",
       "license_url": "https://www.world.rugby/organisation/about-us/terms-conditions",
       "commercial_use": false
-    },
-    {
-      "id": "IQ/CBI-Regulations",
-      "country": "IQ",
-      "name": "Central Bank of Iraq — Regulations & Circulars",
-      "license_id": "ogd",
-      "license_name": "Open Government Data (Iraq)",
-      "license_url": null,
-      "commercial_use": true
     },
     {
       "id": "IQ/KRG-Legislation",
@@ -9850,15 +9814,6 @@
       "commercial_use": true
     },
     {
-      "id": "KE/EnvironmentTribunal",
-      "country": "KE",
-      "name": "Kenya National Environment Tribunal Decisions",
-      "license_id": "pd-gov",
-      "license_name": "Public domain (government)",
-      "license_url": "https://new.kenyalaw.org/about/",
-      "commercial_use": true
-    },
-    {
       "id": "KE/IRA",
       "country": "KE",
       "name": "Kenya Insurance Regulatory Authority — Guidelines & Decisions",
@@ -9940,15 +9895,6 @@
       "commercial_use": true
     },
     {
-      "id": "KH/ArbitrationCouncil",
-      "country": "KH",
-      "name": "Arbitration Council of Cambodia — Labor Decisions",
-      "license_id": "custom-terms",
-      "license_name": "Arbitration Council — All Rights Reserved (site terms)",
-      "license_url": "https://www.arbitrationcouncil.org/",
-      "commercial_use": false
-    },
-    {
       "id": "KH/CCF-Prakas",
       "country": "KH",
       "name": "Cambodia Competition Commission — Prakas",
@@ -10000,15 +9946,6 @@
       "license_id": "custom-terms",
       "license_name": "Custom Terms",
       "license_url": "https://huskyandpartners.com/huskypublication/legal-library",
-      "commercial_use": true
-    },
-    {
-      "id": "KH/NBC",
-      "country": "KH",
-      "name": "Cambodia National Bank Prakas and Circulars",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain (Government)",
-      "license_url": null,
       "commercial_use": true
     },
     {
@@ -10854,15 +10791,6 @@
       "name": "LegiMonaco Legal Database",
       "license_id": "ogd",
       "license_name": "Government open access — Monaco consolidated legislation published by the Gouvernement Princier. Official legal texts freely accessible for consultation.",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "MD/BNM",
-      "country": "MD",
-      "name": "National Bank of Moldova — Regulations & Decisions",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain (Government)",
       "license_url": null,
       "commercial_use": true
     },
