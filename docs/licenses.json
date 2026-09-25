@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-25T09:27:19.250158+00:00",
+  "generated_at": "2026-09-25T15:02:42.695640+00:00",
   "summary": {
-    "total_complete": 2192,
-    "commercial_ok": 1997,
+    "total_complete": 2194,
+    "commercial_ok": 1999,
     "non_commercial": 172,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 698
+      "count": 699
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 371
+      "count": 372
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -3051,6 +3051,15 @@
       "name": "Colombia Secretaria del Senado Laws",
       "license_id": "pd-gov",
       "license_name": "Official Colombian legislation — public domain under Colombian law (Art. 71, Ley 23 de 1982: official texts of legislative, administrative, and judicial acts are not subject to copyright).",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "CR/BCCR-Regulations",
+      "country": "CR",
+      "name": "Banco Central de Costa Rica — Regulations",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
       "license_url": null,
       "commercial_use": true
     },
@@ -6480,6 +6489,15 @@
       "name": "Legal Council of the State (NSK)",
       "license_id": "pd-gov",
       "license_name": "Public domain — official government legal opinions of the Hellenic Republic.",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "GR/NTA",
+      "country": "GR",
+      "name": "National Transparency Authority (AEAD)",
+      "license_id": "pd-gov",
+      "license_name": "Public domain",
       "license_url": null,
       "commercial_use": true
     },
