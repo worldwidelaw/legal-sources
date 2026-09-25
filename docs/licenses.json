@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-24T23:03:41.995627+00:00",
+  "generated_at": "2026-09-25T03:49:02.863198+00:00",
   "summary": {
-    "total_complete": 2194,
-    "commercial_ok": 1999,
+    "total_complete": 2192,
+    "commercial_ok": 1997,
     "non_commercial": 172,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 699
+      "count": 696
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 372
+      "count": 373
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -4495,15 +4495,6 @@
       "commercial_use": true
     },
     {
-      "id": "ES/DGT-Consultas",
-      "country": "ES",
-      "name": "Spanish Tax Binding Rulings (Consultas Vinculantes DGT)",
-      "license_id": "ogd",
-      "license_name": "Spanish PSI reuse regulations",
-      "license_url": "https://datos.gob.es/en/terms",
-      "commercial_use": true
-    },
-    {
       "id": "ES/Extremadura",
       "country": "ES",
       "name": "Extremadura Regional Legislation (DOE)",
@@ -7486,15 +7477,6 @@
       "id": "IN/TDSAT",
       "country": "IN",
       "name": "Telecom Disputes Settlement and Appellate Tribunal",
-      "license_id": "ogd",
-      "license_name": "Government Open Data License — India",
-      "license_url": "https://data.gov.in/government-open-data-license-india",
-      "commercial_use": true
-    },
-    {
-      "id": "IN/TRAI",
-      "country": "IN",
-      "name": "India Telecom Regulatory Authority (TRAI) Orders",
       "license_id": "ogd",
       "license_name": "Government Open Data License — India",
       "license_url": "https://data.gov.in/government-open-data-license-india",
@@ -10849,6 +10831,15 @@
       "commercial_use": true
     },
     {
+      "id": "MD/BNM",
+      "country": "MD",
+      "name": "National Bank of Moldova — Regulations & Decisions",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "MD/CurteaConstitutionala",
       "country": "MD",
       "name": "Moldova Constitutional Court",
@@ -12555,15 +12546,6 @@
       "name": "Peru Jurado Nacional de Elecciones — Resoluciones",
       "license_id": "ogd",
       "license_name": "Open Government Data",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "PE/OSCE",
-      "country": "PE",
-      "name": "Peru OSCE - Public Procurement Tribunal Resolutions",
-      "license_id": "ogd",
-      "license_name": "Official Peruvian government data — tribunal resolutions published on gob.pe. Peruvian administrative decisions are public acts. Peru's open government data policy applies.",
       "license_url": null,
       "commercial_use": true
     },
