@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-26T14:11:53.899104+00:00",
+  "generated_at": "2026-09-26T19:07:10.235800+00:00",
   "summary": {
-    "total_complete": 2194,
-    "commercial_ok": 1999,
-    "non_commercial": 172,
+    "total_complete": 2192,
+    "commercial_ok": 1998,
+    "non_commercial": 171,
     "commercial_unknown": 23,
     "unverified": 26,
     "unique_license_ids": 30
@@ -32,7 +32,7 @@
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 183
+      "count": 182
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
@@ -56,7 +56,7 @@
       "display_name": "Public domain — 5 UrhG",
       "url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true,
-      "count": 44
+      "count": 43
     },
     "custom-nc": {
       "display_name": "Custom non-commercial terms",
@@ -3600,15 +3600,6 @@
       "name": "German Federal Institute for Drugs (BfArM) - Rote-Hand-Briefe",
       "license_id": "pd-de",
       "license_name": "§ 5 UrhG",
-      "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
-      "commercial_use": true
-    },
-    {
-      "id": "DE/BfDI",
-      "country": "DE",
-      "name": "German Federal Data Protection Authority (BfDI)",
-      "license_id": "pd-de",
-      "license_name": "Public domain — § 5 UrhG",
       "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true
     },
@@ -7651,15 +7642,6 @@
       "license_id": "custom-terms",
       "license_name": "BIS Terms and Conditions",
       "license_url": "https://www.bis.org/about/terms-conditions",
-      "commercial_use": false
-    },
-    {
-      "id": "INTL/BasketballArbitralTribunal",
-      "country": "INTL",
-      "name": "FIBA Basketball Arbitral Tribunal (BAT) Awards",
-      "license_id": "custom-terms",
-      "license_name": "FIBA Terms (All Rights Reserved)",
-      "license_url": "https://about.fiba.basketball/en/footer/terms-conditions",
       "commercial_use": false
     },
     {
@@ -16870,15 +16852,6 @@
       "commercial_use": true
     },
     {
-      "id": "US/GovInfoUSCourts",
-      "country": "US",
-      "name": "GovInfo Federal Court Opinions (USCOURTS)",
-      "license_id": "pd-us",
-      "license_name": "Public domain — 17 U.S.C. § 105",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
-      "commercial_use": true
-    },
-    {
       "id": "US/HI-AGOpinions",
       "country": "US",
       "name": "Hawaii Attorney General Opinions",
@@ -17836,6 +17809,15 @@
       "id": "US/ND-Courts",
       "country": "US",
       "name": "North Dakota State Courts",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/ND-Legislation",
+      "country": "US",
+      "name": "North Dakota Century Code (ndlegis.gov)",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
