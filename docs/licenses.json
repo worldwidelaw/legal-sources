@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-25T23:10:18.090357+00:00",
+  "generated_at": "2026-09-26T03:54:40.383278+00:00",
   "summary": {
-    "total_complete": 2192,
-    "commercial_ok": 1997,
+    "total_complete": 2194,
+    "commercial_ok": 1999,
     "non_commercial": 172,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 698
+      "count": 699
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -44,7 +44,7 @@
       "display_name": "EUR-Lex reuse notice",
       "url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
       "commercial_use": true,
-      "count": 63
+      "count": 64
     },
     "ogl-3.0": {
       "display_name": "OGL v3.0",
@@ -5314,6 +5314,15 @@
       "commercial_use": true
     },
     {
+      "id": "EU/TDI",
+      "country": "EU",
+      "name": "EU Trade Defence Instruments",
+      "license_id": "eur-lex",
+      "license_name": "EUR-Lex reuse notice",
+      "license_url": "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html",
+      "commercial_use": true
+    },
+    {
       "id": "EU/TED",
       "country": "EU",
       "name": "EU Tenders Electronic Daily (TED)",
@@ -7090,6 +7099,15 @@
       "id": "IE/OCEI",
       "country": "IE",
       "name": "Commissioner for Environmental Information (Ireland) — Appeal Decisions",
+      "license_id": "ogd",
+      "license_name": "PSI Licence (Ireland)",
+      "license_url": "https://data.gov.ie/pages/opendatalicence",
+      "commercial_use": true
+    },
+    {
+      "id": "IE/OIC",
+      "country": "IE",
+      "name": "Office of the Information Commissioner (Ireland) — Review Decisions",
       "license_id": "ogd",
       "license_name": "PSI Licence (Ireland)",
       "license_url": "https://data.gov.ie/pages/opendatalicence",
