@@ -1,0 +1,37 @@
+{
+  "_id": "BR-DATAJUD-STJ_SUP_08002545920204058310",
+  "_source": "BR/DataJudCNJ",
+  "_type": "case_law",
+  "_fetched_at": "2026-07-28T23:16:39.554951+00:00",
+  "title": "Recurso Especial - 0800254-59.2020.4.05.8310 - STJ",
+  "text": "Classe processual: Recurso Especial\n\nAssuntos: Aposentadoria por Tempo de Contribuição (Art. 55/6)\n\nOrgao julgador: GABINETE DO MINISTRO SÉRGIO LUIZ KUKINA\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-07-25 Distribuição (tipo_de_distribuicao_redistribuicao: sorteio)\n2023-07-25 Conclusão (tipo_de_conclusao: para decisão)\n2023-07-17 Recebimento\n2023-10-09 Não-Provimento\n2023-10-11 Publicação\n2023-12-12 Trânsito em julgado\n2023-12-12 Baixa Definitiva\n2023-10-09 Ato ordinatório\n2023-10-10 Disponibilização no Diário da Justiça Eletrônico",
+  "date": "2023-07-17",
+  "date_last_update": "2024-07-24",
+  "case_number": "0800254-59.2020.4.05.8310",
+  "case_number_raw": "08002545920204058310",
+  "court": "STJ",
+  "court_tier": 1,
+  "chamber": "GABINETE DO MINISTRO SÉRGIO LUIZ KUKINA",
+  "jurisdiction": "Brazil",
+  "language": "pt",
+  "country": "BR",
+  "decision_type": "Recurso Especial",
+  "classe_codigo": 1032,
+  "assuntos": [
+    "Aposentadoria por Tempo de Contribuição (Art. 55/6)"
+  ],
+  "grau": "SUP",
+  "movement_count": 9,
+  "url": "https://www.cnj.jus.br/sistemas/datajud/",
+  "_raw_fields": {
+    "sistema": {
+      "codigo": 8,
+      "nome": "Outros"
+    },
+    "formato": {
+      "codigo": 1,
+      "nome": "Eletrônico"
+    },
+    "@timestamp": "2025-02-06T11:19:21.418687537Z"
+  }
+}
