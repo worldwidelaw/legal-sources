@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-26T19:07:10.235800+00:00",
+  "generated_at": "2026-09-26T22:26:09.826124+00:00",
   "summary": {
-    "total_complete": 2192,
-    "commercial_ok": 1998,
+    "total_complete": 2193,
+    "commercial_ok": 1999,
     "non_commercial": 171,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -20,7 +20,7 @@
       "display_name": "Public domain — 17 U.S.C. 105",
       "url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true,
-      "count": 381
+      "count": 382
     },
     "pd-gov": {
       "display_name": "Public domain (government works)",
@@ -16848,6 +16848,15 @@
       "name": "GovInfo (US Federal Legislation)",
       "license_id": "pd-gov",
       "license_name": "Public domain",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/GovInfoUSCourts",
+      "country": "US",
+      "name": "GovInfo Federal Court Opinions (USCOURTS)",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
