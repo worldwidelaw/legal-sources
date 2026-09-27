@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-26T22:26:09.826124+00:00",
+  "generated_at": "2026-09-27T04:04:23.009341+00:00",
   "summary": {
-    "total_complete": 2193,
-    "commercial_ok": 1999,
-    "non_commercial": 171,
+    "total_complete": 2195,
+    "commercial_ok": 2000,
+    "non_commercial": 172,
     "commercial_unknown": 23,
     "unverified": 26,
     "unique_license_ids": 30
@@ -32,7 +32,7 @@
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 182
+      "count": 183
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
@@ -56,7 +56,7 @@
       "display_name": "Public domain — 5 UrhG",
       "url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true,
-      "count": 43
+      "count": 44
     },
     "custom-nc": {
       "display_name": "Custom non-commercial terms",
@@ -3600,6 +3600,15 @@
       "name": "German Federal Institute for Drugs (BfArM) - Rote-Hand-Briefe",
       "license_id": "pd-de",
       "license_name": "§ 5 UrhG",
+      "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
+      "commercial_use": true
+    },
+    {
+      "id": "DE/BfDI",
+      "country": "DE",
+      "name": "German Federal Data Protection Authority (BfDI)",
+      "license_id": "pd-de",
+      "license_name": "Public domain — § 5 UrhG",
       "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true
     },
@@ -7642,6 +7651,15 @@
       "license_id": "custom-terms",
       "license_name": "BIS Terms and Conditions",
       "license_url": "https://www.bis.org/about/terms-conditions",
+      "commercial_use": false
+    },
+    {
+      "id": "INTL/BasketballArbitralTribunal",
+      "country": "INTL",
+      "name": "FIBA Basketball Arbitral Tribunal (BAT) Awards",
+      "license_id": "custom-terms",
+      "license_name": "FIBA Terms (All Rights Reserved)",
+      "license_url": "https://about.fiba.basketball/en/footer/terms-conditions",
       "commercial_use": false
     },
     {
