@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-28T08:19:53.942312+00:00",
+  "generated_at": "2026-09-28T17:59:53.403666+00:00",
   "summary": {
     "total_complete": 2193,
     "commercial_ok": 1998,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 698
+      "count": 699
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 373
+      "count": 372
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -559,15 +559,6 @@
       "license_id": "pd-gov",
       "license_name": "Government of Argentina — official opinions of the Attorney General",
       "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "AR/NormasGBA",
-      "country": "AR",
-      "name": "Buenos Aires Province Normative System (SIND)",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": "https://normas.gba.gob.ar/",
       "commercial_use": true
     },
     {
@@ -10732,6 +10723,15 @@
       "commercial_use": true
     },
     {
+      "id": "LY/LawSocietyGazette",
+      "country": "LY",
+      "name": "Libya Law Society — Official Gazette & Legislation Archive",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "LY/LibyanLawSociety",
       "country": "LY",
       "name": "Libyan Law and Society — Leiden/Benghazi Academic Collection",
@@ -11539,6 +11539,15 @@
       "license_id": "pd-gov",
       "license_name": "Public Domain (official legal text)",
       "license_url": "https://www.congresocoahuila.gob.mx/portal/leyes-estatales-vigentes/",
+      "commercial_use": true
+    },
+    {
+      "id": "MX/CongresoChihuahua",
+      "country": "MX",
+      "name": "H. Congreso del Estado de Chihuahua — Biblioteca Legislativa",
+      "license_id": "ogd",
+      "license_name": "Open Government Data — Mexico",
+      "license_url": "https://www.gob.mx/terminos",
       "commercial_use": true
     },
     {
@@ -13186,15 +13195,6 @@
       "license_id": "odbl-1.0",
       "license_name": "ODbL 1.0",
       "license_url": "https://opendatacommons.org/licenses/odbl/1-0/",
-      "commercial_use": true
-    },
-    {
-      "id": "RO/ICCJ",
-      "country": "RO",
-      "name": "Romanian High Court of Cassation and Justice (ICCJ)",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain (Romanian Government)",
-      "license_url": "https://www.scj.ro",
       "commercial_use": true
     },
     {
@@ -17050,15 +17050,6 @@
       "commercial_use": true
     },
     {
-      "id": "US/IL-IWCC",
-      "country": "US",
-      "name": "Illinois Workers' Compensation Commission — Decisions",
-      "license_id": "pd-us",
-      "license_name": "Public domain — 17 U.S.C. § 105",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
-      "commercial_use": true
-    },
-    {
       "id": "US/IL-LegalEthics",
       "country": "US",
       "name": "Illinois State Bar Association (ISBA) — Professional Conduct Advisory Opinions",
@@ -19060,6 +19051,15 @@
       "id": "US/WA-BIIA",
       "country": "US",
       "name": "Washington Board of Industrial Insurance Appeals — Significant Decisions",
+      "license_id": "pd-us",
+      "license_name": "Public domain — 17 U.S.C. § 105",
+      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
+      "commercial_use": true
+    },
+    {
+      "id": "US/WA-BTA",
+      "country": "US",
+      "name": "Washington State Board of Tax Appeals — Decisions",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
