@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-29T04:38:47.644583+00:00",
+  "generated_at": "2026-09-29T12:17:21.203650+00:00",
   "summary": {
-    "total_complete": 2195,
-    "commercial_ok": 2000,
-    "non_commercial": 172,
+    "total_complete": 2140,
+    "commercial_ok": 1946,
+    "non_commercial": 171,
     "commercial_unknown": 23,
     "unverified": 26,
     "unique_license_ids": 30
@@ -14,25 +14,25 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 699
+      "count": 663
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
       "url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true,
-      "count": 382
+      "count": 380
     },
     "pd-gov": {
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 373
+      "count": 362
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 183
+      "count": 180
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
@@ -122,7 +122,7 @@
       "display_name": "IODL 2.0",
       "url": "https://www.dati.gov.it/content/italian-open-data-license-v20",
       "commercial_use": true,
-      "count": 9
+      "count": 6
     },
     "cc-by-sa-4.0": {
       "display_name": "CC BY-SA 4.0",
@@ -451,15 +451,6 @@
       "license_id": "pd-gov",
       "license_name": "Angola Government Publications",
       "license_url": "https://angolex.com/",
-      "commercial_use": true
-    },
-    {
-      "id": "AO/LexAO",
-      "country": "AO",
-      "name": "Lex.ao — Free Angolan Legal Platform",
-      "license_id": "ogd",
-      "license_name": "Free access (Angolan legislation)",
-      "license_url": null,
       "commercial_use": true
     },
     {
@@ -1210,15 +1201,6 @@
       "commercial_use": false
     },
     {
-      "id": "BE/FISCONETplus-Doctrine",
-      "country": "BE",
-      "name": "Belgian Tax Doctrine (FISCONETplus Circulars)",
-      "license_id": "ogd",
-      "license_name": "Belgian Open Government Data",
-      "license_url": "https://data.gov.be/en/licence-conditions",
-      "commercial_use": true
-    },
-    {
       "id": "BE/FSMA",
       "country": "BE",
       "name": "Belgian Financial Services Authority (FSMA)",
@@ -1669,15 +1651,6 @@
       "commercial_use": true
     },
     {
-      "id": "BR/RFB-SolucoesConsulta",
-      "country": "BR",
-      "name": "Brazilian Federal Revenue Tax Rulings (Soluções de Consulta)",
-      "license_id": "ogd",
-      "license_name": "Open government data",
-      "license_url": "https://dados.gov.br",
-      "commercial_use": true
-    },
-    {
       "id": "BR/STJ",
       "country": "BR",
       "name": "Superior Tribunal de Justiça (STJ) — Brazil",
@@ -1819,15 +1792,6 @@
       "license_id": "ogd",
       "license_name": "https://www.courtofappeal.org.bs/judgments.php",
       "license_url": "https://www.courtofappeal.org.bs/judgments.php",
-      "commercial_use": true
-    },
-    {
-      "id": "BS/DIR-TaxGuidance",
-      "country": "BS",
-      "name": "Bahamas Department of Inland Revenue VAT Guidance",
-      "license_id": "ogd",
-      "license_name": "Government of The Bahamas, Department of Inland Revenue. Tax guidance published for public access. No formal open licence specified.",
-      "license_url": null,
       "commercial_use": true
     },
     {
@@ -3253,15 +3217,6 @@
       "commercial_use": true
     },
     {
-      "id": "CY/TaxTribunal",
-      "country": "CY",
-      "name": "Cyprus Tax Tribunal Decisions",
-      "license_id": "custom-terms",
-      "license_name": "CyLaw Terms of Use",
-      "license_url": "https://www.cylaw.org/terms.html",
-      "commercial_use": false
-    },
-    {
       "id": "CZ/ConstitutionalCourt",
       "country": "CZ",
       "name": "Czech Constitutional Court (Ústavní soud)",
@@ -4009,15 +3964,6 @@
       "commercial_use": true
     },
     {
-      "id": "DK/Skattestyrelsen-Vejledning",
-      "country": "DK",
-      "name": "Danish Tax Legal Guidance (Den Juridiske Vejledning)",
-      "license_id": "ogd",
-      "license_name": "Open Data",
-      "license_url": "https://info.skat.dk",
-      "commercial_use": true
-    },
-    {
       "id": "DM/FSU",
       "country": "DM",
       "name": "Dominica Financial Services Unit Legislation",
@@ -4042,15 +3988,6 @@
       "license_id": "ogd",
       "license_name": "https://dominica.gov.dm/laws-of-dominica",
       "license_url": "https://dominica.gov.dm/laws-of-dominica",
-      "commercial_use": true
-    },
-    {
-      "id": "DO/BCRD-Regulations",
-      "country": "DO",
-      "name": "Banco Central de la República Dominicana — Regulaciones",
-      "license_id": "ogd",
-      "license_name": "Open Government Data (Dominican Republic)",
-      "license_url": null,
       "commercial_use": true
     },
     {
@@ -4153,15 +4090,6 @@
       "commercial_use": true
     },
     {
-      "id": "DZ/ARPCE",
-      "country": "DZ",
-      "name": "Algeria ARPCE Telecom Regulatory Decisions",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "DZ/BankOfAlgeria",
       "country": "DZ",
       "name": "Bank of Algeria Regulations & Instructions",
@@ -4258,24 +4186,6 @@
       "license_id": "pd-gov",
       "license_name": "Public Domain (official documents)",
       "license_url": "https://www.riigiteataja.ee/en/eli/512122024001/consolide",
-      "commercial_use": true
-    },
-    {
-      "id": "EE/EMTA-TaxGuidance",
-      "country": "EE",
-      "name": "Estonia Tax and Customs Board (EMTA) Guidance",
-      "license_id": "pd-gov",
-      "license_name": "Estonian Public Information Act",
-      "license_url": "https://www.riigiteataja.ee/en/eli/514112013001/consolide",
-      "commercial_use": true
-    },
-    {
-      "id": "EE/EMTA-TaxRulings",
-      "country": "EE",
-      "name": "Estonian Tax and Customs Board Binding Rulings (Siduvad Eelotsused)",
-      "license_id": "ogd",
-      "license_name": "Open government data",
-      "license_url": "https://www.emta.ee/en",
       "commercial_use": true
     },
     {
@@ -5485,15 +5395,6 @@
       "commercial_use": true
     },
     {
-      "id": "FI/Vero-Guidance",
-      "country": "FI",
-      "name": "Finnish Tax Authority Detailed Guidance",
-      "license_id": "ogd",
-      "license_name": "vero.fi",
-      "license_url": "https://www.vero.fi",
-      "commercial_use": true
-    },
-    {
       "id": "FJ/FCCC-Decisions",
       "country": "FJ",
       "name": "Fijian Competition and Consumer Commission — Decisions",
@@ -6610,24 +6511,6 @@
       "commercial_use": false
     },
     {
-      "id": "GY/BOG-Regulations",
-      "country": "GY",
-      "name": "Bank of Guyana — Regulations & Guidelines",
-      "license_id": "ogd",
-      "license_name": "Open Government Data (Guyana)",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "GY/EPA-Regulations",
-      "country": "GY",
-      "name": "Guyana Environmental Protection Agency — Regulations",
-      "license_id": "ogd",
-      "license_name": "Government of Guyana public information",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "GY/GRA-TaxPolicy",
       "country": "GY",
       "name": "Guyana Revenue Authority — Tax Policies",
@@ -6799,15 +6682,6 @@
       "commercial_use": true
     },
     {
-      "id": "HR/PoreznaUprava-Misljenja",
-      "country": "HR",
-      "name": "Croatian Tax Authority Opinions (Mišljenja Središnjeg ureda)",
-      "license_id": "ogd",
-      "license_name": "Croatian Open Government Data",
-      "license_url": "https://data.gov.hr",
-      "commercial_use": true
-    },
-    {
       "id": "HR/Sabor",
       "country": "HR",
       "name": "Croatian Parliament (Hrvatski sabor)",
@@ -6823,33 +6697,6 @@
       "license_id": "ogd",
       "license_name": "Open Government Data",
       "license_url": "https://data.gov.hr/en",
-      "commercial_use": true
-    },
-    {
-      "id": "HT/ANJ-Repertoire",
-      "country": "HT",
-      "name": "Haiti Assemblée Nationale de la Jeunesse — Répertoire des Lois",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain",
-      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "commercial_use": true
-    },
-    {
-      "id": "HT/BRH-Regulations",
-      "country": "HT",
-      "name": "Banque de la République d'Haïti — Circulaires & Lois",
-      "license_id": "ogd",
-      "license_name": "Open Government Data (Haiti)",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "HT/CONATEL-Regulations",
-      "country": "HT",
-      "name": "Haiti CONATEL — Telecom Regulatory Texts",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": null,
       "commercial_use": true
     },
     {
@@ -7687,15 +7534,6 @@
       "license_id": "ogd",
       "license_name": "Andean Community Official Publication",
       "license_url": "https://www.comunidadandina.org/",
-      "commercial_use": true
-    },
-    {
-      "id": "INTL/CARICOM-Treaties",
-      "country": "INTL",
-      "name": "CARICOM Treaty Collection",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": null,
       "commercial_use": true
     },
     {
@@ -8698,15 +8536,6 @@
       "commercial_use": false
     },
     {
-      "id": "INTL/SCO-LegalDocs",
-      "country": "INTL",
-      "name": "Shanghai Cooperation Organization Legal Documents",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "INTL/SICE",
       "country": "INTL",
       "name": "SICE OAS Foreign Trade Information System",
@@ -8902,15 +8731,6 @@
       "license_id": "custom-terms",
       "license_name": "UNIDROIT Terms of Use",
       "license_url": "https://www.unilex.info/",
-      "commercial_use": true
-    },
-    {
-      "id": "INTL/UNOOSA-SpaceLaw",
-      "country": "INTL",
-      "name": "UN Office for Outer Space Affairs — Space Law Database",
-      "license_id": "ogd",
-      "license_name": "UN Terms of Use",
-      "license_url": "https://www.un.org/en/about-us/terms-of-use",
       "commercial_use": true
     },
     {
@@ -9238,15 +9058,6 @@
       "commercial_use": true
     },
     {
-      "id": "IT/AGCOM",
-      "country": "IT",
-      "name": "Italian Communications Authority (AGCOM)",
-      "license_id": "iodl-2.0",
-      "license_name": "Italian Open Data License v2.0 (IODL 2.0)",
-      "license_url": "https://www.dati.gov.it/content/italian-open-data-license-v20",
-      "commercial_use": true
-    },
-    {
       "id": "IT/AgenziEntrate",
       "country": "IT",
       "name": "Italian Revenue Agency (Agenzia delle Entrate)",
@@ -9256,27 +9067,9 @@
       "commercial_use": true
     },
     {
-      "id": "IT/AgenziaDogane",
-      "country": "IT",
-      "name": "Italian Customs Agency (Agenzia delle Dogane)",
-      "license_id": "iodl-2.0",
-      "license_name": "Italian Open Data License v2.0 (IODL 2.0)",
-      "license_url": "https://www.dati.gov.it/content/italian-open-data-license-v20",
-      "commercial_use": true
-    },
-    {
       "id": "IT/AgenziaEntrate",
       "country": "IT",
       "name": "Italian Revenue Agency Tax Doctrine (Interpelli & Circolari)",
-      "license_id": "iodl-2.0",
-      "license_name": "Italian Open Data License v2.0 (IODL 2.0)",
-      "license_url": "https://www.dati.gov.it/content/italian-open-data-license-v20",
-      "commercial_use": true
-    },
-    {
-      "id": "IT/Banca",
-      "country": "IT",
-      "name": "Bank of Italy - Supervision",
       "license_id": "iodl-2.0",
       "license_name": "Italian Open Data License v2.0 (IODL 2.0)",
       "license_url": "https://www.dati.gov.it/content/italian-open-data-license-v20",
@@ -9598,42 +9391,6 @@
       "commercial_use": true
     },
     {
-      "id": "JM/BOJ-Regulations",
-      "country": "JM",
-      "name": "Bank of Jamaica — Regulations & Standards",
-      "license_id": "ogd",
-      "license_name": "Open Government Data (Jamaica)",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "JM/CourtOfAppeal",
-      "country": "JM",
-      "name": "Jamaica Court of Appeal Judgments",
-      "license_id": "pd-gov",
-      "license_name": "Public domain (government)",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "JM/FSC-Guidelines",
-      "country": "JM",
-      "name": "Jamaica FSC — Financial Services Commission Guidelines",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "JM/FTC-Decisions",
-      "country": "JM",
-      "name": "Jamaica Fair Trading Commission — Decisions",
-      "license_id": "ogd",
-      "license_name": "Open Government Data (Jamaica)",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "JM/Gazette",
       "country": "JM",
       "name": "Jamaica Official Gazette (Ministry of Justice)",
@@ -9657,15 +9414,6 @@
       "name": "Jamaica Supreme Court Judgments (supremecourt.gov.jm)",
       "license_id": "ogd",
       "license_name": "Official Jamaican court judgments — published by the Supreme Court of Jamaica. Court decisions are public judicial acts. Jamaica Government Open Data.",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "JM/TAJ-PracticeNotes",
-      "country": "JM",
-      "name": "Jamaica Tax Administration — Practice Notes & Bulletins",
-      "license_id": "pd-gov",
-      "license_name": "Public domain (government)",
       "license_url": null,
       "commercial_use": true
     },
@@ -9766,15 +9514,6 @@
       "license_id": "ogd",
       "license_name": "Open government data",
       "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "JP/NTA-Circulars",
-      "country": "JP",
-      "name": "Japanese National Tax Agency Circulars",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": "https://www.nta.go.jp",
       "commercial_use": true
     },
     {
@@ -9900,24 +9639,6 @@
       "name": "Kyrgyzstan Constitutional Court Decisions",
       "license_id": "pd-gov",
       "license_name": "Public Domain",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "KG/GKTS-Telecom",
-      "country": "KG",
-      "name": "Kyrgyzstan State Agency for Communications — Decisions",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "KG/NationalBank-Regulations",
-      "country": "KG",
-      "name": "National Bank of Kyrgyzstan — Regulations",
-      "license_id": "ogd",
-      "license_name": "Open Government Data (Kyrgyzstan)",
       "license_url": null,
       "commercial_use": true
     },
@@ -10543,15 +10264,6 @@
       "commercial_use": true
     },
     {
-      "id": "LT/KT",
-      "country": "LT",
-      "name": "Lithuanian Competition Council — Decisions",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain (Government)",
-      "license_url": "https://kt.gov.lt/lt/atviri-duomenys",
-      "commercial_use": true
-    },
-    {
       "id": "LT/LITEKO",
       "country": "LT",
       "name": "Lithuania Court Information System (LITEKO) Public Decisions",
@@ -10674,15 +10386,6 @@
       "name": "Latvian Constitutional Court (Satversmes tiesa)",
       "license_id": "ogd",
       "license_name": "All rights reserved (Satversmes tiesa). Court decisions are publicly accessible but the site states \"All rights reserved.\" Latvian court judgments may be freely cited for legal purposes under Latvian law.",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "LV/KP",
-      "country": "LV",
-      "name": "Latvia Competition Council — Decisions",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain (Government)",
       "license_url": null,
       "commercial_use": true
     },
@@ -11029,15 +10732,6 @@
       "commercial_use": true
     },
     {
-      "id": "MK/AEC-Decisions",
-      "country": "MK",
-      "name": "North Macedonia Agency for Electronic Communications — Decisions",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "MK/ConstitutionalCourt",
       "country": "MK",
       "name": "North Macedonia Constitutional Court (Уставен суд)",
@@ -11052,15 +10746,6 @@
       "name": "North Macedonia Supreme Court Practice (Судска пракса - Врховен суд)",
       "license_id": "ogd",
       "license_name": "Government open access — North Macedonia Supreme Court case law published on the national judicial portal. Court decisions are public records.",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "MK/KZK",
-      "country": "MK",
-      "name": "North Macedonia Commission for Protection of Competition — Decisions",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain (Government)",
       "license_url": null,
       "commercial_use": true
     },
@@ -11179,15 +10864,6 @@
       "license_id": "ogd",
       "license_name": "Open Government Data (Mongolia)",
       "license_url": "https://www.mongolbank.mn/en/",
-      "commercial_use": true
-    },
-    {
-      "id": "MN/ConstitutionalCourt",
-      "country": "MN",
-      "name": "Mongolia Constitutional Court (Tsets) — Decisions",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain (Government)",
-      "license_url": null,
       "commercial_use": true
     },
     {
@@ -11347,15 +11023,6 @@
       "id": "MT/IDPC",
       "country": "MT",
       "name": "Malta Information & Data Protection Commissioner — GDPR Decisions",
-      "license_id": "ogd",
-      "license_name": "Open Government Data (Malta)",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "MT/MCCAA",
-      "country": "MT",
-      "name": "Malta Competition and Consumer Affairs Authority — Competition Decisions",
       "license_id": "ogd",
       "license_name": "Open Government Data (Malta)",
       "license_url": null,
@@ -11785,42 +11452,6 @@
       "commercial_use": true
     },
     {
-      "id": "NA/BON-Regulations",
-      "country": "NA",
-      "name": "Bank of Namibia — Regulations & Determinations",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "NA/CRAN-Decisions",
-      "country": "NA",
-      "name": "Communications Regulatory Authority of Namibia — Decisions",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "NA/LAC-Statutes",
-      "country": "NA",
-      "name": "Namibia Legal Assistance Centre — Annotated Statutes",
-      "license_id": "pd-gov",
-      "license_name": "Public domain (government)",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "NA/LRDC-LegislationReform",
-      "country": "NA",
-      "name": "Namibia Law Reform & Development Commission — Reports",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "NA/LawsAfricaActs",
       "country": "NA",
       "name": "Namibia Acts (NamibLII)",
@@ -11828,15 +11459,6 @@
       "license_name": "Laws.Africa Open Access",
       "license_url": "https://namiblii.org/",
       "commercial_use": false
-    },
-    {
-      "id": "NA/NAMFISA-Instruments",
-      "country": "NA",
-      "name": "Namibia Financial Institutions Supervisory Authority — Regulatory Instruments",
-      "license_id": "ogd",
-      "license_name": "Government of Namibia open data",
-      "license_url": null,
-      "commercial_use": true
     },
     {
       "id": "NA/NamibLII",
@@ -11983,15 +11605,6 @@
       "commercial_use": null
     },
     {
-      "id": "NI/BCN-Regulations",
-      "country": "NI",
-      "name": "Banco Central de Nicaragua — Regulaciones",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain (Government of Nicaragua)",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "NI/Digesto",
       "country": "NI",
       "name": "Nicaragua Digesto Juridico (Legislative Database)",
@@ -12006,6 +11619,15 @@
       "name": "Nicaragua National Assembly Legislation",
       "license_id": "ogd",
       "license_name": "Government open access — Nicaragua National Assembly legislation portal. Official legal texts published for public access. No explicit open license stated.",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "NI/SIBOIF-Normativa",
+      "country": "NI",
+      "name": "Superintendencia de Bancos — Normativa",
+      "license_id": "ogd",
+      "license_name": "Open Government Data (Nicaragua)",
       "license_url": null,
       "commercial_use": true
     },
@@ -12433,24 +12055,6 @@
       "commercial_use": true
     },
     {
-      "id": "OM/CMA-Regulations",
-      "country": "OM",
-      "name": "Oman Capital Market Authority — Regulations",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "OM/DecreeOm",
-      "country": "OM",
-      "name": "Oman Decrees Portal (decree.om)",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": "https://decree.om/",
-      "commercial_use": true
-    },
-    {
       "id": "OM/Legislation",
       "country": "OM",
       "name": "Oman Legal Database (qanoon.om)",
@@ -12511,15 +12115,6 @@
       "license_id": "ogd",
       "license_name": "Government of Panama, Direccion General de Ingresos. Tax resolutions and guidance published for public access. No formal open licence specified.",
       "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "PA/Legispan",
-      "country": "PA",
-      "name": "Legispan - Panama National Assembly Legislation",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": "https://legispan.asamblea.gob.pa",
       "commercial_use": true
     },
     {
@@ -12898,15 +12493,6 @@
       "license_id": "ogd",
       "license_name": "Open government data",
       "license_url": "https://maqam.najah.edu",
-      "commercial_use": true
-    },
-    {
-      "id": "PS/PMA-Regulations",
-      "country": "PS",
-      "name": "Palestine Monetary Authority — Regulations",
-      "license_id": "ogd",
-      "license_name": "Open Government Data (Palestine)",
-      "license_url": null,
       "commercial_use": true
     },
     {
@@ -13378,15 +12964,6 @@
       "commercial_use": true
     },
     {
-      "id": "SA/ALARB",
-      "country": "SA",
-      "name": "Saudi Commercial Court Cases (ALARB)",
-      "license_id": "custom-terms",
-      "license_name": "Apache 2.0",
-      "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
-      "commercial_use": true
-    },
-    {
       "id": "SA/ArabicLJP",
       "country": "SA",
       "name": "Saudi Commercial Court Judgments (HuggingFace)",
@@ -13402,15 +12979,6 @@
       "license_id": "ogd",
       "license_name": "Open Government Data",
       "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "SA/SAMARulebook",
-      "country": "SA",
-      "name": "Saudi Central Bank (SAMA) — Rulebook",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": "https://rulebook.sama.gov.sa/en/terms-and-conditions",
       "commercial_use": true
     },
     {
@@ -13977,15 +13545,6 @@
       "name": "Suriname Wetten.sr Legislation",
       "license_id": "ogd",
       "license_name": "Copyright wetten.sr (supported by Qualogy Caribbean). Suriname legislation database providing free public access to laws and regulations. No explicit open license stated; contact info@wetten.sr for reuse permissions.",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "SS/BOSS-Regulations",
-      "country": "SS",
-      "name": "Bank of South Sudan — Regulations & Circulars",
-      "license_id": "ogd",
-      "license_name": "Open Government Data (South Sudan)",
       "license_url": null,
       "commercial_use": true
     },
@@ -14787,15 +14346,6 @@
       "name": "Tanzania Fair Competition Commission — Decisions",
       "license_id": "pd-gov",
       "license_name": "Public domain (government)",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "TZ/FCT-Decisions",
-      "country": "TZ",
-      "name": "Fair Competition Tribunal — Case Digest",
-      "license_id": "ogd",
-      "license_name": "Open Government Data (Tanzania)",
       "license_url": null,
       "commercial_use": true
     },
@@ -16528,15 +16078,6 @@
       "commercial_use": true
     },
     {
-      "id": "US/DOJ-Antitrust",
-      "country": "US",
-      "name": "US DOJ Antitrust Division - Public Documents",
-      "license_id": "pd-us",
-      "license_name": "U.S. Public Domain",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
-      "commercial_use": true
-    },
-    {
       "id": "US/DOL",
       "country": "US",
       "name": "US Department of Labor Administrative Decisions (OALJ)",
@@ -16621,15 +16162,6 @@
       "id": "US/FERC-eLibrary",
       "country": "US",
       "name": "US Federal Energy Regulatory Commission — eLibrary Orders & Issuances",
-      "license_id": "pd-us",
-      "license_name": "Public domain — 17 U.S.C. § 105",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
-      "commercial_use": true
-    },
-    {
-      "id": "US/FINRA-Awards",
-      "country": "US",
-      "name": "FINRA Arbitration Awards (US Securities)",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
@@ -19777,15 +19309,6 @@
       "commercial_use": true
     },
     {
-      "id": "ZA/CompetitionTribunal",
-      "country": "ZA",
-      "name": "Competition Tribunal of South Africa - Cases",
-      "license_id": "ogd",
-      "license_name": "Open Government Data (South Africa)",
-      "license_url": "https://www.comptrib.co.za",
-      "commercial_use": true
-    },
-    {
       "id": "ZA/ConstitutionalCourt",
       "country": "ZA",
       "name": "South Africa Constitutional Court Judgments",
@@ -19834,15 +19357,6 @@
       "id": "ZA/SARS-AdditionalGuidance",
       "country": "ZA",
       "name": "South Africa SARS Practice Notes and Comprehensive Guides (sars.gov.za)",
-      "license_id": "custom-terms",
-      "license_name": "SARS Terms and Conditions",
-      "license_url": "https://www.sars.gov.za/legal-counsel/legal-policy/disclaimer/",
-      "commercial_use": true
-    },
-    {
-      "id": "ZA/SARS-Interpretations",
-      "country": "ZA",
-      "name": "South Africa Revenue Service Tax Interpretations",
       "license_id": "custom-terms",
       "license_name": "SARS Terms and Conditions",
       "license_url": "https://www.sars.gov.za/legal-counsel/legal-policy/disclaimer/",
@@ -19926,15 +19440,6 @@
       "name": "Securities and Exchange Commission of Zimbabwe — Notices",
       "license_id": "pd-gov",
       "license_name": "Public Government Documents (Zimbabwe)",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "ZW/ZIMRA-Rulings",
-      "country": "ZW",
-      "name": "Zimbabwe Revenue Authority — Tax Guidance & Rulings",
-      "license_id": "ogd",
-      "license_name": "Open Government Data (Zimbabwe)",
       "license_url": null,
       "commercial_use": true
     },
