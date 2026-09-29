@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-29T12:17:21.203650+00:00",
+  "generated_at": "2026-09-29T19:09:58.033805+00:00",
   "summary": {
-    "total_complete": 2140,
-    "commercial_ok": 1946,
+    "total_complete": 2143,
+    "commercial_ok": 1949,
     "non_commercial": 171,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 663
+      "count": 665
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -32,7 +32,7 @@
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 180
+      "count": 181
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
@@ -1651,6 +1651,15 @@
       "commercial_use": true
     },
     {
+      "id": "BR/RFB-SolucoesConsulta",
+      "country": "BR",
+      "name": "Brazilian Federal Revenue Tax Rulings (Soluções de Consulta)",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://dados.gov.br",
+      "commercial_use": true
+    },
+    {
       "id": "BR/STJ",
       "country": "BR",
       "name": "Superior Tribunal de Justiça (STJ) — Brazil",
@@ -1792,6 +1801,15 @@
       "license_id": "ogd",
       "license_name": "https://www.courtofappeal.org.bs/judgments.php",
       "license_url": "https://www.courtofappeal.org.bs/judgments.php",
+      "commercial_use": true
+    },
+    {
+      "id": "BS/DIR-TaxGuidance",
+      "country": "BS",
+      "name": "Bahamas Department of Inland Revenue VAT Guidance",
+      "license_id": "ogd",
+      "license_name": "Government of The Bahamas, Department of Inland Revenue. Tax guidance published for public access. No formal open licence specified.",
+      "license_url": null,
       "commercial_use": true
     },
     {
@@ -3214,6 +3232,15 @@
       "license_id": "ogd",
       "license_name": "Open Access",
       "license_url": "http://www.cylaw.org",
+      "commercial_use": true
+    },
+    {
+      "id": "CY/TaxTribunal",
+      "country": "CY",
+      "name": "Cyprus Tax Tribunal (Εφοριακό Συμβούλιο)",
+      "license_id": "custom-terms",
+      "license_name": "Cyprus Tax Tribunal — Terms of Use",
+      "license_url": "https://www.taxtribunal.gov.cy/taxtribunal/taxtribunal.nsf/terms_el/terms_el?opendocument",
       "commercial_use": true
     },
     {
