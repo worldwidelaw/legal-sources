@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-29T19:09:58.033805+00:00",
+  "generated_at": "2026-09-30T04:22:45.680059+00:00",
   "summary": {
-    "total_complete": 2143,
-    "commercial_ok": 1949,
+    "total_complete": 2148,
+    "commercial_ok": 1954,
     "non_commercial": 171,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 665
+      "count": 669
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 362
+      "count": 363
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -451,6 +451,15 @@
       "license_id": "pd-gov",
       "license_name": "Angola Government Publications",
       "license_url": "https://angolex.com/",
+      "commercial_use": true
+    },
+    {
+      "id": "AO/LexAO",
+      "country": "AO",
+      "name": "Lex.ao — Free Angolan Legal Platform",
+      "license_id": "ogd",
+      "license_name": "Free access (Angolan legislation)",
+      "license_url": null,
       "commercial_use": true
     },
     {
@@ -1199,6 +1208,15 @@
       "license_name": "DBRC disclaimer — commercial reuse requires prior express written consent",
       "license_url": "https://www.dbrc.be/disclaimer",
       "commercial_use": false
+    },
+    {
+      "id": "BE/FISCONETplus-Doctrine",
+      "country": "BE",
+      "name": "Belgian Tax Doctrine (FISCONETplus Circulars)",
+      "license_id": "ogd",
+      "license_name": "Belgian Open Government Data",
+      "license_url": "https://data.gov.be/en/licence-conditions",
+      "commercial_use": true
     },
     {
       "id": "BE/FSMA",
@@ -3991,6 +4009,15 @@
       "commercial_use": true
     },
     {
+      "id": "DK/Skattestyrelsen-Vejledning",
+      "country": "DK",
+      "name": "Danish Tax Legal Guidance (Den Juridiske Vejledning)",
+      "license_id": "ogd",
+      "license_name": "Open Data",
+      "license_url": "https://info.skat.dk",
+      "commercial_use": true
+    },
+    {
       "id": "DM/FSU",
       "country": "DM",
       "name": "Dominica Financial Services Unit Legislation",
@@ -4213,6 +4240,15 @@
       "license_id": "pd-gov",
       "license_name": "Public Domain (official documents)",
       "license_url": "https://www.riigiteataja.ee/en/eli/512122024001/consolide",
+      "commercial_use": true
+    },
+    {
+      "id": "EE/EMTA-TaxGuidance",
+      "country": "EE",
+      "name": "Estonia Tax and Customs Board (EMTA) Guidance",
+      "license_id": "pd-gov",
+      "license_name": "Estonian Public Information Act",
+      "license_url": "https://www.riigiteataja.ee/en/eli/514112013001/consolide",
       "commercial_use": true
     },
     {
@@ -13006,6 +13042,15 @@
       "license_id": "ogd",
       "license_name": "Open Government Data",
       "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "SA/SAMARulebook",
+      "country": "SA",
+      "name": "Saudi Central Bank (SAMA) — Rulebook",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": "https://rulebook.sama.gov.sa/en/terms-and-conditions",
       "commercial_use": true
     },
     {
