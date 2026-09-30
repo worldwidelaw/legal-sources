@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-30T12:03:14.610265+00:00",
+  "generated_at": "2026-09-30T18:51:48.588438+00:00",
   "summary": {
-    "total_complete": 2154,
-    "commercial_ok": 1960,
+    "total_complete": 2156,
+    "commercial_ok": 1962,
     "non_commercial": 171,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 672
+      "count": 673
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 363
+      "count": 364
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -9508,6 +9508,15 @@
       "commercial_use": true
     },
     {
+      "id": "JM/CourtOfAppeal",
+      "country": "JM",
+      "name": "Jamaica Court of Appeal Judgments",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "JM/Gazette",
       "country": "JM",
       "name": "Jamaica Official Gazette (Ministry of Justice)",
@@ -9631,6 +9640,15 @@
       "license_id": "ogd",
       "license_name": "Open government data",
       "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "JP/NTA-Circulars",
+      "country": "JP",
+      "name": "Japanese National Tax Agency Circulars",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": "https://www.nta.go.jp",
       "commercial_use": true
     },
     {
