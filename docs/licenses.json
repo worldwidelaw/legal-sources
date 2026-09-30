@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-30T04:22:45.680059+00:00",
+  "generated_at": "2026-09-30T12:03:14.610265+00:00",
   "summary": {
-    "total_complete": 2148,
-    "commercial_ok": 1954,
+    "total_complete": 2154,
+    "commercial_ok": 1960,
     "non_commercial": 171,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 669
+      "count": 672
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -122,7 +122,7 @@
       "display_name": "IODL 2.0",
       "url": "https://www.dati.gov.it/content/italian-open-data-license-v20",
       "commercial_use": true,
-      "count": 6
+      "count": 9
     },
     "cc-by-sa-4.0": {
       "display_name": "CC BY-SA 4.0",
@@ -4252,6 +4252,15 @@
       "commercial_use": true
     },
     {
+      "id": "EE/EMTA-TaxRulings",
+      "country": "EE",
+      "name": "Estonian Tax and Customs Board Binding Rulings (Siduvad Eelotsused)",
+      "license_id": "ogd",
+      "license_name": "Open government data",
+      "license_url": "https://www.emta.ee/en",
+      "commercial_use": true
+    },
+    {
       "id": "EE/Konkurentsiamet",
       "country": "EE",
       "name": "Estonia Competition Authority (Konkurentsiamet) Decisions",
@@ -5455,6 +5464,15 @@
       "license_id": "cc-by-4.0",
       "license_name": "CC BY 4.0",
       "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial_use": true
+    },
+    {
+      "id": "FI/Vero-Guidance",
+      "country": "FI",
+      "name": "Finnish Tax Authority Detailed Guidance",
+      "license_id": "ogd",
+      "license_name": "vero.fi",
+      "license_url": "https://www.vero.fi",
       "commercial_use": true
     },
     {
@@ -6742,6 +6760,15 @@
       "license_id": "ogd",
       "license_name": "Open Government Data",
       "license_url": "https://data.gov.hr/en",
+      "commercial_use": true
+    },
+    {
+      "id": "HR/PoreznaUprava-Misljenja",
+      "country": "HR",
+      "name": "Croatian Tax Authority Opinions (Mišljenja Središnjeg ureda)",
+      "license_id": "ogd",
+      "license_name": "Croatian Open Government Data",
+      "license_url": "https://data.gov.hr",
       "commercial_use": true
     },
     {
@@ -9121,6 +9148,15 @@
       "commercial_use": true
     },
     {
+      "id": "IT/AGCOM",
+      "country": "IT",
+      "name": "Italian Communications Authority (AGCOM)",
+      "license_id": "iodl-2.0",
+      "license_name": "Italian Open Data License v2.0 (IODL 2.0)",
+      "license_url": "https://www.dati.gov.it/content/italian-open-data-license-v20",
+      "commercial_use": true
+    },
+    {
       "id": "IT/AgenziEntrate",
       "country": "IT",
       "name": "Italian Revenue Agency (Agenzia delle Entrate)",
@@ -9130,9 +9166,27 @@
       "commercial_use": true
     },
     {
+      "id": "IT/AgenziaDogane",
+      "country": "IT",
+      "name": "Italian Customs Agency (Agenzia delle Dogane)",
+      "license_id": "iodl-2.0",
+      "license_name": "Italian Open Data License v2.0 (IODL 2.0)",
+      "license_url": "https://www.dati.gov.it/content/italian-open-data-license-v20",
+      "commercial_use": true
+    },
+    {
       "id": "IT/AgenziaEntrate",
       "country": "IT",
       "name": "Italian Revenue Agency Tax Doctrine (Interpelli & Circolari)",
+      "license_id": "iodl-2.0",
+      "license_name": "Italian Open Data License v2.0 (IODL 2.0)",
+      "license_url": "https://www.dati.gov.it/content/italian-open-data-license-v20",
+      "commercial_use": true
+    },
+    {
+      "id": "IT/Banca",
+      "country": "IT",
+      "name": "Bank of Italy - Supervision",
       "license_id": "iodl-2.0",
       "license_name": "Italian Open Data License v2.0 (IODL 2.0)",
       "license_url": "https://www.dati.gov.it/content/italian-open-data-license-v20",
