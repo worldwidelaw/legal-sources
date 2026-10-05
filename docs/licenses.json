@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-05T08:29:58.970329+00:00",
+  "generated_at": "2026-10-05T19:07:47.979311+00:00",
   "summary": {
-    "total_complete": 2158,
-    "commercial_ok": 1964,
+    "total_complete": 2160,
+    "commercial_ok": 1966,
     "non_commercial": 171,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 675
+      "count": 676
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -32,7 +32,7 @@
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 181
+      "count": 182
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
@@ -12271,6 +12271,15 @@
       "commercial_use": true
     },
     {
+      "id": "PA/Legispan",
+      "country": "PA",
+      "name": "Legispan - Panama National Assembly Legislation",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": "https://legispan.asamblea.gob.pa",
+      "commercial_use": true
+    },
+    {
       "id": "PA/SBP-Regulations",
       "country": "PA",
       "name": "Superintendencia de Bancos de Panamá — Regulations",
@@ -13114,6 +13123,15 @@
       "license_id": "ogd",
       "license_name": "https://rwandalii.org/",
       "license_url": "https://rwandalii.org/",
+      "commercial_use": true
+    },
+    {
+      "id": "SA/ALARB",
+      "country": "SA",
+      "name": "Saudi Commercial Court Cases (ALARB)",
+      "license_id": "custom-terms",
+      "license_name": "Apache 2.0",
+      "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
       "commercial_use": true
     },
     {
