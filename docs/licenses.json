@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-06T01:10:51.481220+00:00",
+  "generated_at": "2026-10-06T08:39:58.242037+00:00",
   "summary": {
-    "total_complete": 2162,
-    "commercial_ok": 1968,
+    "total_complete": 2163,
+    "commercial_ok": 1969,
     "non_commercial": 171,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -32,7 +32,7 @@
       "display_name": "Custom terms of use",
       "url": null,
       "commercial_use": null,
-      "count": 182
+      "count": 183
     },
     "cc-by-4.0": {
       "display_name": "CC BY 4.0",
@@ -19555,6 +19555,15 @@
       "id": "ZA/SARS-AdditionalGuidance",
       "country": "ZA",
       "name": "South Africa SARS Practice Notes and Comprehensive Guides (sars.gov.za)",
+      "license_id": "custom-terms",
+      "license_name": "SARS Terms and Conditions",
+      "license_url": "https://www.sars.gov.za/legal-counsel/legal-policy/disclaimer/",
+      "commercial_use": true
+    },
+    {
+      "id": "ZA/SARS-Interpretations",
+      "country": "ZA",
+      "name": "South Africa Revenue Service Tax Interpretations",
       "license_id": "custom-terms",
       "license_name": "SARS Terms and Conditions",
       "license_url": "https://www.sars.gov.za/legal-counsel/legal-policy/disclaimer/",
