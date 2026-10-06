@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-06T08:39:58.242037+00:00",
+  "generated_at": "2026-10-06T16:33:15.027971+00:00",
   "summary": {
-    "total_complete": 2163,
-    "commercial_ok": 1969,
+    "total_complete": 2165,
+    "commercial_ok": 1971,
     "non_commercial": 171,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 677
+      "count": 679
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -4045,6 +4045,15 @@
       "commercial_use": true
     },
     {
+      "id": "DO/BCRD-Regulations",
+      "country": "DO",
+      "name": "Banco Central de la República Dominicana — Regulaciones",
+      "license_id": "ogd",
+      "license_name": "Open Government Data (Dominican Republic)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "DO/CongresoRD",
       "country": "DO",
       "name": "Dominican Republic Legislation (Consultoría Jurídica)",
@@ -4138,6 +4147,15 @@
       "id": "DO/TribunalSuperiorElectoral",
       "country": "DO",
       "name": "Dominican Republic Tribunal Superior Electoral — Sentencias Contenciosas",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "DZ/ARPCE",
+      "country": "DZ",
+      "name": "Algeria ARPCE Telecom Regulatory Decisions",
       "license_id": "ogd",
       "license_name": "Open Government Data",
       "license_url": null,
