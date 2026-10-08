@@ -1,0 +1,37 @@
+{
+  "_id": "BR-DATAJUD-STJ_SUP_03425446720233000000",
+  "_source": "BR/DataJudCNJ",
+  "_type": "case_law",
+  "_fetched_at": "2026-07-28T23:16:41.557266+00:00",
+  "title": "Habeas Corpus - 0342544-67.2023.3.00.0000 - STJ",
+  "text": "Classe processual: Habeas Corpus\n\nAssuntos: Tráfico de Drogas e Condutas Afins\n\nOrgao julgador: GABINETE DO MINISTRO ROGERIO SCHIETTI\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-09-21 Documento (tipo_de_documento: Certidão)\n2023-09-21 Distribuição (tipo_de_distribuicao_redistribuicao: sorteio)\n2023-09-21 Conclusão (tipo_de_conclusao: para decisão)\n2023-09-26 Petição (tipo_de_peticao: Petição (outras))\n2023-09-28 Petição (tipo_de_peticao: Parecer de Mérito (MP))\n2023-09-28 Conclusão (tipo_de_conclusao: para decisão)\n2023-10-05 Expedição de documento (tipo_de_documento: Ofício)\n2023-10-05 Expedição de documento (tipo_de_documento: Ofício)\n2023-10-06 Petição (tipo_de_peticao: Petição (outras))\n2023-10-06 Petição (tipo_de_peticao: Petição (outras))\n2023-09-26 Publicação\n2023-09-28 Recebimento\n2023-10-05 Habeas corpus\n2023-10-06 Publicação\n2023-10-27 Trânsito em julgado\n2023-09-20 Protocolo de Petição\n2023-09-25 Mero expediente\n2023-09-25 Ato ordinatório\n2023-09-25 Disponibilização no Diário da Justiça Eletrônico\n2023-09-26 Protocolo de Petição\n2023-09-28 Protocolo de Petição\n2023-10-05 Ato ordinatório\n2023-10-05 Disponibilização no Diário da Justiça Eletrônico\n2023-10-06 Protocolo de Petição\n2023-10-06 Protocolo de Petição\n2023-10-27 Definitivo",
+  "date": "2023-09-21",
+  "date_last_update": "2024-07-24",
+  "case_number": "0342544-67.2023.3.00.0000",
+  "case_number_raw": "03425446720233000000",
+  "court": "STJ",
+  "court_tier": 1,
+  "chamber": "GABINETE DO MINISTRO ROGERIO SCHIETTI",
+  "jurisdiction": "Brazil",
+  "language": "pt",
+  "country": "BR",
+  "decision_type": "Habeas Corpus",
+  "classe_codigo": 1720,
+  "assuntos": [
+    "Tráfico de Drogas e Condutas Afins"
+  ],
+  "grau": "SUP",
+  "movement_count": 26,
+  "url": "https://www.cnj.jus.br/sistemas/datajud/",
+  "_raw_fields": {
+    "sistema": {
+      "codigo": 8,
+      "nome": "Outros"
+    },
+    "formato": {
+      "codigo": 1,
+      "nome": "Eletrônico"
+    },
+    "@timestamp": "2025-02-06T11:19:21.418243265Z"
+  }
+}

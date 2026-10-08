@@ -1,0 +1,38 @@
+{
+  "_id": "BR-DATAJUD-STJ_SUP_08001704420224058001",
+  "_source": "BR/DataJudCNJ",
+  "_type": "case_law",
+  "_fetched_at": "2026-07-28T23:16:42.558687+00:00",
+  "title": "Recurso Especial - 0800170-44.2022.4.05.8001 - STJ",
+  "text": "Classe processual: Recurso Especial\n\nAssuntos: Convalidação de Estudos e Reconhecimento de Diploma; Inscrição / Documentação\n\nOrgao julgador: GABINETE DA MINISTRA REGINA HELENA COSTA\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-03-30 Distribuição (tipo_de_distribuicao_redistribuicao: sorteio)\n2023-03-30 Conclusão (tipo_de_conclusao: para decisão)\n2023-04-26 Petição (tipo_de_peticao: Parecer de Mérito (MP))\n2023-04-26 Conclusão (tipo_de_conclusao: para decisão)\n2023-05-03 Petição (tipo_de_peticao: Petição (outras))\n2023-03-21 Recebimento\n2023-04-17 Publicação\n2023-04-26 Recebimento\n2023-04-28 Conhecimento em Parte e Não-Provimento ou Denegação\n2023-05-02 Publicação\n2023-06-28 Trânsito em julgado\n2023-06-28 Baixa Definitiva\n2023-04-14 Mero expediente\n2023-04-14 Ato ordinatório\n2023-04-14 Disponibilização no Diário da Justiça Eletrônico\n2023-04-26 Protocolo de Petição\n2023-04-28 Ato ordinatório\n2023-04-28 Disponibilização no Diário da Justiça Eletrônico\n2023-05-03 Protocolo de Petição",
+  "date": "2023-03-24",
+  "date_last_update": "2024-07-24",
+  "case_number": "0800170-44.2022.4.05.8001",
+  "case_number_raw": "08001704420224058001",
+  "court": "STJ",
+  "court_tier": 1,
+  "chamber": "GABINETE DA MINISTRA REGINA HELENA COSTA",
+  "jurisdiction": "Brazil",
+  "language": "pt",
+  "country": "BR",
+  "decision_type": "Recurso Especial",
+  "classe_codigo": 1032,
+  "assuntos": [
+    "Convalidação de Estudos e Reconhecimento de Diploma",
+    "Inscrição / Documentação"
+  ],
+  "grau": "SUP",
+  "movement_count": 19,
+  "url": "https://www.cnj.jus.br/sistemas/datajud/",
+  "_raw_fields": {
+    "sistema": {
+      "codigo": 8,
+      "nome": "Outros"
+    },
+    "formato": {
+      "codigo": 1,
+      "nome": "Eletrônico"
+    },
+    "@timestamp": "2025-02-06T11:19:21.418782097Z"
+  }
+}
