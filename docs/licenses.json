@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-07T19:47:05.998074+00:00",
+  "generated_at": "2026-10-08T08:30:40.671069+00:00",
   "summary": {
-    "total_complete": 2171,
-    "commercial_ok": 1977,
+    "total_complete": 2176,
+    "commercial_ok": 1982,
     "non_commercial": 171,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 685
+      "count": 688
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 364
+      "count": 366
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -9589,6 +9589,24 @@
       "commercial_use": true
     },
     {
+      "id": "JM/FSC-Guidelines",
+      "country": "JM",
+      "name": "Jamaica FSC — Financial Services Commission Guidelines",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "JM/FTC-Decisions",
+      "country": "JM",
+      "name": "Jamaica Fair Trading Commission — Decisions",
+      "license_id": "ogd",
+      "license_name": "Open Government Data (Jamaica)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "JM/Gazette",
       "country": "JM",
       "name": "Jamaica Official Gazette (Ministry of Justice)",
@@ -9612,6 +9630,15 @@
       "name": "Jamaica Supreme Court Judgments (supremecourt.gov.jm)",
       "license_id": "ogd",
       "license_name": "Official Jamaican court judgments — published by the Supreme Court of Jamaica. Court decisions are public judicial acts. Jamaica Government Open Data.",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "JM/TAJ-PracticeNotes",
+      "country": "JM",
+      "name": "Jamaica Tax Administration — Practice Notes & Bulletins",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (government)",
       "license_url": null,
       "commercial_use": true
     },
@@ -9846,6 +9873,24 @@
       "name": "Kyrgyzstan Constitutional Court Decisions",
       "license_id": "pd-gov",
       "license_name": "Public Domain",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "KG/GKTS-Telecom",
+      "country": "KG",
+      "name": "Kyrgyzstan State Agency for Communications — Decisions",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "KG/NationalBank-Regulations",
+      "country": "KG",
+      "name": "National Bank of Kyrgyzstan — Regulations",
+      "license_id": "ogd",
+      "license_name": "Open Government Data (Kyrgyzstan)",
       "license_url": null,
       "commercial_use": true
     },
