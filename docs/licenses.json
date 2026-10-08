@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-08T08:30:40.671069+00:00",
+  "generated_at": "2026-10-08T17:15:04.861863+00:00",
   "summary": {
-    "total_complete": 2176,
-    "commercial_ok": 1982,
+    "total_complete": 2179,
+    "commercial_ok": 1985,
     "non_commercial": 171,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 688
+      "count": 689
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 366
+      "count": 368
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -10516,6 +10516,15 @@
       "commercial_use": true
     },
     {
+      "id": "LT/KT",
+      "country": "LT",
+      "name": "Lithuanian Competition Council — Decisions",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government)",
+      "license_url": "https://kt.gov.lt/lt/atviri-duomenys",
+      "commercial_use": true
+    },
+    {
       "id": "LT/LITEKO",
       "country": "LT",
       "name": "Lithuania Court Information System (LITEKO) Public Decisions",
@@ -10638,6 +10647,15 @@
       "name": "Latvian Constitutional Court (Satversmes tiesa)",
       "license_id": "ogd",
       "license_name": "All rights reserved (Satversmes tiesa). Court decisions are publicly accessible but the site states \"All rights reserved.\" Latvian court judgments may be freely cited for legal purposes under Latvian law.",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "LV/KP",
+      "country": "LV",
+      "name": "Latvia Competition Council — Decisions",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government)",
       "license_url": null,
       "commercial_use": true
     },
@@ -10980,6 +10998,15 @@
       "name": "Marshall Islands — Administrative Regulations",
       "license_id": "pd-gov",
       "license_name": "Public Domain (Government)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "MK/AEC-Decisions",
+      "country": "MK",
+      "name": "North Macedonia Agency for Electronic Communications — Decisions",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
       "license_url": null,
       "commercial_use": true
     },
