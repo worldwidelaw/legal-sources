@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-08T23:01:32.610909+00:00",
+  "generated_at": "2026-10-09T04:56:58.385727+00:00",
   "summary": {
-    "total_complete": 2180,
-    "commercial_ok": 1986,
+    "total_complete": 2181,
+    "commercial_ok": 1987,
     "non_commercial": 171,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 369
+      "count": 370
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -11152,6 +11152,15 @@
       "license_id": "ogd",
       "license_name": "Open Government Data (Mongolia)",
       "license_url": "https://www.mongolbank.mn/en/",
+      "commercial_use": true
+    },
+    {
+      "id": "MN/ConstitutionalCourt",
+      "country": "MN",
+      "name": "Mongolia Constitutional Court (Tsets) — Decisions",
+      "license_id": "pd-gov",
+      "license_name": "Public Domain (Government)",
+      "license_url": null,
       "commercial_use": true
     },
     {
