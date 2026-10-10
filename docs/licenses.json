@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-10T04:42:33.737692+00:00",
+  "generated_at": "2026-10-10T12:02:15.276063+00:00",
   "summary": {
-    "total_complete": 2188,
-    "commercial_ok": 1994,
+    "total_complete": 2190,
+    "commercial_ok": 1996,
     "non_commercial": 171,
     "commercial_unknown": 23,
     "unverified": 26,
@@ -14,7 +14,7 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 695
+      "count": 696
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
@@ -26,7 +26,7 @@
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 371
+      "count": 372
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -11763,6 +11763,24 @@
       "name": "Bank of Namibia — Regulations & Determinations",
       "license_id": "ogd",
       "license_name": "Open Government Data",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "NA/CRAN-Decisions",
+      "country": "NA",
+      "name": "Communications Regulatory Authority of Namibia — Decisions",
+      "license_id": "ogd",
+      "license_name": "Open Government Data",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
+      "id": "NA/LAC-Statutes",
+      "country": "NA",
+      "name": "Namibia Legal Assistance Centre — Annotated Statutes",
+      "license_id": "pd-gov",
+      "license_name": "Public domain (government)",
       "license_url": null,
       "commercial_use": true
     },
