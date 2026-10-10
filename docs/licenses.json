@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-10T18:15:24.904737+00:00",
+  "generated_at": "2026-10-10T23:19:17.727742+00:00",
   "summary": {
-    "total_complete": 2190,
-    "commercial_ok": 1996,
-    "non_commercial": 171,
+    "total_complete": 2174,
+    "commercial_ok": 1981,
+    "non_commercial": 170,
     "commercial_unknown": 23,
     "unverified": 26,
     "unique_license_ids": 30
@@ -14,19 +14,19 @@
       "display_name": "Open government data",
       "url": null,
       "commercial_use": true,
-      "count": 696
+      "count": 693
     },
     "pd-us": {
       "display_name": "Public domain — 17 U.S.C. 105",
       "url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true,
-      "count": 381
+      "count": 378
     },
     "pd-gov": {
       "display_name": "Public domain (government works)",
       "url": null,
       "commercial_use": true,
-      "count": 372
+      "count": 368
     },
     "custom-terms": {
       "display_name": "Custom terms of use",
@@ -38,7 +38,7 @@
       "display_name": "CC BY 4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/",
       "commercial_use": true,
-      "count": 107
+      "count": 104
     },
     "eur-lex": {
       "display_name": "EUR-Lex reuse notice",
@@ -56,13 +56,13 @@
       "display_name": "Public domain — 5 UrhG",
       "url": "https://www.gesetze-im-internet.de/urhg/__5.html",
       "commercial_use": true,
-      "count": 44
+      "count": 42
     },
     "custom-nc": {
       "display_name": "Custom non-commercial terms",
       "url": null,
       "commercial_use": false,
-      "count": 42
+      "count": 41
     },
     "odbl-1.0": {
       "display_name": "ODbL 1.0",
@@ -3307,15 +3307,6 @@
       "commercial_use": true
     },
     {
-      "id": "CZ/RozhodnutiJustice",
-      "country": "CZ",
-      "name": "Czech Court Decisions Open Data (rozhodnutí.justice.cz)",
-      "license_id": "ogd",
-      "license_name": "Open government data",
-      "license_url": "https://rozhodnuti.justice.cz",
-      "commercial_use": true
-    },
-    {
       "id": "CZ/SupremeCourt",
       "country": "CZ",
       "name": "Czech Supreme Court (Nejvyšší soud)",
@@ -3487,15 +3478,6 @@
       "commercial_use": true
     },
     {
-      "id": "DE/BNetzA",
-      "country": "DE",
-      "name": "German Network Agency (BNetzA)",
-      "license_id": "custom-nc",
-      "license_name": "BNetzA Terms of Use",
-      "license_url": "https://www.bundesnetzagentur.de/EN/General/LegalNotice/LegalNotice_node.html",
-      "commercial_use": false
-    },
-    {
       "id": "DE/BPatG",
       "country": "DE",
       "name": "German Federal Patent Court (BPatG)",
@@ -3535,15 +3517,6 @@
       "id": "DE/BVerfG",
       "country": "DE",
       "name": "German Federal Constitutional Court (BVerfG)",
-      "license_id": "pd-de",
-      "license_name": "§ 5 UrhG",
-      "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
-      "commercial_use": true
-    },
-    {
-      "id": "DE/BVerwG",
-      "country": "DE",
-      "name": "German Federal Administrative Court (BVerwG)",
       "license_id": "pd-de",
       "license_name": "§ 5 UrhG",
       "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
@@ -3607,15 +3580,6 @@
       "id": "DE/BfDI",
       "country": "DE",
       "name": "German Federal Data Protection Authority (BfDI)",
-      "license_id": "pd-de",
-      "license_name": "Public domain — § 5 UrhG",
-      "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
-      "commercial_use": true
-    },
-    {
-      "id": "DE/BfJ",
-      "country": "DE",
-      "name": "German Federal Office of Justice (BfJ)",
       "license_id": "pd-de",
       "license_name": "Public domain — § 5 UrhG",
       "license_url": "https://www.gesetze-im-internet.de/urhg/__5.html",
@@ -4261,15 +4225,6 @@
       "commercial_use": true
     },
     {
-      "id": "EE/EMTA-TaxGuidance",
-      "country": "EE",
-      "name": "Estonia Tax and Customs Board (EMTA) Guidance",
-      "license_id": "pd-gov",
-      "license_name": "Estonian Public Information Act",
-      "license_url": "https://www.riigiteataja.ee/en/eli/514112013001/consolide",
-      "commercial_use": true
-    },
-    {
       "id": "EE/EMTA-TaxRulings",
       "country": "EE",
       "name": "Estonian Tax and Customs Board Binding Rulings (Siduvad Eelotsused)",
@@ -4423,15 +4378,6 @@
       "commercial_use": true
     },
     {
-      "id": "ES/BasqueCountry",
-      "country": "ES",
-      "name": "Basque Country Regional Legislation (BOPV/EHAA)",
-      "license_id": "cc-by-4.0",
-      "license_name": "CC BY 4.0",
-      "license_url": "https://creativecommons.org/licenses/by/4.0/",
-      "commercial_use": true
-    },
-    {
       "id": "ES/CNMV",
       "country": "ES",
       "name": "Spanish Securities Commission (CNMV)",
@@ -4471,15 +4417,6 @@
       "id": "ES/CastillaLeon",
       "country": "ES",
       "name": "Castilla y León Regional Legislation (BOCYL)",
-      "license_id": "cc-by-4.0",
-      "license_name": "CC BY 4.0",
-      "license_url": "https://creativecommons.org/licenses/by/4.0/",
-      "commercial_use": true
-    },
-    {
-      "id": "ES/Catalonia",
-      "country": "ES",
-      "name": "Catalan Regional Legislation (DOGC)",
       "license_id": "cc-by-4.0",
       "license_name": "CC BY 4.0",
       "license_url": "https://creativecommons.org/licenses/by/4.0/",
@@ -5449,15 +5386,6 @@
       "commercial_use": true
     },
     {
-      "id": "FI/SupremeAdministrativeCourt",
-      "country": "FI",
-      "name": "Finnish Supreme Administrative Court",
-      "license_id": "cc-by-4.0",
-      "license_name": "CC BY 4.0",
-      "license_url": "https://creativecommons.org/licenses/by/4.0/",
-      "commercial_use": true
-    },
-    {
       "id": "FI/SupremeCourt",
       "country": "FI",
       "name": "Finnish Supreme Court (Korkein oikeus)",
@@ -6061,15 +5989,6 @@
       "commercial_use": true
     },
     {
-      "id": "GE/Matsne",
-      "country": "GE",
-      "name": "Georgian Legislation Database (Matsne)",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": "https://matsne.gov.ge",
-      "commercial_use": true
-    },
-    {
       "id": "GE/NBG-LegalActs",
       "country": "GE",
       "name": "Georgia National Bank — Legal Acts & Regulations",
@@ -6544,15 +6463,6 @@
       "license_id": "ogd",
       "license_name": "Open Government Data",
       "license_url": "https://jurisprudencia.cc.gob.gt/",
-      "commercial_use": true
-    },
-    {
-      "id": "GU/CompilerOfLaws",
-      "country": "GU",
-      "name": "Guam Code Annotated & Administrative Rules",
-      "license_id": "pd-us",
-      "license_name": "US Public Domain",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
     {
@@ -7551,15 +7461,6 @@
       "name": "African Union Legal Instruments",
       "license_id": "ogd",
       "license_name": "African Union treaty texts are public international law instruments. Published by the AU Commission for public access. Copyright AU; no formal open data license published.",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
-      "id": "INTL/AU-Decisions",
-      "country": "INTL",
-      "name": "African Union Assembly Decisions & Resolutions (DSpace Archive)",
-      "license_id": "ogd",
-      "license_name": "African Union open access",
       "license_url": null,
       "commercial_use": true
     },
@@ -10705,15 +10606,6 @@
       "commercial_use": true
     },
     {
-      "id": "LY/LawSocietyGazette",
-      "country": "LY",
-      "name": "Libya Law Society — Official Gazette & Legislation Archive",
-      "license_id": "ogd",
-      "license_name": "Open Government Data",
-      "license_url": null,
-      "commercial_use": true
-    },
-    {
       "id": "LY/LibyanLawSociety",
       "country": "LY",
       "name": "Libyan Law and Society — Leiden/Benghazi Academic Collection",
@@ -11188,15 +11080,6 @@
       "license_id": "ogd",
       "license_name": "https://www.amcm.gov.mo/en/research-statistics/policy-and-guidelines",
       "license_url": "https://www.amcm.gov.mo/en/research-statistics/policy-and-guidelines",
-      "commercial_use": true
-    },
-    {
-      "id": "MO/BoletimOficial",
-      "country": "MO",
-      "name": "Macau Official Gazette (Boletim Oficial)",
-      "license_id": "ogd",
-      "license_name": "https://bo.io.gov.mo/",
-      "license_url": "https://bo.io.gov.mo/",
       "commercial_use": true
     },
     {
@@ -11803,6 +11686,15 @@
       "commercial_use": false
     },
     {
+      "id": "NA/NAMFISA-Instruments",
+      "country": "NA",
+      "name": "Namibia Financial Institutions Supervisory Authority — Regulatory Instruments",
+      "license_id": "ogd",
+      "license_name": "Government of Namibia open data",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "NA/NamibLII",
       "country": "NA",
       "name": "Namibia Legal Information Institute",
@@ -12115,15 +12007,6 @@
       "license_id": "pd-gov",
       "license_name": "Public Domain (Dutch official documents)",
       "license_url": "https://www.overheid.nl/help/algemeen/copyright",
-      "commercial_use": true
-    },
-    {
-      "id": "NL/TweedeKamer",
-      "country": "NL",
-      "name": "Dutch House of Representatives (Tweede Kamer)",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain",
-      "license_url": "https://data.overheid.nl/licenties",
       "commercial_use": true
     },
     {
@@ -12757,15 +12640,6 @@
       "commercial_use": true
     },
     {
-      "id": "PL/SAOS",
-      "country": "PL",
-      "name": "SAOS - System Analizy Orzeczeń Sądowych",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain (Polish court decisions)",
-      "license_url": "https://dane.gov.pl",
-      "commercial_use": true
-    },
-    {
       "id": "PL/Sejm",
       "country": "PL",
       "name": "Polish Sejm (Parliament)",
@@ -12874,6 +12748,15 @@
       "commercial_use": true
     },
     {
+      "id": "PS/PMA-Regulations",
+      "country": "PS",
+      "name": "Palestine Monetary Authority — Regulations",
+      "license_id": "ogd",
+      "license_name": "Open Government Data (Palestine)",
+      "license_url": null,
+      "commercial_use": true
+    },
+    {
       "id": "PS/SecurityLegislation",
       "country": "PS",
       "name": "Palestine Security Sector Legal Database (DCAF)",
@@ -12952,15 +12835,6 @@
       "license_id": "ogd",
       "license_name": "Open Government Data",
       "license_url": "https://dados.gov.pt",
-      "commercial_use": true
-    },
-    {
-      "id": "PT/DiarioRepublica",
-      "country": "PT",
-      "name": "Diário da República - Portuguese Official Gazette",
-      "license_id": "pd-gov",
-      "license_name": "Public Domain (official state publications)",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
       "commercial_use": true
     },
     {
@@ -16699,15 +16573,6 @@
       "commercial_use": true
     },
     {
-      "id": "US/FederalDistrictCourts",
-      "country": "US",
-      "name": "US Federal District Courts",
-      "license_id": "pd-us",
-      "license_name": "Public domain — 17 U.S.C. § 105",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
-      "commercial_use": true
-    },
-    {
       "id": "US/FederalRegister",
       "country": "US",
       "name": "Federal Register",
@@ -16720,15 +16585,6 @@
       "id": "US/FederalReserve",
       "country": "US",
       "name": "US Federal Reserve Board Enforcement Actions",
-      "license_id": "pd-us",
-      "license_name": "Public domain — 17 U.S.C. § 105",
-      "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
-      "commercial_use": true
-    },
-    {
-      "id": "US/FederalSpecialtyCourts",
-      "country": "US",
-      "name": "US Federal Specialty & Bankruptcy Courts",
       "license_id": "pd-us",
       "license_name": "Public domain — 17 U.S.C. § 105",
       "license_url": "https://www.law.cornell.edu/uscode/text/17/105",
