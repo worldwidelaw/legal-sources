@@ -483,16 +483,42 @@ class WettenOverheidScraper(BaseScraper):
             # - <al> - Text paragraphs
             # - <nota-toelichting> - Explanatory notes
 
-            # Extract text from all relevant text elements
-            text_tags = ['intitule', 'citeertitel', 'al', 'titel', 'wij',
+            # Extract text from all relevant text elements. Headers
+            # (<kop>) are rendered separately so an article keeps its label
+            # and number ("Artikel 8b") and a chapter or section keeps its
+            # label, number and title on one line; <titel> is therefore not
+            # in this list, or every heading would be emitted twice.
+            text_tags = ['intitule', 'citeertitel', 'al', 'wij',
                         'considerans.al', 'tussenkop', 'lidnr', 'li.nr']
 
+            def local_name(tag):
+                return tag.split('}')[-1] if '}' in tag else tag
+
+            def render_kop(kop):
+                """'Artikel 8b', 'Hoofdstuk II. Voorwerp van de belasting bij
+                binnenlandse belastingplichtigen', 'Afdeling 2.3. Innovatiebox'."""
+                label = " ".join(
+                    "".join(child.itertext()).strip()
+                    for child in kop
+                    if local_name(child.tag).lower() in ('label', 'nr')
+                ).strip()
+                titel = " ".join(
+                    "".join(child.itertext()).strip()
+                    for child in kop
+                    if local_name(child.tag).lower() == 'titel'
+                ).strip()
+                return ". ".join(part for part in (label, titel) if part)
+
             for elem in root.iter():
-                tag_local = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
-                if tag_local.lower() in [t.lower() for t in text_tags]:
+                tag_local = local_name(elem.tag).lower()
+                if tag_local == 'kop':
+                    text = render_kop(elem)
+                elif tag_local in text_tags:
                     text = "".join(elem.itertext()).strip()
-                    if text:
-                        text_parts.append(text)
+                else:
+                    continue
+                if text:
+                    text_parts.append(text)
 
             # If no specific elements found, try to get all text content
             if not text_parts:
