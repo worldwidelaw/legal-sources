@@ -1,0 +1,58 @@
+fetch:
+  base_url: https://api.canlii.org/v1/caseBrowse
+  method: browse_keyword_filter
+  page_size: 10000
+  rate_limit_seconds: 0.65
+  date_from: '2016-01-01'
+  date_to: '2026-12-31'
+
+auth:
+  type: api_key
+  env_var: CANLII_API_KEY
+  param_name: api_key
+  note: Free key at https://developer.canlii.org/
+
+schema:
+  key_fields:
+    - name: _id
+      required: true
+      type: string
+    - name: title
+      required: true
+      type: string
+    - name: citation
+      required: false
+      type: string
+    - name: year
+      required: false
+      type: integer
+    - name: tribunal
+      required: true
+      type: string
+    - name: url
+      required: false
+      type: string
+
+source:
+  auth: api_key
+  country: CA
+  data_types:
+    - case_law
+  description: >
+    Extended keyword-filtered browse across all CanLII databases (400+ courts and
+    tribunals). Complements CA/A2AJ by targeting courts not covered in the main
+    source and by applying an expanded keyword set including French-language terms,
+    provincial water statutes by name, riparian/drainage/tort terms, and Indigenous
+    water rights vocabulary. Covers all provincial superior courts, courts of appeal,
+    and 100+ specialised tribunals.
+
+    Key API behaviour notes (discovered empirically):
+    - The database-list endpoint returns key `caseDatabases` (not `databases`)
+    - Browse listings omit `decisionDate`; year is parsed from citation string
+    - No result cap on browse endpoint (unlike ESAJ); full pagination supported
+
+    Requires free CANLII_API_KEY environment variable (register at developer.canlii.org).
+  id: CA/CanLII-Extended
+  language: en,fr
+  name: CanLII — Extended keyword browse (all databases)
+  url: https://www.canlii.org/
