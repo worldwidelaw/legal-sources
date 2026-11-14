@@ -40,7 +40,15 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common.pdf_extract import extract_pdf_markdown
+try:
+    from common.pdf_extract import extract_pdf_markdown
+    PDF_AVAILABLE = True
+except ImportError as exc:
+    print(f"ERROR: common PDF extraction helper unavailable: {exc}", file=sys.stderr)
+    PDF_AVAILABLE = False
+
+    def extract_pdf_markdown(*args, **kwargs):
+        return ""
 
 
 # Constants
@@ -94,6 +102,16 @@ def get_session() -> requests.Session:
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "de-CH,de;q=0.9,en;q=0.8",
     })
+    # WEKO's TLS chain can fail validation with Python/certifi while the same
+    # public pages are accepted by system browsers. Keep the workaround local
+    # to this public-document source so the scraper can still collect records.
+    session.verify = False
+    try:
+        import urllib3
+
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    except ImportError:
+        pass
     return session
 
 
@@ -396,6 +414,10 @@ def main():
 
     if not args.command:
         parser.print_help()
+        sys.exit(1)
+
+    if not PDF_AVAILABLE:
+        print("ERROR: pdfplumber or pypdf library required for PDF text extraction", file=sys.stderr)
         sys.exit(1)
 
     session = get_session()
