@@ -1,0 +1,37 @@
+{
+  "_id": "BR-DATAJUD-STJ_SUP_22311175920218260000",
+  "_source": "BR/DataJudCNJ",
+  "_type": "case_law",
+  "_fetched_at": "2026-07-28T23:16:35.564446+00:00",
+  "title": "Agravo em Recurso Especial - 2231117-59.2021.8.26.0000 - STJ",
+  "text": "Classe processual: Agravo em Recurso Especial\n\nAssuntos: Títulos de Crédito\n\nOrgao julgador: PRESIDÊNCIA\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-04-18 Distribuição (tipo_de_distribuicao_redistribuicao: competência exclusiva)\n2023-04-25 Petição (tipo_de_peticao: Petição (outras))\n2023-04-26 Conclusão (tipo_de_conclusao: para decisão)\n2023-06-05 Petição (tipo_de_peticao: Procuração/substabelecimento com reserva de poderes)\n2023-06-05 Conclusão (tipo_de_conclusao: para decisão)\n2023-03-27 Recebimento\n2023-04-19 Publicação\n2023-05-17 Publicação\n2023-07-20 Publicação\n2023-08-30 Trânsito em julgado\n2023-08-30 Baixa Definitiva\n2023-04-18 Ato ordinatório\n2023-04-18 Disponibilização no Diário da Justiça Eletrônico\n2023-04-25 Protocolo de Petição\n2023-05-15 Mero expediente\n2023-05-15 Ato ordinatório\n2023-05-16 Disponibilização no Diário da Justiça Eletrônico\n2023-06-05 Protocolo de Petição\n2023-07-19 Desistência de Recurso\n2023-07-19 Ato ordinatório\n2023-07-19 Disponibilização no Diário da Justiça Eletrônico",
+  "date": "2023-04-14",
+  "date_last_update": "2024-07-24",
+  "case_number": "2231117-59.2021.8.26.0000",
+  "case_number_raw": "22311175920218260000",
+  "court": "STJ",
+  "court_tier": 1,
+  "chamber": "PRESIDÊNCIA",
+  "jurisdiction": "Brazil",
+  "language": "pt",
+  "country": "BR",
+  "decision_type": "Agravo em Recurso Especial",
+  "classe_codigo": 11881,
+  "assuntos": [
+    "Títulos de Crédito"
+  ],
+  "grau": "SUP",
+  "movement_count": 21,
+  "url": "https://www.cnj.jus.br/sistemas/datajud/",
+  "_raw_fields": {
+    "sistema": {
+      "codigo": 8,
+      "nome": "Outros"
+    },
+    "formato": {
+      "codigo": 1,
+      "nome": "Eletrônico"
+    },
+    "@timestamp": "2025-02-06T11:19:21.416403778Z"
+  }
+}
