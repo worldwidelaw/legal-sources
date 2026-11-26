@@ -1,0 +1,377 @@
+[
+  {
+    "_id": "BR-DATAJUD-STJ_SUP_22311175920218260000",
+    "_source": "BR/DataJudCNJ",
+    "_type": "case_law",
+    "_fetched_at": "2026-07-28T23:16:35.564446+00:00",
+    "title": "Agravo em Recurso Especial - 2231117-59.2021.8.26.0000 - STJ",
+    "text": "Classe processual: Agravo em Recurso Especial\n\nAssuntos: Títulos de Crédito\n\nOrgao julgador: PRESIDÊNCIA\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-04-18 Distribuição (tipo_de_distribuicao_redistribuicao: competência exclusiva)\n2023-04-25 Petição (tipo_de_peticao: Petição (outras))\n2023-04-26 Conclusão (tipo_de_conclusao: para decisão)\n2023-06-05 Petição (tipo_de_peticao: Procuração/substabelecimento com reserva de poderes)\n2023-06-05 Conclusão (tipo_de_conclusao: para decisão)\n2023-03-27 Recebimento\n2023-04-19 Publicação\n2023-05-17 Publicação\n2023-07-20 Publicação\n2023-08-30 Trânsito em julgado\n2023-08-30 Baixa Definitiva\n2023-04-18 Ato ordinatório\n2023-04-18 Disponibilização no Diário da Justiça Eletrônico\n2023-04-25 Protocolo de Petição\n2023-05-15 Mero expediente\n2023-05-15 Ato ordinatório\n2023-05-16 Disponibilização no Diário da Justiça Eletrônico\n2023-06-05 Protocolo de Petição\n2023-07-19 Desistência de Recurso\n2023-07-19 Ato ordinatório\n2023-07-19 Disponibilização no Diário da Justiça Eletrônico",
+    "date": "2023-04-14",
+    "date_last_update": "2024-07-24",
+    "case_number": "2231117-59.2021.8.26.0000",
+    "case_number_raw": "22311175920218260000",
+    "court": "STJ",
+    "court_tier": 1,
+    "chamber": "PRESIDÊNCIA",
+    "jurisdiction": "Brazil",
+    "language": "pt",
+    "country": "BR",
+    "decision_type": "Agravo em Recurso Especial",
+    "classe_codigo": 11881,
+    "assuntos": [
+      "Títulos de Crédito"
+    ],
+    "grau": "SUP",
+    "movement_count": 21,
+    "url": "https://www.cnj.jus.br/sistemas/datajud/",
+    "_raw_fields": {
+      "sistema": {
+        "codigo": 8,
+        "nome": "Outros"
+      },
+      "formato": {
+        "codigo": 1,
+        "nome": "Eletrônico"
+      },
+      "@timestamp": "2025-02-06T11:19:21.416403778Z"
+    }
+  },
+  {
+    "_id": "BR-DATAJUD-STJ_SUP_10095342520188260032",
+    "_source": "BR/DataJudCNJ",
+    "_type": "case_law",
+    "_fetched_at": "2026-07-28T23:16:35.564446+00:00",
+    "title": "Agravo em Recurso Especial - 1009534-25.2018.8.26.0032 - STJ",
+    "text": "Classe processual: Agravo em Recurso Especial\n\nAssuntos: Locação de Imóvel; Inadimplemento\n\nOrgao julgador: PRESIDÊNCIA\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-08-15 Distribuição (tipo_de_distribuicao_redistribuicao: competência exclusiva)\n2023-08-15 Conclusão (tipo_de_conclusao: para decisão)\n2023-08-23 Não Conhecimento de recurso (tipo_de_peticao: Agravo em recurso especial)\n2023-07-12 Recebimento\n2023-08-25 Publicação\n2023-09-19 Trânsito em julgado\n2023-09-19 Baixa Definitiva\n2023-08-23 Ato ordinatório\n2023-08-24 Disponibilização no Diário da Justiça Eletrônico",
+    "date": "2023-08-08",
+    "date_last_update": "2024-07-24",
+    "case_number": "1009534-25.2018.8.26.0032",
+    "case_number_raw": "10095342520188260032",
+    "court": "STJ",
+    "court_tier": 1,
+    "chamber": "PRESIDÊNCIA",
+    "jurisdiction": "Brazil",
+    "language": "pt",
+    "country": "BR",
+    "decision_type": "Agravo em Recurso Especial",
+    "classe_codigo": 11881,
+    "assuntos": [
+      "Locação de Imóvel",
+      "Inadimplemento"
+    ],
+    "grau": "SUP",
+    "movement_count": 9,
+    "url": "https://www.cnj.jus.br/sistemas/datajud/",
+    "_raw_fields": {
+      "sistema": {
+        "codigo": 8,
+        "nome": "Outros"
+      },
+      "formato": {
+        "codigo": 1,
+        "nome": "Eletrônico"
+      },
+      "@timestamp": "2025-02-06T11:19:21.417092926Z"
+    }
+  },
+  {
+    "_id": "BR-DATAJUD-STJ_SUP_00133832420198240038",
+    "_source": "BR/DataJudCNJ",
+    "_type": "case_law",
+    "_fetched_at": "2026-07-28T23:16:35.564446+00:00",
+    "title": "Agravo em Recurso Especial - 0013383-24.2019.8.24.0038 - STJ",
+    "text": "Classe processual: Agravo em Recurso Especial\n\nAssuntos: Estelionato; Falsa identidade\n\nOrgao julgador: PRESIDÊNCIA\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-05-15 Distribuição (tipo_de_distribuicao_redistribuicao: competência exclusiva)\n2023-05-15 Conclusão (tipo_de_conclusao: para decisão)\n2023-06-14 Não Conhecimento de recurso (tipo_de_peticao: Agravo em recurso especial)\n2023-06-19 Petição (tipo_de_peticao: Embargos de declaração)\n2023-06-19 Conclusão (tipo_de_conclusao: para decisão)\n2023-06-19 Petição (tipo_de_peticao: Petição (outras))\n2023-07-20 Petição (tipo_de_peticao: Petição (outras))\n2023-08-10 Remessa (motivo_da_remessa: em grau de recurso)\n2023-04-20 Recebimento\n2023-06-16 Publicação\n2023-07-18 Não-Acolhimento de Embargos de Declaração\n2023-07-19 Publicação\n2023-08-10 Trânsito em julgado\n2023-08-10 Recebimento\n2023-06-14 Ato ordinatório\n2023-06-15 Disponibilização no Diário da Justiça Eletrônico\n2023-06-19 Protocolo de Petição\n2023-06-19 Protocolo de Petição\n2023-07-18 Ato ordinatório\n2023-07-18 Disponibilização no Diário da Justiça Eletrônico\n2023-07-20 Protocolo de Petição",
+    "date": "2023-05-04",
+    "date_last_update": "2024-07-24",
+    "case_number": "0013383-24.2019.8.24.0038",
+    "case_number_raw": "00133832420198240038",
+    "court": "STJ",
+    "court_tier": 1,
+    "chamber": "PRESIDÊNCIA",
+    "jurisdiction": "Brazil",
+    "language": "pt",
+    "country": "BR",
+    "decision_type": "Agravo em Recurso Especial",
+    "classe_codigo": 11881,
+    "assuntos": [
+      "Estelionato",
+      "Falsa identidade"
+    ],
+    "grau": "SUP",
+    "movement_count": 21,
+    "url": "https://www.cnj.jus.br/sistemas/datajud/",
+    "_raw_fields": {
+      "sistema": {
+        "codigo": 8,
+        "nome": "Outros"
+      },
+      "formato": {
+        "codigo": 1,
+        "nome": "Eletrônico"
+      },
+      "@timestamp": "2025-02-06T11:19:21.417497972Z"
+    }
+  },
+  {
+    "_id": "BR-DATAJUD-STJ_SUP_02246662420233000000",
+    "_source": "BR/DataJudCNJ",
+    "_type": "case_law",
+    "_fetched_at": "2026-07-28T23:16:36.550575+00:00",
+    "title": "Habeas Corpus - 0224666-24.2023.3.00.0000 - STJ",
+    "text": "Classe processual: Habeas Corpus\n\nAssuntos: Tráfico de Drogas e Condutas Afins\n\nOrgao julgador: GABINETE DO MINISTRO JOEL ILAN PACIORNIK\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-06-29 Documento (tipo_de_documento: Certidão)\n2023-06-29 Distribuição (tipo_de_distribuicao_redistribuicao: prevenção)\n2023-06-29 Conclusão (tipo_de_conclusao: para decisão)\n2023-07-03 Petição (tipo_de_peticao: Petição (outras))\n2023-07-03 Publicação\n2023-08-17 Trânsito em julgado\n2023-06-28 Protocolo de Petição\n2023-06-30 Ato ordinatório\n2023-06-30 Disponibilização no Diário da Justiça Eletrônico\n2023-07-03 Protocolo de Petição\n2023-08-17 Definitivo",
+    "date": "2023-06-29",
+    "date_last_update": "2024-07-24",
+    "case_number": "0224666-24.2023.3.00.0000",
+    "case_number_raw": "02246662420233000000",
+    "court": "STJ",
+    "court_tier": 1,
+    "chamber": "GABINETE DO MINISTRO JOEL ILAN PACIORNIK",
+    "jurisdiction": "Brazil",
+    "language": "pt",
+    "country": "BR",
+    "decision_type": "Habeas Corpus",
+    "classe_codigo": 1720,
+    "assuntos": [
+      "Tráfico de Drogas e Condutas Afins"
+    ],
+    "grau": "SUP",
+    "movement_count": 11,
+    "url": "https://www.cnj.jus.br/sistemas/datajud/",
+    "_raw_fields": {
+      "sistema": {
+        "codigo": 8,
+        "nome": "Outros"
+      },
+      "formato": {
+        "codigo": 1,
+        "nome": "Eletrônico"
+      },
+      "@timestamp": "2025-02-06T11:19:21.417709288Z"
+    }
+  },
+  {
+    "_id": "BR-DATAJUD-STJ_SUP_08284203720218120001",
+    "_source": "BR/DataJudCNJ",
+    "_type": "case_law",
+    "_fetched_at": "2026-07-28T23:16:37.551776+00:00",
+    "title": "Agravo em Recurso Especial - 0828420-37.2021.8.12.0001 - STJ",
+    "text": "Classe processual: Agravo em Recurso Especial\n\nAssuntos: Direito de Imagem\n\nOrgao julgador: PRESIDÊNCIA\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-06-06 Distribuição (tipo_de_distribuicao_redistribuicao: competência exclusiva)\n2023-06-06 Conclusão (tipo_de_conclusao: para decisão)\n2023-06-16 Não Conhecimento de recurso (tipo_de_peticao: Agravo em recurso especial)\n2023-08-01 Petição (tipo_de_peticao: Petição (outras))\n2023-08-10 Conclusão (tipo_de_conclusao: para decisão)\n2023-06-02 Recebimento\n2023-06-19 Publicação\n2023-10-18 Publicação\n2023-10-26 Trânsito em julgado\n2023-10-26 Baixa Definitiva\n2023-06-16 Ato ordinatório\n2023-06-16 Disponibilização no Diário da Justiça Eletrônico\n2023-08-01 Protocolo de Petição\n2023-10-16 Mero expediente\n2023-10-16 Ato ordinatório\n2023-10-17 Disponibilização no Diário da Justiça Eletrônico",
+    "date": "2023-06-05",
+    "date_last_update": "2024-07-24",
+    "case_number": "0828420-37.2021.8.12.0001",
+    "case_number_raw": "08284203720218120001",
+    "court": "STJ",
+    "court_tier": 1,
+    "chamber": "PRESIDÊNCIA",
+    "jurisdiction": "Brazil",
+    "language": "pt",
+    "country": "BR",
+    "decision_type": "Agravo em Recurso Especial",
+    "classe_codigo": 11881,
+    "assuntos": [
+      "Direito de Imagem"
+    ],
+    "grau": "SUP",
+    "movement_count": 16,
+    "url": "https://www.cnj.jus.br/sistemas/datajud/",
+    "_raw_fields": {
+      "sistema": {
+        "codigo": 8,
+        "nome": "Outros"
+      },
+      "formato": {
+        "codigo": 1,
+        "nome": "Eletrônico"
+      },
+      "@timestamp": "2025-02-06T11:19:21.417854786Z"
+    }
+  },
+  {
+    "_id": "BR-DATAJUD-STJ_SUP_00483874220208260100",
+    "_source": "BR/DataJudCNJ",
+    "_type": "case_law",
+    "_fetched_at": "2026-07-28T23:16:38.553299+00:00",
+    "title": "Agravo em Recurso Especial - 0048387-42.2020.8.26.0100 - STJ",
+    "text": "Classe processual: Agravo em Recurso Especial\n\nAssuntos: Inventário e Partilha\n\nOrgao julgador: PRESIDÊNCIA\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-04-19 Distribuição (tipo_de_distribuicao_redistribuicao: competência exclusiva)\n2023-05-02 Documento (tipo_de_documento: Certidão)\n2023-05-02 Conclusão (tipo_de_conclusao: para decisão)\n2023-05-29 Não Conhecimento de recurso (tipo_de_peticao: Agravo em recurso especial)\n2023-05-30 Petição (tipo_de_peticao: Procuração/substabelecimento com reserva de poderes)\n2023-06-05 Petição (tipo_de_peticao: Embargos de declaração)\n2023-06-06 Petição (tipo_de_peticao: Impugnação)\n2023-06-07 Conclusão (tipo_de_conclusao: para decisão)\n2023-03-27 Recebimento\n2023-04-20 Publicação\n2023-05-31 Publicação\n2023-06-07 Publicação\n2023-06-22 Não-Acolhimento de Embargos de Declaração\n2023-06-26 Publicação\n2023-08-18 Trânsito em julgado\n2023-08-18 Baixa Definitiva\n2023-04-19 Ato ordinatório\n2023-04-19 Disponibilização no Diário da Justiça Eletrônico\n2023-05-29 Ato ordinatório\n2023-05-30 Protocolo de Petição\n2023-05-30 Disponibilização no Diário da Justiça Eletrônico\n2023-06-05 Protocolo de Petição\n2023-06-05 Ato ordinatório\n2023-06-06 Protocolo de Petição\n2023-06-06 Disponibilização no Diário da Justiça Eletrônico\n2023-06-22 Ato ordinatório\n2023-06-23 Disponibilização no Diário da Justiça Eletrônico",
+    "date": "2023-04-14",
+    "date_last_update": "2024-07-24",
+    "case_number": "0048387-42.2020.8.26.0100",
+    "case_number_raw": "00483874220208260100",
+    "court": "STJ",
+    "court_tier": 1,
+    "chamber": "PRESIDÊNCIA",
+    "jurisdiction": "Brazil",
+    "language": "pt",
+    "country": "BR",
+    "decision_type": "Agravo em Recurso Especial",
+    "classe_codigo": 11881,
+    "assuntos": [
+      "Inventário e Partilha"
+    ],
+    "grau": "SUP",
+    "movement_count": 27,
+    "url": "https://www.cnj.jus.br/sistemas/datajud/",
+    "_raw_fields": {
+      "sistema": {
+        "codigo": 8,
+        "nome": "Outros"
+      },
+      "formato": {
+        "codigo": 1,
+        "nome": "Eletrônico"
+      },
+      "@timestamp": "2025-02-06T11:19:21.417963869Z"
+    }
+  },
+  {
+    "_id": "BR-DATAJUD-STJ_SUP_08002545920204058310",
+    "_source": "BR/DataJudCNJ",
+    "_type": "case_law",
+    "_fetched_at": "2026-07-28T23:16:39.554951+00:00",
+    "title": "Recurso Especial - 0800254-59.2020.4.05.8310 - STJ",
+    "text": "Classe processual: Recurso Especial\n\nAssuntos: Aposentadoria por Tempo de Contribuição (Art. 55/6)\n\nOrgao julgador: GABINETE DO MINISTRO SÉRGIO LUIZ KUKINA\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-07-25 Distribuição (tipo_de_distribuicao_redistribuicao: sorteio)\n2023-07-25 Conclusão (tipo_de_conclusao: para decisão)\n2023-07-17 Recebimento\n2023-10-09 Não-Provimento\n2023-10-11 Publicação\n2023-12-12 Trânsito em julgado\n2023-12-12 Baixa Definitiva\n2023-10-09 Ato ordinatório\n2023-10-10 Disponibilização no Diário da Justiça Eletrônico",
+    "date": "2023-07-17",
+    "date_last_update": "2024-07-24",
+    "case_number": "0800254-59.2020.4.05.8310",
+    "case_number_raw": "08002545920204058310",
+    "court": "STJ",
+    "court_tier": 1,
+    "chamber": "GABINETE DO MINISTRO SÉRGIO LUIZ KUKINA",
+    "jurisdiction": "Brazil",
+    "language": "pt",
+    "country": "BR",
+    "decision_type": "Recurso Especial",
+    "classe_codigo": 1032,
+    "assuntos": [
+      "Aposentadoria por Tempo de Contribuição (Art. 55/6)"
+    ],
+    "grau": "SUP",
+    "movement_count": 9,
+    "url": "https://www.cnj.jus.br/sistemas/datajud/",
+    "_raw_fields": {
+      "sistema": {
+        "codigo": 8,
+        "nome": "Outros"
+      },
+      "formato": {
+        "codigo": 1,
+        "nome": "Eletrônico"
+      },
+      "@timestamp": "2025-02-06T11:19:21.418687537Z"
+    }
+  },
+  {
+    "_id": "BR-DATAJUD-STJ_SUP_50094039020198130231",
+    "_source": "BR/DataJudCNJ",
+    "_type": "case_law",
+    "_fetched_at": "2026-07-28T23:16:40.556278+00:00",
+    "title": "Recurso Especial - 5009403-90.2019.8.13.0231 - STJ",
+    "text": "Classe processual: Recurso Especial\n\nAssuntos: Contratos Bancários; Interpretação / Revisão de Contrato; Bancários\n\nOrgao julgador: GABINETE DO MINISTRO ANTONIO CARLOS FERREIRA\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-02-03 Distribuição (tipo_de_distribuicao_redistribuicao: sorteio)\n2023-02-03 Conclusão (tipo_de_conclusao: para decisão)\n2023-01-26 Recebimento\n2023-08-13 Provimento em Parte\n2023-08-15 Publicação\n2023-09-06 Trânsito em julgado\n2023-09-06 Baixa Definitiva\n2023-08-13 Ato ordinatório\n2023-08-14 Disponibilização no Diário da Justiça Eletrônico",
+    "date": "2023-02-01",
+    "date_last_update": "2024-07-24",
+    "case_number": "5009403-90.2019.8.13.0231",
+    "case_number_raw": "50094039020198130231",
+    "court": "STJ",
+    "court_tier": 1,
+    "chamber": "GABINETE DO MINISTRO ANTONIO CARLOS FERREIRA",
+    "jurisdiction": "Brazil",
+    "language": "pt",
+    "country": "BR",
+    "decision_type": "Recurso Especial",
+    "classe_codigo": 1032,
+    "assuntos": [
+      "Contratos Bancários",
+      "Interpretação / Revisão de Contrato",
+      "Bancários"
+    ],
+    "grau": "SUP",
+    "movement_count": 9,
+    "url": "https://www.cnj.jus.br/sistemas/datajud/",
+    "_raw_fields": {
+      "sistema": {
+        "codigo": 8,
+        "nome": "Outros"
+      },
+      "formato": {
+        "codigo": 1,
+        "nome": "Eletrônico"
+      },
+      "@timestamp": "2025-02-06T11:19:21.418628076Z"
+    }
+  },
+  {
+    "_id": "BR-DATAJUD-STJ_SUP_03425446720233000000",
+    "_source": "BR/DataJudCNJ",
+    "_type": "case_law",
+    "_fetched_at": "2026-07-28T23:16:41.557266+00:00",
+    "title": "Habeas Corpus - 0342544-67.2023.3.00.0000 - STJ",
+    "text": "Classe processual: Habeas Corpus\n\nAssuntos: Tráfico de Drogas e Condutas Afins\n\nOrgao julgador: GABINETE DO MINISTRO ROGERIO SCHIETTI\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-09-21 Documento (tipo_de_documento: Certidão)\n2023-09-21 Distribuição (tipo_de_distribuicao_redistribuicao: sorteio)\n2023-09-21 Conclusão (tipo_de_conclusao: para decisão)\n2023-09-26 Petição (tipo_de_peticao: Petição (outras))\n2023-09-28 Petição (tipo_de_peticao: Parecer de Mérito (MP))\n2023-09-28 Conclusão (tipo_de_conclusao: para decisão)\n2023-10-05 Expedição de documento (tipo_de_documento: Ofício)\n2023-10-05 Expedição de documento (tipo_de_documento: Ofício)\n2023-10-06 Petição (tipo_de_peticao: Petição (outras))\n2023-10-06 Petição (tipo_de_peticao: Petição (outras))\n2023-09-26 Publicação\n2023-09-28 Recebimento\n2023-10-05 Habeas corpus\n2023-10-06 Publicação\n2023-10-27 Trânsito em julgado\n2023-09-20 Protocolo de Petição\n2023-09-25 Mero expediente\n2023-09-25 Ato ordinatório\n2023-09-25 Disponibilização no Diário da Justiça Eletrônico\n2023-09-26 Protocolo de Petição\n2023-09-28 Protocolo de Petição\n2023-10-05 Ato ordinatório\n2023-10-05 Disponibilização no Diário da Justiça Eletrônico\n2023-10-06 Protocolo de Petição\n2023-10-06 Protocolo de Petição\n2023-10-27 Definitivo",
+    "date": "2023-09-21",
+    "date_last_update": "2024-07-24",
+    "case_number": "0342544-67.2023.3.00.0000",
+    "case_number_raw": "03425446720233000000",
+    "court": "STJ",
+    "court_tier": 1,
+    "chamber": "GABINETE DO MINISTRO ROGERIO SCHIETTI",
+    "jurisdiction": "Brazil",
+    "language": "pt",
+    "country": "BR",
+    "decision_type": "Habeas Corpus",
+    "classe_codigo": 1720,
+    "assuntos": [
+      "Tráfico de Drogas e Condutas Afins"
+    ],
+    "grau": "SUP",
+    "movement_count": 26,
+    "url": "https://www.cnj.jus.br/sistemas/datajud/",
+    "_raw_fields": {
+      "sistema": {
+        "codigo": 8,
+        "nome": "Outros"
+      },
+      "formato": {
+        "codigo": 1,
+        "nome": "Eletrônico"
+      },
+      "@timestamp": "2025-02-06T11:19:21.418243265Z"
+    }
+  },
+  {
+    "_id": "BR-DATAJUD-STJ_SUP_08001704420224058001",
+    "_source": "BR/DataJudCNJ",
+    "_type": "case_law",
+    "_fetched_at": "2026-07-28T23:16:42.558687+00:00",
+    "title": "Recurso Especial - 0800170-44.2022.4.05.8001 - STJ",
+    "text": "Classe processual: Recurso Especial\n\nAssuntos: Convalidação de Estudos e Reconhecimento de Diploma; Inscrição / Documentação\n\nOrgao julgador: GABINETE DA MINISTRA REGINA HELENA COSTA\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-03-30 Distribuição (tipo_de_distribuicao_redistribuicao: sorteio)\n2023-03-30 Conclusão (tipo_de_conclusao: para decisão)\n2023-04-26 Petição (tipo_de_peticao: Parecer de Mérito (MP))\n2023-04-26 Conclusão (tipo_de_conclusao: para decisão)\n2023-05-03 Petição (tipo_de_peticao: Petição (outras))\n2023-03-21 Recebimento\n2023-04-17 Publicação\n2023-04-26 Recebimento\n2023-04-28 Conhecimento em Parte e Não-Provimento ou Denegação\n2023-05-02 Publicação\n2023-06-28 Trânsito em julgado\n2023-06-28 Baixa Definitiva\n2023-04-14 Mero expediente\n2023-04-14 Ato ordinatório\n2023-04-14 Disponibilização no Diário da Justiça Eletrônico\n2023-04-26 Protocolo de Petição\n2023-04-28 Ato ordinatório\n2023-04-28 Disponibilização no Diário da Justiça Eletrônico\n2023-05-03 Protocolo de Petição",
+    "date": "2023-03-24",
+    "date_last_update": "2024-07-24",
+    "case_number": "0800170-44.2022.4.05.8001",
+    "case_number_raw": "08001704420224058001",
+    "court": "STJ",
+    "court_tier": 1,
+    "chamber": "GABINETE DA MINISTRA REGINA HELENA COSTA",
+    "jurisdiction": "Brazil",
+    "language": "pt",
+    "country": "BR",
+    "decision_type": "Recurso Especial",
+    "classe_codigo": 1032,
+    "assuntos": [
+      "Convalidação de Estudos e Reconhecimento de Diploma",
+      "Inscrição / Documentação"
+    ],
+    "grau": "SUP",
+    "movement_count": 19,
+    "url": "https://www.cnj.jus.br/sistemas/datajud/",
+    "_raw_fields": {
+      "sistema": {
+        "codigo": 8,
+        "nome": "Outros"
+      },
+      "formato": {
+        "codigo": 1,
+        "nome": "Eletrônico"
+      },
+      "@timestamp": "2025-02-06T11:19:21.418782097Z"
+    }
+  }
+]

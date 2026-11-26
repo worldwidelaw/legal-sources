@@ -1,0 +1,38 @@
+{
+  "_id": "BR-DATAJUD-STJ_SUP_10095342520188260032",
+  "_source": "BR/DataJudCNJ",
+  "_type": "case_law",
+  "_fetched_at": "2026-07-28T23:16:35.564446+00:00",
+  "title": "Agravo em Recurso Especial - 1009534-25.2018.8.26.0032 - STJ",
+  "text": "Classe processual: Agravo em Recurso Especial\n\nAssuntos: Locação de Imóvel; Inadimplemento\n\nOrgao julgador: PRESIDÊNCIA\n\nGrau: SUP\n\nMovimentacoes processuais:\n2023-08-15 Distribuição (tipo_de_distribuicao_redistribuicao: competência exclusiva)\n2023-08-15 Conclusão (tipo_de_conclusao: para decisão)\n2023-08-23 Não Conhecimento de recurso (tipo_de_peticao: Agravo em recurso especial)\n2023-07-12 Recebimento\n2023-08-25 Publicação\n2023-09-19 Trânsito em julgado\n2023-09-19 Baixa Definitiva\n2023-08-23 Ato ordinatório\n2023-08-24 Disponibilização no Diário da Justiça Eletrônico",
+  "date": "2023-08-08",
+  "date_last_update": "2024-07-24",
+  "case_number": "1009534-25.2018.8.26.0032",
+  "case_number_raw": "10095342520188260032",
+  "court": "STJ",
+  "court_tier": 1,
+  "chamber": "PRESIDÊNCIA",
+  "jurisdiction": "Brazil",
+  "language": "pt",
+  "country": "BR",
+  "decision_type": "Agravo em Recurso Especial",
+  "classe_codigo": 11881,
+  "assuntos": [
+    "Locação de Imóvel",
+    "Inadimplemento"
+  ],
+  "grau": "SUP",
+  "movement_count": 9,
+  "url": "https://www.cnj.jus.br/sistemas/datajud/",
+  "_raw_fields": {
+    "sistema": {
+      "codigo": 8,
+      "nome": "Outros"
+    },
+    "formato": {
+      "codigo": 1,
+      "nome": "Eletrônico"
+    },
+    "@timestamp": "2025-02-06T11:19:21.417092926Z"
+  }
+}
